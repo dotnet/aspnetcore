@@ -24,14 +24,11 @@ namespace TestOutput
             WriteLiteral("    <p>This is item #");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(55, 1, false);
-            Write(
 #line 2 "ImplicitExpression.cshtml"
-                      i
+                Write(i);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(56, 6, true);
             WriteLiteral("</p>\r\n");

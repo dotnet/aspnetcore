@@ -53,32 +53,21 @@ namespace TestOutput
             WriteLiteral("\r\n<p>But this should show the comment syntax: ");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(310, 3, false);
-            Write(
 #line 13 "RazorComments.cshtml"
-                                             bar
+                                       Write(bar);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(313, 8, true);
             WriteLiteral("</p>\r\n\r\n");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(323, 1, false);
-            Write(
 #line 15 "RazorComments.cshtml"
-  a
+Write(ab);
 
 #line default
 #line hidden
-#line 15 "RazorComments.cshtml"
-       b
-
-#line default
-#line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(330, 2, true);
             WriteLiteral("\r\n");

@@ -24,14 +24,11 @@ Bold(string s) {
             WriteLiteralTo(__razor_helper_writer, "    <strong>");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(61, 1, false);
-            WriteTo(__razor_helper_writer, 
 #line 3 "HelpersMissingOpenParen.cshtml"
-             s
+WriteTo(__razor_helper_writer, s);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(62, 11, true);
             WriteLiteralTo(__razor_helper_writer, "</strong>\r\n");
@@ -68,14 +65,11 @@ Italic
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(95, 13, false);
-            Write(
 #line 7 "HelpersMissingOpenParen.cshtml"
- Bold("Hello")
+Write(Bold("Hello"));
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
         }
         #pragma warning restore 1998

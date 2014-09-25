@@ -31,14 +31,11 @@ Italic(string s) {
             WriteLiteralTo(__razor_helper_writer, "    <em>");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(151, 7, false);
-            WriteTo(__razor_helper_writer, 
 #line 7 "NestedHelpers.cshtml"
-         Bold(s)
+WriteTo(__razor_helper_writer, Bold(s));
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(158, 7, true);
             WriteLiteralTo(__razor_helper_writer, "</em>\r\n");
@@ -74,14 +71,11 @@ Bold(string s) {
             WriteLiteralTo(__razor_helper_writer, "        <strong>");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(123, 1, false);
-            WriteTo(__razor_helper_writer, 
 #line 5 "NestedHelpers.cshtml"
-                 s
+WriteTo(__razor_helper_writer, s);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(124, 11, true);
             WriteLiteralTo(__razor_helper_writer, "</strong>\r\n");
@@ -112,14 +106,11 @@ Bold(string s) {
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(171, 15, false);
-            Write(
 #line 10 "NestedHelpers.cshtml"
- Italic("Hello")
+Write(Italic("Hello"));
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
         }
         #pragma warning restore 1998

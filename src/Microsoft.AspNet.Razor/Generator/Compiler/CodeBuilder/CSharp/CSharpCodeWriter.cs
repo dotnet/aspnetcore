@@ -180,9 +180,27 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return WriteLine();
         }
 
+        /// <summary>
+        /// Writes a <c>#line</c> pragma directive for the line number at the specified <paramref name="location"/>.
+        /// </summary>
+        /// <param name="location">The location to generate the line pragma for.</param>
+        /// <param name="file">The file to generate the line pragma for.</param>
+        /// <returns>The current instance of <see cref="CSharpCodeWriter"/>.</returns>
+        public CSharpCodeWriter WriteLineNumberDirective(SourceLocation location, string file)
+        {
+            return WriteLineNumberDirective(location.LineIndex + 1, file);
+        }
+
         public CSharpCodeWriter WriteLineNumberDirective(int lineNumber, string file)
         {
-            return Write("#line ").Write(lineNumber.ToString()).Write(" \"").Write(file).WriteLine("\"");
+            if (!string.IsNullOrEmpty(LastWrite) &&
+                !LastWrite.EndsWith(Environment.NewLine, StringComparison.Ordinal))
+            {
+                WriteLine();
+            }
+
+            var lineNumberAsString = lineNumber.ToString(CultureInfo.InvariantCulture);
+            return Write("#line ").Write(lineNumberAsString).Write(" \"").Write(file).WriteLine("\"");
         }
 
         public CSharpCodeWriter WriteStartMethodInvocation(string methodName)

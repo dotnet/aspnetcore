@@ -18,14 +18,11 @@ namespace TestOutput
             WriteLiteral("1 + 1 = ");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(10, 3, false);
-            Write(
 #line 1 "ExplicitExpression.cshtml"
-          1+1
+    Write(1+1);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
         }
         #pragma warning restore 1998

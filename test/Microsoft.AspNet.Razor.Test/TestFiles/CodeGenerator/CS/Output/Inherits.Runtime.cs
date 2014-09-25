@@ -15,14 +15,11 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             Instrumentation.BeginContext(1, 5, false);
-            Write(
 #line 1 "Inherits.cshtml"
- foo()
+Write(foo());
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(6, 4, true);
             WriteLiteral("\r\n\r\n");

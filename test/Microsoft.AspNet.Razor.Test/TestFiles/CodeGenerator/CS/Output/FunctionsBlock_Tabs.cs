@@ -36,14 +36,11 @@ namespace TestOutput
             WriteLiteral("\r\nHere\'s a random number: ");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(152, 11, false);
-            Write(
 #line 12 "FunctionsBlock_Tabs.cshtml"
-                         RandomInt()
+                   Write(RandomInt());
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
         }
         #pragma warning restore 1998

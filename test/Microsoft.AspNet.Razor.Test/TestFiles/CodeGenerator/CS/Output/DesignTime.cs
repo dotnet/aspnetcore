@@ -82,12 +82,7 @@ __o = Foo(item => new Template((__razor_template_writer) => {
 #line hidden
 }
 )
-#line 9 "DesignTime.cshtml"
-                         )
-
-#line default
-#line hidden
-;
+);
 
 #line default
 #line hidden

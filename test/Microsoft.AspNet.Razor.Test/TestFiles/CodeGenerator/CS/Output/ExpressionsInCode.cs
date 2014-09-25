@@ -33,14 +33,11 @@ namespace TestOutput
 #line hidden
 
             Instrumentation.BeginContext(83, 3, false);
-            Write(
 #line 7 "ExpressionsInCode.cshtml"
-     foo
+Write(foo);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
 #line 7 "ExpressionsInCode.cshtml"
         
@@ -69,14 +66,11 @@ namespace TestOutput
 #line hidden
 
             Instrumentation.BeginContext(174, 21, false);
-            Write(
 #line 14 "ExpressionsInCode.cshtml"
-      bar.Replace("F", "B")
+Write(bar.Replace("F", "B"));
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
 #line 14 "ExpressionsInCode.cshtml"
                             

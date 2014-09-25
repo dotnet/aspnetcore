@@ -31,14 +31,11 @@ Link(string link) {
 #line hidden
 
                 Instrumentation.BeginContext(63, 4, false);
-                WriteTo(__razor_attribute_value_writer, 
 #line 2 "InlineBlocks.cshtml"
-                                  link
+WriteTo(__razor_attribute_value_writer, link);
 
 #line default
 #line hidden
-                );
-
                 Instrumentation.EndContext();
 #line 2 "InlineBlocks.cshtml"
                                        } else {

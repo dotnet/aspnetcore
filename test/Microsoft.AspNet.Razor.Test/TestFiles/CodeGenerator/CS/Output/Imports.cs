@@ -35,27 +35,21 @@ using System
             WriteLiteral("\r\n<p>Path\'s full type name is ");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(99, 21, false);
-            Write(
 #line 5 "Imports.cshtml"
-                             typeof(Path).FullName
+                       Write(typeof(Path).FullName);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(120, 40, true);
             WriteLiteral("</p>\r\n<p>Foo\'s actual full type name is ");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(161, 20, false);
-            Write(
 #line 6 "Imports.cshtml"
-                                   typeof(Foo).FullName
+                             Write(typeof(Foo).FullName);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(181, 4, true);
             WriteLiteral("</p>");

@@ -54,13 +54,7 @@ namespace TestOutput
 #line default
 #line hidden
 #line 15 "RazorComments.cshtml"
-__o = a
-#line 15 "RazorComments.cshtml"
-       b
-
-#line default
-#line hidden
-;
+__o = ab;
 
 #line default
 #line hidden

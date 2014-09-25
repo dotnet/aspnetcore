@@ -23,14 +23,11 @@ Strong(string s) {
             WriteLiteralTo(__razor_helper_writer, "    <strong>");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(41, 1, false);
-            WriteTo(__razor_helper_writer, 
 #line 2 "Instrumented.cshtml"
-             s
+WriteTo(__razor_helper_writer, s);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(42, 11, true);
             WriteLiteralTo(__razor_helper_writer, "</strong>\r\n");
@@ -100,14 +97,11 @@ Strong(string s) {
             WriteLiteral("    <p>Hello from C#, #");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(200, 1, false);
-            Write(
 #line 13 "Instrumented.cshtml"
-                         i
+                   Write(i);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(202, 6, true);
             WriteLiteral("</p>\r\n");
@@ -180,14 +174,11 @@ Strong(string s) {
             WriteLiteral("    <p>Hello again from C#, #");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(509, 1, false);
-            Write(
 #line 31 "Instrumented.cshtml"
-                               j
+                         Write(j);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(511, 6, true);
             WriteLiteral("</p>\r\n");
@@ -220,14 +211,11 @@ Strong(string s) {
             WriteLiteral("    <p>Oh no! An error occurred: ");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(631, 10, false);
-            Write(
 #line 37 "Instrumented.cshtml"
-                                   ex.Message
+                             Write(ex.Message);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(642, 6, true);
             WriteLiteral("</p>\r\n");

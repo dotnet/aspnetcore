@@ -34,14 +34,11 @@ namespace TestOutput
             WriteLiteral("    <p>Hello from C#, #");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(69, 1, false);
-            Write(
 #line 6 ""
-                         i
+                   Write(i);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(71, 6, true);
             WriteLiteral("</p>\r\n");
@@ -114,14 +111,11 @@ namespace TestOutput
             WriteLiteral("    <p>Hello again from C#, #");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(378, 1, false);
-            Write(
 #line 24 ""
-                               j
+                         Write(j);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(380, 6, true);
             WriteLiteral("</p>\r\n");
@@ -154,14 +148,11 @@ namespace TestOutput
             WriteLiteral("    <p>Oh no! An error occurred: ");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(500, 10, false);
-            Write(
 #line 30 ""
-                                   ex.Message
+                             Write(ex.Message);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(511, 6, true);
             WriteLiteral("</p>\r\n");
@@ -183,14 +174,11 @@ namespace TestOutput
             WriteLiteral("<p>i is now ");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(571, 1, false);
-            Write(
 #line 34 ""
-             i
+       Write(i);
 
 #line default
 #line hidden
-            );
-
             Instrumentation.EndContext();
             Instrumentation.BeginContext(572, 8, true);
             WriteLiteral("</p>\r\n\r\n");
