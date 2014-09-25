@@ -43,7 +43,7 @@ namespace MusicStore.Controllers
 
         public IActionResult Details(int id)
         {
-            var album = cache.GetOrAdd(string.Format("album_{0}", id), context =>
+            var album = cache.GetOrSet(string.Format("album_{0}", id), context =>
             {
                 //Remove it from cache if not retrieved in last 10 minutes
                 context.SetSlidingExpiration(TimeSpan.FromMinutes(10));
