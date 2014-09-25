@@ -8,7 +8,7 @@ namespace E2ETests
 {
     public partial class SmokeTests
     {
-        //[Theory]
+        [Theory]
         [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/", false)]
         [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5002/", false)]
         [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5001/", false)]
