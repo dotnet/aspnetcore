@@ -7,13 +7,13 @@ using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
-    public class TagHelpersExecutionContextTest
+    public class TagHelperExecutionContextTest
     {
         [Fact]
         public void AddHtmlAttribute_MaintainsHTMLAttributes()
         {
             // Arrange
-            var executionContext = new TagHelpersExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p");
             var expectedAttributes = new Dictionary<string, string>
             {
                 { "class", "btn" },
@@ -29,10 +29,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void TagHelpersExecutionContext_MaintainsAllAttributes()
+        public void TagHelperExecutionContext_MaintainsAllAttributes()
         {
             // Arrange
-            var executionContext = new TagHelpersExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p");
             var expectedAttributes = new Dictionary<string, object>
             {
                 { "class", "btn" },
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void Add_MaintainsTagHelpers()
         {
             // Arrange
-            var executionContext = new TagHelpersExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p");
             var tagHelper = new PTagHelper();
 
             // Act
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void Add_MaintainsMultipleTagHelpers()
         {
             // Arrange
-            var executionContext = new TagHelpersExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p");
             var tagHelper1 = new PTagHelper();
             var tagHelper2 = new PTagHelper();
 

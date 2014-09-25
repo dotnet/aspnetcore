@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var runner = new TagHelperRunner();
-            var executionContext = new TagHelpersExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p");
             var executableTagHelper1 = new ExecutableTagHelper();
             var executableTagHelper2 = new ExecutableTagHelper();
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var runner = new TagHelperRunner();
-            var executionContext = new TagHelpersExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p");
             var executableTagHelper = new ExecutableTagHelper();
 
             // Act
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var runner = new TagHelperRunner();
-            var executionContext = new TagHelpersExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p");
             var tagHelper = new TagHelperContextTouchingTagHelper();
 
             // Act
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var runner = new TagHelperRunner();
-            var executionContext = new TagHelpersExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p");
             var tagHelper = new ExecutableTagHelper();
             var contentWriter = new StringWriter(new StringBuilder("Hello World"));
 
