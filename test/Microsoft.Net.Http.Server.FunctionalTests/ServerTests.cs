@@ -17,15 +17,14 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task Server_200OK_Success()
         {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
+            using (var server = Utilities.CreateHttpServer(out var address))
             {
-                Task<string> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Dispose();
 
-                string response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(string.Empty, response);
             }
         }
@@ -33,8 +32,7 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task Server_SendHelloWorld_Success()
         {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
+            using (var server = Utilities.CreateHttpServer(out var address))
             {
                 Task<string> responseTask = SendRequestAsync(address);
                 
@@ -53,10 +51,9 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task Server_EchoHelloWorld_Success()
         {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
+            using (var server = Utilities.CreateHttpServer(out var address))
             {
-                Task<string> responseTask = SendRequestAsync(address, "Hello World");
+                var responseTask = SendRequestAsync(address, "Hello World");
 
                 var context = await server.GetContextAsync();
                 string input = new StreamReader(context.Request.Body).ReadToEnd();
@@ -67,7 +64,7 @@ namespace Microsoft.Net.Http.Server
                     writer.Write("Hello World");
                 }
 
-                string response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal("Hello World", response);
             }
         }
@@ -75,18 +72,17 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task Server_ClientDisconnects_CallCanceled()
         {
-            TimeSpan interval = TimeSpan.FromSeconds(1);
-            ManualResetEvent canceled = new ManualResetEvent(false);
+            var interval = TimeSpan.FromSeconds(1);
+            var canceled = new ManualResetEvent(false);
 
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
+            using (var server = Utilities.CreateHttpServer(out var address))
             {
                 using (var client = new HttpClient())
                 {
-                    Task<HttpResponseMessage> responseTask = client.GetAsync(address);
+                    var responseTask = client.GetAsync(address);
 
                     var context = await server.GetContextAsync();
-                    CancellationToken ct = context.DisconnectToken;
+                    var ct = context.DisconnectToken;
                     Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                     Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
                     ct.Register(() => canceled.Set());
@@ -106,16 +102,15 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task Server_Abort_CallCanceled()
         {
-            TimeSpan interval = TimeSpan.FromSeconds(1);
-            ManualResetEvent canceled = new ManualResetEvent(false);
+            var interval = TimeSpan.FromSeconds(1);
+            var canceled = new ManualResetEvent(false);
 
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
+            using (var server = Utilities.CreateHttpServer(out var address))
             {
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
-                CancellationToken ct = context.DisconnectToken;
+                var ct = context.DisconnectToken;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
                 ct.Register(() => canceled.Set());
@@ -134,16 +129,15 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task Server_ConnectionCloseHeader_CancellationTokenFires()
         {
-            TimeSpan interval = TimeSpan.FromSeconds(1);
-            ManualResetEvent canceled = new ManualResetEvent(false);
+            var interval = TimeSpan.FromSeconds(1);
+            var canceled = new ManualResetEvent(false);
 
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
+            using (var server = Utilities.CreateHttpServer(out var address))
             {
-                Task<string> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
-                CancellationToken ct = context.DisconnectToken;
+                var ct = context.DisconnectToken;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
                 ct.Register(() => canceled.Set());
@@ -159,7 +153,7 @@ namespace Microsoft.Net.Http.Server
                 Assert.True(canceled.WaitOne(interval), "Disconnected");
                 Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
 
-                string response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal("Hello World", response);
             }
         }
@@ -167,16 +161,15 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task Server_SetQueueLimit_Success()
         {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
+            using (var server = Utilities.CreateHttpServer(out var address))
             {
                 server.SetRequestQueueLimit(1001);
-                Task<string> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
                 context.Dispose();
 
-                string response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(string.Empty, response);
             }
         }
