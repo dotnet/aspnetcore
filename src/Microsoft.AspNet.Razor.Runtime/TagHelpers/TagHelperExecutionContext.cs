@@ -9,15 +9,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// <summary>
     /// Class used to store information about a <see cref="ITagHelper"/>'s execution lifetime.
     /// </summary>
-    public class TagHelpersExecutionContext
+    public class TagHelperExecutionContext
     {
         private readonly List<ITagHelper> _tagHelpers;
 
         /// <summary>
-        /// Instantiates a new <see cref="TagHelpersExecutionContext"/>.
+        /// Instantiates a new <see cref="TagHelperExecutionContext"/>.
         /// </summary>
         /// <param name="tagName">The HTML tag name in the Razor source.</param>
-        public TagHelpersExecutionContext([NotNull] string tagName)
+        public TagHelperExecutionContext([NotNull] string tagName)
         {
             AllAttributes = new Dictionary<string, object>(StringComparer.Ordinal);
             HTMLAttributes = new Dictionary<string, string>(StringComparer.Ordinal);

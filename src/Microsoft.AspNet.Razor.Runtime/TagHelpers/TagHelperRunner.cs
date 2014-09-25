@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="context">Contains information associated with running <see cref="ITagHelper"/>s.</param>
         /// <returns>Resulting <see cref="TagHelperOutput"/> from processing all of the 
         /// <paramref name="context"/>'s <see cref="ITagHelper"/>s.</returns>
-        public async Task<TagHelperOutput> RunAsync([NotNull] TagHelpersExecutionContext context)
+        public async Task<TagHelperOutput> RunAsync([NotNull] TagHelperExecutionContext context)
         {
             return await RunAsyncCore(context, string.Empty);
         }
@@ -29,13 +29,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="bufferedBody">Contains the buffered content of the current HTML tag.</param>
         /// <returns>Resulting <see cref="TagHelperOutput"/> from processing all of the 
         /// <paramref name="context"/>'s <see cref="ITagHelper"/>s.</returns>
-        public async Task<TagHelperOutput> RunAsync([NotNull] TagHelpersExecutionContext context,
+        public async Task<TagHelperOutput> RunAsync([NotNull] TagHelperExecutionContext context,
                                                     [NotNull] TextWriter bufferedBody)
         {
             return await RunAsyncCore(context, bufferedBody.ToString());
         }
 
-        private async Task<TagHelperOutput> RunAsyncCore(TagHelpersExecutionContext executionContext, string outputContent)
+        private async Task<TagHelperOutput> RunAsyncCore(TagHelperExecutionContext executionContext, string outputContent)
         {
             var tagHelperContext = new TagHelperContext(executionContext.AllAttributes);
             var tagHelperOutput = new TagHelperOutput(executionContext.TagName,

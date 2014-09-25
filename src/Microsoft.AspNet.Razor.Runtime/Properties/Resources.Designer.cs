@@ -62,6 +62,22 @@ namespace Microsoft.AspNet.Razor.Runtime
             return GetString("TagHelperTypeResolver_TagHelperAssemblyNameCannotBeEmptyOrNull");
         }
 
+        /// <summary>
+        /// Must call '{2}.{1}' before calling '{2}.{0}'.
+        /// </summary>
+        internal static string ScopeManager_EndCannotBeCalledWithoutACallToBegin
+        {
+            get { return GetString("ScopeManager_EndCannotBeCalledWithoutACallToBegin"); }
+        }
+
+        /// <summary>
+        /// Must call '{2}.{1}' before calling '{2}.{0}'.
+        /// </summary>
+        internal static string FormatScopeManager_EndCannotBeCalledWithoutACallToBegin(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ScopeManager_EndCannotBeCalledWithoutACallToBegin"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

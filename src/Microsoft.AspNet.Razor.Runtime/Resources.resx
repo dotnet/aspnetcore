@@ -128,4 +128,7 @@
   <data name="TagHelperTypeResolver_TagHelperAssemblyNameCannotBeEmptyOrNull" xml:space="preserve">
     <value>Tag helper directive assembly name cannot be null or empty.</value>
   </data>
+  <data name="ScopeManager_EndCannotBeCalledWithoutACallToBegin" xml:space="preserve">
+    <value>Must call '{2}.{1}' before calling '{2}.{0}'.</value>
+  </data>
 </root>
