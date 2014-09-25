@@ -1191,11 +1191,6 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-            if (Options.User.UseUserNameAsEmail)
-            {
-                return await GetUserNameAsync(user, cancellationToken);
-            }
-
             var store = GetEmailStore();
             if (user == null)
             {
@@ -1215,11 +1210,6 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-
-            if (Options.User.UseUserNameAsEmail)
-            {
-                await UpdateUserName(user, email, cancellationToken);
-            }
 
             var store = GetEmailStore();
             if (user == null)
@@ -1242,11 +1232,6 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-            if (Options.User.UseUserNameAsEmail)
-            {
-                return FindByNameAsync(email, cancellationToken);
-            }
-
             var store = GetEmailStore();
             if (email == null)
             {

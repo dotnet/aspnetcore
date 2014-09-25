@@ -388,25 +388,6 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task UserNameAsEmailTest()
-        {
-            var manager = CreateManager();
-            manager.Options.User.UseUserNameAsEmail = true;
-            manager.Options.User.UserNameValidationRegex = null;
-            var user = CreateTestUser();
-            var email = user.UserName + "@test.com";
-            user.UserName = email;
-            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            Assert.Equal(user, await manager.FindByEmailAsync(email));
-            Assert.Equal(email, await manager.GetEmailAsync(user));
-            const string newEmail = "modified@woot.com";
-            IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, newEmail));
-            Assert.Equal(newEmail, user.UserName);
-            Assert.Equal(newEmail, user.Email);
-            Assert.False(user.EmailConfirmed);
-        }
-
-        [Fact]
         public async Task CanFindUsersViaUserQuerable()
         {
             var mgr = CreateManager();

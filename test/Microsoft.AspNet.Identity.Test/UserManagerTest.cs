@@ -163,65 +163,6 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task UseUserNameAsEmailCallsStoreFindByName()
-        {
-            // Setup
-            var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser {UserName="Foo"};
-            store.Setup(s => s.FindByNameAsync(user.UserName, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
-            var userManager = MockHelpers.TestUserManager(store.Object);
-            userManager.Options.User.UseUserNameAsEmail = true;
-            userManager.UserNameNormalizer = null;
-
-            // Act
-            var result = await userManager.FindByEmailAsync(user.UserName);
-
-            // Assert
-            Assert.Equal(user, result);
-            store.VerifyAll();
-        }
-
-        [Fact]
-        public async Task UseUserNameAsEmailReturnsName()
-        {
-            // Setup
-            var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo@email.com" };
-            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).ReturnsAsync(user.UserName).Verifiable();
-            var userManager = MockHelpers.TestUserManager(store.Object);
-            userManager.Options.User.UseUserNameAsEmail = true;
-            userManager.UserNameNormalizer = null;
-
-            // Act
-            var result = await userManager.GetEmailAsync(user);
-
-            // Assert
-            Assert.Equal(user.UserName, result);
-            store.VerifyAll();
-        }
-
-        [Fact]
-        public async Task UseUserNameAsEmailUpdatesNameAndEmail()
-        {
-            // Setup
-            var store = new Mock<IUserEmailStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
-            var email = "foo@foo.com";
-            store.Setup(s => s.SetUserNameAsync(user, email, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            store.Setup(s => s.SetEmailAsync(user, email, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            store.Setup(s => s.SetEmailConfirmedAsync(user, false, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager(store.Object);
-            userManager.Options.User.UseUserNameAsEmail = true;
-            userManager.UserNameNormalizer = null;
-
-            // Act
-            IdentityResultAssert.IsSuccess(await userManager.SetEmailAsync(user, email));
-
-            // Assert
-            store.VerifyAll();
-        }
-
-        [Fact]
         public async Task AddToRolesCallsStore()
         {
             // Setup
