@@ -75,8 +75,7 @@ namespace Microsoft.AspNet.Identity
         {
             var userIdentity = await CreateUserIdentityAsync(user);
             // Should always clear any external login cookies when signing in for real
-            // BUG: SignOut currently throws if auth type was not signed in
-            //Context.Response.SignOut(Options.ExternalCookie.AuthenticationType);
+            Context.Response.SignOut(Options.ExternalCookie.AuthenticationType);
             if (authenticationMethod != null)
             {
                 userIdentity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));

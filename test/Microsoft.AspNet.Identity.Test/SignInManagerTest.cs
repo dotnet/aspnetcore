@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Identity.Test
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
             var roleManager = MockHelpers.MockRoleManager<TestRole>();
             var identityOptions = new IdentityOptions();
-            //response.Setup(r => r.SignOut(identityOptions.ExternalCookie.AuthenticationType)).Verifiable();
+            response.Setup(r => r.SignOut(identityOptions.ExternalCookie.AuthenticationType)).Verifiable();
             var options = new Mock<IOptionsAccessor<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
             var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object, options.Object);
@@ -365,7 +365,7 @@ namespace Microsoft.AspNet.Identity.Test
                     It.Is<ClaimsIdentity>(i => i.FindFirstValue(ClaimTypes.Name) == user.Id
                         && i.AuthenticationType == ClaimsIdentityOptions.DefaultTwoFactorRememberMeAuthenticationType))).Verifiable();
             }
-            //response.Setup(r => r.SignOut(identityOptions.ExternalCookie.AuthenticationType)).Verifiable();
+            response.Setup(r => r.SignOut(identityOptions.ExternalCookie.AuthenticationType)).Verifiable();
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
             context.Setup(c => c.AuthenticateAsync(ClaimsIdentityOptions.DefaultTwoFactorUserIdAuthenticationType)).ReturnsAsync(authResult).Verifiable();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
@@ -449,7 +449,7 @@ namespace Microsoft.AspNet.Identity.Test
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
             var roleManager = MockHelpers.MockRoleManager<TestRole>();
             var identityOptions = new IdentityOptions();
-            //response.Setup(r => r.SignOut(identityOptions.ExternalCookie.AuthenticationType)).Verifiable();
+            response.Setup(r => r.SignOut(identityOptions.ExternalCookie.AuthenticationType)).Verifiable();
             var options = new Mock<IOptionsAccessor<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
             var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object, options.Object);

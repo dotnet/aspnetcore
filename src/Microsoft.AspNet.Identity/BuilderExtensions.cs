@@ -20,9 +20,9 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException("app");
             }
             var options = app.ApplicationServices.GetService<IOptionsAccessor<IdentityOptions>>().Options;
-            app.UseCookieAuthentication(options.ApplicationCookie);
             app.SetDefaultSignInAsAuthenticationType(options.DefaultSignInAsAuthenticationType);
             app.UseCookieAuthentication(options.ExternalCookie);
+            app.UseCookieAuthentication(options.ApplicationCookie);
             app.UseCookieAuthentication(options.TwoFactorRememberMeCookie);
             app.UseCookieAuthentication(options.TwoFactorUserIdCookie);
             return app;
