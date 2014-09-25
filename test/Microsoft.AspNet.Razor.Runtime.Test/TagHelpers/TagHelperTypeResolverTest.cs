@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -122,18 +123,34 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         public class Invalid_NestedPublicTagHelper : ITagHelper
         {
+            public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+            {
+                return Task.FromResult(result: true);
+            }
         }
 
         internal class Invalid_NestedInternalTagHelper : ITagHelper
         {
+            public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+            {
+                return Task.FromResult(result: true);
+            }
         }
 
         private class Invalid_PrivateTagHelper : ITagHelper
         {
+            public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+            {
+                return Task.FromResult(result: true);
+            }
         }
 
         protected class Invalid_ProtectedTagHelper : ITagHelper
         {
+            public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+            {
+                return Task.FromResult(result: true);
+            }
         }
     }
 
@@ -141,13 +158,25 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     // In this case they do not fulfill other TagHelper requirements.
     public abstract class Invalid_AbstractTagHelper : ITagHelper
     {
+        public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+        {
+            return Task.FromResult(result: true);
+        }
     }
 
     public class Invalid_GenericTagHelper<T> : ITagHelper
     {
+        public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+        {
+            return Task.FromResult(result: true);
+        }
     }
 
     internal class Invalid_InternalTagHelper : ITagHelper
     {
+        public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+        {
+            return Task.FromResult(result: true);
+        }
     }
 }

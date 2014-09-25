@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
-    public class Valid_PlainTagHelper : ITagHelper
+    public class Valid_PlainTagHelper : TagHelper
     {
     }
 
@@ -11,19 +11,19 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     {
     }
 
-    public class SingleAttributeTagHelper : ITagHelper
+    public class SingleAttributeTagHelper : TagHelper
     {
         public int IntAttribute { get; set; }
     }
 
-    public class MissingAccessorTagHelper : ITagHelper
+    public class MissingAccessorTagHelper : TagHelper
     {
         public string ValidAttribute { get; set; }
         public string InvalidNoGetAttribute { set { } }
         public string InvalidNoSetAttribute { get { return string.Empty; } }
     }
 
-    public class PrivateAccessorTagHelper : ITagHelper
+    public class PrivateAccessorTagHelper : TagHelper
     {
         public string ValidAttribute { get; set; }
         public string InvalidPrivateSetAttribute { get; private set; }
