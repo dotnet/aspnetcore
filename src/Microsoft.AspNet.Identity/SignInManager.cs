@@ -74,8 +74,9 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var userIdentity = await CreateUserIdentityAsync(user);
-            // Always clear any external login cookies when signing in for real
-            Context.Response.SignOut(Options.ExternalCookie.AuthenticationType);
+            // Should always clear any external login cookies when signing in for real
+            // BUG: SignOut currently throws if auth type was not signed in
+            //Context.Response.SignOut(Options.ExternalCookie.AuthenticationType);
             if (authenticationMethod != null)
             {
                 userIdentity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));

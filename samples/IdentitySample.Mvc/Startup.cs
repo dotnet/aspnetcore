@@ -115,7 +115,7 @@ namespace IdentitySamples
                     options.Password.RequireLowercase = false;
                     options.Password.RequireUppercase = false;
                     options.Password.RequireNonLetterOrDigit = false;
-                    options.SecurityStampValidationInterval = TimeSpan.Zero;
+                    options.SecurityStampValidationInterval = TimeSpan.FromMinutes(1);
                 });
                 services.SetupOptions<GoogleAuthenticationOptions>(options =>
                 {
