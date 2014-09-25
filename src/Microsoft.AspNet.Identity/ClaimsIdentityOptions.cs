@@ -13,8 +13,6 @@ namespace Microsoft.AspNet.Identity
         public static readonly string DefaultTwoFactorRememberMeAuthenticationType = typeof(ClaimsIdentityOptions).Namespace + ".TwoFactorRememberMe";
         public static readonly string DefaultTwoFactorUserIdAuthenticationType = typeof(ClaimsIdentityOptions).Namespace + ".TwoFactorUserId";
 
-        public string AuthenticationType { get; set; } = DefaultAuthenticationType;
-
         /// <summary>
         ///     Claim type used for role claims
         /// </summary>

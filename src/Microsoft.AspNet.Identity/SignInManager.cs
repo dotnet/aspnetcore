@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<ClaimsIdentity> CreateUserIdentityAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            return await ClaimsFactory.CreateAsync(user, Options.ClaimsIdentity);
+            return await ClaimsFactory.CreateAsync(user);
         }
 
         //public virtual async Task<bool> CanSignInAsync(TUser user,
@@ -74,6 +74,8 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var userIdentity = await CreateUserIdentityAsync(user);
+            // Always clear any external login cookies when signing in for real
+            Context.Response.SignOut(Options.ExternalCookie.AuthenticationType);
             if (authenticationMethod != null)
             {
                 userIdentity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
@@ -84,8 +86,7 @@ namespace Microsoft.AspNet.Identity
         // TODO: Should this be async?
         public virtual void SignOut()
         {
-            // REVIEW: need a new home for this option config?
-            Context.Response.SignOut(Options.ClaimsIdentity.AuthenticationType);
+            Context.Response.SignOut(Options.ApplicationCookie.AuthenticationType);
         }
 
         private async Task<bool> IsLockedOut(TUser user, CancellationToken token)
@@ -184,7 +185,7 @@ namespace Microsoft.AspNet.Identity
         {
             var userId = await UserManager.GetUserIdAsync(user, cancellationToken);
             var result =
-                await Context.AuthenticateAsync(ClaimsIdentityOptions.DefaultTwoFactorRememberMeAuthenticationType);
+                await Context.AuthenticateAsync(Options.TwoFactorRememberMeCookie.AuthenticationType);
             return (result != null && result.Identity != null && result.Identity.Name == userId);
         }
 
@@ -199,7 +200,7 @@ namespace Microsoft.AspNet.Identity
 
         public virtual Task ForgetTwoFactorClientAsync()
         {
-            Context.Response.SignOut(ClaimsIdentityOptions.DefaultTwoFactorRememberMeAuthenticationType);
+            Context.Response.SignOut(Options.TwoFactorRememberMeCookie.AuthenticationType);
             return Task.FromResult(0);
         }
 

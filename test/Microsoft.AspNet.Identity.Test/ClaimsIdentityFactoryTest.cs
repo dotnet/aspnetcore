@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using Xunit;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity.Test
 {
@@ -18,15 +19,16 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var userManager = MockHelpers.MockUserManager<TestUser>().Object;
             var roleManager = MockHelpers.MockRoleManager<TestRole>().Object;
-            var factory = new ClaimsIdentityFactory<TestUser, TestRole>(userManager, roleManager);
+            var options = new Mock<IOptionsAccessor<IdentityOptions>>();
+            Assert.Throws<ArgumentNullException>("optionsAccessor",
+                () => new ClaimsIdentityFactory<TestUser, TestRole>(userManager, roleManager, options.Object));
+            var identityOptions = new IdentityOptions();
+            options.Setup(a => a.Options).Returns(identityOptions);
+            var factory = new ClaimsIdentityFactory<TestUser, TestRole>(userManager, roleManager, options.Object);
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await factory.CreateAsync(null, new ClaimsIdentityOptions()));
-            await Assert.ThrowsAsync<ArgumentNullException>("options",
-                async () => await factory.CreateAsync(new TestUser(), null));
+                async () => await factory.CreateAsync(null));
         }
 
-#if ASPNET50
-        //TODO: Mock fails in K (this works fine in net45)
         [Theory]
         [InlineData(false, false, false)]
         [InlineData(false, true, false)]
@@ -69,15 +71,19 @@ namespace Microsoft.AspNet.Identity.Test
                 roleManager.Setup(m => m.GetClaimsAsync(local, CancellationToken.None)).ReturnsAsync(localClaims);
             }
 
-            var factory = new ClaimsIdentityFactory<TestUser, TestRole>(userManager.Object, roleManager.Object);
+            var options = new Mock<IOptionsAccessor<IdentityOptions>>();
+            var identityOptions = new IdentityOptions();
+            options.Setup(a => a.Options).Returns(identityOptions);
+            var factory = new ClaimsIdentityFactory<TestUser, TestRole>(userManager.Object, roleManager.Object, options.Object);
 
             // Act
-            var identity = await factory.CreateAsync(user, new ClaimsIdentityOptions());
+            var identity = await factory.CreateAsync(user);
 
             // Assert
             var manager = userManager.Object;
             Assert.NotNull(identity);
             Assert.Equal(ClaimsIdentityOptions.DefaultAuthenticationType, identity.AuthenticationType);
+            Assert.Equal(identityOptions.ApplicationCookie.AuthenticationType, identity.AuthenticationType);
             var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
             Assert.True(
@@ -100,6 +106,5 @@ namespace Microsoft.AspNet.Identity.Test
             userManager.VerifyAll();
             roleManager.VerifyAll();
         }
-#endif
     }
 }

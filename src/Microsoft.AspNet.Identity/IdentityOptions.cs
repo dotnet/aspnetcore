@@ -37,6 +37,7 @@ namespace Microsoft.AspNet.Identity
         public CookieAuthenticationOptions ApplicationCookie { get; set; } = new CookieAuthenticationOptions
         {
             AuthenticationType = ClaimsIdentityOptions.DefaultAuthenticationType,
+            //CookieName = ".AspNet.Identity." + ClaimsIdentityOptions.DefaultAuthenticationType,
             LoginPath = new PathString("/Account/Login"),
             Notifications = new CookieAuthenticationNotifications
             {
@@ -51,20 +52,24 @@ namespace Microsoft.AspNet.Identity
         public CookieAuthenticationOptions ExternalCookie { get; set; } = new CookieAuthenticationOptions
         {
             AuthenticationType = ClaimsIdentityOptions.DefaultExternalLoginAuthenticationType,
-            AuthenticationMode = AuthenticationMode.Passive
+            AuthenticationMode = AuthenticationMode.Passive,
+            CookieName = ClaimsIdentityOptions.DefaultExternalLoginAuthenticationType,
+            ExpireTimeSpan = TimeSpan.FromMinutes(5),
         };
 
         public CookieAuthenticationOptions TwoFactorRememberMeCookie { get; set; } = new CookieAuthenticationOptions
         {
             AuthenticationType = ClaimsIdentityOptions.DefaultTwoFactorRememberMeAuthenticationType,
-            AuthenticationMode = AuthenticationMode.Passive
+            AuthenticationMode = AuthenticationMode.Passive,
+            CookieName = ClaimsIdentityOptions.DefaultTwoFactorRememberMeAuthenticationType
         };
 
         public CookieAuthenticationOptions TwoFactorUserIdCookie { get; set; } = new CookieAuthenticationOptions
         {
             AuthenticationType = ClaimsIdentityOptions.DefaultTwoFactorUserIdAuthenticationType,
-            AuthenticationMode = AuthenticationMode.Passive
-
+            AuthenticationMode = AuthenticationMode.Passive,
+            CookieName = ClaimsIdentityOptions.DefaultTwoFactorUserIdAuthenticationType,
+            ExpireTimeSpan = TimeSpan.FromMinutes(5),
         };
     }
 }

@@ -45,11 +45,9 @@ namespace Microsoft.AspNet.Identity.Test
             const string usernameClaimType = "namez";
             const string useridClaimType = "idz";
             const string securityStampClaimType = "stampz";
-            const string authType = "auth";
 
             var dic = new Dictionary<string, string>
             {
-                {"identity:claimsidentity:authENTICATIONType", authType},
                 {"identity:claimsidentity:roleclaimtype", roleClaimType},
                 {"identity:claimsidentity:usernameclaimtype", usernameClaimType},
                 {"identity:claimsidentity:useridclaimtype", useridClaimType},
@@ -71,7 +69,6 @@ namespace Microsoft.AspNet.Identity.Test
             var accessor = services.BuildServiceProvider().GetService<IOptionsAccessor<IdentityOptions>>();
             Assert.NotNull(accessor);
             var options = accessor.Options;
-            Assert.Equal(authType, options.ClaimsIdentity.AuthenticationType);
             Assert.Equal(roleClaimType, options.ClaimsIdentity.RoleClaimType);
             Assert.Equal(useridClaimType, options.ClaimsIdentity.UserIdClaimType);
             Assert.Equal(usernameClaimType, options.ClaimsIdentity.UserNameClaimType);
