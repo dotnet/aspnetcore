@@ -65,7 +65,7 @@ namespace MusicStore.Areas.Admin.Controllers
         public IActionResult Details(int id)
         {
             string cacheId = string.Format("album_{0}", id);
-            var album = cache.GetOrAdd(cacheId, context =>
+            var album = cache.GetOrSet(cacheId, context =>
             {
                 //Remove it from cache if not retrieved in last 10 minutes
                 context.SetSlidingExpiration(TimeSpan.FromMinutes(10));

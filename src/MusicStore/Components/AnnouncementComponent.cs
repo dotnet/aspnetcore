@@ -21,7 +21,7 @@ namespace MusicStore.Components
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var latestAlbum = await cache.GetOrAdd("latestAlbum", async context =>
+            var latestAlbum = await cache.GetOrSet("latestAlbum", async context =>
             {
                 context.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
                 return await GetLatestAlbum();

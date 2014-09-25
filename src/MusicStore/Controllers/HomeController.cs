@@ -23,7 +23,7 @@ namespace MusicStore.Controllers
         public IActionResult Index()
         {
             // Get most popular albums
-            var albums = cache.GetOrAdd("topselling", context =>
+            var albums = cache.GetOrSet("topselling", context =>
             {
                 //Refresh it every 10 minutes. Let this be the last item to be removed by cache if cache GC kicks in.
                 context.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
