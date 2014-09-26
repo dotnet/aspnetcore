@@ -65,7 +65,7 @@ namespace MusicStore.Spa
             });
 
             // Add static files
-            app.UseStaticFiles(new StaticFileOptions { FileSystem = new PhysicalFileSystem("wwwroot") });
+            app.UseStaticFiles();
 
             // Add MVC
             app.UseMvc(routes =>

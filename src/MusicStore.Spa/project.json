@@ -1,4 +1,5 @@
 {
+    "webroot": "wwwroot",
     "authors": [
         "Microsoft"
     ],
