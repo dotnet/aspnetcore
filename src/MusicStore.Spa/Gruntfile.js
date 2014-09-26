@@ -1,4 +1,5 @@
-﻿/// <reference path="node_modules/grunt/lib/grunt.js" />
+/// <vs BeforeBuild='dev' Clean='clean' />
+/// <reference path="node_modules/grunt/lib/grunt.js" />
 
 // node-debug (Resolve-Path ~\AppData\Roaming\npm\node_modules\grunt-cli\bin\grunt) task:target
 
