@@ -51,6 +51,8 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 
         public List<ReflectedActionModel> Actions { get; private set; }
 
+        public ReflectedApplicationModel Application { get; set; }
+
         public List<object> Attributes { get; private set; }
 
         public string ControllerName { get; set; }

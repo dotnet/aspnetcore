@@ -21,6 +21,8 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             IsOptional = ParameterInfo.HasDefaultValue;
         }
 
+        public ReflectedActionModel Action { get; set; }
+
         public List<object> Attributes { get; private set; }
 
         public bool IsOptional { get; set; }

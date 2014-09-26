@@ -24,6 +24,7 @@
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
         "ModelBindingWebSite": "",
         "MvcSample.Web": "",
+        "ReflectedModelWebSite": "",
         "RoutingWebSite": "",
         "RazorWebSite": "",
         "ValueProvidersSite": "",

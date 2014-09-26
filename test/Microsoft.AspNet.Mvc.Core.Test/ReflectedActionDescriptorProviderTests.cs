@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
+using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
-using Microsoft.AspNet.Mvc.Filters;
 
 namespace Microsoft.AspNet.Mvc.Test
 {
@@ -1130,6 +1130,56 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("Store", action.GetProperty<ApiDescriptionActionData>().GroupName);
         }
 
+        // Verifies the sequence of conventions running
+        [Fact]
+        public void ApplyConventions_RunsInOrderOfDecreasingScope()
+        {
+            // Arrange
+            var sequence = 0;
+
+            var applicationConvention = new Mock<IReflectedApplicationModelConvention>();
+            applicationConvention
+                .Setup(c => c.Apply(It.IsAny<ReflectedApplicationModel>()))
+                .Callback(() => { Assert.Equal(0, sequence++); });
+
+            var controllerConvention = new Mock<IReflectedControllerModelConvention>();
+            controllerConvention
+                .Setup(c => c.Apply(It.IsAny<ReflectedControllerModel>()))
+                .Callback(() => { Assert.Equal(1, sequence++); });
+
+            var actionConvention = new Mock<IReflectedActionModelConvention>();
+            actionConvention
+                .Setup(c => c.Apply(It.IsAny<ReflectedActionModel>()))
+                .Callback(() => { Assert.Equal(2, sequence++); });
+
+            var parameterConvention = new Mock<IReflectedParameterModelConvention>();
+            parameterConvention
+                .Setup(c => c.Apply(It.IsAny<ReflectedParameterModel>()))
+                .Callback(() => { Assert.Equal(3, sequence++); });
+
+            var options = new MockMvcOptionsAccessor();
+            options.Options.ApplicationModelConventions.Add(applicationConvention.Object);
+            
+            var provider = GetProvider(typeof(ConventionsController).GetTypeInfo(), options);
+
+            var model = provider.BuildModel();
+
+            var controller = model.Controllers.Single();
+            controller.Attributes.Add(controllerConvention.Object);
+
+            var action = controller.Actions.Single();
+            action.Attributes.Add(actionConvention.Object);
+
+            var parameter = action.Parameters.Single();
+            parameter.Attributes.Add(parameterConvention.Object);
+
+            // Act
+            provider.ApplyConventions(model);
+
+            // Assert
+            Assert.Equal(4, sequence);
+        }
+
         private ReflectedActionDescriptorProvider GetProvider(
             TypeInfo controllerTypeInfo,
             IEnumerable<IFilter> filters = null)
@@ -1145,8 +1195,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 conventions,
                 new TestGlobalFilterProvider(filters),
-                new MockMvcOptionsAccessor(),
-                Mock.Of<IInlineConstraintResolver>());
+                new MockMvcOptionsAccessor());
 
             return provider;
         }
@@ -1165,10 +1214,27 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 conventions,
                 new TestGlobalFilterProvider(),
-                new MockMvcOptionsAccessor(),
-                Mock.Of<IInlineConstraintResolver>());
+                new MockMvcOptionsAccessor());
 
             return provider;
+        }
+
+        private ReflectedActionDescriptorProvider GetProvider(
+            TypeInfo type, 
+            IOptionsAccessor<MvcOptions> options)
+        {
+            var conventions = new StaticActionDiscoveryConventions(type);
+
+            var assemblyProvider = new Mock<IControllerAssemblyProvider>();
+            assemblyProvider
+                .SetupGet(ap => ap.CandidateAssemblies)
+                .Returns(new Assembly[] { type.Assembly });
+
+            return new ReflectedActionDescriptorProvider(
+                assemblyProvider.Object,
+                conventions,
+                new TestGlobalFilterProvider(),
+                options);
         }
 
         private IEnumerable<ActionDescriptor> GetDescriptors(params TypeInfo[] controllerTypeInfos)
@@ -1184,8 +1250,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 conventions,
                 new TestGlobalFilterProvider(),
-                new MockMvcOptionsAccessor(),
-                null);
+                new MockMvcOptionsAccessor());
 
             return provider.GetDescriptors();
         }
@@ -1587,6 +1652,11 @@ namespace Microsoft.AspNet.Mvc.Test
             public void Edit() { }
 
             public void Create() { }
+        }
+
+        private class ConventionsController
+        {
+            public void Create(int productId) { }
         }
     }
 }

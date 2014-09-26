@@ -227,8 +227,7 @@ namespace Microsoft.AspNet.Mvc
                                         controllerAssemblyProvider,
                                         actionDiscoveryConventions,
                                         new TestGlobalFilterProvider(),
-                                        new MockMvcOptionsAccessor(),
-                                        Mock.Of<IInlineConstraintResolver>());
+                                        new MockMvcOptionsAccessor());
         }
 
         private static HttpContext GetHttpContext(string httpMethod)

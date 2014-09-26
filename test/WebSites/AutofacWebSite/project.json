@@ -2,10 +2,11 @@
     "dependencies": {
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "",
+        "Microsoft.AspNet.Mvc.TestConfiguration": "",
         "Microsoft.Framework.DependencyInjection.Autofac": "1.0.0-*",
         "Autofac": "3.3.0"
     },
-    "frameworks" : {
-        "aspnet50" : { }
+    "frameworks": {
+        "aspnet50": { }
     }
 }

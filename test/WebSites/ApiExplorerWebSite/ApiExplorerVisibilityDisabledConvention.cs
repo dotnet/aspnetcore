@@ -19,7 +19,7 @@ namespace ApiExplorer
             _type = type.GetTypeInfo();
         }
 
-        public void OnModelCreated(ReflectedApplicationModel model)
+        public void Apply(ReflectedApplicationModel model)
         {
             foreach (var controller in model.Controllers)
             {

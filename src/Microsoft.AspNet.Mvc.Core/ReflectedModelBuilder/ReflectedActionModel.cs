@@ -51,6 +51,8 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 
         public List<object> Attributes { get; private set; }
 
+        public ReflectedControllerModel Controller { get; set; }
+
         public List<IFilter> Filters { get; private set; }
 
         public List<string> HttpMethods { get; private set; }

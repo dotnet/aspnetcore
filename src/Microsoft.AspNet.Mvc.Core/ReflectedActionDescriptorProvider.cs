@@ -31,19 +31,16 @@ namespace Microsoft.AspNet.Mvc
         private readonly IActionDiscoveryConventions _conventions;
         private readonly IReadOnlyList<IFilter> _globalFilters;
         private readonly IEnumerable<IReflectedApplicationModelConvention> _modelConventions;
-        private readonly IInlineConstraintResolver _constraintResolver;
 
         public ReflectedActionDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider,
                                                  IActionDiscoveryConventions conventions,
                                                  IGlobalFilterProvider globalFilters,
-                                                 IOptionsAccessor<MvcOptions> optionsAccessor,
-                                                 IInlineConstraintResolver constraintResolver)
+                                                 IOptionsAccessor<MvcOptions> optionsAccessor)
         {
             _controllerAssemblyProvider = controllerAssemblyProvider;
             _conventions = conventions;
             _globalFilters = globalFilters.Filters;
             _modelConventions = optionsAccessor.Options.ApplicationModelConventions;
-            _constraintResolver = constraintResolver;
         }
 
         public int Order
@@ -60,12 +57,7 @@ namespace Microsoft.AspNet.Mvc
         public IEnumerable<ReflectedActionDescriptor> GetDescriptors()
         {
             var model = BuildModel();
-
-            foreach (var convention in _modelConventions)
-            {
-                convention.OnModelCreated(model);
-            }
-
+            ApplyConventions(model);
             return Build(model);
         }
 
@@ -80,7 +72,11 @@ namespace Microsoft.AspNet.Mvc
 
             foreach (var controllerType in controllerTypes)
             {
-                var controllerModel = new ReflectedControllerModel(controllerType);
+                var controllerModel = new ReflectedControllerModel(controllerType)
+                {
+                    Application = applicationModel,
+                };
+
                 applicationModel.Controllers.Add(controllerModel);
 
                 foreach (var methodInfo in controllerType.AsType().GetMethods())
@@ -93,10 +89,13 @@ namespace Microsoft.AspNet.Mvc
 
                     foreach (var actionInfo in actionInfos)
                     {
-                        var actionModel = new ReflectedActionModel(methodInfo);
+                        var actionModel = new ReflectedActionModel(methodInfo)
+                        {
+                            ActionName = actionInfo.ActionName,
+                            Controller = controllerModel,
+                            IsActionNameMatchRequired = actionInfo.RequireActionNameMatch,
+                        };
 
-                        actionModel.ActionName = actionInfo.ActionName;
-                        actionModel.IsActionNameMatchRequired = actionInfo.RequireActionNameMatch;
                         actionModel.HttpMethods.AddRange(actionInfo.HttpMethods ?? Enumerable.Empty<string>());
 
                         if (actionInfo.AttributeRoute != null)
@@ -107,7 +106,10 @@ namespace Microsoft.AspNet.Mvc
 
                         foreach (var parameter in methodInfo.GetParameters())
                         {
-                            actionModel.Parameters.Add(new ReflectedParameterModel(parameter));
+                            actionModel.Parameters.Add(new ReflectedParameterModel(parameter)
+                            {
+                                Action = actionModel,
+                            });
                         }
 
                         controllerModel.Actions.Add(actionModel);
@@ -116,6 +118,62 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return applicationModel;
+        }
+
+        public void ApplyConventions(ReflectedApplicationModel model)
+        {
+            // Conventions are applied from the outside-in to allow for scenarios where an action overrides
+            // a controller, etc.
+            foreach (var convention in _modelConventions)
+            {
+                convention.Apply(model);
+            }
+
+            // First apply the conventions from attributes in decreasing order of scope.
+            foreach (var controller in model.Controllers)
+            {
+                // ToArray is needed here to prevent issues with modifying the attributes collection
+                // while iterating it.
+                var controllerConventions =
+                    controller.Attributes
+                        .OfType<IReflectedControllerModelConvention>()
+                        .ToArray();
+
+                foreach (var controllerConvention in controllerConventions)
+                {
+                    controllerConvention.Apply(controller);
+                }
+
+                foreach (var action in controller.Actions)
+                {
+                    // ToArray is needed here to prevent issues with modifying the attributes collection
+                    // while iterating it.
+                    var actionConventions =
+                        action.Attributes
+                            .OfType<IReflectedActionModelConvention>()
+                            .ToArray();
+
+                    foreach (var actionConvention in actionConventions)
+                    {
+                        actionConvention.Apply(action);
+                    }
+
+                    foreach (var parameter in action.Parameters)
+                    {
+                        // ToArray is needed here to prevent issues with modifying the attributes collection
+                        // while iterating it.
+                        var parameterConventions =
+                            parameter.Attributes
+                                .OfType<IReflectedParameterModelConvention>()
+                                .ToArray();
+
+                        foreach (var parameterConvention in parameterConventions)
+                        {
+                            parameterConvention.Apply(parameter);
+                        }
+                    }
+                }
+            }
         }
 
         public List<ReflectedActionDescriptor> Build(ReflectedApplicationModel model)
@@ -132,7 +190,12 @@ namespace Microsoft.AspNet.Mvc
 
             foreach (var controller in model.Controllers)
             {
-                var controllerDescriptor = new ControllerDescriptor(controller.ControllerType);
+                var controllerDescriptor = new ControllerDescriptor()
+                {
+                    ControllerTypeInfo = controller.ControllerType,
+                    Name = controller.ControllerName,
+                };
+
                 foreach (var action in controller.Actions)
                 {
                     // Controllers with multiple [Route] attributes (or user defined implementation of
@@ -351,7 +414,7 @@ namespace Microsoft.AspNet.Mvc
 
         private static void AddApiExplorerInfo(
             ReflectedActionDescriptor actionDescriptor,
-            ReflectedActionModel action, 
+            ReflectedActionModel action,
             ReflectedControllerModel controller)
         {
             var apiExplorerIsVisible = action.ApiExplorerIsVisible ?? controller.ApiExplorerIsVisible ?? false;
@@ -360,7 +423,7 @@ namespace Microsoft.AspNet.Mvc
                 var apiExplorerActionData = new ApiDescriptionActionData()
                 {
                     GroupName = action.ApiExplorerGroupName ?? controller.ApiExplorerGroupName,
-                };  
+                };
 
                 actionDescriptor.SetProperty(apiExplorerActionData);
             }
