@@ -155,6 +155,38 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// There is no active writing scope to end.
+        /// </summary>
+        internal static string RazorPage_ThereIsNoActiveWritingScopeToEnd
+        {
+            get { return GetString("RazorPage_ThereIsNoActiveWritingScopeToEnd"); }
+        }
+
+        /// <summary>
+        /// There is no active writing scope to end.
+        /// </summary>
+        internal static string FormatRazorPage_ThereIsNoActiveWritingScopeToEnd()
+        {
+            return GetString("RazorPage_ThereIsNoActiveWritingScopeToEnd");
+        }
+
+        /// <summary>
+        /// You cannot flush while inside a writing scope.
+        /// </summary>
+        internal static string RazorPage_YouCannotFlushWhileInAWritingScope
+        {
+            get { return GetString("RazorPage_YouCannotFlushWhileInAWritingScope"); }
+        }
+
+        /// <summary>
+        /// You cannot flush while inside a writing scope.
+        /// </summary>
+        internal static string FormatRazorPage_YouCannotFlushWhileInAWritingScope()
+        {
+            return GetString("RazorPage_YouCannotFlushWhileInAWritingScope");
+        }
+
+        /// <summary>
         /// {0} can only be called from a layout page.
         /// </summary>
         internal static string RenderBodyCannotBeCalled

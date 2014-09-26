@@ -21,12 +21,16 @@ namespace Microsoft.AspNet.Mvc.Razor
     public abstract class RazorPage : IRazorPage
     {
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Stack<TextWriter> _writerScopes;
+        private TextWriter _originalWriter;
         private IUrlHelper _urlHelper;
         private bool _renderedBody;
 
         public RazorPage()
         {
             SectionWriters = new Dictionary<string, HelperResult>(StringComparer.OrdinalIgnoreCase);
+
+            _writerScopes = new Stack<TextWriter>();
         }
 
         public HttpContext Context
@@ -106,6 +110,57 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         public abstract Task ExecuteAsync();
+
+        /// <summary>
+        /// Starts a new writing scope.
+        /// </summary>
+        /// <remarks>
+        /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will 
+        /// be buffered until <see cref="EndWritingScope"/> is called.
+        /// </remarks>
+        public void StartWritingScope()
+        {
+            // If there isn't a base writer take the ViewContext.Writer
+            if (_originalWriter == null)
+            {
+                _originalWriter = ViewContext.Writer;
+            }
+
+            // We need to replace the ViewContext's Writer to ensure that all content (including content written
+            // from HTML helpers) is redirected.
+            ViewContext.Writer = new StringWriter();
+
+            _writerScopes.Push(ViewContext.Writer);
+        }
+
+        /// <summary>
+        /// Ends the current writing scope that was started by calling <see cref="StartWritingScope"/>.
+        /// </summary>
+        /// <returns>The <see cref="TextWriter"/> that contains the content written to the <see cref="Output"/> or 
+        /// <see cref="ViewContext.Writer"/> during the writing scope.</returns>
+        public TextWriter EndWritingScope()
+        {
+            if (_writerScopes.Count == 0)
+            {
+                throw new InvalidOperationException(Resources.RazorPage_ThereIsNoActiveWritingScopeToEnd);
+            }
+
+            var writer = _writerScopes.Pop();
+
+            if (_writerScopes.Count > 0)
+            {
+                ViewContext.Writer = _writerScopes.Peek();
+            }
+            else
+            {
+                ViewContext.Writer = _originalWriter;
+
+                // No longer a base writer
+                _originalWriter = null;
+            }
+
+            return writer;
+        }
 
         /// <summary>
         /// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Output"/>.
@@ -395,6 +450,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <returns>A <see cref="Task"/> that represents the asynchronous flush operation.</returns>
         public Task FlushAsync()
         {
+            // If there are active writing scopes then we should throw. Cannot flush content that has the potential to
+            // change.
+            if (_writerScopes.Count > 0)
+            {
+                throw new InvalidOperationException(Resources.RazorPage_YouCannotFlushWhileInAWritingScope);
+            }
+
             // Calls to Flush are allowed if the page does not specify a Layout or if it is executing a section in the
             // Layout.
             if (!IsLayoutBeingRendered && !string.IsNullOrEmpty(Layout))

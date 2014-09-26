@@ -144,6 +144,12 @@
   <data name="MvcRazorCodeParser_OnlyOneModelStatementIsAllowed" xml:space="preserve">
     <value>Only one '{0}' statement is allowed in a file.</value>
   </data>
+  <data name="RazorPage_ThereIsNoActiveWritingScopeToEnd" xml:space="preserve">
+    <value>There is no active writing scope to end.</value>
+  </data>
+  <data name="RazorPage_YouCannotFlushWhileInAWritingScope" xml:space="preserve">
+    <value>You cannot flush while inside a writing scope.</value>
+  </data>
   <data name="RenderBodyCannotBeCalled" xml:space="preserve">
     <value>{0} can only be called from a layout page.</value>
   </data>
