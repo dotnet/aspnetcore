@@ -34,6 +34,16 @@ namespace MvcSample.Web
             return HttpNotFound();
         }
 
+        public ActionResult SendFileFromDisk()
+        {
+            return File("sample.txt", "text/plain");
+        }
+
+        public ActionResult SendFileFromDiskWithName()
+        {
+            return File("sample.txt", "text/plain", "sample-file.txt");
+        }
+
         public bool IsDefaultNameSpace()
         {
             var namespaceToken = ActionContext.RouteData.DataTokens["NameSpace"] as string;

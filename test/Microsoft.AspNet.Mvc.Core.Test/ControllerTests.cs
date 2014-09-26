@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
-using System.Text;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
@@ -13,7 +15,6 @@ using Microsoft.AspNet.Testing;
 using Moq;
 #endif
 using Xunit;
-using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Mvc.Test
 {
@@ -367,6 +368,109 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Same(routeName, resultPermanent.RouteName);
             Assert.Equal(expected, resultPermanent.RouteValues);
         }
+
+        [Fact]
+        public void File_WithContents()
+        {
+            // Arrange
+            var controller = new Controller();
+            var fileContents = new byte[0];
+
+            // Act
+            var result = controller.File(fileContents, "someContentType");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Same(fileContents, result.FileContents);
+            Assert.Equal("someContentType", result.ContentType);
+            Assert.Equal(string.Empty, result.FileDownloadName);
+        }
+
+        [Fact]
+        public void File_WithContentsAndFileDownloadName()
+        {
+            // Arrange
+            var controller = new Controller();
+            var fileContents = new byte[0];
+
+            // Act
+            var result = controller.File(fileContents, "someContentType", "someDownloadName");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Same(fileContents, result.FileContents);
+            Assert.Equal("someContentType", result.ContentType);
+            Assert.Equal("someDownloadName", result.FileDownloadName);
+        }
+
+        [Fact]
+        public void File_WithPath()
+        {
+            // Arrange
+            var controller = new Controller();
+            var path = Path.GetFullPath("somepath");
+
+            // Act
+            var result = controller.File(path, "someContentType");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(path, result.FileName);
+            Assert.Equal("someContentType", result.ContentType);
+            Assert.Equal(string.Empty, result.FileDownloadName);
+        }
+
+        [Fact]
+        public void File_WithPathAndFileDownloadName()
+        {
+            // Arrange
+            var controller = new Controller();
+            var path = Path.GetFullPath("somepath");
+
+            // Act
+            var result = controller.File(path, "someContentType", "someDownloadName");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(path, result.FileName);
+            Assert.Equal("someContentType", result.ContentType);
+            Assert.Equal("someDownloadName", result.FileDownloadName);
+        }
+
+        [Fact]
+        public void File_WithStream()
+        {
+            // Arrange
+            var controller = new Controller();
+            var fileStream = Stream.Null;
+
+            // Act
+            var result = controller.File(fileStream, "someContentType");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Same(fileStream, result.FileStream);
+            Assert.Equal("someContentType", result.ContentType);
+            Assert.Equal(string.Empty, result.FileDownloadName);
+        }
+
+        [Fact]
+        public void File_WithStreamAndFileDownloadName()
+        {
+            // Arrange
+            var controller = new Controller();
+            var fileStream = Stream.Null;
+
+            // Act
+            var result = controller.File(fileStream, "someContentType", "someDownloadName");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Same(fileStream, result.FileStream);
+            Assert.Equal("someContentType", result.ContentType);
+            Assert.Equal("someDownloadName", result.FileDownloadName);
+        }
+
 
         [Fact]
         public void HttpNotFound_SetsStatusCode()

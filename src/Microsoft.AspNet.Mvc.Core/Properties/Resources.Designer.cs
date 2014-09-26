@@ -1483,6 +1483,22 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// "The path to the file must be absolute: {0}"
+        /// </summary>
+        internal static string FileResult_InvalidPathType_RelativeOrVirtualPath
+        {
+            get { return GetString("FileResult_InvalidPathType_RelativeOrVirtualPath"); }
+        }
+
+        /// <summary>
+        /// "The path to the file must be absolute: {0}"
+        /// </summary>
+        internal static string FormatFileResult_InvalidPathType_RelativeOrVirtualPath(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FileResult_InvalidPathType_RelativeOrVirtualPath"), p0);
+        }
+
+        /// <summary>
         /// Multiple actions matched. The following actions matched route data and had all constraints satisfied:{0}{0}{1}
         /// </summary>
         internal static string DefaultActionSelector_AmbiguousActions

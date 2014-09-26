@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
@@ -422,6 +423,90 @@ namespace Microsoft.AspNet.Mvc
         public virtual RedirectToRouteResult RedirectToRoutePermanent(string routeName, object routeValues)
         {
             return new RedirectToRouteResult(Url, routeName, routeValues, permanent: true);
+        }
+
+        /// <summary>
+        /// Returns a file with the specified <paramref name="fileContents" /> as content and the
+        /// specified <paramref name="contentType" /> as the Content-Type.
+        /// </summary>
+        /// <param name="fileContents">The file contents.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <returns>The created <see cref="FileContentResult"/> for the response.</returns>
+        [NonAction]
+        public virtual FileContentResult File(byte[] fileContents, string contentType)
+        {
+            return File(fileContents, contentType, fileDownloadName: null);
+        }
+
+        /// <summary>
+        /// Returns a file with the specified <paramref name="fileContents" /> as content, the
+        /// specified <paramref name="contentType" /> as the Content-Type and the
+        /// specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// </summary>
+        /// <param name="fileContents">The file contents.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="fileDownloadName">The suggested file name.</param>
+        /// <returns>The created <see cref="FileContentResult"/> for the response.</returns>
+        [NonAction]
+        public virtual FileContentResult File(byte[] fileContents, string contentType, string fileDownloadName)
+        {
+            return new FileContentResult(fileContents, contentType) { FileDownloadName = fileDownloadName };
+        }
+
+        /// <summary>
+        /// Returns a file in the specified <paramref name="fileStream" /> with the
+        /// specified <paramref name="contentType" /> as the Content-Type.
+        /// </summary>
+        /// <param name="fileStream">The <see cref="Stream"/> with the contents of the file.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        [NonAction]
+        public virtual FileStreamResult File(Stream fileStream, string contentType)
+        {
+            return File(fileStream, contentType, fileDownloadName: null);
+        }
+
+        /// <summary>
+        /// Returns a file in the specified <paramref name="fileStream" /> with the
+        /// specified <paramref name="contentType" /> as the Content-Type and the
+        /// specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// </summary>
+        /// <param name="fileStream">The <see cref="Stream"/> with the contents of the file.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="fileDownloadName">The suggested file name.</param>
+        /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        [NonAction]
+        public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName)
+        {
+            return new FileStreamResult(fileStream, contentType) { FileDownloadName = fileDownloadName };
+        }
+
+        /// <summary>
+        /// Returns the file specified by <paramref name="fileName" /> with the
+        /// specified <paramref name="contentType" /> as the Content-Type.
+        /// </summary>
+        /// <param name="fileName">The <see cref="Stream"/> with the contents of the file.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <returns>The created <see cref="FilePathResult"/> for the response.</returns>
+        [NonAction]
+        public virtual FilePathResult File(string fileName, string contentType)
+        {
+            return File(fileName, contentType, fileDownloadName: null);
+        }
+
+        /// <summary>
+        /// Returns the file specified by <paramref name="fileName" /> with the
+        /// specified <paramref name="contentType" /> as the Content-Type and the
+        /// specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// </summary>
+        /// <param name="fileName">The <see cref="Stream"/> with the contents of the file.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="fileDownloadName">The suggested file name.</param>
+        /// <returns>The created <see cref="FilePathResult"/> for the response.</returns>
+        [NonAction]
+        public virtual FilePathResult File(string fileName, string contentType, string fileDownloadName)
+        {
+            return new FilePathResult(fileName, contentType) { FileDownloadName = fileDownloadName };
         }
 
         /// <summary>
