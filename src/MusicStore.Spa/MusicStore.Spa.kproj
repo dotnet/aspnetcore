@@ -1,208 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-  </PropertyGroup>
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>9bceb29b-7e09-4b4c-a466-498efc602331</ProjectGuid>
+    <ProjectGuid>93891170-a8d5-46fd-a291-40f90cf258c2</ProjectGuid>
     <OutputType>Web</OutputType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
   </PropertyGroup>
-  <PropertyGroup Label="Configuration">
-    <RootNamespace>MusicStore</RootNamespace>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
   </PropertyGroup>
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
+    <DevelopmentServerPort>5001</DevelopmentServerPort>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DevelopmentServerPort>2452</DevelopmentServerPort>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="Apis\AlbumsApiController.cs" />
-    <Compile Include="Apis\ArtistsApiController.cs" />
-    <Compile Include="Apis\GenresApiController.cs" />
-    <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\TemplateController.cs" />
-    <Compile Include="Helpers\AngularExtensions.cs" />
-    <Compile Include="Helpers\AngularHtmlHelper%27T.cs" />
-    <Compile Include="Helpers\GeneralExtensions.cs" />
-    <Compile Include="Helpers\JsonExtensions.cs" />
-    <Compile Include="Infrastructure\ApiResult.cs" />
-    <Compile Include="Infrastructure\ForcedModelError.cs" />
-    <Compile Include="Infrastructure\PagedList.cs" />
-    <Compile Include="Infrastructure\SmartJsonResult.cs" />
-    <Compile Include="Infrastructure\SortDirection.cs" />
-    <Compile Include="Infrastructure\SortExpression.cs" />
-    <Compile Include="Models\AccountViewModels.cs" />
-    <Compile Include="Models\Album.cs" />
-    <Compile Include="Models\Artist.cs" />
-    <Compile Include="Models\CartItem.cs" />
-    <Compile Include="Models\Genre.cs" />
-    <Compile Include="Models\IdentityModels.cs" />
-    <Compile Include="Models\MusicStoreContext.cs" />
-    <Compile Include="Models\Order.cs" />
-    <Compile Include="Models\OrderDetail.cs" />
-    <Compile Include="Models\SampleData.cs" />
-    <Compile Include="Models\ShoppingCart.cs" />
-    <Compile Include="Startup.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="bower.json" />
-    <Content Include="Client\favicon.ico" />
-    <Content Include="Client\images\home-showcase.png" />
-    <Content Include="Client\images\logo.png" />
-    <Content Include="Client\images\logo.svg" />
-    <Content Include="Client\images\placeholder.png" />
-    <Content Include="Client\images\placeholder.svg" />
-    <Content Include="Client\ng-apps\components\AlbumApi\AlbumApiService.ts" />
-    <Content Include="Client\ng-apps\components\ArtistApi\ArtistApiService.ts" />
-    <Content Include="Client\ng-apps\components\GenreApi\GenreApiService.ts" />
-    <Content Include="Client\ng-apps\components\GenreMenu\GenreMenuController.ts" />
-    <Content Include="Client\ng-apps\components\GenreMenu\GenreMenuDirective.ts" />
-    <Content Include="Client\ng-apps\components\InlineData\InlineDataDirective.ts" />
-    <Content Include="Client\ng-apps\components\LoginLink\LoginLinkDirective.ts" />
-    <Content Include="Client\ng-apps\components\Models\IAlbum.ts" />
-    <Content Include="Client\ng-apps\components\Models\IAlert.ts" />
-    <Content Include="Client\ng-apps\components\Models\IApiResult.ts" />
-    <Content Include="Client\ng-apps\components\Models\IArtist.ts" />
-    <Content Include="Client\ng-apps\components\Models\IGenre.ts" />
-    <Content Include="Client\ng-apps\components\Models\IGenreLookup.ts" />
-    <Content Include="Client\ng-apps\components\Models\IModelError.ts" />
-    <Content Include="Client\ng-apps\components\Models\IPagedList.ts" />
-    <Content Include="Client\ng-apps\components\Models\IUserDetails.ts" />
-    <Content Include="Client\ng-apps\components\PreventSubmit\PreventSubmitDirective.ts" />
-    <Content Include="Client\ng-apps\components\TitleCase\TitleCaseFilter.ts" />
-    <Content Include="Client\ng-apps\components\Truncate\TruncateFilter.ts" />
-    <Content Include="Client\ng-apps\components\UrlResolver\UrlResolverService.ts" />
-    <Content Include="Client\ng-apps\components\UserDetails\UserDetailsService.ts" />
-    <Content Include="Client\ng-apps\components\ViewMessage\ViewAlertService.ts" />
-    <Content Include="Client\ng-apps\components\Visited\VisitedDirective.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDeleteModalController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDetailsController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumEditController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumListController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Admin\MusicStore.Admin.app.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Store\Catalog\AlbumDetailsController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Store\Catalog\GenreDetailsController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Store\Catalog\GenreListController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Store\Home\HomeController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Store\MusicStore.Store.app.ts" />
-    <Content Include="Client\ng-apps\references.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\AlbumApi\AlbumApiService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\ArtistApi\ArtistApiService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\GenreApi\GenreApiService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\GenreMenu\GenreMenuController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\GenreMenu\GenreMenuDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\InlineData\InlineDataDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\LoginLink\LoginLinkDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IAlbum.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IAlert.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IApiResult.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IArtist.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IGenre.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IGenreLookup.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IModelError.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IPagedList.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IUserDetails.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\PreventSubmit\PreventSubmitDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\TitleCase\TitleCaseFilter.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Truncate\TruncateFilter.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\UrlResolver\UrlResolverService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\UserDetails\UserDetailsService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\ViewMessage\ViewAlertService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Visited\VisitedDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDeleteModalController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDetailsController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumEditController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumListController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\MusicStore.Admin.app.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Catalog\AlbumDetailsController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Catalog\GenreDetailsController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Catalog\GenreListController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Home\HomeController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\MusicStore.Store.app.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\references.ts" />
-    <Content Include="Views\Account\Login.cshtml" />
-    <Content Include="Views\Account\Manage.cshtml" />
-    <Content Include="Views\Account\Register.cshtml" />
-    <Content Include="Views\Account\_ChangePasswordPartial.cshtml" />
-    <TypeScriptCompile Include="Client\ng-apps\components\AlbumApi\AlbumApiService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\ArtistApi\ArtistApiService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\GenreApi\GenreApiService.ts" />
-    <Content Include="Client\ng-apps\components\GenreMenu\GenreMenu.html" />
-    <TypeScriptCompile Include="Client\ng-apps\components\GenreMenu\GenreMenuController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\GenreMenu\GenreMenuDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\InlineData\InlineDataDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\LoginLink\LoginLinkDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IAlbum.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IAlert.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IApiResult.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IArtist.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IGenre.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IGenreLookup.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IModelError.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IPagedList.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Models\IUserDetails.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\PreventSubmit\PreventSubmitDirective.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\TitleCase\TitleCaseFilter.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Truncate\TruncateFilter.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\UrlResolver\UrlResolverService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\UserDetails\UserDetailsService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\ViewMessage\ViewAlertService.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\components\Visited\VisitedDirective.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDeleteModal.cshtml" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDeleteModalController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDetails.cshtml" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumDetailsController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumEdit.cshtml" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumEditController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumList.cshtml" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\Catalog\AlbumListController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Admin\MusicStore.Admin.app.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Store\Catalog\AlbumDetails.html" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Catalog\AlbumDetailsController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Store\Catalog\GenreDetails.html" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Catalog\GenreDetailsController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Store\Catalog\GenreList.html" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Catalog\GenreListController.ts" />
-    <Content Include="Client\ng-apps\MusicStore.Store\Home\Home.html" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\Home\HomeController.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\MusicStore.Store\MusicStore.Store.app.ts" />
-    <TypeScriptCompile Include="Client\ng-apps\references.ts" />
-    <None Include="Client\Site.less" />
-    <Content Include="Default.html" />
-    <Content Include="Gruntfile.js" />
-    <Content Include="Config.json" />
-    <Content Include="package.json" />
-    <Content Include="project.json" />
-    <Content Include="tslint.json" />
-    <Content Include="Views\Home\Index.cshtml" />
-    <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Shared\_LoginPartial.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\Account\" />
-  </ItemGroup>
-  <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.jsproj.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.jsproj.targets')" />
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
-    <TypeScriptSourceMap>true</TypeScriptSourceMap>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
-    <TypeScriptSourceMap>false</TypeScriptSourceMap>
-  </PropertyGroup>
-  <PropertyGroup>
-    <TypeScriptEnabled>true</TypeScriptEnabled>
-  </PropertyGroup>
-  <!--<Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />-->
 </Project>

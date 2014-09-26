@@ -6,6 +6,7 @@
     "description": "Music store application on K as a SPA",
     "compilationOptions": { "define": [ "DEBUG" ] },
     "dependencies": {
+        "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
@@ -13,13 +14,13 @@
         "EntityFramework.InMemory": "7.0.0-*",
         "EntityFramework.SqlServer": "7.0.0-*",
         "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
-        "Microsoft.AspNet.Identity.Authentication": "3.0.0-*",
         "Microsoft.AspNet.Identity.SqlServer": "3.0.0-*",
         "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*"
     },
     "commands": {
-        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",
+        "WebListener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",
+        "Kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5004",
         "run": "run server.urls=http://localhost:5003"
     },
     "frameworks": {
