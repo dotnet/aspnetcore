@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PageExecutionInstrumentation;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -24,6 +25,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly Stack<TextWriter> _writerScopes;
         private TextWriter _originalWriter;
         private IUrlHelper _urlHelper;
+        private ITypeActivator _typeActivator;
         private bool _renderedBody;
 
         public RazorPage()
@@ -110,6 +112,38 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         public abstract Task ExecuteAsync();
+
+        private ITypeActivator TypeActivator
+        {
+            get
+            {
+                if(_typeActivator == null)
+                {
+                    _typeActivator = ViewContext.HttpContext.RequestServices.GetService<ITypeActivator>();
+                }
+
+                return _typeActivator;
+            }
+        }
+
+        /// <summary>
+        /// Creates and activates a <see cref="ITagHelper"/>.
+        /// </summary>
+        /// <typeparam name="TTagHelper">A <see cref="ITagHelper"/> type.</typeparam>
+        /// <returns>The activated <see cref="ITagHelper"/>.</returns>
+        /// <remarks>
+        /// If the <see cref= "ITagHelper" /> implements <see cref="ICanHasViewContext"/> the 
+        /// <see cref="ICanHasViewContext.Contextualize(ViewContext)"/> method is called with <see cref="ViewContext"/>.
+        /// </remarks>
+        public TTagHelper CreateTagHelper<TTagHelper>() where TTagHelper : ITagHelper
+        {
+            var tagHelper = TypeActivator.CreateInstance<TTagHelper>(ViewContext.HttpContext.RequestServices);
+            var hasViewContext = tagHelper as ICanHasViewContext;
+
+            hasViewContext?.Contextualize(ViewContext);
+
+            return tagHelper;
+        }
 
         /// <summary>
         /// Starts a new writing scope.
