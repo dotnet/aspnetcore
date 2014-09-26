@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>a06f8be0-c66d-4650-a4e9-a639212bc507</ProjectGuid>
+    <ProjectGuid>3cfbed5d-2ed8-49db-96fb-bdaa748dc5a0</ProjectGuid>
     <OutputType>Web</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
@@ -15,56 +15,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
+    <DevelopmentServerPort>5001</DevelopmentServerPort>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DevelopmentServerPort>41532</DevelopmentServerPort>
-  </PropertyGroup>
-  <ItemGroup>
-    <Content Include="CopyAspNetLoader.cmd" />
-    <Content Include="Helios.cmd" />
-    <Content Include="config.json" />
-    <Content Include="project.json" />
-    <Content Include="Views\Account\Login.cshtml" />
-    <Content Include="Views\Account\Register.cshtml" />
-    <Content Include="Views\Checkout\AddressAndPayment.cshtml" />
-    <Content Include="Views\Checkout\Complete.cshtml" />
-    <Content Include="Views\Home\Index.cshtml" />
-    <Content Include="Views\Shared\Components\CartSummary\Default.cshtml" />
-    <Content Include="Views\Shared\Components\GenreMenu\Default.cshtml" />
-    <Content Include="Views\Shared\Error.cshtml" />
-    <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Shared\_LoginPartial.cshtml" />
-    <Content Include="Views\ShoppingCart\Index.cshtml" />
-    <Content Include="Views\Store\Browse.cshtml" />
-    <Content Include="Views\Store\Details.cshtml" />
-    <Content Include="Views\Store\Index.cshtml" />
-    <Content Include="Views\_ViewStart.cshtml" />
-    <Content Include="web.config" />
-    <Content Include="web.Debug.config" />
-    <Content Include="web.Release.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Components\CartSummaryComponent.cs" />
-    <Compile Include="Components\GenreMenuComponent.cs" />
-    <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\CheckoutController.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\ShoppingCartController.cs" />
-    <Compile Include="Controllers\StoreController.cs" />
-    <Compile Include="Models\AccountViewModels.cs" />
-    <Compile Include="Models\Album.cs" />
-    <Compile Include="Models\Artist.cs" />
-    <Compile Include="Models\CartItem.cs" />
-    <Compile Include="Models\Genre.cs" />
-    <Compile Include="Models\MusicStoreContext.cs" />
-    <Compile Include="Models\Order.cs" />
-    <Compile Include="Models\OrderDetail.cs" />
-    <Compile Include="Models\SampleData.cs" />
-    <Compile Include="Models\ShoppingCart.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Startup.cs" />
-    <Compile Include="ViewModels\ShoppingCartRemoveViewModel.cs" />
-    <Compile Include="ViewModels\ShoppingCartViewModel.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
