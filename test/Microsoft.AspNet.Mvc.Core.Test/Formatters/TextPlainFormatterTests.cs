@@ -54,22 +54,29 @@ namespace Microsoft.AspNet.Mvc
         public async Task WriteAsync_DoesNotWriteNullStrings()
         {
             // Arrange
+            Encoding encoding = Encoding.UTF8;
+            var memoryStream = new MemoryStream();
+            var response = new Mock<HttpResponse>();
+            response.SetupProperty<long?>(o => o.ContentLength);
+            response.SetupGet(r => r.Body).Returns(memoryStream);
+            var mockHttpContext = new Mock<HttpContext>();
+            mockHttpContext.Setup(o => o.Response).Returns(response.Object);
+
             var formatter = new TextPlainFormatter();
             var formatterContext = new OutputFormatterContext()
             {
                 Object = null,
-                DeclaredType = typeof(string), 
+                DeclaredType = typeof(string),
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor()),
+                SelectedEncoding = encoding
             };
 
-            var tempMemoryStream = new MemoryStream();
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.SetupGet(o => o.Response.Body)
-                           .Returns(tempMemoryStream);
             // Act
             await formatter.WriteResponseBodyAsync(formatterContext);
 
             // Assert
-            Assert.Equal(0, tempMemoryStream.Length);
+            Assert.Equal(0, memoryStream.Length);
+            response.VerifySet(r => r.ContentLength = It.IsAny<long?>(), Times.Never());
         }
     }
 }

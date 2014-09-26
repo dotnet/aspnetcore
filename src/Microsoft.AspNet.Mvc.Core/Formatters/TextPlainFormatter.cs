@@ -51,7 +51,9 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var response = context.ActionContext.HttpContext.Response;
-            using (var writer = new StreamWriter(response.Body, context.SelectedEncoding, 1024, leaveOpen: true))
+
+            using (var delegatingStream = new DelegatingStream(response.Body))
+            using (var writer = new StreamWriter(delegatingStream, context.SelectedEncoding, 1024, leaveOpen: true))
             {
                 await writer.WriteAsync(valueAsString);
             }
