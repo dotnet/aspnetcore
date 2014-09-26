@@ -63,7 +63,7 @@ namespace Microsoft.Framework.DependencyInjection
             return builder;
         }
 
-        public static IdentityBuilder<TUser, TRole> AddIdentitySqlServer<TContext, TUser, TRole, TKey>(this ServiceCollection services)
+        public static IdentityBuilder<TUser, TRole> AddIdentitySqlServer<TContext, TUser, TRole, TKey>(this IServiceCollection services)
             where TUser : IdentityUser<TKey>, new()
             where TRole : IdentityRole<TKey>, new()
             where TContext : DbContext
