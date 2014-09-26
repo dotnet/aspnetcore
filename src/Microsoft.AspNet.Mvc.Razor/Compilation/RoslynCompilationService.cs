@@ -161,9 +161,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 {
                     projectReference.EmitReferenceAssembly(ms);
 
-                    ms.Seek(0, SeekOrigin.Begin);
-
-                    return new MetadataImageReference(ms);
+                    return new MetadataImageReference(ms.ToArray());
                 }
             }
 
