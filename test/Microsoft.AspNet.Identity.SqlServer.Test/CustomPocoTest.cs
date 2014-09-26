@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Identity.Test;
-using Microsoft.Data.Entity;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.OptionsModel;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
+using Microsoft.AspNet.Identity.Test;
+using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Metadata;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.SqlServer.Test
@@ -24,28 +26,37 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
             public string UserName { get; set; }
         }
 
-        public class CustomDbContext<TUser> : DbContext where TUser : class
+        public class CustomDbContext<TKey> : DbContext where TKey : IEquatable<TKey>
         {
-            public DbSet<TUser> Users { get; set; }
+            public DbSet<User<TKey>> Users { get; set; }
 
-            public CustomDbContext(IServiceProvider services) : 
-                base(services, services.GetService<IOptionsAccessor<DbContextOptions>>().Options) { }
+            public CustomDbContext(IServiceProvider services) :
+                base(services, services.GetService<IOptionsAccessor<DbContextOptions>>().Options)
+            { }
+
+            protected override void OnModelCreating(ModelBuilder modelBuilder)
+            {
+                base.OnModelCreating(modelBuilder);
+
+                modelBuilder.Entity<User<TKey>>().Property(p => p.Id)
+                            .GenerateValuesOnAdd(generateValues: false);
+            }
         }
 
 
-        public CustomDbContext<TUser> GetContext<TUser>() where TUser : class
+        public CustomDbContext<TKey> GetContext<TKey>() where TKey : IEquatable<TKey>
         {
             var services = new ServiceCollection();
             services.Add(OptionsServices.GetDefaultServices());
             services.AddEntityFramework().AddSqlServer();
             services.SetupOptions<DbContextOptions>(options => options.UseSqlServer(ConnectionString));
             var serviceProvider = services.BuildServiceProvider();
-            return new CustomDbContext<TUser>(serviceProvider);
+            return new CustomDbContext<TKey>(serviceProvider);
         }
 
-        public CustomDbContext<TUser> CreateContext<TUser>(bool delete = false) where TUser : class
+        public CustomDbContext<TKey> CreateContext<TKey>(bool delete = false) where TKey : IEquatable<TKey>
         {
-            var db = GetContext<TUser>();
+            var db = GetContext<TKey>();
             if (delete)
             {
                 db.Database.EnsureDeleted();
@@ -70,14 +81,14 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
 
         public void DropDb()
         {
-            var db = GetContext<User<string>>();
+            var db = GetContext<string>();
             db.Database.EnsureDeleted();
         }
 
         [Fact]
         public async Task CanUpdateNameGuid()
         {
-            using (var db = CreateContext<User<Guid>>(true))
+            using (var db = CreateContext<Guid>(true))
             {
                 var oldName = Guid.NewGuid().ToString();
                 var user = new User<Guid> { UserName = oldName, Id = Guid.NewGuid() };
@@ -94,7 +105,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         [Fact]
         public async Task CanUpdateNameString()
         {
-            using (var db = CreateContext<User<string>>(true))
+            using (var db = CreateContext<string>(true))
             {
                 var oldName = Guid.NewGuid().ToString();
                 var user = new User<string> { UserName = oldName, Id = Guid.NewGuid().ToString() };
@@ -111,7 +122,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         [Fact]
         public async Task CanCreateUserInt()
         {
-            using (var db = CreateContext<User<int>>(true))
+            using (var db = CreateContext<int>(true))
             {
                 var user = new User<int> { Id = 11 };
                 db.Users.Add(user);
@@ -126,7 +137,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         [Fact]
         public async Task CanCreateUserIntViaSet()
         {
-            using (var db = CreateContext<User<int>>(true))
+            using (var db = CreateContext<int>(true))
             {
                 var user = new User<int> { Id = 11 };
                 var users = db.Set<User<int>>();
@@ -142,7 +153,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         [Fact]
         public async Task CanUpdateNameInt()
         {
-            using (var db = CreateContext<User<int>>(true))
+            using (var db = CreateContext<int>(true))
             {
                 var oldName = Guid.NewGuid().ToString();
                 var user = new User<int> { UserName = oldName, Id = 1 };
@@ -159,7 +170,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         [Fact]
         public async Task CanUpdateNameIntWithSet()
         {
-            using (var db = CreateContext<User<int>>(true))
+            using (var db = CreateContext<int>(true))
             {
                 var oldName = Guid.NewGuid().ToString();
                 var user = new User<int> { UserName = oldName, Id = 1 };
