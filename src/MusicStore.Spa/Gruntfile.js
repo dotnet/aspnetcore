@@ -33,8 +33,8 @@ module.exports = function (grunt) {
         },
         clean: {
             options: { force: true },
-            bower: ['wwwroot'],
-            assets: ['wwwroot'],
+            bower: ['wwwroot/*', '!wwwroot/bin'],
+            assets: ['wwwroot/*', '!wwwroot/bin'],
             tsng: ['client/**/*.ng.ts']
         },
         copy: {
