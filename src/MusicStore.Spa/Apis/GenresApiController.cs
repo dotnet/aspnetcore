@@ -14,7 +14,7 @@ namespace MusicStore.Apis
             _storeContext = storeContext;
         }
 
-        //[Route("api/genres/lookup")]
+        [Route("api/genres/lookup")]
         public async Task<ActionResult> Lookup()
         {
             var genres = await _storeContext.Genres
@@ -24,7 +24,7 @@ namespace MusicStore.Apis
             return Json(genres);
         }
 
-        //[Route("api/genres/menu")]
+        [Route("api/genres/menu")]
         public async Task<ActionResult> GenreMenuList(int count = 9)
         {
             count = count > 0 && count < 20 ? count : 9;
@@ -39,7 +39,7 @@ namespace MusicStore.Apis
             return Json(genres);
         }
 
-        //[Route("api/genres")]
+        [Route("api/genres")]
         public async Task<ActionResult> GenreList()
         {
             var genres = await _storeContext.Genres
@@ -50,7 +50,7 @@ namespace MusicStore.Apis
             return Json(genres);
         }
 
-        //[Route("api/genres/{genreId:int}/albums")]
+        [Route("api/genres/{genreId:int}/albums")]
         public async Task<ActionResult> GenreAlbums(int genreId)
         {
             var albums = await _storeContext.Albums

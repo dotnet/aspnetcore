@@ -1,0 +1,10 @@
+﻿{
+    "options": {
+        "banner": "/*! <%= pkg.name %> <%= grunt.template.today('dd-mm-yyyy') %> */\n"
+    },
+    "release": {
+        "files": {
+            "wwwroot/app.min.js": ["<%= typescript.dev.dest %>"]
+        }
+    }
+}

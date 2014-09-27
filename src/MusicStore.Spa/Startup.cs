@@ -63,17 +63,7 @@ namespace MusicStore.Spa
             app.UseStaticFiles();
 
             // Add MVC
-            app.UseMvc(routes =>
-            {
-                // TODO: Move these back to attribute routes when they're available
-                routes.MapRoute(null, "api/genres/menu", new { controller = "GenresApi", action = "GenreMenuList" });
-                routes.MapRoute(null, "api/genres", new { controller = "GenresApi", action = "GenreList" });
-                routes.MapRoute(null, "api/genres/{genreId}/albums", new { controller = "GenresApi", action = "GenreAlbums" });
-                routes.MapRoute(null, "api/albums/mostPopular", new { controller = "AlbumsApi", action = "MostPopular" });
-                routes.MapRoute(null, "api/albums/all", new { controller = "AlbumsApi", action = "All" });
-                routes.MapRoute(null, "api/albums/{albumId}", new { controller = "AlbumsApi", action = "Details" });
-                routes.MapRoute(null, "{controller}/{action}/{id?}", new { controller = "Home", action = "Index" });
-            });
+            app.UseMvc();
         }
     }
 }

@@ -15,7 +15,7 @@ namespace MusicStore.Apis
             _storeContext = storeContext;
         }
 
-        //[Route("api/artists/lookup")]
+        [Route("api/artists/lookup")]
         public async Task<ActionResult> Lookup()
         {
             var artists = await _storeContext.Artists

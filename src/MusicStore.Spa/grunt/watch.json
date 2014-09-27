@@ -1,0 +1,10 @@
+﻿{
+    "typescript": {
+        "files": ["Client/**/*.ts", "!**/*.ng.ts"],
+        "tasks": ["ts"]
+    },
+    "dev": {
+        "files": ["bower_components/<%= staticFilePattern %>", "Client/<%= staticFilePattern %>"],
+        "tasks": ["dev"]
+    }
+}

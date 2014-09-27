@@ -16,7 +16,7 @@ namespace MusicStore.Apis
             _storeContext = storeContext;
         }
 
-        //[Route("api/albums")]
+        [Route("api/albums")]
         public async Task<ActionResult> Paged(int page = 1, int pageSize = 50, string sortBy = null)
         {
             var albums = await _storeContext.Albums
@@ -28,7 +28,7 @@ namespace MusicStore.Apis
             return Json(albums);
         }
 
-        //[Route("api/albums/all")]
+        [Route("api/albums/all")]
         public async Task<ActionResult> All()
         {
             var albums = await _storeContext.Albums
@@ -40,7 +40,7 @@ namespace MusicStore.Apis
             return Json(albums);
         }
 
-        //[Route("api/albums/mostPopular")]
+        [Route("api/albums/mostPopular")]
         public async Task<ActionResult> MostPopular(int count = 6)
         {
             count = count > 0 && count < 20 ? count : 6;
@@ -52,7 +52,7 @@ namespace MusicStore.Apis
             return Json(albums);
         }
 
-        //[Route("api/albums/{albumId:int}")]
+        [Route("api/albums/{albumId:int}")]
         public async Task<ActionResult> Details(int albumId)
         {
             // TODO: Remove this when EF supports related entity loading

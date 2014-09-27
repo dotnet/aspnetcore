@@ -1,5 +1,7 @@
 {
     "webroot": "wwwroot",
+    "exclude": [ "wwwroot/**/*.*", "bower_components/**/*.*", "node_modules/**/*.*", "grunt/**/*.*" ],
+    "pack-exclude": [ "bower.json", "package.json", "gruntfile.js", "bower_components/**/*.*", "node_modules/**/*.*", "grunt/**/*.*" ],
     "authors": [
         "Microsoft"
     ],

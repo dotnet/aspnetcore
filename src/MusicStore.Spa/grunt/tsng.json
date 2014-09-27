@@ -1,0 +1,17 @@
+﻿{
+    "options": {
+        "extension": ".ng.ts"
+    },
+    "dev": {
+        "files": [
+            {
+                "src": [ "Client/ng-apps/components/**/*.ts", "Client/ng-apps/MusicStore.Store/**/*.ts", "!**/*.ng.ts" ],
+                "dest": "Client/ng-apps"
+            },
+            {
+                "src": ["Client/ng-apps/components/**/*.ts", "Client/ng-apps/MusicStore.Admin/**/*.ts", "!**/*.ng.ts"],
+                "dest": "Client/ng-apps"
+            }
+        ]
+    }
+}

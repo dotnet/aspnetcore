@@ -1,0 +1,6 @@
+﻿{
+    "options": { "force": true },
+    "bower": ["wwwroot/*", "!wwwroot/bin"],
+    "assets": ["wwwroot/*", "!wwwroot/bin"],
+    "tsng": ["client/**/*.ng.ts"]
+}

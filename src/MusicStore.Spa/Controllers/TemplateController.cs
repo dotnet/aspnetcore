@@ -5,16 +5,15 @@ namespace MusicStore.Controllers
 {
     public class TemplateController : Controller
     {
-        private static readonly string _templateBasePath = "~/Client/ng-apps/";
+        private static readonly string _templateBasePath = "/Client/ng-apps/";
 
         // GET: Template
-        //[Route("ng-apps/{*path}")]
+        [Route("ng-apps/{*path}")]
         public ActionResult Index(string path)
         {
             if (!IsValidPath(path))
             {
-                // TODO: Change this to NotFoundResult when it's available
-                return new HttpStatusCodeResult(404);
+                return new HttpNotFoundResult();
             }
 
             return View(_templateBasePath + path);

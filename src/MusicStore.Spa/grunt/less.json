@@ -1,0 +1,18 @@
+﻿{
+    "dev": {
+        "options": {
+            "cleancss": false
+        },
+        "files": {
+            "wwwroot/css/site.css": "Client/**/*.less"
+        }
+    },
+    "release": {
+        "options": {
+            "cleancss": true
+        },
+        "files": {
+            "wwwroot/css/site.css": "Client/**/*.less"
+        }
+    }
+}
