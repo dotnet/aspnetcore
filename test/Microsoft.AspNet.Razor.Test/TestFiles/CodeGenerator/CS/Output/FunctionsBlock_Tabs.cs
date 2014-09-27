@@ -1,3 +1,4 @@
+#pragma checksum "FunctionsBlock_Tabs.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "93dd195557fe9c2e5a15b75d76608f2cb7082f3f"
 namespace TestOutput
 {
     using System;

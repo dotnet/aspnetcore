@@ -1,3 +1,4 @@
+#pragma checksum "RazorComments.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "051345e2cc0313fea445db2f6cf48fe28b0b4edf"
 namespace TestOutput
 {
     using System;

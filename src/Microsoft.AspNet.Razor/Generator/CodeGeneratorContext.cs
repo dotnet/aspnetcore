@@ -23,6 +23,11 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public CodeTreeBuilder CodeTreeBuilder { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <c>SHA1</c> based checksum for the file whose location is defined by <see cref="SourceFile"/>.
+        /// </summary>
+        public string Checksum { get; set; }
+
         public static CodeGeneratorContext Create(RazorEngineHost host, string className, string rootNamespace, string sourceFile, bool shouldGenerateLinePragmas)
         {
             return new CodeGeneratorContext()

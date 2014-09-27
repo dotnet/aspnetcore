@@ -1,3 +1,4 @@
+#pragma checksum "HelpersMissingOpenParen.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "dc407d9349ea9a1595c65660d41a63970de65729"
 namespace TestOutput
 {
     using System;

@@ -1,3 +1,4 @@
+#pragma checksum "CodeBlock.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "d570564dcb19afbfb9fcd1b8a7e339d22c0d0c97"
 namespace TestOutput
 {
     using System;

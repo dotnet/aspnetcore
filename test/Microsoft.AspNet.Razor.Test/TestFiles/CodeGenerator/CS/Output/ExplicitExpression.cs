@@ -1,3 +1,4 @@
+#pragma checksum "ExplicitExpression.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "0fa6894c606c7426da1d8cacfbacf8be971c777f"
 namespace TestOutput
 {
     using System;

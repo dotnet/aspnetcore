@@ -1,3 +1,4 @@
+#pragma checksum "HelpersMissingCloseParen.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "a59fed8a1d7b5333e081339188fe2dba59c71e41"
 namespace TestOutput
 {
     using System;

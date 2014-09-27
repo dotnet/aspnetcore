@@ -1,3 +1,4 @@
+#pragma checksum "ExpressionsInCode.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "3ccb5b16f61b84dd82d7402e4a17870a39d09ca9"
 namespace TestOutput
 {
     using System;

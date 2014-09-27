@@ -1,3 +1,4 @@
+#pragma checksum "NestedHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "e8232b2b30af7dadb0698abf8ba08851f401963d"
 namespace TestOutput
 {
     using System;

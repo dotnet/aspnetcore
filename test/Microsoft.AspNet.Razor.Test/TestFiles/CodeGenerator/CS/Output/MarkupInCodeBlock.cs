@@ -1,3 +1,4 @@
+#pragma checksum "MarkupInCodeBlock.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "539d5763b7091d29df375085f623b9086e7f8ad6"
 namespace TestOutput
 {
     using System;

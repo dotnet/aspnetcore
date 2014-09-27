@@ -1,3 +1,4 @@
+#pragma checksum "" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "c6fa3992fa56644768995c97941d682d90f6d8ec"
 namespace TestOutput
 {
     using System;

@@ -10,6 +10,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
     public class CSharpCodeBuilder : CodeBuilder
     {
+        // See http://msdn.microsoft.com/en-us/library/system.codedom.codechecksumpragma.checksumalgorithmid.aspx
+        private const string Sha1AlgorithmId = "{ff1816ec-aa5e-4d10-87f7-6f4963833460}";
         private const int DisableAsyncWarning = 1998;
 
         public CSharpCodeBuilder(CodeGeneratorContext context)
@@ -23,6 +25,17 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         public override CodeBuilderResult Build()
         {
             var writer = new CSharpCodeWriter();
+
+            if (!Host.DesignTimeMode && !string.IsNullOrEmpty(Context.Checksum))
+            {
+                writer.Write("#pragma checksum \"")
+                      .Write(Context.SourceFile)
+                      .Write("\" \"")
+                      .Write(Sha1AlgorithmId)
+                      .Write("\" \"")
+                      .Write(Context.Checksum)
+                      .WriteLine("\"");
+            }
 
             using (writer.BuildNamespace(Context.RootNamespace))
             {
@@ -102,7 +115,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             string taskNamespace = typeof(Task).Namespace;
 
             // We need to add the task namespace but ONLY if it hasn't been added by the default imports or using imports yet.
-            if(!defaultImports.Contains(taskNamespace) && !usingVisitor.ImportedUsings.Contains(taskNamespace))
+            if (!defaultImports.Contains(taskNamespace) && !usingVisitor.ImportedUsings.Contains(taskNamespace))
             {
                 writer.WriteUsing(taskNamespace);
             }

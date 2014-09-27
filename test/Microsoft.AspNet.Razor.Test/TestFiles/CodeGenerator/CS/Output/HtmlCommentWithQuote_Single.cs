@@ -1,3 +1,4 @@
+#pragma checksum "HtmlCommentWithQuote_Single.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "2080c7f4c5de3e5e7f309c11a6be5c5e8d86e75a"
 namespace TestOutput
 {
     using System;

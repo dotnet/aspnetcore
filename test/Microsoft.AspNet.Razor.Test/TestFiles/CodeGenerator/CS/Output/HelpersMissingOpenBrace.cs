@@ -1,3 +1,4 @@
+#pragma checksum "HelpersMissingOpenBrace.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "f81212c85e39fa08cb4c95e2339817caa725397c"
 namespace TestOutput
 {
     using System;

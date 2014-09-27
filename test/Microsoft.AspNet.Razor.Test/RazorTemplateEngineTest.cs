@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Generator;
@@ -10,6 +12,7 @@ using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 using Moq;
+using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test
@@ -161,7 +164,7 @@ namespace Microsoft.AspNet.Razor.Test
 
             // Assert
             mockEngine.Verify(e => e.GenerateCodeCore(It.Is<SeekableTextReader>(l => l.ReadToEnd() == "foo"),
-                                                      className, ns, src, source.Token));
+                                                      className, ns, src, null, source.Token));
         }
 
         [Fact]
@@ -212,12 +215,70 @@ namespace Microsoft.AspNet.Razor.Test
             Assert.NotNull(results.DesignTimeLineMappings);
         }
 
+        public static IEnumerable<object[]> GenerateCodeCalculatesLinePragma_IfStreamInputIsUsedData
+        {
+            get
+            {
+                // Seekable stream
+                var content = Encoding.UTF8.GetBytes("Hello world");
+                var stream = new MemoryStream(content);
+
+                yield return new[] { stream };
+
+                // Non seekable stream
+                var mockStream = new Mock<MemoryStream>(content)
+                {
+                    CallBase = true
+                };
+                mockStream.Setup(m => m.CanSeek)
+                          .Returns(false);
+
+                yield return new[] { mockStream.Object };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GenerateCodeCalculatesLinePragma_IfStreamInputIsUsedData))]
+        public void GenerateCodeCalculatesLinePragma_IfStreamInputIsUsed(Stream stream)
+        {
+            // Arrange
+            var engine = new TestableRazorTemplateEngine();
+
+            // Act
+            var results = engine.GenerateCode(stream, "some-class", "some-ns", "foo.cshtml");
+
+            // Assert
+            Assert.Equal("7b502c3a1f48c8609ae212cdfb639dee39673f5e", engine.Checksum);
+        }
+
         private static RazorEngineHost CreateHost(bool designTime = false)
         {
             return new RazorEngineHost(new CSharpRazorCodeLanguage())
             {
                 DesignTimeMode = designTime
             };
+        }
+
+        private class TestableRazorTemplateEngine : RazorTemplateEngine
+        {
+            public TestableRazorTemplateEngine()
+                : base(CreateHost())
+            {
+
+            }
+
+            public string Checksum { get; set; }
+
+            protected internal override GeneratorResults GenerateCodeCore(ITextDocument input, 
+                                                                          string className, 
+                                                                          string rootNamespace, 
+                                                                          string sourceFileName, 
+                                                                          string checksum, 
+                                                                          CancellationToken? cancelToken)
+            {
+                Checksum = checksum;
+                return null;
+            }
         }
     }
 }

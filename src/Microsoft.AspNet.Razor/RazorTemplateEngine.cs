@@ -4,7 +4,10 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
@@ -19,6 +22,7 @@ namespace Microsoft.AspNet.Razor
     /// </summary>
     public class RazorTemplateEngine
     {
+        private const int BufferSize = 1024;
         public static readonly string DefaultClassName = "Template";
         public static readonly string DefaultNamespace = String.Empty;
 
@@ -127,7 +131,12 @@ namespace Microsoft.AspNet.Razor
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so we don't want to dispose it")]
         public GeneratorResults GenerateCode(ITextBuffer input, string className, string rootNamespace, string sourceFileName, CancellationToken? cancelToken)
         {
-            return GenerateCodeCore(input.ToDocument(), className, rootNamespace, sourceFileName, cancelToken);
+            return GenerateCodeCore(input.ToDocument(),
+                                    className,
+                                    rootNamespace,
+                                    sourceFileName,
+                                    checksum: null,
+                                    cancelToken: cancelToken);
         }
 
         // See GenerateCode override which takes ITextBuffer, and BufferingTextReader for details.
@@ -146,13 +155,83 @@ namespace Microsoft.AspNet.Razor
             return GenerateCode(input, className, rootNamespace, sourceFileName, null);
         }
 
+        /// <summary>
+        /// Parses the contents specified by the <paramref name="inputStream"/> and returns the generated code.
+        /// </summary>
+        /// <param name="inputStream">A <see cref="Stream"/> that represents the contents to be parsed.</param>
+        /// <param name="className">The name of the generated class. When <c>null</c>, defaults to
+        /// <see cref="Host.DefaultClassName"/>.</param>
+        /// <param name="rootNamespace">The namespace in which the generated class will reside. When <c>null</c>,
+        /// defaults to <see cref="Host.DefaultNamespace"/>.</param>
+        /// <param name="sourceFileName">The file name to use in line pragmas, usually the original Razor file.</param>
+        /// <returns>A <see cref="GeneratorResults"/> that represents the results of parsing the content.</returns>
+        /// <remarks>
+        /// This overload calculates the checksum of the contents of <paramref name="inputStream"/> prior to code
+        /// generation. The checksum is used for producing the <c>#pragma checksum</c> line pragma required for
+        /// debugging.
+        /// </remarks>
+        public GeneratorResults GenerateCode([NotNull] Stream inputStream,
+                                             string className,
+                                             string rootNamespace,
+                                             string sourceFileName)
+        {
+            MemoryStream memoryStream = null;
+            try
+            {
+                if (!inputStream.CanSeek)
+                {
+                    memoryStream = new MemoryStream();
+                    inputStream.CopyTo(memoryStream);
+
+                    // We don't have to dispose the input stream since it is owned externally.
+                    inputStream = memoryStream;
+                }
+
+                inputStream.Position = 0;
+                var checksum = ComputeChecksum(inputStream);
+                inputStream.Position = 0;
+
+                using (var reader = new StreamReader(inputStream,
+                                                     Encoding.UTF8,
+                                                     detectEncodingFromByteOrderMarks: true,
+                                                     bufferSize: BufferSize,
+                                                     leaveOpen: true))
+                {
+                    var seekableStream = new SeekableTextReader(reader);
+                    return GenerateCodeCore(seekableStream,
+                                            className,
+                                            rootNamespace,
+                                            sourceFileName,
+                                            checksum,
+                                            cancelToken: null);
+                }
+            }
+            finally
+            {
+                if (memoryStream != null)
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so we don't want to dispose it")]
         public GeneratorResults GenerateCode(TextReader input, string className, string rootNamespace, string sourceFileName, CancellationToken? cancelToken)
         {
-            return GenerateCodeCore(new SeekableTextReader(input), className, rootNamespace, sourceFileName, cancelToken);
+            return GenerateCodeCore(new SeekableTextReader(input),
+                                    className,
+                                    rootNamespace,
+                                    sourceFileName,
+                                    checksum: null,
+                                    cancelToken: cancelToken);
         }
 
-        protected internal virtual GeneratorResults GenerateCodeCore(ITextDocument input, string className, string rootNamespace, string sourceFileName, CancellationToken? cancelToken)
+        protected internal virtual GeneratorResults GenerateCodeCore(ITextDocument input,
+                                                                     string className,
+                                                                     string rootNamespace,
+                                                                     string sourceFileName,
+                                                                     string checksum,
+                                                                     CancellationToken? cancelToken)
         {
             className = (className ?? Host.DefaultClassName) ?? DefaultClassName;
             rootNamespace = (rootNamespace ?? Host.DefaultNamespace) ?? DefaultNamespace;
@@ -167,7 +246,11 @@ namespace Microsoft.AspNet.Razor
             generator.DesignTimeMode = Host.DesignTimeMode;
             generator.Visit(results);
 
-            var builder = CreateCodeBuilder(generator.Context);
+
+            var codeGenerationContext = generator.Context;
+            codeGenerationContext.Checksum = checksum;
+
+            var builder = CreateCodeBuilder(codeGenerationContext);
             var builderResult = builder.Build();
 
             // Collect results and return
@@ -194,8 +277,24 @@ namespace Microsoft.AspNet.Razor
 
         protected internal virtual CodeBuilder CreateCodeBuilder(CodeGeneratorContext context)
         {
-            return Host.DecorateCodeBuilder(Host.CodeLanguage.CreateCodeBuilder(context), 
+            return Host.DecorateCodeBuilder(Host.CodeLanguage.CreateCodeBuilder(context),
                                             context);
+        }
+
+        private static string ComputeChecksum(Stream inputStream)
+        {
+            byte[] hashedBytes;
+            using (var hashAlgorithm = SHA1.Create())
+            {
+                hashedBytes = hashAlgorithm.ComputeHash(inputStream);
+            }
+
+            var fileHashBuilder = new StringBuilder(hashedBytes.Length * 2);
+            foreach (var value in hashedBytes)
+            {
+                fileHashBuilder.Append(value.ToString("x2"));
+            }
+            return fileHashBuilder.ToString();
         }
     }
 }

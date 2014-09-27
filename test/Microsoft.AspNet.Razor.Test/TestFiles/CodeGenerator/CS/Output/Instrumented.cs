@@ -1,3 +1,4 @@
+#pragma checksum "Instrumented.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "24ae301f33f984680e86aa6c7ae226809531ffe9"
 namespace TestOutput
 {
     using System;

@@ -1,3 +1,4 @@
+#pragma checksum "Helpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "228b0ea0de0f06806d10a9768bb4afd7e0ecb878"
 namespace TestOutput
 {
     using System;

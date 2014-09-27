@@ -1,3 +1,4 @@
+#pragma checksum "ResolveUrl.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "ef2ca9797f9fbd9788685830524a0daacb2a30e8"
 namespace TestOutput
 {
     using System;

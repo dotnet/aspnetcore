@@ -1,3 +1,4 @@
+#pragma checksum "Sections.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "0bd579cc5b9e6bd12b720003df47899d0a0207cf"
 namespace TestOutput
 {
     using System;

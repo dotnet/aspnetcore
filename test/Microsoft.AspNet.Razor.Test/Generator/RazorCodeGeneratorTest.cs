@@ -99,8 +99,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 baselineName = name;
             }
 
-            string sourceLocation = string.Format("/CodeGenerator/{1}/Source/{0}.{2}", name, LanguageName, FileExtension);
-            string source = TestFile.Create(string.Format("TestFiles/CodeGenerator/CS/Source/{0}.{1}", name, FileExtension)).ReadAllText();
+            string sourceLocation = string.Format("TestFiles/CodeGenerator/{1}/Source/{0}.{2}", name, LanguageName, FileExtension);
             string expectedOutput = TestFile.Create(string.Format("TestFiles/CodeGenerator/CS/Output/{0}.{1}", baselineName, BaselineExtension)).ReadAllText();
 
             // Set up the host and engine
@@ -136,11 +135,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
             // Generate code for the file
             GeneratorResults results = null;
-            using (StringTextBuffer buffer = new StringTextBuffer(source))
+            using (var source = TestFile.Create(sourceLocation).OpenRead())
             {
-                results = engine.GenerateCode(buffer, className: name, rootNamespace: TestRootNamespaceName, sourceFileName: generatePragmas ? String.Format("{0}.{1}", name, FileExtension) : null);
+                var sourceFileName = generatePragmas ? String.Format("{0}.{1}", name, FileExtension) : null;
+                results = engine.GenerateCode(source, className: name, rootNamespace: TestRootNamespaceName, sourceFileName: sourceFileName);
             }
-
             // Only called if GENERATE_BASELINES is set, otherwise compiled out.
             BaselineWriter.WriteBaseline(String.Format(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\{0}\Output\{1}.{2}", LanguageName, baselineName, BaselineExtension), results.GeneratedCode);
 
@@ -179,7 +178,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
                     for (var i = 0; i < expectedDesignTimePragmas.Count; i++)
                     {
-                        if(!expectedDesignTimePragmas[i].Equals(results.DesignTimeLineMappings[i]))
+                        if (!expectedDesignTimePragmas[i].Equals(results.DesignTimeLineMappings[i]))
                         {
                             Assert.True(false, String.Format("Line mapping {0} is not equivalent.", i));
                         }

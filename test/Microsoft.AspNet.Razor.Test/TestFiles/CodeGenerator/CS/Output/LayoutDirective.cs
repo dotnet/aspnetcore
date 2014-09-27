@@ -1,3 +1,4 @@
+#pragma checksum "LayoutDirective.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "936a0ebedd8d855480541640e61dacbb8b0e56c0"
 namespace TestOutput
 {
     using System;
