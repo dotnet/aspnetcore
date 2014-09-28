@@ -11,6 +11,38 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
             = new ResourceManager("Microsoft.AspNet.Mvc.HeaderValueAbstractions.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Invalid Argument. Accept Charset '{0}' could not be parsed.
+        /// </summary>
+        internal static string InvalidAcceptCharset
+        {
+            get { return GetString("InvalidAcceptCharset"); }
+        }
+
+        /// <summary>
+        /// Invalid Argument. Accept Charset '{0}' could not be parsed.
+        /// </summary>
+        internal static string FormatInvalidAcceptCharset(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidAcceptCharset"), p0);
+        }
+
+        /// <summary>
+        /// Invalid Argument. Accept Header '{0}' could not be parsed.
+        /// </summary>
+        internal static string InvalidAcceptHeader
+        {
+            get { return GetString("InvalidAcceptHeader"); }
+        }
+
+        /// <summary>
+        /// Invalid Argument. Accept Header '{0}' could not be parsed.
+        /// </summary>
+        internal static string FormatInvalidAcceptHeader(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidAcceptHeader"), p0);
+        }
+
+        /// <summary>
         /// Invalid Argument. Content type '{0}' could not be parsed.
         /// </summary>
         internal static string InvalidContentType

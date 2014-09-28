@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 
 namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
 {
@@ -10,26 +10,32 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
     {
         public double? Quality { get; private set; }
 
-        public static new MediaTypeWithQualityHeaderValue Parse(string input)
+        public static bool TryParse(string input, out MediaTypeWithQualityHeaderValue headerValue)
         {
             MediaTypeHeaderValue mediaTypeHeaderValue;
             if (!MediaTypeHeaderValue.TryParse(input, out mediaTypeHeaderValue))
             {
-                return null;
+                headerValue = null;
+                return false;
             }
 
             var quality = HttpHeaderUtilitites.Match;
-            string qualityStringValue = null;
+            string qualityStringValue;
             if (mediaTypeHeaderValue.Parameters.TryGetValue("q", out qualityStringValue))
             {
-                if (!Double.TryParse(qualityStringValue, out quality))
+                if (!double.TryParse(
+                        qualityStringValue,
+                        NumberStyles.AllowLeadingWhite | NumberStyles.AllowDecimalPoint |
+                            NumberStyles.AllowTrailingWhite,
+                        NumberFormatInfo.InvariantInfo,
+                        out quality))
                 {
-                    return null;
+                    headerValue = null;
+                    return false;
                 }
             }
 
-            return
-                new MediaTypeWithQualityHeaderValue()
+            headerValue = new MediaTypeWithQualityHeaderValue()
                 {
                     MediaType = mediaTypeHeaderValue.MediaType,
                     MediaSubType = mediaTypeHeaderValue.MediaSubType,
@@ -38,6 +44,19 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
                     Parameters = mediaTypeHeaderValue.Parameters,
                     Quality = quality,
                 };
-        } 
+
+            return true;
+        }
+
+        public static new MediaTypeWithQualityHeaderValue Parse(string input)
+        {
+            MediaTypeWithQualityHeaderValue headerValue = null;
+            if (!MediaTypeWithQualityHeaderValue.TryParse(input, out headerValue))
+            {
+                throw new ArgumentException(Resources.FormatInvalidAcceptHeader(input));
+            }
+
+            return headerValue;
+        }
     }
 }

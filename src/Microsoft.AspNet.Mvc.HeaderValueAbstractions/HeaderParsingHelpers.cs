@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
 {
     public static class HeaderParsingHelpers
     {
@@ -18,7 +17,14 @@ namespace Microsoft.AspNet.Mvc
             var acceptHeaderCollection = new List<MediaTypeWithQualityHeaderValue>();
             foreach (var item in acceptHeader.Split(','))
             {
-                acceptHeaderCollection.Add(MediaTypeWithQualityHeaderValue.Parse(item));
+                MediaTypeWithQualityHeaderValue parsedAcceptHeader;
+                // If we are unable to parse any of the Accept Headers, we ignore them completely.
+                if (!MediaTypeWithQualityHeaderValue.TryParse(item, out parsedAcceptHeader))
+                {
+                    return null;
+                }
+
+                acceptHeaderCollection.Add(parsedAcceptHeader);
             }
 
             return acceptHeaderCollection;
@@ -34,7 +40,14 @@ namespace Microsoft.AspNet.Mvc
             var acceptCharsetHeaderCollection = new List<StringWithQualityHeaderValue>();
             foreach (var item in acceptCharsetHeader.Split(','))
             {
-                acceptCharsetHeaderCollection.Add(StringWithQualityHeaderValue.Parse(item));
+                StringWithQualityHeaderValue parsedAcceptCharsetHeader;
+                // If we are unable to parse any of the Accept-Charset Headers, we ignore them completely.
+                if (!StringWithQualityHeaderValue.TryParse(item, out parsedAcceptCharsetHeader))
+                {
+                    return null;
+                }
+
+                acceptCharsetHeaderCollection.Add(parsedAcceptCharsetHeader);
             }
 
             return acceptCharsetHeaderCollection;
