@@ -1469,7 +1469,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Route("api")]
-        private class AttributeRoutedController()
+        private class AttributeRoutedController
         {
             [HttpGet("AttributeRoute")]
             public void AttributeRoutedAction() { }
