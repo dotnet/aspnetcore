@@ -8,7 +8,7 @@ using Microsoft.Internal.Web.Utils;
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
     /// <summary>
-    /// Defines a an <see cref="IEqualityComparer{TagHelperDescriptor}"/> that is used to check equality between
+    /// An <see cref="IEqualityComparer{TagHelperDescriptor}"/> used to check equality between
     /// two <see cref="TagHelperDescriptor"/>s.
     /// </summary>
     public class TagHelperDescriptorComparer : IEqualityComparer<TagHelperDescriptor>
@@ -18,7 +18,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </summary>
         public static readonly TagHelperDescriptorComparer Default = new TagHelperDescriptorComparer();
 
-        private TagHelperDescriptorComparer()
+        // Internal for testing
+        internal TagHelperDescriptorComparer()
         {
         }
 

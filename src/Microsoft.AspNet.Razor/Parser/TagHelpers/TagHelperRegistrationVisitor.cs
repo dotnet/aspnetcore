@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     throw new InvalidOperationException(
                         RazorResources.FormatTagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver(
                             SyntaxConstants.CSharp.AddTagHelperKeyword,
-                            nameof(TagHelperDescriptorResolver),
+                            nameof(ITagHelperDescriptorResolver),
                             nameof(RazorParser)));
                 }
 

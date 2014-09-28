@@ -114,6 +114,11 @@ namespace Microsoft.AspNet.Razor
         public virtual RazorCodeLanguage CodeLanguage { get; protected set; }
 
         /// <summary>
+        /// The <see cref="ITagHelperDescriptorResolver"/> used to resolve <see cref="TagHelperDescriptor"/>s.
+        /// </summary>
+        public virtual ITagHelperDescriptorResolver TagHelperDescriptorResolver { get; protected set; }
+
+        /// <summary>
         /// Boolean indicating if instrumentation code should be injected into the output page
         /// </summary>
         public virtual bool EnableInstrumentation
@@ -159,12 +164,6 @@ namespace Microsoft.AspNet.Razor
                 return _markupParserFactory();
             }
             return null;
-        }
-
-        // TODO: Document this as part of https://github.com/aspnet/Razor/issues/99
-        public virtual ITagHelperDescriptorResolver CreateTagHelperDescriptorResolver()
-        {
-            return new TagHelperDescriptorResolver();
         }
 
         /// <summary>

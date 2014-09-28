@@ -5,10 +5,19 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
-    // TODO: Document this class as part of https://github.com/aspnet/Razor/issues/99
-
+    /// <summary>
+    /// Contract used to resolve <see cref="TagHelperDescriptor"/>s.
+    /// </summary>
     public interface ITagHelperDescriptorResolver
     {
+        /// <summary>
+        /// Resolves <see cref="TagHelperDescriptor"/>s matching the given <paramref name="lookupText"/>.
+        /// </summary>
+        /// <param name="lookupText">
+        /// A <see cref="string"/> used to find tag helper <see cref="Type"/>s.
+        /// </param>
+        /// <returns>An <see cref="IEnumerable{TagHelperDescriptor}"/> of <see cref="TagHelperDescriptor"/>s matching 
+        /// the given <paramref name="lookupText"/>.</returns>
         IEnumerable<TagHelperDescriptor> Resolve(string lookupText);
     }
 }

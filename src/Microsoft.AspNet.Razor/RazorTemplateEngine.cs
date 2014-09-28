@@ -271,11 +271,10 @@ namespace Microsoft.AspNet.Razor
         {
             var codeParser = Host.CodeLanguage.CreateCodeParser();
             var markupParser = Host.CreateMarkupParser();
-            var tagHelperDescriptorResolver = Host.CreateTagHelperDescriptorResolver();
 
             return new RazorParser(Host.DecorateCodeParser(codeParser),
                                    Host.DecorateMarkupParser(markupParser),
-                                   tagHelperDescriptorResolver)
+                                   Host.TagHelperDescriptorResolver)
             {
                 DesignTimeMode = Host.DesignTimeMode
             };

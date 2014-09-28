@@ -3,5 +3,4 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Microsoft.AspNet.Razor.Test")]
 [assembly: InternalsVisibleTo("Microsoft.AspNet.Razor.Runtime.Test")]
