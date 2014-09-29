@@ -1,0 +1,58 @@
+﻿@using System
+@using System.Globalization
+@using System.Linq
+@using Microsoft.AspNet.Diagnostics
+@using Microsoft.AspNet.Diagnostics.Views
+@using Microsoft.Framework.Runtime;
+
+@functions
+{
+    public RuntimeInfoPage(RuntimeInfoPageModel model)
+    {
+        Model = model;
+    }
+
+    public RuntimeInfoPageModel Model { get; set; }
+}
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>@Resources.RuntimeInfoPage_Title</title>
+    <style>
+        <%$ include: RuntimeInfoPage.css %>
+    </style>
+</head>
+<body>
+    <h1>@Resources.RuntimeInfoPage_RuntimeVersion</h1>
+    <h2>@(string.IsNullOrWhiteSpace(Model.Version) ? Resources.RuntimeInfoPage_RuntimeVersionFail : Model.Version)</h2>
+    
+    <h1>@Resources.RuntimeInfoPage_Packages</h1>
+    @if (@Resources.RuntimeInfoPage_Packages == null)
+    {
+        <h2>@Resources.RuntimeInfoPage_PackagesFail</h2>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>@Resources.RuntimeInfoPage_PackageNameColumnName</th>
+                    <th>@Resources.RuntimeInfoPage_PackagePathColumnName</th>
+                </tr>
+            </thead>
+            <tbody>
+            @{ bool even = false; }
+            @foreach (var package in Model.References.OrderBy(package => package.Name.ToLowerInvariant()))
+            {
+                <tr class="@(even?"even":"odd")">
+                    <td>@package.Name</td>
+                    <td>@package.Path</td>
+                </tr>
+                @{ even = !even; }
+            }
+            </tbody>
+        </table>
+    }
+</body>
+</html>

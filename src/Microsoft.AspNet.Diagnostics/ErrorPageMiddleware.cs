@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Diagnostics
                 model.Environment = context;
             }*/
 
-            var errorPage = new ErrorPage() { Model = model };
+            var errorPage = new ErrorPage(model);
             await errorPage.ExecuteAsync(context);
         }
 

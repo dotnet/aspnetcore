@@ -182,6 +182,27 @@
   <data name="Exception_PathMustStartWithSlash" xml:space="preserve">
     <value>The path must start with a '/'.</value>
   </data>
+  <data name="RuntimeInfoPage_PackageNameColumnName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="RuntimeInfoPage_PackagePathColumnName" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="RuntimeInfoPage_Packages" xml:space="preserve">
+    <value>Packages:</value>
+  </data>
+  <data name="RuntimeInfoPage_PackagesFail" xml:space="preserve">
+    <value>Could not retrieve the list of loaded packages.</value>
+  </data>
+  <data name="RuntimeInfoPage_RuntimeVersion" xml:space="preserve">
+    <value>Runtime Version:</value>
+  </data>
+  <data name="RuntimeInfoPage_RuntimeVersionFail" xml:space="preserve">
+    <value>Could not determine the runtime version.</value>
+  </data>
+  <data name="RuntimeInfoPage_Title" xml:space="preserve">
+    <value>Runtime Information</value>
+  </data>
   <data name="WelcomeHeader" xml:space="preserve">
     <value>Welcome</value>
   </data>

@@ -3,7 +3,8 @@
   "dependencies": {
     "Microsoft.AspNet.FeatureModel": "1.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.PipelineCore": "1.0.0-*"
+    "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+    "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
   },
   "frameworks": {
     "aspnet50": {},
@@ -18,6 +19,7 @@
         "System.IO.FileSystem": "4.0.0.0",
         "System.Linq": "4.0.0.0",
         "System.Reflection": "4.0.10.0",
+        "System.Reflection.Extensions": "4.0.0.0",
         "System.Resources.ResourceManager": "4.0.0.0",
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",

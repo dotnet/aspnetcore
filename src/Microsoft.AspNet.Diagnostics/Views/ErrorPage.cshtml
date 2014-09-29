@@ -4,6 +4,11 @@
 @using Views
 @functions
 {
+    public ErrorPage(ErrorPageModel model)
+    {
+        Model = model;
+    }
+
     public ErrorPageModel Model { get; set; }
 }
 @{

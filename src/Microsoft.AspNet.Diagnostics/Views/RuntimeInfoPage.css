@@ -1,0 +1,29 @@
+﻿body {
+    font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
+    font-size: .813em;
+    line-height: 1.4em;
+    color: #222;
+}
+
+h1, h2, h3, h4, h5, th {
+    font-weight: 100;
+}
+
+h1 {
+    color: #44525e;
+    margin: 15px 0 15px 0;
+}
+
+h2 {
+    margin: 10px 5px 0 0;
+}
+
+table .even{
+    background-color: #f0f0f0;
+}
+
+th {
+    font-size: 16px;
+}
+
+

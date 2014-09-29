@@ -1,0 +1,25 @@
+﻿{
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+    "dependencies": {
+        "Microsoft.AspNet.Diagnostics": "",
+        "Xunit.KRunner": "1.0.0-*"
+    },
+
+    "frameworks": {
+        "aspnet50": {
+            "dependencies": {
+                "Moq": "4.2.1312.1622"
+            }
+        },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Runtime": "4.0.20.0"
+            }
+        }
+    },
+    "commands": {
+        "test": "Xunit.KRunner"
+    }
+}
