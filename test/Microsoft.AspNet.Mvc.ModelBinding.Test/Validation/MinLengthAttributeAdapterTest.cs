@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("minlength", rule.ValidationType);
             Assert.Equal(1, rule.ValidationParameters.Count);
             Assert.Equal(6, rule.ValidationParameters["min"]);
-            Assert.Equal("The field Length must be a string or array type with a minimum length of '6'.", rule.ErrorMessage);
+            Assert.Equal(attribute.FormatErrorMessage("Length"), rule.ErrorMessage);
         }
 
         [Fact]

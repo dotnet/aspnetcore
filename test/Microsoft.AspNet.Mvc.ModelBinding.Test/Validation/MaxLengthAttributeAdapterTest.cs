@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("maxlength", rule.ValidationType);
             Assert.Equal(1, rule.ValidationParameters.Count);
             Assert.Equal(10, rule.ValidationParameters["max"]);
-            Assert.Equal("The field Length must be a string or array type with a maximum length of '10'.", rule.ErrorMessage);
+            Assert.Equal(attribute.FormatErrorMessage("Length"), rule.ErrorMessage);
         }
 
         [Fact]

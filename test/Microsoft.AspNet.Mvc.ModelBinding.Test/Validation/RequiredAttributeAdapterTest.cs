@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetClientValidationRules_ReturnsValidationParameters()
         {
             // Arrange
+            var expected = ValidationAttributeUtil.GetRequiredErrorMessage("Length");
             var provider = new DataAnnotationsModelMetadataProvider();
             var metadata = provider.GetMetadataForProperty(() => null, typeof(string), "Length");
             var attribute = new RequiredAttribute();
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var rule = Assert.Single(rules);
             Assert.Equal("required", rule.ValidationType);
             Assert.Empty(rule.ValidationParameters);
-            Assert.Equal("The Length field is required.", rule.ErrorMessage);
+            Assert.Equal(expected, rule.ErrorMessage);
         }
     }
 }

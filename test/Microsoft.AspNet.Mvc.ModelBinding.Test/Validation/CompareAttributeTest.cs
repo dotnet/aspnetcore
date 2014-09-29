@@ -71,6 +71,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [Fact]
         public void ClientRulesWithCompareAttribute_ErrorMessageUsesResourceOverride()
         {
+            if (TestPlatformHelper.IsMono)
+            {
+                // ValidationAttribute in Mono does not read non-public resx properties.
+                return;
+            }
+
             // Arrange
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var metadata = metadataProvider.GetMetadataForProperty(() => null, typeof(PropertyNameModel), "MyProperty");

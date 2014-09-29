@@ -28,8 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("length", rule.ValidationType);
             Assert.Equal(1, rule.ValidationParameters.Count);
             Assert.Equal(8, rule.ValidationParameters["max"]);
-            Assert.Equal("The field Length must be a string with a maximum length of 8.",
-                         rule.ErrorMessage);
+            Assert.Equal(attribute.FormatErrorMessage("Length"), rule.ErrorMessage);
         }
 
         [Fact]
@@ -52,8 +51,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(2, rule.ValidationParameters.Count);
             Assert.Equal(3, rule.ValidationParameters["min"]);
             Assert.Equal(10, rule.ValidationParameters["max"]);
-            Assert.Equal("The field Length must be a string with a minimum length of 3 and a maximum length of 10.",
-                         rule.ErrorMessage);
+            Assert.Equal(attribute.FormatErrorMessage("Length"), rule.ErrorMessage);
         }
     }
 }
