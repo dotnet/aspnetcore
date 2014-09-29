@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,15 +6,21 @@ using System;
 namespace Microsoft.AspNet.Security.DataProtection
 {
     /// <summary>
-    /// A factory that can provide IDataProtector instances.
+    /// An interface that can be used to create IDataProtector instances.
     /// </summary>
-    public interface IDataProtectionProvider : IDisposable
+    public interface IDataProtectionProvider
     {
         /// <summary>
-        /// Given a purpose, returns a new IDataProtector that has unique cryptographic keys tied to this purpose.
+        /// Creates an IDataProtector given a purpose.
         /// </summary>
-        /// <param name="purpose">The consumer of the IDataProtector.</param>
-        /// <returns>An IDataProtector.</returns>
+        /// <param name="purposes">
+        /// The purpose to be assigned to the newly-created IDataProtector.
+        /// This parameter must be unique for the intended use case; two different IDataProtector
+        /// instances created with two different 'purpose' strings will not be able
+        /// to understand each other's payloads. The 'purpose' parameter is not intended to be
+        /// kept secret.
+        /// </param>
+        /// <returns>An IDataProtector tied to the provided purpose.</returns>
         IDataProtector CreateProtector(string purpose);
     }
 }

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Security.DataProtection.Cng.PBKDF2;
+using Microsoft.AspNet.Security.DataProtection.PBKDF2;
 
-namespace Microsoft.AspNet.Security.DataProtection.Cng
+namespace Microsoft.AspNet.Security.DataProtection
 {
     public static class KeyDerivation
     {

@@ -4,8 +4,9 @@
 using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Text;
 
-namespace Microsoft.AspNet.Security.DataProtection.Cng.PBKDF2
+namespace Microsoft.AspNet.Security.DataProtection.PBKDF2
 {
     /// <summary>
     /// A PBKDF2 provider which utilizes the managed hash algorithm classes as PRFs.
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng.PBKDF2
 
         private static KeyedHashAlgorithm PrfToManagedHmacAlgorithm(KeyDerivationPrf prf, string password)
         {
-            byte[] passwordBytes = Pbkdf2Util.SecureUtf8Encoding.GetBytes(password);
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
             try
             {
                 switch (prf)

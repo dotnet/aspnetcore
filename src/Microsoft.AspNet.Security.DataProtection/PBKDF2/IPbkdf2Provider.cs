@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Security.DataProtection.Cng.PBKDF2
+namespace Microsoft.AspNet.Security.DataProtection.PBKDF2
 {
     /// <summary>
     /// Internal interface used for abstracting away the PBKDF2 implementation since the implementation is OS-specific.

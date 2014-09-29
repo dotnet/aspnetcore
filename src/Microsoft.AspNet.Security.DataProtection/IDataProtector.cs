@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,33 +6,26 @@ using System;
 namespace Microsoft.AspNet.Security.DataProtection
 {
     /// <summary>
-    /// Represents an object that can perform cryptographic operations.
+    /// An interface that can provide data protection services.
     /// </summary>
-    public interface IDataProtector : IDisposable
+    public interface IDataProtector : IDataProtectionProvider
     {
         /// <summary>
-        /// Given a subpurpose, returns a new IDataProtector that has unique cryptographic keys tied <em>both</em> the purpose
-        /// that was used to create this IDataProtector instance <em>and</em> the purpose that is provided as a parameter
-        /// to this method.
+        /// Cryptographically protects a piece of plaintext data.
         /// </summary>
-        /// <param name="purpose">The sub-consumer of the IDataProtector.</param>
-        /// <returns>An IDataProtector.</returns>
-        IDataProtector CreateSubProtector(string purpose);
-
-        /// <summary>
-        /// Cryptographically protects some input data.
-        /// </summary>
-        /// <param name="unprotectedData">The data to be protected.</param>
-        /// <returns>An array containing cryptographically protected data.</returns>
-        /// <remarks>To retrieve the original data, call Unprotect on the protected data.</remarks>
+        /// <param name="unprotectedData">The plaintext data to protect.</param>
+        /// <returns>The protected form of the plaintext data.</returns>
         byte[] Protect(byte[] unprotectedData);
 
         /// <summary>
-        /// Retrieves the original data that was protected by a call to Protect.
+        /// Cryptographically unprotects a piece of protected data.
         /// </summary>
-        /// <param name="protectedData">The protected data to be decrypted.</param>
-        /// <returns>The original data.</returns>
-        /// <remarks>Throws CryptographicException if the <em>protectedData</em> parameter has been tampered with.</remarks>
+        /// <param name="protectedData">The protected data to unprotect.</param>
+        /// <returns>The plaintext form of the protected data.</returns>
+        /// <remarks>
+        /// Implementations should throw CryptographicException if the protected data is
+        /// invalid or malformed.
+        /// </remarks>
         byte[] Unprotect(byte[] protectedData);
     }
 }

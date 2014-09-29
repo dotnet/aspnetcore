@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Security.DataProtection.Cng
+namespace Microsoft.AspNet.Security.DataProtection
 {
     /// <summary>
     /// Specifies the PRF which should be used for the key derivation algorithm.

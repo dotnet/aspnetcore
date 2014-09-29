@@ -1,0 +1,54 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption;
+
+namespace Microsoft.AspNet.Security.DataProtection.KeyManagement
+{
+    /// <summary>
+    /// The basic interface for representing an authenticated encryption key.
+    /// </summary>
+    public interface IKey
+    {
+        /// <summary>
+        /// The date at which encryptions with this key can begin taking place.
+        /// </summary>
+        DateTimeOffset ActivationDate { get; }
+
+        /// <summary>
+        /// The date on which this key was created.
+        /// </summary>
+        DateTimeOffset CreationDate { get; }
+
+        /// <summary>
+        /// The date after which encryptions with this key may no longer take place.
+        /// </summary>
+        /// <remarks>
+        /// An expired key may still be used to decrypt existing payloads.
+        /// </remarks>
+        DateTimeOffset ExpirationDate { get; }
+
+        /// <summary>
+        /// Returns a value stating whether this key was revoked.
+        /// </summary>
+        /// <remarks>
+        /// A revoked key may still be used to decrypt existing payloads, but the payloads
+        /// must be treated as potentially unauthentic unless the application has some
+        /// other assurance that the payloads are authentic.
+        /// </remarks>
+        bool IsRevoked { get; }
+
+        /// <summary>
+        /// The id of the key.
+        /// </summary>
+        Guid KeyId { get; }
+
+        /// <summary>
+        /// Creates an IAuthenticatedEncryptor instance that can be used to encrypt data
+        /// to and decrypt data from this key.
+        /// </summary>
+        /// <returns>An IAuthenticatedEncryptor.</returns>
+        IAuthenticatedEncryptor CreateEncryptorInstance();
+    }
+}

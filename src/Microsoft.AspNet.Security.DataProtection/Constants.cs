@@ -1,11 +1,11 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
-    // from bcrypt.h
+    // The majority of these are from bcrypt.h
     internal static class Constants
     {
         internal const int MAX_STACKALLOC_BYTES = 256; // greatest number of bytes that we'll ever allow to stackalloc in a single frame
@@ -15,11 +15,11 @@ namespace Microsoft.AspNet.Security.DataProtection
         internal const string BCRYPT_KEY_DATA_BLOB = "KeyDataBlob";
         internal const string BCRYPT_AES_WRAP_KEY_BLOB = "Rfc3565KeyWrapBlob";
 
-        // Microsoft built-in providers.
+        // Microsoft built-in providers
         internal const string MS_PRIMITIVE_PROVIDER = "Microsoft Primitive Provider";
         internal const string MS_PLATFORM_CRYPTO_PROVIDER = "Microsoft Platform Crypto Provider";
 
-        // Common algorithm identifiers.
+        // Common algorithm identifiers
         internal const string BCRYPT_RSA_ALGORITHM = "RSA";
         internal const string BCRYPT_RSA_SIGN_ALGORITHM = "RSA_SIGN";
         internal const string BCRYPT_DH_ALGORITHM = "DH";

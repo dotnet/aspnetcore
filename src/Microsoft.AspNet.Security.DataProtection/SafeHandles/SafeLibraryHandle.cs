@@ -1,0 +1,188 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security;
+using Microsoft.Win32.SafeHandles;
+
+#if !ASPNETCORE50
+using System.Runtime.ConstrainedExecution;
+#endif
+
+namespace Microsoft.AspNet.Security.DataProtection.SafeHandles
+{
+    /// <summary>
+    /// Represents a handle to a Windows module (DLL).
+    /// </summary>
+    internal unsafe sealed class SafeLibraryHandle : SafeHandleZeroOrMinusOneIsInvalid
+    {
+        // Called by P/Invoke when returning SafeHandles
+        private SafeLibraryHandle()
+            : base(ownsHandle: true) { }
+
+        /// <summary>
+        /// Returns a value stating whether the library exports a given proc.
+        /// </summary>
+        public bool DoesProcExist(string lpProcName)
+        {
+            IntPtr pfnProc = UnsafeNativeMethods.GetProcAddress(this, lpProcName);
+            return (pfnProc != IntPtr.Zero);
+        }
+
+        /// <summary>
+        /// Gets a delegate pointing to a given export from this library.
+        /// </summary>
+        public TDelegate GetProcAddress<TDelegate>(string lpProcName, bool throwIfNotFound = true) where TDelegate : class
+        {
+            Debug.Assert(typeof(Delegate).IsAssignableFrom(typeof(TDelegate)), "TDelegate must be a delegate type!");
+
+            IntPtr pfnProc = UnsafeNativeMethods.GetProcAddress(this, lpProcName);
+            if (pfnProc == IntPtr.Zero)
+            {
+                if (throwIfNotFound)
+                {
+                    UnsafeNativeMethods.ThrowExceptionForLastWin32Error();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+#if ASPNETCORE50
+            return Marshal.GetDelegateForFunctionPointer<TDelegate>(pfnProc);
+#else
+            return (TDelegate)(object)Marshal.GetDelegateForFunctionPointer(pfnProc, typeof(TDelegate));
+#endif
+        }
+
+        /// <summary>
+        /// Forbids this library from being unloaded. The library will remain loaded until process termination,
+        /// regardless of how many times FreeLibrary is called.
+        /// </summary>
+        public void ForbidUnload()
+        {
+            // from winbase.h
+            const uint GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS = 0x00000004U;
+            const uint GET_MODULE_HANDLE_EX_FLAG_PIN = 0x00000001U;
+
+            IntPtr unused;
+            bool retVal = UnsafeNativeMethods.GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_PIN, this, out unused);
+            if (!retVal)
+            {
+                UnsafeNativeMethods.ThrowExceptionForLastWin32Error();
+            }
+        }
+
+        /// <summary>
+        /// Formats a message string using the resource table in the specified library.
+        /// </summary>
+        public string FormatMessage(int messageId)
+        {
+            // from winbase.h
+            const uint FORMAT_MESSAGE_ALLOCATE_BUFFER = 0x00000100;
+            const uint FORMAT_MESSAGE_FROM_HMODULE = 0x00000800;
+            const uint FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000;
+            const uint FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200;
+
+            LocalAllocHandle messageHandle;
+            int numCharsOutput = UnsafeNativeMethods.FormatMessage(
+                dwFlags: FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                lpSource: this,
+                dwMessageId: (uint)messageId,
+                dwLanguageId: 0 /* ignore current culture */,
+                lpBuffer: out messageHandle,
+                nSize: 0 /* unused */,
+                Arguments: IntPtr.Zero /* unused */);
+
+            if (numCharsOutput != 0 && messageHandle != null && !messageHandle.IsInvalid)
+            {
+                // Successfully retrieved the message.
+                using (messageHandle)
+                {
+                    return new String((char*)messageHandle.DangerousGetHandle(), 0, numCharsOutput).Trim();
+                }
+            }
+            else
+            {
+                // Message not found - that's fine.
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Opens a library. If 'filename' is not a fully-qualified path, the default search path is used.
+        /// </summary>
+        public static SafeLibraryHandle Open(string filename)
+        {
+            SafeLibraryHandle handle = UnsafeNativeMethods.LoadLibrary(filename);
+            if (handle == null || handle.IsInvalid)
+            {
+                UnsafeNativeMethods.ThrowExceptionForLastWin32Error();
+            }
+            return handle;
+        }
+
+        // Do not provide a finalizer - SafeHandle's critical finalizer will call ReleaseHandle for you.
+        protected override bool ReleaseHandle()
+        {
+            return UnsafeNativeMethods.FreeLibrary(handle);
+        }
+
+#if !ASPNETCORE50
+        [SuppressUnmanagedCodeSecurity]
+#endif
+        private static class UnsafeNativeMethods
+        {
+            private const string KERNEL32_LIB = "kernel32.dll";
+
+            // http://msdn.microsoft.com/en-us/library/windows/desktop/ms679351(v=vs.85).aspx
+            [DllImport(KERNEL32_LIB, EntryPoint = "FormatMessageW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+            public static extern int FormatMessage(
+                [In] uint dwFlags,
+                [In] SafeLibraryHandle lpSource,
+                [In] uint dwMessageId,
+                [In] uint dwLanguageId,
+                [Out] out LocalAllocHandle lpBuffer,
+                [In] uint nSize,
+                [In] IntPtr Arguments
+            );
+
+            // http://msdn.microsoft.com/en-us/library/ms683152(v=vs.85).aspx
+            [return: MarshalAs(UnmanagedType.Bool)]
+#if !ASPNETCORE50
+            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+#endif
+            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+            internal static extern bool FreeLibrary(IntPtr hModule);
+
+            // http://msdn.microsoft.com/en-us/library/ms683200(v=vs.85).aspx
+            [return: MarshalAs(UnmanagedType.Bool)]
+            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+            internal static extern bool GetModuleHandleEx(
+                [In] uint dwFlags,
+                [In] SafeLibraryHandle lpModuleName, // can point to a location within the module if GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS is set
+                [Out] out IntPtr phModule);
+
+            // http://msdn.microsoft.com/en-us/library/ms683212(v=vs.85).aspx
+            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+            internal static extern IntPtr GetProcAddress(
+                [In] SafeLibraryHandle hModule,
+                [In, MarshalAs(UnmanagedType.LPStr)] string lpProcName);
+
+            // http://msdn.microsoft.com/en-us/library/ms684175(v=vs.85).aspx
+            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+            internal static extern SafeLibraryHandle LoadLibrary(
+                [In, MarshalAs(UnmanagedType.LPWStr)] string lpFileName);
+
+            internal static void ThrowExceptionForLastWin32Error()
+            {
+                int hr = Marshal.GetHRForLastWin32Error();
+                Marshal.ThrowExceptionForHR(hr);
+            }
+        }
+    }
+}

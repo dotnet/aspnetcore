@@ -1,0 +1,16 @@
+{
+    "dependencies": {
+        "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
+        "Moq": "4.2.1312.1622",
+        "Xunit.KRunner": "1.0.0-*"
+    },
+    "frameworks": {
+        "aspnet50": { }
+    },
+    "commands": {
+        "test": "Xunit.KRunner"
+    },
+    "compilationOptions": {
+        "allowUnsafe": true
+    }
+}
