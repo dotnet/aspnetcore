@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 
@@ -24,10 +21,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <param name="context">A <see cref="CodeGeneratorContext"/> instance that contains information about 
         /// the current code generation process.</param>
         /// <param name="renderAttributeValue"><see cref="Action"/> that renders the raw value of the HTML attribute.</param>
-        public void RenderAttributeValue([NotNull] TagHelperAttributeDescriptor attributeDescriptor,
-                                         [NotNull] CSharpCodeWriter writer,
-                                         [NotNull] CodeBuilderContext context,
-                                         [NotNull] Action<CSharpCodeWriter> renderAttributeValue)
+        public virtual void RenderAttributeValue([NotNull] TagHelperAttributeDescriptor attributeDescriptor,
+                                                 [NotNull] CSharpCodeWriter writer,
+                                                 [NotNull] CodeBuilderContext context,
+                                                 [NotNull] Action<CSharpCodeWriter> renderAttributeValue)
         {
             renderAttributeValue(writer);
         }

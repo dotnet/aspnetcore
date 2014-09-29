@@ -52,8 +52,10 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                         writer.WriteLine("private static object @__o;");
                     }
 
-                    new CSharpHelperVisitor(writer, Context).Accept(Tree.Chunks);
-                    new CSharpTypeMemberVisitor(writer, Context).Accept(Tree.Chunks);
+                    var csharpCodeVisitor = CreateCSharpCodeVisitor(writer, Context);
+
+                    new CSharpHelperVisitor(csharpCodeVisitor, writer, Context).Accept(Tree.Chunks);
+                    new CSharpTypeMemberVisitor(csharpCodeVisitor, writer, Context).Accept(Tree.Chunks);
                     new CSharpDesignTimeHelpersVisitor(writer, Context).AcceptTree(Tree);
                     new CSharpTagHelperFieldDeclarationVisitor(writer, Context).Accept(Tree.Chunks);
 
@@ -66,13 +68,19 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     {
                         using (writer.BuildMethodDeclaration("public override async", "Task", Host.GeneratedClassContext.ExecuteMethodName))
                         {
-                            new CSharpCodeVisitor(writer, Context).Accept(Tree.Chunks);
+                            csharpCodeVisitor.Accept(Tree.Chunks);
                         }
                     }
                 }
             }
 
             return new CodeBuilderResult(writer.GenerateCode(), writer.LineMappingManager.Mappings);
+        }
+
+        protected virtual CSharpCodeVisitor CreateCSharpCodeVisitor([NotNull] CSharpCodeWriter writer,
+                                                                    [NotNull] CodeBuilderContext context)
+        {
+            return new CSharpCodeVisitor(writer, context);
         }
 
         protected virtual CSharpCodeWritingScope BuildClassDeclaration(CSharpCodeWriter writer)

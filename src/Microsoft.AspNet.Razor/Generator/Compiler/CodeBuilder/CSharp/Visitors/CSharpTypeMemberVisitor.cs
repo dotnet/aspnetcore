@@ -9,10 +9,12 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
     {
         private CSharpCodeVisitor _csharpCodeVisitor;
 
-        public CSharpTypeMemberVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
+        public CSharpTypeMemberVisitor([NotNull] CSharpCodeVisitor csharpCodeVisitor, 
+                                       [NotNull] CSharpCodeWriter writer, 
+                                       [NotNull] CodeBuilderContext context)
             : base(writer, context)
         {
-            _csharpCodeVisitor = new CSharpCodeVisitor(writer, context);
+            _csharpCodeVisitor = csharpCodeVisitor;
         }
 
         protected override void Visit(TypeMemberChunk chunk)

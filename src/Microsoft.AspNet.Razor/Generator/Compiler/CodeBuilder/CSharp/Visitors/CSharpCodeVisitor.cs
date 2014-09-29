@@ -17,18 +17,19 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         private const string TemplateWriterName = "__razor_template_writer";
 
         private CSharpPaddingBuilder _paddingBuilder;
-        private CSharpTagHelperCodeRenderer _tagHelperCodeRenderer;
 
         public CSharpCodeVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
             : base(writer, context)
         {
             _paddingBuilder = new CSharpPaddingBuilder(context.Host);
-            _tagHelperCodeRenderer = new CSharpTagHelperCodeRenderer(this, writer, context);
+            TagHelperRenderer = new CSharpTagHelperCodeRenderer(this, writer, context);
         }
+
+        public CSharpTagHelperCodeRenderer TagHelperRenderer { get; set; }
 
         protected override void Visit(TagHelperChunk chunk)
         {
-            _tagHelperCodeRenderer.RenderTagHelper(chunk);
+            TagHelperRenderer.RenderTagHelper(chunk);
         }
 
         protected override void Visit(ChunkBlock chunk)

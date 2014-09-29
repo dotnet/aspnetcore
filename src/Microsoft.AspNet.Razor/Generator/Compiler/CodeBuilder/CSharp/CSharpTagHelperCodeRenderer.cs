@@ -22,9 +22,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         private static readonly TagHelperAttributeDescriptorComparer AttributeDescriptorComparer =
             new TagHelperAttributeDescriptorComparer();
 
-        // TODO: The work to properly implement this will be done in: https://github.com/aspnet/Razor/issues/74
-        private readonly TagHelperAttributeValueCodeRenderer _attributeValueCodeRenderer =
-            new TagHelperAttributeValueCodeRenderer();
         private readonly CSharpCodeWriter _writer;
         private readonly CodeBuilderContext _context;
         private readonly IChunkVisitor _bodyVisitor;
@@ -41,11 +38,14 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                                            [NotNull] CSharpCodeWriter writer,
                                            [NotNull] CodeBuilderContext context)
         {
+            _bodyVisitor = bodyVisitor;
             _writer = writer;
             _context = context;
-            _bodyVisitor = bodyVisitor;
             _tagHelperContext = context.Host.GeneratedClassContext.GeneratedTagHelperContext;
+            AttributeValueCodeRenderer = new TagHelperAttributeValueCodeRenderer();
         }
+
+        public TagHelperAttributeValueCodeRenderer AttributeValueCodeRenderer { get; set; }
 
         /// <summary>
         /// Renders the code for the given <paramref name="chunk"/>.
@@ -431,7 +431,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         private void RenderAttributeValue(TagHelperAttributeDescriptor attributeDescriptor,
                                           Action<CSharpCodeWriter> valueRenderer)
         {
-            _attributeValueCodeRenderer.RenderAttributeValue(attributeDescriptor, _writer, _context, valueRenderer);
+            AttributeValueCodeRenderer.RenderAttributeValue(attributeDescriptor, _writer, _context, valueRenderer);
         }
 
         private static void RenderBufferedAttributeValueAccessor(CSharpCodeWriter writer)

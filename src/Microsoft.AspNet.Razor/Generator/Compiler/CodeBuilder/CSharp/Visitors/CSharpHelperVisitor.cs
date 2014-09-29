@@ -9,12 +9,14 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
     {
         private const string HelperWriterName = "__razor_helper_writer";
 
-        private CSharpCodeVisitor _codeVisitor;
+        private CSharpCodeVisitor _csharpCodeVisitor;
 
-        public CSharpHelperVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
+        public CSharpHelperVisitor([NotNull] CSharpCodeVisitor csharpCodeVisitor,
+                                   [NotNull] CSharpCodeWriter writer,
+                                   [NotNull] CodeBuilderContext context)
             : base(writer, context)
         {
-            _codeVisitor = new CSharpCodeVisitor(writer, context);
+            _csharpCodeVisitor = csharpCodeVisitor;
         }
 
         protected override void Visit(HelperChunk chunk)
@@ -46,7 +48,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             Context.TargetWriterName = HelperWriterName;
 
             // Generate children code
-            _codeVisitor.Accept(chunk.Children);
+            _csharpCodeVisitor.Accept(chunk.Children);
 
             Context.TargetWriterName = currentTargetWriterName;
 
