@@ -1,5 +1,6 @@
 {
     "dependencies": {
+        "Microsoft.AspNet.Razor.Runtime": "",
         "Microsoft.AspNet.Razor.Test": ""
     },
     "commands": {
