@@ -17,8 +17,9 @@ namespace Microsoft.AspNet.Identity
     /// <summary>
     ///     Token provider that uses an IDataProtector to generate encrypted tokens based off of the security stamp
     /// </summary>
-    public class DataProtectorTokenProvider<TUser>(DataProtectionTokenProviderOptions options, IDataProtector protector) : IUserTokenProvider<TUser> where TUser : class
+    public class DataProtectorTokenProvider<TUser> : IUserTokenProvider<TUser> where TUser : class
     {
+        public DataProtectorTokenProvider(DataProtectionTokenProviderOptions options, IDataProtector protector)
         {
             if (options == null)
             {
@@ -28,10 +29,12 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException(nameof(protector));
             }
+            Options = options;
+            Protector = protector;
         }
 
-        public DataProtectionTokenProviderOptions Options { get; } = options;
-        public IDataProtector Protector { get; } = protector;
+        public DataProtectionTokenProviderOptions Options { get; private set; }
+        public IDataProtector Protector { get; private set; }
 
         public string Name { get { return Options.Name; } }
 

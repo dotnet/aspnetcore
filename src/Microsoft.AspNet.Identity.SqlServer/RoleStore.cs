@@ -12,34 +12,39 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.SqlServer
 {
-    public class RoleStore<TRole>(DbContext context) : RoleStore<TRole, DbContext, string>(context) 
+    public class RoleStore<TRole> : RoleStore<TRole, DbContext, string>
         where TRole : IdentityRole
-    { }
+    {
+        public RoleStore(DbContext context) : base(context) { }
+    }
 
-    public class RoleStore<TRole, TContext>(TContext context) : RoleStore<TRole, TContext, string>(context)
+    public class RoleStore<TRole, TContext> : RoleStore<TRole, TContext, string>
         where TRole : IdentityRole
         where TContext : DbContext
-    { }
+    {
+        public RoleStore(TContext context) : base(context) { }
+    }
 
-    public class RoleStore<TRole, TContext, TKey>(TContext context) : 
+    public class RoleStore<TRole, TContext, TKey> : 
         IQueryableRoleStore<TRole>, 
         IRoleClaimStore<TRole>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
         where TContext : DbContext
     {
-        // Primary constructor
+        public RoleStore(TContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
             }
+            Context = context;
         }
 
         private bool _disposed;
 
 
-        public TContext Context { get; } = context;
+        public TContext Context { get; private set; }
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync

@@ -33,8 +33,10 @@ namespace Microsoft.AspNet.Identity
     ///     Represents a Role entity
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    public class IdentityRole<TKey>() where TKey : IEquatable<TKey>
+    public class IdentityRole<TKey> where TKey : IEquatable<TKey>
     {
+        public IdentityRole() { }
+
         /// <summary>
         ///     Constructor
         /// </summary>

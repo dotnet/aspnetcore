@@ -13,20 +13,26 @@ using Microsoft.Data.Entity;
 
 namespace Microsoft.AspNet.Identity.SqlServer
 {
-    public class UserStore(DbContext context) : UserStore<IdentityUser>(context)
-    { }
+    public class UserStore : UserStore<IdentityUser>
+    {
+        public UserStore(DbContext context) : base(context) { }
+    }
 
-    public class UserStore<TUser>(DbContext context) : UserStore<TUser, IdentityRole, DbContext>(context)
+    public class UserStore<TUser> : UserStore<TUser, IdentityRole, DbContext>
         where TUser : IdentityUser, new()
-    { }
+    {
+        public UserStore(DbContext context) : base(context) { }
+    }
 
-    public class UserStore<TUser, TRole, TContext>(TContext context) : UserStore<TUser, TRole, TContext, string>(context)
+    public class UserStore<TUser, TRole, TContext> : UserStore<TUser, TRole, TContext, string>
         where TUser : IdentityUser, new()
         where TRole : IdentityRole, new()
         where TContext : DbContext
-    { }
+    {
+        public UserStore(TContext context) : base(context) { }
+    }
 
-    public class UserStore<TUser, TRole, TContext, TKey>(TContext context) :
+    public class UserStore<TUser, TRole, TContext, TKey> :
         IUserLoginStore<TUser>,
         IUserRoleStore<TUser>,
         IUserClaimStore<TUser>,
@@ -42,17 +48,19 @@ namespace Microsoft.AspNet.Identity.SqlServer
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        // Primary constructor
+
+        public UserStore(TContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
             }
+            Context = context;
         }
 
         private bool _disposed;
 
-        public TContext Context { get; } = context;
+        public TContext Context { get; private set; }
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync

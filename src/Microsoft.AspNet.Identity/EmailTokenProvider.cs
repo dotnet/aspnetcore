@@ -21,12 +21,18 @@ namespace Microsoft.AspNet.Identity
     ///     TokenProvider that generates tokens from the user's security stamp and notifies a user via their email
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    public class EmailTokenProvider<TUser>(EmailTokenProviderOptions options) : TotpSecurityStampBasedTokenProvider<TUser>
+    public class EmailTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<TUser>
         where TUser : class
     {
+        public EmailTokenProvider(EmailTokenProviderOptions options)
+        {
+            Options = options;
+        }
+
+
         public EmailTokenProvider() : this(new EmailTokenProviderOptions()) { }
 
-        public EmailTokenProviderOptions Options { get; } = options;
+        public EmailTokenProviderOptions Options { get; private set; }
 
         public override string Name { get { return Options.Name; } }
 

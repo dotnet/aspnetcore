@@ -19,12 +19,18 @@ namespace Microsoft.AspNet.Identity
     ///     TokenProvider that generates tokens from the user's security stamp and notifies a user via their phone number
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    public class PhoneNumberTokenProvider<TUser>(PhoneNumberTokenProviderOptions options) : TotpSecurityStampBasedTokenProvider<TUser>
+    public class PhoneNumberTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<TUser>
         where TUser : class
     {
+        public PhoneNumberTokenProvider(PhoneNumberTokenProviderOptions options)
+        {
+            Options = options;
+        }
+
+
         public PhoneNumberTokenProvider() : this(new PhoneNumberTokenProviderOptions()) { }
 
-        public PhoneNumberTokenProviderOptions Options { get; } = options;
+        public PhoneNumberTokenProviderOptions Options { get; private set; }
 
         public override string Name { get { return Options.Name; } }
 

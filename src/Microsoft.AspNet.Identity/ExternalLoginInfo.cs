@@ -5,9 +5,14 @@ using System.Security.Claims;
 
 namespace Microsoft.AspNet.Identity
 {
-    public class ExternalLoginInfo(ClaimsIdentity externalIdentity, string loginProvider, string providerKey,
-        string displayName) : UserLoginInfo(loginProvider, providerKey, displayName)
+    public class ExternalLoginInfo : UserLoginInfo
     {
-        public ClaimsIdentity ExternalIdentity { get; set; } = externalIdentity;
+        public ExternalLoginInfo(ClaimsIdentity externalIdentity, string loginProvider, string providerKey, 
+            string displayName) : base(loginProvider, providerKey, displayName)
+        {
+            ExternalIdentity = externalIdentity;
+        }
+
+        public ClaimsIdentity ExternalIdentity { get; set; }
     }
 }
