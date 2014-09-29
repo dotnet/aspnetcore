@@ -27,14 +27,14 @@ namespace MusicStore.Mocks.Twitter
 
         internal static async Task OnReturnEndpoint(TwitterReturnEndpointContext context)
         {
-            if (context.Identity != null && context.SignInAsAuthenticationType == "External")
+            if (context.Identity != null && context.SignInAsAuthenticationType == "Microsoft.AspNet.Identity.ExternalLogin")
             {
                 //This way we will know all notifications were fired.
                 var manageStoreClaim = context.Identity.Claims.Where(c => c.Type == "ManageStore" && c.Value == "false").FirstOrDefault();
                 if (manageStoreClaim != null)
                 {
                     context.Identity.RemoveClaim(manageStoreClaim);
-                    context.Identity.AddClaim(new Claim("ManageStore", "true"));
+                    context.Identity.AddClaim(new Claim("ManageStore", "Allowed"));
                 }
             }
 

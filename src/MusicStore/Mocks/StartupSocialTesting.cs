@@ -21,6 +21,7 @@ using MusicStore.Mocks.Twitter;
 using MusicStore.Mocks.Google;
 using Microsoft.Framework.Runtime;
 using System.Threading.Tasks;
+using MusicStore.Mocks.MicrosoftAccount;
 
 namespace MusicStore
 {
@@ -170,12 +171,24 @@ namespace MusicStore
 #endif
             });
 
-            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountAuthenticationOptions()
+            var microsoftAccountOptions = new MicrosoftAccountAuthenticationOptions()
             {
                 Caption = "MicrosoftAccount - Requires project changes",
                 ClientId = "[ClientId]",
                 ClientSecret = "[ClientSecret]",
-            });
+                Notifications = new MicrosoftAccountAuthenticationNotifications()
+                {
+                    OnAuthenticated = MicrosoftAccountNotifications.OnAuthenticated,
+                    OnReturnEndpoint = MicrosoftAccountNotifications.OnReturnEndpoint,
+                    OnApplyRedirect = MicrosoftAccountNotifications.OnApplyRedirect
+                },
+                BackchannelHttpHandler = new MicrosoftAccountMockBackChannelHandler(),
+                StateDataFormat = new CustomStateDataFormat()
+            };
+
+            microsoftAccountOptions.Scope.Add("wl.basic");
+            microsoftAccountOptions.Scope.Add("wl.signin");
+            app.UseMicrosoftAccountAuthentication(microsoftAccountOptions);
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

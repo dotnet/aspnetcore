@@ -145,6 +145,9 @@ namespace E2ETests
                 //Twitter login
                 LoginWithTwitter();
 
+                //MicrosoftAccountLogin
+                LoginWithMicrosoftAccount();
+
                 var testCompletionTime = DateTime.Now;
                 Console.WriteLine("[Time]: All tests completed in '{0}' seconds", (testCompletionTime - initializationCompleteTime).TotalSeconds);
                 Console.WriteLine("[Time]: Total time taken for this test variation '{0}' seconds", (testCompletionTime - testStartTime).TotalSeconds);

@@ -59,6 +59,7 @@ namespace E2ETests
             responseContent = response.Content.ReadAsStringAsync().Result;
 
             //Correlation cookie not getting cleared after successful signin?
+            //https://github.com/aspnet/Security/issues/69
             //Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl))["__TwitterState"]);
             Assert.Equal(ApplicationBaseUrl + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
             //Twitter does not give back the email claim for some reason. 
@@ -79,10 +80,15 @@ namespace E2ETests
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
             Assert.NotNull(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-
-            //https://github.com/aspnet/Identity/issues/210
-            //Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
+            Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
             Console.WriteLine("Successfully signed in with user '{0}'", "twitter@test.com");
+
+            Console.WriteLine("Verifying if the middleware notifications were fired");
+            //Check for a non existing item
+            response = httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123")).Result;
+            //This action requires admin permissions. If notifications are fired this permission is granted
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Console.WriteLine("Middleware notifications were fired successfully");
         }
     }
 }

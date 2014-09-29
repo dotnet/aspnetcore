@@ -175,6 +175,7 @@ namespace MusicStore.Areas.Admin.Controllers
             return RedirectToAction("Index");
         }
 
+#if TESTING
         //
         // GET: /StoreManager/GetAlbumIdFromName
         // Note: Added for automated testing purpose. Application does not use this.
@@ -190,5 +191,6 @@ namespace MusicStore.Areas.Admin.Controllers
 
             return new ContentResult { Content = album.AlbumId.ToString(), ContentType = "text/plain" };
         }
+#endif
     }
 }

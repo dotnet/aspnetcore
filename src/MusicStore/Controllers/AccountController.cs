@@ -376,6 +376,16 @@ namespace MusicStore.Controllers
                 }
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await UserManager.CreateAsync(user);
+
+#if TESTING
+                //Just for automated testing adding a claim named 'ManageStore' - Not required for production
+                var manageClaim = info.ExternalIdentity.Claims.Where(c => c.Type == "ManageStore").FirstOrDefault();
+                if (manageClaim != null)
+                {
+                    await UserManager.AddClaimAsync(user, manageClaim);
+                }
+#endif
+
                 if (result.Succeeded)
                 {
                     result = await UserManager.AddLoginAsync(user, info);

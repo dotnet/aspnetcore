@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.Security.Google;
+﻿using Microsoft.AspNet.Security.MicrosoftAccount;
 using Microsoft.AspNet.Security.OAuth;
 using MusicStore.Mocks.Common;
 using System;
@@ -6,25 +6,26 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace MusicStore.Mocks.Google
+namespace MusicStore.Mocks.MicrosoftAccount
 {
     /// <summary>
-    /// Summary description for GoogleNotifications
+    /// Summary description for MicrosoftAccountNotifications
     /// </summary>
-    internal class GoogleNotifications
+    internal class MicrosoftAccountNotifications
     {
-        internal static async Task OnAuthenticated(GoogleAuthenticatedContext context)
+        internal static async Task OnAuthenticated(MicrosoftAccountAuthenticatedContext context)
         {
             if (context.Identity != null)
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "Access token is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.RefreshToken == "ValidRefreshToken", "Refresh token is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.Email == "AspnetvnextTest@gmail.com", "Email is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.Id == "106790274378320830963", "Id is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.FamilyName == "AspnetvnextTest", "FamilyName is not valid");
+                Helpers.ThrowIfConditionFailed(() => context.FirstName == "AspnetvnextTest", "Email is not valid");
+                Helpers.ThrowIfConditionFailed(() => context.LastName == "AspnetvnextTest", "Email is not valid");
+                Helpers.ThrowIfConditionFailed(() => context.Id == "fccf9a24999f4f4f", "Id is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.Name == "AspnetvnextTest AspnetvnextTest", "Name is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(1200), "ExpiresIn is not valid");
+                Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(3600), "ExpiresIn is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.User != null, "User object is not valid");
+                Helpers.ThrowIfConditionFailed(() => context.Id == context.User.SelectToken("id").ToString(), "User id is not valid");
                 context.Identity.AddClaim(new Claim("ManageStore", "false"));
             }
 
