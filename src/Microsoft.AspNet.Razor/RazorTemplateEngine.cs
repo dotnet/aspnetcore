@@ -176,20 +176,26 @@ namespace Microsoft.AspNet.Razor
                                              string sourceFileName)
         {
             MemoryStream memoryStream = null;
+            string checksum = null;
             try
             {
-                if (!inputStream.CanSeek)
+                if (!Host.DesignTimeMode)
                 {
-                    memoryStream = new MemoryStream();
-                    inputStream.CopyTo(memoryStream);
+                    // We don't need to calculate the checksum in design time.
 
-                    // We don't have to dispose the input stream since it is owned externally.
-                    inputStream = memoryStream;
+                    if (!inputStream.CanSeek)
+                    {
+                        memoryStream = new MemoryStream();
+                        inputStream.CopyTo(memoryStream);
+
+                        // We don't have to dispose the input stream since it is owned externally.
+                        inputStream = memoryStream;
+                    }
+
+                    inputStream.Position = 0;
+                    checksum = ComputeChecksum(inputStream);
+                    inputStream.Position = 0;
                 }
-
-                inputStream.Position = 0;
-                var checksum = ComputeChecksum(inputStream);
-                inputStream.Position = 0;
 
                 using (var reader = new StreamReader(inputStream,
                                                      Encoding.UTF8,

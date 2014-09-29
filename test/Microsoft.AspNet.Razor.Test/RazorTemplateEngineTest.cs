@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.Razor.Test
 
         [Theory]
         [MemberData(nameof(GenerateCodeCalculatesLinePragma_IfStreamInputIsUsedData))]
-        public void GenerateCodeCalculatesLinePragma_IfStreamInputIsUsed(Stream stream)
+        public void GenerateCodeCalculatesChecksum_IfStreamInputIsUsed(Stream stream)
         {
             // Arrange
             var engine = new TestableRazorTemplateEngine();
@@ -249,6 +249,20 @@ namespace Microsoft.AspNet.Razor.Test
 
             // Assert
             Assert.Equal("7b502c3a1f48c8609ae212cdfb639dee39673f5e", engine.Checksum);
+        }
+
+        [Fact]
+        public void GenerateCode_DoesNotCalculateChecksum_InDesignTimeMode()
+        {
+            // Arrange
+            var engine = new TestableRazorTemplateEngine();
+            engine.Host.DesignTimeMode = true;
+
+            // Act
+            var results = engine.GenerateCode(Stream.Null, "some-class", "some-ns", "foo.cshtml");
+
+            // Assert
+            Assert.Null(engine.Checksum);
         }
 
         private static RazorEngineHost CreateHost(bool designTime = false)
@@ -264,7 +278,6 @@ namespace Microsoft.AspNet.Razor.Test
             public TestableRazorTemplateEngine()
                 : base(CreateHost())
             {
-
             }
 
             public string Checksum { get; set; }
