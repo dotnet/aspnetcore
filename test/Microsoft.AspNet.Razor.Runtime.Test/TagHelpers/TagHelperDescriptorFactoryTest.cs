@@ -15,9 +15,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var expectedDescriptor = new TagHelperDescriptor("Object", "System.Object", ContentBehavior.None);
 
             // Act
-            var descriptor = TagHelperDescriptorFactory.CreateDescriptor(typeof(object));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(object));
 
             // Assert
+            var descriptor = Assert.Single(descriptors);
             Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
@@ -35,9 +36,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 });
 
             // Act
-            var descriptor = TagHelperDescriptorFactory.CreateDescriptor(typeof(SingleAttributeTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(SingleAttributeTagHelper));
 
             // Assert
+            var descriptor = Assert.Single(descriptors);
             Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
@@ -56,9 +58,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 });
 
             // Act
-            var descriptor = TagHelperDescriptorFactory.CreateDescriptor(typeof(MissingAccessorTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(MissingAccessorTagHelper));
 
             // Assert
+            var descriptor = Assert.Single(descriptors);
             Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
@@ -78,12 +81,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 });
 
             // Act
-            var descriptor = TagHelperDescriptorFactory.CreateDescriptor(typeof(PrivateAccessorTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(PrivateAccessorTagHelper));
 
             // Assert
+            var descriptor = Assert.Single(descriptors);
             Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
         }
-
 
         [Fact]
         public void CreateDescriptor_ResolvesCustomContentBehavior()
@@ -95,9 +98,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 ContentBehavior.Append);
 
             // Act
-            var descriptor = TagHelperDescriptorFactory.CreateDescriptor(typeof(CustomContentBehaviorTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(CustomContentBehaviorTagHelper));
 
             // Assert
+            var descriptor = Assert.Single(descriptors);
             Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
@@ -111,11 +115,112 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 ContentBehavior.None);
 
             // Act
-            var descriptor = TagHelperDescriptorFactory.CreateDescriptor(
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 typeof(InheritedCustomContentBehaviorTagHelper));
 
             // Assert
+            var descriptor = Assert.Single(descriptors);
             Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void CreateDescriptor_ResolvesMultipleTagHelperDescriptorsFromSingleType()
+        {
+            // Arrange
+            var validProp = typeof(MultiTagTagHelper).GetProperty(nameof(MultiTagTagHelper.ValidAttribute));
+            var expectedDescriptors = new[] {
+                new TagHelperDescriptor(
+                    "div",
+                    typeof(MultiTagTagHelper).FullName,
+                    ContentBehavior.None,
+                    new[] {
+                        new TagHelperAttributeDescriptor(nameof(MultiTagTagHelper.ValidAttribute), validProp)
+                    }),
+                new TagHelperDescriptor(
+                    "p",
+                    typeof(MultiTagTagHelper).FullName,
+                    ContentBehavior.None,
+                    new[] {
+                        new TagHelperAttributeDescriptor(nameof(MultiTagTagHelper.ValidAttribute), validProp)
+                    })
+            };
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(MultiTagTagHelper));
+
+            // Assert
+            Assert.Equal(descriptors, expectedDescriptors, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void CreateDescriptor_DoesntResolveInheritedTagNames()
+        {
+            // Arrange
+            var validProp = typeof(InheritedMultiTagTagHelper).GetProperty(nameof(InheritedMultiTagTagHelper.ValidAttribute));
+            var expectedDescriptor = new TagHelperDescriptor(
+                    "InheritedMultiTag",
+                    typeof(InheritedMultiTagTagHelper).FullName,
+                    ContentBehavior.None,
+                    new[] {
+                        new TagHelperAttributeDescriptor(nameof(InheritedMultiTagTagHelper.ValidAttribute), validProp)
+                    });
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(InheritedMultiTagTagHelper));
+
+            // Assert
+            var descriptor = Assert.Single(descriptors);
+            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void CreateDescriptor_IgnoresDuplicateTagNamesFromAttribute()
+        {
+            // Arrange
+            var expectedDescriptors = new[] {
+                new TagHelperDescriptor("p", typeof(DuplicateTagNameTagHelper).FullName, ContentBehavior.None),
+                new TagHelperDescriptor("div", typeof(DuplicateTagNameTagHelper).FullName, ContentBehavior.None)
+            };
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(DuplicateTagNameTagHelper));
+
+            // Assert
+            Assert.Equal(descriptors, expectedDescriptors, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void CreateDescriptor_OverridesTagNameFromAttribute()
+        {
+            // Arrange
+            var expectedDescriptors = new[] {
+                new TagHelperDescriptor("data-condition", 
+                                        typeof(OverrideNameTagHelper).FullName, 
+                                        ContentBehavior.None),
+            };
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(OverrideNameTagHelper));
+
+            // Assert
+            Assert.Equal(descriptors, expectedDescriptors, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void CreateDescriptor_GetsTagNamesFromMultipleAttributes()
+        {
+            // Arrange
+            var expectedDescriptors = new[] {
+                new TagHelperDescriptor("span", typeof(MultipleAttributeTagHelper).FullName, ContentBehavior.None),
+                new TagHelperDescriptor("p", typeof(MultipleAttributeTagHelper).FullName, ContentBehavior.None),
+                new TagHelperDescriptor("div", typeof(MultipleAttributeTagHelper).FullName, ContentBehavior.None)
+            };
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(MultipleAttributeTagHelper));
+
+            // Assert
+            Assert.Equal(descriptors, expectedDescriptors, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [ContentBehavior(ContentBehavior.Append)]
@@ -124,6 +229,32 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         private class InheritedCustomContentBehaviorTagHelper : CustomContentBehaviorTagHelper
+        {
+        }
+
+        [TagName("p", "div")]
+        private class MultiTagTagHelper
+        {
+            public string ValidAttribute { get; set; }
+        }
+
+        private class InheritedMultiTagTagHelper : MultiTagTagHelper
+        {
+        }
+
+        [TagName("p", "p", "div", "div")]
+        private class DuplicateTagNameTagHelper
+        {
+        }
+
+        [TagName("data-condition")]
+        private class OverrideNameTagHelper
+        {
+        }
+
+        [TagName("span")]
+        [TagName("div", "p")]
+        private class MultipleAttributeTagHelper
         {
         }
     }

@@ -24,30 +24,40 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="type">The type to create a <see cref="TagHelperDescriptor"/> from.</param>
         /// <returns>A <see cref="TagHelperDescriptor"/> that describes the given <paramref name="type"/>.</returns>
-        public static TagHelperDescriptor CreateDescriptor(Type type)
+        public static IEnumerable<TagHelperDescriptor> CreateDescriptors(Type type)
         {
-            var tagName = GetTagName(type);
+            var tagNames = GetTagNames(type);
             var typeName = type.FullName;
             var attributeDescriptors = GetAttributeDescriptors(type);
             var contentBehavior = GetContentBehavior(type);
 
-            return new TagHelperDescriptor(tagName,
-                                           typeName,
-                                           contentBehavior,
-                                           attributeDescriptors);
+            return tagNames.Select(tagName =>
+                new TagHelperDescriptor(tagName,
+                                        typeName,
+                                        contentBehavior,
+                                        attributeDescriptors));
         }
 
-        // TODO: Make this method support TagNameAttribute tag names: https://github.com/aspnet/Razor/issues/120
-        private static string GetTagName(Type tagHelperType)
+        private static IEnumerable<string> GetTagNames(Type tagHelperType)
         {
-            var name = tagHelperType.Name;
+            var typeInfo = tagHelperType.GetTypeInfo();
+            var attributes = typeInfo.GetCustomAttributes<TagNameAttribute>(inherit: false);
 
-            if (name.EndsWith(TagHelperNameEnding, StringComparison.OrdinalIgnoreCase))
+            // If there isn't an attribute specifying the tag name derive it from the name
+            if (!attributes.Any())
             {
-                name = name.Substring(0, name.Length - TagHelperNameEnding.Length);
+                var name = typeInfo.Name;
+
+                if (name.EndsWith(TagHelperNameEnding, StringComparison.OrdinalIgnoreCase))
+                {
+                    name = name.Substring(0, name.Length - TagHelperNameEnding.Length);
+                }
+
+                return new[] { name };
             }
 
-            return name;
+            // Remove duplicate tag names.
+            return attributes.SelectMany(attribute => attribute.Tags).Distinct();
         }
 
         private static IEnumerable<TagHelperAttributeDescriptor> GetAttributeDescriptors(Type type)

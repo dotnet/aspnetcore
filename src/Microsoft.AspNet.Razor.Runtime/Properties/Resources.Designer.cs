@@ -78,6 +78,22 @@ namespace Microsoft.AspNet.Razor.Runtime
             return string.Format(CultureInfo.CurrentCulture, GetString("ScopeManager_EndCannotBeCalledWithoutACallToBegin"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// Parameter {0} must not contain null tag names.
+        /// </summary>
+        internal static string TagNameAttribute_AdditionalTagsCannotContainNull
+        {
+            get { return GetString("TagNameAttribute_AdditionalTagsCannotContainNull"); }
+        }
+
+        /// <summary>
+        /// Parameter {0} must not contain null tag names.
+        /// </summary>
+        internal static string FormatTagNameAttribute_AdditionalTagsCannotContainNull(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagNameAttribute_AdditionalTagsCannotContainNull"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

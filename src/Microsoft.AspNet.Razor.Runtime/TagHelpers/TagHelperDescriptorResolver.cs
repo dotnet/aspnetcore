@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperTypes = ResolveTagHelperTypes(lookupStrings);
 
             // Convert types to TagHelperDescriptors
-            var descriptors = tagHelperTypes.Select(TagHelperDescriptorFactory.CreateDescriptor);
+            var descriptors = tagHelperTypes.SelectMany(TagHelperDescriptorFactory.CreateDescriptors);
 
             return descriptors;
         }
