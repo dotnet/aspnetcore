@@ -9,6 +9,7 @@ using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 #if ASPNET50 || ASPNETCORE50
 using Microsoft.Framework.Runtime;
@@ -71,6 +72,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             _fileSystem = fileSystem;
             _baseType = BaseType;
 
+            TagHelperDescriptorResolver = new TagHelperDescriptorResolver();
             DefaultBaseClass = BaseType + '<' + DefaultModel + '>';
             DefaultNamespace = "Asp";
             GeneratedClassContext = new GeneratedClassContext(
@@ -80,7 +82,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                 writeToMethodName: "WriteTo",
                 writeLiteralToMethodName: "WriteLiteralTo",
                 templateTypeName: "Microsoft.AspNet.Mvc.Razor.HelperResult",
-                defineSectionMethodName: "DefineSection")
+                defineSectionMethodName: "DefineSection",
+                generatedTagHelperContext: new GeneratedTagHelperContext
+                {
+                    RunnerTypeName = typeof(TagHelperRunner).FullName,
+                    ScopeManagerTypeName = typeof(TagHelperScopeManager).FullName,
+                    ExecutionContextTypeName = typeof(TagHelpersExecutionContext).FullName
+                })
             {
                 ResolveUrlMethodName = "Href",
                 BeginContextMethodName = "BeginContext",
