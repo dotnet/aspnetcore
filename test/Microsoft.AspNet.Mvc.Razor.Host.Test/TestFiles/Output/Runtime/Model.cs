@@ -1,23 +1,22 @@
 ﻿namespace Asp
 {
+    using System;
+    using System.Linq;
+    using System.Collections.Generic;
+    using Microsoft.AspNet.Mvc;
+    using Microsoft.AspNet.Mvc.Rendering;
     using System.Threading.Tasks;
 
-    public class __CompiledTemplate : Microsoft.AspNet.Mvc.Razor.RazorPage<
-#line 1 ""
+    public class ASPV_TestFiles_Input_Model_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<
+#line 1 "TestFiles/Input/Model.cshtml"
        System.Collections.IEnumerable
 
 #line default
 #line hidden
     >
     {
-        private static object @__o;
-        private void @__RazorDesignTimeHelpers__()
-        {
-            #pragma warning disable 219
-            #pragma warning restore 219
-        }
         #line hidden
-        public __CompiledTemplate()
+        public ASPV_TestFiles_Input_Model_cshtml()
         {
         }
         #line hidden

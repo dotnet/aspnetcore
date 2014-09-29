@@ -146,82 +146,6 @@ MyType1
             Assert.Equal(expected, code);
         }
 
-        [Fact]
-        public void InjectVisitor_GeneratesCorrectLineMappings()
-        {
-            // Arrange
-            var host = new MvcRazorHost(new TestFileSystem())
-            {
-                DesignTimeMode = true
-            };
-            host.NamespaceImports.Clear();
-            var engine = new RazorTemplateEngine(host);
-            var source = ReadResource("TestFiles/Input/Inject.cshtml");
-            var expectedCode = ReadResource("TestFiles/Output/Inject.cs");
-            var expectedLineMappings = new List<LineMapping>
-            {
-                BuildLineMapping(1, 0, 1, 30, 3, 0, 17),
-                BuildLineMapping(28, 1, 8, 598, 26, 8, 20)
-            };
-
-            // Act
-            GeneratorResults results;
-            using (var buffer = new StringTextBuffer(source))
-            {
-                results = engine.GenerateCode(buffer);
-            }
-
-            // Assert
-            Assert.True(results.Success);
-            Assert.Equal(expectedCode, results.GeneratedCode);
-            Assert.Empty(results.ParserErrors);
-            Assert.Equal(expectedLineMappings, results.DesignTimeLineMappings);
-        }
-
-        [Fact]
-        public void InjectVisitorWithModel_GeneratesCorrectLineMappings()
-        {
-            // Arrange
-            var host = new MvcRazorHost(new TestFileSystem())
-            {
-                DesignTimeMode = true
-            };
-            host.NamespaceImports.Clear();
-            var engine = new RazorTemplateEngine(host);
-            var source = ReadResource("TestFiles/Input/InjectWithModel.cshtml");
-            var expectedCode = ReadResource("TestFiles/Output/InjectWithModel.cs");
-            var expectedLineMappings = new List<LineMapping>
-            {
-                BuildLineMapping(7, 0, 7, 151, 6, 7, 7),
-                BuildLineMapping(24, 1, 8, 587, 26, 8, 20),
-                BuildLineMapping(54, 2, 8, 757, 34, 8, 23)
-            };
-
-            // Act
-            GeneratorResults results;
-            using (var buffer = new StringTextBuffer(source))
-            {
-                results = engine.GenerateCode(buffer);
-            }
-
-            // Assert
-            Assert.True(results.Success);
-            Assert.Equal(expectedCode, results.GeneratedCode);
-            Assert.Empty(results.ParserErrors);
-            Assert.Equal(expectedLineMappings, results.DesignTimeLineMappings);
-        }
-
-        private string ReadResource(string resourceName)
-        {
-            var assembly = typeof(InjectChunkVisitorTest).Assembly;
-
-            using (var stream = assembly.GetManifestResourceStream(resourceName))
-            using (var streamReader = new StreamReader(stream))
-            {
-                return streamReader.ReadToEnd();
-            }
-        }
-
         private static CodeGeneratorContext CreateContext()
         {
             return CodeGeneratorContext.Create(new MvcRazorHost(new TestFileSystem()),
@@ -229,26 +153,6 @@ MyType1
                                               "MyNamespace",
                                               string.Empty,
                                               shouldGenerateLinePragmas: true);
-        }
-
-        private static LineMapping BuildLineMapping(int documentAbsoluteIndex,
-                                                    int documentLineIndex,
-                                                    int documentCharacterIndex,
-                                                    int generatedAbsoluteIndex,
-                                                    int generatedLineIndex,
-                                                    int generatedCharacterIndex,
-                                                    int contentLength)
-        {
-            var documentLocation = new SourceLocation(documentAbsoluteIndex,
-                                                      documentLineIndex,
-                                                      documentCharacterIndex);
-            var generatedLocation = new SourceLocation(generatedAbsoluteIndex,
-                                                       generatedLineIndex,
-                                                       generatedCharacterIndex);
-
-            return new LineMapping(
-                documentLocation: new MappingLocation(documentLocation, contentLength),
-                generatedLocation: new MappingLocation(generatedLocation, contentLength));
         }
     }
 }

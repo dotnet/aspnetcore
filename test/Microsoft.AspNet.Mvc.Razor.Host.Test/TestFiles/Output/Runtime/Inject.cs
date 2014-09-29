@@ -1,34 +1,27 @@
 ﻿namespace Asp
 {
-#line 1 ""
+#line 1 "TestFiles/Input/Inject.cshtml"
 using MyNamespace
 
 #line default
 #line hidden
     ;
+    using System;
+    using System.Linq;
+    using System.Collections.Generic;
+    using Microsoft.AspNet.Mvc;
+    using Microsoft.AspNet.Mvc.Rendering;
     using System.Threading.Tasks;
 
-    public class __CompiledTemplate : Microsoft.AspNet.Mvc.Razor.RazorPage<dynamic>
+    public class ASPV_TestFiles_Input_Inject_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<dynamic>
     {
-        private static object @__o;
-        private void @__RazorDesignTimeHelpers__()
-        {
-            #pragma warning disable 219
-            #pragma warning restore 219
-        }
         #line hidden
-        public __CompiledTemplate()
+        public ASPV_TestFiles_Input_Inject_cshtml()
         {
         }
         #line hidden
         [Microsoft.AspNet.Mvc.ActivateAttribute]
-        public
-#line 2 ""
-        MyApp MyPropertyName
-
-#line default
-#line hidden
-        { get; private set; }
+        public MyApp MyPropertyName { get; private set; }
         [Microsoft.AspNet.Mvc.ActivateAttribute]
         public Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<dynamic> Html { get; private set; }
         [Microsoft.AspNet.Mvc.ActivateAttribute]
