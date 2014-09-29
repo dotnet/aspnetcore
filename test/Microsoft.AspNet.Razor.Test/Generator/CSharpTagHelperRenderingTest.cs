@@ -1,17 +1,14 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Parser.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
 {
-    public class CSharpTagHelperRenderingTest : CSharpRazorCodeGeneratorTest
+    public class CSharpTagHelperRenderingTest : TagHelperTestBase
     {
         [Theory]
         [InlineData("TagHelpersInSection")]
@@ -36,7 +33,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 });
 
             // Act & Assert
-            RunTagHelperTest(testType, tagHelperDescriptorProvider);
+            RunTagHelperTest(testType, tagHelperDescriptorProvider: tagHelperDescriptorProvider);
         }
 
         [Theory]
@@ -80,7 +77,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 });
 
             // Act & Assert
-            RunTagHelperTest(testType, tagHelperDescriptorProvider);
+            RunTagHelperTest(testType, tagHelperDescriptorProvider: tagHelperDescriptorProvider);
         }
 
         [Fact]
@@ -98,45 +95,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 });
 
             // Act & Assert
-            RunTagHelperTest("ContentBehaviorTagHelpers", tagHelperDescriptorProvider);
-        }
-
-        private void RunTagHelperTest(string testName, TagHelperDescriptorProvider tagHelperDescriptorProvider)
-        {
-            RunTest(
-                name: testName,
-                templateEngineConfig: (engine) =>
-                {
-                    return new TagHelperTemplateEngine(engine, tagHelperDescriptorProvider);
-                });
-        }
-
-        private class TagHelperTemplateEngine : RazorTemplateEngine
-        {
-            private TagHelperDescriptorProvider _tagHelperDescriptorProvider;
-
-            public TagHelperTemplateEngine(RazorTemplateEngine engine, TagHelperDescriptorProvider tagHelperDescriptorProvider)
-                : base(engine.Host)
-            {
-                _tagHelperDescriptorProvider = tagHelperDescriptorProvider;
-            }
-
-            protected internal override RazorParser CreateParser()
-            {
-                var parser = base.CreateParser();
-                var tagHelperParseTreeRewriter = new TagHelperParseTreeRewriter(_tagHelperDescriptorProvider);
-
-                for (var i = 0; i < parser.Optimizers.Count; i++)
-                {
-                    if (parser.Optimizers[i] is TagHelperParseTreeRewriter)
-                    {
-                        parser.Optimizers[i] = tagHelperParseTreeRewriter;
-                        break;
-                    }
-                }
-
-                return parser;
-            }
+            RunTagHelperTest("ContentBehaviorTagHelpers", tagHelperDescriptorProvider: tagHelperDescriptorProvider);
         }
     }
 }

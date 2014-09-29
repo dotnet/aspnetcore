@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                IList<LineMapping> expectedDesignTimePragmas = null,
                                TestSpan[] spans = null,
                                TabTest tabTest = TabTest.Both,
-                               Action<RazorEngineHost> hostConfig = null,
+                               Func<RazorEngineHost, RazorEngineHost> hostConfig = null,
                                Func<RazorTemplateEngine, RazorTemplateEngine> templateEngineConfig = null,
                                Action<GeneratorResults> onResults = null)
         {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                      IList<LineMapping> expectedDesignTimePragmas,
                                      TestSpan[] spans,
                                      bool withTabs,
-                                     Action<RazorEngineHost> hostConfig,
+                                     Func<RazorEngineHost, RazorEngineHost> hostConfig,
                                      Func<RazorTemplateEngine, RazorTemplateEngine> templateEngineConfig,
                                      Action<GeneratorResults> onResults = null)
         {
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                                                    };
             if (hostConfig != null)
             {
-                hostConfig(host);
+                host = hostConfig(host);
             }
 
             host.IsIndentingWithTabs = withTabs;

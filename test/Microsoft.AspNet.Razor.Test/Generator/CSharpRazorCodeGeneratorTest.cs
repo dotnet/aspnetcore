@@ -387,7 +387,14 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         [Fact]
         public void CSharpCodeGeneratorRendersHelpersBlockCorrectlyWhenInstanceHelperRequested()
         {
-            RunTest("Helpers", baselineName: "Helpers.Instance", hostConfig: h => h.StaticHelpers = false);
+            RunTest("Helpers",
+                    baselineName: "Helpers.Instance",
+                    hostConfig: host =>
+                    {
+                        host.StaticHelpers = false;
+
+                        return host;
+                    });
         }
 
         [Fact]
@@ -396,6 +403,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             RunTest("Instrumented", hostConfig: host =>
             {
                 host.InstrumentedSourceFilePath = string.Format("~/{0}.cshtml", host.DefaultClassName);
+
+                return host;
             });
         }
 
