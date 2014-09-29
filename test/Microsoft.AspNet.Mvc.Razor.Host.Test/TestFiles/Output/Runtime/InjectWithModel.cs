@@ -1,4 +1,5 @@
-﻿namespace Asp
+﻿#pragma checksum "TestFiles/Input/InjectWithModel.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "0c0e10d3fd8f5bf30eabc22ca0ee91355a13426d"
+namespace Asp
 {
     using System;
     using System.Linq;

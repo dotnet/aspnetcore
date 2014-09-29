@@ -1,4 +1,5 @@
-﻿namespace Asp
+﻿#pragma checksum "TestFiles/Input/Inject.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "424b7fe9f12352c59210b5fa8c74ca8c9c67de81"
+namespace Asp
 {
 #line 1 "TestFiles/Input/Inject.cshtml"
 using MyNamespace

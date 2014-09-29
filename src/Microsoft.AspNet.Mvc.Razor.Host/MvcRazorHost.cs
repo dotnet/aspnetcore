@@ -128,11 +128,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Adding a prefix so that the main view class can be easily identified.
             var className = MainClassNamePrefix + ParserHelpers.SanitizeClassName(rootRelativePath);
-            using (var reader = new StreamReader(inputStream))
-            {
-                var engine = new RazorTemplateEngine(this);
-                return engine.GenerateCode(reader, className, DefaultNamespace, rootRelativePath);
-            }
+            var engine = new RazorTemplateEngine(this);
+            return engine.GenerateCode(inputStream, className, DefaultNamespace, rootRelativePath);
         }
 
         /// <inheritdoc />
