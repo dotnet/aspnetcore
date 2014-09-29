@@ -5,15 +5,7 @@
 module.exports = function (grunt) {
 
     grunt.initConfig({
-        staticFilePattern: "**/*.{js,css,map,html,htm,ico,jpg,jpeg,png,gif,eot,svg,ttf,woff}",
-        tslint: {
-            options: {
-                configuration: grunt.file.readJSON("grunt/tslint-rules.json")
-            },
-            files: {
-                src: ["Client/**/*.ts", "!**/*.ng.ts"]
-            }
-        }
+        staticFilePattern: "**/*.{js,css,map,html,htm,ico,jpg,jpeg,png,gif,eot,svg,ttf,woff}"
     });
 
     grunt.registerTask("ts", ["tslint", "tsng", "typescript:dev", "clean:tsng"]);
