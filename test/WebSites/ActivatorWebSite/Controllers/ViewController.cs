@@ -24,5 +24,25 @@ namespace ActivatorWebSite
         {
             return View();
         }
+
+        public ViewResult ConsumeViewComponent()
+        {
+            return View();
+        }
+
+        public ViewResult ConsumeValueComponent()
+        {
+            return View();
+        }
+
+        public ViewResult ConsumeViewAndValueComponent()
+        {
+            return View();
+        }
+
+        public ViewResult ConsumeCannotBeActivatedComponent()
+        {
+            return View();
+        }
     }
 }
