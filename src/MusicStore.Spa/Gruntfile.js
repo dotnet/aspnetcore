@@ -1,5 +1,4 @@
-/// <vs BeforeBuild='dev' Clean='clean' />
-
+/// <vs Clean='clean' />
 // node-debug (Resolve-Path ~\AppData\Roaming\npm\node_modules\grunt-cli\bin\grunt) task:target
 
 module.exports = function (grunt) {

@@ -6,6 +6,7 @@ using MusicStore.Models;
 
 namespace MusicStore.Apis
 {
+    [Route("api/artists")]
     public class ArtistsApiController : Controller
     {
         private readonly MusicStoreContext _storeContext;
@@ -15,7 +16,7 @@ namespace MusicStore.Apis
             _storeContext = storeContext;
         }
 
-        [Route("api/artists/lookup")]
+        [HttpGet("lookup")]
         public async Task<ActionResult> Lookup()
         {
             var artists = await _storeContext.Artists

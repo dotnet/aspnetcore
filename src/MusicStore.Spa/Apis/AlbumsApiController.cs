@@ -7,6 +7,7 @@ using MusicStore.Models;
 
 namespace MusicStore.Apis
 {
+    [Route("api/albums")]
     public class AlbumsApiController : Controller
     {
         private readonly MusicStoreContext _storeContext;
@@ -16,7 +17,7 @@ namespace MusicStore.Apis
             _storeContext = storeContext;
         }
 
-        [Route("api/albums")]
+        [HttpGet]
         public async Task<ActionResult> Paged(int page = 1, int pageSize = 50, string sortBy = null)
         {
             var albums = await _storeContext.Albums
@@ -28,7 +29,7 @@ namespace MusicStore.Apis
             return Json(albums);
         }
 
-        [Route("api/albums/all")]
+        [HttpGet("all")]
         public async Task<ActionResult> All()
         {
             var albums = await _storeContext.Albums
@@ -40,7 +41,7 @@ namespace MusicStore.Apis
             return Json(albums);
         }
 
-        [Route("api/albums/mostPopular")]
+        [HttpGet("mostPopular")]
         public async Task<ActionResult> MostPopular(int count = 6)
         {
             count = count > 0 && count < 20 ? count : 6;
@@ -52,7 +53,7 @@ namespace MusicStore.Apis
             return Json(albums);
         }
 
-        [Route("api/albums/{albumId:int}")]
+        [HttpGet("{albumId:int}")]
         public async Task<ActionResult> Details(int albumId)
         {
             // TODO: Remove this when EF supports related entity loading
@@ -70,7 +71,6 @@ namespace MusicStore.Apis
             return Json(album);
         }
 
-        //[Route("api/albums")]
         [HttpPost]
         //[Authorize(Roles = "Administrator")]
         [Authorize(ClaimTypes.Role, "Administrator")]
@@ -98,8 +98,7 @@ namespace MusicStore.Apis
             };
         }
 
-        //[Route("api/albums/{albumId:int}/update")]
-        [HttpPut]
+        [HttpPut("{albumId:int}/update")]
         //[Authorize(Roles = "Administrator")]
         [Authorize(ClaimTypes.Role, "Administrator")]
         public async Task<ActionResult> UpdateAlbum(int albumId)
@@ -133,8 +132,7 @@ namespace MusicStore.Apis
             };
         }
 
-        //[Route("api/albums/{albumId:int}")]
-        [HttpDelete]
+        [HttpDelete("{albumId:int}")]
         //[Authorize(Roles = "Administrator")]
         [Authorize(ClaimTypes.Role, "Administrator")]
         public async Task<ActionResult> DeleteAlbum(int albumId)

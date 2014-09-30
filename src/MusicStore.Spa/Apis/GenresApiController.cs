@@ -5,6 +5,7 @@ using MusicStore.Models;
 
 namespace MusicStore.Apis
 {
+    [Route("api/genres")]
     public class GenresApiController : Controller
     {
         private readonly MusicStoreContext _storeContext;
@@ -14,7 +15,18 @@ namespace MusicStore.Apis
             _storeContext = storeContext;
         }
 
-        [Route("api/genres/lookup")]
+        [HttpGet]
+        public async Task<ActionResult> GenreList()
+        {
+            var genres = await _storeContext.Genres
+                //.Include(g => g.Albums)
+                .OrderBy(g => g.Name)
+                .ToListAsync();
+
+            return Json(genres);
+        }
+
+        [HttpGet("lookup")]
         public async Task<ActionResult> Lookup()
         {
             var genres = await _storeContext.Genres
@@ -24,7 +36,7 @@ namespace MusicStore.Apis
             return Json(genres);
         }
 
-        [Route("api/genres/menu")]
+        [HttpGet("menu")]
         public async Task<ActionResult> GenreMenuList(int count = 9)
         {
             count = count > 0 && count < 20 ? count : 9;
@@ -39,18 +51,7 @@ namespace MusicStore.Apis
             return Json(genres);
         }
 
-        [Route("api/genres")]
-        public async Task<ActionResult> GenreList()
-        {
-            var genres = await _storeContext.Genres
-                //.Include(g => g.Albums)
-                .OrderBy(g => g.Name)
-                .ToListAsync();
-
-            return Json(genres);
-        }
-
-        [Route("api/genres/{genreId:int}/albums")]
+        [HttpGet("{genreId:int}/albums")]
         public async Task<ActionResult> GenreAlbums(int genreId)
         {
             var albums = await _storeContext.Albums
