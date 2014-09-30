@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics;
+using System.Globalization;
+
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
     public class CSharpDesignTimeHelpersVisitor : CodeVisitor<CSharpCodeWriter>
@@ -8,10 +11,21 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         internal const string InheritsHelper = "__inheritsHelper";
         internal const string DesignTimeHelperMethodName = "__RazorDesignTimeHelpers__";
 
+        private const string TagHelperDirectiveSyntaxHelper = "__tagHelperDirectiveSyntaxHelper";
         private const int DisableVariableNamingWarnings = 219;
 
-        public CSharpDesignTimeHelpersVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
-            : base(writer, context) { }
+        private readonly CSharpCodeVisitor _csharpCodeVisitor;
+
+        private bool _initializedTagHelperDirectiveSyntaxHelper;
+
+        public CSharpDesignTimeHelpersVisitor([NotNull] CSharpCodeVisitor csharpCodeVisitor,
+                                              [NotNull] CSharpCodeWriter writer,
+                                              [NotNull] CodeBuilderContext context)
+
+            : base(writer, context)
+        {
+            _csharpCodeVisitor = csharpCodeVisitor;
+        }
 
         public void AcceptTree(CodeTree tree)
         {
@@ -42,6 +56,30 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     Writer.Write(" ").Write(InheritsHelper).Write(" = null;");
                 }
             }
+        }
+
+        protected override void Visit(AddTagHelperChunk chunk)
+        {
+            // We should always be in design time mode because of the calling AcceptTree method verification.
+            Debug.Assert(Context.Host.DesignTimeMode);
+
+            if (!_initializedTagHelperDirectiveSyntaxHelper)
+            {
+                _initializedTagHelperDirectiveSyntaxHelper = true;
+                Writer.WriteVariableDeclaration("string", TagHelperDirectiveSyntaxHelper, "null");
+            }
+
+            Writer.WriteStartAssignment(TagHelperDirectiveSyntaxHelper);
+
+            // The parsing mechanism for the AddTagHelperChunk (CSharpCodeParser.TagHelperDirective()) removes quotes
+            // that surround the chunk.LookupText.
+            _csharpCodeVisitor.CreateExpressionCodeMapping(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "\"{0}\"", chunk.LookupText),
+                chunk);
+
+            Writer.WriteLine(";");
         }
     }
 }

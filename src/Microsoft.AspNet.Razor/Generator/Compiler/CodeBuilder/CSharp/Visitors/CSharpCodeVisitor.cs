@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         private const string TemplateWriterName = "__razor_template_writer";
 
         private CSharpPaddingBuilder _paddingBuilder;
+        private CSharpTagHelperCodeRenderer _tagHelperCodeRenderer;
 
         public CSharpCodeVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
             : base(writer, context)
@@ -25,7 +26,22 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             TagHelperRenderer = new CSharpTagHelperCodeRenderer(this, writer, context);
         }
 
-        public CSharpTagHelperCodeRenderer TagHelperRenderer { get; set; }
+        public CSharpTagHelperCodeRenderer TagHelperRenderer
+        {
+            get
+            {
+                return _tagHelperCodeRenderer;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(TagHelperRenderer));
+                }
+
+                _tagHelperCodeRenderer = value;
+            }
+        }
 
         protected override void Visit(TagHelperChunk chunk)
         {
@@ -485,7 +501,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return Context.Host.EnableInstrumentation &&
                    Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput;
         }
-        
+
         private CSharpCodeWriter RenderPreWriteStart()
         {
             return RenderPreWriteStart(Writer, Context);

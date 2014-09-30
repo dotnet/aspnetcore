@@ -269,11 +269,13 @@ namespace Microsoft.AspNet.Razor
 
         protected internal virtual RazorParser CreateParser()
         {
-            ParserBase codeParser = Host.CodeLanguage.CreateCodeParser();
-            ParserBase markupParser = Host.CreateMarkupParser();
+            var codeParser = Host.CodeLanguage.CreateCodeParser();
+            var markupParser = Host.CreateMarkupParser();
+            var tagHelperDescriptorResolver = Host.CreateTagHelperDescriptorResolver();
 
             return new RazorParser(Host.DecorateCodeParser(codeParser),
-                                   Host.DecorateMarkupParser(markupParser))
+                                   Host.DecorateMarkupParser(markupParser),
+                                   tagHelperDescriptorResolver)
             {
                 DesignTimeMode = Host.DesignTimeMode
             };

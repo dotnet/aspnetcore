@@ -17,24 +17,15 @@ namespace Microsoft.AspNet.Razor.Parser
 {
     public class RazorParser
     {
-        public RazorParser(ParserBase codeParser, ParserBase markupParser)
-        {
-            if (codeParser == null)
-            {
-                throw new ArgumentNullException("codeParser");
-            }
-            if (markupParser == null)
-            {
-                throw new ArgumentNullException("markupParser");
-            }
+        private ITagHelperDescriptorResolver _tagHelperDescriptorResolver;
 
+        public RazorParser([NotNull] ParserBase codeParser,
+                           [NotNull] ParserBase markupParser,
+                           ITagHelperDescriptorResolver tagHelperDescriptorResolver)
+        {
+            _tagHelperDescriptorResolver = tagHelperDescriptorResolver;
             MarkupParser = markupParser;
             CodeParser = codeParser;
-
-            // TODO: As part of https://github.com/aspnet/Razor/issues/111 and 
-            // https://github.com/aspnet/Razor/issues/112 pull the provider from some sort of tag helper locator 
-            // object.
-            var provider = new TagHelperDescriptorProvider(Enumerable.Empty<TagHelperDescriptor>());
 
             Optimizers = new List<ISyntaxTreeRewriter>()
             {
@@ -45,8 +36,6 @@ namespace Microsoft.AspNet.Razor.Parser
                 new WhiteSpaceRewriter(MarkupParser.BuildSpan),
                 // Collapse conditional attributes where the entire value is literal
                 new ConditionalAttributeCollapser(MarkupParser.BuildSpan),
-                // Enables tag helpers
-                new TagHelperParseTreeRewriter(provider),
             };
         }
 
@@ -151,6 +140,16 @@ namespace Microsoft.AspNet.Razor.Parser
             foreach (ISyntaxTreeRewriter rewriter in Optimizers)
             {
                 current = rewriter.Rewrite(current);
+            }
+
+            if (_tagHelperDescriptorResolver != null)
+            {
+                var tagHelperRegistrationVisitor = new TagHelperRegistrationVisitor(_tagHelperDescriptorResolver);
+                var tagHelperProvider = tagHelperRegistrationVisitor.CreateProvider(current);
+
+                var tagHelperParseTreeRewriter = new TagHelperParseTreeRewriter(tagHelperProvider);
+                // Rewrite the document to utilize tag helpers
+                current = tagHelperParseTreeRewriter.Rewrite(current);
             }
 
             // Link the leaf nodes into a chain

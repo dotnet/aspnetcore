@@ -32,6 +32,9 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         protected override void Visit(TagHelperChunk chunk)
         {
         }
+        protected override void Visit(AddTagHelperChunk chunk)
+        {
+        }
         protected override void Visit(LiteralCodeAttributeChunk chunk)
         {
         }

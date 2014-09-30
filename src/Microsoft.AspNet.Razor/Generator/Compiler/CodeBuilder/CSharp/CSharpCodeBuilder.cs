@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
                     new CSharpHelperVisitor(csharpCodeVisitor, writer, Context).Accept(Tree.Chunks);
                     new CSharpTypeMemberVisitor(csharpCodeVisitor, writer, Context).Accept(Tree.Chunks);
-                    new CSharpDesignTimeHelpersVisitor(writer, Context).AcceptTree(Tree);
+                    new CSharpDesignTimeHelpersVisitor(csharpCodeVisitor, writer, Context).AcceptTree(Tree);
                     new CSharpTagHelperFieldDeclarationVisitor(writer, Context).Accept(Tree.Chunks);
 
                     BuildConstructor(writer);

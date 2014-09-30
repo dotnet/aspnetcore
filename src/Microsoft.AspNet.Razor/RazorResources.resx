@@ -415,4 +415,13 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="TagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols" xml:space="preserve">
     <value>TagHelper attributes that do not expect strings must not have @ symbols within them. Found attribute '{0}' with an invalid value.</value>
   </data>
+  <data name="ParseError_DirectiveMustHaveValue" xml:space="preserve">
+    <value>Directive '{0}' must have a value.</value>
+  </data>
+  <data name="ParseError_DirectiveMustBeSurroundedByQuotes" xml:space="preserve">
+    <value>Directive '{0}'s value must be surrounded in double quotes.</value>
+  </data>
+  <data name="TagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver" xml:space="preserve">
+    <value>Cannot use directive '{0}' when a {1} has not been provided to the {2}.</value>
+  </data>
 </root>

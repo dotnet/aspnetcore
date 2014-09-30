@@ -8,6 +8,7 @@ using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Razor
 {
@@ -158,6 +159,12 @@ namespace Microsoft.AspNet.Razor
                 return _markupParserFactory();
             }
             return null;
+        }
+
+        // TODO: Document this as part of https://github.com/aspnet/Razor/issues/99
+        public virtual ITagHelperDescriptorResolver CreateTagHelperDescriptorResolver()
+        {
+            return new TagHelperDescriptorResolver();
         }
 
         /// <summary>

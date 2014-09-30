@@ -1494,6 +1494,54 @@ namespace Microsoft.AspNet.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols"), p0);
         }
 
+        /// <summary>
+        /// Directive '{0}' must have a value.
+        /// </summary>
+        internal static string ParseError_DirectiveMustHaveValue
+        {
+            get { return GetString("ParseError_DirectiveMustHaveValue"); }
+        }
+
+        /// <summary>
+        /// Directive '{0}' must have a value.
+        /// </summary>
+        internal static string FormatParseError_DirectiveMustHaveValue(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_DirectiveMustHaveValue"), p0);
+        }
+
+        /// <summary>
+        /// Directive '{0}'s value must be surrounded in double quotes.
+        /// </summary>
+        internal static string ParseError_DirectiveMustBeSurroundedByQuotes
+        {
+            get { return GetString("ParseError_DirectiveMustBeSurroundedByQuotes"); }
+        }
+
+        /// <summary>
+        /// Directive '{0}'s value must be surrounded in double quotes.
+        /// </summary>
+        internal static string FormatParseError_DirectiveMustBeSurroundedByQuotes(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_DirectiveMustBeSurroundedByQuotes"), p0);
+        }
+
+        /// <summary>
+        /// Cannot use directive '{0}' when a {1} has not been provided to the {2}.
+        /// </summary>
+        internal static string TagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver
+        {
+            get { return GetString("TagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver"); }
+        }
+
+        /// <summary>
+        /// Cannot use directive '{0}' when a {1} has not been provided to the {2}.
+        /// </summary>
+        internal static string FormatTagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
