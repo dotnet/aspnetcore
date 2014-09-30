@@ -44,12 +44,16 @@ namespace Microsoft.AspNet.Mvc.Razor
         public virtual void CompileViews([NotNull] IBeforeCompileContext context)
         {
             var descriptors = CreateCompilationDescriptors(context);
-            var collectionGenerator = new RazorFileInfoCollectionGenerator(
-                                            descriptors,
-                                            SyntaxTreeGenerator.GetParseOptions(context.CSharpCompilation));
 
-            var tree = collectionGenerator.GenerateCollection();
-            context.CSharpCompilation = context.CSharpCompilation.AddSyntaxTrees(tree);
+            if (descriptors.Count > 0)
+            {
+                var collectionGenerator = new RazorFileInfoCollectionGenerator(
+                                                descriptors,
+                                                SyntaxTreeGenerator.GetParseOptions(context.CSharpCompilation));
+
+                var tree = collectionGenerator.GenerateCollection();
+                context.CSharpCompilation = context.CSharpCompilation.AddSyntaxTrees(tree);
+            }
         }
 
         protected virtual IReadOnlyList<RazorFileInfo> CreateCompilationDescriptors(
@@ -115,9 +119,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             using (var stream = fileInfo.FileInfo.CreateReadStream())
             {
                 var results = _host.GenerateCode(fileInfo.RelativePath, stream);
-                if (results.Success)
+
+                var generatedCode = results.GeneratedCode;
+
+                if (generatedCode != null)
                 {
-                    var syntaxTree = SyntaxTreeGenerator.Generate(results.GeneratedCode, fileInfo.FileInfo.PhysicalPath, options);
+                    var syntaxTree = SyntaxTreeGenerator.Generate(generatedCode, fileInfo.FileInfo.PhysicalPath, options);
                     var fullTypeName = results.GetMainClassName(_host, syntaxTree);
 
                     if (fullTypeName != null)
@@ -135,6 +142,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                             Hash = hash,
                         };
                     }
+                }
+
+                foreach (var parserError in results.ParserErrors)
+                {
+                    context.Diagnostics.Add(parserError.ToDiagnostics(fileInfo.FileInfo.PhysicalPath));
                 }
             }
 
