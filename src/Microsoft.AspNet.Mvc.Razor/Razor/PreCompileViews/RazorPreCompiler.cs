@@ -120,6 +120,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 var results = _host.GenerateCode(fileInfo.RelativePath, stream);
 
+                foreach (var parserError in results.ParserErrors)
+                {
+                    var diagnostic = parserError.ToDiagnostics(fileInfo.FileInfo.PhysicalPath);
+                    context.Diagnostics.Add(diagnostic);
+                }
+
                 var generatedCode = results.GeneratedCode;
 
                 if (generatedCode != null)
@@ -143,14 +149,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                         };
                     }
                 }
-
-                foreach (var parserError in results.ParserErrors)
-                {
-                    context.Diagnostics.Add(parserError.ToDiagnostics(fileInfo.FileInfo.PhysicalPath));
-                }
             }
 
-            // TODO: Add diagnostics when view parsing/code generation failed.
             return null;
         }
     }
