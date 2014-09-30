@@ -37,12 +37,20 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public override Task InvokeAsync()
+        public async override Task InvokeAsync()
         {
-            ActionContext.Controller = _controllerFactory.CreateController(ActionContext);
-            ActionContext.InputFormatters = _inputFormattersProvider.InputFormatters
-                                                                    .ToList();
-            return base.InvokeAsync();
+            var controller = _controllerFactory.CreateController(ActionContext);
+            try
+            {
+                ActionContext.Controller = controller;
+                ActionContext.InputFormatters = _inputFormattersProvider.InputFormatters
+                                                                        .ToList();
+                await base.InvokeAsync();
+            }
+            finally
+            {
+                _controllerFactory.ReleaseController(ActionContext.Controller);
+            }
         }
             
         protected override async Task<IActionResult> InvokeActionAsync(ActionExecutingContext actionExecutingContext)

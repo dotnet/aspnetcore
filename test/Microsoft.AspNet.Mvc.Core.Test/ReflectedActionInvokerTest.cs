@@ -1272,12 +1272,12 @@ namespace Microsoft.AspNet.Mvc
             Assert.Same(input, contentResult.Value);
         }
 
-        private ReflectedActionInvoker CreateInvoker(IFilter filter, bool actionThrows = false)
+        private TestReflectedActionInvoker CreateInvoker(IFilter filter, bool actionThrows = false)
         {
             return CreateInvoker(new[] { filter }, actionThrows);
         }
 
-        private ReflectedActionInvoker CreateInvoker(IFilter[] filters, bool actionThrows = false)
+        private TestReflectedActionInvoker CreateInvoker(IFilter[] filters, bool actionThrows = false)
         {
             var actionDescriptor = new ReflectedActionDescriptor()
             {
@@ -1319,6 +1319,7 @@ namespace Microsoft.AspNet.Mvc
 
             var controllerFactory = new Mock<IControllerFactory>();
             controllerFactory.Setup(c => c.CreateController(It.IsAny<ActionContext>())).Returns(this);
+            controllerFactory.Setup(m => m.ReleaseController(this)).Verifiable();
 
             var actionBindingContextProvider = new Mock<IActionBindingContextProvider>(MockBehavior.Strict);
             actionBindingContextProvider
@@ -1333,11 +1334,12 @@ namespace Microsoft.AspNet.Mvc
             var inputFormattersProvider = new Mock<IInputFormattersProvider>();
             inputFormattersProvider.SetupGet(o => o.InputFormatters)
                                             .Returns(new List<IInputFormatter>());
-            var invoker = new ReflectedActionInvoker(
+
+            var invoker = new TestReflectedActionInvoker(
                 actionContext,
                 actionBindingContextProvider.Object,
                 filterProvider.Object,
-                controllerFactory.Object,
+                controllerFactory,
                 actionDescriptor,
                 inputFormattersProvider.Object);
 
@@ -1611,6 +1613,35 @@ namespace Microsoft.AspNet.Mvc
             {
                 context.HttpContext.Items["Result"] = Value;
                 return Task.FromResult(0);
+            }
+        }
+
+        public class TestReflectedActionInvoker : ReflectedActionInvoker
+        {
+            private Mock<IControllerFactory> _factoryMock;
+
+            public TestReflectedActionInvoker(
+                ActionContext actionContext,
+                IActionBindingContextProvider bindingContextProvider,
+                INestedProviderManager<FilterProviderContext> filterProvider,
+                Mock<IControllerFactory> controllerFactoryMock,
+                ReflectedActionDescriptor descriptor,
+                IInputFormattersProvider inputFormattersProvider) :
+                    base(actionContext,
+                        bindingContextProvider,
+                        filterProvider,
+                        controllerFactoryMock.Object,
+                        descriptor,
+                        inputFormattersProvider)
+            {
+                _factoryMock = controllerFactoryMock;
+            }
+
+            public async override Task InvokeAsync()
+            {
+                await base.InvokeAsync();
+
+                _factoryMock.Verify();
             }
         }
     }
