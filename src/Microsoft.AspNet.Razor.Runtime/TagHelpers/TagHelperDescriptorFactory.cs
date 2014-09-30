@@ -66,10 +66,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return new TagHelperAttributeDescriptor(property.Name, property);
         }
 
-        // TODO: Make the content behavior pull from a ContentBehaviorAttribute: https://github.com/aspnet/Razor/issues/122
         private static ContentBehavior GetContentBehavior(Type type)
         {
-            return ContentBehavior.None;
+            var typeInfo = type.GetTypeInfo();
+            var contentBehaviorAttribute = typeInfo.GetCustomAttribute<ContentBehaviorAttribute>(inherit: false);
+
+            return contentBehaviorAttribute != null ? 
+                contentBehaviorAttribute.ContentBehavior :
+                ContentBehavior.None;
         }
 
         private static bool IsValidProperty(PropertyInfo property)

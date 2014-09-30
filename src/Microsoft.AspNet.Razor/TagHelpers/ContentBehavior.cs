@@ -9,15 +9,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     public enum ContentBehavior
     {
         /// <summary>
-        /// Indicates that the tag helper will not modify its inner HTML in any way. This is the default
+        /// Indicates that a tag helper will not modify its content in any way. This is the default
         /// <see cref="ContentBehavior"/>.
         /// </summary>
         /// <remarks>Children of the current tag helper will execute after the current tag helper.</remarks>
         None,
 
         /// <summary>
-        /// Indicates that the tag helper wants anything within its tag builder's inner HTML to be
-        /// appended to content its children generate.
+        /// Indicates the tag helper's content should be appended to what its children generate.
         /// </summary>
         /// <remarks>Children of the current tag helper will execute before the current tag helper.</remarks>
         Append,
@@ -30,15 +29,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         Modify,
 
         /// <summary>
-        /// Indicates that the tag helper wants anything within its tag builder's inner HTML to be
-        /// prepended to the content its children generate.
+        /// Indicates the tag helper's content should be prepended to what its children generate.
         /// </summary>
         /// <remarks>Children of the current tag helper will execute after the current tag helper.</remarks>
         Prepend,
 
         /// <summary>
-        /// Indicates that the tag helper wants anything within its tag builder's inner HTML to
-        /// replace any HTML inside of it.
+        /// Indicates the tag helper's content should replace the HTML its children generate.
         /// </summary>
         /// <remarks>Children of the current tag helper will not execute.</remarks>
         Replace,

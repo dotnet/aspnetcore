@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     public class TagHelperDescriptorFactoryTest
     {
         [Fact]
-        public void DescriptorFactory_BuildsDescriptorsFromSimpleTypes()
+        public void CreateDescriptor_BuildsDescriptorsFromSimpleTypes()
         {
             // Arrange
             var expectedDescriptor = new TagHelperDescriptor("Object", "System.Object", ContentBehavior.None);
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void DescriptorFactory_BuildsDescriptorsWithConventionNames()
+        public void CreateDescriptor_BuildsDescriptorsWithConventionNames()
         {
             // Arrange
             var intProperty = typeof(SingleAttributeTagHelper).GetProperty(nameof(SingleAttributeTagHelper.IntAttribute));
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void DescriptorFactory_OnlyAcceptsPropertiesWithGetAndSet()
+        public void CreateDescriptor_OnlyAcceptsPropertiesWithGetAndSet()
         {
             // Arrange
             var validProperty = typeof(MissingAccessorTagHelper).GetProperty(
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void DescriptorFactory_OnlyAcceptsPropertiesWithPublicGetAndSet()
+        public void CreateDescriptor_OnlyAcceptsPropertiesWithPublicGetAndSet()
         {
             // Arrange
             var validProperty = typeof(PrivateAccessorTagHelper).GetProperty(
@@ -82,6 +82,49 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+
+        [Fact]
+        public void CreateDescriptor_ResolvesCustomContentBehavior()
+        {
+            // Arrange            
+            var expectedDescriptor = new TagHelperDescriptor(
+                "CustomContentBehavior",
+                typeof(CustomContentBehaviorTagHelper).FullName,
+                ContentBehavior.Append);
+
+            // Act
+            var descriptor = TagHelperDescriptorFactory.CreateDescriptor(typeof(CustomContentBehaviorTagHelper));
+
+            // Assert
+            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void CreateDescriptor_DoesNotResolveInheritedCustomContentBehavior()
+        {
+            // Arrange            
+            var expectedDescriptor = new TagHelperDescriptor(
+                "InheritedCustomContentBehavior",
+                typeof(InheritedCustomContentBehaviorTagHelper).FullName,
+                ContentBehavior.None);
+
+            // Act
+            var descriptor = TagHelperDescriptorFactory.CreateDescriptor(
+                typeof(InheritedCustomContentBehaviorTagHelper));
+
+            // Assert
+            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+        [ContentBehavior(ContentBehavior.Append)]
+        private class CustomContentBehaviorTagHelper
+        {
+        }
+
+        private class InheritedCustomContentBehaviorTagHelper : CustomContentBehaviorTagHelper
+        {
         }
     }
 }
