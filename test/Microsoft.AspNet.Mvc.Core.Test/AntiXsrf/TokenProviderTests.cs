@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var cookieToken = new AntiForgeryToken() { IsSessionToken = true };
             var httpContext = new Mock<HttpContext>().Object;
-            ClaimsIdentity identity = new GenericIdentity("some-identity");
+            var identity = GetAuthenticatedIdentity("some-identity");
 
             var config = new AntiForgeryOptions();
 
