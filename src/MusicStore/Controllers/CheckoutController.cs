@@ -49,14 +49,14 @@ namespace MusicStore.Controllers
                     order.OrderDate = DateTime.Now;
 
                     //Add the Order
-                    db.Orders.Add(order);
+                    await db.Orders.AddAsync(order, Context.RequestAborted);
 
                     //Process the order
                     var cart = ShoppingCart.GetCart(db, Context);
                     cart.CreateOrder(order);
 
                     // Save all changes
-                    db.SaveChanges();
+                    await db.SaveChangesAsync(Context.RequestAborted);
 
                     return RedirectToAction("Complete",
                         new { id = order.OrderId });

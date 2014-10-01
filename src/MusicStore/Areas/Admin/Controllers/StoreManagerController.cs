@@ -9,6 +9,7 @@ using MusicStore.Hubs;
 using MusicStore.ViewModels;
 using Microsoft.Framework.Cache.Memory;
 using System;
+using System.Threading.Tasks;
 
 namespace MusicStore.Areas.Admin.Controllers
 {
@@ -97,12 +98,12 @@ namespace MusicStore.Areas.Admin.Controllers
         // POST: /StoreManager/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Album album)
+        public async Task<IActionResult> Create(Album album)
         {
             if (ModelState.IsValid)
             {
-                db.Albums.Add(album);
-                db.SaveChanges();
+                await db.Albums.AddAsync(album, Context.RequestAborted);
+                await db.SaveChangesAsync(Context.RequestAborted);
                 annoucementHub.Clients.All.announcement(new AlbumData() { Title = album.Title, Url = Url.Action("Details", "Store", new { id = album.AlbumId }) });
                 cache.Remove("latestAlbum");
                 return RedirectToAction("Index");
@@ -133,12 +134,12 @@ namespace MusicStore.Areas.Admin.Controllers
         // POST: /StoreManager/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Album album)
+        public async Task<IActionResult> Edit(Album album)
         {
             if (ModelState.IsValid)
             {
                 db.ChangeTracker.Entry(album).State = EntityState.Modified;
-                db.SaveChanges();
+                await db.SaveChangesAsync(Context.RequestAborted);
                 //Invalidate the cache entry as it is modified
                 cache.Remove(string.Format("album_{0}", album.AlbumId));
                 return RedirectToAction("Index");
@@ -160,14 +161,14 @@ namespace MusicStore.Areas.Admin.Controllers
         //
         // POST: /StoreManager/RemoveAlbum/5
         [HttpPost, ActionName("RemoveAlbum")]
-        public IActionResult RemoveAlbumConfirmed(int id)
+        public async Task<IActionResult> RemoveAlbumConfirmed(int id)
         {
             Album album = db.Albums.Where(a => a.AlbumId == id).FirstOrDefault();
 
             if (album != null)
             {
                 db.Albums.Remove(album);
-                db.SaveChanges();
+                await db.SaveChangesAsync(Context.RequestAborted);
                 //Remove the cache entry as it is removed
                 cache.Remove(string.Format("album_{0}", id));
             }

@@ -37,7 +37,7 @@ namespace MusicStore.Controllers
         //
         // GET: /ShoppingCart/AddToCart/5
 
-        public IActionResult AddToCart(int id)
+        public async Task<IActionResult> AddToCart(int id)
         {
             // Retrieve the album from the database
             var addedAlbum = db.Albums
@@ -48,7 +48,7 @@ namespace MusicStore.Controllers
 
             cart.AddToCart(addedAlbum);
 
-            db.SaveChanges();
+            await db.SaveChangesAsync(Context.RequestAborted);
 
             // Go back to the main store page for more shopping
             return RedirectToAction("Index");
@@ -89,7 +89,7 @@ namespace MusicStore.Controllers
             // Remove from cart
             int itemCount = cart.RemoveFromCart(id);
 
-            db.SaveChanges();
+            await db.SaveChangesAsync(Context.RequestAborted);
 
             string removed = (itemCount > 0) ? " 1 copy of " : string.Empty;
 

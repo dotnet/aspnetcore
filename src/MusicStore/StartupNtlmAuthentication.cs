@@ -11,6 +11,7 @@ using Microsoft.AspNet.Server.WebListener;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.Framework.Cache.Memory;
+using Microsoft.AspNet.Identity;
 
 namespace MusicStore
 {
@@ -82,7 +83,7 @@ namespace MusicStore
                         });
 
                 // Add Identity services to the services container
-                services.AddIdentitySqlServer<MusicStoreContext, ApplicationUser>();
+                services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(configuration);
 
                 // Add MVC services to the services container
                 services.AddMvc();
