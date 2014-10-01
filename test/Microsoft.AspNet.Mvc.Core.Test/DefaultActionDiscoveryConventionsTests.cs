@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.DefaultActionDiscoveryConventionsControllers;
 using Xunit;
-using System.Linq;
-using System;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.Mvc
             var action = Assert.Single(actionInfos);
             Assert.Equal("List", action.ActionName);
             Assert.True(action.RequireActionNameMatch);
-            Assert.Equal(new[] { "GET", "POST", "PUT"}, action.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
+            Assert.Equal(new[] { "GET", "POST", "PUT" }, action.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
             Assert.Null(action.AttributeRoute);
         }
 
@@ -751,7 +751,7 @@ namespace Microsoft.AspNet.Mvc.DefaultActionDiscoveryConventionsControllers
         {
             private readonly string[] _methods;
 
-            public CustomHttpMethodsAttribute(params string [] methods)
+            public CustomHttpMethodsAttribute(params string[] methods)
             {
                 _methods = methods;
             }
