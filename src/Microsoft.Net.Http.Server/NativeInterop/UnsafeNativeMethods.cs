@@ -37,7 +37,7 @@ namespace Microsoft.Net.Http.Server
         private const string api_ms_win_core_processthreads_LIB = "api-ms-win-core-processthreads-l1-1-1.dll";
         private const string api_ms_win_core_io_LIB = "api-ms-win-core-io-l1-1-1.dll";
         private const string api_ms_win_core_handle_LIB = "api-ms-win-core-handle-l1-1-0.dll";
-        private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-1.dll";
+        private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-0.dll";
         private const string api_ms_win_core_heap_obsolete_LIB = "api-ms-win-core-heap-obsolete-L1-1-0.dll";
         private const string api_ms_win_core_kernel32_legacy_LIB = "api-ms-win-core-kernel32-legacy-l1-1-0.dll";
 #else

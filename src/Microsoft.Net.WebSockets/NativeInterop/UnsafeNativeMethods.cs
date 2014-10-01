@@ -32,7 +32,7 @@ namespace Microsoft.Net.WebSockets
     internal static class UnsafeNativeMethods
     {
 #if ASPNETCORE50
-        private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-1.dll";
+        private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-0.dll";
 #else    
         private const string KERNEL32 = "kernel32.dll";
 #endif
