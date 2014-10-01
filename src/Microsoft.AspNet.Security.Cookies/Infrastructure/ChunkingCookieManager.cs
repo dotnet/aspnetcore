@@ -43,7 +43,8 @@ namespace Microsoft.AspNet.Security.Cookies.Infrastructure
             if (value != null && value.StartsWith("chunks:", StringComparison.Ordinal))
             {
                 var chunksCountString = value.Substring("chunks:".Length);
-                if (int.TryParse(chunksCountString, NumberStyles.None, CultureInfo.InvariantCulture, out var chunksCount))
+                int chunksCount;
+                if (int.TryParse(chunksCountString, NumberStyles.None, CultureInfo.InvariantCulture, out chunksCount))
                 {
                     return chunksCount;
                 }
