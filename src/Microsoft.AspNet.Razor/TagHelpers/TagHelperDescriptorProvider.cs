@@ -61,7 +61,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
             // If we have a tag name associated with the requested name, return the descriptors +
             // all of the catch-all descriptors.
-            if (_registrations.TryGetValue(tagName, out var matchingDescriptors))
+            HashSet<TagHelperDescriptor> matchingDescriptors;
+            if (_registrations.TryGetValue(tagName, out matchingDescriptors))
             {
                 return matchingDescriptors.Concat(descriptors);
             }
