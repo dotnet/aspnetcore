@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -393,6 +393,27 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
+        public void RouteUrl_WithUnicodeHost_DoesNotPunyEncodeTheHost()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.RouteUrl(routeName: "namedroute",
+                                         values: new
+                                         {
+                                             Action = "newaction",
+                                             Controller = "home2",
+                                             id = "someid"
+                                         },
+                                         protocol: "https",
+                                         host: "pingüino");
+
+            // Assert
+            Assert.Equal("https://pingüino/app/named/home2/newaction/someid", url);
+        }
+
+        [Fact]
         public void RouteUrlWithRouteNameAndDefaults()
         {
             // Arrange
@@ -470,6 +491,24 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Same(id, dict["ID"]);
             Assert.Same(isprint, dict["isprint"]);
             Assert.Equal("/app/home/contact/suppliedid?isprint=true", url);
+        }
+
+        [Fact]
+        public void UrlAction_WithUnicodeHost_DoesNotPunyEncodeTheHost()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.Action(
+                                    action: "contact",
+                                    controller: "home",
+                                    values: null,
+                                    protocol: "http",
+                                    host: "pingüino");
+
+            // Assert
+            Assert.Equal("http://pingüino/app/home/contact", url);
         }
 
         [Fact]
