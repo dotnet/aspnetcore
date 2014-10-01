@@ -17,7 +17,8 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task Server_200OK_Success()
         {
-            using (var server = Utilities.CreateHttpServer(out var address))
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 var responseTask = SendRequestAsync(address);
 
@@ -32,7 +33,8 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task Server_SendHelloWorld_Success()
         {
-            using (var server = Utilities.CreateHttpServer(out var address))
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 Task<string> responseTask = SendRequestAsync(address);
                 
@@ -51,7 +53,8 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task Server_EchoHelloWorld_Success()
         {
-            using (var server = Utilities.CreateHttpServer(out var address))
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 var responseTask = SendRequestAsync(address, "Hello World");
 
@@ -75,7 +78,8 @@ namespace Microsoft.Net.Http.Server
             var interval = TimeSpan.FromSeconds(1);
             var canceled = new ManualResetEvent(false);
 
-            using (var server = Utilities.CreateHttpServer(out var address))
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 using (var client = new HttpClient())
                 {
@@ -105,7 +109,8 @@ namespace Microsoft.Net.Http.Server
             var interval = TimeSpan.FromSeconds(1);
             var canceled = new ManualResetEvent(false);
 
-            using (var server = Utilities.CreateHttpServer(out var address))
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 var responseTask = SendRequestAsync(address);
 
@@ -132,7 +137,8 @@ namespace Microsoft.Net.Http.Server
             var interval = TimeSpan.FromSeconds(1);
             var canceled = new ManualResetEvent(false);
 
-            using (var server = Utilities.CreateHttpServer(out var address))
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 var responseTask = SendRequestAsync(address);
 
@@ -161,7 +167,8 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task Server_SetQueueLimit_Success()
         {
-            using (var server = Utilities.CreateHttpServer(out var address))
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
                 server.SetRequestQueueLimit(1001);
                 var responseTask = SendRequestAsync(address);
