@@ -66,7 +66,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public CompilationResult GetOrAdd(RelativeFileInfo fileInfo, Func<CompilationResult> compile)
         {
-            if (!_cache.TryGetValue(fileInfo.RelativePath, out var cacheEntry))
+            CompilerCacheEntry cacheEntry;
+            if (!_cache.TryGetValue(fileInfo.RelativePath, out cacheEntry))
             {
                 return OnCacheMiss(fileInfo, compile);
             }

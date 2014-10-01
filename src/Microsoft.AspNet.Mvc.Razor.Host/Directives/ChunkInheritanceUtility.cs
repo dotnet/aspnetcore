@@ -85,12 +85,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public void MergeInheritedChunks(List<Chunk> inherited)
         {
             var current = CodeTree.Chunks;
+            IChunkMerger merger;
 
             // We merge chunks into the codeTree in two passes. In the first pass, we traverse the CodeTree visiting
             // a mapped IChunkMerger for types that are registered.
             foreach (var chunk in current)
             {
-                if (ChunkMergers.TryGetValue(chunk.GetType(), out var merger))
+                if (ChunkMergers.TryGetValue(chunk.GetType(), out merger))
                 {
                     merger.VisitChunk(chunk);
                 }
@@ -101,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             // rules.
             foreach (var chunk in inherited)
             {
-                if (ChunkMergers.TryGetValue(chunk.GetType(), out var merger))
+                if (ChunkMergers.TryGetValue(chunk.GetType(), out merger))
                 {
                     // TODO: When mapping chunks, we should remove mapping information since it would be incorrect
                     // to generate it in the page that inherits it. Tracked by #945
