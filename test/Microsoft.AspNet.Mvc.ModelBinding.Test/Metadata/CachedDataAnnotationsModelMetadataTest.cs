@@ -321,6 +321,44 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(expected, result);
         }
 
+        [Fact]
+        private void EditFormatString_DoesNotAffectDisplayFormat()
+        {
+            // Arrange
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = new CachedDataAnnotationsModelMetadata(
+                provider,
+                containerType: null,
+                modelType: typeof(object),
+                propertyName: null,
+                attributes: Enumerable.Empty<Attribute>());
+
+            // Act
+            metadata.EditFormatString = "custom format";
+
+            // Assert
+            Assert.Null(metadata.DisplayFormatString);
+        }
+
+        [Fact]
+        private void DisplayFormatString_DoesNotAffectEditFormat()
+        {
+            // Arrange
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = new CachedDataAnnotationsModelMetadata(
+                provider,
+                containerType: null,
+                modelType: typeof(object),
+                propertyName: null,
+                attributes: Enumerable.Empty<Attribute>());
+
+            // Act
+            metadata.DisplayFormatString = "custom format";
+
+            // Assert
+            Assert.Null(metadata.EditFormatString);
+        }
+
         private class DataTypeWithCustomDisplayFormat : DataTypeAttribute
         {
             public DataTypeWithCustomDisplayFormat() : base("Custom datatype")

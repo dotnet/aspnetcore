@@ -81,19 +81,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Calculate <see cref="ModelMetadata.DisplayFormatString"/> based on presence of an
+        /// Calculate <see cref="ModelMetadata.DisplayFormatString"/> based on presence of a
         /// <see cref="DisplayFormatAttribute"/> and its <see cref="DisplayFormatAttribute.DataFormatString"/> value.
         /// </summary>
         /// <returns>
         /// Calculated <see cref="ModelMetadata.DisplayFormatString"/> value.
-        /// <see cref="DisplayFormatAttribute.DataFormatString"/> if an <see cref="DisplayFormatAttribute"/> exists.
+        /// <see cref="DisplayFormatAttribute.DataFormatString"/> if a <see cref="DisplayFormatAttribute"/> exists.
         /// <c>null</c> otherwise.
         /// </returns>
         protected override string ComputeDisplayFormatString()
         {
             return PrototypeCache.DisplayFormat != null
                 ? PrototypeCache.DisplayFormat.DataFormatString
-                : base.ComputeEditFormatString();
+                : base.ComputeDisplayFormatString();
         }
 
         protected override string ComputeDisplayName()
@@ -114,13 +114,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Calculate <see cref="ModelMetadata.EditFormatString"/> based on presence of an
+        /// Calculate <see cref="ModelMetadata.EditFormatString"/> based on presence of a
         /// <see cref="DisplayFormatAttribute"/> and its <see cref="DisplayFormatAttribute.ApplyFormatInEditMode"/> and
         /// <see cref="DisplayFormatAttribute.DataFormatString"/> values.
         /// </summary>
         /// <returns>
         /// Calculated <see cref="ModelMetadata.DisplayFormatString"/> value.
-        /// <see cref="DisplayFormatAttribute.DataFormatString"/> if an <see cref="DisplayFormatAttribute"/> exists and
+        /// <see cref="DisplayFormatAttribute.DataFormatString"/> if a <see cref="DisplayFormatAttribute"/> exists and
         /// its <see cref="DisplayFormatAttribute.ApplyFormatInEditMode"/> is <c>true</c>; <c>null</c> otherwise.
         /// </returns>
         /// <remarks>
