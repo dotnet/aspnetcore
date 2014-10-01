@@ -151,14 +151,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             string inputString = "hello";
             var syncMethod = new SyncMethod(_controller.EchoWithException);
-            var expectedException = "The method or operation is not implemented.";
-            await AssertThrowsAsync<NotImplementedException>(
-                                                async () => 
-                                                    await ReflectedActionExecutor.ExecuteAsync(
-                                                                        syncMethod.GetMethodInfo(),
-                                                                        _controller,
-                                                                        new Dictionary<string, object>() { { "input", inputString } }),
-                                                expectedException);
+            await Assert.ThrowsAsync<NotImplementedException>(
+                        () => ReflectedActionExecutor.ExecuteAsync(
+                                                syncMethod.GetMethodInfo(),
+                                                _controller,
+                                                new Dictionary<string, object>() { { "input", inputString } }));
         }
 
         [Fact]

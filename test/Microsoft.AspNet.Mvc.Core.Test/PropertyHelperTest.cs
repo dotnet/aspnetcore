@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -144,6 +145,12 @@ namespace Microsoft.AspNet.Mvc
         [Fact]
         public void PropertyHelper_WorksForStruct()
         {
+            if (TestPlatformHelper.IsMono)
+            {
+                // PropertyHelper seems to be broken for value types on Mono.
+                return;
+            }
+
             // Arrange
             var anonymous = new MyProperties();
 
