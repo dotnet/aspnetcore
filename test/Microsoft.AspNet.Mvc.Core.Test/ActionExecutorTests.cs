@@ -246,8 +246,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                                                 _controller,
                                                                 actionParameters),
                                                 expectedException);
-
-            Assert.Equal(expectedException, ex.Message);
         }
 
         [Fact]
