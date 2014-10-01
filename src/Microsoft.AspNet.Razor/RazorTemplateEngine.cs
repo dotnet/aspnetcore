@@ -253,10 +253,8 @@ namespace Microsoft.AspNet.Razor
             generator.Visit(results);
 
             var codeBuilderContext = new CodeBuilderContext(generator.Context);
+            codeBuilderContext.Checksum = checksum;
             var builder = CreateCodeBuilder(codeBuilderContext);
-            codeGenerationContext.Checksum = checksum;
-
-            var builder = CreateCodeBuilder(codeGenerationContext);
             var builderResult = builder.Build();
 
             // Collect results and return

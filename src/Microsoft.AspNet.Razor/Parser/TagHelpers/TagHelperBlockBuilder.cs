@@ -150,6 +150,10 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                 {
                     name = symbol.Content;
                 }
+                else if (afterEquals)
+                {
+                    builder.Accept(symbol);
+                }
                 else if (symbol.Type == HtmlSymbolType.Equals)
                 {
                     // We've found an '=' symbol, this means that the coming symbols will either be a quote
@@ -173,10 +177,6 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                     }
 
                     afterEquals = true;
-                }
-                else if (afterEquals)
-                {
-                    builder.Accept(symbol);
                 }
             }
 
