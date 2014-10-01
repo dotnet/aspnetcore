@@ -45,7 +45,8 @@ namespace Microsoft.AspNet.Hosting
                 using (var reader = new JsonTextReader(new StreamReader(stream)))
                 {
                     var project = JObject.Load(reader);
-                    if (project.TryGetValue("webroot", out var token))
+                    JToken token;
+                    if (project.TryGetValue("webroot", out token))
                     {
                         webroot = Path.Combine(applicationBasePath, token.ToString());
                     }
