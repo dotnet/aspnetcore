@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private bool _convertEmptyStringToNull;
         private string _nullDisplayText;
+        private string _dataTypeName;
         private string _description;
         private string _displayFormatString;
         private string _displayName;
@@ -31,6 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private bool _convertEmptyStringToNullComputed;
         private bool _nullDisplayTextComputed;
+        private bool _dataTypeNameComputed;
         private bool _descriptionComputed;
         private bool _displayFormatStringComputed;
         private bool _displayNameComputed;
@@ -102,6 +104,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 _nullDisplayText = value;
                 _nullDisplayTextComputed = true;
+            }
+        }
+
+        /// <inheritdoc />
+        public sealed override string DataTypeName
+        {
+            get
+            {
+                if (!_dataTypeNameComputed)
+                {
+                    _dataTypeName = ComputeDataTypeName();
+                    _dataTypeNameComputed = true;
+                }
+
+                return _dataTypeName;
+            }
+
+            set
+            {
+                _dataTypeName = value;
+                _dataTypeNameComputed = true;
             }
         }
 
@@ -336,6 +359,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual string ComputeNullDisplayText()
         {
             return base.NullDisplayText;
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="DataTypeName"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="DataTypeName"/> value.</returns>
+        protected virtual string ComputeDataTypeName()
+        {
+            return base.DataTypeName;
         }
 
         protected virtual string ComputeDescription()

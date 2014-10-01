@@ -59,6 +59,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             set { _convertEmptyStringToNull = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the name of the <see cref="Model"/>'s datatype.  Overrides <see cref="ModelType"/> in some
+        /// display scenarios.
+        /// </summary>
+        /// <value><c>null</c> unless set manually or through additional metadata e.g. attributes.</value>
         public virtual string DataTypeName { get; set; }
 
         public virtual string Description { get; set; }

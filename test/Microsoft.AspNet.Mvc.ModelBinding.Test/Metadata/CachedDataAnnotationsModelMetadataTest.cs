@@ -57,6 +57,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return new TheoryData<Attribute, Func<ModelMetadata, string>>
                 {
                     {
+                        new DataTypeAttribute("value"), metadata => metadata.DataTypeName
+                    },
+                    {
                         new DataTypeWithCustomDisplayFormat(), metadata => metadata.DisplayFormatString
                     },
                     {
@@ -208,6 +211,69 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
+        public void DataTypeName_Null_IfHtmlEncodeTrue()
+        {
+            // Arrange
+            var displayFormat = new DisplayFormatAttribute { HtmlEncode = true, };
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = new CachedDataAnnotationsModelMetadata(
+                provider,
+                containerType: null,
+                modelType: typeof(object),
+                propertyName: null,
+                attributes: new Attribute[] { displayFormat });
+
+            // Act
+            var result = metadata.DataTypeName;
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void DataTypeName_Html_IfHtmlEncodeFalse()
+        {
+            // Arrange
+            var expected = "Html";
+            var displayFormat = new DisplayFormatAttribute { HtmlEncode = false, };
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = new CachedDataAnnotationsModelMetadata(
+                provider,
+                containerType: null,
+                modelType: typeof(object),
+                propertyName: null,
+                attributes: new Attribute[] { displayFormat });
+
+            // Act
+            var result = metadata.DataTypeName;
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void DataTypeName_AttributesHaveExpectedPrecedence()
+        {
+            // Arrange
+            var expected = "MultilineText";
+            var dataType = new DataTypeAttribute(DataType.MultilineText);
+            var displayFormat = new DisplayFormatAttribute { HtmlEncode = false, };
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = new CachedDataAnnotationsModelMetadata(
+                provider,
+                containerType: null,
+                modelType: typeof(object),
+                propertyName: null,
+                attributes: new Attribute[] { dataType, displayFormat });
+
+            // Act
+            var result = metadata.DataTypeName;
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
         public void DisplayFormatString_AttributesHaveExpectedPrecedence()
         {
             // Arrange
@@ -220,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 containerType: null,
                 modelType: typeof(object),
                 propertyName: null,
-                attributes: new Attribute[] { dataType, displayFormat, });
+                attributes: new Attribute[] { dataType, displayFormat });
 
             // Act
             var result = metadata.DisplayFormatString;
@@ -246,7 +312,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 containerType: null,
                 modelType: typeof(object),
                 propertyName: null,
-                attributes: new Attribute[] { dataType, displayFormat, });
+                attributes: new Attribute[] { dataType, displayFormat });
 
             // Act
             var result = metadata.EditFormatString;
