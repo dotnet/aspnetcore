@@ -29,22 +29,13 @@ namespace Asp
         {
             WriteLiteral("<div");
             WriteAttribute("class", Tuple.Create(" class=\"", 4), Tuple.Create("\"", 17), 
-            Tuple.Create(Tuple.Create("", 12), Tuple.Create<System.Object, System.Int32>(
-#line 1 "TestFiles/Input/Basic.cshtml"
-             logo
-
-#line default
-#line hidden
-            , 12), false));
+            Tuple.Create(Tuple.Create("", 12), Tuple.Create<System.Object, System.Int32>(logo, 12), false));
             WriteLiteral(">\r\n    Hello world\r\n    ");
-            Write(
 #line 3 "TestFiles/Input/Basic.cshtml"
-     Html.Input("SomeKey")
+Write(Html.Input("SomeKey"));
 
 #line default
 #line hidden
-            );
-
             WriteLiteral("\r\n</div>");
         }
         #pragma warning restore 1998
