@@ -9,17 +9,17 @@ namespace E2ETests
     public partial class SmokeTests
     {
         [Theory]
-        [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/", false)]
-        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5002/", false)]
-        [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5001/", false)]
+        [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5002/")]
+        [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5001/")]
         //WindowsIdentity not available on CoreCLR
-        //[InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/", false)]
-        //[InlineData(ServerType.WebListener, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5002/", false)]
-        public void NtlmAuthenticationTest(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool RunTestOnMono = false)
+        //[InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/")]
+        //[InlineData(ServerType.WebListener, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5002/")]
+        public void NtlmAuthenticationTest(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", serverType, kreFlavor, architecture, applicationBaseUrl);
 
-            if (Helpers.SkipTestOnCurrentConfiguration(RunTestOnMono, architecture))
+            if (Helpers.SkipTestOnCurrentConfiguration(false, architecture))
             {
                 Assert.True(true);
                 return;

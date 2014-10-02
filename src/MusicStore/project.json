@@ -5,6 +5,7 @@
     "description": "Music store application on K",
     "version": "1.0.0-*",
     "compilationOptions": { "warningsAsErrors": true, "define": [ "DEMO", "TESTING" ] },
+    "pack-exclude":  "*.cmd",
     "webroot": "wwwroot",
     "dependencies": {
         "Kestrel": "1.0.0-*",
