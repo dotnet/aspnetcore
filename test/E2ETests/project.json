@@ -16,7 +16,6 @@
     "frameworks": {
         "aspnet50": {
             "frameworkAssemblies": {
-                //https://github.com/aspnet/KRuntime/issues/687
                 "System.Xml": "",
                 "System.Data": ""
             }
