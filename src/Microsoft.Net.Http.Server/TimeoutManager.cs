@@ -35,12 +35,12 @@ namespace Microsoft.Net.Http.Server
     /// </summary>
     public sealed class TimeoutManager
     {
-#if ASPNET50
-        private static readonly int TimeoutLimitSize =
-            Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_LIMIT_INFO));
-#else
+#if ASPNETCORE50
         private static readonly int TimeoutLimitSize =
             Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_LIMIT_INFO>();
+#else
+        private static readonly int TimeoutLimitSize =
+            Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_LIMIT_INFO));
 #endif
         private WebListener _server;
         private int[] _timeouts;

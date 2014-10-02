@@ -32,11 +32,12 @@ namespace Microsoft.Net.Http.Server
 
         static ComNetOS()
         {
-#if ASPNET50
+#if ASPNETCORE50
+            // TODO: SkipIOCPCallbackOnSuccess doesn't work on Win7. Need a way to detect Win7 vs 8+.
+            IsWin8orLater = false;
+#else
             var win8Version = new Version(6, 2);
             IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
-#else
-            IsWin8orLater = true;
 #endif
         }
     }

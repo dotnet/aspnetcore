@@ -44,17 +44,17 @@ namespace Microsoft.Net.Http.Server
     public sealed class WebListener : IDisposable
     {
         private const long DefaultRequestQueueLength = 1000;  // Http.sys default.
-#if ASPNET50
+#if ASPNETCORE50
+        private static readonly int RequestChannelBindStatusSize =
+            Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>();
+        private static readonly int BindingInfoSize =
+            Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_BINDING_INFO>();
+#else
         private static readonly Type ChannelBindingStatusType = typeof(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS);
         private static readonly int RequestChannelBindStatusSize =
             Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS));
         private static readonly int BindingInfoSize =
             Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_BINDING_INFO));
-#else
-        private static readonly int RequestChannelBindStatusSize =
-            Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>();
-        private static readonly int BindingInfoSize =
-            Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_BINDING_INFO>();
 #endif
 
         // Win8# 559317 fixed a bug in Http.sys's HttpReceiveClientCertificate method.
@@ -819,10 +819,10 @@ namespace Microsoft.Net.Http.Server
 
                     knownHeaderInfo[httpResponse.ResponseInfoCount].Type = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
                     knownHeaderInfo[httpResponse.ResponseInfoCount].Length =
-#if ASPNET50
-                    (uint)Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS));
-#else
+#if ASPNETCORE50
                     (uint)Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS>();
+#else
+                    (uint)Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS));
 #endif
 
                     UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS header = new UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS();
@@ -911,10 +911,10 @@ namespace Microsoft.Net.Http.Server
         private static int GetTokenOffsetFromBlob(IntPtr blob)
         {
             Debug.Assert(blob != IntPtr.Zero);
-#if ASPNET50
-            IntPtr tokenPointer = Marshal.ReadIntPtr(blob, (int)Marshal.OffsetOf(ChannelBindingStatusType, "ChannelToken"));
-#else
+#if ASPNETCORE50
             IntPtr tokenPointer = Marshal.ReadIntPtr(blob, (int)Marshal.OffsetOf<UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelToken"));
+#else
+            IntPtr tokenPointer = Marshal.ReadIntPtr(blob, (int)Marshal.OffsetOf(ChannelBindingStatusType, "ChannelToken"));
 #endif
             Debug.Assert(tokenPointer != IntPtr.Zero);
             return (int)IntPtrHelper.Subtract(tokenPointer, blob);
@@ -923,10 +923,10 @@ namespace Microsoft.Net.Http.Server
         private static int GetTokenSizeFromBlob(IntPtr blob)
         {
             Debug.Assert(blob != IntPtr.Zero);
-#if ASPNET50
-            return Marshal.ReadInt32(blob, (int)Marshal.OffsetOf(ChannelBindingStatusType, "ChannelTokenSize"));
-#else
+#if ASPNETCORE50
             return Marshal.ReadInt32(blob, (int)Marshal.OffsetOf<UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelTokenSize"));
+#else
+            return Marshal.ReadInt32(blob, (int)Marshal.OffsetOf(ChannelBindingStatusType, "ChannelTokenSize"));
 #endif
         }
 

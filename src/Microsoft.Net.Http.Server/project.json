@@ -8,7 +8,8 @@
     "allowUnsafe": true
   },
   "frameworks": {
-    "aspnet50": {},
+    "net45": { },
+    "aspnet50": { },
     "aspnetcore50": {
       "dependencies": {
         "Microsoft.Net.WebSocketAbstractions": "1.0.0-*",

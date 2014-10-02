@@ -109,7 +109,7 @@ namespace Microsoft.Net.Http.Server
         {
             return _requestStream.ReadByte();
         }
-#if ASPNET50
+#if !ASPNETCORE50
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _requestStream.BeginRead(buffer, offset, count, callback, state);
@@ -143,7 +143,7 @@ namespace Microsoft.Net.Http.Server
         {
             _responseStream.WriteByte(value);
         }
-#if ASPNET50
+#if !ASPNETCORE50
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _responseStream.BeginWrite(buffer, offset, count, callback, state);

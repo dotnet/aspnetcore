@@ -31,7 +31,7 @@
 **
 =============================================================================*/
 
-#if !ASPNET50
+#if ASPNETCORE50
 
 namespace System.Runtime.InteropServices
 {

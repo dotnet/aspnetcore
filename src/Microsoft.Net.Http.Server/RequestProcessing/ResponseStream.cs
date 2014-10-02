@@ -195,7 +195,7 @@ namespace Microsoft.Net.Http.Server
             throw new InvalidOperationException(Resources.Exception_WriteOnlyStream);
         }
 
-#if ASPNET50
+#if !ASPNETCORE50
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
         {
             throw new InvalidOperationException(Resources.Exception_WriteOnlyStream);
@@ -360,10 +360,10 @@ namespace Microsoft.Net.Http.Server
 
             // TODO: Verbose log data written
         }
-#if ASPNET50
-        public override unsafe IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
-#else
+#if ASPNETCORE50
         public unsafe IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
+#else
+        public override unsafe IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
 #endif
         {
             if (buffer == null)
@@ -465,10 +465,10 @@ namespace Microsoft.Net.Http.Server
 
             return asyncResult;
         }
-#if ASPNET50
-        public override void EndWrite(IAsyncResult asyncResult)
-#else
+#if ASPNETCORE50
         public void EndWrite(IAsyncResult asyncResult)
+#else
+        public override void EndWrite(IAsyncResult asyncResult)
 #endif
         {
             if (asyncResult == null)

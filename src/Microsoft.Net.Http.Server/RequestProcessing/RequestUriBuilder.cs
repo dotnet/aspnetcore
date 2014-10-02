@@ -70,10 +70,10 @@ namespace Microsoft.Net.Http.Server
             // TODO: False triggers more detailed/correct parsing, but it's rather slow.
             UseCookedRequestUrl = true; // SettingsSectionInternal.Section.HttpListenerUnescapeRequestUrl;
             Utf8Encoding = new UTF8Encoding(false, true);
-#if ASPNET50
-            AnsiEncoding = Encoding.GetEncoding(0, new EncoderExceptionFallback(), new DecoderExceptionFallback());
-#else
+#if ASPNETCORE50
             AnsiEncoding = Utf8Encoding;
+#else
+            AnsiEncoding = Encoding.GetEncoding(0, new EncoderExceptionFallback(), new DecoderExceptionFallback());
 #endif
         }
 

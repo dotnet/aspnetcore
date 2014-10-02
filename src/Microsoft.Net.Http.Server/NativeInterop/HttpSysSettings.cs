@@ -26,7 +26,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Security;
-#if ASPNET50
+#if !ASPNETCORE50
 using Microsoft.Win32;
 #endif
 
@@ -34,7 +34,7 @@ namespace Microsoft.Net.Http.Server
 {
     internal static class HttpSysSettings
     {
-#if ASPNET50
+#if !ASPNETCORE50
         private const string HttpSysParametersKey = @"System\CurrentControlSet\Services\HTTP\Parameters";
 #endif
         private const bool EnableNonUtf8Default = true;
@@ -61,7 +61,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         private static void ReadHttpSysRegistrySettings()
-#if !ASPNET50
+#if ASPNETCORE50
         {
         }
 #else

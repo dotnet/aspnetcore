@@ -1103,7 +1103,7 @@ namespace Microsoft.Net.WebSockets
 
             if (thisLockTaken || sessionHandleLockTaken)
             {
-#if ASPNET50
+#if !ASPNETCORE50
                 RuntimeHelpers.PrepareConstrainedRegions();
 #endif
                 try
@@ -1189,7 +1189,7 @@ namespace Microsoft.Net.WebSockets
             Contract.Assert(lockObject != null, "'lockObject' MUST NOT be NULL.");
             if (lockTaken)
             {
-#if ASPNET50
+#if !ASPNETCORE50
                 RuntimeHelpers.PrepareConstrainedRegions();
 #endif
                 try
@@ -2253,7 +2253,9 @@ namespace Microsoft.Net.WebSockets
                         "'webSocket.m_KeepAliveTracker' MUST NOT be NULL at this point.");
                     int keepAliveIntervalMilliseconds = (int)_keepAliveInterval.TotalMilliseconds;
                     Contract.Assert(keepAliveIntervalMilliseconds > 0, "'keepAliveIntervalMilliseconds' MUST be POSITIVE.");
-#if ASPNET50
+#if ASPNETCORE50
+                    _keepAliveTimer = new Timer(_keepAliveTimerElapsedCallback, webSocket, keepAliveIntervalMilliseconds, Timeout.Infinite);
+#else
                     if (ExecutionContext.IsFlowSuppressed())
                     {
                         _keepAliveTimer = new Timer(_keepAliveTimerElapsedCallback, webSocket, keepAliveIntervalMilliseconds, Timeout.Infinite);
@@ -2265,8 +2267,6 @@ namespace Microsoft.Net.WebSockets
                             _keepAliveTimer = new Timer(_keepAliveTimerElapsedCallback, webSocket, keepAliveIntervalMilliseconds, Timeout.Infinite);
                         }
                     }
-#else
-                    _keepAliveTimer = new Timer(_keepAliveTimerElapsedCallback, webSocket, keepAliveIntervalMilliseconds, Timeout.Infinite);
 #endif
                 }
 

@@ -21,7 +21,7 @@
 // </copyright>                                                                
 //------------------------------------------------------------------------------
 
-#if !ASPNET50
+#if ASPNETCORE50
 
 using System.Runtime.InteropServices;
 using System.Text;

@@ -1,18 +1,18 @@
 {
-     "commands": {
-          "test": "Xunit.KRunner"
-     },
-     "dependencies": {
-          "Microsoft.Net.Http.Server" : "",
-          "Xunit.KRunner": "1.0.0-*"
-     },
-     "frameworks": {
-        "aspnet50": {
-            "dependencies": {
-                "System.Net.Http": "",
-                "System.Net.Http.WebRequest": "",
-                "System.Runtime": ""
+    "commands": {
+        "test": "Xunit.KRunner"
+    },
+    "dependencies": {
+        "System.Net.Http": "4.0.0.0",
+        "System.Runtime": "4.0.20.0",
+        "Microsoft.Net.Http.Server": "1.0.0-*",
+        "Xunit.KRunner": "1.0.0-*"
+    },
+    "frameworks": {
+        "net45": {
+            dependencies: {
+                "System.Net.Http.WebRequest": ""
             }
         }
-     }
+    }
 }

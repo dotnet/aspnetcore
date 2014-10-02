@@ -45,12 +45,12 @@ namespace Microsoft.Net.Http.Server
             : base(errorCode, message)
         {
         }
-#if ASPNET50
+#if ASPNETCORE50
+        public int ErrorCode
+#else
         // the base class returns the HResult with this property
         // we need the Win32 Error Code, hence the override.
         public override int ErrorCode
-#else
-        public int ErrorCode
 #endif
         {
             get

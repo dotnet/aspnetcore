@@ -198,10 +198,10 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-#if ASPNET50
-        public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
-#else
+#if ASPNETCORE50
         public unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
+#else
+        public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
 #endif
         {
             ValidateReadBuffer(buffer, offset, size);
@@ -291,10 +291,10 @@ namespace Microsoft.Net.Http.Server
             return asyncResult;
         }
 
-#if ASPNET50
-        public override int EndRead(IAsyncResult asyncResult)
-#else
+#if ASPNETCORE50
         public int EndRead(IAsyncResult asyncResult)
+#else
+        public override int EndRead(IAsyncResult asyncResult)
 #endif
         {
             if (asyncResult == null)
@@ -425,20 +425,20 @@ namespace Microsoft.Net.Http.Server
         {
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
-        
-#if ASPNET50
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
-#else
+
+#if ASPNETCORE50
         public IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
+#else
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
 #endif
         {
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
 
-#if ASPNET50
-        public override void EndWrite(IAsyncResult asyncResult)
-#else
+#if ASPNETCORE50
         public void EndWrite(IAsyncResult asyncResult)
+#else
+        public override void EndWrite(IAsyncResult asyncResult)
 #endif
         {
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);

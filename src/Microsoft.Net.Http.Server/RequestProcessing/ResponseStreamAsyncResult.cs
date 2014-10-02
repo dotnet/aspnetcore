@@ -140,12 +140,12 @@ namespace Microsoft.Net.Http.Server
             overlapped.AsyncResult = this;
 
             int bufferSize = 1024 * 64; // TODO: Validate buffer size choice.
-#if ASPNET50
+#if ASPNETCORE50
+            _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize /*, useAsync: true*/); // Extremely expensive.
+#else
             // It's too expensive to validate anything before opening the file. Open the file and then check the lengths.
             _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize,
                     FileOptions.Asynchronous | FileOptions.SequentialScan); // Extremely expensive.
-#else
-            _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize /*, useAsync: true*/); // Extremely expensive.
 #endif
             long length = _fileStream.Length; // Expensive
             if (offset < 0 || offset > length)

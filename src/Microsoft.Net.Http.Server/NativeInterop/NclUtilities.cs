@@ -32,7 +32,7 @@ namespace Microsoft.Net.Http.Server
             get
             {
                 return Environment.HasShutdownStarted
-#if ASPNET50
+#if !ASPNETCORE50
                     || AppDomain.CurrentDomain.IsFinalizingForUnload()
 #endif
                     ;

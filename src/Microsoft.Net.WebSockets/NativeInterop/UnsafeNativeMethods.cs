@@ -173,10 +173,10 @@ namespace Microsoft.Net.WebSockets
 
             static WebSocketProtocolComponent()
             {
-#if ASPNET50
-                DllFileName = Path.Combine(Environment.SystemDirectory, WEBSOCKET);
-#else
+#if ASPNETCORE50
                 DllFileName = Path.Combine(Environment.GetEnvironmentVariable("SYSTEMROOT"), "System32", WEBSOCKET);
+#else
+                DllFileName = Path.Combine(Environment.SystemDirectory, WEBSOCKET);
 #endif
                 WebSocketDllHandle = SafeLoadLibrary.LoadLibraryEx(DllFileName);
 
