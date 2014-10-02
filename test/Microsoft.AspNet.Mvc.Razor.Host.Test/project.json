@@ -1,7 +1,4 @@
 {
-  "compilationOptions": {
-    "warningsAsErrors": false
-  },
   "resources": "TestFiles\\**",
   "dependencies": {
     "Microsoft.AspNet.Mvc.Razor.Host": "",
