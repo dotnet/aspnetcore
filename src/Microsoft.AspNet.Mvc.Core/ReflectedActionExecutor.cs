@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc
             }
             else
             {
-                return Task.FromResult<object>(result);
+                return Task.FromResult(result);
             }
         }
 

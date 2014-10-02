@@ -47,7 +47,7 @@ namespace ApiExplorer
         [HttpGet]
         public Task GetTask()
         {
-            return Task.FromResult<object>(null);
+            return Task.FromResult(true);
         }
 
         [HttpGet]
@@ -65,7 +65,7 @@ namespace ApiExplorer
         [HttpGet]
         public Task<ObjectResult> GetTaskOfDerivedActionResult()
         {
-            return Task.FromResult<ObjectResult>(new ObjectResult(null));
+            return Task.FromResult(new ObjectResult(null));
         }
 
         [HttpGet]

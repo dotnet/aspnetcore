@@ -13,7 +13,6 @@ using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Logging;
 using Moq;
 using Xunit;
-using Microsoft.AspNet.PipelineCore;
 
 namespace Microsoft.AspNet.Mvc.Routing
 {
@@ -1302,7 +1301,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                     context.IsHandled = MatchingDelegate(context);
                 }
 
-                return Task.FromResult<object>(null);
+                return Task.FromResult(true);
             }
         }
     }

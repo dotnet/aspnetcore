@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
@@ -21,7 +20,10 @@ namespace Microsoft.AspNet.Mvc
             return context.Object == null;
         }
 
-        public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type declaredType, Type runtimeType, MediaTypeHeaderValue contentType)
+        public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(
+            Type declaredType, 
+            Type runtimeType, 
+            MediaTypeHeaderValue contentType)
         {
             return null;
         }
@@ -35,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
             // TODO: By default the status code is set to 200. 
             // https://github.com/aspnet/HttpAbstractions/issues/114
             response.StatusCode = 204;
-            return Task.FromResult<bool>(true);
+            return Task.FromResult(true);
         }
     }
 }

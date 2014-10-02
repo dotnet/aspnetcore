@@ -260,7 +260,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             public Task ExecuteResultAsync(ActionContext context)
             {
-                return Task.FromResult<object>(null);
+                return Task.FromResult(true);
             }
         }
     }

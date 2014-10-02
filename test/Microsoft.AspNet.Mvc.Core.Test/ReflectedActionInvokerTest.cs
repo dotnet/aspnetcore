@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc
             var filter = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
             filter
                 .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
-                .Returns<ExceptionContext>((context) => Task.FromResult<object>(null))
+                .Returns<ExceptionContext>((context) => Task.FromResult(true))
                 .Verifiable();
 
             var invoker = CreateInvoker(filter.Object, actionThrows: false);
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Mvc
                     // Handle the exception
                     context.Result = new EmptyResult();
                 })
-                .Returns<ExceptionContext>((context) => Task.FromResult<object>(null))
+                .Returns<ExceptionContext>((context) => Task.FromResult(true))
                 .Verifiable();
 
             var invoker = CreateInvoker(filter.Object, actionThrows: true);
@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Mvc
                     filter2.ToString();
                     context.Exception = null;
                 })
-                .Returns<ExceptionContext>((context) => Task.FromResult<object>(null))
+                .Returns<ExceptionContext>((context) => Task.FromResult(true))
                 .Verifiable();
 
             var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object }, actionThrows: true);
@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.Mvc
             var result = new Mock<IActionResult>(MockBehavior.Strict);
             result
                 .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
-                .Returns<ActionContext>((context) => Task.FromResult<object>(null))
+                .Returns<ActionContext>((context) => Task.FromResult(true))
                 .Verifiable();
 
             var filter = new Mock<IExceptionFilter>(MockBehavior.Strict);
@@ -260,7 +260,7 @@ namespace Microsoft.AspNet.Mvc
             var filter = new Mock<IAsyncAuthorizationFilter>(MockBehavior.Strict);
             filter
                 .Setup(f => f.OnAuthorizationAsync(It.IsAny<AuthorizationContext>()))
-                .Returns<AuthorizationContext>(context => Task.FromResult<object>(null))
+                .Returns<AuthorizationContext>(context => Task.FromResult(true))
                 .Verifiable();
 
             var invoker = CreateInvoker(filter.Object);
@@ -309,7 +309,7 @@ namespace Microsoft.AspNet.Mvc
                 .Returns<AuthorizationContext>((context) =>
                 {
                     context.Result = challenge;
-                    return Task.FromResult<object>(null);
+                    return Task.FromResult(true);
                 })
                 .Verifiable();
 
@@ -380,7 +380,7 @@ namespace Microsoft.AspNet.Mvc
             var challenge = new Mock<IActionResult>(MockBehavior.Strict);
             challenge
                 .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
-                .Returns<ActionContext>((context) => Task.FromResult<object>(null))
+                .Returns<ActionContext>((context) => Task.FromResult(true))
                 .Verifiable();
 
             var authorizationFilter = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
@@ -528,7 +528,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     // Notice we're not calling next
                     c.Result = result;
-                    return Task.FromResult<object>(null);
+                    return Task.FromResult(true);
                 })
                 .Verifiable();
 
@@ -583,7 +583,7 @@ namespace Microsoft.AspNet.Mvc
                 .Returns<ActionExecutingContext, ActionExecutionDelegate>((c, next) =>
                 {
                     // Notice we're not calling next
-                    return Task.FromResult<object>(null);
+                    return Task.FromResult(true);
                 })
                 .Verifiable();
 
@@ -772,7 +772,7 @@ namespace Microsoft.AspNet.Mvc
             var result = new Mock<IActionResult>(MockBehavior.Strict);
             result
                 .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
-                .Returns<ActionContext>((context) => Task.FromResult<object>(null))
+                .Returns<ActionContext>((context) => Task.FromResult(true))
                 .Verifiable();
 
             var actionFilter = new Mock<IActionFilter>(MockBehavior.Strict);
@@ -906,7 +906,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     // Not calling next here
                     c.Cancel = true;
-                    return Task.FromResult<object>(null);
+                    return Task.FromResult(true);
                 })
                 .Verifiable();
 
@@ -948,7 +948,7 @@ namespace Microsoft.AspNet.Mvc
                 .Returns<ResultExecutingContext, ResultExecutionDelegate>((c, next) =>
                 {
                     // Not calling next here
-                    return Task.FromResult<object>(null);
+                    return Task.FromResult(true);
                 })
                 .Verifiable();
 

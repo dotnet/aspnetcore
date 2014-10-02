@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 var mockInvoker = new Mock<IActionInvoker>();
                 mockInvoker.Setup(i => i.InvokeAsync())
-                    .Returns(Task.FromResult<object>(null));
+                    .Returns(Task.FromResult(true));
 
                 var mockInvokerFactory = new Mock<IActionInvokerFactory>();
                 mockInvokerFactory.Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))

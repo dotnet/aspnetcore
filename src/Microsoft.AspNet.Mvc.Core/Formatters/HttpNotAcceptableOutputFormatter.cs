@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var response = context.ActionContext.HttpContext.Response;
             response.StatusCode = 406;
-            return Task.FromResult<bool>(true);
+            return Task.FromResult(true);
         }
     }
 }

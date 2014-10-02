@@ -20,7 +20,7 @@ namespace ConnegWebsite
 
         public Task<object> ReturnTaskOfObject_ObjectValue()
         {
-            return Task.FromResult<object>(new object());
+            return Task.FromResult(new object());
         }
 
         public string ReturnString()
