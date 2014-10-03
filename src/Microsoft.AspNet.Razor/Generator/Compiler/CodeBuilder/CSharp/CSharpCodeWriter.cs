@@ -284,13 +284,23 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return new CSharpCodeWritingScope(this);
         }
 
-        public CSharpCodeWritingScope BuildLambda(params string[] parameterNames)
-        {
-            return BuildLambda(true, parameterNames);
-        }
-
         public CSharpCodeWritingScope BuildLambda(bool endLine, params string[] parameterNames)
         {
+            return BuildLambda(endLine, async: false, parameterNames: parameterNames);
+        }
+
+        public CSharpCodeWritingScope BuildAsyncLambda(bool endLine, params string[] parameterNames)
+        {
+            return BuildLambda(endLine, async: true, parameterNames: parameterNames);
+        }
+
+        private CSharpCodeWritingScope BuildLambda(bool endLine, bool async, string[] parameterNames)
+        {
+            if (async)
+            {
+                Write("async");
+            }
+
             Write("(").Write(string.Join(", ", parameterNames)).Write(") => ");
 
             var scope = new CSharpCodeWritingScope(this);

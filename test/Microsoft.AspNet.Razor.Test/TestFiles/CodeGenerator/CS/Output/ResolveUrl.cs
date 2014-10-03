@@ -92,7 +92,7 @@ namespace TestOutput
             Instrumentation.BeginContext(474, 4, true);
             WriteLiteral("\r\n\r\n");
             Instrumentation.EndContext();
-            DefineSection("Foo", new Template((__razor_template_writer) => {
+            DefineSection("Foo", async(__razor_template_writer) => {
                 Instrumentation.BeginContext(492, 8, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n    <a");
                 Instrumentation.EndContext();
@@ -126,7 +126,7 @@ namespace TestOutput
                 WriteLiteralTo(__razor_template_writer, ">Crazy Url!</a>\r\n");
                 Instrumentation.EndContext();
             }
-            ));
+            );
         }
         #pragma warning restore 1998
     }

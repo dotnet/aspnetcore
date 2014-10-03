@@ -34,7 +34,7 @@ namespace TestOutput
             Instrumentation.BeginContext(63, 4, true);
             WriteLiteral("\r\n\r\n");
             Instrumentation.EndContext();
-            DefineSection("MySection", new Template((__razor_template_writer) => {
+            DefineSection("MySection", async(__razor_template_writer) => {
                 Instrumentation.BeginContext(87, 21, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n    <div>\r\n        ");
                 Instrumentation.EndContext();
@@ -90,7 +90,7 @@ Write(DateTime.Now);
                 WriteLiteralTo(__razor_template_writer, "\r\n    </div>\r\n");
                 Instrumentation.EndContext();
             }
-            ));
+            );
         }
         #pragma warning restore 1998
     }

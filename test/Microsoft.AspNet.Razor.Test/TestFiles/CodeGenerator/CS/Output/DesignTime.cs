@@ -86,14 +86,14 @@ __o = Foo(item => new Template((__razor_template_writer) => {
 
 #line default
 #line hidden
-            DefineSection("Footer", new Template((__razor_template_writer) => {
+            DefineSection("Footer", async(__razor_template_writer) => {
 #line 14 "DesignTime.cshtml"
 __o = bar;
 
 #line default
 #line hidden
             }
-            ));
+            );
         }
         #pragma warning restore 1998
     }
