@@ -6,9 +6,14 @@ using Microsoft.AspNet.Razor;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
+    /// <summary>
+    /// Default implementation of <see cref="IRazorCompilationService"/>.
+    /// </summary>
+    /// <remarks>
+    /// This class must be registered as a singleton service for the caching to work.
+    /// </remarks>
     public class RazorCompilationService : IRazorCompilationService
     {
-        // This class must be registered as a singleton service for the caching to work.
         private readonly CompilerCache _cache;
         private readonly ICompilationService _baseCompilationService;
         private readonly IMvcRazorHost _razorHost;
@@ -22,13 +27,16 @@ namespace Microsoft.AspNet.Mvc.Razor
             _cache = new CompilerCache(_controllerAssemblyProvider.CandidateAssemblies);
         }
 
-        public CompilationResult Compile([NotNull] RelativeFileInfo file)
+        /// <inheritdoc />
+        public CompilationResult Compile([NotNull] RelativeFileInfo file, bool isInstrumented)
         {
-            return _cache.GetOrAdd(file, () => CompileCore(file));
+            return _cache.GetOrAdd(file, isInstrumented, () => CompileCore(file, isInstrumented));
         }
 
-        internal CompilationResult CompileCore(RelativeFileInfo file)
+        internal CompilationResult CompileCore(RelativeFileInfo file, bool isInstrumented)
         {
+            _razorHost.EnableInstrumentation = isInstrumented;
+
             GeneratorResults results;
             using (var inputStream = file.FileInfo.CreateReadStream())
             {

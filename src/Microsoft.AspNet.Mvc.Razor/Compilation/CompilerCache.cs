@@ -64,25 +64,30 @@ namespace Microsoft.AspNet.Mvc.Razor
             return false;
         }
 
-        public CompilationResult GetOrAdd(RelativeFileInfo fileInfo, Func<CompilationResult> compile)
+        public CompilationResult GetOrAdd([NotNull] RelativeFileInfo fileInfo,
+                                          bool enableInstrumentation,
+                                          [NotNull] Func<CompilationResult> compile)
         {
             CompilerCacheEntry cacheEntry;
             if (!_cache.TryGetValue(fileInfo.RelativePath, out cacheEntry))
             {
-                return OnCacheMiss(fileInfo, compile);
+                return OnCacheMiss(fileInfo, enableInstrumentation, compile);
             }
             else
             {
-                if (cacheEntry.Length != fileInfo.FileInfo.Length)
+                if ((cacheEntry.Length != fileInfo.FileInfo.Length) ||
+                    (enableInstrumentation && !cacheEntry.IsInstrumented))
                 {
-                    // it's not a match, recompile
-                    return OnCacheMiss(fileInfo, compile);
+                    // Recompile if
+                    // (a) If the file lengths differ
+                    // (b) If the compiled type is not instrumented but we require it to be instrumented.
+                    return OnCacheMiss(fileInfo, enableInstrumentation, compile);
                 }
 
                 if (cacheEntry.LastModified == fileInfo.FileInfo.LastModified)
                 {
                     // Match, not update needed
-                    return CompilationResult.Successful(cacheEntry.ViewType);
+                    return CompilationResult.Successful(cacheEntry.CompiledType);
                 }
 
                 var hash = RazorFileHash.GetHash(fileInfo.FileInfo);
@@ -92,20 +97,24 @@ namespace Microsoft.AspNet.Mvc.Razor
                     string.Equals(cacheEntry.Hash, hash, StringComparison.Ordinal))
                 {
                     // Cache hit, but we need to update the entry
-                    return OnCacheMiss(fileInfo, () => CompilationResult.Successful(cacheEntry.ViewType));
+                    return OnCacheMiss(fileInfo,
+                                       enableInstrumentation,
+                                       () => CompilationResult.Successful(cacheEntry.CompiledType));
                 }
 
                 // it's not a match, recompile
-                return OnCacheMiss(fileInfo, compile);
+                return OnCacheMiss(fileInfo, enableInstrumentation, compile);
             }
         }
 
-        private CompilationResult OnCacheMiss(RelativeFileInfo file, Func<CompilationResult> compile)
+        private CompilationResult OnCacheMiss(RelativeFileInfo file,
+                                              bool isInstrumented,
+                                              Func<CompilationResult> compile)
         {
             var result = compile();
 
-            var cacheEntry = new CompilerCacheEntry(file, result.CompiledType);
-            _cache.AddOrUpdate(file.RelativePath, cacheEntry, (a, b) => cacheEntry);
+            var cacheEntry = new CompilerCacheEntry(file, result.CompiledType, isInstrumented);
+            _cache[file.RelativePath] = cacheEntry;
 
             return result;
         }

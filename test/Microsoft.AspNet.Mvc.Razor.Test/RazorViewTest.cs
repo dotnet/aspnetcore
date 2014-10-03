@@ -3,8 +3,10 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.PipelineCore;
 using Moq;
 using Xunit;
@@ -45,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: true);
+            view.Contextualize(page, isPartial: true, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
             var expected = viewContext.Writer;
 
@@ -72,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      activator.Object,
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: true);
+            view.Contextualize(page, isPartial: true, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
             var expectedWriter = viewContext.Writer;
             activator.Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
@@ -102,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      activator.Object,
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: true);
+            view.Contextualize(page, isPartial: true, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -124,15 +126,16 @@ namespace Microsoft.AspNet.Mvc.Razor
             var view = new RazorView(pageFactory.Object,
                                      Mock.Of<IRazorPageActivator>(),
                                      viewStartProvider);
-            view.Contextualize(page, isPartial: true);
+            view.Contextualize(page, isPartial: true, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
 
             // Act
             await view.RenderAsync(viewContext);
 
             // Assert
-            pageFactory.Verify(v => v.CreateInstance(It.IsAny<string>()), Times.Never());
-            Mock.Get(viewStartProvider).Verify(v => v.GetViewStartPages(It.IsAny<string>()), Times.Never());
+            pageFactory.Verify(v => v.CreateInstance(It.IsAny<string>(), It.IsAny<bool>()), Times.Never());
+            Mock.Get(viewStartProvider)
+                .Verify(v => v.GetViewStartPages(It.IsAny<string>(), It.IsAny<bool>()), Times.Never());
         }
 
         [Fact]
@@ -147,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
 
@@ -170,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
 
@@ -195,7 +198,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      activator.Object,
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
 
             var viewContext = CreateViewContext(view);
 
@@ -237,7 +240,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      activator.Object,
                                      CreateViewStartProvider(viewStart1, viewStart2));
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -285,13 +288,13 @@ foot-content";
             activator.Setup(a => a.Activate(layout, It.IsAny<ViewContext>()))
                      .Verifiable();
             var pageFactory = new Mock<IRazorPageFactory>();
-            pageFactory.Setup(p => p.CreateInstance(LayoutPath))
+            pageFactory.Setup(p => p.CreateInstance(LayoutPath, false))
                        .Returns(layout);
 
             var view = new RazorView(pageFactory.Object,
                                      activator.Object,
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -318,13 +321,13 @@ foot-content";
                 v.RenderBodyPublic();
             });
             var pageFactory = new Mock<IRazorPageFactory>();
-            pageFactory.Setup(p => p.CreateInstance(LayoutPath))
+            pageFactory.Setup(p => p.CreateInstance(LayoutPath, false))
                        .Returns(layout);
 
             var view = new RazorView(pageFactory.Object,
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -344,13 +347,13 @@ foot-content";
             {
             });
             var pageFactory = new Mock<IRazorPageFactory>();
-            pageFactory.Setup(p => p.CreateInstance(LayoutPath))
+            pageFactory.Setup(p => p.CreateInstance(LayoutPath, false))
                        .Returns(layout);
 
             var view = new RazorView(pageFactory.Object,
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -396,15 +399,15 @@ body-content";
                 v.RenderBodyPublic();
             });
             var pageFactory = new Mock<IRazorPageFactory>();
-            pageFactory.Setup(p => p.CreateInstance("~/Shared/Layout1.cshtml"))
+            pageFactory.Setup(p => p.CreateInstance("~/Shared/Layout1.cshtml", false))
                        .Returns(layout1);
-            pageFactory.Setup(p => p.CreateInstance("~/Shared/Layout2.cshtml"))
+            pageFactory.Setup(p => p.CreateInstance("~/Shared/Layout2.cshtml", false))
                        .Returns(layout2);
 
             var view = new RazorView(pageFactory.Object,
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -444,13 +447,13 @@ section-content-2";
             });
 
             var pageFactory = new Mock<IRazorPageFactory>();
-            pageFactory.Setup(p => p.CreateInstance("layout-1"))
+            pageFactory.Setup(p => p.CreateInstance("layout-1", false))
                        .Returns(layout1);
 
             var view = new RazorView(pageFactory.Object,
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -488,13 +491,13 @@ section-content-2";
             });
 
             var pageFactory = new Mock<IRazorPageFactory>();
-            pageFactory.Setup(p => p.CreateInstance("layout-1"))
+            pageFactory.Setup(p => p.CreateInstance("layout-1", false))
                        .Returns(layout1);
 
             var view = new RazorView(pageFactory.Object,
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -520,7 +523,7 @@ section-content-2";
             var view = new RazorView(Mock.Of<IRazorPageFactory>(),
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -555,18 +558,165 @@ section-content-2";
                 v.Layout = "~/Shared/Layout2.cshtml";
             });
             var pageFactory = new Mock<IRazorPageFactory>();
-            pageFactory.Setup(p => p.CreateInstance("~/Shared/Layout1.cshtml"))
+            pageFactory.Setup(p => p.CreateInstance("~/Shared/Layout1.cshtml", false))
                        .Returns(layout1);
 
             var view = new RazorView(pageFactory.Object,
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider());
-            view.Contextualize(page, isPartial: false);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: null);
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
             Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public async Task RenderAsync_UsesPageExecutionFeatureFromRequest_ToWrapWriter()
+        {
+            // Arrange
+            var pageWriter = CreateBufferedWriter();
+            var layoutWriter = CreateBufferedWriter();
+
+            var layoutExecuted = false;
+            var count = -1;
+            var feature = new Mock<IPageExecutionListenerFeature>(MockBehavior.Strict);
+            feature.Setup(f => f.DecorateWriter(It.IsAny<RazorTextWriter>()))
+                   .Returns(() =>
+                   {
+                       count++;
+                       if (count == 0)
+                       {
+                           return pageWriter;
+                       }
+                       else if (count == 1)
+                       {
+                           return layoutWriter;
+                       }
+                       throw new Exception();
+                   })
+                   .Verifiable();
+
+            var pageContext = Mock.Of<IPageExecutionContext>();
+            feature.Setup(f => f.GetContext("/MyPage.cshtml", pageWriter))
+                    .Returns(pageContext)
+                    .Verifiable();
+
+            var layoutContext = Mock.Of<IPageExecutionContext>();
+            feature.Setup(f => f.GetContext("/Layout.cshtml", layoutWriter))
+                    .Returns(layoutContext)
+                    .Verifiable();
+
+            var page = new TestableRazorPage(v =>
+            {
+                v.Layout = "/Layout.cshtml";
+                Assert.Same(pageWriter, v.Output);
+                Assert.Same(pageContext, v.PageExecutionContext);
+            });
+            page.Path = "/MyPage.cshtml";
+
+            var layout = new TestableRazorPage(v =>
+            {
+                Assert.Same(layoutWriter, v.Output);
+                Assert.Same(layoutContext, v.PageExecutionContext);
+                v.RenderBodyPublic();
+
+                layoutExecuted = true;
+            });
+            layout.Path = "/Layout.cshtml";
+
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance("/Layout.cshtml", true))
+                       .Returns(layout);
+            var viewStartProvider = new Mock<IViewStartProvider>();
+            viewStartProvider.Setup(v => v.GetViewStartPages(It.IsAny<string>(), true))
+                             .Returns(Enumerable.Empty<IRazorPage>())
+                             .Verifiable();
+            var view = new RazorView(pageFactory.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     viewStartProvider.Object);
+            view.Contextualize(page, isPartial: false, pageExecutionListener: feature.Object);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            feature.Verify();
+            viewStartProvider.Verify();
+            Assert.True(layoutExecuted);
+        }
+
+        [Fact]
+        public async Task RenderAsync_UsesPageExecutionFeatureFromRequest_ToGetExecutionContext()
+        {
+            // Arrange
+            var writer = Mock.Of<TextWriter>();
+            var executed = false;
+            var feature = new Mock<IPageExecutionListenerFeature>(MockBehavior.Strict);
+
+            var pageContext = Mock.Of<IPageExecutionContext>();
+            feature.Setup(f => f.GetContext("/MyPartialPage.cshtml", writer))
+                    .Returns(pageContext)
+                    .Verifiable();
+
+            var page = new TestableRazorPage(v =>
+            {
+                Assert.Same(writer, v.Output);
+                Assert.Same(pageContext, v.PageExecutionContext);
+                executed = true;
+            });
+            page.Path = "/MyPartialPage.cshtml";
+
+            var view = new RazorView(Mock.Of<IRazorPageFactory>(),
+                                     Mock.Of<IRazorPageActivator>(),
+                                     Mock.Of<IViewStartProvider>());
+            view.Contextualize(page, isPartial: true, pageExecutionListener: feature.Object);
+            var viewContext = CreateViewContext(view);
+            viewContext.Writer = writer;
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            feature.Verify();
+            Assert.True(executed);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task RenderAsync_DoesNotSetExecutionContextWhenListenerIsNotRegistered(bool isPartial)
+        {
+            // Arrange
+            var executed = false;
+            var page = new TestableRazorPage(v =>
+            {
+                Assert.Null(v.PageExecutionContext);
+                executed = true;
+            });
+
+            var view = new RazorView(Mock.Of<IRazorPageFactory>(),
+                                     Mock.Of<IRazorPageActivator>(),
+                                     Mock.Of<IViewStartProvider>());
+            view.Contextualize(page, isPartial, pageExecutionListener: null);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.True(executed);
+        }
+
+        private static TextWriter CreateBufferedWriter()
+        {
+            var mockWriter = new Mock<TextWriter>();
+            var bufferedWriter = mockWriter.As<IBufferedTextWriter>();
+            bufferedWriter.SetupGet(b => b.IsBuffering)
+                          .Returns(true);
+            return mockWriter.Object;
         }
 
         private static ViewContext CreateViewContext(RazorView view)
@@ -584,7 +734,7 @@ section-content-2";
         {
             viewStartPages = viewStartPages ?? new IRazorPage[0];
             var viewStartProvider = new Mock<IViewStartProvider>();
-            viewStartProvider.Setup(v => v.GetViewStartPages(It.IsAny<string>()))
+            viewStartProvider.Setup(v => v.GetViewStartPages(It.IsAny<string>(), false))
                              .Returns(viewStartPages);
 
             return viewStartProvider.Object;

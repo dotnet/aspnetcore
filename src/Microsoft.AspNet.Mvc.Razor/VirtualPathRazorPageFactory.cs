@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public IRazorPage CreateInstance([NotNull] string relativePath)
+        public IRazorPage CreateInstance([NotNull] string relativePath, bool enableInstrumentation)
         {
             var fileInfo = _fileInfoCache.GetFileInfo(relativePath);
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     RelativePath = relativePath,
                 };
 
-                var result = _compilationService.Compile(relativeFileInfo);
+                var result = _compilationService.Compile(relativeFileInfo, enableInstrumentation);
                 var page = (IRazorPage)_activator.CreateInstance(_serviceProvider, result.CompiledType);
                 page.Path = relativePath;
 

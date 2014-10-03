@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             };
 
             // Act
-            var actual = cache.GetOrAdd(runtimeFileInfo, () => expected);
+            var actual = cache.GetOrAdd(runtimeFileInfo, false, () => expected);
 
             // Assert
             Assert.Same(expected, actual);
@@ -140,7 +140,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Act
             var actual = cache.GetOrAdd(runtimeFileInfo,
-                () => CompilationResult.Successful(resultViewType));
+                                        enableInstrumentation: false,
+                                        compile: () => CompilationResult.Successful(resultViewType));
 
             // Assert
             if (swapsPreCompile)
@@ -174,9 +175,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             };
 
             // Act
-            cache.GetOrAdd(runtimeFileInfo, () => uncachedResult);
-            var actual1 = cache.GetOrAdd(runtimeFileInfo, () => uncachedResult);
-            var actual2 = cache.GetOrAdd(runtimeFileInfo, () => uncachedResult);
+            cache.GetOrAdd(runtimeFileInfo, false, () => uncachedResult);
+            var actual1 = cache.GetOrAdd(runtimeFileInfo, false, () => uncachedResult);
+            var actual2 = cache.GetOrAdd(runtimeFileInfo, false, () => uncachedResult);
 
             // Assert
             Assert.NotSame(uncachedResult, actual1);
@@ -188,6 +189,41 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             result = Assert.IsType<CompilationResult>(actual2);
             Assert.Null(actual2.CompiledContent);
             Assert.Same(type, actual2.CompiledType);
+        }
+
+        [Fact]
+        public void GetOrAdd_IgnoresCache_IfCachedItemIsNotInstrumentedAndEnableInstrumentationIsTrue()
+        {
+            // Arrange
+            var lastModified = DateTime.UtcNow;
+            var cache = new CompilerCache();
+            var fileInfo = new Mock<IFileInfo>();
+            fileInfo.SetupGet(f => f.PhysicalPath)
+                    .Returns("test");
+            fileInfo.SetupGet(f => f.LastModified)
+                    .Returns(lastModified);
+            var type = GetType();
+            var uncachedResult1 = UncachedCompilationResult.Successful(type, "hello world");
+            var uncachedResult2 = UncachedCompilationResult.Successful(typeof(object), "hello world");
+            var uncachedResult3 = UncachedCompilationResult.Successful(typeof(Guid), "hello world");
+
+            var runtimeFileInfo = new RelativeFileInfo()
+            {
+                FileInfo = fileInfo.Object,
+                RelativePath = "test",
+            };
+
+            // Act
+            cache.GetOrAdd(runtimeFileInfo, false, () => uncachedResult1);
+            var actual1 = cache.GetOrAdd(runtimeFileInfo, true, () => uncachedResult2);
+            var actual2 = cache.GetOrAdd(runtimeFileInfo, false, () => uncachedResult3);
+
+            // Assert
+            Assert.Same(uncachedResult2, actual1);
+            Assert.Same(typeof(object), actual1.CompiledType);
+
+            Assert.NotSame(actual2, uncachedResult3);
+            Assert.Same(typeof(object), actual2.CompiledType);
         }
     }
 }

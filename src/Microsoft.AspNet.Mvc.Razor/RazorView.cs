@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.PageExecutionInstrumentation;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -15,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IRazorPageFactory _pageFactory;
         private readonly IRazorPageActivator _pageActivator;
         private readonly IViewStartProvider _viewStartProvider;
+        private IPageExecutionListenerFeature _pageExecutionFeature;
         private IRazorPage _razorPage;
         private bool _isPartial;
 
@@ -34,11 +37,19 @@ namespace Microsoft.AspNet.Mvc.Razor
             _viewStartProvider = viewStartProvider;
         }
 
+        private bool EnableInstrumentation
+        {
+            get { return _pageExecutionFeature != null; }
+        }
+
         /// <inheritdoc />
-        public virtual void Contextualize(IRazorPage razorPage, bool isPartial)
+        public virtual void Contextualize([NotNull] IRazorPage razorPage,
+                                          bool isPartial,
+                                          IPageExecutionListenerFeature pageExecutionListener)
         {
             _razorPage = razorPage;
             _isPartial = isPartial;
+            _pageExecutionFeature = pageExecutionListener;
         }
 
         /// <inheritdoc />
@@ -61,45 +72,66 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private async Task<RazorTextWriter> RenderPageAsync(IRazorPage page,
-                                                            ViewContext context,
-                                                            bool executeViewStart)
+        private async Task<IBufferedTextWriter> RenderPageAsync(IRazorPage page,
+                                                                ViewContext context,
+                                                                bool executeViewStart)
         {
-            using (var bufferedWriter = new RazorTextWriter(context.Writer, context.Writer.Encoding))
+            var razorTextWriter = new RazorTextWriter(context.Writer, context.Writer.Encoding);
+            TextWriter writer = razorTextWriter;
+            IBufferedTextWriter bufferedWriter = razorTextWriter;
+
+            if (EnableInstrumentation)
             {
-                // The writer for the body is passed through the ViewContext, allowing things like HtmlHelpers
-                // and ViewComponents to reference it.
-                var oldWriter = context.Writer;
-                context.Writer = bufferedWriter;
-
-                try
+                writer = _pageExecutionFeature.DecorateWriter(razorTextWriter);
+                bufferedWriter = writer as IBufferedTextWriter;
+                if (bufferedWriter == null)
                 {
-                    if (executeViewStart)
-                    {
-                        // Execute view starts using the same context + writer as the page to render.
-                        await RenderViewStartAsync(context);
-                    }
+                    var message = Resources.FormatInstrumentation_WriterMustBeBufferedTextWriter(
+                        nameof(TextWriter),
+                        _pageExecutionFeature.GetType().FullName,
+                        typeof(IBufferedTextWriter).FullName);
+                    throw new InvalidOperationException(message);
+                }
+            }
 
-                    await RenderPageCoreAsync(page, context);
-                    return bufferedWriter;
-                }
-                finally
+            // The writer for the body is passed through the ViewContext, allowing things like HtmlHelpers
+            // and ViewComponents to reference it.
+            var oldWriter = context.Writer;
+            context.Writer = writer;
+
+            try
+            {
+                if (executeViewStart)
                 {
-                    context.Writer = oldWriter;
+                    // Execute view starts using the same context + writer as the page to render.
+                    await RenderViewStartAsync(context);
                 }
+
+                await RenderPageCoreAsync(page, context);
+                return bufferedWriter;
+            }
+            finally
+            {
+                context.Writer = oldWriter;
+                writer.Dispose();
             }
         }
 
         private async Task RenderPageCoreAsync(IRazorPage page, ViewContext context)
         {
             page.ViewContext = context;
+            if (EnableInstrumentation)
+            {
+                page.PageExecutionContext = _pageExecutionFeature.GetContext(page.Path, context.Writer);
+            }
+
             _pageActivator.Activate(page, context);
             await page.ExecuteAsync();
         }
 
         private async Task RenderViewStartAsync(ViewContext context)
         {
-            var viewStarts = _viewStartProvider.GetViewStartPages(_razorPage.Path);
+            var viewStarts = _viewStartProvider.GetViewStartPages(_razorPage.Path, EnableInstrumentation);
 
             foreach (var viewStart in viewStarts)
             {
@@ -111,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         private async Task RenderLayoutAsync(ViewContext context,
-                                             RazorTextWriter bodyWriter)
+                                             IBufferedTextWriter bodyWriter)
         {
             // A layout page can specify another layout page. We'll need to continue
             // looking for layout pages until they're no longer specified.
@@ -129,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     throw new InvalidOperationException(message);
                 }
 
-                var layoutPage = _pageFactory.CreateInstance(previousPage.Layout);
+                var layoutPage = _pageFactory.CreateInstance(previousPage.Layout, EnableInstrumentation);
                 if (layoutPage == null)
                 {
                     var message = Resources.FormatLayoutCannotBeLocated(previousPage.Layout);

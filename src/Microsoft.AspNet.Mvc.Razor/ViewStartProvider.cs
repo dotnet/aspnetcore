@@ -22,14 +22,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             _pageFactory = pageFactory;
         }
 
-
         /// <inheritdoc />
-        public IEnumerable<IRazorPage> GetViewStartPages([NotNull] string path)
+        public IEnumerable<IRazorPage> GetViewStartPages([NotNull] string path, bool enableInstrumentation)
         {
             var viewStartLocations = ViewStartUtility.GetViewStartLocations(_fileSystem, path);
-            var viewStarts = viewStartLocations.Select(_pageFactory.CreateInstance)
-                                                .Where(p => p != null)
-                                                .ToArray();
+            var viewStarts = viewStartLocations.Select(p => _pageFactory.CreateInstance(p, enableInstrumentation))
+                                               .Where(p => p != null)
+                                               .ToArray();
 
             // GetViewStartLocations return ViewStarts inside-out that is the _ViewStart closest to the page 
             // is the first: e.g. [ /Views/Home/_ViewStart, /Views/_ViewStart, /_ViewStart ]

@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Arrange
             var host = new Mock<IMvcRazorHost>();
             host.Setup(h => h.GenerateCode(@"views\index\home.cshtml", It.IsAny<Stream>()))
-                .Returns(new GeneratorResults(new Block(new BlockBuilder { Type = BlockType.Comment }), new RazorError[0], new CodeBuilderResult("", new LineMapping[0])))
+                .Returns(GetGeneratorResult())
                 .Verifiable();
 
             var ap = new Mock<IControllerAssemblyProvider>();
@@ -46,10 +46,51 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             };
 
             // Act
-            razorService.CompileCore(relativeFileInfo);
+            razorService.CompileCore(relativeFileInfo, isInstrumented: false);
 
             // Assert
             host.Verify();
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void CompileCoreSetsEnableInstrumentationOnHost(bool enableInstrumentation)
+        {
+            // Arrange
+            var host = new Mock<IMvcRazorHost>();
+            host.SetupAllProperties();
+            host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
+                .Returns(GetGeneratorResult());
+            var assemblyProvider = new Mock<IControllerAssemblyProvider>();
+            assemblyProvider.SetupGet(e => e.CandidateAssemblies)
+                            .Returns(Enumerable.Empty<Assembly>());
+
+            var compiler = new Mock<ICompilationService>();
+            compiler.Setup(c => c.Compile(It.IsAny<IFileInfo>(), It.IsAny<string>()))
+                    .Returns(CompilationResult.Successful(GetType()));
+
+            var razorService = new RazorCompilationService(compiler.Object, assemblyProvider.Object, host.Object);
+            var relativeFileInfo = new RelativeFileInfo()
+            {
+                FileInfo = Mock.Of<IFileInfo>(),
+                RelativePath = @"views\index\home.cshtml",
+            };
+
+            // Act
+            razorService.CompileCore(relativeFileInfo, isInstrumented: enableInstrumentation);
+
+            // Assert
+            Assert.Equal(enableInstrumentation, host.Object.EnableInstrumentation);
+        }
+
+        private static GeneratorResults GetGeneratorResult()
+        {
+            return new GeneratorResults(
+                    new Block(
+                        new BlockBuilder { Type = BlockType.Comment }),
+                        new RazorError[0],
+                        new CodeBuilderResult("", new LineMapping[0]));
         }
     }
 }
