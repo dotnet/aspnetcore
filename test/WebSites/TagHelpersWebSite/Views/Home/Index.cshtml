@@ -1,0 +1,32 @@
+﻿@using TagHelpersWebSite.Models
+@model WebsiteContext
+
+@{
+    ViewBag.Title = "Home Page";
+}
+
+@addtaghelper "TagHelpersWebSite"
+
+@section css {
+    <style condition="!Model.Approved">
+        h1 {
+            color:red;
+            font-size:2em;
+        }
+    </style>
+}
+
+<div condition="!Model.Approved">
+    <p>This website has <strong>not</strong> been approved yet. Visit www.contoso.com for <strong makePretty="false">more</strong> information.</p>
+</div>
+
+<div>
+    <h3>Current Tag Cloud from Tag Helper</h3>
+    <section><tag-cloud count="Model.TagsToShow" /></section>
+    <h3>Current Tag Cloud from ViewComponentHelper:</h3>
+    <section>@await Component.InvokeAsync("Tags", 15)</section>
+</div>
+
+@section footerContent {
+    <p condition="Model.Approved">&copy; @Model.CopyrightYear - My ASP.NET Application</p>
+}

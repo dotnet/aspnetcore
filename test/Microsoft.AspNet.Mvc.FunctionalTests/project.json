@@ -33,6 +33,7 @@
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+        "TagHelpersWebSite": "1.0.0",
         "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {
