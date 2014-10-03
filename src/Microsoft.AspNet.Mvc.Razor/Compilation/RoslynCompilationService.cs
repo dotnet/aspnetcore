@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             if (embeddedReference != null)
             {
-                return new MetadataImageReference(embeddedReference.Contents);
+                return MetadataReference.CreateFromImage(embeddedReference.Contents);
             }
 
             var fileMetadataReference = metadataReference as IMetadataFileReference;
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 {
                     projectReference.EmitReferenceAssembly(ms);
 
-                    return new MetadataImageReference(ms.ToArray());
+                    return MetadataReference.CreateFromImage(ms.ToArray());
                 }
             }
 
@@ -172,10 +172,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             var metadata = _metadataFileCache.GetOrAdd(path, _ =>
             {
-                return AssemblyMetadata.CreateFromImageStream(File.OpenRead(path));
+                return AssemblyMetadata.CreateFromStream(File.OpenRead(path));
             });
 
-            return new MetadataImageReference(metadata);
+            return metadata.GetReference();
         }
 
         private static CompilationMessage GetCompilationMessage(DiagnosticFormatter formatter, Diagnostic diagnostic)
