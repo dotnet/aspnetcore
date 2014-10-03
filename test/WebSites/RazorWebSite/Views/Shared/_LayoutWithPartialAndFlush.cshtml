@@ -6,7 +6,7 @@
     WaitService.WaitForClient();
 }
 @await Html.PartialAsync("_PartialThatSetsTitle")
-@RenderSection("content")
+@await RenderSectionAsync("content")
 @{ 
     WaitService.NotifyClient();
 }

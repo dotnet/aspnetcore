@@ -153,7 +153,7 @@
   <data name="RazorPage_NullModelMetadata" xml:space="preserve">
     <value>The {0} was unable to provide metadata for expression '{1}'.</value>
   </data>
-  <data name="RenderBodyCannotBeCalled" xml:space="preserve">
+  <data name="RazorPage_MethodCannotBeCalled" xml:space="preserve">
     <value>{0} can only be called from a layout page.</value>
   </data>
   <data name="RenderBodyNotCalled" xml:space="preserve">
@@ -163,7 +163,7 @@
     <value>Section '{0}' is already defined.</value>
   </data>
   <data name="SectionAlreadyRendered" xml:space="preserve">
-    <value>{0} has already been called for the section named '{1}'.</value>
+    <value>The section named '{0}' has already been rendered.</value>
   </data>
   <data name="SectionNotDefined" xml:space="preserve">
     <value>Section '{0}' is not defined.</value>
@@ -182,8 +182,5 @@
   </data>
   <data name="ViewMustBeContextualized" xml:space="preserve">
     <value>The '{0}' method must be called before '{1}' can be invoked.</value>
-  </data>
-  <data name="View_MethodCannotBeCalled" xml:space="preserve">
-    <value>The method '{0}' cannot be invoked by this view.</value>
   </data>
 </root>

@@ -7,7 +7,7 @@ RenderBody content
 @section content
 {
     @{
-        FlushAsync().Wait();
+        await FlushAsync();
         WaitService.WaitForClient();
     }
     <span>Content that takes time to produce</span>

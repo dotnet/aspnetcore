@@ -205,17 +205,17 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// {0} can only be called from a layout page.
         /// </summary>
-        internal static string RenderBodyCannotBeCalled
+        internal static string RazorPage_MethodCannotBeCalled
         {
-            get { return GetString("RenderBodyCannotBeCalled"); }
+            get { return GetString("RazorPage_MethodCannotBeCalled"); }
         }
 
         /// <summary>
         /// {0} can only be called from a layout page.
         /// </summary>
-        internal static string FormatRenderBodyCannotBeCalled(object p0)
+        internal static string FormatRazorPage_MethodCannotBeCalled(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RenderBodyCannotBeCalled"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("RazorPage_MethodCannotBeCalled"), p0);
         }
 
         /// <summary>
@@ -251,7 +251,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// {0} has already been called for the section named '{1}'.
+        /// The section named '{0}' has already been rendered.
         /// </summary>
         internal static string SectionAlreadyRendered
         {
@@ -259,11 +259,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// {0} has already been called for the section named '{1}'.
+        /// The section named '{0}' has already been rendered.
         /// </summary>
-        internal static string FormatSectionAlreadyRendered(object p0, object p1)
+        internal static string FormatSectionAlreadyRendered(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("SectionAlreadyRendered"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("SectionAlreadyRendered"), p0);
         }
 
         /// <summary>
@@ -360,22 +360,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         internal static string FormatViewMustBeContextualized(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewMustBeContextualized"), p0, p1);
-        }
-
-        /// <summary>
-        /// The method '{0}' cannot be invoked by this view.
-        /// </summary>
-        internal static string View_MethodCannotBeCalled
-        {
-            get { return GetString("View_MethodCannotBeCalled"); }
-        }
-
-        /// <summary>
-        /// The method '{0}' cannot be invoked by this view.
-        /// </summary>
-        internal static string FormatView_MethodCannotBeCalled(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("View_MethodCannotBeCalled"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

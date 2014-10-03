@@ -17,6 +17,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class RazorPageTest
     {
+        private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = async writer => { };
+
         [Fact]
         public async Task WritingScopesRedirectContentWrittenToViewContextWriter()
         {
@@ -135,8 +137,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(v =>
             {
-                v.DefineSection("qux", new HelperResult(action: null));
-                v.DefineSection("qux", new HelperResult(action: null));
+                v.DefineSection("qux", _nullRenderAsyncDelegate);
+                v.DefineSection("qux", _nullRenderAsyncDelegate);
             });
 
             // Act
@@ -151,23 +153,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderSection_RendersSectionFromPreviousPage()
         {
             // Arrange
-            var expected = new HelperResult(action: null);
+            var expected = "Hello world";
             var viewContext = CreateViewContext();
-            HelperResult actual = null;
             var page = CreatePage(v =>
             {
-                actual = v.RenderSection("bar");
+                v.Write(v.RenderSection("bar"));
             });
-            page.PreviousSectionWriters = new Dictionary<string, HelperResult>
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
-                { "bar", expected }
+                { "bar", writer => writer.WriteAsync(expected) }
             };
 
             // Act
             await page.ExecuteAsync();
 
             // Assert
-            Assert.Same(actual, expected);
+            Assert.Equal(expected, page.RenderedContent);
         }
 
         [Fact]
@@ -184,7 +185,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             await page.ExecuteAsync();
 
             // Assert
-            Assert.Equal("The method 'RenderSection' cannot be invoked by this view.",
+            Assert.Equal("RenderSection can only be called from a layout page.",
                          ex.Message);
         }
 
@@ -192,14 +193,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderSection_ThrowsIfRequiredSectionIsNotFound()
         {
             // Arrange
-            var expected = new HelperResult(action: null);
             var page = CreatePage(v =>
             {
                 v.RenderSection("bar");
             });
-            page.PreviousSectionWriters = new Dictionary<string, HelperResult>
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
-                { "baz", expected }
+                { "baz", _nullRenderAsyncDelegate }
             };
 
             // Act
@@ -217,7 +217,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Act and Assert
             ExceptionAssert.Throws<InvalidOperationException>(() => page.IsSectionDefined("foo"),
-                "The method 'IsSectionDefined' cannot be invoked by this view.");
+                "IsSectionDefined can only be called from a layout page.");
         }
 
         [Fact]
@@ -231,9 +231,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.RenderSection("baz");
                 v.RenderBodyPublic();
             });
-            page.PreviousSectionWriters = new Dictionary<string, HelperResult>
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
-                { "baz", new HelperResult(writer => { }) }
+                { "baz", _nullRenderAsyncDelegate }
             };
             page.RenderBodyDelegate = CreateBodyAction("body-content");
 
@@ -255,9 +255,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.RenderSection("baz");
                 v.RenderBodyPublic();
             });
-            page.PreviousSectionWriters = new Dictionary<string, HelperResult>
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
-                { "baz", new HelperResult(writer => { }) }
+                { "baz", _nullRenderAsyncDelegate }
             };
             page.RenderBodyDelegate = CreateBodyAction("body-content");
 
@@ -278,32 +278,92 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.RenderSection("header");
                 v.RenderSection("header");
             });
-            page.PreviousSectionWriters = new Dictionary<string, HelperResult>
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
-                { "header", new HelperResult(writer => { }) }
+                { "header", _nullRenderAsyncDelegate }
             };
 
             // Act
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(page.ExecuteAsync);
 
             // Assert
-            Assert.Equal("RenderSection has already been called for the section named 'header'.", ex.Message);
+            Assert.Equal("The section named 'header' has already been rendered.", ex.Message);
+        }
+
+        [Fact]
+        public async Task RenderSectionAsync_ThrowsIfSectionIsRenderedMoreThanOnce()
+        {
+            // Arrange
+            var expected = new HelperResult(action: null);
+            var page = CreatePage(async v =>
+            {
+                await v.RenderSectionAsync("header");
+                await v.RenderSectionAsync("header");
+            });
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
+            {
+                { "header", _nullRenderAsyncDelegate }
+            };
+
+            // Act
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(page.ExecuteAsync);
+
+            // Assert
+            Assert.Equal("The section named 'header' has already been rendered.", ex.Message);
+        }
+
+        [Fact]
+        public async Task RenderSectionAsync_ThrowsIfSectionIsRenderedMoreThanOnce_WithSyncMethod()
+        {
+            // Arrange
+            var expected = new HelperResult(action: null);
+            var page = CreatePage(async v =>
+            {
+                v.RenderSection("header");
+                await v.RenderSectionAsync("header");
+            });
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
+            {
+                { "header", _nullRenderAsyncDelegate }
+            };
+
+            // Act
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(page.ExecuteAsync);
+
+            // Assert
+            Assert.Equal("The section named 'header' has already been rendered.", ex.Message);
+        }
+
+        [Fact]
+        public async Task RenderSectionAsync_ThrowsIfNotInvokedFromLayoutPage()
+        {
+            // Arrange
+            var expected = new HelperResult(action: null);
+            var page = CreatePage(async v =>
+            {
+                await v.RenderSectionAsync("header");
+            });
+
+            // Act
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(page.ExecuteAsync);
+
+            // Assert
+            Assert.Equal("RenderSectionAsync can only be called from a layout page.", ex.Message);
         }
 
         [Fact]
         public async Task EnsureBodyAndSectionsWereRendered_ThrowsIfDefinedSectionIsNotRendered()
         {
             // Arrange
-            var expected = new HelperResult(action: null);
             var page = CreatePage(v =>
             {
                 v.RenderSection("sectionA");
             });
-            page.PreviousSectionWriters = new Dictionary<string, HelperResult>
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
-                { "header", expected },
-                { "footer", expected },
-                { "sectionA", expected },
+                { "header", _nullRenderAsyncDelegate },
+                { "footer", _nullRenderAsyncDelegate },
+                { "sectionA", _nullRenderAsyncDelegate },
             };
 
             // Act
@@ -337,35 +397,38 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task ExecuteAsync_RendersSectionsAndBody()
         {
             // Arrange
-            var expected = @"Layout start
-Header section
-body content
-Footer section
-Layout end
-";
-            var page = CreatePage(v =>
+            var expected = string.Join(Environment.NewLine,
+                                       "Layout start",
+                                       "Header section",
+                                       "Async Header section",
+                                       "body content",
+                                       "Async Footer section",
+                                       "Footer section",
+                                       "Layout end");
+            var page = CreatePage(async v =>
             {
                 v.WriteLiteral("Layout start" + Environment.NewLine);
                 v.Write(v.RenderSection("header"));
+                v.Write(await v.RenderSectionAsync("async-header"));
                 v.Write(v.RenderBodyPublic());
+                v.Write(await v.RenderSectionAsync("async-footer"));
                 v.Write(v.RenderSection("footer"));
-                v.WriteLiteral("Layout end" + Environment.NewLine);
-
+                v.WriteLiteral("Layout end");
             });
             page.RenderBodyDelegate = CreateBodyAction("body content" + Environment.NewLine);
-            page.PreviousSectionWriters = new Dictionary<string, HelperResult>
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 {
-                    "footer", new HelperResult(writer =>
-                    {
-                        writer.WriteLine("Footer section");
-                    })
+                    "footer", writer => writer.WriteLineAsync("Footer section")
                 },
                 {
-                    "header", new HelperResult(writer =>
-                    {
-                        writer.WriteLine("Header section");
-                    })
+                    "header", writer => writer.WriteLineAsync("Header section")
+                },
+                {
+                    "async-header", writer => writer.WriteLineAsync("Async Header section")
+                },
+                {
+                    "async-footer", writer => writer.WriteLineAsync("Async Footer section")
                 },
             };
 
@@ -373,7 +436,7 @@ Layout end
             await page.ExecuteAsync();
 
             // Assert
-            var actual = ((StringWriter)page.Output).ToString();
+            var actual = page.RenderedContent;
             Assert.Equal(expected, actual);
         }
 
@@ -399,7 +462,7 @@ Layout end
             await page.ExecuteAsync();
 
             // Assert
-            var actual = ((StringWriter)page.Output).ToString();
+            var actual = page.RenderedContent;
             Assert.Equal(expected, actual);
             helper.Verify();
         }
@@ -410,9 +473,9 @@ Layout end
             // Arrange
             var writer = new Mock<TextWriter>();
             var context = CreateViewContext(writer.Object);
-            var page = CreatePage(p =>
+            var page = CreatePage(async p =>
             {
-                p.FlushAsync().Wait();
+                await p.FlushAsync();
             }, context);
 
             // Act
@@ -429,10 +492,10 @@ Layout end
             var expected = @"A layout page cannot be rendered after 'FlushAsync' has been invoked.";
             var writer = new Mock<TextWriter>();
             var context = CreateViewContext(writer.Object);
-            var page = CreatePage(p =>
+            var page = CreatePage(async p =>
             {
                 p.Layout = "foo";
-                p.FlushAsync().Wait();
+                await p.FlushAsync();
             }, context);
 
             // Act and Assert
@@ -449,10 +512,10 @@ Layout end
             var page = CreatePage(p =>
             {
                 p.Layout = "bar";
-                p.DefineSection("test-section", new HelperResult(_ =>
+                p.DefineSection("test-section", async _ =>
                 {
-                    p.FlushAsync().Wait();
-                }));
+                    await p.FlushAsync();
+                });
             }, context);
 
             // Act
@@ -460,7 +523,8 @@ Layout end
             page.IsLayoutBeingRendered = true;
 
             // Assert
-            Assert.DoesNotThrow(() => page.SectionWriters["test-section"].WriteTo(TextWriter.Null));
+            var renderAsyncDelegate = page.SectionWriters["test-section"];
+            await Assert.DoesNotThrowAsync(() => renderAsyncDelegate(TextWriter.Null));
         }
 
         [Fact]
@@ -554,13 +618,26 @@ Layout end
         private static TestableRazorPage CreatePage(Action<TestableRazorPage> executeAction,
                                                     ViewContext context = null)
         {
+            return CreatePage(page =>
+            {
+                executeAction(page);
+                return Task.FromResult(0);
+            }, context);
+        }
+
+
+        private static TestableRazorPage CreatePage(Func<TestableRazorPage, Task> executeAction,
+                                                    ViewContext context = null)
+        {
             context = context ?? CreateViewContext();
             var view = new Mock<TestableRazorPage> { CallBase = true };
             if (executeAction != null)
             {
                 view.Setup(v => v.ExecuteAsync())
-                    .Callback(() => executeAction(view.Object))
-                    .Returns(Task.FromResult(0));
+                    .Returns(() =>
+                    {
+                        return executeAction(view.Object);
+                    });
             }
 
             view.Object.ViewContext = context;
@@ -585,6 +662,15 @@ Layout end
 
         public abstract class TestableRazorPage : RazorPage
         {
+            public string RenderedContent
+            {
+                get
+                {
+                    var writer = Assert.IsType<StringWriter>(Output);
+                    return writer.ToString();
+                }
+            }
+
             public HelperResult RenderBodyPublic()
             {
                 return base.RenderBody();

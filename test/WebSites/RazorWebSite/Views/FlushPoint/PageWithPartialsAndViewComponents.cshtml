@@ -7,9 +7,9 @@ RenderBody content
 @section content
 {
     @{
-        FlushAsync().Wait();
+        await FlushAsync();
         WaitService.WaitForClient();
     }
-    @Component.InvokeAsync("ComponentThatSetsTitle").Result
+    @await Component.InvokeAsync("ComponentThatSetsTitle")
     <span>Content that takes time to produce</span>
 }

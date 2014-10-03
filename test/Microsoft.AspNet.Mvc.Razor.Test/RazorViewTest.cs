@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class RazorViewTest
     {
         private const string LayoutPath = "~/Shared/_Layout.cshtml";
+        private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = async writer => { };
 
         [Fact]
         public async Task RenderAsync_ThrowsIfContextualizeHasNotBeenInvoked()
@@ -264,14 +265,14 @@ foot-content";
             {
                 v.WriteLiteral("body-content");
                 v.Layout = LayoutPath;
-                v.DefineSection("head", new HelperResult(writer =>
+                v.DefineSection("head", async writer =>
                 {
-                    writer.Write("head-content");
-                }));
-                v.DefineSection("foot", new HelperResult(writer =>
+                    await writer.WriteAsync("head-content");
+                });
+                v.DefineSection("foot", async writer =>
                 {
-                    writer.Write("foot-content");
-                }));
+                    await writer.WriteAsync("foot-content");
+                });
             });
             var layout = new TestableRazorPage(v =>
             {
@@ -312,9 +313,9 @@ foot-content";
             // Arrange
             var page = new TestableRazorPage(v =>
             {
-                v.DefineSection("head", new HelperResult(writer => { }));
+                v.DefineSection("head", _nullRenderAsyncDelegate);
                 v.Layout = LayoutPath;
-                v.DefineSection("foot", new HelperResult(writer => { }));
+                v.DefineSection("foot", _nullRenderAsyncDelegate);
             });
             var layout = new TestableRazorPage(v =>
             {
@@ -374,10 +375,10 @@ body-content";
 
             var page = new TestableRazorPage(v =>
             {
-                v.DefineSection("foo", new HelperResult(writer =>
+                v.DefineSection("foo", async writer =>
                 {
-                    writer.WriteLine("foo-content");
-                }));
+                    await writer.WriteLineAsync("foo-content");
+                });
                 v.Layout = "~/Shared/Layout1.cshtml";
                 v.WriteLiteral("body-content");
             });
@@ -385,10 +386,7 @@ body-content";
             {
                 v.Write("layout-1" + Environment.NewLine);
                 v.Write(v.RenderSection("foo"));
-                v.DefineSection("bar", new HelperResult(writer =>
-                {
-                    writer.WriteLine("bar-content");
-                }));
+                v.DefineSection("bar", writer => writer.WriteLineAsync("bar-content"));
                 v.RenderBodyPublic();
                 v.Layout = "~/Shared/Layout2.cshtml";
             });
@@ -431,12 +429,12 @@ section-content-2";
             {
                 v.Layout = "layout-1";
                 v.WriteLiteral("body content" + Environment.NewLine);
-                v.DefineSection("foo", new HelperResult(_ =>
+                v.DefineSection("foo", async _ =>
                 {
                     v.WriteLiteral("section-content-1" + Environment.NewLine);
-                    v.FlushAsync().Wait();
+                    await v.FlushAsync();
                     v.WriteLiteral("section-content-2");
-                }));
+                });
             });
 
             var layout1 = new TestableRazorPage(v =>
@@ -475,12 +473,12 @@ section-content-2";
             var page = new TestableRazorPage(v =>
            {
                v.Layout = "layout-1";
-               v.DefineSection("foo", new HelperResult(_ =>
+               v.DefineSection("foo", async _ =>
                {
                    v.WriteLiteral("section-content-1" + Environment.NewLine);
-                   v.FlushAsync().Wait();
+                   await v.FlushAsync();
                    v.WriteLiteral("section-content-2");
-               }));
+               });
            });
 
             var layout1 = new TestableRazorPage(v =>
@@ -538,11 +536,11 @@ section-content-2";
             var expected = @"A layout page cannot be rendered after 'FlushAsync' has been invoked.";
             var page = new TestableRazorPage(v =>
             {
-                v.DefineSection("foo", new HelperResult(writer =>
+                v.DefineSection("foo", async writer =>
                 {
                     writer.WriteLine("foo-content");
-                    v.FlushAsync().Wait();
-                }));
+                    await v.FlushAsync();
+                });
                 v.Layout = "~/Shared/Layout1.cshtml";
                 v.WriteLiteral("body-content");
             });
@@ -550,10 +548,7 @@ section-content-2";
             {
                 v.Write("layout-1" + Environment.NewLine);
                 v.Write(v.RenderSection("foo"));
-                v.DefineSection("bar", new HelperResult(writer =>
-                {
-                    writer.WriteLine("bar-content");
-                }));
+                v.DefineSection("bar", writer => writer.WriteLineAsync("bar-content"));
                 v.RenderBodyPublic();
                 v.Layout = "~/Shared/Layout2.cshtml";
             });

@@ -11,7 +11,7 @@
             body { padding-top: 0px; }
         }
     </style>
-    @RenderSection("header", required: false)
+    @await RenderSectionAsync("header", required: false)
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -37,6 +37,6 @@
             <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
         </footer>
     </div>
-    @RenderSection("footer", required: false)
+    @await RenderSectionAsync("footer", required: false)
 </body>
 </html>

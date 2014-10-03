@@ -45,10 +45,9 @@
     <strong>Marketing:</strong> <a href="mailto:Marketing@example.com">Marketing@example.com</a>
 </address>
 
-@* Remove the Wait() calls once we add support for async sections *@
 @{
-    FlushAsync().Wait();
-    Task.Delay(TimeSpan.FromSeconds(1)).Wait();
+    await FlushAsync();
+    await Task.Delay(TimeSpan.FromSeconds(1));
 }
 <div class="row">
     <div class="col-md-6">
