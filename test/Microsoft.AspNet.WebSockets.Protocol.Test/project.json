@@ -4,7 +4,7 @@
         "Xunit.KRunner": "1.0.0-*"
     },
     "frameworks": {
-        "net45": {
+        "aspnet50": {
             "dependencies": {
                 "System.Runtime" : ""
             }
