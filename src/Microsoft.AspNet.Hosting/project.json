@@ -8,6 +8,7 @@
         "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
+        "Microsoft.Framework.OptionsModel": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" },
         "Newtonsoft.Json": "6.0.4"
     },

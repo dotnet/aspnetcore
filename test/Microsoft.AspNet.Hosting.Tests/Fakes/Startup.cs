@@ -17,6 +17,7 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting.Fakes
 {
@@ -25,6 +26,39 @@ namespace Microsoft.AspNet.Hosting.Fakes
         public Startup()
         {
         }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.ConfigureOptions<FakeOptions>(o => o.Configured = true);
+        }
+
+        public void ConfigureServicesDev(IServiceCollection services)
+        {
+            services.ConfigureOptions<FakeOptions>(o =>
+            {
+                o.Configured = true;
+                o.Environment = "Dev";
+            });
+        }
+
+        public void ConfigureServicesRetail(IServiceCollection services)
+        {
+            services.ConfigureOptions<FakeOptions>(o =>
+            {
+                o.Configured = true;
+                o.Environment = "Retail";
+            });
+        }
+
+        public static void ConfigureServicesStatic(IServiceCollection services)
+        {
+            services.ConfigureOptions<FakeOptions>(o =>
+            {
+                o.Configured = true;
+                o.Environment = "Static";
+            });
+        }
+
 
         public void Configure(IApplicationBuilder builder)
         {
