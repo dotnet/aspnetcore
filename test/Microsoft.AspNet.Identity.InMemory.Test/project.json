@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "Microsoft.AspNet.Http" : "1.0.0-*",
-    "Microsoft.AspNet.Identity" : "",
+    "Microsoft.AspNet.Identity" : "3.0.0-*",
     "Microsoft.AspNet.PipelineCore" : "1.0.0-*",
     "Microsoft.AspNet.RequestContainer" : "1.0.0-*",
     "Microsoft.AspNet.Security" : "1.0.0-*",
@@ -16,9 +16,7 @@
   "frameworks": {
     "aspnet50": {
       "dependencies": {
-        "Moq" : "4.2.1312.1622",
-        "System.Collections": "",
-        "System.Runtime": ""
+        "Moq" : "4.2.1312.1622"
       }
     }
   },

@@ -1,16 +1,13 @@
 {
   "version": "3.0.0-*",
   "dependencies": {
-    "Microsoft.AspNet.Identity": "",
+    "Microsoft.AspNet.Identity": "3.0.0-*",
     "EntityFramework.SqlServer": "7.0.0-*",
     "System.Security.Claims" : "1.0.0-*"
   },
   "frameworks": {
     "aspnet50": {
-      "dependencies": {
-        "System.Collections": "",
-        "System.Runtime": ""
-      }
+      "dependencies": { }
     },
     "aspnetcore50": {
       "dependencies": {
