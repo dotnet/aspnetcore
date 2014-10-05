@@ -10,12 +10,18 @@ using System.Threading.Tasks;
 namespace IdentitySample.Models
 {
     [Authorize]
-    public class AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
-        : Controller
+    public class AccountController : Controller
     {
-        public UserManager<ApplicationUser> UserManager { get; } = userManager;
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        {
+            UserManager = UserManager;
+            SignInManager = signInManager;
+        }
 
-        public SignInManager<ApplicationUser> SignInManager { get; } = signInManager;
+        public UserManager<ApplicationUser> UserManager { get; private set; }
+
+        public SignInManager<ApplicationUser> SignInManager { get; private set; }
+
 
         //
         // GET: /Account/Login
@@ -129,7 +135,7 @@ namespace IdentitySample.Models
             }
 
             // Sign in the user with this external login provider if the user already has a login
-            var result = await SignInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, 
+            var result = await SignInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey,
                 isPersistent: false);
             switch (result)
             {

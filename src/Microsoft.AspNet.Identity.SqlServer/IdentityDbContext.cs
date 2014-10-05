@@ -79,17 +79,17 @@ namespace Microsoft.AspNet.Identity.SqlServer
             //var urfk2 = userRoleType.GetOrAddForeignKey(roleType.GetPrimaryKey(), new[] { userRoleType.GetProperty("RoleId") });
             //roleType.AddNavigation(new Navigation(urfk2, "Users", false));
 
-            var rcfk = roleClaimType.GetOrAddForeignKey(roleType.GetPrimaryKey(), new[] { roleClaimType.GetProperty("RoleId") });
-            roleType.AddNavigation(new Navigation(rcfk, "Claims", false));
+            var rcfk = roleClaimType.GetOrAddForeignKey(new[] { roleClaimType.GetProperty("RoleId") }, roleType.GetPrimaryKey());
+            roleType.AddNavigation("Claims", rcfk, false);
 
             builder.Entity<IdentityUserRole<TKey>>(b =>
                 {
                     b.Key(r => new { r.UserId, r.RoleId });
                     b.ToTable("AspNetUserRoles");
                 });
-                // Blocks delete currently without cascade
-                //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
-                //.ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId));
+            // Blocks delete currently without cascade
+            //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
+            //.ForeignKeys(fk => fk.ForeignKey<TRole>(f => f.RoleId));
 
             builder.Entity<IdentityUserLogin<TKey>>(b =>
                 {

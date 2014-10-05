@@ -5,13 +5,8 @@
     "description": "Identity sample MVC application on K",
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.ModelBinding": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-        "Microsoft.AspNet.Routing": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
         "Microsoft.AspNet.Identity.SqlServer": "3.0.0-*",

@@ -9,12 +9,17 @@ using System.Threading.Tasks;
 namespace IdentitySample
 {
     [Authorize]
-    public class ManageController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
-        : Controller
+    public class ManageController : Controller
     {
-        public UserManager<ApplicationUser> UserManager { get; } = userManager;
+        public ManageController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        {
+            UserManager = UserManager;
+            SignInManager = signInManager;
+        }
 
-        public SignInManager<ApplicationUser> SignInManager { get; } = signInManager;
+        public UserManager<ApplicationUser> UserManager { get; private set; }
+
+        public SignInManager<ApplicationUser> SignInManager { get; private set; }
 
         //
         // GET: /Account/Index

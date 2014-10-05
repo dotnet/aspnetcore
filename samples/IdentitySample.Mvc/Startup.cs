@@ -15,7 +15,8 @@ using IdentitySample.Models;
 
 namespace IdentitySamples
 {
-    public static class UseExt {
+    public static class UseExt
+    {
 
         /**
         * TODO: Middleware constructors need to take IOptionsAccessor<TOptions>
@@ -73,8 +74,9 @@ namespace IdentitySamples
         }
     }
 
-    public partial class Startup()
+    public partial class Startup
     {
+        public Startup()
         {
             /* 
             * Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
