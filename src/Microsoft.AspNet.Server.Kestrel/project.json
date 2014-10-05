@@ -1,20 +1,11 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
+        "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*","type": "build" }
     },
     "frameworks": {
-        "aspnet50": {
-            "compilationOptions": {
-                "define": [ "TRACE", "NET45" ],
-                "allowUnsafe": true
-            }
-        },
+        "aspnet50": { },
         "aspnetcore50": {
-            "compilationOptions": {
-                "define": [ "TRACE", "K10" ],
-                "allowUnsafe": true
-            },
             "dependencies": {
                 "System.Threading.ThreadPool": "4.0.10.0",
                 "System.Diagnostics.Debug": "4.0.10.0",
