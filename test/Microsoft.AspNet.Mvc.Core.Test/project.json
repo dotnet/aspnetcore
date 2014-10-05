@@ -3,14 +3,8 @@
     "warningsAsErrors": "true"
   },
   "dependencies": {
-    "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.PipelineCore": "1.0.0-*",
-    "Microsoft.AspNet.Mvc.HeaderValueAbstractions": "1.0.0-*",
-    "Microsoft.AspNet.Mvc" : "",
-    "Microsoft.AspNet.Mvc.Core" : "",
-    "Microsoft.AspNet.Mvc.ModelBinding": "",
-    "Microsoft.AspNet.PipelineCore": "1.0.0-*",
-    "Microsoft.AspNet.Routing": "1.0.0-*",
+    "Microsoft.AspNet.Mvc" : "6.0.0-*",
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
     "Microsoft.Framework.Logging": "1.0.0-*",

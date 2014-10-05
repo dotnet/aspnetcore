@@ -1,13 +1,10 @@
 {
     "dependencies": {
-        "Microsoft.AspNet.Mvc": "",
-        "Microsoft.AspNet.Mvc.TestConfiguration": ""
+        "Microsoft.AspNet.Mvc": "6.0.0-*",
+        "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0"
     },
     "frameworks": {
         "aspnet50": {
-            "dependencies": {
-                "System.Xml": ""
-            }
         },
         "aspnetcore50": {
             "dependencies": {

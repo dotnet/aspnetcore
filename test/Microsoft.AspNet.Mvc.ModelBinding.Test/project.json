@@ -1,46 +1,25 @@
 {
-  "compilationOptions": {
-    "warningsAsErrors": "true"
-  },
-  "dependencies": {
-    "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.Mvc.ModelBinding" : "",
-    "Microsoft.AspNet.PipelineCore": "1.0.0-*",
-    "Microsoft.AspNet.Routing": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
-    "Microsoft.AspNet.WebUtilities": "1.0.0-*",
-    "Microsoft.DataAnnotations" : "1.0.0-*",
-    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-    "Moq": "4.2.1312.1622",
-    "Newtonsoft.Json": "6.0.4",
-    "Xunit.KRunner": "1.0.0-*"
-  },
-  "commands": {
-    "test": "Xunit.KRunner"
-  },
-  "frameworks": {
-    "aspnet50": {
-      "dependencies": {
-        "System.ComponentModel.DataAnnotations": "",
-        "System.Reflection": "",
-        "System.Runtime": "",
-        "System.Runtime.Serialization": ""
-      }
+    "compilationOptions": {
+        "warningsAsErrors": "true"
     },
-    "aspnetcore50" : { 
-      "dependencies": {
-        "System.Collections": "4.0.10.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Globalization": "4.0.10.0",
-        "System.Linq": "4.0.0.0",
-        "System.Reflection": "4.0.10.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.Serialization.Primitives": "4.0.0.0",
-        "System.Threading": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.10.0",
-        "System.Threading.Thread": "4.0.0.0"
-      }
+    "dependencies": {
+        "Microsoft.AspNet.Http": "1.0.0-*",
+        "Microsoft.AspNet.Mvc.ModelBinding": "6.0.0-*",
+        "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+        "Microsoft.AspNet.Routing": "1.0.0-*",
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+        "Microsoft.DataAnnotations": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "Moq": "4.2.1312.1622",
+        "Newtonsoft.Json": "6.0.4",
+        "Xunit.KRunner": "1.0.0-*"
+    },
+    "commands": {
+        "test": "Xunit.KRunner"
+    },
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": { }
     }
-  }
 }

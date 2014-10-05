@@ -1,52 +1,54 @@
 {
-  "version": "6.0.0-*",
-  "compilationOptions": {
-    "warningsAsErrors": false
-  },
-  "dependencies": {
-    "K.Roslyn" : "1.0.0-*",
-    "Microsoft.AspNet.FileSystems": "1.0.0-*",
-    "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.Mvc.Common" : "",
-    "Microsoft.AspNet.Mvc.Core" : "",
-    "Microsoft.AspNet.Mvc.ModelBinding" : "",
-    "Microsoft.AspNet.Mvc.Razor.Host" : "",
-    "Microsoft.AspNet.Razor": "4.0.0-*",
-    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-    "Microsoft.Framework.Runtime.Interfaces":  "1.0.0-*"
-  },
-  "frameworks": {
-    "aspnet50": {
-      "dependencies": {
-        "System.Collections": "",
-        "System.Runtime": "",
-        "System.Text.Encoding": "",
-        "System.Xml": "",
-        "System.Xml.Linq": ""
-      }
+    "version": "6.0.0-*",
+    "compilationOptions": {
+        "warningsAsErrors": false
     },
-    "aspnetcore50": {
-      "dependencies": {
-        "System.Collections": "4.0.10.0",
-        "System.Collections.Concurrent": "4.0.0.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0.0",
-        "System.Diagnostics.Contracts": "4.0.0.0",
-        "System.Diagnostics.Debug": "4.0.10.0",
-        "System.Diagnostics.Tools": "4.0.0.0",
-        "System.Dynamic.Runtime": "4.0.0.0",
-        "System.Globalization": "4.0.10.0",
-        "System.IO": "4.0.10.0",
-        "System.IO.FileSystem": "4.0.0.0",
-        "System.Linq": "4.0.0.0",
-        "System.Reflection": "4.0.10.0",
-        "System.Resources.ResourceManager": "4.0.0.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.InteropServices": "4.0.20.0",
-        "System.Text.Encoding": "4.0.10.0",
-        "System.Threading.Tasks": "4.0.10.0"
-      }
+    "dependencies": {
+        "K.Roslyn": "1.0.0-*",
+        "Microsoft.AspNet.FileSystems": "1.0.0-*",
+        "Microsoft.AspNet.Http": "1.0.0-*",
+        "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
+        "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
+        "Microsoft.AspNet.Mvc.ModelBinding": "6.0.0-*",
+        "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
+        "Microsoft.AspNet.Razor": "4.0.0-*",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+    },
+    "frameworks": {
+        "aspnet50": {
+            "frameworkAssemblies": {
+                "System.Collections": "4.0.0.0",
+                "System.IO": "4.0.0.0",
+                "System.Runtime": "4.0.0.0",
+                "System.Text.Encoding": "4.0.0.0",
+                "System.Threading.Tasks": "4.0.0.0",
+                "System.Xml": "4.0.0.0",
+                "System.Xml.Linq": "4.0.0.0"
+            }
+        },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Collections": "4.0.10.0",
+                "System.Collections.Concurrent": "4.0.0.0",
+                "System.ComponentModel": "4.0.0.0",
+                "System.Security.Cryptography.Hashing.Algorithms": "4.0.0.0",
+                "System.Diagnostics.Contracts": "4.0.0.0",
+                "System.Diagnostics.Debug": "4.0.10.0",
+                "System.Diagnostics.Tools": "4.0.0.0",
+                "System.Dynamic.Runtime": "4.0.0.0",
+                "System.Globalization": "4.0.10.0",
+                "System.IO": "4.0.10.0",
+                "System.IO.FileSystem": "4.0.0.0",
+                "System.Linq": "4.0.0.0",
+                "System.Reflection": "4.0.10.0",
+                "System.Resources.ResourceManager": "4.0.0.0",
+                "System.Runtime": "4.0.20.0",
+                "System.Runtime.Extensions": "4.0.10.0",
+                "System.Runtime.InteropServices": "4.0.20.0",
+                "System.Text.Encoding": "4.0.10.0",
+                "System.Threading.Tasks": "4.0.10.0"
+            }
+        }
     }
-  }
 }

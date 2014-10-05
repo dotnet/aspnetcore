@@ -1,8 +1,8 @@
 {
     "dependencies": {
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
-        "Microsoft.AspNet.Mvc": "",
-        "Microsoft.AspNet.Mvc.TestConfiguration": "",
+        "Microsoft.AspNet.Mvc": "6.0.0-*",
+        "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
         "Microsoft.Framework.DependencyInjection.Autofac": "1.0.0-*",
         "Autofac": "3.3.0"
     },

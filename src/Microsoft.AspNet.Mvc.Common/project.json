@@ -1,18 +1,19 @@
 {
-  "version": "6.0.0-*",
-  "shared": "*.cs",
-  "dependencies": {
-    "System.Linq": "4.0.0.0",
-    "System.Reflection": "4.0.10.0",
-    "System.Reflection.Extensions": "4.0.0.0",
-    "System.Runtime" : "4.0.20.0"
-  },
-  "frameworks": {
-    "aspnet50": {},
-    "aspnetcore50": {
-        "dependencies": {
-            "System.Text.Encoding.Extensions": "4.0.10.0"
+    "version": "6.0.0-*",
+    "shared": "*.cs",
+    "dependencies": {
+
+    },
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Linq": "4.0.0.0",
+                "System.Reflection": "4.0.10.0",
+                "System.Reflection.Extensions": "4.0.0.0",
+                "System.Runtime": "4.0.20.0",
+                "System.Text.Encoding.Extensions": "4.0.10.0"
+            }
         }
     }
-  }
 }

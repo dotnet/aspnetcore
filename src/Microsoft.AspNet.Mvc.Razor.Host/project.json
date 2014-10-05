@@ -1,52 +1,54 @@
 {
-  "version": "6.0.0-*",
-  "compilationOptions": {
-    "warningsAsErrors": true
-  },
-  "dependencies": {
-    "Microsoft.AspNet.FileSystems": "1.0.0-*",
-    "Microsoft.AspNet.Mvc.Common": "",
-    "Microsoft.AspNet.Razor": "4.0.0-*"
-  },
-  "frameworks": {
-    "net45": {
-      "dependencies": {
-        "System.Collections": "",
-        "System.Runtime": "",
-        "System.Xml": "",
-        "System.Xml.Linq": ""
-      }
+    "version": "6.0.0-*",
+    "compilationOptions": {
+        "warningsAsErrors": true
     },
-    "aspnet50": {
-      "dependencies": {
-        "System.Collections": "",
-        "System.Runtime": "",
-        "System.Xml": "",
-        "System.Xml.Linq": "",
-        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
-      }
+    "dependencies": {
+        "Microsoft.AspNet.FileSystems": "1.0.0-*",
+        "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
+        "Microsoft.AspNet.Razor": "4.0.0-*"
     },
-    "aspnetcore50": {
-      "dependencies": {
-        "System.Collections": "4.0.10.0",
-        "System.Collections.Concurrent": "4.0.0.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Diagnostics.Contracts": "4.0.0.0",
-        "System.Diagnostics.Debug": "4.0.10.0",
-        "System.Diagnostics.Tools": "4.0.0.0",
-        "System.Dynamic.Runtime": "4.0.0.0",
-        "System.Globalization": "4.0.10.0",
-        "System.IO": "4.0.10.0",
-        "System.IO.FileSystem": "4.0.0.0",
-        "System.Linq": "4.0.0.0",
-        "System.Reflection": "4.0.10.0",
-        "System.Resources.ResourceManager": "4.0.0.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.InteropServices": "4.0.20.0",
-        "System.Threading.Tasks": "4.0.10.0",
-        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
-      }
+    "frameworks": {
+        "net45": {
+            "frameworkAssemblies": {
+                "System.Collections": "4.0.0.0",
+                "System.Runtime": "4.0.0.0",
+                "System.Xml": "4.0.0.0",
+                "System.Xml.Linq": "4.0.0.0"
+            }
+        },
+        "aspnet50": {
+            "frameworkAssemblies": {
+                "System.Collections": "4.0.0.0",
+                "System.Runtime": "4.0.10.0",
+                "System.Xml": "4.0.0.0",
+                "System.Xml.Linq": "4.0.0.0"
+            },
+            "dependencies": {
+                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+            }
+        },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Collections": "4.0.10.0",
+                "System.Collections.Concurrent": "4.0.0.0",
+                "System.ComponentModel": "4.0.0.0",
+                "System.Diagnostics.Contracts": "4.0.0.0",
+                "System.Diagnostics.Debug": "4.0.10.0",
+                "System.Diagnostics.Tools": "4.0.0.0",
+                "System.Dynamic.Runtime": "4.0.0.0",
+                "System.Globalization": "4.0.10.0",
+                "System.IO": "4.0.10.0",
+                "System.IO.FileSystem": "4.0.0.0",
+                "System.Linq": "4.0.0.0",
+                "System.Reflection": "4.0.10.0",
+                "System.Resources.ResourceManager": "4.0.0.0",
+                "System.Runtime": "4.0.20.0",
+                "System.Runtime.Extensions": "4.0.10.0",
+                "System.Runtime.InteropServices": "4.0.20.0",
+                "System.Threading.Tasks": "4.0.10.0",
+                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" },
+            }
+        }
     }
-  }
 }

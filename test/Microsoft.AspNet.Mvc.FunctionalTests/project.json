@@ -3,36 +3,36 @@
         "warningsAsErrors": "true"
     },
     "dependencies": {
-        "ActivatorWebSite": "",
-        "AddServicesWebSite": "",
-        "AntiForgeryWebSite": "",
-        "ApiExplorerWebSite": "",
-        "BasicWebSite": "",
-        "CompositeViewEngine": "",
-        "ConnegWebsite": "",
-        "FilesWebSite": "",
-        "FiltersWebSite": "",
-        "FormatterWebSite": "",
-        "InlineConstraintsWebSite": "",
-        "VersioningWebSite": "",
+        "ActivatorWebSite": "1.0.0",
+        "AddServicesWebSite": "1.0.0",
+        "AntiForgeryWebSite": "1.0.0",
+        "ApiExplorerWebSite": "1.0.0",
+        "BasicWebSite": "1.0.0",
+        "CompositeViewEngine": "1.0.0",
+        "ConnegWebsite": "1.0.0",
+        "FilesWebSite": "1.0.0",
+        "FiltersWebSite": "1.0.0",
+        "FormatterWebSite": "1.0.0",
+        "InlineConstraintsWebSite": "1.0.0",
+        "VersioningWebSite": "1.0.0",
+        "ModelBindingWebSite": "1.0.0",
+        "MvcSample.Web": "1.0.0",
+        "ReflectedModelWebSite": "1.0.0",
+        "RoutingWebSite": "1.0.0",
+        "RazorWebSite": "1.0.0",
+        "RazorInstrumentationWebsite": "1.0.0",
+        "ValueProvidersSite": "1.0.0",
+        "XmlSerializerWebSite": "1.0.0",
+        "UrlHelperWebSite": "1.0.0",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
-        "Microsoft.AspNet.Mvc.TestConfiguration": "",
+        "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
         "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
-        "ModelBindingWebSite": "",
-        "MvcSample.Web": "",
-        "ReflectedModelWebSite": "",
-        "RoutingWebSite": "",
-        "RazorWebSite": "",
-        "RazorInstrumentationWebsite": "",
-        "ValueProvidersSite": "",
-        "XmlSerializerWebSite": "",
-        "UrlHelperWebSite": "",
         "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {
@@ -41,7 +41,7 @@
     "frameworks": {
         "aspnet50": {
             "dependencies": {
-                "AutofacWebSite": ""
+                "AutofacWebSite": "1.0.0"
             }
         },
         "aspnetcore50": {

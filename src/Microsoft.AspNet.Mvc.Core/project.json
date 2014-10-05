@@ -7,21 +7,21 @@
     "Microsoft.AspNet.FileSystems": "1.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Mvc.HeaderValueAbstractions": "1.0.0-*",
-    "Microsoft.AspNet.Mvc.Common": "",
-    "Microsoft.AspNet.Mvc.ModelBinding": "",
+    "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
+    "Microsoft.AspNet.Mvc.ModelBinding": "6.0.0-*",
     "Microsoft.AspNet.Routing": "1.0.0-*",
     "Microsoft.AspNet.Security": "1.0.0-*",
     "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-    "Microsoft.Framework.Runtime.Interfaces":  "1.0.0-*",
+    "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" },
     "Microsoft.Framework.Logging": "1.0.0-*",
     "Microsoft.Framework.OptionsModel": "1.0.0-*",
     "Newtonsoft.Json": "6.0.4"
   },
   "frameworks": {
     "aspnet50": {
-      "dependencies": {
-        "System.Xml": ""
+      "frameworkAssemblies": {
+        "System.Xml": "4.0.0.0"
       }
     },
     "aspnetcore50": {

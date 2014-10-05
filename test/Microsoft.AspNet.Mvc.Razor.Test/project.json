@@ -1,23 +1,22 @@
 {
-  "dependencies": {
-    "Microsoft.AspNet.FileSystems": "1.0.0-*",
-    "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.Mvc.Core" : "",
-    "Microsoft.AspNet.Mvc.Razor" : "",
-    "Microsoft.AspNet.Razor": "4.0.0-*",
-    "Microsoft.AspNet.Routing": "1.0.0-*",
-    "Microsoft.AspNet.Testing" : "1.0.0-*",
-    "Xunit.KRunner": "1.0.0-*"
-  },
-  "commands": {
-    "test": "Xunit.KRunner"
-  },
-  "frameworks": {
-    "aspnet50": {
-      "dependencies": {
-        "Moq": "4.2.1312.1622",
-        "System.Reflection": ""
-      }
+    "dependencies": {
+        "Microsoft.AspNet.FileSystems": "1.0.0-*",
+        "Microsoft.AspNet.Http": "1.0.0-*",
+        "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
+        "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
+        "Microsoft.AspNet.Razor": "4.0.0-*",
+        "Microsoft.AspNet.Routing": "1.0.0-*",
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Xunit.KRunner": "1.0.0-*"
+    },
+    "commands": {
+        "test": "Xunit.KRunner"
+    },
+    "frameworks": {
+        "aspnet50": {
+            "dependencies": {
+                "Moq": "4.2.1312.1622"
+            }
+        }
     }
-  }
 }
