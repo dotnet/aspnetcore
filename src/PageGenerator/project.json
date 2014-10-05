@@ -1,18 +1,14 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.AspNet.Diagnostics":  "",
+        "Microsoft.AspNet.Diagnostics": "1.0.0-*",
         "Microsoft.AspNet.Razor": "4.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
     },
 
-    "frameworks" : {
-        "aspnet50" : {
-            "dependencies": {
-                "System.Runtime":  ""
-            }
-        },
-        "aspnetcore50" : { 
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": {
             "dependencies": {
                 "System.Console": "4.0.0.0"
             }
