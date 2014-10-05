@@ -11,7 +11,7 @@
         "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
         "Microsoft.AspNet.Mvc.ModelBinding": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
-    	"Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
+        "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
     },
