@@ -1,4 +1,5 @@
 {
+    "version": "1.0.0",
     "resources": "TestFiles/**/*",
     "dependencies": {
         "Moq": "4.2.1312.1622",

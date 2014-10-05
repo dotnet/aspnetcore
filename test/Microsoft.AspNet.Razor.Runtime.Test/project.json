@@ -1,7 +1,8 @@
 {
+    "version": "1.0.0",
     "dependencies": {
-        "Microsoft.AspNet.Razor.Runtime": "",
-        "Microsoft.AspNet.Razor.Test": ""
+        "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
+        "Microsoft.AspNet.Razor.Test": "1.0.0"
     },
     "commands": {
         "test": "Xunit.KRunner"

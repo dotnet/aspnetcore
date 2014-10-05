@@ -1,7 +1,7 @@
 {
     "version": "4.0.0-*",
     "dependencies": {
-        "Microsoft.AspNet.Razor": ""
+        "Microsoft.AspNet.Razor": "4.0.0-*"
     },
     "frameworks": {
         "net45": { },
