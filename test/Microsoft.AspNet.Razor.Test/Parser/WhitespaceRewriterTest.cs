@@ -32,14 +32,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                 factory.Markup("test")
                 );
             WhiteSpaceRewriter rewriter = new WhiteSpaceRewriter(new HtmlMarkupParser().BuildSpan);
+            var rewritingContext = new RewritingContext(start);
 
             // Act
-            Block actual = rewriter.Rewrite(start);
+            rewriter.Rewrite(rewritingContext);
 
             factory.Reset();
 
             // Assert
-            ParserTestBase.EvaluateParseTree(actual, new MarkupBlock(
+            ParserTestBase.EvaluateParseTree(rewritingContext.SyntaxTree, new MarkupBlock(
                                                          factory.Markup("test"),
                                                          factory.Markup("    "),
                                                          new ExpressionBlock(

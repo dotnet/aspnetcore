@@ -424,4 +424,7 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="TagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver" xml:space="preserve">
     <value>Cannot use directive '{0}' when a {1} has not been provided to the {2}.</value>
   </data>
+  <data name="TagHelpersParseTreeRewriter_FoundMalformedTagHelper" xml:space="preserve">
+    <value>Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self closing.</value>
+  </data>
 </root>

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Text;
 using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Parser.TagHelpers
@@ -16,6 +17,8 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
     /// </summary>
     public class TagHelperBlock : Block, IEquatable<TagHelperBlock>
     {
+        private readonly SourceLocation _start;
+
         /// <summary>
         /// Instantiates a new instance of a <see cref="TagHelperBlock"/>.
         /// </summary>
@@ -26,6 +29,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         {
             TagName = source.TagName;
             Attributes = new Dictionary<string, SyntaxTreeNode>(source.Attributes);
+            _start = source.Start;
 
             source.Reset();
 
@@ -39,6 +43,15 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// The HTML attributes.
         /// </summary>
         public IDictionary<string, SyntaxTreeNode> Attributes { get; private set; }
+
+        /// <inheritdoc />
+        public override SourceLocation Start
+        {
+            get
+            {
+                return _start;
+            }
+        }
 
         /// <summary>
         /// The HTML tag name.

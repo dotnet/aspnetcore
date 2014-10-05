@@ -6,19 +6,17 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 namespace Microsoft.AspNet.Razor.Parser
 {
     /// <summary>
-    /// Defines the contract for rewriting a syntax tree.
+    /// Contract for rewriting a syntax tree.
     /// </summary>
     public interface ISyntaxTreeRewriter
     {
         /// <summary>
-        /// Rewrites the provided <paramref name="input"/> syntax tree.
+        /// Rewrites the provided <paramref name="context"/>s <see cref= "RewritingContext.SyntaxTree" />.
         /// </summary>
-        /// <param name="input">The current syntax tree.</param>
-        /// <returns>The <paramref name="input"/> syntax tree or a syntax tree to be used instead of the 
-        /// <paramref name="input"/> tree.</returns>
+        /// <param name="context">Contains information on the rewriting of the syntax tree.</param>
         /// <remarks>
-        /// If you choose not to modify the syntax tree you can always return <paramref name="input"/>.
+        /// To modify the syntax tree replace the <paramref name="context"/>s <see cref="RewritingContext.SyntaxTree"/>.
         /// </remarks>
-        Block Rewrite(Block input);
+        void Rewrite(RewritingContext context);
     }
 }

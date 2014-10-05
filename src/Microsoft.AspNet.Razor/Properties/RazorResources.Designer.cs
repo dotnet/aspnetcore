@@ -1542,6 +1542,22 @@ namespace Microsoft.AspNet.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self closing.
+        /// </summary>
+        internal static string TagHelpersParseTreeRewriter_FoundMalformedTagHelper
+        {
+            get { return GetString("TagHelpersParseTreeRewriter_FoundMalformedTagHelper"); }
+        }
+
+        /// <summary>
+        /// Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self closing.
+        /// </summary>
+        internal static string FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_FoundMalformedTagHelper"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

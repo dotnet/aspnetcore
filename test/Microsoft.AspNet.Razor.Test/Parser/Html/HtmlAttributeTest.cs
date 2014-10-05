@@ -185,8 +185,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             // Act
             ParserResults results = ParseDocument("<a href='~/Foo/Bar' />");
-            Block rewritten = new ConditionalAttributeCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(results.Document);
-            rewritten = new MarkupCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritten);
+            var rewritingContext = new RewritingContext(results.Document);
+            new ConditionalAttributeCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
+            new MarkupCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
+            var rewritten = rewritingContext.SyntaxTree;
 
             // Assert
             Assert.Equal(0, results.ParserErrors.Count);
@@ -270,8 +272,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
 
             // Act
             ParserResults results = ParseDocument(code);
-            Block rewritten = new ConditionalAttributeCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(results.Document);
-            rewritten = new MarkupCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritten);
+            var rewritingContext = new RewritingContext(results.Document);
+            new ConditionalAttributeCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
+            new MarkupCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
+            var rewritten = rewritingContext.SyntaxTree;
 
             // Assert
             Assert.Equal(0, results.ParserErrors.Count);

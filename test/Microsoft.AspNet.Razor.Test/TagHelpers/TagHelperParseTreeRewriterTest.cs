@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
@@ -16,6 +18,90 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : CsHtmlMarkupParserTestBase
     {
+        public static IEnumerable<object[]> IncompleteHelperBlockData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+                var errorFormat = "Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or " +
+                                  "be self closing.";
+                var dateTimeNow = new MarkupBlock(
+                    new ExpressionBlock(
+                        factory.CodeTransition(),
+                            factory.Code("DateTime.Now")
+                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                .Accepts(AcceptedCharacters.NonWhiteSpace)));
+
+                yield return new object[] {
+                    "<p class=foo dynamic=@DateTime.Now style=color:red;><strong></p></strong>",
+                    new MarkupBlock(
+                        new MarkupTagHelperBlock("p",
+                        new Dictionary<string, SyntaxTreeNode>
+                        {
+                            { "class", new MarkupBlock(factory.Markup("foo")) },
+                            { "dynamic", new MarkupBlock(dateTimeNow) },
+                            { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                        },
+                        new MarkupTagHelperBlock("strong",
+                            blockFactory.MarkupTagBlock("</p>")))),
+                    new RazorError(string.Format(CultureInfo.InvariantCulture, errorFormat, "p"),
+                                   SourceLocation.Zero)
+                };
+                yield return new object[] {
+                    "<div><p>Hello <strong>World</strong></div>",
+                    new MarkupBlock(
+                        blockFactory.MarkupTagBlock("<div>"),
+                        new MarkupTagHelperBlock("p",
+                            factory.Markup("Hello "),
+                            new MarkupTagHelperBlock("strong",
+                                factory.Markup("World")),
+                            blockFactory.MarkupTagBlock("</div>"))),
+                    new RazorError(string.Format(CultureInfo.InvariantCulture, errorFormat, "p"),
+                                   absoluteIndex: 5, lineIndex: 0, columnIndex: 5)
+                };
+                yield return new object[] {
+                    "<div><p>Hello <strong>World</div>",
+                    new MarkupBlock(
+                        blockFactory.MarkupTagBlock("<div>"),
+                        new MarkupTagHelperBlock("p",
+                            factory.Markup("Hello "),
+                            new MarkupTagHelperBlock("strong",
+                                factory.Markup("World"),
+                                blockFactory.MarkupTagBlock("</div>")))),
+                    new RazorError(string.Format(CultureInfo.InvariantCulture, errorFormat, "strong"),
+                                   absoluteIndex: 14, lineIndex: 0, columnIndex: 14)
+                };
+                yield return new object[] {
+                    "<p class=\"foo\">Hello <p style=\"color:red;\">World</p>",
+                    new MarkupBlock(
+                        new MarkupTagHelperBlock("p",
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "class", new MarkupBlock(factory.Markup("foo")) }
+                            },
+                            factory.Markup("Hello "),
+                            new MarkupTagHelperBlock("p",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                                },
+                                factory.Markup("World")))),
+                    new RazorError(string.Format(CultureInfo.InvariantCulture, errorFormat, "p"),
+                                   SourceLocation.Zero)
+                };
+            }
+        }
+        [Theory]
+        [MemberData(nameof(IncompleteHelperBlockData))]
+        public void TagHelperParseTreeRewriter_CreatesErrorForIncompleteTagHelper(
+            string documentContent,
+            MarkupBlock expectedOutput,
+            RazorError expectedError)
+        {
+            RunParseTreeRewriterTest(documentContent, expectedOutput, new[] { expectedError }, "strong", "p");
+        }
+
         public static IEnumerable<object[]> TextTagsBlockData
         {
             get
@@ -938,14 +1024,25 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         }
 
         private void RunParseTreeRewriterTest(string documentContent,
-                                      MarkupBlock expectedOutput,
-                                      params string[] tagNames)
+                                              MarkupBlock expectedOutput,
+                                              params string[] tagNames)
+        {
+            RunParseTreeRewriterTest(documentContent,
+                                     expectedOutput,
+                                     errors: Enumerable.Empty<RazorError>(),
+                                     tagNames: tagNames);
+        }
+
+        private void RunParseTreeRewriterTest(string documentContent,
+                                              MarkupBlock expectedOutput,
+                                              IEnumerable<RazorError> errors,
+                                              params string[] tagNames)
         {
             // Arrange
             var providerContext = BuildProviderContext(tagNames);
 
             // Act & Assert
-            EvaluateData(providerContext, documentContent, expectedOutput);
+            EvaluateData(providerContext, documentContent, expectedOutput, errors);
         }
 
         private TagHelperDescriptorProvider BuildProviderContext(params string[] tagNames)
@@ -961,12 +1058,20 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             return new TagHelperDescriptorProvider(descriptors);
         }
 
-        private void EvaluateData(TagHelperDescriptorProvider provider, string documentContent, MarkupBlock expectedOutput)
+        private void EvaluateData(TagHelperDescriptorProvider provider,
+                                  string documentContent,
+                                  MarkupBlock expectedOutput,
+                                  IEnumerable<RazorError> expectedErrors)
         {
             var results = ParseDocument(documentContent);
-            var rewritten = new TagHelperParseTreeRewriter(provider).Rewrite(results.Document);
+            var rewritingContext = new RewritingContext(results.Document);
+            new TagHelperParseTreeRewriter(provider).Rewrite(rewritingContext);
+            var rewritten = rewritingContext.SyntaxTree;
 
-            Assert.Empty(results.ParserErrors);
+            // Combine the parser errors and the rewriter errors. Normally the RazorParser does this.
+            var errors = results.ParserErrors.Concat(rewritingContext.Errors).ToList();
+
+            EvaluateRazorErrors(errors, expectedErrors.ToList());
             EvaluateParseTree(rewritten, expectedOutput);
         }
 

@@ -136,25 +136,27 @@ namespace Microsoft.AspNet.Razor.Parser
             ParserResults results = context.CompleteParse();
 
             // Rewrite whitespace if supported
-            Block current = results.Document;
+            var rewritingContext = new RewritingContext(results.Document);
             foreach (ISyntaxTreeRewriter rewriter in Optimizers)
             {
-                current = rewriter.Rewrite(current);
+                rewriter.Rewrite(rewritingContext);
             }
 
             if (_tagHelperDescriptorResolver != null)
             {
                 var tagHelperRegistrationVisitor = new TagHelperRegistrationVisitor(_tagHelperDescriptorResolver);
-                var tagHelperProvider = tagHelperRegistrationVisitor.CreateProvider(current);
+                var tagHelperProvider = tagHelperRegistrationVisitor.CreateProvider(rewritingContext.SyntaxTree);
 
                 var tagHelperParseTreeRewriter = new TagHelperParseTreeRewriter(tagHelperProvider);
                 // Rewrite the document to utilize tag helpers
-                current = tagHelperParseTreeRewriter.Rewrite(current);
+                tagHelperParseTreeRewriter.Rewrite(rewritingContext);
             }
+
+            var syntaxTree = rewritingContext.SyntaxTree;
 
             // Link the leaf nodes into a chain
             Span prev = null;
-            foreach (Span node in current.Flatten())
+            foreach (Span node in syntaxTree.Flatten())
             {
                 node.Previous = prev;
                 if (prev != null)
@@ -164,8 +166,12 @@ namespace Microsoft.AspNet.Razor.Parser
                 prev = node;
             }
 
+            // We want to surface both the parsing and rewriting errors as one unified list of errors because
+            // both parsing and rewriting errors affect the end users Razor page.
+            var errors = results.ParserErrors.Concat(rewritingContext.Errors).ToList();
+
             // Return the new result
-            return new ParserResults(current, results.ParserErrors);
+            return new ParserResults(syntaxTree, errors);
         }
     }
 }

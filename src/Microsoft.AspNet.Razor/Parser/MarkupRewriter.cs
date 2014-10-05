@@ -28,11 +28,11 @@ namespace Microsoft.AspNet.Razor.Parser
             get { return _blocks.Count > 0 ? _blocks.Peek() : null; }
         }
 
-        public virtual Block Rewrite(Block input)
+        public virtual void Rewrite(RewritingContext context)
         {
-            input.Accept(this);
+            context.SyntaxTree.Accept(this);
             Debug.Assert(_blocks.Count == 1);
-            return _blocks.Pop().Build();
+            context.SyntaxTree = _blocks.Pop().Build();
         }
 
         public override void VisitBlock(Block block)

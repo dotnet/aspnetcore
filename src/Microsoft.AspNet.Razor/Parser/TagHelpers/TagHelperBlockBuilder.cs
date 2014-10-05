@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
 namespace Microsoft.AspNet.Razor.Parser.TagHelpers
@@ -44,6 +45,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             CodeGenerator = new TagHelperCodeGenerator(descriptors);
             Type = startTag.Type;
             Attributes = GetTagAttributes(startTag);
+
+            // There will always be at least one child for the '<'.
+            Start = startTag.Children.First().Start;
         }
 
         // Internal for testing
@@ -97,6 +101,11 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 
             base.Reset();
         }
+
+        /// <summary>
+        /// The starting <see cref="SourceLocation"/> of the tag helper.
+        /// </summary>
+        public SourceLocation Start { get; private set; }
 
         private static IDictionary<string, SyntaxTreeNode> GetTagAttributes(Block tagBlock)
         {

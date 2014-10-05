@@ -25,13 +25,13 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             _blockStack = new Stack<BlockBuilder>();
         }
 
-        public Block Rewrite(Block input)
+        public void Rewrite(RewritingContext context)
         {
-            RewriteTags(input);
+            RewriteTags(context.SyntaxTree);
 
-            Debug.Assert(_blockStack.Count == 0);
+            ValidateRewrittenSyntaxTree(context);
 
-            return _currentBlock.Build();
+            context.SyntaxTree = _currentBlock.Build();
         }
 
         private void RewriteTags(Block input)
@@ -120,6 +120,37 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             }
 
             BuildCurrentlyTrackedBlock();
+        }
+
+        private void ValidateRewrittenSyntaxTree(RewritingContext context)
+        {
+            // If the blockStack still has elements in it that means there's at least one malformed TagHelper block in
+            // the document, that's the only way we can have a non-zero _blockStack.Count.
+            if (_blockStack.Count != 0)
+            {
+                // We reverse the children so we can search from the back to the front for the TagHelper that is 
+                // malformed.
+                var candidateChildren = _currentBlock.Children.Reverse();
+                var malformedTagHelper = candidateChildren.OfType<TagHelperBlock>().FirstOrDefault();
+
+                // If the malformed tag helper is null that means something other than a TagHelper caused the 
+                // unbalancing of the syntax tree (should never happen).
+                Debug.Assert(malformedTagHelper != null);
+
+                // We only create a single error because we can't reasonably determine other invalid tag helpers in the
+                // document; having one malformed tag helper puts the document into an invalid state.
+                context.OnError(
+                    malformedTagHelper.Start,
+                    RazorResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(
+                        malformedTagHelper.TagName));
+
+                // We need to build the remaining blocks in the stack to ensure we don't return an invalid syntax tree.
+                do
+                {
+                    BuildCurrentlyTrackedTagHelperBlock();
+                }
+                while (_blockStack.Count != 0);
+            }
         }
 
         private void BuildCurrentlyTrackedBlock()
