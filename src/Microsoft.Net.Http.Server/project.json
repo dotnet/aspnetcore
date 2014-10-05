@@ -1,45 +1,45 @@
 {
-  "version": "1.0.0-*",
-  "dependencies": {
-    "Microsoft.Framework.Logging": "1.0.0-*",
-    "Microsoft.Net.WebSockets": ""
-  },
-  "compilationOptions": {
-    "allowUnsafe": true
-  },
-  "frameworks": {
-    "net45": { },
-    "aspnet50": { },
-    "aspnetcore50": {
-      "dependencies": {
-        "Microsoft.Net.WebSocketAbstractions": "1.0.0-*",
-        "Microsoft.Win32.Primitives": "4.0.0.0",
-        "System.Collections": "4.0.10.0",
-        "System.Collections.Concurrent": "4.0.0.0",
-        "System.Diagnostics.Contracts": "4.0.0.0",
-        "System.Diagnostics.Debug": "4.0.10.0",
-        "System.Diagnostics.Tools": "4.0.0.0",
-        "System.Globalization": "4.0.10.0",
-        "System.IO": "4.0.10.0",
-        "System.IO.FileSystem": "4.0.0.0",
-        "System.Linq": "4.0.0.0",
-        "System.Net.Primitives": "4.0.10.0",
-        "System.Reflection": "4.0.10.0",
-        "System.Resources.ResourceManager": "4.0.0.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.Handles":  "4.0.0.0",
-        "System.Runtime.InteropServices": "4.0.20.0",
-        "System.Security.Claims": "1.0.0-*",
-        "System.Security.Cryptography.X509Certificates": "4.0.0.0",
-        "System.Security.Principal": "4.0.0.0",
-        "System.Text.Encoding": "4.0.10.0",
-        "System.Text.Encoding.Extensions": "4.0.10.0",
-        "System.Threading": "4.0.0.0",
-        "System.Threading.Overlapped": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.10.0",
-        "System.Threading.ThreadPool": "4.0.10.0"
-      }
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.Framework.Logging": "1.0.0-*",
+        "Microsoft.Net.WebSockets": "1.0.0-*"
+    },
+    "compilationOptions": {
+        "allowUnsafe": true
+    },
+    "frameworks": {
+        "net45": { },
+        "aspnet50": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "Microsoft.Net.WebSocketAbstractions": "1.0.0-*",
+                "Microsoft.Win32.Primitives": "4.0.0.0",
+                "System.Collections": "4.0.10.0",
+                "System.Collections.Concurrent": "4.0.0.0",
+                "System.Diagnostics.Contracts": "4.0.0.0",
+                "System.Diagnostics.Debug": "4.0.10.0",
+                "System.Diagnostics.Tools": "4.0.0.0",
+                "System.Globalization": "4.0.10.0",
+                "System.IO": "4.0.10.0",
+                "System.IO.FileSystem": "4.0.0.0",
+                "System.Linq": "4.0.0.0",
+                "System.Net.Primitives": "4.0.10.0",
+                "System.Reflection": "4.0.10.0",
+                "System.Resources.ResourceManager": "4.0.0.0",
+                "System.Runtime": "4.0.20.0",
+                "System.Runtime.Extensions": "4.0.10.0",
+                "System.Runtime.Handles": "4.0.0.0",
+                "System.Runtime.InteropServices": "4.0.20.0",
+                "System.Security.Claims": "1.0.0-*",
+                "System.Security.Cryptography.X509Certificates": "4.0.0.0",
+                "System.Security.Principal": "4.0.0.0",
+                "System.Text.Encoding": "4.0.10.0",
+                "System.Text.Encoding.Extensions": "4.0.10.0",
+                "System.Threading": "4.0.0.0",
+                "System.Threading.Overlapped": "4.0.0.0",
+                "System.Threading.Tasks": "4.0.10.0",
+                "System.Threading.ThreadPool": "4.0.10.0"
+            }
+        }
     }
-  }
 }
