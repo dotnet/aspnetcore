@@ -1,19 +1,18 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.RequestContainer": "1.0.0-*",
         "Microsoft.AspNet.Security": "1.0.0-*",
         "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
         "Microsoft.AspNet.Security.OAuth": "1.0.0-*",
         "Microsoft.AspNet.WebUtilities": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
-        "Newtonsoft.Json": "6.0.4",
-        "System.Net.Http": "4.0.0.0"
+        "Newtonsoft.Json": "6.0.4"
     },
     "frameworks": {
         "aspnet50": {
-            "dependencies": {
+            "frameworkAssemblies": {
+                "System.Net.Http": "4.0.0.0"
             }
         },
         "aspnetcore50": {
@@ -36,7 +35,8 @@
                 "System.Security.Cryptography.Hashing.Algorithms": "4.0.0.0",
                 "System.Security.Principal": "4.0.0.0",
                 "System.Threading": "4.0.0.0",
-                "System.Threading.Tasks": "4.0.10.0"
+                "System.Threading.Tasks": "4.0.10.0",
+                "System.Net.Http": "4.0.0.0"
             }
         }
     }
