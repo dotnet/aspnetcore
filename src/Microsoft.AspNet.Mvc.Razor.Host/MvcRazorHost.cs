@@ -76,7 +76,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             DefaultBaseClass = BaseType + '<' + DefaultModel + '>';
             DefaultNamespace = "Asp";
             GeneratedClassContext = new GeneratedClassContext(
-
                 executeMethodName: "ExecuteAsync",
                 writeMethodName: "Write",
                 writeLiteralMethodName: "WriteLiteral",
@@ -88,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     RunnerTypeName = typeof(TagHelperRunner).FullName,
                     ScopeManagerTypeName = typeof(TagHelperScopeManager).FullName,
-                    ExecutionContextTypeName = typeof(TagHelpersExecutionContext).FullName,
+                    ExecutionContextTypeName = typeof(TagHelperExecutionContext).FullName,
                     StartWritingScopeMethodName = "StartWritingScope",
                     EndWritingScopeMethodName = "EndWritingScope"
                 })
