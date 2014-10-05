@@ -1,14 +1,10 @@
 {
     "dependencies": {
-        "Microsoft.AspNet.WebSockets.Protocol": "",
+        "Microsoft.AspNet.WebSockets.Protocol": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*"
     },
     "frameworks": {
-        "aspnet50": {
-            "dependencies": {
-                "System.Runtime" : ""
-            }
-        }
+        "aspnet50": { }
     },
     "commands": {
         "test": "Xunit.KRunner"

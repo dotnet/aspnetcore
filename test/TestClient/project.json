@@ -1,9 +1,9 @@
 {
     "dependencies": {
-        "Microsoft.AspNet.WebSockets.Protocol": "",
-        "Microsoft.AspNet.WebSockets.Client": ""
+        "Microsoft.AspNet.WebSockets.Protocol": "1.0.0-*",
+        "Microsoft.AspNet.WebSockets.Client": "1.0.0-*"
     },
     "frameworks": {
-        "net45": { }
+        "aspnet50": { }
     }
 }
