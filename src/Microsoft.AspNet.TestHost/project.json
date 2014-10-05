@@ -1,25 +1,29 @@
 {
-  "version" : "1.0.0-*",
-  "dependencies": {
-    "Microsoft.AspNet.Hosting": "",
-    "System.Net.Http": "4.0.0.0"
-  },
-  "frameworks": {
-    "aspnet50": { },
-    "aspnetcore50" : {
-        "dependencies": {
-            "System.Collections": "4.0.10.0",
-            "System.ComponentModel": "4.0.0.0",
-            "System.Globalization": "4.0.10.0",
-            "System.Linq": "4.0.0.0",
-            "System.Reflection": "4.0.10.0",
-            "System.Runtime": "4.0.20.0",
-            "System.Runtime.Extensions": "4.0.10.0",
-            "System.Runtime.Serialization.Primitives": "4.0.0.0",
-            "System.Threading": "4.0.0.0",
-            "System.Threading.Tasks": "4.0.10.0",
-            "System.Threading.Thread": "4.0.0.0"
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.AspNet.Hosting": "1.0.0-*"
+    },
+    "frameworks": {
+        "aspnet50": {
+            "frameworkAssemblies": {
+                "System.Net.Http": "4.0.0.0"
+            }
+        },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Collections": "4.0.10.0",
+                "System.ComponentModel": "4.0.0.0",
+                "System.Globalization": "4.0.10.0",
+                "System.Linq": "4.0.0.0",
+                "System.Reflection": "4.0.10.0",
+                "System.Runtime": "4.0.20.0",
+                "System.Runtime.Extensions": "4.0.10.0",
+                "System.Runtime.Serialization.Primitives": "4.0.0.0",
+                "System.Threading": "4.0.0.0",
+                "System.Threading.Tasks": "4.0.10.0",
+                "System.Threading.Thread": "4.0.0.0",
+                "System.Net.Http": "4.0.0.0"
+            }
         }
     }
-  }
 }

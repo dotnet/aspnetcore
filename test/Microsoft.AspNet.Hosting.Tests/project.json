@@ -1,18 +1,14 @@
 {
-  "dependencies": {
-    "Microsoft.AspNet.Hosting": "",
-    "Microsoft.AspNet.RequestContainer": "",
-    "Xunit.KRunner": "1.0.0-*"
-  },
-  "frameworks": {
-    "aspnet50": {
-        "dependencies": {
-            "System.Runtime" : ""
-        }
-    }
-  },
-  "commands": {
-    "test": "Xunit.KRunner"
-  },
-  "webroot" : "testroot"
+    "dependencies": {
+        "Microsoft.AspNet.Hosting": "1.0.0-*",
+        "Microsoft.AspNet.RequestContainer": "1.0.0-*",
+        "Xunit.KRunner": "1.0.0-*"
+    },
+    "frameworks": {
+        "aspnet50": { }
+    },
+    "commands": {
+        "test": "Xunit.KRunner"
+    },
+    "webroot": "testroot"
 }

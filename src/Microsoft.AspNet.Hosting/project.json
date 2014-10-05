@@ -1,32 +1,32 @@
 {
-  "version": "1.0.0-*",
-  "dependencies": {
-    "Microsoft.AspNet.FeatureModel": "1.0.0-*",
-    "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.PipelineCore": "1.0.0-*",
-    "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
-    "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
-    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-    "Microsoft.Framework.Logging": "1.0.0-*",
-    "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
-    "Newtonsoft.Json": "6.0.4"
-  },
-  "frameworks": {
-    "aspnet50": {},
-    "aspnetcore50": {
-      "dependencies": {
-        "System.Collections": "4.0.10.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Console": "4.0.0.0",
-        "System.Diagnostics.Debug": "4.0.10.0",
-        "System.IO": "4.0.10.0",
-        "System.Linq": "4.0.0.0",
-        "System.Reflection": "4.0.10.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Threading": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.10.0"
-      }
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.AspNet.FeatureModel": "1.0.0-*",
+        "Microsoft.AspNet.Http": "1.0.0-*",
+        "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+        "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
+        "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "Microsoft.Framework.Logging": "1.0.0-*",
+        "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" },
+        "Newtonsoft.Json": "6.0.4"
+    },
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Collections": "4.0.10.0",
+                "System.ComponentModel": "4.0.0.0",
+                "System.Console": "4.0.0.0",
+                "System.Diagnostics.Debug": "4.0.10.0",
+                "System.IO": "4.0.10.0",
+                "System.Linq": "4.0.0.0",
+                "System.Reflection": "4.0.10.0",
+                "System.Runtime": "4.0.20.0",
+                "System.Runtime.Extensions": "4.0.10.0",
+                "System.Threading": "4.0.0.0",
+                "System.Threading.Tasks": "4.0.10.0"
+            }
+        }
     }
-  }
 }
