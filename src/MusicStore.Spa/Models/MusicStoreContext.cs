@@ -63,10 +63,10 @@ namespace MusicStore.Models
             var album = builder.Model.GetEntityType(typeof(Album));
             var artist = builder.Model.GetEntityType(typeof(Artist));
             var orderDetail = builder.Model.GetEntityType(typeof(OrderDetail));
-            genre.AddNavigation(new Navigation(album.ForeignKeys.Single(k => k.ReferencedEntityType == genre), "Albums", pointsToPrincipal: false));
-            album.AddNavigation(new Navigation(orderDetail.ForeignKeys.Single(k => k.ReferencedEntityType == album), "OrderDetails", pointsToPrincipal: false));
-            album.AddNavigation(new Navigation(album.ForeignKeys.Single(k => k.ReferencedEntityType == genre), "Genre", pointsToPrincipal: true));
-            album.AddNavigation(new Navigation(album.ForeignKeys.Single(k => k.ReferencedEntityType == artist), "Artist", pointsToPrincipal: true));
+            genre.AddNavigation("Albums", album.ForeignKeys.Single(k => k.ReferencedEntityType == genre), pointsToPrincipal: false);
+            album.AddNavigation("OrderDetails", orderDetail.ForeignKeys.Single(k => k.ReferencedEntityType == album), pointsToPrincipal: false);
+            album.AddNavigation("Genre", album.ForeignKeys.Single(k => k.ReferencedEntityType == genre), pointsToPrincipal: true);
+            album.AddNavigation("Artist", album.ForeignKeys.Single(k => k.ReferencedEntityType == artist), pointsToPrincipal: true);
         }
     }
 
