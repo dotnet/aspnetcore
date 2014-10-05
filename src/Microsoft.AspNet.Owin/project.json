@@ -1,30 +1,30 @@
 {
-  "version": "1.0.0-*",
-  "dependencies": {
-    "Microsoft.AspNet.Http": "",
-    "Microsoft.AspNet.FeatureModel": "",
-    "Microsoft.AspNet.PipelineCore": "",
-    "Microsoft.AspNet.HttpFeature": ""
-  },
-  "frameworks": {
-    "aspnet50": { },
-    "aspnetcore50": {
-      "dependencies": {
-        "System.Collections": "4.0.10.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Diagnostics.Tools": "4.0.0.0",
-        "System.Globalization": "4.0.10.0",
-        "System.IO": "4.0.10.0",
-        "System.Linq": "4.0.0.0",
-        "System.Net.Primitives": "4.0.10.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.InteropServices": "4.0.20.0",
-        "System.Security.Claims": "1.0.0-*",
-        "System.Security.Cryptography.X509Certificates": "4.0.0.0",
-        "System.Security.Principal" : "4.0.0.0",
-        "System.Threading.Tasks": "4.0.10.0"
-      }
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.AspNet.Http": "1.0.0-*",
+        "Microsoft.AspNet.FeatureModel": "1.0.0-*",
+        "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+        "Microsoft.AspNet.HttpFeature": { "version": "1.0.0-*", "type": "build" }
+    },
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Collections": "4.0.10.0",
+                "System.ComponentModel": "4.0.0.0",
+                "System.Diagnostics.Tools": "4.0.0.0",
+                "System.Globalization": "4.0.10.0",
+                "System.IO": "4.0.10.0",
+                "System.Linq": "4.0.0.0",
+                "System.Net.Primitives": "4.0.10.0",
+                "System.Runtime": "4.0.20.0",
+                "System.Runtime.Extensions": "4.0.10.0",
+                "System.Runtime.InteropServices": "4.0.20.0",
+                "System.Security.Claims": "1.0.0-*",
+                "System.Security.Cryptography.X509Certificates": "4.0.0.0",
+                "System.Security.Principal": "4.0.0.0",
+                "System.Threading.Tasks": "4.0.10.0"
+            }
+        }
     }
-  }
 }

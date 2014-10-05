@@ -1,17 +1,13 @@
 {
-  "dependencies": {
-    "Microsoft.AspNet.Http": "",
-    "Microsoft.AspNet.WebUtilities": "",
-    "Xunit.KRunner": "1.0.0-*"
-  },
-  "commands": {
-    "test": "Xunit.KRunner"
-  },
-  "frameworks": {
-    "aspnet50": {
-      "dependencies": {
-        "System.Runtime":  ""
-      }
+    "dependencies": {
+        "Microsoft.AspNet.Http": "1.0.0-*",
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+        "Xunit.KRunner": "1.0.0-*"
+    },
+    "commands": {
+        "test": "Xunit.KRunner"
+    },
+    "frameworks": {
+        "aspnet50": { }
     }
-  }
 }

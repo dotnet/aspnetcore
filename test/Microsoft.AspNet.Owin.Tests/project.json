@@ -1,10 +1,10 @@
 {
   "dependencies": {
-    "Microsoft.AspNet.FeatureModel": "",
-    "Microsoft.AspNet.Http": "",
-    "Microsoft.AspNet.HttpFeature": "",
-    "Microsoft.AspNet.Owin": "",
-    "Microsoft.AspNet.PipelineCore": "",
+    "Microsoft.AspNet.FeatureModel": "1.0.0-*",
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.HttpFeature": "1.0.0-*",
+    "Microsoft.AspNet.Owin": "1.0.0-*",
+    "Microsoft.AspNet.PipelineCore": "1.0.0-*",
     "Xunit.KRunner": "1.0.0-*"
   },
   "commands": {
@@ -13,8 +13,7 @@
   "frameworks": {
     "aspnet50": {
       "dependencies": {
-        "Shouldly": "1.1.1.1",
-        "System.Runtime":  ""
+        "Shouldly": "1.1.1.1"
       }
     }
   }

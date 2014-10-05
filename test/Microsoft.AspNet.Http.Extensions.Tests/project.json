@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "Microsoft.AspNet.Http": "",
-    "Microsoft.AspNet.Http.Extensions": "",
-    "Microsoft.AspNet.HttpFeature": "",
-    "Microsoft.AspNet.PipelineCore": "",
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNet.HttpFeature": "1.0.0-*",
+    "Microsoft.AspNet.PipelineCore": "1.0.0-*",
     "Xunit.KRunner": "1.0.0-*"
   },
   "commands": {
@@ -12,8 +12,7 @@
   "frameworks": {
     "aspnet50": {
       "dependencies": {
-        "Shouldly": "1.1.1.1",
-        "System.Runtime":  ""
+        "Shouldly": "1.1.1.1"
       }
     }
   }
