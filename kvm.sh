@@ -15,7 +15,7 @@ fi
 
 KRE_USER_PACKAGES="$KRE_USER_HOME/packages"
 if [ -z "$KRE_FEED" ]; then
-    KRE_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
+    KRE_FEED="https://www.myget.org/F/aspnetmaster/api/v2"
 fi
 
 _kvm_find_latest() {

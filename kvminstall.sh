@@ -27,7 +27,7 @@ if ! _kvmsetup_has "curl"; then
 fi
 
 if [ -z "$KVM_SOURCE" ]; then
-    KVM_SOURCE="https://raw.githubusercontent.com/aspnet/Home/dev/kvm.sh"
+    KVM_SOURCE="https://raw.githubusercontent.com/aspnet/Home/master/kvm.sh"
 fi
 
 # Downloading to $KVM_DIR
