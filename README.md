@@ -14,6 +14,7 @@ The samples provided in this repo are designed to show some of the features of t
 * [Getting Started](#getting-started)
 * [Samples](#samples)
 * [Documentation and Further Learning](#documentation-and-further-learning)
+* [Repos and Projects](#repos-and-projects)
 * [Feedback](#feedback)
 
 ## Minimum Requirements
@@ -120,6 +121,19 @@ If you see errors, or want some extra content, then feel free to create an issue
 
 ### [ASP.NET/vNext](http://www.asp.net/vnext)
 The vNext page on the ASP.NET site has links to some TechEd videos and articles with some good information about vNext.
+
+## Repos and Projects
+
+These are some of the most common repos:
+
+* [DependencyInjection](https://github.com/aspnet/DependencyInjection) - basic dependency injection infrastructure and default implementation
+* [EntityFramework](https://github.com/aspnet/EntityFramework) - data access technology
+* [Identity](https://github.com/aspnet/Identity) - users and membership system
+* [KRuntime](https://github.com/aspnet/KRuntime) - core runtime, project system, loader
+* [MVC](https://github.com/aspnet/Mvc) - MVC framework for web apps and services
+* [SignalR-Server](https://github.com/aspnet/SignalR-Server) - real-time 
+
+A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Repo-List).
 
 ## Feedback
 
