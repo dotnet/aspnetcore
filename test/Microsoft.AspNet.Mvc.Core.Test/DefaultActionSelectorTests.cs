@@ -501,7 +501,7 @@ namespace Microsoft.AspNet.Mvc
 
             actions[0].RouteConstraints.Add(new RouteDataActionConstraint("country", "CA"));
             actions[1].RouteConstraints.Add(new RouteDataActionConstraint("country", "US"));
-            actions[2].RouteConstraints.Add(new RouteDataActionConstraint("country", RouteKeyHandling.CatchAll));
+            actions[2].RouteConstraints.Add(RouteDataActionConstraint.CreateCatchAll("country"));
 
             var selector = CreateSelector(actions);
             var context = CreateRouteContext("GET");
@@ -530,7 +530,7 @@ namespace Microsoft.AspNet.Mvc
 
             actions[0].RouteConstraints.Add(new RouteDataActionConstraint("country", "CA"));
             actions[1].RouteConstraints.Add(new RouteDataActionConstraint("country", "US"));
-            actions[2].RouteConstraints.Add(new RouteDataActionConstraint("country", RouteKeyHandling.CatchAll));
+            actions[2].RouteConstraints.Add(RouteDataActionConstraint.CreateCatchAll("country"));
 
             var selector = CreateSelector(actions);
             var context = CreateRouteContext("GET");
@@ -559,7 +559,7 @@ namespace Microsoft.AspNet.Mvc
 
             actions[0].RouteConstraints.Add(new RouteDataActionConstraint("country", "CA"));
             actions[1].RouteConstraints.Add(new RouteDataActionConstraint("country", "US"));
-            actions[2].RouteConstraints.Add(new RouteDataActionConstraint("country", RouteKeyHandling.CatchAll));
+            actions[2].RouteConstraints.Add(RouteDataActionConstraint.CreateCatchAll("country"));
 
             var selector = CreateSelector(actions);
             var context = CreateRouteContext("GET");
@@ -635,11 +635,13 @@ namespace Microsoft.AspNet.Mvc
             string controller,
             string action)
         {
+            var comparer = new RouteValueEqualityComparer();
+
             return
                 actions
-                .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "area" && c.Comparer.Equals(c.RouteValue, area)))
-                .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "controller" && c.Comparer.Equals(c.RouteValue, controller)))
-                .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "action" && c.Comparer.Equals(c.RouteValue, action)));
+                .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "area" && comparer.Equals(c.RouteValue, area)))
+                .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "controller" && comparer.Equals(c.RouteValue, controller)))
+                .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "action" && comparer.Equals(c.RouteValue, action)));
         }
 
         private static DefaultActionSelector CreateSelector(IReadOnlyList<ActionDescriptor> actions, ILoggerFactory loggerFactory = null)
@@ -714,17 +716,17 @@ namespace Microsoft.AspNet.Mvc
 
             actionDescriptor.RouteConstraints.Add(
                 area == null ?
-                new RouteDataActionConstraint("area", RouteKeyHandling.DenyKey) :
+                new RouteDataActionConstraint("area", null) :
                 new RouteDataActionConstraint("area", area));
 
             actionDescriptor.RouteConstraints.Add(
                 controller == null ?
-                new RouteDataActionConstraint("controller", RouteKeyHandling.DenyKey) :
+                new RouteDataActionConstraint("controller", null) :
                 new RouteDataActionConstraint("controller", controller));
 
             actionDescriptor.RouteConstraints.Add(
                 action == null ?
-                new RouteDataActionConstraint("action", RouteKeyHandling.DenyKey) :
+                new RouteDataActionConstraint("action", null) :
                 new RouteDataActionConstraint("action", action));
 
             return actionDescriptor;

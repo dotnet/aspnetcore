@@ -178,17 +178,17 @@ namespace Microsoft.AspNet.Routing.Tests
 
             actionDescriptor.RouteConstraints.Add(
                 area == null ?
-                new RouteDataActionConstraint("area", RouteKeyHandling.DenyKey) :
+                new RouteDataActionConstraint("area", null) :
                 new RouteDataActionConstraint("area", area));
 
             actionDescriptor.RouteConstraints.Add(
                 controller == null ?
-                new RouteDataActionConstraint("controller", RouteKeyHandling.DenyKey) :
+                new RouteDataActionConstraint("controller", null) :
                 new RouteDataActionConstraint("controller", controller));
 
             actionDescriptor.RouteConstraints.Add(
                 action == null ?
-                new RouteDataActionConstraint("action", RouteKeyHandling.DenyKey) :
+                new RouteDataActionConstraint("action", null) :
                 new RouteDataActionConstraint("action", action));
 
             return actionDescriptor;

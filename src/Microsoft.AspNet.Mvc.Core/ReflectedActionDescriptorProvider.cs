@@ -349,7 +349,7 @@ namespace Microsoft.AspNet.Mvc
                     {
                         actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
                             AttributeRouting.RouteGroupKey,
-                            RouteKeyHandling.DenyKey));
+                            string.Empty));
                     }
 
                     // Add a route constraint with DenyKey for each constraint in the set to all the
@@ -636,7 +636,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
                     "action",
-                    RouteKeyHandling.DenyKey));
+                    string.Empty));
             }
         }
 
@@ -660,11 +660,11 @@ namespace Microsoft.AspNet.Mvc
                 // Skip duplicates
                 if (!HasConstraint(actionDescriptor.RouteConstraints, constraintAttribute.RouteKey))
                 {
-                    if (constraintAttribute.RouteValue == null)
+                    if (constraintAttribute.RouteKeyHandling == RouteKeyHandling.CatchAll)
                     {
-                        actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                            constraintAttribute.RouteKey,
-                            constraintAttribute.RouteKeyHandling));
+                        actionDescriptor.RouteConstraints.Add(
+                            RouteDataActionConstraint.CreateCatchAll(
+                            constraintAttribute.RouteKey));
                     }
                     else
                     {
@@ -741,7 +741,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
                         key,
-                        RouteKeyHandling.DenyKey));
+                        string.Empty));
                 }
             }
         }

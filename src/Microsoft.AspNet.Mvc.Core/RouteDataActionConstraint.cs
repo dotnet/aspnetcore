@@ -2,19 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
+    /// <summary>
+    /// Constraints an action to a route key and value.
+    /// </summary>
     public class RouteDataActionConstraint
     {
-        private IEqualityComparer _comparer;
-
         private RouteDataActionConstraint(string routeKey)
         {
             if (routeKey == null)
@@ -23,109 +18,60 @@ namespace Microsoft.AspNet.Mvc
             }
 
             RouteKey = routeKey;
-            Comparer = StringComparer.OrdinalIgnoreCase; // Is this the right comparer for route values?
         }
 
+        /// <summary>
+        /// Initializes a <see cref="RouteDataActionConstraint"/> with a key and value, that are
+        /// required to make the action match.
+        /// </summary>
+        /// <param name="routeKey">The route key.</param>
+        /// <param name="routeValue">The route value.</param>
+        /// <remarks>
+        /// Passing a <see cref="string.Empty"/> or <see langword="null" /> to <paramref name="routeValue"/>
+        /// is a way to express that routing cannot produce a value for this key.
+        /// </remarks>
         public RouteDataActionConstraint(string routeKey, string routeValue)
             : this(routeKey)
         {
+            RouteValue = routeValue ?? string.Empty;
+
             if (string.IsNullOrEmpty(routeValue))
             {
-                throw new ArgumentNullException("routeValue");
+                KeyHandling = RouteKeyHandling.DenyKey;
             }
-
-            RouteValue = routeValue;
-            KeyHandling = RouteKeyHandling.RequireKey;
-        }
-
-        public RouteDataActionConstraint(string routeKey, RouteKeyHandling keyHandling)
-            : this(routeKey)
-        {
-            switch (keyHandling)
+            else
             {
-                case RouteKeyHandling.CatchAll:
-                case RouteKeyHandling.DenyKey:
-                case RouteKeyHandling.RequireKey:
-                    KeyHandling = keyHandling;
-                    break;
-                default:
-#if ASPNET50
-                    throw new InvalidEnumArgumentException("keyHandling", (int)keyHandling, typeof (RouteKeyHandling));
-#else
-                    throw new ArgumentOutOfRangeException("keyHandling");
-#endif
+                KeyHandling = RouteKeyHandling.RequireKey;
             }
         }
 
+        /// <summary>
+        /// Create a catch all constraint for the given key.
+        /// </summary>
+        /// <param name="routeKey">Route key.</param>
+        /// <returns>a <see cref="RouteDataActionConstraint"/> that represents a catch all constraint.</returns>
+        public static RouteDataActionConstraint CreateCatchAll(string routeKey)
+        {
+            var c = new RouteDataActionConstraint(routeKey);
+            c.KeyHandling = RouteKeyHandling.CatchAll;
+            c.RouteValue = string.Empty;
+
+            return c;
+        }
+
+        /// <summary>
+        /// The route key this constraint matches against.
+        /// </summary>
         public string RouteKey { get; private set; }
+
+        /// <summary>
+        /// The route value this constraint matches against.
+        /// </summary>
         public string RouteValue { get; private set; }
+
+        /// <summary>
+        /// The key handling definition for this constraint.
+        /// </summary>
         public RouteKeyHandling KeyHandling { get; private set; }
-
-        public IEqualityComparer Comparer
-        {
-            get { return _comparer; }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
-                _comparer = value;
-            }
-        }
-
-        public bool Accept([NotNull] IDictionary<string, object> routeValues)
-        {
-            object value;
-            switch (KeyHandling)
-            {
-                case RouteKeyHandling.CatchAll:
-                    return routeValues.ContainsKey(RouteKey);
-
-                case RouteKeyHandling.DenyKey:
-                    // Routing considers a null or empty string to also be the lack of a value
-                    if (!routeValues.TryGetValue(RouteKey, out value) || value == null)
-                    {
-                        return true;
-                    }
-
-                    var stringValue = value as string;
-                    if (stringValue != null && stringValue.Length == 0)
-                    {
-                        return true;
-                    }
-
-                    return false;
-
-                case RouteKeyHandling.RequireKey:
-                    if (routeValues.TryGetValue(RouteKey, out value))
-                    {
-                        return Comparer.Equals(value, RouteValue);
-                    }
-                    else
-                    {
-                        return false;
-                    }
-
-                default:
-                    Debug.Fail("Unexpected routeValue");
-                    return false;
-            }
-        }
-
-        public bool Accept([NotNull] RouteContext context)
-        {
-            var routeValues = context.RouteData.Values;
-            if (routeValues == null)
-            {
-                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
-                        "Values",
-                        typeof(RouteData)),
-                    "context");
-            }
-
-            return Accept(routeValues);
-        }
     }
 }

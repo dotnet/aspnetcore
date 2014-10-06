@@ -3,8 +3,6 @@
 
 namespace Microsoft.AspNet.Mvc
 {
-    // This needs more thought, the intent is that we would be able to cache over this constraint
-    // without running the accept method.
     public enum RouteKeyHandling
     {
         /// <summary>
@@ -19,6 +17,8 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// Requires that the key will be in the route values, but ignore the content.
+        /// Constraints with this value are considered less important than ones with 
+        /// <see cref="RequireKey"/>
         /// </summary>
         CatchAll,
     }

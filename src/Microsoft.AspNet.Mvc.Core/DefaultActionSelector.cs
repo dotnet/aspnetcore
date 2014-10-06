@@ -233,13 +233,10 @@ namespace Microsoft.AspNet.Mvc
                 return false;
             }
 
-            var actions =
-                GetActions().Where(
-                    action =>
-                        action.RouteConstraints == null ||
-                        action.RouteConstraints.All(constraint => constraint.Accept(context.ProvidedValues)));
+            var tree = _decisionTreeProvider.DecisionTree;
+            var matchingRouteConstraints = tree.Select(context.ProvidedValues);
 
-            return actions.Any();
+            return matchingRouteConstraints.Count > 0;
         }
 
         private IReadOnlyList<ActionDescriptor> GetActions()

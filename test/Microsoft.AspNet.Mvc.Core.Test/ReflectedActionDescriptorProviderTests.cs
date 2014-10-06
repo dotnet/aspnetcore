@@ -389,7 +389,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 descriptorWithoutConstraint.RouteConstraints,
                 c =>
                     c.RouteKey == "key" &&
-                    c.RouteValue == null &&
+                    c.RouteValue == string.Empty &&
                     c.KeyHandling == RouteKeyHandling.DenyKey);
         }
 
