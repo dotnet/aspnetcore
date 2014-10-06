@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Newtonsoft.Json;
 
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.Mvc
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public IEnumerable<ModelError> ModelErrors { get; set; }
 
-        public override void ExecuteResult(ActionContext context)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
             if (StatusCode.HasValue)
             {
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var json = new JsonResult(this);
-            json.ExecuteResult(context);
+            return json.ExecuteResultAsync(context);
         }
 
         public class ModelError

@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using MusicStore.Infrastructure;
@@ -23,8 +22,7 @@ namespace MusicStore.Apis
             var albums = await _storeContext.Albums
                 //.Include(a => a.Genre)
                 //.Include(a => a.Artist)
-                .SortBy(sortBy, a => a.Title)
-                .ToPagedListAsync(page, pageSize);
+                .ToPagedListAsync(page, pageSize, sortBy, a => a.Title);
 
             return Json(albums);
         }
@@ -72,8 +70,7 @@ namespace MusicStore.Apis
         }
 
         [HttpPost]
-        //[Authorize(Roles = "Administrator")]
-        [Authorize(ClaimTypes.Role, "Administrator")]
+        [Authorize("ManageStore", "Allowed")]
         public async Task<ActionResult> CreateAlbum()
         {
             var album = new Album();
@@ -99,8 +96,7 @@ namespace MusicStore.Apis
         }
 
         [HttpPut("{albumId:int}/update")]
-        //[Authorize(Roles = "Administrator")]
-        [Authorize(ClaimTypes.Role, "Administrator")]
+        [Authorize("ManageStore", "Allowed")]
         public async Task<ActionResult> UpdateAlbum(int albumId)
         {
             var album = _storeContext.Albums.SingleOrDefault(a => a.AlbumId == albumId);
@@ -133,11 +129,11 @@ namespace MusicStore.Apis
         }
 
         [HttpDelete("{albumId:int}")]
-        //[Authorize(Roles = "Administrator")]
-        [Authorize(ClaimTypes.Role, "Administrator")]
+        [Authorize("ManageStore", "Allowed")]
         public async Task<ActionResult> DeleteAlbum(int albumId)
         {
-            var album = await _storeContext.Albums.SingleOrDefaultAsync(a => a.AlbumId == albumId);
+            //var album = await _storeContext.Albums.SingleOrDefaultAsync(a => a.AlbumId == albumId);
+            var album = _storeContext.Albums.SingleOrDefault(a => a.AlbumId == albumId);
 
             if (album != null)
             {

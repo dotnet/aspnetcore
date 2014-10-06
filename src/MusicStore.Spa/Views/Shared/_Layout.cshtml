@@ -17,11 +17,11 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                @Html.ActionLink("ASP.NET MVC Music Store", "Index", "Home", null, new { @class = "navbar-brand" })
+                @Html.ActionLink("ASP.NET MVC Music Store", "Home", "Page", null, new { @class = "navbar-brand" })
             </div>
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                    <li>@Html.ActionLink("Home", "Home", "Page")</li>
                     
                     @RenderSection("NavBarItems", required: false)
 
@@ -35,8 +35,8 @@
         @RenderBody()
         <hr />
         <footer class="navbar navbar-fixed-bottom navbar-default text-center">
-            <p><a href="http://mvcmusicstore.codeplex.com">mvcmusicstore.codeplex.com</a></p>
-            <small>@Html.ActionLink("admin", "Index", "StoreManager")</small>
+            <p><a href="https://github.com/aspnet/musicstore">github.com/aspnet/musicstore</a></p>
+            <small>@Html.ActionLink("admin", "Admin", "Page")</small>
         </footer>
     </div>
 

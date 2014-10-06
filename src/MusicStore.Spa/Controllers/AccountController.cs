@@ -7,6 +7,7 @@ using MusicStore.Models;
 
 namespace MusicStore.Controllers
 {
+    [Route("account")]
     [Authorize]
     public class AccountController : Controller
     {
@@ -20,20 +21,16 @@ namespace MusicStore.Controllers
 
         public SignInManager<ApplicationUser> SignInManager { get; private set; }
 
-        //
-        // GET: /Account/Login
         [AllowAnonymous]
         //Bug: https://github.com/aspnet/WebFx/issues/339
-        [HttpGet]
+        [HttpGet("login")]
         public IActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
-        //
-        // POST: /Account/Login
-        [HttpPost]
+        [HttpPost("login")]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
@@ -59,19 +56,15 @@ namespace MusicStore.Controllers
             return View(model);
         }
 
-        //
-        // GET: /Account/Register
         [AllowAnonymous]
         //Bug: https://github.com/aspnet/WebFx/issues/339
-        [HttpGet]
+        [HttpGet("register")]
         public IActionResult Register()
         {
             return View();
         }
 
-        //
-        // POST: /Account/Register
-        [HttpPost]
+        [HttpPost("register")]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -84,7 +77,7 @@ namespace MusicStore.Controllers
                 if (result.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Home", "Page");
                 }
                 else
                 {
@@ -96,9 +89,7 @@ namespace MusicStore.Controllers
             return View(model);
         }
 
-        //
-        // GET: /Account/Manage
-        [HttpGet]
+        [HttpGet("manage")]
         public IActionResult Manage(ManageMessageId? message = null)
         {
             ViewBag.StatusMessage =
@@ -109,9 +100,7 @@ namespace MusicStore.Controllers
             return View();
         }
 
-        //
-        // POST: /Account/Manage
-        [HttpPost]
+        [HttpPost("manage")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Manage(ManageUserViewModel model)
         {
@@ -135,14 +124,12 @@ namespace MusicStore.Controllers
             return View(model);
         }
 
-        //
-        // POST: /Account/LogOff
-        [HttpPost]
+        [HttpPost("logoff")]
         [ValidateAntiForgeryToken]
         public IActionResult LogOff()
         {
             SignInManager.SignOut();
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Home", "Page");
         }
 
         #region Helpers

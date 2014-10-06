@@ -1,0 +1,22 @@
+﻿using System.Security.Claims;
+using Microsoft.AspNet.Mvc;
+
+namespace MusicStore.Spa.Controllers
+{
+    [Route("/")]
+    public class PageController : Controller
+    {
+        [HttpGet]
+        public IActionResult Home()
+        {
+            return View("/Pages/Home.cshtml");
+        }
+
+        [HttpGet("admin")]
+        [Authorize("ManageStore", "Allowed")]
+        public IActionResult Admin()
+        {
+            return View("/Pages/Admin.cshtml");
+        }
+    }
+}

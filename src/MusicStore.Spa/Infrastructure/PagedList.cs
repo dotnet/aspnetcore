@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace MusicStore.Infrastructure
@@ -64,7 +65,8 @@ namespace MusicStore.Infrastructure
             return new PagedList<T>(data, pagingConfig.Page, pagingConfig.PageSize, query.Count());
         }
 
-        public static async Task<IPagedList<T>> ToPagedListAsync<T>(this IQueryable<T> query, int page, int pageSize)
+        public static async Task<IPagedList<TModel>> ToPagedListAsync<TModel, TProperty>(this IQueryable<TModel> query, int page, int pageSize, string sortExpression, Expression<Func<TModel, TProperty>> defaultSortExpression, SortDirection defaultSortDirection = SortDirection.Ascending)
+            where TModel : class
         {
             if (query == null)
             {
@@ -73,8 +75,15 @@ namespace MusicStore.Infrastructure
 
             var pagingConfig = new PagingConfig(page, pageSize);
             var skipCount = ValidatePagePropertiesAndGetSkipCount(pagingConfig);
+            var dataQuery = query;
 
-            var data = await query
+            if (defaultSortExpression != null)
+            {
+                dataQuery = dataQuery
+                    .SortBy(sortExpression, defaultSortExpression);
+            }
+
+            var data = await dataQuery
                 .Skip(skipCount)
                 .Take(pagingConfig.PageSize)
                 .ToListAsync();
@@ -83,12 +92,14 @@ namespace MusicStore.Infrastructure
             {
                 // Requested page has no records, just return the first page
                 pagingConfig.Page = 1;
-                data = await query
+                data = await dataQuery
                     .Take(pagingConfig.PageSize)
                     .ToListAsync();
             }
 
-            return new PagedList<T>(data, pagingConfig.Page, pagingConfig.PageSize, await query.CountAsync());
+            var count = await query.CountAsync();
+
+            return new PagedList<TModel>(data, pagingConfig.Page, pagingConfig.PageSize, count);
         }
 
         private static int ValidatePagePropertiesAndGetSkipCount(PagingConfig pagingConfig)
