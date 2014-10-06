@@ -8,16 +8,14 @@
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*",
         "Microsoft.AspNet.SignalR.Client": "2.1.1",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
-        "System.Net.Http": "4.0.0.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0"
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*"
     },
     "frameworks": {
         "aspnet50": {
             "frameworkAssemblies": {
-                "System.Xml": "",
-                "System.Data": ""
+                "System.Xml": "4.0.0.0",
+                "System.Data": "4.0.0.0",
+                "System.Net.Http": "4.0.0.0"
             }
         }
     }
