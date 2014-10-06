@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ConnegTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("ConnegWebsite");
+        private readonly IServiceProvider _provider = TestHelper.CreateServices("ConnegWebSite");
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
