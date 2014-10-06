@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Hosting
             yield return describer.Transient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             yield return describer.Transient<IHttpContextFactory, HttpContextFactory>();
 
-            yield return describer.Transient<ITypeActivator, TypeActivator>();
+            yield return describer.Singleton<ITypeActivator, TypeActivator>();
 
             yield return describer.Instance<IApplicationLifetime>(new ApplicationLifetime());
 
