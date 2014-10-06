@@ -18,6 +18,8 @@ namespace FiltersWebSite
             app.UseServices(services =>
             {
                 services.AddMvc(configuration);
+                services.AddSingleton<RandomNumberFilter>();
+                services.AddSingleton<RandomNumberService>();
 
                 services.Configure<MvcOptions>(options =>
                 {
