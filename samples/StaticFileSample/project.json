@@ -1,18 +1,16 @@
 {
-  "dependencies": {
-    "Helios": "1.0.0-*",
-    "Microsoft.AspNet.FileSystems": "1.0.0-*",
-    "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.StaticFiles": ""
-  },
-  "frameworks": {
-    "aspnet50": {
+    "dependencies": {
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Kestrel": "1.0.0-*",
+        "Microsoft.AspNet.StaticFiles": "1.0.0-*"
     },
-    "aspnetcore50": {
-        "dependencies": {
-            "System.Diagnostics.Contracts": "4.0.0.0",
-            "System.Security.Claims" :  "1.0.0-*"
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Diagnostics.Contracts": "4.0.0.0",
+                "System.Security.Claims": "1.0.0-*"
+            }
         }
     }
-  }
 }
