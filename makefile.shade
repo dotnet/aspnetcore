@@ -132,20 +132,15 @@ functions
         }
     }
 
-#reset-master
-    -// Resets master branch to release
+#update-master
+    -// Merge release branch to master
     for each='var repo in GetAllRepos()'
         -CloneOrUpdate(repo);
 
         var gitFolder = '${repo}'
         git gitCommand='fetch origin'
-        git gitCommand='checkout origin/release -B master'
-
-#push-master
-    -// Resets master branch to release
-    for each='var repo in GetAllRepos()'
-        var gitFolder = '${repo}'
-        git gitCommand='push origin master:master -f'
+        git gitCommand='merge origin/release --ff-only'
+        git gitCommand='push origin master:master'
 
 #only-compile target='compile'
     @{
