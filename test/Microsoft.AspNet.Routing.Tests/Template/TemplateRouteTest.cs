@@ -20,22 +20,30 @@ namespace Microsoft.AspNet.Routing.Template
     {
         private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
 
-        [Fact]
-        public async Task RouteAsync_MatchSuccess_LogsCorrectValues()
+        private async Task<Tuple<TestSink, RouteContext>> SetUp(bool enabled, string template, string requestPath)
         {
-            // Arrange
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<TemplateRoute>,
                 TestSink.EnableWithTypeName<TemplateRoute>);
-            var loggerFactory = new TestLoggerFactory(sink);
-
-            var template = "{controller}/{action}";
+            var loggerFactory = new TestLoggerFactory(sink, enabled);
 
             var route = CreateRoute(template);
-            var context = CreateRouteContext("/Home/Index", loggerFactory);
+            var context = CreateRouteContext(requestPath, loggerFactory);
 
             // Act
             await route.RouteAsync(context);
+
+            return Tuple.Create(sink, context);
+        }
+
+        [Fact]
+        public async Task RouteAsync_MatchSuccess_LogsCorrectValues()
+        {
+            // Arrange & Act
+            var template = "{controller}/{action}";
+            var result = await SetUp(true, template, "/Home/Index");
+            var sink = result.Item1;
+            var context = result.Item2;
 
             // Assert
             Assert.Equal(1, sink.Scopes.Count);
@@ -43,15 +51,9 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
             Assert.Equal("TemplateRoute.RouteAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(1, sink.Writes.Count);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, enabled.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(TemplateRoute).FullName, write.LoggerName);
             Assert.Equal("TemplateRoute.RouteAsync", write.Scope);
 
@@ -69,21 +71,12 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [Fact]
-        public async Task RouteAsync_MatchFailOnValues_LogsCorrectValues()
+        public async Task RouteAsync_MatchSuccess_DoesNotLogWhenDisabled()
         {
-            // Arrange
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<TemplateRoute>,
-                TestSink.EnableWithTypeName<TemplateRoute>);
-            var loggerFactory = new TestLoggerFactory(sink);
-
+            // Arrange & Act
             var template = "{controller}/{action}";
-
-            var route = CreateRoute(template);
-            var context = CreateRouteContext("/Home/Index/Failure", loggerFactory);
-
-            // Act
-            await route.RouteAsync(context);
+            var result = await SetUp(false, template, "/Home/Index");
+            var sink = result.Item1;
 
             // Assert
             Assert.Equal(1, sink.Scopes.Count);
@@ -91,15 +84,27 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
             Assert.Equal("TemplateRoute.RouteAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(0, sink.Writes.Count);
+        }
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, enabled.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", enabled.Scope);
-            Assert.Null(enabled.State);
+        [Fact]
+        public async Task RouteAsync_MatchFailOnValues_LogsCorrectValues()
+        {
+            // Arrange & Act
+            var template = "{controller}/{action}";
+            var result = await SetUp(true, template, "/Home/Index/Failure");
+            var sink = result.Item1;
+            var context = result.Item2;
 
-            var write = sink.Writes[1];
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope);
+
+            Assert.Equal(1, sink.Writes.Count);
+
+            var write = sink.Writes[0];
             Assert.Equal(typeof(TemplateRoute).FullName, write.LoggerName);
             Assert.Equal("TemplateRoute.RouteAsync", write.Scope);
             var values = Assert.IsType<TemplateRouteRouteAsyncValues>(write.State);
@@ -115,21 +120,12 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [Fact]
-        public async Task RouteAsync_MatchFailOnConstraints_LogsCorrectValues()
+        public async Task RouteAsync_MatchFailOnValues_DoesNotLogWhenDisabled()
         {
             // Arrange
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<TemplateRoute>,
-                TestSink.EnableWithTypeName<TemplateRoute>);
-            var loggerFactory = new TestLoggerFactory(sink);
-
-            var template = "{controller}/{action}/{id:int}";
-
-            var route = CreateRoute(template);
-            var context = CreateRouteContext("/Home/Index/Failure", loggerFactory);
-
-            // Act
-            await route.RouteAsync(context);
+            var template = "{controller}/{action}";
+            var result = await SetUp(false, template, "/Home/Index/Failure");
+            var sink = result.Item1;
 
             // Assert
             Assert.Equal(1, sink.Scopes.Count);
@@ -137,15 +133,27 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
             Assert.Equal("TemplateRoute.RouteAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(0, sink.Writes.Count);
+        }
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, enabled.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", enabled.Scope);
-            Assert.Null(enabled.State);
+        [Fact]
+        public async Task RouteAsync_MatchFailOnConstraints_LogsCorrectValues()
+        {
+            // Arrange & Act
+            var template = "{controller}/{action}/{id:int}";
+            var result = await SetUp(true, template, "/Home/Index/Failure");
+            var sink = result.Item1;
+            var context = result.Item2;
 
-            var write = sink.Writes[1];
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope);
+
+            Assert.Equal(1, sink.Writes.Count);
+
+            var write = sink.Writes[0];
             Assert.Equal(typeof(TemplateRoute).FullName, write.LoggerName);
             Assert.Equal("TemplateRoute.RouteAsync", write.Scope);
             var values = Assert.IsType<TemplateRouteRouteAsyncValues>(write.State);
@@ -158,6 +166,23 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal(false, values.MatchedConstraints);
             Assert.Equal(false, values.Matched);
             Assert.Equal(context.IsHandled, values.Handled);
+        }
+
+        [Fact]
+        public async Task RouteAsync_MatchFailOnConstraints_DoesNotLogWhenDisabled()
+        {
+            // Arrange & Act
+            var template = "{controller}/{action}/{id:int}";
+            var result = await SetUp(false, template, "/Home/Index/Failure");
+            var sink = result.Item1;
+
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
+            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope);
+
+            Assert.Equal(0, sink.Writes.Count);
         }
 
         #region Route Matching

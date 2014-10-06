@@ -8,15 +8,17 @@ namespace Microsoft.AspNet.Routing
     public class TestLoggerFactory : ILoggerFactory
     {
         private TestSink _sink;
+        private bool _enabled;
 
-        public TestLoggerFactory(TestSink sink)
+        public TestLoggerFactory(TestSink sink, bool enabled)
         {
             _sink = sink;
+            _enabled = enabled;
         }
 
         public ILogger Create(string name)
         {
-            return new TestLogger(name, _sink);
+            return new TestLogger(name, _sink, _enabled);
         }
 
         public void AddProvider(ILoggerProvider provider)

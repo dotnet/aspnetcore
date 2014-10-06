@@ -6,7 +6,7 @@ using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Routing
 {
-    public class WriteCoreContext
+    public class WriteContext
     {
         public TraceType EventType { get; set; }
 

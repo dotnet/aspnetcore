@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Routing
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<RouterMiddleware>, 
                 TestSink.EnableWithTypeName<RouterMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
             mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
@@ -43,25 +43,54 @@ namespace Microsoft.AspNet.Routing
             await middleware.Invoke(mockContext.Object);
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
+            Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
             Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Single(sink.Writes);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(RouterMiddleware).FullName, enabled.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, write.LoggerName);
             Assert.Equal("RouterMiddleware.Invoke", write.Scope);
             var values = Assert.IsType<RouterMiddlewareInvokeValues>(write.State);
             Assert.Equal("RouterMiddleware.Invoke", values.Name);
             Assert.Equal(false, values.Handled);
+        }
+
+        [Fact]
+        public async void Invoke_DoesNotLogWhenDisabledAndNotHandled()
+        {
+            // Arrange
+            var isHandled = false;
+
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<RouterMiddleware>,
+                TestSink.EnableWithTypeName<RouterMiddleware>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: false);
+
+            var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
+            mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
+                .Returns(loggerFactory);
+
+            RequestDelegate next = (c) =>
+            {
+                return Task.FromResult<object>(null);
+            };
+
+            var router = new TestRouter(isHandled);
+            var middleware = new RouterMiddleware(next, router);
+
+            // Act
+            await middleware.Invoke(mockContext.Object);
+
+            // Assert
+            Assert.Single(sink.Scopes);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
+            Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
+
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
@@ -73,7 +102,7 @@ namespace Microsoft.AspNet.Routing
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<RouterMiddleware>,
                 TestSink.EnableWithTypeName<RouterMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
             mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
@@ -92,26 +121,56 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             // exists a BeginScope, verify contents
-            Assert.Equal(1, sink.Scopes.Count);
+            Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
             Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Single(sink.Writes);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(RouterMiddleware).FullName, enabled.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, write.LoggerName);
             Assert.Equal("RouterMiddleware.Invoke", write.Scope);
             Assert.Equal(typeof(RouterMiddlewareInvokeValues), write.State.GetType());
             var values = (RouterMiddlewareInvokeValues)write.State;
             Assert.Equal("RouterMiddleware.Invoke", values.Name);
             Assert.Equal(true, values.Handled);
+        }
+
+        [Fact]
+        public async void Invoke_DoesNotLogWhenDisabledAndHandled()
+        {
+            // Arrange
+            var isHandled = true;
+
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<RouterMiddleware>,
+                TestSink.EnableWithTypeName<RouterMiddleware>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: false);
+
+            var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
+            mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
+                .Returns(loggerFactory);
+
+            RequestDelegate next = (c) =>
+            {
+                return Task.FromResult<object>(null);
+            };
+
+            var router = new TestRouter(isHandled);
+            var middleware = new RouterMiddleware(next, router);
+
+            // Act
+            await middleware.Invoke(mockContext.Object);
+
+            // Assert
+            // exists a BeginScope, verify contents
+            Assert.Single(sink.Scopes);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
+            Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
+
+            Assert.Empty(sink.Writes);
         }
 #endif
 

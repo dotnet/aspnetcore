@@ -7,9 +7,9 @@ namespace Microsoft.AspNet.Routing.Logging
 {
     internal static class LoggerExtensions
     {
-        public static bool WriteValues([NotNull] this ILogger logger, object values)
+        public static void WriteValues([NotNull] this ILogger logger, object values)
         {
-            return logger.WriteCore(
+            logger.Write(
                 eventType: TraceType.Information,
                 eventId: 0,
                 state: values,

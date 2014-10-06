@@ -11,12 +11,14 @@ namespace Microsoft.AspNet.Routing
         private object _scope;
         private TestSink _sink;
         private string _name;
+        private bool _enabled;
 
-	    public TestLogger(string name, TestSink sink)
-	    {
+        public TestLogger(string name, TestSink sink, bool enabled)
+        {
             _sink = sink;
             _name = name;
-	    }
+            _enabled = enabled;
+        }
 
         public string Name { get; set; }
 
@@ -33,9 +35,9 @@ namespace Microsoft.AspNet.Routing
             return NullDisposable.Instance;
         }
 
-        public bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Write(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
-            _sink.Write(new WriteCoreContext()
+            _sink.Write(new WriteContext()
             {
                 EventType = eventType,
                 EventId = eventId,
@@ -45,8 +47,11 @@ namespace Microsoft.AspNet.Routing
                 LoggerName = _name,
                 Scope = _scope
             });
+        }
 
-            return true;
+        public bool IsEnabled(TraceType eventType)
+        {
+            return _enabled;
         }
     }
 }
