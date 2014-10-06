@@ -36,6 +36,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         };
 
         private readonly IFileSystem _fileSystem;
+
         // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>. 
         // This field holds the type name without the generic decoration (MyBaseType)
         private readonly string _baseType;
@@ -85,11 +86,28 @@ namespace Microsoft.AspNet.Mvc.Razor
                 defineSectionMethodName: "DefineSection",
                 generatedTagHelperContext: new GeneratedTagHelperContext
                 {
-                    RunnerTypeName = typeof(TagHelperRunner).FullName,
-                    ScopeManagerTypeName = typeof(TagHelperScopeManager).FullName,
                     ExecutionContextTypeName = typeof(TagHelperExecutionContext).FullName,
+                    ExecutionContextAddMethodName = nameof(TagHelperExecutionContext.Add),
+                    ExecutionContextAddTagHelperAttributeMethodName =
+                        nameof(TagHelperExecutionContext.AddTagHelperAttribute),
+                    ExecutionContextAddHtmlAttributeMethodName = nameof(TagHelperExecutionContext.AddHtmlAttribute),
+                    ExecutionContextOutputPropertyName = nameof(TagHelperExecutionContext.Output),
+
+                    RunnerTypeName = typeof(TagHelperRunner).FullName,
+                    RunnerRunAsyncMethodName = nameof(TagHelperRunner.RunAsync),
+
+                    ScopeManagerTypeName = typeof(TagHelperScopeManager).FullName,
+                    ScopeManagerBeginMethodName = nameof(TagHelperScopeManager.Begin),
+                    ScopeManagerEndMethodName = nameof(TagHelperScopeManager.End),
+
+                    OutputGenerateStartTagMethodName = nameof(TagHelperOutput.GenerateStartTag),
+                    OutputGenerateContentMethodName = nameof(TagHelperOutput.GenerateContent),
+                    OutputGenerateEndTagMethodName = nameof(TagHelperOutput.GenerateEndTag),
+
+                    // Can't use nameof because RazorPage is not accessible here.
+                    CreateTagHelperMethodName = "CreateTagHelper",
                     StartWritingScopeMethodName = "StartWritingScope",
-                    EndWritingScopeMethodName = "EndWritingScope"
+                    EndWritingScopeMethodName = "EndWritingScope",
                 })
             {
                 ResolveUrlMethodName = "Href",

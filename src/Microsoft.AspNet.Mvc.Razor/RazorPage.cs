@@ -138,8 +138,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public TTagHelper CreateTagHelper<TTagHelper>() where TTagHelper : ITagHelper
         {
             var tagHelper = TypeActivator.CreateInstance<TTagHelper>(ViewContext.HttpContext.RequestServices);
-            var hasViewContext = tagHelper as ICanHasViewContext;
 
+            var hasViewContext = tagHelper as ICanHasViewContext;
             hasViewContext?.Contextualize(ViewContext);
 
             return tagHelper;
