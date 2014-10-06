@@ -8,15 +8,23 @@ ASP.NET vNext is being actively developed by the ASP.NET team assigned to the Mi
 
 The samples provided in this repo are designed to show some of the features of the new framework and to provide a starting point for further exploration. The NuGet.config file in the repo points to a MyGet feed (https://www.myget.org/F/aspnetmaster/) that has all the packages being developed. This feed is updated with each preview release. To try out the latest bits under development use the dev feed instead (https://www.myget.org/F/aspnetvnext).
 
+## Contents
+
+* [Minimum Requirements](#minimum-requirements)
+* [Getting Started](#getting-started)
+* [Samples](#samples)
+* [Documentation and Further Learning](#documentation-and-further-learning)
+* [Feedback](#feedback)
+
 ## Minimum Requirements
 
 These are the current minimum requirements for the latest preview release. They do not necessarily represent what the final minimum requirements will be.
 
-#### Windows
+### Windows
 * Windows 7 or Windows Server 2008 R2.
 * .NET 4.5.1 for hosting in IIS
 
-#### OS X/Linux
+### OS X/Linux
  * Mono 3.4.1 or later (Note: On OS X use the Homebrew formula specified below to install the required version of Mono)
  * bash or zsh and curl
 
@@ -62,7 +70,7 @@ Now that you have KVM setup you can install the latest version of the runtime by
  
 This command will download the specified version of the K Runtime Environment (KRE), and put it on your user profile ready to use. You are now ready to start using ASP.NET vNext!
 
-# Samples
+## Samples
 
 The samples in this repo are basic starting points for you to experiment with.
 
@@ -100,19 +108,19 @@ By default when running ASP.NET vNext applications on the Windows platform you a
 
 ## Documentation and Further Learning
 
-#### [Community Standup](http://www.youtube.com/playlist?list=PL0M0zPgJ3HSftTAAHttA3JQU4vOjXFquF)
+### [Community Standup](http://www.youtube.com/playlist?list=PL0M0zPgJ3HSftTAAHttA3JQU4vOjXFquF)
 The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist. 
 
 If you have questions you can also jump online during the next standup and have them answered live.
 
-#### [Wiki Documentation] (https://github.com/aspnet/Home/wiki)
+### [Wiki Documentation] (https://github.com/aspnet/Home/wiki)
 We have some useful documentation on the wiki of this Repo. This wiki is a central spot for docs from any part of the stack.
 
 If you see errors, or want some extra content, then feel free to create an issue or send a pull request (see feedback section below).
 
-#### [ASP.NET/vNext](http://www.asp.net/vnext)
+### [ASP.NET/vNext](http://www.asp.net/vnext)
 The vNext page on the ASP.NET site has links to some TechEd videos and articles with some good information about vNext.
 
-# Feedback
+## Feedback
 
 Check out the [contributing](https://github.com/aspnet/Home/blob/master/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
