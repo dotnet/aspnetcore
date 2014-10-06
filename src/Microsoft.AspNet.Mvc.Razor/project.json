@@ -18,13 +18,13 @@
     "frameworks": {
         "aspnet50": {
             "frameworkAssemblies": {
-                "System.Collections": "4.0.0.0",
-                "System.IO": "4.0.0.0",
-                "System.Runtime": "4.0.0.0",
-                "System.Text.Encoding": "4.0.0.0",
-                "System.Threading.Tasks": "4.0.0.0",
-                "System.Xml": "4.0.0.0",
-                "System.Xml.Linq": "4.0.0.0"
+                "System.Collections": "",
+                "System.IO": "",
+                "System.Runtime": "",
+                "System.Text.Encoding": "",
+                "System.Threading.Tasks": "",
+                "System.Xml": "",
+                "System.Xml.Linq": ""
             }
         },
         "aspnetcore50": {

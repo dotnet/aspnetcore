@@ -14,9 +14,9 @@
   "frameworks": {
     "aspnet50": {
       "frameworkAssemblies": {
-        "System.Xml": "4.0.0.0",
-        "System.ComponentModel.DataAnnotations": "4.0.0.0",
-        "System.Runtime.Serialization": "4.0.0.0"
+        "System.Xml": "",
+        "System.ComponentModel.DataAnnotations": "",
+        "System.Runtime.Serialization": ""
       }
     },
     "aspnetcore50": {

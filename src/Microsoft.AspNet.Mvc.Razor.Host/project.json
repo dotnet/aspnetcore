@@ -11,18 +11,18 @@
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {
-                "System.Collections": "4.0.0.0",
-                "System.Runtime": "4.0.0.0",
-                "System.Xml": "4.0.0.0",
-                "System.Xml.Linq": "4.0.0.0"
+                "System.Collections": "",
+                "System.Runtime": "",
+                "System.Xml": "",
+                "System.Xml.Linq": ""
             }
         },
         "aspnet50": {
             "frameworkAssemblies": {
-                "System.Collections": "4.0.0.0",
-                "System.Runtime": "4.0.10.0",
-                "System.Xml": "4.0.0.0",
-                "System.Xml.Linq": "4.0.0.0"
+                "System.Collections": "",
+                "System.Runtime": "",
+                "System.Xml": "",
+                "System.Xml.Linq": ""
             },
             "dependencies": {
                 "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
