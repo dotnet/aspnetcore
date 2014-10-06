@@ -5,51 +5,6 @@
             "bower_components/jquery/jquery.d.ts": [ "bower_components/dt-jquery/jquery.d.ts" ]
         }
     },
-    "bower": {
-        "files": [
-            {
-                "_": "JavaScript",
-                "expand": true,
-                "flatten": true,
-                "cwd": "bower_components/",
-                "src": [
-                    "modernizr/modernizr.js",
-                    "jquery/dist/*.{js,map}",
-                    "jquery.validation/jquery.validate.js",
-                    "jquery.validation/additional-methods.js",
-                    "bootstrap/dist/**/*.js",
-                    "respond/dest/**/*.js",
-                    "angular/*.{js,.js.map}",
-                    "angular-route/*.{js,.js.map}",
-                    "angular-bootstrap/ui-bootstrap*"
-                ],
-                "dest": "wwwroot/js/",
-                "options": { "force": true }
-            },
-            {
-                "_": "CSS",
-                "expand": true,
-                "flatten": true,
-                "cwd": "bower_components/",
-                "src": [
-                    "bootstrap/dist/**/*.css"
-                ],
-                "dest": "wwwroot/css/",
-                "options": { "force": true }
-            },
-            {
-                "_": "Fonts",
-                "expand": true,
-                "flatten": true,
-                "cwd": "bower_components/",
-                "src": [
-                    "bootstrap/**/*.{woff,svg,eot,ttf}"
-                ],
-                "dest": "wwwroot/fonts/",
-                "options": { "force": true }
-            }
-        ]
-    },
     "assets": {
         "files": [
             {

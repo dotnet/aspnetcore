@@ -4,14 +4,37 @@
   "private": true,
   "dependencies": {
     "bootstrap": "~3.1.0",
-    "jquery.validation": "~1.11.1",
+    "jquery.validation": "~1.13.0",
     "jquery": "~2.1.0",
     "modernizr": "~2.7.1",
     "respond": "~1.4.2",
-    "dt-angular": "~1.2.15",
     "angular": "~1.2.15",
     "angular-route": "~1.2.15",
-    "angular-bootstrap": "~0.10.0",
-    "dt-angular-ui-bootstrap": "*"
-  }
+    "angular-bootstrap": "~0.10.0"
+  },
+  "devDependencies": {
+    "dt-angular": "~1.2.15",
+    "dt-angular-ui-bootstrap": "*",
+    "dt-jquery": "~2.0.0"
+  },
+  "exportsOverride": {
+        "bootstrap": {
+            "js": "dist/**/*.js",
+            "css": "dist/**/*.css",
+            "fonts": "**/*.{eot,svg,ttf,woff}"
+        },
+        "jquery": {
+            "": "dist/*.{js,map}"
+        },
+        "/angular/": {
+            "": "*.{js,map}"
+        },
+        "modernizr": {
+            "": "modernizr.js"
+        },
+        "respond": {
+          "": "dest/*.{js,map}"
+        },
+        "dt-*": { }
+    }
 }
