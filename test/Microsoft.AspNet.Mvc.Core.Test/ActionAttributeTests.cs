@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Act
             var result = actionDescriptorProvider.GetDescriptors()
-                                                 .Select(x => x as ReflectedActionDescriptor)
+                                                 .Select(x => x as ControllerActionDescriptor)
                                                  .FirstOrDefault(
                                                             x=> x.ControllerName == "NonAction" &&
                                                                 x.Name == actionName);
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.Mvc
             return await defaultActionSelector.SelectAsync(context);
         }
 
-        private ReflectedActionDescriptorProvider GetActionDescriptorProvider(
+        private ControllerActionDescriptorProvider GetActionDescriptorProvider(
             IActionDiscoveryConventions actionDiscoveryConventions  = null)
         {
             var controllerAssemblyProvider = new StaticControllerAssemblyProvider();
@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.Mvc
                 actionDiscoveryConventions = new StaticActionDiscoveryConventions(controllerTypes.ToArray());
             }
 
-            return new ReflectedActionDescriptorProvider(
+            return new ControllerActionDescriptorProvider(
                                         controllerAssemblyProvider,
                                         actionDiscoveryConventions,
                                         new TestGlobalFilterProvider(),

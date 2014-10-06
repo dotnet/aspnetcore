@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
-using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
+using Microsoft.AspNet.Mvc.ApplicationModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
 
         public MvcOptions()
         {
-            ApplicationModelConventions = new List<IReflectedApplicationModelConvention>();
+            ApplicationModelConventions = new List<IGlobalModelConvention>();
             ModelBinders = new List<ModelBinderDescriptor>();
             ViewEngines = new List<ViewEngineDescriptor>();
             ValueProviderFactories = new List<ValueProviderFactoryDescriptor>();
@@ -113,6 +113,6 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public List<ValueProviderFactoryDescriptor> ValueProviderFactories { get; private set; }
 
-        public List<IReflectedApplicationModelConvention> ApplicationModelConventions { get; private set; }
+        public List<IGlobalModelConvention> ApplicationModelConventions { get; private set; }
     }
 }

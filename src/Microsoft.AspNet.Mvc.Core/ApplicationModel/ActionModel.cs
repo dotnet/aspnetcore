@@ -7,11 +7,11 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Routing;
 
-namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
+namespace Microsoft.AspNet.Mvc.ApplicationModel
 {
-    public class ReflectedActionModel
+    public class ActionModel
     {
-        public ReflectedActionModel([NotNull] MethodInfo actionMethod)
+        public ActionModel([NotNull] MethodInfo actionMethod)
         {
             ActionMethod = actionMethod;
 
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
             ActionConstraints = new List<IActionConstraintMetadata>();
             Filters = new List<IFilter>();
             HttpMethods = new List<string>();
-            Parameters = new List<ReflectedParameterModel>();
+            Parameters = new List<ParameterModel>();
         }
 
         public List<IActionConstraintMetadata> ActionConstraints { get; private set; }
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 
         public List<object> Attributes { get; private set; }
 
-        public ReflectedControllerModel Controller { get; set; }
+        public ControllerModel Controller { get; set; }
 
         public List<IFilter> Filters { get; private set; }
 
@@ -38,20 +38,20 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 
         public bool IsActionNameMatchRequired { get; set; }
 
-        public List<ReflectedParameterModel> Parameters { get; private set; }
+        public List<ParameterModel> Parameters { get; private set; }
 
-        public ReflectedAttributeRouteModel AttributeRouteModel { get; set; }
+        public AttributeRouteModel AttributeRouteModel { get; set; }
 
         /// <summary>
         /// If <c>true</c>, <see cref="ApiDescription"/> objects will be created for this action. If <c>null</c>
-        /// then the value of <see cref="ReflectedControllerModel.ApiExplorerIsVisible"/> will be used.
+        /// then the value of <see cref="ControllerModel.ApiExplorerIsVisible"/> will be used.
         /// </summary>
         public bool? ApiExplorerIsVisible { get; set; }
 
         /// <summary>
         /// The value for <see cref="ApiDescription.GroupName"/> of <see cref="ApiDescription"/> objects created
         /// for actions defined by this controller. If <c>null</c> then the value of 
-        /// <see cref="ReflectedControllerModel.ApiExplorerGroupName"/> will be used.
+        /// <see cref="ControllerModel.ApiExplorerGroupName"/> will be used.
         /// </summary>
         public string ApiExplorerGroupName { get; set; }
     }

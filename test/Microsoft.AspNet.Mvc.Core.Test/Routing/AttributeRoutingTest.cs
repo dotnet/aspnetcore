@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             var controllerType = typeof(HomeController);
             var actionMethod = controllerType.GetMethod("Index");
 
-            var action = new ReflectedActionDescriptor();
+            var action = new ControllerActionDescriptor();
             action.DisplayName = "Microsoft.AspNet.Mvc.Routing.AttributeRoutingTest+HomeController.Index";
             action.MethodInfo = actionMethod;
             action.RouteConstraints = new List<RouteDataActionConstraint>()

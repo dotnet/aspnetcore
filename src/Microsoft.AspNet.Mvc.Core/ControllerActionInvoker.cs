@@ -10,17 +10,17 @@ using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ReflectedActionInvoker : FilterActionInvoker
+    public class ControllerActionInvoker : FilterActionInvoker
     {
-        private readonly ReflectedActionDescriptor _descriptor;
+        private readonly ControllerActionDescriptor _descriptor;
         private readonly IControllerFactory _controllerFactory;
         private readonly IInputFormattersProvider _inputFormattersProvider;
 
-        public ReflectedActionInvoker([NotNull] ActionContext actionContext,
+        public ControllerActionInvoker([NotNull] ActionContext actionContext,
                                       [NotNull] IActionBindingContextProvider bindingContextProvider,
                                       [NotNull] INestedProviderManager<FilterProviderContext> filterProvider,
                                       [NotNull] IControllerFactory controllerFactory,
-                                      [NotNull] ReflectedActionDescriptor descriptor,
+                                      [NotNull] ControllerActionDescriptor descriptor,
                                       [NotNull] IInputFormattersProvider inputFormattersProvider,
                                       [NotNull] IBodyModelValidator modelValidator)
             : base(actionContext, bindingContextProvider, filterProvider, modelValidator)
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 throw new ArgumentException(
                     Resources.FormatPropertyOfTypeCannotBeNull("MethodInfo",
-                                                               typeof(ReflectedActionDescriptor)),
+                                                               typeof(ControllerActionDescriptor)),
                     "descriptor");
             }
         }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc
         protected override async Task<IActionResult> InvokeActionAsync(ActionExecutingContext actionExecutingContext)
         {
             var actionMethodInfo = _descriptor.MethodInfo;
-            var actionReturnValue = await ReflectedActionExecutor.ExecuteAsync(
+            var actionReturnValue = await ControllerActionExecutor.ExecuteAsync(
                 actionMethodInfo,
                 ActionContext.Controller,
                 actionExecutingContext.ActionArguments);

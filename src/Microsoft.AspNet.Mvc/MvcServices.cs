@@ -72,9 +72,9 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Singleton<IFileInfoCache, ExpiringFileInfoCache>();
 
             yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,
-                                            ReflectedActionDescriptorProvider>();
+                                            ControllerActionDescriptorProvider>();
             yield return describe.Transient<INestedProvider<ActionInvokerProviderContext>,
-                                            ReflectedActionInvokerProvider>();
+                                            ControllerActionInvokerProvider>();
             yield return describe.Singleton<IActionDescriptorsCollectionProvider,
                 DefaultActionDescriptorsCollectionProvider>();
 

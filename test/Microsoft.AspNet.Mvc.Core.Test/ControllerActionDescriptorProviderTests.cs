@@ -7,14 +7,14 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
+using Microsoft.AspNet.Mvc.ApplicationModel;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Test
 {
-    public class ReflectedActionDescriptorProviderTests
+    public class ControllerActionDescriptorProviderTests
     {
         [Fact]
         public void GetDescriptors_GetsDescriptorsOnlyForValidActions()
@@ -85,18 +85,18 @@ namespace Microsoft.AspNet.Mvc.Test
                 "The following errors occurred with attribute routing information:" + Environment.NewLine +
                 Environment.NewLine +
                 "Error 1:" + Environment.NewLine +
-                "A method 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "A method 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "AttributeRoutedHttpMethodController.PutOrPatch'" +
                 " that defines attribute routed actions must not have attributes that implement " +
                 "'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' and do not implement " +
                 "'Microsoft.AspNet.Mvc.Routing.IRouteTemplateProvider':" + Environment.NewLine +
-                "Action 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "AttributeRoutedHttpMethodController.PutOrPatch' with route template 'Products' has " +
-                "'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+CustomHttpMethodConstraintAttribute'" +
+                "'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+CustomHttpMethodConstraintAttribute'" +
                 " invalid 'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' attributes." + Environment.NewLine +
-                "Action 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "AttributeRoutedHttpMethodController.PutOrPatch' with route template 'Items' has " +
-                "'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+CustomHttpMethodConstraintAttribute'" +
+                "'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+CustomHttpMethodConstraintAttribute'" +
                 " invalid 'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' attributes.";
 
             var provider = GetProvider(
@@ -466,7 +466,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public void BuildModel_CreatesReflectedControllerModels_ForAllControllers()
+        public void BuildModel_CreatesControllerModels_ForAllControllers()
         {
             // Arrange
             var provider = GetProvider(
@@ -502,7 +502,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public void BuildModel_CreatesReflectedActionDescriptors_ForValidActions()
+        public void BuildModel_CreatesControllerActionDescriptors_ForValidActions()
         {
             // Arrange
             var provider = GetProvider(
@@ -539,8 +539,8 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(
                 new[]
                 {
-                    "Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+PersonController.GetPerson",
-                    "Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+PersonController.ListPeople",
+                    "Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+PersonController.GetPerson",
+                    "Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+PersonController.ListPeople",
                 },
                 displayNames);
         }
@@ -587,13 +587,13 @@ namespace Microsoft.AspNet.Mvc.Test
                 "The following errors occurred with attribute routing information:" + Environment.NewLine +
                 Environment.NewLine +
                 "Error 1:" + Environment.NewLine +
-                "For action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "For action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "MultipleErrorsController.Unknown'" + Environment.NewLine +
                 "Error: While processing template 'stub/[action]/[unknown]', a replacement value for the token 'unknown' " +
                 "could not be found. Available tokens: 'controller, action'." + Environment.NewLine +
                 Environment.NewLine +
                 "Error 2:" + Environment.NewLine +
-                "For action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "For action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "MultipleErrorsController.Invalid'" + Environment.NewLine +
                 "Error: The route template '[invalid/syntax' has invalid syntax. A replacement token is not closed.";
 
@@ -786,22 +786,22 @@ namespace Microsoft.AspNet.Mvc.Test
                 "The following errors occurred with attribute routing information:" + Environment.NewLine +
                 Environment.NewLine +
                 "Error 1:" + Environment.NewLine +
-                "A method 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "A method 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method'" +
                 " must not define attribute routed actions and non attribute routed actions at the same time:" + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' - Template: 'AttributeRouted'" + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' - Template: '(none)'" + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' - Template: '(none)'" + Environment.NewLine +
-                "A method 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "A method 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' that defines attribute routed actions must not" +
                 " have attributes that implement 'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' and do not implement" +
                 " 'Microsoft.AspNet.Mvc.Routing.IRouteTemplateProvider':" + Environment.NewLine +
-                "Action 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' with route template 'AttributeRouted' has " +
-                "'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+CustomHttpMethodConstraintAttribute'" +
+                "'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+CustomHttpMethodConstraintAttribute'" +
                 " invalid 'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' attributes.";
 
             var provider = GetProvider(
@@ -847,37 +847,37 @@ namespace Microsoft.AspNet.Mvc.Test
                 "Error 1:" + Environment.NewLine +
                 "Attribute routes with the same name 'Products' must have the same template:"
                 + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "SameNameDifferentTemplatesController.Get' - Template: 'Products'"
                 + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "SameNameDifferentTemplatesController.Get' - Template: 'Products/{id}'"
                 + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "SameNameDifferentTemplatesController.Put' - Template: 'Products/{id}'"
                 + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "SameNameDifferentTemplatesController.Post' - Template: 'Products'"
                 + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "SameNameDifferentTemplatesController.Delete' - Template: 'Products/{id}'"
                 + Environment.NewLine + Environment.NewLine +
                 "Error 2:" + Environment.NewLine +
                 "Attribute routes with the same name 'Items' must have the same template:"
                 + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "SameNameDifferentTemplatesController.GetItems' - Template: 'Items/{id}'"
                 + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "SameNameDifferentTemplatesController.PostItems' - Template: 'Items'"
                 + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "SameNameDifferentTemplatesController.PutItems' - Template: 'Items/{id}'"
                 + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "SameNameDifferentTemplatesController.DeleteItems' - Template: 'Items/{id}'"
                 + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ReflectedActionDescriptorProviderTests+" +
+                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "SameNameDifferentTemplatesController.PatchItems' - Template: 'Items'";
 
             // Act
@@ -1142,24 +1142,24 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var sequence = 0;
 
-            var applicationConvention = new Mock<IReflectedApplicationModelConvention>();
+            var applicationConvention = new Mock<IGlobalModelConvention>();
             applicationConvention
-                .Setup(c => c.Apply(It.IsAny<ReflectedApplicationModel>()))
+                .Setup(c => c.Apply(It.IsAny<GlobalModel>()))
                 .Callback(() => { Assert.Equal(0, sequence++); });
 
-            var controllerConvention = new Mock<IReflectedControllerModelConvention>();
+            var controllerConvention = new Mock<IControllerModelConvention>();
             controllerConvention
-                .Setup(c => c.Apply(It.IsAny<ReflectedControllerModel>()))
+                .Setup(c => c.Apply(It.IsAny<ControllerModel>()))
                 .Callback(() => { Assert.Equal(1, sequence++); });
 
-            var actionConvention = new Mock<IReflectedActionModelConvention>();
+            var actionConvention = new Mock<IActionModelConvention>();
             actionConvention
-                .Setup(c => c.Apply(It.IsAny<ReflectedActionModel>()))
+                .Setup(c => c.Apply(It.IsAny<ActionModel>()))
                 .Callback(() => { Assert.Equal(2, sequence++); });
 
-            var parameterConvention = new Mock<IReflectedParameterModelConvention>();
+            var parameterConvention = new Mock<IParameterModelConvention>();
             parameterConvention
-                .Setup(c => c.Apply(It.IsAny<ReflectedParameterModel>()))
+                .Setup(c => c.Apply(It.IsAny<ParameterModel>()))
                 .Callback(() => { Assert.Equal(3, sequence++); });
 
             var options = new MockMvcOptionsAccessor();
@@ -1328,7 +1328,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Single(action.ActionConstraints, a => a is ConstraintAttribute);
         }
 
-        private ReflectedActionDescriptorProvider GetProvider(
+        private ControllerActionDescriptorProvider GetProvider(
             TypeInfo controllerTypeInfo,
             IEnumerable<IFilter> filters = null)
         {
@@ -1339,7 +1339,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(new Assembly[] { controllerTypeInfo.Assembly });
 
-            var provider = new ReflectedActionDescriptorProvider(
+            var provider = new ControllerActionDescriptorProvider(
                 assemblyProvider.Object,
                 conventions,
                 new TestGlobalFilterProvider(filters),
@@ -1348,7 +1348,7 @@ namespace Microsoft.AspNet.Mvc.Test
             return provider;
         }
 
-        private ReflectedActionDescriptorProvider GetProvider(
+        private ControllerActionDescriptorProvider GetProvider(
             params TypeInfo[] controllerTypeInfo)
         {
             var conventions = new StaticActionDiscoveryConventions(controllerTypeInfo);
@@ -1358,7 +1358,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(new Assembly[] { controllerTypeInfo.First().Assembly });
 
-            var provider = new ReflectedActionDescriptorProvider(
+            var provider = new ControllerActionDescriptorProvider(
                 assemblyProvider.Object,
                 conventions,
                 new TestGlobalFilterProvider(),
@@ -1367,7 +1367,7 @@ namespace Microsoft.AspNet.Mvc.Test
             return provider;
         }
 
-        private ReflectedActionDescriptorProvider GetProvider(
+        private ControllerActionDescriptorProvider GetProvider(
             TypeInfo type, 
             IOptionsAccessor<MvcOptions> options)
         {
@@ -1378,7 +1378,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(new Assembly[] { type.Assembly });
 
-            return new ReflectedActionDescriptorProvider(
+            return new ControllerActionDescriptorProvider(
                 assemblyProvider.Object,
                 conventions,
                 new TestGlobalFilterProvider(),
@@ -1394,7 +1394,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(controllerTypeInfos.Select(cti => cti.Assembly).Distinct());
 
-            var provider = new ReflectedActionDescriptorProvider(
+            var provider = new ControllerActionDescriptorProvider(
                 assemblyProvider.Object,
                 conventions,
                 new TestGlobalFilterProvider(),

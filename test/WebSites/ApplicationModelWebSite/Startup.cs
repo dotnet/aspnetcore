@@ -4,7 +4,7 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
 
-namespace ReflectedModelWebSite
+namespace ApplicationModelWebSite
 {
     public class Startup
     {

@@ -7,7 +7,7 @@ using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ReflectedActionInvokerProvider : IActionInvokerProvider
+    public class ControllerActionInvokerProvider : IActionInvokerProvider
     {
         private readonly IControllerFactory _controllerFactory;
         private readonly IActionBindingContextProvider _bindingProvider;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
         private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
         private readonly IBodyModelValidator _modelValidator;
 
-        public ReflectedActionInvokerProvider(IControllerFactory controllerFactory,
+        public ControllerActionInvokerProvider(IControllerFactory controllerFactory,
                                               IActionBindingContextProvider bindingProvider,
                                               IInputFormattersProvider inputFormattersProvider,
                                               INestedProviderManager<FilterProviderContext> filterProvider,
@@ -35,11 +35,11 @@ namespace Microsoft.AspNet.Mvc
 
         public void Invoke(ActionInvokerProviderContext context, Action callNext)
         {
-            var actionDescriptor = context.ActionContext.ActionDescriptor as ReflectedActionDescriptor;
+            var actionDescriptor = context.ActionContext.ActionDescriptor as ControllerActionDescriptor;
 
             if (actionDescriptor != null)
             {
-                context.Result = new ReflectedActionInvoker(
+                context.Result = new ControllerActionInvoker(
                                     context.ActionContext,
                                     _bindingProvider,
                                     _filterProvider,

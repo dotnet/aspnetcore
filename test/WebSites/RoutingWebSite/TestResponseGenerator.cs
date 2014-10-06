@@ -47,7 +47,7 @@ namespace RoutingWebSite
                 routeValues = new Dictionary<string, object>(_actionContext.RouteData.Values),
 
                 action = _actionContext.ActionDescriptor.Name,
-                controller = ((ReflectedActionDescriptor)_actionContext.ActionDescriptor).ControllerDescriptor.Name,
+                controller = ((ControllerActionDescriptor)_actionContext.ActionDescriptor).ControllerDescriptor.Name,
 
                 link,
             });

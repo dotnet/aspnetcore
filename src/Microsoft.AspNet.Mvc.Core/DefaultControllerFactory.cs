@@ -24,12 +24,12 @@ namespace Microsoft.AspNet.Mvc
 
         public object CreateController(ActionContext actionContext)
         {
-            var actionDescriptor = actionContext.ActionDescriptor as ReflectedActionDescriptor;
+            var actionDescriptor = actionContext.ActionDescriptor as ControllerActionDescriptor;
             if (actionDescriptor == null)
             {
                 throw new ArgumentException(
                     Resources.FormatDefaultControllerFactory_ActionDescriptorMustBeReflected(
-                        typeof(ReflectedActionDescriptor)),
+                        typeof(ControllerActionDescriptor)),
                     "actionContext");
             }
 

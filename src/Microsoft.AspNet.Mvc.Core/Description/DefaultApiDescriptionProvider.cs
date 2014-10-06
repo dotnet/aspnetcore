@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Description
 {
     /// <summary>
     /// Implements a provider of <see cref="ApiDescription"/> for actions represented
-    /// by <see cref="ReflectedActionDescriptor"/>.
+    /// by <see cref="ControllerActionDescriptor"/>.
     /// </summary>
     public class DefaultApiDescriptionProvider : INestedProvider<ApiDescriptionProviderContext>
     {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.Description
         /// <inheritdoc />
         public void Invoke(ApiDescriptionProviderContext context, Action callNext)
         {
-            foreach (var action in context.Actions.OfType<ReflectedActionDescriptor>())
+            foreach (var action in context.Actions.OfType<ControllerActionDescriptor>())
             {
                 var extensionData = action.GetProperty<ApiDescriptionActionData>();
                 if (extensionData != null)
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.Description
         }
 
         private ApiDescription CreateApiDescription(
-            ReflectedActionDescriptor action, 
+            ControllerActionDescriptor action, 
             string httpMethod, 
             string groupName)
         {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Description
             return apiDescription;
         }
 
-        private IEnumerable<string> GetHttpMethods(ReflectedActionDescriptor action)
+        private IEnumerable<string> GetHttpMethods(ControllerActionDescriptor action)
         {
             if (action.ActionConstraints != null && action.ActionConstraints.Count > 0)
             {
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.Description
             }
         }
 
-        private string GetRelativePath(ReflectedActionDescriptor action)
+        private string GetRelativePath(ControllerActionDescriptor action)
         {
             // This is a placeholder for functionality which will correctly generate the relative path
             // stub of an action. See: #885
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.Description
         }
 
         private IReadOnlyList<ApiResponseFormat> GetResponseFormats(
-            ReflectedActionDescriptor action,
+            ControllerActionDescriptor action,
             IApiResponseMetadataProvider[] responseMetadataAttributes,
             Type declaredType,
             Type runtimeType)
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Mvc.Description
             return results;
         }
 
-        private Type GetDeclaredReturnType(ReflectedActionDescriptor action)
+        private Type GetDeclaredReturnType(ControllerActionDescriptor action)
         {
             var declaredReturnType = action.MethodInfo.ReturnType;
             if (declaredReturnType == typeof(void) ||
@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.Mvc.Description
             return declaredReturnType;
         }
 
-        private IApiResponseMetadataProvider[] GetResponseMetadataAttributes(ReflectedActionDescriptor action)
+        private IApiResponseMetadataProvider[] GetResponseMetadataAttributes(ControllerActionDescriptor action)
         {
             if (action.FilterDescriptors == null)
             {

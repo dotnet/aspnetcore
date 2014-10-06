@@ -7,17 +7,17 @@ using System.Text;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Routing;
 
-namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
+namespace Microsoft.AspNet.Mvc.ApplicationModel
 {
-    public class ReflectedAttributeRouteModel
+    public class AttributeRouteModel
     {
-        private static readonly ReflectedAttributeRouteModel _default = new ReflectedAttributeRouteModel();
+        private static readonly AttributeRouteModel _default = new AttributeRouteModel();
 
-        public ReflectedAttributeRouteModel()
+        public AttributeRouteModel()
         {
         }
 
-        public ReflectedAttributeRouteModel([NotNull] IRouteTemplateProvider templateProvider)
+        public AttributeRouteModel([NotNull] IRouteTemplateProvider templateProvider)
         {
             Attribute = templateProvider;
             Template = templateProvider.Template;
@@ -43,17 +43,17 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         }
 
         /// <summary>
-        /// Combines two <see cref="ReflectedAttributeRouteModel"/> instances and returns
-        /// a new <see cref="ReflectedAttributeRouteModel"/> instance with the result.
+        /// Combines two <see cref="AttributeRouteModel"/> instances and returns
+        /// a new <see cref="AttributeRouteModel"/> instance with the result.
         /// </summary>
-        /// <param name="left">The left <see cref="ReflectedAttributeRouteModel"/>.</param>
-        /// <param name="right">The right <see cref="ReflectedAttributeRouteModel"/>.</param>
-        /// <returns>A new instance of <see cref="ReflectedAttributeRouteModel"/> that represents the
-        /// combination of the two <see cref="ReflectedAttributeRouteModel"/> instances or <c>null</c> if both
+        /// <param name="left">The left <see cref="AttributeRouteModel"/>.</param>
+        /// <param name="right">The right <see cref="AttributeRouteModel"/>.</param>
+        /// <returns>A new instance of <see cref="AttributeRouteModel"/> that represents the
+        /// combination of the two <see cref="AttributeRouteModel"/> instances or <c>null</c> if both
         /// parameters are <c>null</c>.</returns>
-        public static ReflectedAttributeRouteModel CombineReflectedAttributeRouteModel(
-            ReflectedAttributeRouteModel left,
-            ReflectedAttributeRouteModel right)
+        public static AttributeRouteModel CombineAttributeRouteModel(
+            AttributeRouteModel left,
+            AttributeRouteModel right)
         {
             right = right ?? _default;
 
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
                 return null;
             }
 
-            return new ReflectedAttributeRouteModel()
+            return new AttributeRouteModel()
             {
                 Template = combinedTemplate,
                 Order = right.Order ?? left.Order,
@@ -81,8 +81,8 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
         }
 
         private static string ChooseName(
-            ReflectedAttributeRouteModel left,
-            ReflectedAttributeRouteModel right)
+            AttributeRouteModel left,
+            AttributeRouteModel right)
         {
             if (right.Name == null && string.IsNullOrEmpty(right.Template))
             {

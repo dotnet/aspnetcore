@@ -97,12 +97,12 @@ namespace Microsoft.AspNet.Mvc
             return await defaultActionSelector.SelectAsync(context);
         }
 
-        private ReflectedActionDescriptorProvider GetActionDescriptorProvider(DefaultActionDiscoveryConventions actionDiscoveryConventions)
+        private ControllerActionDescriptorProvider GetActionDescriptorProvider(DefaultActionDiscoveryConventions actionDiscoveryConventions)
         {
             var assemblies = new Assembly[] { typeof(DefaultActionDiscoveryConventionsActionSelectionTests).GetTypeInfo().Assembly, };
             var controllerAssemblyProvider = new Mock<IControllerAssemblyProvider>();
             controllerAssemblyProvider.SetupGet(x => x.CandidateAssemblies).Returns(assemblies);
-            return new ReflectedActionDescriptorProvider(
+            return new ControllerActionDescriptorProvider(
                                         controllerAssemblyProvider.Object,
                                         actionDiscoveryConventions,
                                         new TestGlobalFilterProvider(),

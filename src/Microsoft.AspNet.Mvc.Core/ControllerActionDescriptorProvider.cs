@@ -8,14 +8,14 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
+using Microsoft.AspNet.Mvc.ApplicationModel;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ReflectedActionDescriptorProvider : IActionDescriptorProvider
+    public class ControllerActionDescriptorProvider : IActionDescriptorProvider
     {
         /// <summary>
         /// Represents the default order associated with this provider for dependency injection
@@ -30,9 +30,9 @@ namespace Microsoft.AspNet.Mvc
         private readonly IControllerAssemblyProvider _controllerAssemblyProvider;
         private readonly IActionDiscoveryConventions _conventions;
         private readonly IReadOnlyList<IFilter> _globalFilters;
-        private readonly IEnumerable<IReflectedApplicationModelConvention> _modelConventions;
+        private readonly IEnumerable<IGlobalModelConvention> _modelConventions;
 
-        public ReflectedActionDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider,
+        public ControllerActionDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider,
                                                  IActionDiscoveryConventions conventions,
                                                  IGlobalFilterProvider globalFilters,
                                                  IOptionsAccessor<MvcOptions> optionsAccessor)
@@ -54,16 +54,16 @@ namespace Microsoft.AspNet.Mvc
             callNext();
         }
 
-        public IEnumerable<ReflectedActionDescriptor> GetDescriptors()
+        public IEnumerable<ControllerActionDescriptor> GetDescriptors()
         {
             var model = BuildModel();
             ApplyConventions(model);
             return Build(model);
         }
 
-        public ReflectedApplicationModel BuildModel()
+        public GlobalModel BuildModel()
         {
-            var applicationModel = new ReflectedApplicationModel();
+            var applicationModel = new GlobalModel();
             applicationModel.Filters.AddRange(_globalFilters);
 
             var assemblies = _controllerAssemblyProvider.CandidateAssemblies;
@@ -100,11 +100,11 @@ namespace Microsoft.AspNet.Mvc
             return applicationModel;
         }
 
-        private ReflectedControllerModel CreateControllerModel(
-            ReflectedApplicationModel applicationModel,
+        private ControllerModel CreateControllerModel(
+            GlobalModel applicationModel,
             TypeInfo controllerType)
         {
-            var controllerModel = new ReflectedControllerModel(controllerType)
+            var controllerModel = new ControllerModel(controllerType)
             {
                 Application = applicationModel,
             };
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc
             controllerModel.RouteConstraints.AddRange(attributes.OfType<RouteConstraintAttribute>());
 
             controllerModel.AttributeRoutes.AddRange(
-                attributes.OfType<IRouteTemplateProvider>().Select(rtp => new ReflectedAttributeRouteModel(rtp)));
+                attributes.OfType<IRouteTemplateProvider>().Select(rtp => new AttributeRouteModel(rtp)));
 
             var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
             if (apiVisibility != null)
@@ -141,12 +141,12 @@ namespace Microsoft.AspNet.Mvc
             return controllerModel;
         }
 
-        private ReflectedActionModel CreateActionModel(
-            ReflectedControllerModel controllerModel,
+        private ActionModel CreateActionModel(
+            ControllerModel controllerModel,
             MethodInfo methodInfo,
             ActionInfo actionInfo)
         {
-            var actionModel = new ReflectedActionModel(methodInfo)
+            var actionModel = new ActionModel(methodInfo)
             {
                 ActionName = actionInfo.ActionName,
                 Controller = controllerModel,
@@ -176,18 +176,18 @@ namespace Microsoft.AspNet.Mvc
 
             if (actionInfo.AttributeRoute != null)
             {
-                actionModel.AttributeRouteModel = new ReflectedAttributeRouteModel(
+                actionModel.AttributeRouteModel = new AttributeRouteModel(
                     actionInfo.AttributeRoute);
             }
 
             return actionModel;
         }
 
-        private ReflectedParameterModel CreateParameterModel(
-            ReflectedActionModel actionModel,
+        private ParameterModel CreateParameterModel(
+            ActionModel actionModel,
             ParameterInfo parameterInfo)
         {
-            var parameterModel = new ReflectedParameterModel(parameterInfo)
+            var parameterModel = new ParameterModel(parameterInfo)
             {
                 Action = actionModel,
             };
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Mvc
             return parameterModel;
         }
 
-        public void ApplyConventions(ReflectedApplicationModel model)
+        public void ApplyConventions(GlobalModel model)
         {
             // Conventions are applied from the outside-in to allow for scenarios where an action overrides
             // a controller, etc.
@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Mvc
                 // while iterating it.
                 var controllerConventions =
                     controller.Attributes
-                        .OfType<IReflectedControllerModelConvention>()
+                        .OfType<IControllerModelConvention>()
                         .ToArray();
 
                 foreach (var controllerConvention in controllerConventions)
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Mvc
                     // while iterating it.
                     var actionConventions =
                         action.Attributes
-                            .OfType<IReflectedActionModelConvention>()
+                            .OfType<IActionModelConvention>()
                             .ToArray();
 
                     foreach (var actionConvention in actionConventions)
@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.Mvc
                         // while iterating it.
                         var parameterConventions =
                             parameter.Attributes
-                                .OfType<IReflectedParameterModelConvention>()
+                                .OfType<IParameterModelConvention>()
                                 .ToArray();
 
                         foreach (var parameterConvention in parameterConventions)
@@ -259,9 +259,9 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public List<ReflectedActionDescriptor> Build(ReflectedApplicationModel application)
+        public List<ControllerActionDescriptor> Build(GlobalModel application)
         {
-            var actions = new List<ReflectedActionDescriptor>();
+            var actions = new List<ControllerActionDescriptor>();
 
             var hasAttributeRoutes = false;
             var removalConstraints = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -407,12 +407,12 @@ namespace Microsoft.AspNet.Mvc
             return actions;
         }
 
-        private static IList<ReflectedActionDescriptor> CreateActionDescriptors(
-            ReflectedApplicationModel application,
-            ReflectedControllerModel controller,
-            ReflectedActionModel action)
+        private static IList<ControllerActionDescriptor> CreateActionDescriptors(
+            GlobalModel application,
+            ControllerModel controller,
+            ActionModel action)
         {
-            var actionDescriptors = new List<ReflectedActionDescriptor>();
+            var actionDescriptors = new List<ControllerActionDescriptor>();
 
             // We check the action to see if the template allows combination behavior
             // (It doesn't start with / or ~/) so that in the case where we have multiple
@@ -478,9 +478,9 @@ namespace Microsoft.AspNet.Mvc
             return actionDescriptors;
         }
 
-        private static ReflectedActionDescriptor CreateActionDescriptor(
-            ReflectedActionModel action,
-            ReflectedAttributeRouteModel controllerAttributeRoute)
+        private static ControllerActionDescriptor CreateActionDescriptor(
+            ActionModel action,
+            AttributeRouteModel controllerAttributeRoute)
         {
             var parameterDescriptors = new List<ParameterDescriptor>();
             foreach (var parameter in action.Parameters)
@@ -493,7 +493,7 @@ namespace Microsoft.AspNet.Mvc
                 action.AttributeRouteModel,
                 controllerAttributeRoute);
 
-            var actionDescriptor = new ReflectedActionDescriptor()
+            var actionDescriptor = new ControllerActionDescriptor()
             {
                 Name = action.ActionName,
                 MethodInfo = action.ActionMethod,
@@ -510,7 +510,7 @@ namespace Microsoft.AspNet.Mvc
             return actionDescriptor;
         }
 
-        private static ParameterDescriptor CreateParameterDescriptor(ReflectedParameterModel parameter)
+        private static ParameterDescriptor CreateParameterDescriptor(ParameterModel parameter)
         {
             var parameterDescriptor = new ParameterDescriptor()
             {
@@ -535,9 +535,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static void AddApiExplorerInfo(
-            ReflectedActionDescriptor actionDescriptor,
-            ReflectedActionModel action,
-            ReflectedControllerModel controller)
+            ControllerActionDescriptor actionDescriptor,
+            ActionModel action,
+            ControllerModel controller)
         {
             var apiExplorerIsVisible = action.ApiExplorerIsVisible ?? controller.ApiExplorerIsVisible ?? false;
             if (apiExplorerIsVisible)
@@ -552,7 +552,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static void AddActionFilters(
-            ReflectedActionDescriptor actionDescriptor,
+            ControllerActionDescriptor actionDescriptor,
             IEnumerable<IFilter> actionFilters,
             IEnumerable<IFilter> controllerFilters,
             IEnumerable<IFilter> globalFilters)
@@ -566,10 +566,10 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static AttributeRouteInfo CreateAttributeRouteInfo(
-            ReflectedAttributeRouteModel action,
-            ReflectedAttributeRouteModel controller)
+            AttributeRouteModel action,
+            AttributeRouteModel controller)
         {
-            var combinedRoute = ReflectedAttributeRouteModel.CombineReflectedAttributeRouteModel(
+            var combinedRoute = AttributeRouteModel.CombineAttributeRouteModel(
                                 controller,
                                 action);
 
@@ -589,8 +589,8 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static void AddActionConstraints(
-            ReflectedActionDescriptor actionDescriptor,
-            ReflectedActionModel action,
+            ControllerActionDescriptor actionDescriptor,
+            ActionModel action,
             IEnumerable<IActionConstraintMetadata> controllerConstraints)
         {
             var constraints = new List<IActionConstraintMetadata>();
@@ -618,9 +618,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public void AddRouteConstraints(
-            ReflectedActionDescriptor actionDescriptor,
-            ReflectedControllerModel controller,
-            ReflectedActionModel action)
+            ControllerActionDescriptor actionDescriptor,
+            ControllerModel controller,
+            ActionModel action)
         {
             actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
                 "controller",
@@ -641,7 +641,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static void AddControllerRouteConstraints(
-            ReflectedActionDescriptor actionDescriptor,
+            ControllerActionDescriptor actionDescriptor,
             IList<RouteConstraintAttribute> routeconstraints,
             ISet<string> removalConstraints)
         {
@@ -682,7 +682,7 @@ namespace Microsoft.AspNet.Mvc
                 rc => string.Equals(rc.RouteKey, routeKey, StringComparison.OrdinalIgnoreCase));
         }
 
-        private static void ReplaceRouteConstraints(ReflectedActionDescriptor actionDescriptor)
+        private static void ReplaceRouteConstraints(ControllerActionDescriptor actionDescriptor)
         {
             var routeGroupValue = GetRouteGroupValue(
                 actionDescriptor.AttributeRouteInfo.Order,
@@ -697,12 +697,12 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static void ReplaceAttributeRouteTokens(
-            ReflectedActionDescriptor actionDescriptor,
+            ControllerActionDescriptor actionDescriptor,
             IList<string> routeTemplateErrors)
         {
             try
             {
-                actionDescriptor.AttributeRouteInfo.Template = ReflectedAttributeRouteModel.ReplaceTokens(
+                actionDescriptor.AttributeRouteInfo.Template = AttributeRouteModel.ReplaceTokens(
                     actionDescriptor.AttributeRouteInfo.Template,
                     actionDescriptor.RouteValueDefaults);
             }
@@ -717,7 +717,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private static void AddConstraintsAsDefaultRouteValues(ReflectedActionDescriptor actionDescriptor)
+        private static void AddConstraintsAsDefaultRouteValues(ControllerActionDescriptor actionDescriptor)
         {
             foreach (var constraint in actionDescriptor.RouteConstraints)
             {
@@ -732,7 +732,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static void AddRemovalConstraints(
-            ReflectedActionDescriptor actionDescriptor,
+            ControllerActionDescriptor actionDescriptor,
             ISet<string> removalConstraints)
         {
             foreach (var key in removalConstraints)
@@ -749,7 +749,7 @@ namespace Microsoft.AspNet.Mvc
         private static void AddActionToNamedGroup(
             IDictionary<string, IList<ActionDescriptor>> actionsByRouteName,
             string routeName,
-            ReflectedActionDescriptor actionDescriptor)
+            ControllerActionDescriptor actionDescriptor)
         {
             IList<ActionDescriptor> namedActionGroup;
 
@@ -765,7 +765,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private static bool IsAttributeRoutedAction(ReflectedActionDescriptor actionDescriptor)
+        private static bool IsAttributeRoutedAction(ControllerActionDescriptor actionDescriptor)
         {
             return actionDescriptor.AttributeRouteInfo != null &&
                 actionDescriptor.AttributeRouteInfo.Template != null;
@@ -829,8 +829,8 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private void ValidateActionGroupConfiguration(
-            IDictionary<MethodInfo, IDictionary<ReflectedActionModel, IList<ReflectedActionDescriptor>>> methodMap,
-            ReflectedActionDescriptor actionDescriptor,
+            IDictionary<MethodInfo, IDictionary<ActionModel, IList<ControllerActionDescriptor>>> methodMap,
+            ControllerActionDescriptor actionDescriptor,
             IDictionary<MethodInfo, string> routingConfigurationErrors)
         {
             string combinedErrorMessage = null;
@@ -838,7 +838,7 @@ namespace Microsoft.AspNet.Mvc
             var hasAttributeRoutedActions = false;
             var hasConventionallyRoutedActions = false;
 
-            var invalidHttpMethodActions = new Dictionary<ReflectedActionModel, IEnumerable<string>>();
+            var invalidHttpMethodActions = new Dictionary<ActionModel, IEnumerable<string>>();
 
             var actionsForMethod = methodMap[actionDescriptor.MethodInfo];
             foreach (var reflectedAction in actionsForMethod)
@@ -895,8 +895,8 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static void ValidateActionHttpMethodProviders(
-            ReflectedActionModel reflectedAction,
-            IDictionary<ReflectedActionModel, IEnumerable<string>> invalidHttpMethodActions)
+            ActionModel reflectedAction,
+            IDictionary<ActionModel, IEnumerable<string>> invalidHttpMethodActions)
         {
             var invalidHttpMethodProviderAttributes = reflectedAction.Attributes
                 .Where(attr => attr is IActionHttpMethodProvider &&
@@ -929,9 +929,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static string CreateInvalidActionHttpMethodProviderErrorMessage(
-            ReflectedActionDescriptor actionDescriptor,
-            IDictionary<ReflectedActionModel, IEnumerable<string>> invalidHttpMethodActions,
-            IDictionary<ReflectedActionModel, IList<ReflectedActionDescriptor>> actionsForMethod)
+            ControllerActionDescriptor actionDescriptor,
+            IDictionary<ActionModel, IEnumerable<string>> invalidHttpMethodActions,
+            IDictionary<ActionModel, IList<ControllerActionDescriptor>> actionsForMethod)
         {
             var messagesForMethodInfo = new List<string>();
             foreach (var invalidAction in invalidHttpMethodActions)
@@ -981,8 +981,8 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static string CreateMixedRoutedActionDescriptorsErrorMessage(
-            ReflectedActionDescriptor actionDescriptor,
-            IDictionary<ReflectedActionModel, IList<ReflectedActionDescriptor>> actionsForMethod)
+            ControllerActionDescriptor actionDescriptor,
+            IDictionary<ActionModel, IList<ControllerActionDescriptor>> actionsForMethod)
         {
             // Text to show as the attribute route template for conventionally routed actions.
             var nullTemplate = Resources.AttributeRoute_NullTemplateRepresentation;
@@ -1044,12 +1044,12 @@ namespace Microsoft.AspNet.Mvc
         //    public ActionResult List(){ ... }
         // }
         private class MethodToActionMap :
-            Dictionary<MethodInfo, IDictionary<ReflectedActionModel, IList<ReflectedActionDescriptor>>>
+            Dictionary<MethodInfo, IDictionary<ActionModel, IList<ControllerActionDescriptor>>>
         {
-            public void AddToMethodInfo(ReflectedActionModel action,
-                IList<ReflectedActionDescriptor> actionDescriptors)
+            public void AddToMethodInfo(ActionModel action,
+                IList<ControllerActionDescriptor> actionDescriptors)
             {
-                IDictionary<ReflectedActionModel, IList<ReflectedActionDescriptor>> actionsForMethod = null;
+                IDictionary<ActionModel, IList<ControllerActionDescriptor>> actionsForMethod = null;
                 if (TryGetValue(action.ActionMethod, out actionsForMethod))
                 {
                     actionsForMethod.Add(action, actionDescriptors);
@@ -1057,7 +1057,7 @@ namespace Microsoft.AspNet.Mvc
                 else
                 {
                     var reflectedActionMap =
-                        new Dictionary<ReflectedActionModel, IList<ReflectedActionDescriptor>>();
+                        new Dictionary<ActionModel, IList<ControllerActionDescriptor>>();
                     reflectedActionMap.Add(action, actionDescriptors);
                     Add(action.ActionMethod, reflectedActionMap);
                 }

@@ -4,18 +4,18 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
+namespace Microsoft.AspNet.Mvc.ApplicationModel
 {
-    public class ReflectedParameterModel
+    public class ParameterModel
     {
-        public ReflectedParameterModel(ParameterInfo parameterInfo)
+        public ParameterModel(ParameterInfo parameterInfo)
         {
             ParameterInfo = parameterInfo;
 
             Attributes = new List<object>();
         }
 
-        public ReflectedActionModel Action { get; set; }
+        public ActionModel Action { get; set; }
 
         public List<object> Attributes { get; private set; }
 

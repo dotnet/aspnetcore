@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.Description
         public void GetApiDescription_IgnoresActionWithoutApiExplorerData()
         {
             // Arrange
-            var action = new ReflectedActionDescriptor();
+            var action = new ControllerActionDescriptor();
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -387,9 +387,9 @@ namespace Microsoft.AspNet.Mvc.Description
             return formatters;
         }
 
-        private ReflectedActionDescriptor CreateActionDescriptor(string methodName = null)
+        private ControllerActionDescriptor CreateActionDescriptor(string methodName = null)
         {
-            var action = new ReflectedActionDescriptor();
+            var action = new ControllerActionDescriptor();
             action.SetProperty(new ApiDescriptionActionData());
 
             action.MethodInfo = GetType().GetMethod(

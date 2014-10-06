@@ -3,14 +3,14 @@
 
 using System;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
+using Microsoft.AspNet.Mvc.ApplicationModel;
 
 namespace ApiExplorer
 {
     // Disables ApiExplorer for a specific controller type.
     // This is part of the test that validates that ApiExplorer can be configured via
     // convention
-    public class ApiExplorerVisibilityDisabledConvention : IReflectedApplicationModelConvention
+    public class ApiExplorerVisibilityDisabledConvention : IGlobalModelConvention
     {
         private readonly TypeInfo _type;
 
@@ -19,7 +19,7 @@ namespace ApiExplorer
             _type = type.GetTypeInfo();
         }
 
-        public void Apply(ReflectedApplicationModel model)
+        public void Apply(GlobalModel model)
         {
             foreach (var controller in model.Controllers)
             {

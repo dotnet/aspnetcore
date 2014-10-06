@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var component = CreateComponent(context);
 
-            var result = await ReflectedActionExecutor.ExecuteAsync(method, component, _args);
+            var result = await ControllerActionExecutor.ExecuteAsync(method, component, _args);
 
             return CoerceToViewComponentResult(result);
         }

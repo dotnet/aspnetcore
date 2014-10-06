@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task AsyncAction_WithVoidReturnType()
         {
             var methodWithVoidReturnType = new MethodWithVoidReturnType(TestController.VoidAction);
-            var result = await ReflectedActionExecutor.ExecuteAsync(
+            var result = await ControllerActionExecutor.ExecuteAsync(
                                                         methodWithVoidReturnType.GetMethodInfo(),
                                                         null,
                                                         (IDictionary<string, object>)null);
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskReturnType = new MethodWithTaskReturnType(_controller.TaskAction);
-            var result = await ReflectedActionExecutor.ExecuteAsync(
+            var result = await ControllerActionExecutor.ExecuteAsync(
                                                             methodWithTaskReturnType.GetMethodInfo(),
                                                             _controller,
                                                             actionParameters);
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskValueTypeAction);
-            var result = await ReflectedActionExecutor.ExecuteAsync(
+            var result = await ControllerActionExecutor.ExecuteAsync(
                                                         methodWithTaskOfIntReturnType.GetMethodInfo(),
                                                         _controller,
                                                         actionParameters);
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskOfTaskOfIntReturnType = new MethodWithTaskOfTaskOfIntReturnType(_controller.TaskOfTaskAction);
-            var result = await (Task<int>)(await ReflectedActionExecutor.ExecuteAsync(
+            var result = await (Task<int>)(await ControllerActionExecutor.ExecuteAsync(
                                                                         methodWithTaskOfTaskOfIntReturnType.GetMethodInfo(),
                                                                         _controller,
                                                                         actionParameters));
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Act and Assert
             await Assert.ThrowsAsync<NotImplementedException>(
-                    () => ReflectedActionExecutor.ExecuteAsync(methodWithTaskOfIntReturnType.GetMethodInfo(),
+                    () => ControllerActionExecutor.ExecuteAsync(methodWithTaskOfIntReturnType.GetMethodInfo(),
                                                                _controller,
                                                                actionParameters));
         }
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskActionWithExceptionWithoutAsync);
             await Assert.ThrowsAsync<NotImplementedException>(
-                        () => ReflectedActionExecutor.ExecuteAsync(methodWithTaskOfIntReturnType.GetMethodInfo(),
+                        () => ControllerActionExecutor.ExecuteAsync(methodWithTaskOfIntReturnType.GetMethodInfo(),
                                                                    _controller,
                                                                    actionParameters));
         }
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskActionThrowAfterAwait);
             await AssertThrowsAsync<ArgumentException>(
                                                 async () =>
-                                                    await ReflectedActionExecutor.ExecuteAsync(
+                                                    await ControllerActionExecutor.ExecuteAsync(
                                                                         methodWithTaskOfIntReturnType.GetMethodInfo(),
                                                                         _controller,
                                                                         actionParameters),
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             string inputString = "hello";
             var syncMethod = new SyncMethod(_controller.Echo);
-            var result = await ReflectedActionExecutor.ExecuteAsync(
+            var result = await ControllerActionExecutor.ExecuteAsync(
                                                 syncMethod.GetMethodInfo(),
                                                 _controller,
                                                 new Dictionary<string, object>() { { "input", inputString } });
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             string inputString = "hello";
             var syncMethod = new SyncMethod(_controller.EchoWithException);
             await Assert.ThrowsAsync<NotImplementedException>(
-                        () => ReflectedActionExecutor.ExecuteAsync(
+                        () => ControllerActionExecutor.ExecuteAsync(
                                                 syncMethod.GetMethodInfo(),
                                                 _controller,
                                                 new Dictionary<string, object>() { { "input", inputString } }));
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                                  typeof(TestController));
             await AssertThrowsAsync<InvalidOperationException>(
                                                 async () => 
-                                                    await ReflectedActionExecutor.ExecuteAsync(
+                                                    await ControllerActionExecutor.ExecuteAsync(
                                                                     methodWithCutomTaskReturnType.GetMethodInfo(), 
                                                                     _controller,
                                                                     actionParameters),
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             await AssertThrowsAsync<InvalidOperationException>(
                                                 async () =>
-                                                    await ReflectedActionExecutor.ExecuteAsync(
+                                                    await ControllerActionExecutor.ExecuteAsync(
                                                                 methodWithCutomTaskOfTReturnType.GetMethodInfo(),
                                                                 _controller,
                                                                 actionParameters),
@@ -213,7 +213,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var methodWithUnwrappedTask = new MethodWithTaskReturnType(_controller.UnwrappedTask);
             await AssertThrowsAsync<InvalidOperationException>(
                                                 async () => 
-                                                    await ReflectedActionExecutor.ExecuteAsync(
+                                                    await ControllerActionExecutor.ExecuteAsync(
                                                                 methodWithUnwrappedTask.GetMethodInfo(),
                                                                 _controller,
                                                                 actionParameters),
@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                                   typeof(TestController));
             await AssertThrowsAsync<InvalidOperationException>(
                                                 async () => 
-                                                    await ReflectedActionExecutor.ExecuteAsync(
+                                                    await ControllerActionExecutor.ExecuteAsync(
                                                                 dynamicTaskMethod.GetMethodInfo(),
                                                                 _controller,
                                                                 actionParameters),
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var actionParameters = new Dictionary<string, object> { { "s", inputParam2 }, { "i", inputParam1 } };
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskValueTypeAction);
 
-            var result = await ReflectedActionExecutor.ExecuteAsync(
+            var result = await ControllerActionExecutor.ExecuteAsync(
                                                         methodWithTaskOfIntReturnType.GetMethodInfo(),
                                                         _controller,
                                                         actionParameters);
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // If it is an unrecognized derived type we throw an InvalidOperationException.
             await AssertThrowsAsync<ArgumentException>(
                                                 async () => 
-                                                    await ReflectedActionExecutor.ExecuteAsync(
+                                                    await ControllerActionExecutor.ExecuteAsync(
                                                                                     methodWithTaskOfIntReturnType.GetMethodInfo(),
                                                                                     _controller, 
                                                                                     actionParameters),

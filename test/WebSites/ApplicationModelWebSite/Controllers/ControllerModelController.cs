@@ -3,23 +3,23 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
+using Microsoft.AspNet.Mvc.ApplicationModel;
 
-namespace ReflectedModelWebSite
+namespace ApplicationModelWebSite
 {
     // This controller uses an reflected model attribute to change the controller name, and thus
     // the URL.
     [ControllerName("CoolController")]
-    public class ReflectedControllerModelController : Controller
+    public class ControllerModelController : Controller
     {
         public string GetControllerName()
         {
-            var actionDescriptor = (ReflectedActionDescriptor)ActionContext.ActionDescriptor;
+            var actionDescriptor = (ControllerActionDescriptor)ActionContext.ActionDescriptor;
 
             return actionDescriptor.ControllerName;
         }
 
-        private class ControllerNameAttribute : Attribute, IReflectedControllerModelConvention
+        private class ControllerNameAttribute : Attribute, IControllerModelConvention
         {
             private readonly string _controllerName;
 
@@ -28,7 +28,7 @@ namespace ReflectedModelWebSite
                 _controllerName = controllerName;
             }
 
-            public void Apply(ReflectedControllerModel model)
+            public void Apply(ControllerModel model)
             {
                 model.ControllerName = _controllerName;
             }

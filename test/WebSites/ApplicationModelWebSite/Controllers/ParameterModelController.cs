@@ -3,23 +3,23 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ReflectedModelBuilder;
+using Microsoft.AspNet.Mvc.ApplicationModel;
 
-namespace ReflectedModelWebSite
+namespace ApplicationModelWebSite
 {
     // This controller uses an reflected model attribute to change a parameter to optional.
-    public class ReflectedParameterModelController : Controller
+    public class ParameterModelController : Controller
     {
         public string GetParameterIsOptional([Optional] int? id)
         {
-            var actionDescriptor = (ReflectedActionDescriptor)ActionContext.ActionDescriptor;
+            var actionDescriptor = (ControllerActionDescriptor)ActionContext.ActionDescriptor;
 
             return actionDescriptor.Parameters[0].IsOptional.ToString();
         }
 
-        private class OptionalAttribute : Attribute, IReflectedParameterModelConvention
+        private class OptionalAttribute : Attribute, IParameterModelConvention
         {
-            public void Apply(ReflectedParameterModel model)
+            public void Apply(ParameterModel model)
             {
                 model.IsOptional = true;
             }

@@ -5,17 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
+namespace Microsoft.AspNet.Mvc.ApplicationModel
 {
-    public class ReflectedControllerModel
+    public class ControllerModel
     {
-        public ReflectedControllerModel([NotNull] TypeInfo controllerType)
+        public ControllerModel([NotNull] TypeInfo controllerType)
         {
             ControllerType = controllerType;
 
-            Actions = new List<ReflectedActionModel>();
+            Actions = new List<ActionModel>();
             Attributes = new List<object>();
-            AttributeRoutes = new List<ReflectedAttributeRouteModel>();
+            AttributeRoutes = new List<AttributeRouteModel>();
             ActionConstraints = new List<IActionConstraintMetadata>();
             Filters = new List<IFilter>();
             RouteConstraints = new List<RouteConstraintAttribute>();
@@ -23,9 +23,9 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 
         public List<IActionConstraintMetadata> ActionConstraints { get; private set; }
 
-        public List<ReflectedActionModel> Actions { get; private set; }
+        public List<ActionModel> Actions { get; private set; }
 
-        public ReflectedApplicationModel Application { get; set; }
+        public GlobalModel Application { get; set; }
 
         public List<object> Attributes { get; private set; }
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
 
         public List<RouteConstraintAttribute> RouteConstraints { get; private set; }
 
-        public List<ReflectedAttributeRouteModel> AttributeRoutes { get; private set; }
+        public List<AttributeRouteModel> AttributeRoutes { get; private set; }
 
         /// <summary>
         /// If <c>true</c>, <see cref="Description.ApiDescription"/> objects will be created for actions defined by

@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                             "<Person><Name>" + sampleName + "</Name></Person>";
             var modelStateDictionary = new ModelStateDictionary();
-            var invoker = GetReflectedActionInvoker(
+            var invoker = GetControllerActionInvoker(
                 input, typeof(Person), new XmlSerializerInputFormatter(), "application/xml");
 
             // Act
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                             "<User><Name>" + sampleName + "</Name><UserName>" + sampleUserName + "</UserName></User>";
             var modelStateDictionary = new ModelStateDictionary();
-            var invoker = GetReflectedActionInvoker(input, typeof(User), new XmlSerializerInputFormatter(), "application/xml");
+            var invoker = GetControllerActionInvoker(input, typeof(User), new XmlSerializerInputFormatter(), "application/xml");
 
             // Act
             var result = await invoker.GetActionArguments(modelStateDictionary);
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var input = "{'Users': [{Name : '" + sampleFirstUser + "', UserName: '" + sampleFirstUserName +
                 "'}, {Name: '" + sampleSecondUser + "', UserName: '" + sampleSecondUserName + "'}]}";
             var modelStateDictionary = new ModelStateDictionary();
-            var invoker = GetReflectedActionInvoker(input, typeof(Customers), new JsonInputFormatter(), "application/xml");
+            var invoker = GetControllerActionInvoker(input, typeof(Customers), new JsonInputFormatter(), "application/xml");
 
             // Act
             var result = await invoker.GetActionArguments(modelStateDictionary);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var input = "{'Users': [{Name : '" + sampleFirstUser + "', UserName: '" + sampleFirstUserName +
                 "'}, {Name: '" + sampleSecondUser + "', UserName: '" + sampleSecondUserName + "'}]}";
             var modelStateDictionary = new ModelStateDictionary();
-            var invoker = GetReflectedActionInvoker(input, typeof(Customers), new JsonInputFormatter(), "application/xml");
+            var invoker = GetControllerActionInvoker(input, typeof(Customers), new JsonInputFormatter(), "application/xml");
 
             // Act
             var result = await invoker.GetActionArguments(modelStateDictionary);
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Equal(sampleSecondUserName, model.Users[1].UserName);
         }
 
-        private static ReflectedActionInvoker GetReflectedActionInvoker(
+        private static ControllerActionInvoker GetControllerActionInvoker(
             string input, Type parameterType, IInputFormatter selectedFormatter, string contentType)
         {
             var mvcOptions = new MvcOptions();
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 accessor.Object, Mock.Of<ITypeActivator>(), Mock.Of<IServiceProvider>());
 
             Func<object, int> method = x => 1;
-            var actionDescriptor = new ReflectedActionDescriptor
+            var actionDescriptor = new ControllerActionDescriptor
             {
                 MethodInfo = method.Method,
                 Parameters = new List<ParameterDescriptor>
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var inputFormattersProvider = new Mock<IInputFormattersProvider>();
             inputFormattersProvider.SetupGet(o => o.InputFormatters)
                                             .Returns(new List<IInputFormatter>());
-            return new ReflectedActionInvoker(actionContext,
+            return new ControllerActionInvoker(actionContext,
                                                      actionBindingContextProvider.Object,
                                                      Mock.Of<INestedProviderManager<FilterProviderContext>>(),
                                                      Mock.Of<IControllerFactory>(),

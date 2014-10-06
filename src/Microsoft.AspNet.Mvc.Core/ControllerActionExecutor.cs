@@ -11,10 +11,10 @@ using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public static class ReflectedActionExecutor
+    public static class ControllerActionExecutor
     {
         private static readonly MethodInfo _convertOfTMethod = 
-            typeof(ReflectedActionExecutor).GetRuntimeMethods().Single(methodInfo => methodInfo.Name == "Convert");
+            typeof(ControllerActionExecutor).GetRuntimeMethods().Single(methodInfo => methodInfo.Name == "Convert");
 
         // Method called via reflection.
         private static Task<object> Convert<T>(object taskAsObject)

@@ -8,7 +8,7 @@ using System.Reflection;
 namespace Microsoft.AspNet.Mvc
 {
     [DebuggerDisplay("CA {DisplayName}(RC-{RouteConstraints.Count})")]
-    public class ReflectedActionDescriptor : ActionDescriptor
+    public class ControllerActionDescriptor : ActionDescriptor
     {
         public string ControllerName
         {

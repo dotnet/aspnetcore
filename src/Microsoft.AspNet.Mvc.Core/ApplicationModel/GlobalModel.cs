@@ -3,17 +3,17 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.ReflectedModelBuilder
+namespace Microsoft.AspNet.Mvc.ApplicationModel
 {
-    public class ReflectedApplicationModel
+    public class GlobalModel
     {
-        public ReflectedApplicationModel()
+        public GlobalModel()
         {
-            Controllers = new List<ReflectedControllerModel>();
+            Controllers = new List<ControllerModel>();
             Filters = new List<IFilter>();
         }
 
-        public List<ReflectedControllerModel> Controllers { get; private set; }
+        public List<ControllerModel> Controllers { get; private set; }
 
         public List<IFilter> Filters { get; private set; }
     }

@@ -10,10 +10,10 @@ using System.Net;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ReflectedModelTest
+    public class ApplicationModelTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(ReflectedModelWebSite));
-        private readonly Action<IApplicationBuilder> _app = new ReflectedModelWebSite.Startup().Configure;
+        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(ApplicationModelWebSite));
+        private readonly Action<IApplicationBuilder> _app = new ApplicationModelWebSite.Startup().Configure;
 
         [Fact]
         public async Task ControllerModel_CustomizedWithAttribute()
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/ReflectedActionModel/ActionName");
+            var response = await client.GetAsync("http://localhost/ActionModel/ActionName");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/ReflectedParameterModel/GetParameterIsOptional");
+            var response = await client.GetAsync("http://localhost/ParameterModel/GetParameterIsOptional");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
