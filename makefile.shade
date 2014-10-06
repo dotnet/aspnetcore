@@ -139,6 +139,7 @@ functions
 
         var gitFolder = '${repo}'
         git gitCommand='fetch origin'
+        git gitCommand='checkout origin/master -B master'
         git gitCommand='merge origin/release --ff-only'
         git gitCommand='push origin master:master'
 
