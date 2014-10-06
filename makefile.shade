@@ -343,7 +343,9 @@ functions
               "Claims",
               "DataAnnotations",
               "SqlClient",
-              "MusicStore"
+              "MusicStore",
+              "Home",
+              "BugTracker"
             };
             return Enumerable.Concat(repos, nonDefaultRepos);
         }
