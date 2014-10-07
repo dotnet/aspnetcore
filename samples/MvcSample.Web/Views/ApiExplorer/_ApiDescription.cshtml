@@ -13,7 +13,11 @@
         <ul>
             @foreach (var parameter in Model.ParameterDescriptions)
             {
-                <li>@parameter.Name - @parameter.Type.FullName - @parameter.Source.ToString()</li>
+                <li>
+                    @parameter.Name - @(parameter?.Type?.FullName ?? "Unknown") - @parameter.Source.ToString()
+                    - Constraint: @(parameter?.Constraint?.GetType()?.Name?.Replace("RouteConstraint", "") ?? " none")
+                    - Default value: @(parameter?.DefaultValue ?? " none")
+                </li>
             }
         </ul>
     }
@@ -22,7 +26,7 @@
     {
         <p>Response Formats:</p>
         <ul>
-            @foreach(var response in Model.SupportedResponseFormats)
+            @foreach (var response in Model.SupportedResponseFormats)
             {
                 <li>@response.MediaType.RawValue - @response.Formatter.GetType().Name</li>
             }

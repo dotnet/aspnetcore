@@ -3,10 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Template;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Description
@@ -19,6 +22,7 @@ namespace Microsoft.AspNet.Mvc.Description
     {
         private readonly IOutputFormattersProvider _formattersProvider;
         private readonly IModelMetadataProvider _modelMetadataProvider;
+        private readonly IInlineConstraintResolver _constraintResolver;
 
         /// <summary>
         /// Creates a new instance of <see cref="DefaultApiDescriptionProvider"/>.
@@ -27,10 +31,12 @@ namespace Microsoft.AspNet.Mvc.Description
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         public DefaultApiDescriptionProvider(
             IOutputFormattersProvider formattersProvider,
+            IInlineConstraintResolver constraintResolver,
             IModelMetadataProvider modelMetadataProvider)
         {
             _formattersProvider = formattersProvider;
             _modelMetadataProvider = modelMetadataProvider;
+            _constraintResolver = constraintResolver;
         }
 
         /// <inheritdoc />
@@ -60,25 +66,23 @@ namespace Microsoft.AspNet.Mvc.Description
         }
 
         private ApiDescription CreateApiDescription(
-            ControllerActionDescriptor action, 
-            string httpMethod, 
+            ControllerActionDescriptor action,
+            string httpMethod,
             string groupName)
         {
+            var parsedTemplate = ParseTemplate(action);
+
             var apiDescription = new ApiDescription()
             {
                 ActionDescriptor = action,
                 GroupName = groupName,
                 HttpMethod = httpMethod,
-                RelativePath = GetRelativePath(action),
+                RelativePath = GetRelativePath(parsedTemplate),
             };
 
-            if (action.Parameters != null)
-            {
-                foreach (var parameter in action.Parameters)
-                {
-                    apiDescription.ParameterDescriptions.Add(GetParameter(parameter));
-                }
-            }
+            var templateParameters = parsedTemplate?.Parameters?.ToList() ?? new List<TemplatePart>();
+
+            GetParameters(apiDescription, action.Parameters, templateParameters);
 
             var responseMetadataAttributes = GetResponseMetadataAttributes(action);
 
@@ -103,13 +107,13 @@ namespace Microsoft.AspNet.Mvc.Description
                 apiDescription.ResponseType = runtimeReturnType;
 
                 apiDescription.ResponseModelMetadata = _modelMetadataProvider.GetMetadataForType(
-                    modelAccessor: null, 
+                    modelAccessor: null,
                     modelType: runtimeReturnType);
 
                 var formats = GetResponseFormats(
-                    action, 
-                    responseMetadataAttributes, 
-                    declaredReturnType, 
+                    action,
+                    responseMetadataAttributes,
+                    declaredReturnType,
                     runtimeReturnType);
 
                 foreach (var format in formats)
@@ -119,6 +123,44 @@ namespace Microsoft.AspNet.Mvc.Description
             }
 
             return apiDescription;
+        }
+
+        private void GetParameters(
+            ApiDescription apiDescription,
+            IList<ParameterDescriptor> parameterDescriptors,
+            IList<TemplatePart> templateParameters)
+        {
+            if (parameterDescriptors != null)
+            {
+                foreach (var parameter in parameterDescriptors)
+                {
+                    // Process together parameters that appear on the path template and on the
+                    // action descriptor and do not come from the body.
+                    TemplatePart templateParameter = null;
+                    if (parameter.BodyParameterInfo == null)
+                    {
+                        templateParameter = templateParameters
+                            .FirstOrDefault(p => p.Name.Equals(parameter.Name, StringComparison.OrdinalIgnoreCase));
+
+                        if (templateParameter != null)
+                        {
+                            templateParameters.Remove(templateParameter);
+                        }
+                    }
+
+                    apiDescription.ParameterDescriptions.Add(GetParameter(parameter, templateParameter));
+                }
+            }
+
+            if (templateParameters.Count > 0)
+            {
+                // Process parameters that only appear on the path template if any.
+                foreach (var templateParameter in templateParameters)
+                {
+                    var parameterDescription = GetParameter(parameterDescriptor: null, templateParameter: templateParameter);
+                    apiDescription.ParameterDescriptions.Add(parameterDescription);
+                }
+            }
         }
 
         private IEnumerable<string> GetHttpMethods(ControllerActionDescriptor action)
@@ -133,23 +175,93 @@ namespace Microsoft.AspNet.Mvc.Description
             }
         }
 
-        private string GetRelativePath(ControllerActionDescriptor action)
+        private RouteTemplate ParseTemplate(ControllerActionDescriptor action)
         {
-            // This is a placeholder for functionality which will correctly generate the relative path
-            // stub of an action. See: #885
             if (action.AttributeRouteInfo != null &&
                 action.AttributeRouteInfo.Template != null)
             {
-                return action.AttributeRouteInfo.Template;
+                return TemplateParser.Parse(action.AttributeRouteInfo.Template, _constraintResolver);
             }
 
             return null;
         }
 
-        private ApiParameterDescription GetParameter(ParameterDescriptor parameter)
+        private string GetRelativePath(RouteTemplate parsedTemplate)
+        {
+            if (parsedTemplate == null)
+            {
+                return null;
+            }
+
+            var segments = new List<string>();
+
+            foreach (var segment in parsedTemplate.Segments)
+            {
+                var currentSegment = "";
+                foreach (var part in segment.Parts)
+                {
+                    if (part.IsLiteral)
+                    {
+                        currentSegment += part.Text;
+                    }
+                    else if (part.IsParameter)
+                    {
+                        currentSegment += "{" + part.Name + "}";
+                    }
+                }
+
+                segments.Add(currentSegment);
+            }
+
+            return string.Join("/", segments);
+        }
+
+        private ApiParameterDescription GetParameter(
+            ParameterDescriptor parameterDescriptor,
+            TemplatePart templateParameter)
         {
             // This is a placeholder based on currently available functionality for parameters. See #886.
-            var resourceParameter = new ApiParameterDescription()
+            ApiParameterDescription parameterDescription = null;
+
+            if (templateParameter != null && parameterDescriptor == null)
+            {
+                // The parameter is part of the route template but not part of the ActionDescriptor.
+
+                // For now if a parameter is part of the template we will asume its value comes from the path.
+                // We will be more accurate when we implement #886.
+                parameterDescription = CreateParameterFromTemplate(templateParameter);
+            }
+            else if (templateParameter != null && parameterDescriptor != null)
+            {
+                // The parameter is part of the route template and part of the ActionDescriptor.
+                parameterDescription = CreateParameterFromTemplateAndParameterDescriptor(
+                    templateParameter,
+                    parameterDescriptor);
+            }
+            else if(templateParameter == null && parameterDescriptor != null)
+            {
+                // The parameter is part of the ActionDescriptor but is not part of the route template.
+                parameterDescription = CreateParameterFromParameterDescriptor(parameterDescriptor);
+            }
+            else
+            {
+                // We will never call this method with templateParameter == null && parameterDescriptor == null
+                Contract.Assert(parameterDescriptor != null);
+            }
+
+            if (parameterDescription.Type != null)
+            {
+                parameterDescription.ModelMetadata = _modelMetadataProvider.GetMetadataForType(
+                    modelAccessor: null,
+                    modelType: parameterDescription.Type);
+            }
+
+            return parameterDescription;
+        }
+
+        private static ApiParameterDescription CreateParameterFromParameterDescriptor(ParameterDescriptor parameter)
+        {
+            var resourceParameter = new ApiParameterDescription
             {
                 IsOptional = parameter.IsOptional,
                 Name = parameter.Name,
@@ -158,8 +270,8 @@ namespace Microsoft.AspNet.Mvc.Description
 
             if (parameter.ParameterBindingInfo != null)
             {
-                resourceParameter.Type = parameter.ParameterBindingInfo.ParameterType;
                 resourceParameter.Source = ApiParameterSource.Query;
+                resourceParameter.Type = parameter.ParameterBindingInfo.ParameterType;
             }
 
             if (parameter.BodyParameterInfo != null)
@@ -168,14 +280,47 @@ namespace Microsoft.AspNet.Mvc.Description
                 resourceParameter.Source = ApiParameterSource.Body;
             }
 
-            if (resourceParameter.Type != null)
+            return resourceParameter;
+        }
+
+        private static ApiParameterDescription CreateParameterFromTemplateAndParameterDescriptor(
+            TemplatePart templateParameter,
+            ParameterDescriptor parameter)
+        {
+            var resourceParameter = new ApiParameterDescription
             {
-                resourceParameter.ModelMetadata = _modelMetadataProvider.GetMetadataForType(
-                    modelAccessor: null, 
-                    modelType: resourceParameter.Type);
+                Source = ApiParameterSource.Path,
+                IsOptional = parameter.IsOptional && IsOptionalParameter(templateParameter),
+                Name = parameter.Name,
+                ParameterDescriptor = parameter,
+                Constraint = templateParameter.InlineConstraint,
+                DefaultValue = templateParameter.DefaultValue,
+            };
+
+            if (parameter.ParameterBindingInfo != null)
+            {
+                resourceParameter.Type = parameter.ParameterBindingInfo.ParameterType;
             }
 
             return resourceParameter;
+        }
+
+        private static bool IsOptionalParameter(TemplatePart templateParameter)
+        {
+            return templateParameter.IsOptional || templateParameter.DefaultValue != null;
+        }
+
+        private static ApiParameterDescription CreateParameterFromTemplate(TemplatePart templateParameter)
+        {
+            return new ApiParameterDescription
+            {
+                Source = ApiParameterSource.Path,
+                IsOptional = IsOptionalParameter(templateParameter),
+                Name = templateParameter.Name,
+                ParameterDescriptor = null,
+                Constraint = templateParameter.InlineConstraint,
+                DefaultValue = templateParameter.DefaultValue,
+            };
         }
 
         private IReadOnlyList<ApiResponseFormat> GetResponseFormats(
@@ -220,7 +365,7 @@ namespace Microsoft.AspNet.Mvc.Description
                         }
                     }
                 }
-            }            
+            }
 
             return results;
         }

@@ -55,7 +55,8 @@ namespace ApiExplorer
                     IsOptional = parameter.IsOptional,
                     Name = parameter.Name,
                     Source = parameter.Source.ToString(),
-                    Type = parameter.Type.FullName,
+                    Type = parameter?.Type?.FullName,
+                    ConstraintType = parameter?.Constraint?.GetType()?.Name,
                 };
 
                 data.ParameterDescriptions.Add(parameterData);
@@ -101,6 +102,8 @@ namespace ApiExplorer
             public string Source { get; set; }
 
             public string Type { get; set; }
+
+            public string ConstraintType { get; set; }
         }
 
         // Used to serialize data between client and server

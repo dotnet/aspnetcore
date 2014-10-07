@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Constraints;
 using Moq;
 using Xunit;
 
@@ -151,25 +153,269 @@ namespace Microsoft.AspNet.Mvc.Description
             Assert.Equal(typeof(string), username.Type);
         }
 
-        // This is a placeholder based on current functionality - see #885
-        [Fact]
-        public void GetApiDescription_PopluatesRelativePath()
+        [Theory]
+        [InlineData("api/products/{id}", false, null, null)]
+        [InlineData("api/products/{id?}", true, null, null)]
+        [InlineData("api/products/{id=5}", true, null, "5")]
+        [InlineData("api/products/{id:int}", false, typeof(IntRouteConstraint), null)]
+        [InlineData("api/products/{id:int?}", true, typeof(IntRouteConstraint), null)]
+        [InlineData("api/products/{id:int=5}", true, null, "5")]
+        [InlineData("api/products/{*id}", false, null, null)]
+        [InlineData("api/products/{*id:int}", false, typeof(IntRouteConstraint), null)]
+        [InlineData("api/products/{*id:int=5}", true, typeof(IntRouteConstraint), "5")]
+        public void GetApiDescription_PopulatesParameters_ThatAppearOnlyOnRouteTemplate(
+            string template,
+            bool isOptional,
+            Type constraintType,
+            object defaultValue)
         {
             // Arrange
             var action = CreateActionDescriptor();
-            action.AttributeRouteInfo = new AttributeRouteInfo();
-            action.AttributeRouteInfo.Template = "api/Products/{id}";
+            action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
 
             // Act
             var descriptions = GetApiDescriptions(action);
 
             // Assert
             var description = Assert.Single(descriptions);
-            Assert.Equal("api/Products/{id}", description.RelativePath);
+
+            var parameter = Assert.Single(description.ParameterDescriptions);
+            Assert.Equal(ApiParameterSource.Path, parameter.Source);
+            Assert.Equal(isOptional, parameter.IsOptional);
+            Assert.Equal("id", parameter.Name);
+            Assert.Null(parameter.ParameterDescriptor);
+
+            if (constraintType != null)
+            {
+                Assert.IsType(constraintType, parameter.Constraint);
+            }
+
+            if (defaultValue != null)
+            {
+                Assert.Equal(defaultValue, parameter.DefaultValue);
+            }
+            else
+            {
+                Assert.Null(parameter.DefaultValue);
+            }
+        }
+
+        [Theory]
+        [InlineData("api/products/{id}", false, null, null)]
+        [InlineData("api/products/{id?}", true, null, null)]
+        [InlineData("api/products/{id=5}", true, null, "5")]
+        [InlineData("api/products/{id:int}", false, typeof(IntRouteConstraint), null)]
+        [InlineData("api/products/{id:int?}", true, typeof(IntRouteConstraint), null)]
+        [InlineData("api/products/{id:int=5}", true, typeof(IntRouteConstraint), "5")]
+        [InlineData("api/products/{*id}", false, null, null)]
+        [InlineData("api/products/{*id:int}", false, typeof(IntRouteConstraint), null)]
+        [InlineData("api/products/{*id:int=5}", true, typeof(IntRouteConstraint), "5")]
+        public void GetApiDescription_PopulatesParametersThatAppearOnRouteTemplate_AndHaveAssociatedParameterDescriptor(
+            string template,
+            bool isOptional,
+            Type constraintType,
+            object defaultValue)
+        {
+            // Arrange
+            var action = CreateActionDescriptor();
+            action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
+
+            var parameterDescriptor = new ParameterDescriptor
+            {
+                Name = "id",
+                IsOptional = true,
+                ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int))
+            };
+            action.Parameters = new List<ParameterDescriptor> { parameterDescriptor };
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+
+            var parameter = Assert.Single(description.ParameterDescriptions);
+            Assert.Equal(ApiParameterSource.Path, parameter.Source);
+            Assert.Equal(isOptional, parameter.IsOptional);
+            Assert.Equal("id", parameter.Name);
+            Assert.Equal(parameterDescriptor, parameter.ParameterDescriptor);
+
+            if (constraintType != null)
+            {
+                Assert.IsType(constraintType, parameter.Constraint);
+            }
+
+            if (defaultValue != null)
+            {
+                Assert.Equal(defaultValue, parameter.DefaultValue);
+            }
+            else
+            {
+                Assert.Null(parameter.DefaultValue);
+            }
+        }
+
+        [Theory]
+        [InlineData("api/products/{id}", false, null, null)]
+        [InlineData("api/products/{id?}", true, null, null)]
+        [InlineData("api/products/{id=5}", true, null, "5")]
+        [InlineData("api/products/{id:int}", false, typeof(IntRouteConstraint), null)]
+        [InlineData("api/products/{id:int?}", true, typeof(IntRouteConstraint), null)]
+        [InlineData("api/products/{id:int=5}", true, typeof(IntRouteConstraint), "5")]
+        [InlineData("api/products/{*id}", false, null, null)]
+        [InlineData("api/products/{*id:int}", false, typeof(IntRouteConstraint), null)]
+        [InlineData("api/products/{*id:int=5}", true, typeof(IntRouteConstraint), "5")]
+        public void GetApiDescription_CreatesDifferentParameters_IfParameterDescriptorIsFromBody(
+            string template,
+            bool isOptional,
+            Type constraintType,
+            object defaultValue)
+        {
+            // Arrange
+            var action = CreateActionDescriptor();
+            action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
+
+            var parameterDescriptor = new ParameterDescriptor
+            {
+                Name = "id",
+                IsOptional = false,
+                BodyParameterInfo = new BodyParameterInfo(typeof(int))
+            };
+            action.Parameters = new List<ParameterDescriptor> { parameterDescriptor };
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+
+            var bodyParameter = Assert.Single(description.ParameterDescriptions, p => p.Source == ApiParameterSource.Body);
+            Assert.False(bodyParameter.IsOptional);
+            Assert.Equal("id", bodyParameter.Name);
+            Assert.Equal(parameterDescriptor, bodyParameter.ParameterDescriptor);
+
+            var pathParameter = Assert.Single(description.ParameterDescriptions, p => p.Source == ApiParameterSource.Path);
+            Assert.Equal(isOptional, pathParameter.IsOptional);
+            Assert.Equal("id", pathParameter.Name);
+            Assert.Null(pathParameter.ParameterDescriptor);
+
+            if (constraintType != null)
+            {
+                Assert.IsType(constraintType, pathParameter.Constraint);
+            }
+
+            if (defaultValue != null)
+            {
+                Assert.Equal(defaultValue, pathParameter.DefaultValue);
+            }
+            else
+            {
+                Assert.Null(pathParameter.DefaultValue);
+            }
+        }
+
+        [Theory]
+        [InlineData("api/products/{id}", false, false)]
+        [InlineData("api/products/{id}", true, false)]
+        [InlineData("api/products/{id?}", false, false)]
+        [InlineData("api/products/{id?}", true, true)]
+        [InlineData("api/products/{id=5}", false, false)]
+        [InlineData("api/products/{id=5}", true, true)]
+        public void GetApiDescription_ParameterFromPathAndDescriptor_IsOptionalOnly_IfBothAreOptional(
+            string template,
+            bool isDescriptorParameterOptional,
+            bool expectedOptional)
+        {
+            // Arrange
+            var action = CreateActionDescriptor();
+            action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
+
+            var parameterDescriptor = new ParameterDescriptor
+            {
+                Name = "id",
+                IsOptional = isDescriptorParameterOptional,
+                ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int))
+            };
+            action.Parameters = new List<ParameterDescriptor> { parameterDescriptor };
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            var parameter = Assert.Single(description.ParameterDescriptions);
+            Assert.Equal(expectedOptional, parameter.IsOptional);
+        }
+
+        [Theory]
+        [InlineData("api/Products/{id}", "api/Products/{id}")]
+        [InlineData("api/Products/{id?}", "api/Products/{id}")]
+        [InlineData("api/Products/{id:int}", "api/Products/{id}")]
+        [InlineData("api/Products/{id:int?}", "api/Products/{id}")]
+        [InlineData("api/Products/{*id}", "api/Products/{id}")]
+        [InlineData("api/Products/{*id:int}", "api/Products/{id}")]
+        [InlineData("api/Products/{id1}-{id2:int}", "api/Products/{id1}-{id2}")]
+        [InlineData("api/{id1}/{id2?}/{id3:int}/{id4:int?}/{*id5:int}", "api/{id1}/{id2}/{id3}/{id4}/{id5}")]
+        public void GetApiDescription_PopulatesRelativePath(string template, string relativePath)
+        {
+            // Arrange
+            var action = CreateActionDescriptor();
+            action.AttributeRouteInfo = new AttributeRouteInfo();
+            action.AttributeRouteInfo.Template = template;
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal(relativePath, description.RelativePath);
         }
 
         [Fact]
-        public void GetApiDescription_PopluatesResponseType_WithProduct()
+        public void GetApiDescription_DetectsMultipleParameters_OnTheSameSegment()
+        {
+            // Arrange
+            var action = CreateActionDescriptor();
+            action.AttributeRouteInfo = new AttributeRouteInfo();
+            action.AttributeRouteInfo.Template = "api/Products/{id1}-{id2:int}";
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            var id1 = Assert.Single(description.ParameterDescriptions, p => p.Name == "id1");
+            Assert.Equal(ApiParameterSource.Path, id1.Source);
+            Assert.Null(id1.Constraint);
+
+            var id2 = Assert.Single(description.ParameterDescriptions, p => p.Name == "id2");
+            Assert.Equal(ApiParameterSource.Path, id2.Source);
+            Assert.IsType<IntRouteConstraint>(id2.Constraint);
+        }
+
+        [Fact]
+        public void GetApiDescription_DetectsMultipleParameters_OnDifferentSegments()
+        {
+            // Arrange
+            var action = CreateActionDescriptor();
+            action.AttributeRouteInfo = new AttributeRouteInfo();
+            action.AttributeRouteInfo.Template = "api/Products/{id1}-{id2}/{id3:int}/{id4:int?}/{*id5:int}";
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+
+            Assert.Single(description.ParameterDescriptions, p => p.Name == "id1");
+            Assert.Single(description.ParameterDescriptions, p => p.Name == "id2");
+            Assert.Single(description.ParameterDescriptions, p => p.Name == "id3");
+            Assert.Single(description.ParameterDescriptions, p => p.Name == "id4");
+            Assert.Single(description.ParameterDescriptions, p => p.Name == "id5");
+        }
+
+        [Fact]
+        public void GetApiDescription_PopulatesResponseType_WithProduct()
         {
             // Arrange
             var action = CreateActionDescriptor(nameof(ReturnsProduct));
@@ -184,7 +430,7 @@ namespace Microsoft.AspNet.Mvc.Description
         }
 
         [Fact]
-        public void GetApiDescription_PopluatesResponseType_WithTaskOfProduct()
+        public void GetApiDescription_PopulatesResponseType_WithTaskOfProduct()
         {
             // Arrange
             var action = CreateActionDescriptor(nameof(ReturnsTaskOfProduct));
@@ -205,7 +451,7 @@ namespace Microsoft.AspNet.Mvc.Description
         [InlineData(nameof(ReturnsTaskOfObject))]
         [InlineData(nameof(ReturnsTaskOfActionResult))]
         [InlineData(nameof(ReturnsTaskOfJsonResult))]
-        public void GetApiDescription_DoesNotPopluatesResponseInformation_WhenUnknown(string methodName)
+        public void GetApiDescription_DoesNotPopulatesResponseInformation_WhenUnknown(string methodName)
         {
             // Arrange
             var action = CreateActionDescriptor(methodName);
@@ -223,7 +469,7 @@ namespace Microsoft.AspNet.Mvc.Description
         [Theory]
         [InlineData(nameof(ReturnsVoid))]
         [InlineData(nameof(ReturnsTask))]
-        public void GetApiDescription_DoesNotPopluatesResponseInformation_WhenVoid(string methodName)
+        public void GetApiDescription_DoesNotPopulatesResponseInformation_WhenVoid(string methodName)
         {
             // Arrange
             var action = CreateActionDescriptor(methodName);
@@ -247,7 +493,7 @@ namespace Microsoft.AspNet.Mvc.Description
         [InlineData(nameof(ReturnsTask))]
         [InlineData(nameof(ReturnsTaskOfActionResult))]
         [InlineData(nameof(ReturnsTaskOfJsonResult))]
-        public void GetApiDescription_PopluatesResponseInformation_WhenSetByFilter(string methodName)
+        public void GetApiDescription_PopulatesResponseInformation_WhenSetByFilter(string methodName)
         {
             // Arrange
             var action = CreateActionDescriptor(methodName);
@@ -323,7 +569,7 @@ namespace Microsoft.AspNet.Mvc.Description
             action.FilterDescriptors.Add(new FilterDescriptor(filter, FilterScope.Action));
 
             var formatters = CreateFormatters();
-            
+
             // This will just format Order
             formatters[0].SupportedTypes.Add(typeof(Order));
 
@@ -349,12 +595,18 @@ namespace Microsoft.AspNet.Mvc.Description
             return GetApiDescriptions(action, CreateFormatters());
         }
 
-        private IReadOnlyList<ApiDescription> GetApiDescriptions(ActionDescriptor action, List<MockFormatter> formatters)
+        private IReadOnlyList<ApiDescription> GetApiDescriptions(
+            ActionDescriptor action,
+            List<MockFormatter> formatters)
         {
             var context = new ApiDescriptionProviderContext(new ActionDescriptor[] { action });
 
             var formattersProvider = new Mock<IOutputFormattersProvider>(MockBehavior.Strict);
             formattersProvider.Setup(fp => fp.OutputFormatters).Returns(formatters);
+
+            var constraintResolver = new Mock<IInlineConstraintResolver>();
+            constraintResolver.Setup(c => c.ResolveConstraint("int"))
+                .Returns(new IntRouteConstraint());
 
             var modelMetadataProvider = new Mock<IModelMetadataProvider>(MockBehavior.Strict);
             modelMetadataProvider
@@ -364,7 +616,11 @@ namespace Microsoft.AspNet.Mvc.Description
                     return new ModelMetadata(modelMetadataProvider.Object, null, accessor, type, null);
                 });
 
-            var provider = new DefaultApiDescriptionProvider(formattersProvider.Object, modelMetadataProvider.Object);
+            var provider = new DefaultApiDescriptionProvider(
+                formattersProvider.Object,
+                constraintResolver.Object,
+                modelMetadataProvider.Object);
+
             provider.Invoke(context, () => { });
             return context.Results;
         }
@@ -395,7 +651,6 @@ namespace Microsoft.AspNet.Mvc.Description
             action.MethodInfo = GetType().GetMethod(
                 methodName ?? "ReturnsObject",
                 BindingFlags.Instance | BindingFlags.NonPublic);
-
 
             return action;
         }

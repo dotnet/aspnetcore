@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using Xunit;
 using Newtonsoft.Json;
-using System.Net.Http;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
@@ -137,6 +137,254 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             var description = Assert.Single(result);
             Assert.Equal(description.GroupName, "SetOnAction");
+        }
+
+        [Fact]
+        public async Task ApiExplorer_RouteTemplate_DisplaysFixedRoute()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ApiExplorerRouteAndPathParametersInformation");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal(description.RelativePath, "ApiExplorerRouteAndPathParametersInformation");
+        }
+
+        [Fact]
+        public async Task ApiExplorer_RouteTemplate_DisplaysRouteWithParameters()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ApiExplorerRouteAndPathParametersInformation/5");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal(description.RelativePath, "ApiExplorerRouteAndPathParametersInformation/{id}");
+
+            var parameter = Assert.Single(description.ParameterDescriptions);
+            Assert.Equal("id", parameter.Name);
+            Assert.False(parameter.IsOptional);
+            Assert.Equal("Path", parameter.Source);
+            Assert.Null(parameter.ConstraintType);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_RouteTemplate_StripsInlineConstraintsFromThePath()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/Constraint/5";
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal("ApiExplorerRouteAndPathParametersInformation/Constraint/{integer}", description.RelativePath);
+
+            var parameter = Assert.Single(description.ParameterDescriptions);
+            Assert.Equal("integer", parameter.Name);
+            Assert.False(parameter.IsOptional);
+            Assert.Equal("Path", parameter.Source);
+            Assert.Equal("IntRouteConstraint", parameter.ConstraintType);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_RouteTemplate_StripsCatchAllsFromThePath()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/CatchAll/5";
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal("ApiExplorerRouteAndPathParametersInformation/CatchAll/{parameter}", description.RelativePath);
+
+            var parameter = Assert.Single(description.ParameterDescriptions);
+            Assert.Equal("parameter", parameter.Name);
+            Assert.False(parameter.IsOptional);
+            Assert.Equal("Path", parameter.Source);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_RouteTemplate_StripsCatchAllsWithConstraintsFromThePath()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/CatchAllAndConstraint/5";
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal(
+                "ApiExplorerRouteAndPathParametersInformation/CatchAllAndConstraint/{integer}",
+                description.RelativePath);
+
+            var parameter = Assert.Single(description.ParameterDescriptions);
+            Assert.Equal("integer", parameter.Name);
+            Assert.False(parameter.IsOptional);
+            Assert.Equal("Path", parameter.Source);
+            Assert.Equal("IntRouteConstraint", parameter.ConstraintType);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_RouteTemplateStripsMultipleConstraints_OnTheSamePathSegment()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/"
+                + "MultipleParametersInSegment/12-01-1987";
+
+            var expectedRelativePath = "ApiExplorerRouteAndPathParametersInformation/"
+                + "MultipleParametersInSegment/{month}-{day}-{year}";
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal(expectedRelativePath, description.RelativePath);
+
+            var month = Assert.Single(description.ParameterDescriptions, p => p.Name == "month");
+            Assert.False(month.IsOptional);
+            Assert.Equal("Path", month.Source);
+            Assert.Equal("RangeRouteConstraint", month.ConstraintType);
+
+            var day = Assert.Single(description.ParameterDescriptions, p => p.Name == "day");
+            Assert.False(day.IsOptional);
+            Assert.Equal("Path", day.Source);
+            Assert.Equal("IntRouteConstraint", day.ConstraintType);
+
+            var year = Assert.Single(description.ParameterDescriptions, p => p.Name == "year");
+            Assert.False(year.IsOptional);
+            Assert.Equal("Path", year.Source);
+            Assert.Equal("IntRouteConstraint", year.ConstraintType);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_RouteTemplateStripsMultipleConstraints_InMultipleSegments()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/"
+                + "MultipleParametersInMultipleSegments/12/01/1987";
+
+            var expectedRelativePath = "ApiExplorerRouteAndPathParametersInformation/"
+                + "MultipleParametersInMultipleSegments/{month}/{day}/{year}";
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal(expectedRelativePath, description.RelativePath);
+
+            var month = Assert.Single(description.ParameterDescriptions, p => p.Name == "month");
+            Assert.False(month.IsOptional);
+            Assert.Equal("Path", month.Source);
+            Assert.Equal("RangeRouteConstraint", month.ConstraintType);
+
+            var day = Assert.Single(description.ParameterDescriptions, p => p.Name == "day");
+            Assert.False(day.IsOptional);
+            Assert.Equal("Path", day.Source);
+            Assert.Equal("IntRouteConstraint", day.ConstraintType);
+
+            var year = Assert.Single(description.ParameterDescriptions, p => p.Name == "year");
+            Assert.True(year.IsOptional);
+            Assert.Equal("Path", year.Source);
+            Assert.Equal("IntRouteConstraint", year.ConstraintType);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_DescribeParameters_FromAllSources()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/MultipleTypesOfParameters/1/2/3";
+
+            var expectedRelativePath = "ApiExplorerRouteAndPathParametersInformation/"
+                + "MultipleTypesOfParameters/{path}/{pathAndQuery}/{pathAndFromBody}";
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal(expectedRelativePath, description.RelativePath);
+
+            var path = Assert.Single(description.ParameterDescriptions, p => p.Name == "path");
+            Assert.Equal("Path", path.Source);
+
+            var pathAndQuery = Assert.Single(description.ParameterDescriptions, p => p.Name == "pathAndQuery");
+            Assert.Equal("Path", pathAndQuery.Source);
+
+            Assert.Single(description.ParameterDescriptions, p => p.Name == "pathAndFromBody" && p.Source == "Body");
+            Assert.Single(description.ParameterDescriptions, p => p.Name == "pathAndFromBody" && p.Source == "Path");
+        }
+
+        [Fact]
+        public async Task ApiExplorer_RouteTemplate_MakesParametersOptional()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ApiExplorerRouteAndPathParametersInformation/Optional/");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal("ApiExplorerRouteAndPathParametersInformation/Optional/{id}", description.RelativePath);
+
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
+            Assert.True(id.IsOptional);
+            Assert.Equal("Path", id.Source);
         }
 
         [Fact]
@@ -500,6 +748,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             public string Source { get; set; }
 
             public string Type { get; set; }
+
+            public string ConstraintType { get; set; }
         }
 
         // Used to serialize data between client and server

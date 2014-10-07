@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc.Description
 {
@@ -17,6 +18,10 @@ namespace Microsoft.AspNet.Mvc.Description
         public ParameterDescriptor ParameterDescriptor { get; set; }
 
         public ApiParameterSource Source { get; set; }
+
+        public IRouteConstraint Constraint { get; set; }
+
+        public object DefaultValue { get; set; }
 
         public Type Type { get; set; }
     }

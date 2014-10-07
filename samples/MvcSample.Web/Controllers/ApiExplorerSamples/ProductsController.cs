@@ -9,7 +9,7 @@ namespace MvcSample.Web.ApiExplorerSamples
     [Route("api/Products")]
     public class ProductsController : Controller
     {
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public Product GetById(int id)
         {
             return null;
@@ -22,7 +22,7 @@ namespace MvcSample.Web.ApiExplorerSamples
         }
 
         [Produces("application/json", Type = typeof(ProductOrderConfirmation))]
-        [HttpPut("{id}/Buy")]
+        [HttpPut("{id:int}/Buy")]
         public IActionResult Buy(int projectId, int quantity = 1)
         {
             return null;

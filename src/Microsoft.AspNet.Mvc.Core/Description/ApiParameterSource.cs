@@ -8,5 +8,6 @@ namespace Microsoft.AspNet.Mvc.Description
     {
         Body,
         Query,
+        Path
     }
 }
