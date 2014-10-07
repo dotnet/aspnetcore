@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 namespace Microsoft.AspNet.Diagnostics.Views
 {
 #line 1 "DiagnosticsPage.cshtml"
@@ -41,64 +38,34 @@ using System.Globalization
 
             WriteLiteral("\r\n<!DOCTYPE html>\r\n\r\n<html lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head" +
 ">\r\n    <meta charset=\"utf-8\" />\r\n    <title>");
-            Write(
 #line 16 "DiagnosticsPage.cshtml"
-            Resources.DiagnosticsPageHtml_Title
+      Write(Resources.DiagnosticsPageHtml_Title);
 
 #line default
 #line hidden
-            );
-
             WriteLiteral("</title>\r\n</head>\r\n<body>\r\n    <div class=\"main\">\r\n        <h1>");
-            Write(
 #line 20 "DiagnosticsPage.cshtml"
-             Resources.DiagnosticsPageHtml_Title
+       Write(Resources.DiagnosticsPageHtml_Title);
 
 #line default
 #line hidden
-            );
-
             WriteLiteral("</h1>\r\n        <p>");
-            Write(
 #line 21 "DiagnosticsPage.cshtml"
-            Resources.DiagnosticsPageHtml_Information
+      Write(Resources.DiagnosticsPageHtml_Information);
 
 #line default
 #line hidden
-            );
-
             WriteLiteral("</p>\r\n    </div>\r\n    <div class=\"errors\">\r\n        <h2>");
-            Write(
 #line 24 "DiagnosticsPage.cshtml"
-             Resources.DiagnosticsPageHtml_TestErrorSection
+       Write(Resources.DiagnosticsPageHtml_TestErrorSection);
 
 #line default
 #line hidden
-            );
-
             WriteLiteral("</h2>\r\n        <p><a");
             WriteAttribute("href", Tuple.Create(" href=\"", 767), Tuple.Create("\"", 858), 
-            Tuple.Create(Tuple.Create("", 774), Tuple.Create<System.Object, System.Int32>(
-#line 25 "DiagnosticsPage.cshtml"
-                     Request.PathBase
-
-#line default
-#line hidden
-            , 774), false), 
-            Tuple.Create(Tuple.Create("", 791), Tuple.Create<System.Object, System.Int32>(
-#line 25 "DiagnosticsPage.cshtml"
-                                      Request.Path
-
-#line default
-#line hidden
-            , 791), false), Tuple.Create(Tuple.Create("", 804), Tuple.Create("?error=", 804), true), 
-            Tuple.Create(Tuple.Create("", 811), Tuple.Create<System.Object, System.Int32>(
-#line 25 "DiagnosticsPage.cshtml"
-                                                          Resources.DiagnosticsPageHtml_TestErrorMessage
-
-#line default
-#line hidden
-            , 811), false));
+            Tuple.Create(Tuple.Create("", 774), Tuple.Create<System.Object, System.Int32>(Request.PathBase, 774), false), 
+            Tuple.Create(Tuple.Create("", 791), Tuple.Create<System.Object, System.Int32>(Request.Path, 791), false), Tuple.Create(Tuple.Create("", 804), Tuple.Create("?error=", 804), true), 
+            Tuple.Create(Tuple.Create("", 811), Tuple.Create<System.Object, System.Int32>(Resources.DiagnosticsPageHtml_TestErrorMessage, 811), false));
             WriteLiteral(">throw InvalidOperationException</a></p>\r\n    </div>\r\n</body>\r\n</html>\r\n");
         }
         #pragma warning restore 1998

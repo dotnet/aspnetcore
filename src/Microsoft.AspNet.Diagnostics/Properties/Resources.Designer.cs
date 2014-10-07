@@ -379,6 +379,22 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         /// <summary>
+        /// Name
+        /// </summary>
+        internal static string RuntimeInfoPage_PackageVersionColumnName
+        {
+            get { return GetString("RuntimeInfoPage_PackageVersionColumnName"); }
+        }
+
+        /// <summary>
+        /// Name
+        /// </summary>
+        internal static string FormatRuntimeInfoPage_PackageVersionColumnName()
+        {
+            return GetString("RuntimeInfoPage_PackageVersionColumnName");
+        }
+
+        /// <summary>
         /// Runtime Version:
         /// </summary>
         internal static string RuntimeInfoPage_RuntimeVersion

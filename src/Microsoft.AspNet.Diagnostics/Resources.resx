@@ -194,6 +194,9 @@
   <data name="RuntimeInfoPage_PackagesFail" xml:space="preserve">
     <value>Could not retrieve the list of loaded packages.</value>
   </data>
+  <data name="RuntimeInfoPage_PackageVersionColumnName" xml:space="preserve">
+    <value>Version</value>
+  </data>
   <data name="RuntimeInfoPage_RuntimeVersion" xml:space="preserve">
     <value>Runtime Version:</value>
   </data>

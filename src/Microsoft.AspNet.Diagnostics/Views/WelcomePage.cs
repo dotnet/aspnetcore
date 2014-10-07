@@ -27,22 +27,13 @@ using System
 
             WriteLiteral("\r\n<!DOCTYPE html>\r\n<html");
             WriteAttribute("lang", Tuple.Create(" lang=\"", 85), Tuple.Create("\"", 167), 
-            Tuple.Create(Tuple.Create("", 92), Tuple.Create<System.Object, System.Int32>(
-#line 6 "WelcomePage.cshtml"
-             System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName
-
-#line default
-#line hidden
-            , 92), false));
+            Tuple.Create(Tuple.Create("", 92), Tuple.Create<System.Object, System.Int32>(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 92), false));
             WriteLiteral(">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <title>");
-            Write(
 #line 9 "WelcomePage.cshtml"
-            Resources.WelcomeTitle
+      Write(Resources.WelcomeTitle);
 
 #line default
 #line hidden
-            );
-
             WriteLiteral("</title>\r\n    <style type=\"text/css\">\r\n        @font-face {\r\n            font-fam" +
 "ily: \'SegoeLight\', helvetica, sans-serif;\r\n            font-weight: normal;\r\n   " +
 "         font-style: normal;\r\n        }\r\n\r\n        body {\r\n            backgroun" +
@@ -135,21 +126,9 @@ using System
 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHL0rwADANq3ok68n5UR" +
 "AAAAAElFTkSuQmCC\"");
             WriteAttribute("alt", Tuple.Create("\r\n                    alt=\"", 7462), Tuple.Create("\"", 7530), 
-            Tuple.Create(Tuple.Create("", 7489), Tuple.Create<System.Object, System.Int32>(
-#line 168 "WelcomePage.cshtml"
-                          Resources.WelcomePageImageText_LightBulb
-
-#line default
-#line hidden
-            , 7489), false));
+            Tuple.Create(Tuple.Create("", 7489), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_LightBulb, 7489), false));
             WriteAttribute("title", Tuple.Create(" title=\"", 7531), Tuple.Create("\"", 7580), 
-            Tuple.Create(Tuple.Create("", 7539), Tuple.Create<System.Object, System.Int32>(
-#line 168 "WelcomePage.cshtml"
-                                                                            Resources.WelcomePageImageText_LightBulb
-
-#line default
-#line hidden
-            , 7539), false));
+            Tuple.Create(Tuple.Create("", 7539), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_LightBulb, 7539), false));
             WriteLiteral(" width=\"274\" height=\"274\" /></div>\r\n            <div class=\"browser\" style=\"opaci" +
 "ty: 1; visible: true;\">\r\n                <img src=\"data:image/png;base64,iVBORw0" +
 "KGgoAAAANSUhEUgAAAYAAAAExCAYAAAB1UXVvAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR" +
@@ -265,21 +244,9 @@ using System
 "AAMALXokn/reOBeCwC/ij+HGLcwMAMFj+Kq73f3n0P6eP/nHj+k831tdf+F78z0n8uBI/znGuAAAGwbX" +
 "48c24+P9N+oP/L8AAx5G6SMzC+fMAAAAASUVORK5CYII=\"");
             WriteAttribute("alt", Tuple.Create("\r\n                     alt=\"", 16668), Tuple.Create("\"", 16735), 
-            Tuple.Create(Tuple.Create("", 16696), Tuple.Create<System.Object, System.Int32>(
-#line 171 "WelcomePage.cshtml"
-                           Resources.WelcomePageImageText_Browser
-
-#line default
-#line hidden
-            , 16696), false));
+            Tuple.Create(Tuple.Create("", 16696), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_Browser, 16696), false));
             WriteAttribute("title", Tuple.Create(" title=\"", 16736), Tuple.Create("\"", 16783), 
-            Tuple.Create(Tuple.Create("", 16744), Tuple.Create<System.Object, System.Int32>(
-#line 171 "WelcomePage.cshtml"
-                                                                           Resources.WelcomePageImageText_Browser
-
-#line default
-#line hidden
-            , 16744), false));
+            Tuple.Create(Tuple.Create("", 16744), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_Browser, 16744), false));
             WriteLiteral(" width=\"384\" height=\"305\" /><div>:-)</div>\r\n            </div>\r\n            <div " +
 "class=\"light second\">\r\n                <img src=\"data:image/png;base64,iVBORw0KG" +
 "goAAAANSUhEUgAAARIAAAESCAYAAAAxN1ojAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5c" +
@@ -362,21 +329,9 @@ using System
 "EwaQ6SBSCCOBLOiclnX/70xJpl1t/ykOZHC57E/X+nnTbZ9EoEgC4DE044mHoCJ/F+AAQAgl3zNeDGxu" +
 "QAAAABJRU5ErkJggg==\"");
             WriteAttribute("alt", Tuple.Create("\r\n                    alt=\"", 23205), Tuple.Create("\"", 23273), 
-            Tuple.Create(Tuple.Create("", 23232), Tuple.Create<System.Object, System.Int32>(
-#line 175 "WelcomePage.cshtml"
-                          Resources.WelcomePageImageText_LightBulb
-
-#line default
-#line hidden
-            , 23232), false));
+            Tuple.Create(Tuple.Create("", 23232), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_LightBulb, 23232), false));
             WriteAttribute("title", Tuple.Create(" title=\"", 23274), Tuple.Create("\"", 23323), 
-            Tuple.Create(Tuple.Create("", 23282), Tuple.Create<System.Object, System.Int32>(
-#line 175 "WelcomePage.cshtml"
-                                                                            Resources.WelcomePageImageText_LightBulb
-
-#line default
-#line hidden
-            , 23282), false));
+            Tuple.Create(Tuple.Create("", 23282), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_LightBulb, 23282), false));
             WriteLiteral(" width=\"274\" height=\"274\" /></div>\r\n            <div class=\"bulb\">\r\n             " +
 "   <img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVoAAAKSCAYAAACTAhMyA" +
 "AAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyRpVFh0WE1MOmNvbS5hZG9iZS54b" +
@@ -477,21 +432,9 @@ using System
 "AIILYDQAiC0AEILgNACCC2A0AIgtABCCyC0AAgtgNACMCcvisIoACT0fwEGAL+BBlr+j4JHAAAAAElFT" +
 "kSuQmCC\"");
             WriteAttribute("alt", Tuple.Create("\r\n                     alt=\"", 31173), Tuple.Create("\"", 31242), 
-            Tuple.Create(Tuple.Create("", 31201), Tuple.Create<System.Object, System.Int32>(
-#line 178 "WelcomePage.cshtml"
-                           Resources.WelcomePageImageText_LightBulb
-
-#line default
-#line hidden
-            , 31201), false));
+            Tuple.Create(Tuple.Create("", 31201), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_LightBulb, 31201), false));
             WriteAttribute("title", Tuple.Create(" title=\"", 31243), Tuple.Create("\"", 31292), 
-            Tuple.Create(Tuple.Create("", 31251), Tuple.Create<System.Object, System.Int32>(
-#line 178 "WelcomePage.cshtml"
-                                                                             Resources.WelcomePageImageText_LightBulb
-
-#line default
-#line hidden
-            , 31251), false));
+            Tuple.Create(Tuple.Create("", 31251), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_LightBulb, 31251), false));
             WriteLiteral(" width=\"346\" height=\"658\" /></div>\r\n            <div class=\"bottom\">\r\n           " +
 "     <img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABLwAAADKCAYAAACv61n" +
 "1AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAKsZJREFUeNrs3VtsXPed2PEzc87" +
@@ -679,50 +622,29 @@ using System
 "643H3SgNOZ3kR8AIAAAAAoIWjGV7UBrLAnc1h1wS8omp1OKzVxqxavihcX60FHHltZ8MF29a16fxojRS" +
 "uBwAAAACghf8vwABfcA5F9k0oGQAAAABJRU5ErkJggg==\"");
             WriteAttribute("alt", Tuple.Create("\r\n                    alt=\"", 46140), Tuple.Create("\"", 46206), 
-            Tuple.Create(Tuple.Create("", 46167), Tuple.Create<System.Object, System.Int32>(
-#line 181 "WelcomePage.cshtml"
-                          Resources.WelcomePageImageText_Skyline
-
-#line default
-#line hidden
-            , 46167), false));
+            Tuple.Create(Tuple.Create("", 46167), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_Skyline, 46167), false));
             WriteAttribute("title", Tuple.Create(" title=\"", 46207), Tuple.Create("\"", 46254), 
-            Tuple.Create(Tuple.Create("", 46215), Tuple.Create<System.Object, System.Int32>(
-#line 181 "WelcomePage.cshtml"
-                                                                          Resources.WelcomePageImageText_Skyline
-
-#line default
-#line hidden
-            , 46215), false));
+            Tuple.Create(Tuple.Create("", 46215), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_Skyline, 46215), false));
             WriteLiteral(" width=\"1212\" height=\"202\" /></div>\r\n        </div>\r\n    </div>\r\n\r\n    <div class" +
 "=\"content\">\r\n        <div class=\"bodyHeadline\">");
-            Write(
 #line 186 "WelcomePage.cshtml"
-                                   Resources.WelcomeHeader
+                             Write(Resources.WelcomeHeader);
 
 #line default
 #line hidden
-            );
-
             WriteLiteral("</div>\r\n        <div class=\"bodyContent\">");
-            Write(
 #line 187 "WelcomePage.cshtml"
-                                  Resources.WelcomeStarted
+                            Write(Resources.WelcomeStarted);
 
 #line default
 #line hidden
-            );
-
             WriteLiteral("</div>\r\n        <a class=\"bodyCTA longer\" href=\"http://go.microsoft.com/fwlink/?L" +
 "inkID=398596&amp;clcid=0x409\">");
-            Write(
 #line 188 "WelcomePage.cshtml"
-                                                                                                        Resources.WelcomeLearnMicrosoftAspNet
+                                                                                                  Write(Resources.WelcomeLearnMicrosoftAspNet);
 
 #line default
 #line hidden
-            );
-
             WriteLiteral("<div>\r\n            <img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADoAAA" +
 "AdCAYAAAD7En+mAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyRpVFh0WE1MOm" +
 "NvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek" +
@@ -755,21 +677,9 @@ using System
 "U1BLaYptsK4VktN9pRq0R9Y5/NMZL8slmC1ioSIu51ezNtkSACQ3HJckjXAX1v8nzsTxLwVBTT99OEiF" +
 "xkMsNIVpu/J6yjhBpEG5mhv7vI8l+AAQB7WiwH/DuungAAAABJRU5ErkJggg==\"");
             WriteAttribute("alt", Tuple.Create("\r\n                alt=\"", 49086), Tuple.Create("\"", 49150), 
-            Tuple.Create(Tuple.Create("", 49109), Tuple.Create<System.Object, System.Int32>(
-#line 190 "WelcomePage.cshtml"
-                      Resources.WelcomePageImageText_LearnMore
-
-#line default
-#line hidden
-            , 49109), false));
+            Tuple.Create(Tuple.Create("", 49109), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_LearnMore, 49109), false));
             WriteAttribute("title", Tuple.Create(" title=\"", 49151), Tuple.Create("\"", 49200), 
-            Tuple.Create(Tuple.Create("", 49159), Tuple.Create<System.Object, System.Int32>(
-#line 190 "WelcomePage.cshtml"
-                                                                        Resources.WelcomePageImageText_LearnMore
-
-#line default
-#line hidden
-            , 49159), false));
+            Tuple.Create(Tuple.Create("", 49159), Tuple.Create<System.Object, System.Int32>(Resources.WelcomePageImageText_LearnMore, 49159), false));
             WriteLiteral(" width=\"58\" height=\"29\" /></div>\r\n        </a>\r\n    </div>\r\n\r\n</body>\r\n</html>\r\n");
         }
         #pragma warning restore 1998

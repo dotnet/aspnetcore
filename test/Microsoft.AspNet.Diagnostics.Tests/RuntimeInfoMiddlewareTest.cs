@@ -96,8 +96,8 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             // Arrange
             var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
             libraryManagerMock.Setup(l => l.GetLibraries()).Returns(new ILibraryInformation[] {
-                        new FakeLibraryInformation() { Name ="LibInfo1", Path = "Path1" },
-                        new FakeLibraryInformation() { Name ="LibInfo2", Path = "Path2" },
+                        new FakeLibraryInformation() { Name ="LibInfo1", Version = "1.0.0-beta1", Path = "Path1" },
+                        new FakeLibraryInformation() { Name ="LibInfo2", Version = "1.0.0-beta2", Path = "Path2" },
                     });
 
             RequestDelegate next = _ =>
@@ -128,8 +128,10 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 string response = Encoding.UTF8.GetString(buffer);
 
                 Assert.True(response.Contains("<td>LibInfo1</td>"));
+                Assert.True(response.Contains("<td>1.0.0-beta1</td>"));
                 Assert.True(response.Contains("<td>Path1</td>"));
                 Assert.True(response.Contains("<td>LibInfo2</td>"));
+                Assert.True(response.Contains("<td>1.0.0-beta2</td>"));
                 Assert.True(response.Contains("<td>Path2</td>"));
             }
         }
@@ -138,6 +140,8 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         private class FakeLibraryInformation : ILibraryInformation
         {
             public string Name { get; set; }
+
+            public string Version { get; set; }
 
             public string Path { get; set; }
 
