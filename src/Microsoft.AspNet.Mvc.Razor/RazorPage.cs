@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private TextWriter _originalWriter;
         private IUrlHelper _urlHelper;
         private ITypeActivator _typeActivator;
+        private ITagHelperActivator _tagHelperActivator;
         private bool _renderedBody;
 
         public RazorPage()
@@ -126,6 +127,19 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
+        private ITagHelperActivator TagHelperActivator
+        {
+            get
+            {
+                if (_tagHelperActivator == null)
+                {
+                    _tagHelperActivator = ViewContext.HttpContext.RequestServices.GetService<ITagHelperActivator>();
+                }
+
+                return _tagHelperActivator;
+            }
+        }
+
         /// <summary>
         /// Creates and activates a <see cref="ITagHelper"/>.
         /// </summary>
@@ -139,8 +153,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var tagHelper = TypeActivator.CreateInstance<TTagHelper>(ViewContext.HttpContext.RequestServices);
 
-            var hasViewContext = tagHelper as ICanHasViewContext;
-            hasViewContext?.Contextualize(ViewContext);
+            TagHelperActivator.Activate(tagHelper, ViewContext);
 
             return tagHelper;
         }

@@ -31,20 +31,47 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public void CreateTagHelper_ActivatesProvidedTagHelperType()
+        public void CreateTagHelper_ActivatesProvidedTagHelperType_Constructor()
         {
             // Arrange
             var instance = CreateTestRazorPage();
 
             // Act
-            var tagHelper = instance.CreateTagHelper<ServiceTagHelper>();
+            var tagHelper = instance.CreateTagHelper<ConstructorServiceTagHelper>();
 
             // Assert
             Assert.NotNull(tagHelper.PassedInService);
         }
 
         [Fact]
-        public void CreateTagHelper_ContextualizesProvidedTagHelperType()
+        public void CreateTagHelper_ActivatesProvidedTagHelperType_Property()
+        {
+            // Arrange
+            var instance = CreateTestRazorPage();
+
+            // Act
+            var tagHelper = instance.CreateTagHelper<ActivateAttributeServiceTagHelper>();
+
+            // Assert
+            Assert.NotNull(tagHelper.ActivatedService);
+        }
+
+        [Fact]
+        public void CreateTagHelper_ActivatesProvidedTagHelperType_PropertyAndConstructor()
+        {
+            // Arrange
+            var instance = CreateTestRazorPage();
+
+            // Act
+            var tagHelper = instance.CreateTagHelper<AttributeConstructorServiceTagHelper>();
+
+            // Assert
+            Assert.NotNull(tagHelper.ActivatedService);
+            Assert.NotNull(tagHelper.PassedInService);
+        }
+
+        [Fact]
+        public void CreateTagHelper_ProvidesTagHelperTypeWithViewContext()
         {
             // Arrange
             var instance = CreateTestRazorPage();
@@ -57,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public void CreateTagHelper_ContextualizesAndActivatesProvidedTagHelperType()
+        public void CreateTagHelper_ProvidesTagHelperTypeWithViewContextAndActivates()
         {
             // Arrange
             var instance = CreateTestRazorPage();
@@ -80,6 +107,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                            .Returns(myService);
             serviceProvider.Setup(mock => mock.GetService(typeof(ITypeActivator)))
                            .Returns(typeActivator);
+            serviceProvider.Setup(mock => mock.GetService(typeof(ITagHelperActivator)))
+                           .Returns(new DefaultTagHelperActivator());
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(serviceProvider.Object);
@@ -109,24 +138,39 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
         }
 
-        private class ServiceTagHelper : TagHelper
+        private class ConstructorServiceTagHelper : TagHelper
         {
             public MyService PassedInService { get; set; }
 
-            public ServiceTagHelper(MyService service)
+            public ConstructorServiceTagHelper(MyService service)
             {
                 PassedInService = service;
             }
         }
 
-        private class ViewContextTagHelper : TagHelper, ICanHasViewContext
+        private class ActivateAttributeServiceTagHelper : TagHelper
         {
-            public ViewContext ViewContext { get; set; }
+            [Activate]
+            public MyService ActivatedService { get; set; }
+        }
 
-            public void Contextualize([NotNull]ViewContext viewContext)
+        private class AttributeConstructorServiceTagHelper : TagHelper
+        {
+            [Activate]
+            public MyService ActivatedService { get; set; }
+
+            public MyService PassedInService { get; set; }
+
+            public AttributeConstructorServiceTagHelper(MyService service)
             {
-                ViewContext = viewContext;
+                PassedInService = service;
             }
+        }
+
+        private class ViewContextTagHelper : TagHelper
+        {
+            [Activate]
+            public ViewContext ViewContext { get; set; }
         }
 
         private class ViewContextServiceTagHelper : ViewContextTagHelper

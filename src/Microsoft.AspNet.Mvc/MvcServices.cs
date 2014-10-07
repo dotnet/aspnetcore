@@ -33,6 +33,9 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<IOptionsAction<MvcOptions>, MvcOptionsSetup>();
 
+            // Only want one ITagHelperActivator so it can cache Type activation information. Types won't conflict.
+            yield return describe.Singleton<ITagHelperActivator, DefaultTagHelperActivator>();
+
             yield return describe.Transient<IControllerFactory, DefaultControllerFactory>();
             yield return describe.Singleton<IControllerActivator, DefaultControllerActivator>();
 
