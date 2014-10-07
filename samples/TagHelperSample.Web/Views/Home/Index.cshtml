@@ -1,0 +1,35 @@
+﻿
+@using TagHelperSample.Web.Models
+@model IEnumerable<User>
+
+<h2>Index</h2>
+<p>
+    <a action="Create">Create New</a>
+</p>
+
+@if (Model != null && Model.Count() != 0)
+{
+    <div class="form-horizontal">
+        @foreach (var item in Model)
+        {
+            <div class="form-group">
+                <label for="@item.Name" />
+                <input type="text" for="@item.Name" disabled="disabled" readonly="readonly" />
+            </div>
+            <div class="form-group">
+                <label for="@item.DateOfBirth" />
+                <input type="date" for="@item.DateOfBirth" disabled="disabled" readonly="readonly" />
+            </div>
+            <div class="form-group">
+                <label for="@item.YearsEmployeed" />
+                <input type="number" for="@item.YearsEmployeed" disabled="disabled" readonly="readonly" />
+            </div>
+            <div class="form-group">
+                <label for="@item.Blurb" />
+                <textarea rows="4" for="@item.Blurb" disabled="disabled" readonly="readonly" />
+            </div>
+
+            <a action="Edit" controller="Home" route="MyRouteName" route-id="@item.Id">Edit</a>
+        }
+    </div>
+}

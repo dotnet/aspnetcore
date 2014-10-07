@@ -1,0 +1,61 @@
+﻿
+@using TagHelperSample.Web.Models
+@model User
+
+<h2>Edit</h2>
+
+<form>
+    <div class="form-horizontal">
+        <div validation-summary="true"/>
+        <input type="hidden" for="Id" />
+
+        <div class="form-group">
+            <label for="Name" class="control-label col-md-2" />
+            <div class="col-md-10">
+                <input type="text" for="Name" />
+                <span validation-for="Name" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="DateOfBirth" class="control-label col-md-2" />
+            <div class="col-md-10">
+                <input type="date" for="DateOfBirth" format="{0:d}" />
+                <span validation-for="DateOfBirth">How old are you?</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="YearsEmployeed" class="control-label col-md-2" />
+            <div class="col-md-10">
+                <select for="YearsEmployeed" items="(IEnumerable<SelectListItem>)ViewBag.Items" size="2" class="form-control">
+                    <optgroup label="Newby">
+                        <option value="0">Less than 1</option>
+                        <option value="1">1</option>
+                    </optgroup>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+                <span validation-for="YearsEmployeed" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="Blurb" class="control-label col-md-2" />
+            <div class="col-md-10">
+                <textarea rows="4" for="Blurb"></textarea>
+                <span validation-for="Blurb" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+</form>
+
+<div>
+    <a action="Index">Back to list</a>
+</div>
