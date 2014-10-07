@@ -28,7 +28,6 @@ namespace CookieSample
             {
                 services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
                 {
-
                     options.SignInAsAuthenticationType = CookieAuthenticationDefaults.AuthenticationType;
                 });
             });
