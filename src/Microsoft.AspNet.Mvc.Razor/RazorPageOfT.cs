@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// <typeparam name="TModel">The type of the view data model.</typeparam>
     public abstract class RazorPage<TModel> : RazorPage
     {
-        IModelMetadataProvider _provider;
+        private IModelMetadataProvider _provider;
 
         public TModel Model
         {
