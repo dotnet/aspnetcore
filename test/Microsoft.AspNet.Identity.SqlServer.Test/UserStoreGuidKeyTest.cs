@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Identity.Test;
+using Microsoft.Data.Entity.Services;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using System;
+using Microsoft.Framework.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.SqlServer.Test
@@ -76,6 +78,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
                 context = CreateTestContext();
             }
             var services = new ServiceCollection();
+            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
             services.AddIdentity<GuidUser, GuidRole>().AddRoleStore(new ApplicationRoleStore((ApplicationDbContext)context));
             return services.BuildServiceProvider().GetService<RoleManager<GuidRole>>();
         }

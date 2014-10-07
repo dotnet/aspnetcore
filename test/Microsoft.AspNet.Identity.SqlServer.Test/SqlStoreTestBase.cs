@@ -1,16 +1,18 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Identity.Test;
-using Microsoft.Data.Entity;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.OptionsModel;
 using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Identity.Test;
+using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Services;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.SqlServer.Test
@@ -47,6 +49,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
             var services = new ServiceCollection();
             services.AddEntityFramework().AddSqlServer();
             services.Add(OptionsServices.GetDefaultServices());
+            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
             services.SetupOptions<DbContextOptions>(options =>
                 options.UseSqlServer(ConnectionString));
             var serviceProvider = services.BuildServiceProvider();
@@ -60,6 +63,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
             var services = new ServiceCollection();
             services.AddEntityFramework().AddSqlServer();
             services.Add(OptionsServices.GetDefaultServices());
+            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
             services.SetupOptions<DbContextOptions>(options =>
                 options.UseSqlServer(ConnectionString));
             var serviceProvider = services.BuildServiceProvider();
@@ -111,6 +115,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
 
             builder.UseServices(services =>
             {
+                services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
                 services.AddEntityFramework().AddSqlServer();
                 services.AddIdentitySqlServer<ApplicationDbContext, TUser, TRole, TKey>();
                 services.SetupOptions<DbContextOptions>(options =>
@@ -138,6 +143,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
 
             builder.UseServices(services =>
             {
+                services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
                 services.AddEntityFramework().AddSqlServer();
                 services.AddIdentitySqlServer<ApplicationDbContext, TUser, TRole, TKey>().SetupOptions(options =>
                 {

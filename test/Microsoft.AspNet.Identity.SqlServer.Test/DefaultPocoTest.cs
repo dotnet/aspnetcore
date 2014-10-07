@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Services;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.SqlServer.Test
@@ -21,6 +23,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         {
             var services = new ServiceCollection();
             services.Add(OptionsServices.GetDefaultServices());
+            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
             services.AddEntityFramework().AddSqlServer();
             services.SetupOptions<DbContextOptions>(options => options.UseSqlServer(ConnectionString));
             var serviceProvider = services.BuildServiceProvider();

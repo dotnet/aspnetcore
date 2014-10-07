@@ -8,8 +8,10 @@ using JetBrains.Annotations;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
+using Microsoft.Data.Entity.Services;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Xunit;
 
@@ -48,6 +50,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         {
             var services = new ServiceCollection();
             services.Add(OptionsServices.GetDefaultServices());
+            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
             services.AddEntityFramework().AddSqlServer();
             services.SetupOptions<DbContextOptions>(options => options.UseSqlServer(ConnectionString));
             var serviceProvider = services.BuildServiceProvider();
