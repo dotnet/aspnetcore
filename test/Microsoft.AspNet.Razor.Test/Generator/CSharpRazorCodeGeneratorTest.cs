@@ -409,6 +409,42 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     tabTest: TabTest.NoTabs);
         }
 
+        [Fact]
+        public void CSharpCodeGenerator_CorrectlyGeneratesAttributes_AtDesignTime()
+        {
+            var expectedDesignTimePragmas = new[]
+            {
+                BuildLineMapping(2, 0, 549, 22, 2, 48),
+                BuildLineMapping(66, 3, 692, 31, 20, 6),
+                BuildLineMapping(83, 4, 788, 38, 15, 3),
+                BuildLineMapping(90, 4, 887, 43, 22, 6),
+                BuildLineMapping(111, 5, 987, 50, 19, 3),
+                BuildLineMapping(118, 5, 1090, 55, 26, 6),
+                BuildLineMapping(135, 6, 1186, 62, 15, 3),
+                BuildLineMapping(146, 6, 1289, 67, 26, 6),
+                BuildLineMapping(185, 7, 1407, 74, 37, 2),
+                BuildLineMapping(191, 7, 1526, 79, 43, 6),
+                BuildLineMapping(234, 8, 1648, 86, 41, 2),
+                BuildLineMapping(240, 8, 1771, 91, 47, 6),
+                BuildLineMapping(257, 9, 15, 1867, 98, 14, 18),
+                BuildLineMapping(276, 9, 1995, 104, 34, 3),
+                BuildLineMapping(279, 9, 2110, 109, 37, 2),
+                BuildLineMapping(285, 9, 2231, 115, 43, 6),
+                BuildLineMapping(309, 10, 2335, 122, 22, 6),
+                BuildLineMapping(329, 11, 2435, 129, 18, 44),
+                BuildLineMapping(407, 11, 2650, 134, 96, 6),
+                BuildLineMapping(427, 12, 2750, 141, 18, 60),
+                BuildLineMapping(521, 12, 2997, 146, 112, 6),
+                BuildLineMapping(638, 13, 3194, 153, 115, 2)
+            };
+
+            RunTest("ConditionalAttributes",
+                    baselineName: "ConditionalAttributes.DesignTime",
+                    designTimeMode: true,
+                    tabTest: TabTest.NoTabs,
+                    expectedDesignTimePragmas: expectedDesignTimePragmas);
+        }
+
         private void OpenedIf(bool withTabs)
         {
             int tabOffsetForMapping = 7;
