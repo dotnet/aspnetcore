@@ -187,6 +187,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// The {0} was unable to provide metadata for expression '{1}'.
+        /// </summary>
+        internal static string RazorPage_NullModelMetadata
+        {
+            get { return GetString("RazorPage_NullModelMetadata"); }
+        }
+
+        /// <summary>
+        /// The {0} was unable to provide metadata for expression '{1}'.
+        /// </summary>
+        internal static string FormatRazorPage_NullModelMetadata(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RazorPage_NullModelMetadata"), p0, p1);
+        }
+
+        /// <summary>
         /// {0} can only be called from a layout page.
         /// </summary>
         internal static string RenderBodyCannotBeCalled
