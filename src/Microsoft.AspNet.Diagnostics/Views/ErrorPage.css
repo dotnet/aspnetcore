@@ -30,6 +30,9 @@ code {
 
 body .titleerror {
     padding: 3px;
+    display: block;
+    font-size: 1.5em;
+    font-weight: 100;
 }
 
 body .location {

@@ -1,6 +1,7 @@
 ﻿@using System
 @using System.Globalization
 @using System.Linq
+@using System.Net
 @using Views
 @functions
 {
@@ -33,7 +34,7 @@
         {
             foreach (var errorDetail in Model.ErrorDetails)
             {
-                <h2 class="titleerror">@errorDetail.Error.GetType().Name: @errorDetail.Error.Message</h2>
+                <div class="titleerror">@errorDetail.Error.GetType().Name: @{ Output.Write(WebUtility.HtmlEncode(errorDetail.Error.Message).Replace("\r\n", "<br/>").Replace("\r", "<br/>").Replace("\n", "<br/>")); }</div>
                 @{
                     StackFrame firstFrame = null;
                     firstFrame = errorDetail.StackFrames.FirstOrDefault();
