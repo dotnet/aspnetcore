@@ -15,7 +15,7 @@ using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core.Test
+namespace Microsoft.AspNet.Mvc
 {
     public class InputObjectBindingTests
     {
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.False(modelStateDictionary.IsValid);
             Assert.Equal(1, modelStateDictionary.ErrorCount);
             Assert.Equal(
-                "The field UserName must be a string or array type with a minimum length of '5'.",
+                ValidationAttributeUtil.GetMinLengthErrorMessage(5, "UserName"),
                 Assert.Single(Assert.Single(modelStateDictionary.Values).Errors).ErrorMessage);
             var model = result["foo"] as User;
             Assert.Equal(sampleName, model.Name);
@@ -113,10 +113,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Equal(2, modelStateDictionary.ErrorCount);
             var model = result["foo"] as Customers;
             Assert.Equal(
-                "The field UserName must be a string or array type with a minimum length of '5'.",
+                ValidationAttributeUtil.GetMinLengthErrorMessage(5, "UserName"),
                 modelStateDictionary["foo.Users[0].UserName"].Errors[0].ErrorMessage);
             Assert.Equal(
-                "The field UserName must be a string or array type with a minimum length of '5'.",
+                ValidationAttributeUtil.GetMinLengthErrorMessage(5, "UserName"),
                 modelStateDictionary["foo.Users[1].UserName"].Errors[0].ErrorMessage);
             Assert.Equal(2, model.Users.Count);
             Assert.Equal(sampleFirstUser, model.Users[0].Name);
