@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Identity
             }
             var userId = await UserManager.GetUserIdAsync(user, cancellationToken);
             var userName = await UserManager.GetUserNameAsync(user, cancellationToken);
-            var id = new ClaimsIdentity(Options.ApplicationCookie.AuthenticationType, Options.ClaimsIdentity.UserNameClaimType,
+            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType, Options.ClaimsIdentity.UserNameClaimType,
                 Options.ClaimsIdentity.RoleClaimType);
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, userId));
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, userName, ClaimValueTypes.String));

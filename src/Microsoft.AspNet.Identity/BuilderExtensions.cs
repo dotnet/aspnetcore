@@ -5,6 +5,8 @@ using System;
 using Microsoft.AspNet.Identity;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.AspNet.Security.Cookies;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -19,12 +21,11 @@ namespace Microsoft.AspNet.Builder
             {
                 throw new ArgumentNullException("app");
             }
-            var options = app.ApplicationServices.GetService<IOptionsAccessor<IdentityOptions>>().Options;
-            app.SetDefaultSignInAsAuthenticationType(options.DefaultSignInAsAuthenticationType);
-            app.UseCookieAuthentication(options.ExternalCookie);
-            app.UseCookieAuthentication(options.ApplicationCookie);
-            app.UseCookieAuthentication(options.TwoFactorRememberMeCookie);
-            app.UseCookieAuthentication(options.TwoFactorUserIdCookie);
+            app.UseCookieAuthentication(null, IdentityOptions.ExternalCookieAuthenticationType);
+            app.UseCookieAuthentication(null, IdentityOptions.ApplicationCookieAuthenticationType);
+            app.UseCookieAuthentication(null, IdentityOptions.TwoFactorRememberMeCookieAuthenticationType);
+            app.UseCookieAuthentication(null, IdentityOptions.TwoFactorUserIdCookieAuthenticationType);
+            app.UseCookieAuthentication(null, IdentityOptions.ApplicationCookieAuthenticationType);
             return app;
         }
     }

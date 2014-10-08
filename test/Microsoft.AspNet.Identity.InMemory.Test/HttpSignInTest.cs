@@ -19,17 +19,20 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
 
     public class HttpSignInTest
     {
-#if ASPNET50
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task VerifyAccountControllerSignIn(bool isPersistent)
         {
             var app = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AuthenticationType = ClaimsIdentityOptions.DefaultAuthenticationType
-            });
+            //app.UseServices(services =>
+            //{
+            //    services.SetupOptions<CookieAuthenticationOptions>(options =>
+            //    {
+            //        options.AuthenticationType = IdentityOptions.ApplicationCookieAuthenticationType;
+            //    });
+            //});
+            app.UseCookieAuthentication();
 
             var context = new Mock<HttpContext>();
             var response = new Mock<HttpResponse>();
@@ -61,6 +64,5 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             response.VerifyAll();
             contextAccessor.VerifyAll();
         }
-#endif
     }
 }

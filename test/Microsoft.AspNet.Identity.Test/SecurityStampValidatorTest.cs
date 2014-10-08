@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(c => c.RequestServices).Returns(new ServiceCollection().BuildServiceProvider());
-            var id = new ClaimsIdentity(ClaimsIdentityOptions.DefaultAuthenticationType);
+            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType);
             var ticket = new AuthenticationTicket(id, new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow });
             var context = new CookieValidateIdentityContext(httpContext.Object, ticket, new CookieAuthenticationOptions());
             await Assert.ThrowsAsync<Exception>(() => SecurityStampValidator.ValidateIdentityAsync(context));
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddInstance(signInManager.Object);
             services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<IdentityUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
-            var id = new ClaimsIdentity(ClaimsIdentityOptions.DefaultAuthenticationType);
+            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
             var ticket = new AuthenticationTicket(id, new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow, IsPersistent = isPersistent });
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddInstance(signInManager.Object);
             services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<IdentityUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
-            var id = new ClaimsIdentity(ClaimsIdentityOptions.DefaultAuthenticationType);
+            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
             var ticket = new AuthenticationTicket(id, new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow });
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddInstance(signInManager.Object);
             services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<IdentityUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
-            var id = new ClaimsIdentity(ClaimsIdentityOptions.DefaultAuthenticationType);
+            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
             var ticket = new AuthenticationTicket(id, new AuthenticationProperties());
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddInstance(signInManager.Object);
             services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<IdentityUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
-            var id = new ClaimsIdentity(ClaimsIdentityOptions.DefaultAuthenticationType);
+            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
             var ticket = new AuthenticationTicket(id, new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow });

@@ -22,7 +22,6 @@ namespace IdentitySample.Models
 
         public SignInManager<ApplicationUser> SignInManager { get; private set; }
 
-
         //
         // GET: /Account/Login
         [HttpGet]
@@ -30,7 +29,7 @@ namespace IdentitySample.Models
         public IActionResult Login(string returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
-            ViewBag.LoginProviders = Context.GetExternalAuthenticationTypes().ToList();
+            ViewBag.LoginProviders = SignInManager.GetExternalAuthenticationTypes().ToList();
             return View();
         }
 
@@ -118,7 +117,7 @@ namespace IdentitySample.Models
         {
             // Request a redirect to the external login provider
             var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
-            var properties = Context.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            var properties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return new ChallengeResult(provider, properties);
         }
 
@@ -128,7 +127,7 @@ namespace IdentitySample.Models
         [AllowAnonymous]
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null)
         {
-            var info = await Context.GetExternalLoginInfo();
+            var info = await SignInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
                 return RedirectToAction("Login");
@@ -171,7 +170,7 @@ namespace IdentitySample.Models
             if (ModelState.IsValid)
             {
                 // Get the information about the user from the external login provider
-                var info = await Context.GetExternalLoginInfo();
+                var info = await SignInManager.GetExternalLoginInfoAsync();
                 if (info == null)
                 {
                     return View("ExternalLoginFailure");

@@ -5,16 +5,23 @@ using System;
 using Microsoft.AspNet.Identity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.AspNet.Security.Cookies;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Security;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class IdentityServiceCollectionExtensions
     {
-        public static IdentityBuilder<IdentityUser, IdentityRole> AddIdentity(this IServiceCollection services, 
-            IConfiguration identityConfig)
+        public static IServiceCollection ConfigureIdentity(this IServiceCollection services, Action<IdentityOptions> configure)
         {
-            services.SetupOptions<IdentityOptions>(identityConfig);
-            return services.AddIdentity<IdentityUser, IdentityRole>();
+            return services.ConfigureOptions(configure);
+        }
+
+        public static IdentityBuilder<IdentityUser, IdentityRole> AddIdentity(this IServiceCollection services, 
+            IConfiguration identityConfig = null, Action<IdentityOptions> configureOptions = null)
+        {
+            return services.AddIdentity<IdentityUser, IdentityRole>(identityConfig, configureOptions);
         }
 
         public static IdentityBuilder<IdentityUser, IdentityRole> AddIdentity(this IServiceCollection services)
@@ -23,28 +30,73 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static IdentityBuilder<TUser, TRole> AddIdentity<TUser, TRole>(this IServiceCollection services, 
-            IConfiguration identityConfig = null)
+            IConfiguration identityConfig = null, Action<IdentityOptions> configureOptions = null)
             where TUser : class
             where TRole : class
         {
             if (identityConfig != null)
             {
-                services.SetupOptions<IdentityOptions>(identityConfig);
+                services.ConfigureOptions<IdentityOptions>(identityConfig);
             }
+            if (configureOptions != null)
+            {
+                services.ConfigureIdentity(configureOptions);
+            }
+
             services.Add(IdentityServices.GetDefaultServices<TUser, TRole>(identityConfig));
             services.AddScoped<UserManager<TUser>>();
             services.AddScoped<SignInManager<TUser>>();
             services.AddScoped<ISecurityStampValidator, SecurityStampValidator<TUser>>();
             services.AddScoped<RoleManager<TRole>>();
             services.AddScoped<IClaimsIdentityFactory<TUser>, ClaimsIdentityFactory<TUser, TRole>>();
+
+            services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
+            {
+                options.SignInAsAuthenticationType = IdentityOptions.ExternalCookieAuthenticationType;
+            });
+
+            services.ConfigureOptions<CookieAuthenticationOptions>(options =>
+            {
+                options.AuthenticationType = IdentityOptions.ApplicationCookieAuthenticationType;
+                //CookieName = ".AspNet.Identity." + ClaimsIdentityOptions.DefaultAuthenticationType,
+                options.LoginPath = new PathString("/Account/Login");
+                options.Notifications = new CookieAuthenticationNotifications
+                {
+                    OnValidateIdentity = SecurityStampValidator.ValidateIdentityAsync
+                };
+            }, IdentityOptions.ApplicationCookieAuthenticationType);
+
+            services.ConfigureOptions<CookieAuthenticationOptions>(options =>
+            {
+                options.AuthenticationType = IdentityOptions.ExternalCookieAuthenticationType;
+                options.AuthenticationMode = AuthenticationMode.Passive;
+                options.CookieName = IdentityOptions.ExternalCookieAuthenticationType;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+            }, IdentityOptions.ExternalCookieAuthenticationType);
+
+            services.ConfigureOptions<CookieAuthenticationOptions>(options =>
+            {
+                options.AuthenticationType = IdentityOptions.TwoFactorRememberMeCookieAuthenticationType;
+                options.AuthenticationMode = AuthenticationMode.Passive;
+                options.CookieName = IdentityOptions.TwoFactorRememberMeCookieAuthenticationType;
+            }, IdentityOptions.TwoFactorRememberMeCookieAuthenticationType);
+
+            services.ConfigureOptions<CookieAuthenticationOptions>(options =>
+            {
+                options.AuthenticationType = IdentityOptions.TwoFactorUserIdCookieAuthenticationType;
+                options.AuthenticationMode = AuthenticationMode.Passive;
+                options.CookieName = IdentityOptions.TwoFactorUserIdCookieAuthenticationType;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+            }, IdentityOptions.TwoFactorUserIdCookieAuthenticationType);
+
             return new IdentityBuilder<TUser, TRole>(services);
         }
 
-        public static IdentityBuilder<TUser, TRole> AddDefaultIdentity<TUser, TRole>(this IServiceCollection services, IConfiguration config = null)
+        public static IdentityBuilder<TUser, TRole> AddDefaultIdentity<TUser, TRole>(this IServiceCollection services, IConfiguration config = null, Action<IdentityOptions> configureOptions = null)
             where TUser : class
             where TRole : class
         {
-            return services.AddIdentity<TUser, TRole>(config)
+            return services.AddIdentity<TUser, TRole>(config, configureOptions)
                 .AddTokenProvider(new DataProtectorTokenProvider<TUser>(
                     new DataProtectionTokenProviderOptions
                     {

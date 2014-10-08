@@ -16,8 +16,6 @@ namespace Microsoft.AspNet.Identity
             Services = services;
         }
 
-        // Rename to Add
-
         public IdentityBuilder<TUser, TRole> AddInstance<T>(T obj)
         {
             Services.AddInstance(obj);
@@ -49,15 +47,10 @@ namespace Microsoft.AspNet.Identity
             return AddInstance(tokenProvider);
         }
 
-        public IdentityBuilder<TUser, TRole> SetupOptions(Action<IdentityOptions> action, int order)
+        public IdentityBuilder<TUser, TRole> ConfigureIdentity(Action<IdentityOptions> action, int order = 0)
         {
-            Services.AddSetup(new OptionsSetup<IdentityOptions>(action) { Order = order });
+            Services.AddOptionsAction(new OptionsAction<IdentityOptions>(action) { Order = order });
             return this;
-        }
-
-        public IdentityBuilder<TUser, TRole> SetupOptions(Action<IdentityOptions> action)
-        {
-            return SetupOptions(action, 0);
         }
 
         public IdentityBuilder<TUser, TRole> AddUserManager<TManager>() where TManager : UserManager<TUser>

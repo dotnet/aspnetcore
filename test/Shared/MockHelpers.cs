@@ -8,6 +8,7 @@ using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Identity.Test
 {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.Identity.Test
             var services = new ServiceCollection();
             services.Add(OptionsServices.GetDefaultServices());
             services.AddIdentity<TUser>().AddUserStore(store);
-            services.SetupOptions<IdentityOptions>(options =>
+            services.ConfigureIdentity(options =>
             {
                 options.Password.RequireDigit = false;
                 options.Password.RequireLowercase = false;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.Identity.Test
                 new UserValidator<TUser>(),
                 new PasswordValidator<TUser>(),
                 new UpperInvariantUserNameNormalizer(),
-                null);
+                new List<IUserTokenProvider<TUser>>());
         }
 
         public static Mock<RoleManager<TRole>> MockRoleManager<TRole>() where TRole : class
