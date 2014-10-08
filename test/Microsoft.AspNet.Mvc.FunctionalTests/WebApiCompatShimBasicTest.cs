@@ -4,6 +4,7 @@
 #if ASPNET50
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -77,6 +78,28 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expected, formatters);
+        }
+
+        [Fact]
+        public async Task ApiController_RequestProperty()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var expected =
+                "POST http://localhost/api/Blog/HttpRequestMessage/EchoProperty localhost " +
+                "13 Hello, world!";
+
+            // Act
+            var response = await client.PostAsync(
+                "http://localhost/api/Blog/HttpRequestMessage/EchoProperty",
+                new StringContent("Hello, world!"));
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expected, content);
         }
     }
 }

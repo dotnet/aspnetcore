@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Net.Http;
 using System.Security.Principal;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
@@ -13,6 +14,8 @@ namespace System.Web.Http
     [UseWebApiOverloading]
     public abstract class ApiController : IDisposable
     {
+        private HttpRequestMessage _request;
+
         /// <summary>Gets the action context.</summary>
         /// <remarks>The setter is intended for unit testing purposes only.</remarks>
         [Activate]
@@ -37,6 +40,25 @@ namespace System.Web.Http
             get
             {
                 return ActionContext?.ModelState;
+            }
+        }
+
+        /// <summary>Gets or sets the HTTP request message.</summary>
+        /// <remarks>The setter is intended for unit testing purposes only.</remarks>
+        public HttpRequestMessage Request
+        {
+            get
+            {
+                if (_request == null && ActionContext != null)
+                {
+                    _request = ActionContext.HttpContext.GetHttpRequestMessage();
+                }
+
+                return _request;
+            }
+            set
+            {
+                _request = value;
             }
         }
 
