@@ -3,11 +3,13 @@
 
 #if ASPNET50
 using System;
+using System.Net;
+using System.Net.Http.Formatting;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Newtonsoft.Json;
 using Xunit;
-using System.Net;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
@@ -50,6 +52,31 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(
                 "Visited: /BasicApi/GenerateUrl",
                 content);
+        }
+
+        [Fact]
+        public async Task Options_SetsDefaultFormatters()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var expected = new string[]
+            {
+                typeof(JsonMediaTypeFormatter).FullName,
+                typeof(XmlMediaTypeFormatter).FullName,
+                typeof(FormUrlEncodedMediaTypeFormatter).FullName,
+            };
+
+            // Act
+            var response = await client.GetAsync("http://localhost/BasicApi/GetFormatters");
+            var content = await response.Content.ReadAsStringAsync();
+
+            var formatters = JsonConvert.DeserializeObject<string[]>(content);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expected, formatters);
         }
     }
 }

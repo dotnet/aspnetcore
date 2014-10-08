@@ -15,8 +15,10 @@ namespace WebApiCompatShimWebSite
             app.UsePerRequestServices(services =>
             {
                 services.AddMvc(configuration);
-            });
 
+                services.AddWebApiConventions();
+            });
+            
             app.UseMvc();
         }
     }
