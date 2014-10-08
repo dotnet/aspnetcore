@@ -12,11 +12,44 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class MvcRazorHostTest
     {
+        [Fact]
+        public void MvcRazorHost_GeneratesTagHelperModelExpressionCode_DesignTime()
+        {
+            // Arrange
+            var host = new MvcRazorHost(new TestFileSystem())
+            {
+                DesignTimeMode = true
+            };
+            var expectedLineMappings = new List<LineMapping>
+            {
+                BuildLineMapping(documentAbsoluteIndex: 7, 
+                                 documentLineIndex: 0,
+                                 documentCharacterIndex: 7, 
+                                 generatedAbsoluteIndex: 444,
+                                 generatedLineIndex: 12,
+                                 generatedCharacterIndex: 7, 
+                                 contentLength: 8),
+                BuildLineMapping(documentAbsoluteIndex: 33,
+                                 documentLineIndex: 2,
+                                 documentCharacterIndex: 14,
+                                 generatedAbsoluteIndex: 823,
+                                 generatedLineIndex: 25,
+                                 generatedCharacterIndex: 14,
+                                 contentLength: 85)
+            };
+
+            // Act and Assert
+            RunDesignTimeTest(host, 
+                              testName: "ModelExpressionTagHelper", 
+                              expectedLineMappings: expectedLineMappings);
+        }
+
         [Theory]
         [InlineData("Basic")]
         [InlineData("Inject")]
         [InlineData("InjectWithModel")]
         [InlineData("Model")]
+        [InlineData("ModelExpressionTagHelper")]
         public void MvcRazorHost_ParsesAndGeneratesCodeForBasicScenarios(string scenarioName)
         {
             // Arrange
