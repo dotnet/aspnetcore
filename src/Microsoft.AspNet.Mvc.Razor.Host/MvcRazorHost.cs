@@ -153,6 +153,22 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return "Microsoft.AspNet.Mvc.ActivateAttribute"; }
         }
 
+        /// <summary>
+        /// Gets the type name used to represent <see cref="ITagHelper"/> model expression properties.
+        /// </summary>
+        public virtual string ModelExpressionType
+        {
+            get { return "Microsoft.AspNet.Mvc.Rendering.ModelExpression"; }
+        }
+
+        /// <summary>
+        /// Gets the method name used to create model expressions.
+        /// </summary>
+        public virtual string CreateModelExpressionMethod
+        {
+            get { return "CreateModelExpression"; }
+        }
+
         /// <inheritdoc />
         public GeneratorResults GenerateCode(string rootRelativePath, Stream inputStream)
         {
@@ -173,7 +189,15 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                         [NotNull] CodeBuilderContext context)
         {
             UpdateCodeBuilder(context);
-            return new MvcCSharpCodeBuilder(context, DefaultModel, ActivateAttribute);
+
+            return new MvcCSharpCodeBuilder(context,
+                                            DefaultModel, 
+                                            ActivateAttribute,
+                                            new GeneratedTagHelperAttributeContext
+                                            {
+                                                ModelExpressionTypeName = ModelExpressionType,
+                                                CreateModelExpressionMethodName = CreateModelExpressionMethod
+                                            });
         }
 
         private void UpdateCodeBuilder(CodeGeneratorContext context)

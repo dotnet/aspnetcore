@@ -11,19 +11,33 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class MvcCSharpCodeBuilder : CSharpCodeBuilder
     {
+        private readonly GeneratedTagHelperAttributeContext _tagHelperAttributeContext;
         private readonly string _defaultModel;
         private readonly string _activateAttribute;
 
         public MvcCSharpCodeBuilder([NotNull] CodeBuilderContext context,
                                     [NotNull] string defaultModel,
-                                    [NotNull] string activateAttribute)
+                                    [NotNull] string activateAttribute,
+                                    [NotNull] GeneratedTagHelperAttributeContext tagHelperAttributeContext)
             : base(context)
         {
+            _tagHelperAttributeContext = tagHelperAttributeContext;
             _defaultModel = defaultModel;
             _activateAttribute = activateAttribute;
         }
 
         private string Model { get; set; }
+
+        protected override CSharpCodeVisitor CreateCSharpCodeVisitor([NotNull] CSharpCodeWriter writer,
+                                                                     [NotNull] CodeBuilderContext context)
+        {
+            var csharpCodeVisitor = base.CreateCSharpCodeVisitor(writer, context);
+
+            csharpCodeVisitor.TagHelperRenderer.AttributeValueCodeRenderer =
+                new MvcTagHelperAttributeValueCodeRenderer(_tagHelperAttributeContext);
+
+            return csharpCodeVisitor;
+        }
 
         protected override CSharpCodeWritingScope BuildClassDeclaration(CSharpCodeWriter writer)
         {

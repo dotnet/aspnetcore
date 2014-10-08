@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
     /// <summary>
     /// Describes an <see cref="System.Linq.Expressions.Expression"/> passed to a tag helper.
     /// </summary>
-    public class ModelExpression
+    public sealed class ModelExpression
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ModelExpression"/> class.
