@@ -6,7 +6,6 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
@@ -24,56 +23,65 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task Home_Index_ReturnsSuccess()
         {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            using (TestHelper.ReplaceCallContextServiceLocationService(_services))
+            {
+                // Arrange
+                var server = TestServer.Create(_services, _app);
+                var client = server.CreateClient();
 
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/Index");
+                // Act
+                var response = await client.GetAsync("http://localhost/Home/Index");
 
-            // Assert
-            Assert.NotNull(response);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                // Assert
+                Assert.NotNull(response);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
         }
 
         [Fact]
         public async Task Home_NotFoundAction_Returns404()
         {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            using (TestHelper.ReplaceCallContextServiceLocationService(_services))
+            {
+                // Arrange
+                var server = TestServer.Create(_services, _app);
+                var client = server.CreateClient();
 
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/NotFound");
+                // Act
+                var response = await client.GetAsync("http://localhost/Home/NotFound");
 
-            // Assert
-            Assert.NotNull(response);
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                // Assert
+                Assert.NotNull(response);
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
         }
 
         [Fact]
         public async Task Home_CreateUser_ReturnsXmlBasedOnAcceptHeader()
         {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/ReturnUser");
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
-            
-            // Act
-            var response = await client.SendAsync(request);
+            using (TestHelper.ReplaceCallContextServiceLocationService(_services))
+            {
+                // Arrange
+                var server = TestServer.Create(_services, _app);
+                var client = server.CreateClient();
+                var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/ReturnUser");
+                request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
 
-            // Assert
-            Assert.NotNull(response);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("<User xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=" +
-            "\"http://schemas.datacontract.org/2004/07/MvcSample.Web.Models\"><About>I like playing Football" +
-            "</About><Address>My address</Address><Age>13</Age><Alive>true</Alive><Dependent><About i:nil=\"true\" />" +
-            "<Address>Dependents address</Address><Age>0</Age><Alive>false</Alive><Dependent i:nil=\"true\" />" +
-            "<GPA>0</GPA><Log i:nil=\"true\" /><Name>Dependents name</Name><Password i:nil=\"true\" />" +
-            "<Profession i:nil=\"true\" /></Dependent><GPA>13.37</GPA><Log i:nil=\"true\" />" +
-            "<Name>My name</Name><Password>Secure string</Password><Profession>Software Engineer</Profession></User>",
-                new StreamReader(await response.Content.ReadAsStreamAsync(), Encoding.UTF8).ReadToEnd());
+                // Act
+                var response = await client.SendAsync(request);
+
+                // Assert
+                Assert.NotNull(response);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("<User xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=" +
+                "\"http://schemas.datacontract.org/2004/07/MvcSample.Web.Models\"><About>I like playing Football" +
+                "</About><Address>My address</Address><Age>13</Age><Alive>true</Alive><Dependent><About i:nil=\"true\" />" +
+                "<Address>Dependents address</Address><Age>0</Age><Alive>false</Alive><Dependent i:nil=\"true\" />" +
+                "<GPA>0</GPA><Log i:nil=\"true\" /><Name>Dependents name</Name><Password i:nil=\"true\" />" +
+                "<Profession i:nil=\"true\" /></Dependent><GPA>13.37</GPA><Log i:nil=\"true\" />" +
+                "<Name>My name</Name><Password>Secure string</Password><Profession>Software Engineer</Profession></User>",
+                    await response.Content.ReadAsStringAsync());
+            }
         }
 
         [Theory]
@@ -82,33 +90,38 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("http://localhost/Filters/NotGrantedClaim", HttpStatusCode.Unauthorized)]
         public async Task FiltersController_Tests(string url, HttpStatusCode statusCode)
         {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            using (TestHelper.ReplaceCallContextServiceLocationService(_services))
+            {
+                // Arrange
+                var server = TestServer.Create(_services, _app);
+                var client = server.CreateClient();
 
-            // Act
-            var response = await client.GetAsync(url);
+                // Act
+                var response = await client.GetAsync(url);
 
-            // Assert
-            Assert.NotNull(response);
-            Assert.Equal(statusCode, response.StatusCode);
+                // Assert
+                Assert.NotNull(response);
+                Assert.Equal(statusCode, response.StatusCode);
+            }
         }
 
         [Fact]
         public async Task FiltersController_Crash_ThrowsException()
         {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            using (TestHelper.ReplaceCallContextServiceLocationService(_services))
+            {
+                // Arrange
+                var server = TestServer.Create(_services, _app);
+                var client = server.CreateClient();
 
-            // Act
-            var response = await client.GetAsync("http://localhost/Filters/Crash?message=HelloWorld");
+                // Act
+                var response = await client.GetAsync("http://localhost/Filters/Crash?message=HelloWorld");
 
-            // Assert
-            Assert.NotNull(response);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("Boom HelloWorld",
-                new StreamReader(await response.Content.ReadAsStreamAsync(), Encoding.UTF8).ReadToEnd());
+                // Assert
+                Assert.NotNull(response);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("Boom HelloWorld", await response.Content.ReadAsStringAsync());
+            }
         }
     }
 }

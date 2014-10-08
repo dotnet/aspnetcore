@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public static class TestHelper
     {
         // Path from Mvc\\test\\Microsoft.AspNet.Mvc.FunctionalTests
-        private static readonly string WebsitesDirectoryPath = Path.Combine("..", "websites");
+        private static readonly string WebsitesDirectoryPath = Path.Combine("..", "WebSites");
 
         public static IServiceProvider CreateServices(string applicationWebSiteName)
         {
@@ -58,9 +58,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 typeof(ILoggerFactory),
                 NullLoggerFactory.Instance);
 
-            var tempServiceProvider = services.BuildServiceProvider(originalProvider);
-            CallContextServiceLocator.Locator.ServiceProvider = tempServiceProvider;
-            return tempServiceProvider;
+            return services.BuildServiceProvider(originalProvider);
         }
 
         // Calculate the path relative to the application base path.
@@ -72,6 +70,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Path.Combine(appEnvironment.ApplicationBasePath, websitePath, applicationWebSiteName));
         }
 
+        /// <summary>
+        /// Creates a disposable action that replaces the service provider <see cref="CallContextServiceLocator.Locator"/>
+        /// with the passed in service that is switched back on <see cref="IDisposable.Dispose"/>.
+        /// </summary>
+        /// <remarks>This is required for config since it uses the static property to get to
+        /// <see cref="IApplicationEnvironment"/>.</remarks>
+        public static IDisposable ReplaceCallContextServiceLocationService(IServiceProvider serviceProvider)
+        {
+            return new CallContextProviderAction(serviceProvider);
+        }
+
         private static Type CreateAssemblyProviderType(string siteName)
         {
             // Creates a service type that will limit MVC to only the controllers in the test site.
@@ -80,6 +89,22 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var providerType = typeof(TestAssemblyProvider<>).MakeGenericType(assembly.GetExportedTypes()[0]);
             return providerType;
+        }
+
+        private sealed class CallContextProviderAction : IDisposable
+        {
+            private readonly IServiceProvider _originalProvider;
+
+            public CallContextProviderAction(IServiceProvider provider)
+            {
+                _originalProvider = CallContextServiceLocator.Locator.ServiceProvider;
+                CallContextServiceLocator.Locator.ServiceProvider = provider;
+            }
+
+            public void Dispose()
+            {
+                CallContextServiceLocator.Locator.ServiceProvider = _originalProvider;
+            }
         }
     }
 }

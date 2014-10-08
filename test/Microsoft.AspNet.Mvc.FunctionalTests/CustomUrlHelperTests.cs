@@ -1,8 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
@@ -26,35 +23,39 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task CustomUrlHelper_GeneratesUrlFromController()
         {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            using (TestHelper.ReplaceCallContextServiceLocationService(_services))
+            {
+                // Arrange
+                var server = TestServer.Create(_services, _app);
+                var client = server.CreateClient();
 
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/UrlContent");
+                // Act
+                var response = await client.GetAsync("http://localhost/Home/UrlContent");
+                var responseData = await response.Content.ReadAsStringAsync();
 
-            string responseData = await response.Content.ReadAsStringAsync();
-            
-            //Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(_cdnServerBaseUrl + "/bootstrap.min.css", responseData);
+                //Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(_cdnServerBaseUrl + "/bootstrap.min.css", responseData);
+            }
         }
 
         [Fact]
         public async Task CustomUrlHelper_GeneratesUrlFromView()
         {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            using (TestHelper.ReplaceCallContextServiceLocationService(_services))
+            {
+                // Arrange
+                var server = TestServer.Create(_services, _app);
+                var client = server.CreateClient();
 
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/Index");
+                // Act
+                var response = await client.GetAsync("http://localhost/Home/Index");
+                var responseData = await response.Content.ReadAsStringAsync();
 
-            string responseData = await response.Content.ReadAsStringAsync();
-
-            //Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Contains(_cdnServerBaseUrl + "/bootstrap.min.css", responseData);
+                //Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Contains(_cdnServerBaseUrl + "/bootstrap.min.css", responseData);
+            }
         }
 
         [Theory]
@@ -62,18 +63,20 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("http://localhost/Home/LinkByUrlAction", "/home/urlcontent")]
         public async Task LowercaseUrls_LinkGeneration(string url, string expectedLink)
         {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            using (TestHelper.ReplaceCallContextServiceLocationService(_services))
+            {
+                // Arrange
+                var server = TestServer.Create(_services, _app);
+                var client = server.CreateClient();
 
-            // Act
-            var response = await client.GetAsync(url);
+                // Act
+                var response = await client.GetAsync(url);
+                var responseData = await response.Content.ReadAsStringAsync();
 
-            string responseData = await response.Content.ReadAsStringAsync();
-
-            //Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(expectedLink, responseData, ignoreCase: false);
+                //Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(expectedLink, responseData, ignoreCase: false);
+            }
         }
     }
 }

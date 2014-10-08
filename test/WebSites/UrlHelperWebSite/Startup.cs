@@ -12,16 +12,15 @@ namespace UrlHelperWebSite
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-            configuration.AddJsonFile("config.json");
 
             // Set up application services
             app.UsePerRequestServices(services =>
             {
                 services.ConfigureOptions<AppOptions>(optionsSetup =>
                 {
-                    optionsSetup.ServeCDNContent = Convert.ToBoolean(configuration.Get("ServeCDNContent"));
-                    optionsSetup.CDNServerBaseUrl = configuration.Get("CDNServerBaseUrl");
-                    optionsSetup.GenerateLowercaseUrls = Convert.ToBoolean(configuration.Get("GenerateLowercaseUrls"));
+                    optionsSetup.ServeCDNContent = true;
+                    optionsSetup.CDNServerBaseUrl = "http://cdn.contoso.com";
+                    optionsSetup.GenerateLowercaseUrls = true;
                 });
 
                 // Add MVC services to the services container
