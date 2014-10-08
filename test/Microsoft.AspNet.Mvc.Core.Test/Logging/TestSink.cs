@@ -9,25 +9,25 @@ namespace Microsoft.AspNet.Mvc
     public class TestSink
     {
         public TestSink(
-            Func<WriteCoreContext, bool> writeEnabled = null, 
+            Func<WriteContext, bool> writeEnabled = null, 
             Func<BeginScopeContext, bool> beginEnabled = null)
         {
             WriteEnabled = writeEnabled;
             BeginEnabled = beginEnabled;
 
             Scopes = new List<BeginScopeContext>();
-            Writes = new List<WriteCoreContext>();
+            Writes = new List<WriteContext>();
         }
 
-        public Func<WriteCoreContext, bool> WriteEnabled { get; set; }
+        public Func<WriteContext, bool> WriteEnabled { get; set; }
 
         public Func<BeginScopeContext, bool> BeginEnabled { get; set; }
 
         public List<BeginScopeContext> Scopes { get; set; }
 
-        public List<WriteCoreContext> Writes { get; set; }
+        public List<WriteContext> Writes { get; set; }
 
-        public void Write(WriteCoreContext context)
+        public void Write(WriteContext context)
         {
             if (WriteEnabled == null || WriteEnabled(context))
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public static bool EnableWithTypeName<T>(WriteCoreContext context)
+        public static bool EnableWithTypeName<T>(WriteContext context)
         {
             return context.LoggerName.Equals(typeof(T).FullName);
         }

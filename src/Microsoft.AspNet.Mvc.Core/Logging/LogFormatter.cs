@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     public static class LogFormatter
     {
         /// <summary>
-        /// A formatter for use with <see cref="Microsoft.Framework.Logging.ILogger.WriteCore(
+        /// A formatter for use with <see cref="Microsoft.Framework.Logging.ILogger.Write(
         /// Framework.Logging.TraceType, 
         /// int, 
         /// object, 

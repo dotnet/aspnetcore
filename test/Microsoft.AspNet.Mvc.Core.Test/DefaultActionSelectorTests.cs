@@ -41,15 +41,9 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
             Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(1, sink.Writes.Count);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(DefaultActionSelector).FullName, enabled.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
             Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
@@ -96,15 +90,9 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
             Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(1, sink.Writes.Count);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(DefaultActionSelector).FullName, enabled.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
             Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
@@ -144,15 +132,9 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
             Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(1, sink.Writes.Count);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(DefaultActionSelector).FullName, enabled.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
             Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);

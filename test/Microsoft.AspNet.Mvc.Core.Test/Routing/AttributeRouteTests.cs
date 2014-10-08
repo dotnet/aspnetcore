@@ -682,15 +682,9 @@ namespace Microsoft.AspNet.Mvc.Routing
             Assert.Equal(typeof(AttributeRoute).FullName, scope.LoggerName);
             Assert.Equal("AttributeRoute.RouteAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(1, sink.Writes.Count);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(AttributeRoute).FullName, enabled.LoggerName);
-            Assert.Equal("AttributeRoute.RouteAsync", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(AttributeRoute).FullName, write.LoggerName);
             Assert.Equal("AttributeRoute.RouteAsync", write.Scope);
             var values = Assert.IsType<AttributeRouteRouteAsyncValues>(write.State);
@@ -719,15 +713,9 @@ namespace Microsoft.AspNet.Mvc.Routing
             Assert.Equal(typeof(AttributeRoute).FullName, scope.LoggerName);
             Assert.Equal("AttributeRoute.RouteAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(1, sink.Writes.Count);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(AttributeRoute).FullName, enabled.LoggerName);
-            Assert.Equal("AttributeRoute.RouteAsync", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(AttributeRoute).FullName, write.LoggerName);
             Assert.Equal("AttributeRoute.RouteAsync", write.Scope);
             var values = Assert.IsType<AttributeRouteRouteAsyncValues>(write.State);

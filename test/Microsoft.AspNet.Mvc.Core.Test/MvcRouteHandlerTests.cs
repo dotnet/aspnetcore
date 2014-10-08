@@ -38,15 +38,9 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
             Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(1, sink.Writes.Count);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(MvcRouteHandler).FullName, enabled.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(MvcRouteHandler).FullName, write.LoggerName);
             Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope);
             var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);
@@ -82,15 +76,9 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
             Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(1, sink.Writes.Count);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(MvcRouteHandler).FullName, enabled.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(MvcRouteHandler).FullName, write.LoggerName);
             Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope);
             var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);
@@ -127,15 +115,9 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
             Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(1, sink.Writes.Count);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(MvcRouteHandler).FullName, enabled.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(MvcRouteHandler).FullName, write.LoggerName);
             Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope);
             var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);

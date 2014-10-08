@@ -33,9 +33,9 @@ namespace Microsoft.AspNet.Mvc
             return NullDisposable.Instance;
         }
 
-        public bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Write(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
-            _sink.Write(new WriteCoreContext()
+            _sink.Write(new WriteContext()
             {
                 EventType = eventType,
                 EventId = eventId,
@@ -45,7 +45,10 @@ namespace Microsoft.AspNet.Mvc
                 LoggerName = _name,
                 Scope = _scope
             });
+        }
 
+        public bool IsEnabled(TraceType eventType)
+        {
             return true;
         }
     }
