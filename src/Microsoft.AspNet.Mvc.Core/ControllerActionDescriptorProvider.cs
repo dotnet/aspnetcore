@@ -17,12 +17,6 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ControllerActionDescriptorProvider : IActionDescriptorProvider
     {
-        /// <summary>
-        /// Represents the default order associated with this provider for dependency injection
-        /// purposes.
-        /// </summary>
-        public static readonly int DefaultOrder = 0;
-
         // This is the default order for attribute routes whose order calculated from
         // the reflected model is null.
         private const int DefaultAttributeRouteOrder = 0;
@@ -45,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
 
         public int Order
         {
-            get { return DefaultOrder; }
+            get { return DefaultOrder.DefaultFrameworkSortOrder; }
         }
 
         public void Invoke(ActionDescriptorProviderContext context, Action callNext)

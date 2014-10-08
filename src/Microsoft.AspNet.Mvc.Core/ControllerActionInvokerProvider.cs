@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc
 
         public int Order
         {
-            get { return 0; }
+            get { return DefaultOrder.DefaultFrameworkSortOrder; }
         }
 
         public void Invoke(ActionInvokerProviderContext context, Action callNext)

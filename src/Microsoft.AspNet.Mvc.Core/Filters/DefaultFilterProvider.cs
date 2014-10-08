@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Filters
 
         public int Order
         {
-            get { return 0; }
+            get { return DefaultOrder.DefaultFrameworkSortOrder; }
         }
 
         protected IServiceProvider ServiceProvider { get; private set; }

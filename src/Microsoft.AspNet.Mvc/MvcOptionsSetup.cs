@@ -3,7 +3,6 @@
 
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
@@ -14,10 +13,9 @@ namespace Microsoft.AspNet.Mvc
     public class MvcOptionsSetup : IOptionsSetup<MvcOptions>
     {
         /// <inheritdoc />
-        /// <remarks>Order is -1 to allow MvcOptionsSetup to run before a user call to SetupOptions.</remarks>
         public int Order
         {
-            get { return -1; }
+            get { return DefaultOrder.DefaultFrameworkSortOrder; }
         }
 
         /// <inheritdoc />

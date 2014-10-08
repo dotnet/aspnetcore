@@ -22,7 +22,7 @@ namespace BasicWebSite
         {
             get
             {
-                return ControllerActionDescriptorProvider.DefaultOrder - 100;
+                return DefaultOrder.DefaultFrameworkSortOrder - 100;
             }
         }
 

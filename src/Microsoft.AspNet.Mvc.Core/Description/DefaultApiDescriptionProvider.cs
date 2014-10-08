@@ -34,7 +34,11 @@ namespace Microsoft.AspNet.Mvc.Description
         }
 
         /// <inheritdoc />
-        public int Order { get; private set; }
+        public int Order 
+        {
+            get { return DefaultOrder.DefaultFrameworkSortOrder; }
+        }
+
 
         /// <inheritdoc />
         public void Invoke(ApiDescriptionProviderContext context, Action callNext)

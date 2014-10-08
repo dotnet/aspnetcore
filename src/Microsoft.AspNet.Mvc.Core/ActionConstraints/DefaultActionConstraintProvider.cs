@@ -28,7 +28,10 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public int Order { get; set; }
+        public int Order 
+        {
+            get { return DefaultOrder.DefaultFrameworkSortOrder; }
+        }
 
         /// <inheritdoc />
         public void Invoke([NotNull] ActionConstraintProviderContext context, [NotNull] Action callNext)
