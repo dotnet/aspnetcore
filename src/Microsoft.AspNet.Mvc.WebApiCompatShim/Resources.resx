@@ -144,4 +144,7 @@
   <data name="HttpResponseExceptionMessage" xml:space="preserve">
     <value>Processing of the HTTP request resulted in an exception. Please see the HTTP response returned by the 'Response' property of this exception for details.</value>
   </data>
+  <data name="CreatedAtRoute_RouteFailed" xml:space="preserve">
+    <value>Failed to generate a URL using route '{0}'.</value>
+  </data>
 </root>

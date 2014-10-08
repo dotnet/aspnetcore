@@ -154,6 +154,22 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             return GetString("HttpResponseExceptionMessage");
         }
 
+        /// <summary>
+        /// Failed to generate a URL using route '{0}'.
+        /// </summary>
+        internal static string CreatedAtRoute_RouteFailed
+        {
+            get { return GetString("CreatedAtRoute_RouteFailed"); }
+        }
+
+        /// <summary>
+        /// Failed to generate a URL using route '{0}'.
+        /// </summary>
+        internal static string FormatCreatedAtRoute_RouteFailed(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CreatedAtRoute_RouteFailed"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
