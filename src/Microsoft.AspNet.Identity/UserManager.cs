@@ -61,7 +61,8 @@ namespace Microsoft.AspNet.Identity
             UserNameNormalizer = userNameNormalizer;
             // TODO: Email/Sms/Token services
 
-            if (tokenProviders != null) {
+            if (tokenProviders != null)
+            {
                 foreach (var tokenProvider in tokenProviders)
                 {
                     RegisterTokenProvider(tokenProvider);
@@ -310,7 +311,7 @@ namespace Microsoft.AspNet.Identity
             {
                 await GetUserLockoutStore().SetLockoutEnabledAsync(user, true, cancellationToken);
             }
-            await UpdateNormalizedUserName(user, cancellationToken);
+            await UpdateNormalizedUserNameAsync(user, cancellationToken);
             await Store.CreateAsync(user, cancellationToken);
             return IdentityResult.Success;
         }
@@ -334,7 +335,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return result;
             }
-            await UpdateNormalizedUserName(user, cancellationToken);
+            await UpdateNormalizedUserNameAsync(user, cancellationToken);
             await Store.UpdateAsync(user, cancellationToken);
             return IdentityResult.Success;
         }
@@ -443,7 +444,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task UpdateNormalizedUserName(TUser user,
+        public virtual async Task UpdateNormalizedUserNameAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var userName = await GetUserNameAsync(user, cancellationToken);
@@ -489,7 +490,7 @@ namespace Microsoft.AspNet.Identity
         private async Task UpdateUserName(TUser user, string userName, CancellationToken cancellationToken)
         {
             await Store.SetUserNameAsync(user, userName, cancellationToken);
-            await UpdateNormalizedUserName(user, cancellationToken);
+            await UpdateNormalizedUserNameAsync(user, cancellationToken);
         }
 
         /// <summary>
@@ -1362,7 +1363,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            if (!await VerifyChangePhoneNumberTokenAsync(user, token, phoneNumber))
+            if (!await VerifyChangePhoneNumberTokenAsync(user, token, phoneNumber, cancellationToken))
             {
                 return IdentityResult.Failed(Resources.InvalidToken);
             }
@@ -1392,10 +1393,10 @@ namespace Microsoft.AspNet.Identity
 
         // Two factor APIS
 
-        internal async Task<SecurityToken> CreateSecurityTokenAsync(TUser user)
+        internal async Task<SecurityToken> CreateSecurityTokenAsync(TUser user, CancellationToken cancellationToken)
         {
             return
-                new SecurityToken(Encoding.Unicode.GetBytes(await GetSecurityStampAsync(user)));
+                new SecurityToken(Encoding.Unicode.GetBytes(await GetSecurityStampAsync(user, cancellationToken)));
         }
 
         /// <summary>
@@ -1404,12 +1405,13 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="phoneNumber"></param>
         /// <returns></returns>
-        public virtual async Task<string> GenerateChangePhoneNumberTokenAsync(TUser user, string phoneNumber)
+        public virtual async Task<string> GenerateChangePhoneNumberTokenAsync(TUser user, string phoneNumber,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-            return
-                Rfc6238AuthenticationService.GenerateCode(await CreateSecurityTokenAsync(user), phoneNumber)
-                    .ToString(CultureInfo.InvariantCulture);
+            return Rfc6238AuthenticationService.GenerateCode(
+                await CreateSecurityTokenAsync(user, cancellationToken), phoneNumber)
+                   .ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -1419,10 +1421,11 @@ namespace Microsoft.AspNet.Identity
         /// <param name="token"></param>
         /// <param name="phoneNumber"></param>
         /// <returns></returns>
-        public virtual async Task<bool> VerifyChangePhoneNumberTokenAsync(TUser user, string token, string phoneNumber)
+        public virtual async Task<bool> VerifyChangePhoneNumberTokenAsync(TUser user, string token, string phoneNumber,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-            var securityToken = await CreateSecurityTokenAsync(user);
+            var securityToken = await CreateSecurityTokenAsync(user, cancellationToken);
             int code;
             if (securityToken != null && Int32.TryParse(token, out code))
             {

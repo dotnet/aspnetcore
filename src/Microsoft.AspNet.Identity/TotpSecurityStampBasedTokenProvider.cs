@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("manager");
             }
-            var token = await manager.CreateSecurityTokenAsync(user);
+            var token = await manager.CreateSecurityTokenAsync(user, cancellationToken);
             var modifier = await GetUserModifierAsync(purpose, manager, user);
             return Rfc6238AuthenticationService.GenerateCode(token, modifier).ToString("D6", CultureInfo.InvariantCulture);
         }
@@ -63,11 +63,11 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("manager");
             }
             int code;
-            if (!Int32.TryParse(token, out code))
+            if (!int.TryParse(token, out code))
             {
                 return false;
             }
-            var securityToken = await manager.CreateSecurityTokenAsync(user);
+            var securityToken = await manager.CreateSecurityTokenAsync(user, cancellationToken);
             var modifier = await GetUserModifierAsync(purpose, manager, user);
             return securityToken != null && Rfc6238AuthenticationService.ValidateCode(securityToken, code, modifier);
         }

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
@@ -10,8 +12,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -214,7 +214,7 @@ namespace Microsoft.AspNet.Identity
             Context.Response.SignIn(new AuthenticationProperties { IsPersistent = true }, rememberBrowserIdentity);
         }
 
-        public virtual Task ForgetTwoFactorClientAsync()
+        public virtual Task ForgetTwoFactorClientAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             Context.Response.SignOut(IdentityOptions.TwoFactorRememberMeCookieAuthenticationType);
             return Task.FromResult(0);

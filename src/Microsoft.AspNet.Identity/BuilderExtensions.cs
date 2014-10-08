@@ -3,10 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Identity;
-using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.AspNet.Security.Cookies;
-using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.AspNet.Builder
 {

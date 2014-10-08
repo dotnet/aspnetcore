@@ -4,6 +4,7 @@
 using System;
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.Framework.DependencyInjection;
@@ -18,11 +19,12 @@ namespace Microsoft.AspNet.Identity
         ///     ClaimsIdentity
         /// </summary>
         /// <returns></returns>
-        public virtual async Task Validate(CookieValidateIdentityContext context, ClaimsIdentity identity)
+        public virtual async Task ValidateAsync(CookieValidateIdentityContext context, ClaimsIdentity identity,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             var manager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<TUser>>();
             var userId = identity.GetUserId();
-            var user = await manager.ValidateSecurityStampAsync(identity, userId);
+            var user = await manager.ValidateSecurityStampAsync(identity, userId, cancellationToken);
             if (user != null)
             {
                 var isPersistent = false;
@@ -30,7 +32,7 @@ namespace Microsoft.AspNet.Identity
                 {
                     isPersistent = context.Properties.IsPersistent;
                 }
-                await manager.SignInAsync(user, isPersistent);
+                await manager.SignInAsync(user, isPersistent, authenticationMethod: null, cancellationToken: cancellationToken);
             }
             else
             {
@@ -71,7 +73,7 @@ namespace Microsoft.AspNet.Identity
             if (validate)
             {
                 var validator = context.HttpContext.RequestServices.GetRequiredService<ISecurityStampValidator>();
-                return validator.Validate(context, context.Identity);
+                return validator.ValidateAsync(context, context.Identity);
             }
             return Task.FromResult(0);
         }

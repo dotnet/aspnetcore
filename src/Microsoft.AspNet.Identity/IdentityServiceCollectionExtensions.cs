@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Identity;
-using Microsoft.Framework.ConfigurationModel;
-using Microsoft.AspNet.Security.DataProtection;
-using Microsoft.AspNet.Security.Cookies;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Security;
+using Microsoft.AspNet.Security.Cookies;
+using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
