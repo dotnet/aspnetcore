@@ -17,65 +17,98 @@ namespace MusicStore
 {
     public class Startup
     {
-        public void Configure(IApplicationBuilder app)
+        public Startup()
         {
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
-            var configuration = new Configuration()
+            Configuration = new Configuration()
                         .AddJsonFile("config.json")
                         .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
+        }
 
+        public IConfiguration Configuration { get; private set; }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            //If this type is present - we're on mono
+            var runningOnMono = Type.GetType("Mono.Runtime") != null;
+
+            // Add EF services to the services container
+            if (runningOnMono)
+            {
+                services.AddEntityFramework()
+                        .AddInMemoryStore();
+            }
+            else
+            {
+                services.AddEntityFramework()
+                        .AddSqlServer();
+            }
+
+            services.AddScoped<MusicStoreContext>();
+
+            // Configure DbContext           
+            services.ConfigureOptions<MusicStoreDbContextOptions>(options =>
+            {
+                options.DefaultAdminUserName = Configuration.Get("DefaultAdminUsername");
+                options.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
+                if (runningOnMono)
+                {
+                    options.UseInMemoryStore();
+                }
+                else
+                {
+                    options.UseSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString"));
+                }
+            });
+
+            // Add Identity services to the services container
+            services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(Configuration);
+
+            services.ConfigureFacebookAuthentication(options =>
+            {
+                options.AppId = "550624398330273";
+                options.AppSecret = "10e56a291d6b618da61b1e0dae3a8954";
+            });
+
+            services.ConfigureGoogleAuthentication(options =>
+            {
+                options.ClientId = "977382855444.apps.googleusercontent.com";
+                options.ClientSecret = "NafT482F70Vjj_9q1PU4B0pN";
+            });
+
+            services.ConfigureTwitterAuthentication(options =>
+            {
+                options.ConsumerKey = "9J3j3pSwgbWkgPFH7nAf0Spam";
+                options.ConsumerSecret = "jUBYkQuBFyqp7G3CUB9SW3AfflFr9z3oQBiNvumYy87Al0W4h8";
+            });
+
+            services.ConfigureMicrosoftAccountAuthentication(options =>
+            {
+                options.Caption = "MicrosoftAccount - Requires project changes";
+                options.ClientId = "000000004012C08A";
+                options.ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL";
+            });
+
+            // Add MVC services to the services container
+            services.AddMvc();
+
+            //Add all SignalR related services to IoC.
+            services.AddSignalR();
+
+            //Add InMemoryCache
+            //Currently not able to AddSingleTon
+            services.AddInstance<IMemoryCache>(new MemoryCache());
+        }
+
+        public void Configure(IApplicationBuilder app)
+        {
             //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
             //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
             app.UseErrorPage(ErrorPageOptions.ShowAll);
 
-            app.UseServices(services =>
-            {
-                //If this type is present - we're on mono
-                var runningOnMono = Type.GetType("Mono.Runtime") != null;
-
-                // Add EF services to the services container
-                if (runningOnMono)
-                {
-                    services.AddEntityFramework()
-                            .AddInMemoryStore();
-                }
-                else
-                {
-                    services.AddEntityFramework()
-                            .AddSqlServer();
-                }
-
-                services.AddScoped<MusicStoreContext>();
-
-                // Configure DbContext           
-                services.SetupOptions<MusicStoreDbContextOptions>(options =>
-                        {
-                            options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
-                            options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
-                            if (runningOnMono)
-                            {
-                                options.UseInMemoryStore();
-                            }
-                            else
-                            {
-                                options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
-                            }
-                        });
-
-                // Add Identity services to the services container
-                services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(configuration);
-
-                // Add MVC services to the services container
-                services.AddMvc();
-
-                //Add all SignalR related services to IoC.
-                services.AddSignalR();
-
-                //Add InMemoryCache
-                //Currently not able to AddSingleTon
-                services.AddInstance<IMemoryCache>(new MemoryCache());
-            });
+            // Add services from ConfigureServices
+            app.UseServices();
 
             //Configure SignalR
             app.UseSignalR();
@@ -86,23 +119,11 @@ namespace MusicStore
             // Add cookie-based authentication to the request pipeline
             app.UseIdentity();
 
-            app.UseFacebookAuthentication(new FacebookAuthenticationOptions()
-            {
-                AppId = "550624398330273",
-                AppSecret = "10e56a291d6b618da61b1e0dae3a8954",
-            });
+            app.UseFacebookAuthentication();
 
-            app.UseGoogleAuthentication(new GoogleAuthenticationOptions()
-            {
-                ClientId = "977382855444.apps.googleusercontent.com",
-                ClientSecret = "NafT482F70Vjj_9q1PU4B0pN",
-            });
+            app.UseGoogleAuthentication();
 
-            app.UseTwitterAuthentication(new TwitterAuthenticationOptions()
-            {
-                ConsumerKey = "9J3j3pSwgbWkgPFH7nAf0Spam",
-                ConsumerSecret = "jUBYkQuBFyqp7G3CUB9SW3AfflFr9z3oQBiNvumYy87Al0W4h8",
-            });
+            app.UseTwitterAuthentication();
 
             //The MicrosoftAccount service has restrictions that prevent the use of http://localhost:5001/ for test applications.
             //As such, here is how to change this sample to uses http://ktesting.com:5001/ instead.
@@ -119,12 +140,7 @@ namespace MusicStore
 
             //The sample app can then be run via:
             // k web
-            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountAuthenticationOptions()
-            {
-                Caption = "MicrosoftAccount - Requires project changes",
-                ClientId = "000000004012C08A",
-                ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL",
-            });
+            app.UseMicrosoftAccountAuthentication();
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

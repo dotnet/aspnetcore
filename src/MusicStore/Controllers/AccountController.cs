@@ -282,7 +282,7 @@ namespace MusicStore.Controllers
         {
             // Request a redirect to the external login provider
             var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
-            var properties = Context.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            var properties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return new ChallengeResult(provider, properties);
         }
 
@@ -328,7 +328,7 @@ namespace MusicStore.Controllers
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl = null)
         {
             //https://github.com/aspnet/Identity/issues/216
-            var loginInfo = await Context.GetExternalLoginInfo();
+            var loginInfo = await SignInManager.GetExternalLoginInfoAsync();
             if (loginInfo == null)
             {
                 return RedirectToAction("Login");
@@ -371,7 +371,7 @@ namespace MusicStore.Controllers
             {
                 // Get the information about the user from the external login provider
                 //https://github.com/aspnet/Identity/issues/216
-                var info = await Context.GetExternalLoginInfo();
+                var info = await SignInManager.GetExternalLoginInfoAsync();
                 if (info == null)
                 {
                     return View("ExternalLoginFailure");

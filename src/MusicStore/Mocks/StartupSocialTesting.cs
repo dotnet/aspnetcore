@@ -40,8 +40,6 @@ namespace MusicStore
             //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
             app.UseErrorPage(ErrorPageOptions.ShowAll);
 
-            app.SetDefaultSignInAsAuthenticationType("External");
-
             app.UseServices(services =>
             {
                 //If this type is present - we're on mono
@@ -62,22 +60,39 @@ namespace MusicStore
                 services.AddScoped<MusicStoreContext>();
 
                 // Configure DbContext           
-                services.SetupOptions<MusicStoreDbContextOptions>(options =>
-                        {
-                            options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
-                            options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
-                            if (runningOnMono)
-                            {
-                                options.UseInMemoryStore();
-                            }
-                            else
-                            {
-                                options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
-                            }
-                        });
+                services.ConfigureOptions<MusicStoreDbContextOptions>(options =>
+                {
+                    options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
+                    options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
+                    if (runningOnMono)
+                    {
+                        options.UseInMemoryStore();
+                    }
+                    else
+                    {
+                        options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
+                    }
+                });
 
                 // Add Identity services to the services container
                 services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(configuration);
+
+                services.ConfigureFacebookAuthentication(options =>
+                {
+                    options.AppId = "[AppId]";
+                    options.AppSecret = "[AppSecret]";
+                    options.Notifications = new FacebookAuthenticationNotifications()
+                    {
+                        OnAuthenticated = FacebookNotifications.OnAuthenticated,
+                        OnReturnEndpoint = FacebookNotifications.OnReturnEndpoint,
+                        OnApplyRedirect = FacebookNotifications.OnApplyRedirect
+                    };
+                    options.BackchannelHttpHandler = new FacebookMockBackChannelHttpHandler();
+                    options.StateDataFormat = new CustomStateDataFormat();
+                    options.Scope.Add("email");
+                    options.Scope.Add("read_friendlists");
+                    options.Scope.Add("user_checkins");
+                });
 
                 // Add MVC services to the services container
                 services.AddMvc();
@@ -119,76 +134,56 @@ namespace MusicStore
             // Add cookie-based authentication to the request pipeline
             app.UseIdentity();
 
-            var facebookOptions = new FacebookAuthenticationOptions()
+            app.UseFacebookAuthentication();
+
+            app.UseGoogleAuthentication(options => 
             {
-                AppId = "[AppId]",
-                AppSecret = "[AppSecret]",
-                Notifications = new FacebookAuthenticationNotifications()
-                {
-                    OnAuthenticated = FacebookNotifications.OnAuthenticated,
-                    OnReturnEndpoint = FacebookNotifications.OnReturnEndpoint,
-                    OnApplyRedirect = FacebookNotifications.OnApplyRedirect
-                },
-                BackchannelHttpHandler = new FacebookMockBackChannelHttpHandler(),
-                StateDataFormat = new CustomStateDataFormat()
-            };
-
-            facebookOptions.Scope.Add("email");
-            facebookOptions.Scope.Add("read_friendlists");
-            facebookOptions.Scope.Add("user_checkins");
-
-            app.UseFacebookAuthentication(facebookOptions);
-
-            app.UseGoogleAuthentication(new GoogleAuthenticationOptions()
-            {
-                ClientId = "[ClientId]",
-                ClientSecret = "[ClientSecret]",
-                AccessType = "offline",
-                Notifications = new GoogleAuthenticationNotifications()
+                options.ClientId = "[ClientId]";
+                options.ClientSecret = "[ClientSecret]";
+                options.AccessType = "offline";
+                options.Notifications = new GoogleAuthenticationNotifications()
                 {
                     OnAuthenticated = GoogleNotifications.OnAuthenticated,
                     OnReturnEndpoint = GoogleNotifications.OnReturnEndpoint,
                     OnApplyRedirect = GoogleNotifications.OnApplyRedirect
-                },
-                StateDataFormat = new CustomStateDataFormat(),
-                BackchannelHttpHandler = new GoogleMockBackChannelHttpHandler()
+                };
+                options.StateDataFormat = new CustomStateDataFormat();
+                options.BackchannelHttpHandler = new GoogleMockBackChannelHttpHandler();
             });
 
-            app.UseTwitterAuthentication(new TwitterAuthenticationOptions()
+            app.UseTwitterAuthentication(options =>
             {
-                ConsumerKey = "[ConsumerKey]",
-                ConsumerSecret = "[ConsumerSecret]",
-                Notifications = new TwitterAuthenticationNotifications()
+                options.ConsumerKey = "[ConsumerKey]";
+                options.ConsumerSecret = "[ConsumerSecret]";
+                options.Notifications = new TwitterAuthenticationNotifications()
                 {
                     OnAuthenticated = TwitterNotifications.OnAuthenticated,
                     OnReturnEndpoint = TwitterNotifications.OnReturnEndpoint,
                     OnApplyRedirect = TwitterNotifications.OnApplyRedirect
-                },
-                StateDataFormat = new CustomTwitterStateDataFormat(),
-                BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler(),
+                };
+                options.StateDataFormat = new CustomTwitterStateDataFormat();
+                options.BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler();
 #if ASPNET50
-                BackchannelCertificateValidator = null
+                options.BackchannelCertificateValidator = null;
 #endif
             });
 
-            var microsoftAccountOptions = new MicrosoftAccountAuthenticationOptions()
+            app.UseMicrosoftAccountAuthentication(options =>
             {
-                Caption = "MicrosoftAccount - Requires project changes",
-                ClientId = "[ClientId]",
-                ClientSecret = "[ClientSecret]",
-                Notifications = new MicrosoftAccountAuthenticationNotifications()
+                options.Caption = "MicrosoftAccount - Requires project changes";
+                options.ClientId = "[ClientId]";
+                options.ClientSecret = "[ClientSecret]";
+                options.Notifications = new MicrosoftAccountAuthenticationNotifications()
                 {
                     OnAuthenticated = MicrosoftAccountNotifications.OnAuthenticated,
                     OnReturnEndpoint = MicrosoftAccountNotifications.OnReturnEndpoint,
                     OnApplyRedirect = MicrosoftAccountNotifications.OnApplyRedirect
-                },
-                BackchannelHttpHandler = new MicrosoftAccountMockBackChannelHandler(),
-                StateDataFormat = new CustomStateDataFormat()
-            };
-
-            microsoftAccountOptions.Scope.Add("wl.basic");
-            microsoftAccountOptions.Scope.Add("wl.signin");
-            app.UseMicrosoftAccountAuthentication(microsoftAccountOptions);
+                };
+                options.BackchannelHttpHandler = new MicrosoftAccountMockBackChannelHandler();
+                options.StateDataFormat = new CustomStateDataFormat();
+                options.Scope.Add("wl.basic");
+                options.Scope.Add("wl.signin");
+            });
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

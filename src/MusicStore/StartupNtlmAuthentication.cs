@@ -75,12 +75,12 @@ namespace MusicStore
                 services.AddScoped<MusicStoreContext>();
 
                 // Configure DbContext           
-                services.SetupOptions<MusicStoreDbContextOptions>(options =>
-                        {
-                            options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
-                            options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
-                            options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
-                        });
+                services.ConfigureOptions<MusicStoreDbContextOptions>(options =>
+                {
+                    options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
+                    options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
+                    options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
+                });
 
                 // Add Identity services to the services container
                 services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(configuration);
