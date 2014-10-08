@@ -69,11 +69,14 @@ ViewWithNestedLayout-Content
         [Fact]
         public async Task RazorView_ExecutesPartialPagesWithCorrectContext()
         {
-            var expected =
-@"<partial>98052
-
-</partial>
-test-value";
+            var expected = string.Join(Environment.NewLine,
+                                       "<partial>98052",
+                                       "",
+                                       "</partial>",
+                                       "<partial2>98052",
+                                       "",
+                                       "</partial2>",
+                                       "test-value");
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
 

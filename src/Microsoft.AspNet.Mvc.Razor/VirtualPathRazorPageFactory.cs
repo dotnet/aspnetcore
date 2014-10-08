@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -32,6 +31,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public IRazorPage CreateInstance([NotNull] string relativePath, bool enableInstrumentation)
         {
+            if (relativePath.StartsWith("~/", StringComparison.Ordinal))
+            {
+                // For tilde slash paths, drop the leading ~ to make it work with the underlying IFileSystem.
+                relativePath = relativePath.Substring(1);
+            }
+
             var fileInfo = _fileInfoCache.GetFileInfo(relativePath);
 
             if (fileInfo != null)
