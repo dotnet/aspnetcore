@@ -57,7 +57,8 @@ namespace Microsoft.AspNet.Mvc
             Assert.Empty(values.ActionsMatchingRouteConstraints);
             Assert.Empty(values.ActionsMatchingActionConstraints);
             Assert.Empty(values.FinalMatches);
-            Assert.Null(values.SelectedAction);
+            Assert.Null(values.SelectedAction);            
+            Assert.DoesNotThrow(() => values.Summary);
         }
 
         [Fact]
@@ -160,6 +161,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingActionConstraints);
             Assert.Equal<ActionDescriptor>(actions, values.FinalMatches);
             Assert.Null(values.SelectedAction);
+            Assert.DoesNotThrow(() => values.Summary);
         }
 
         [Fact]
