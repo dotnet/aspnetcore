@@ -24,6 +24,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 
             // Add a model binder to be able to bind HttpRequestMessage
             options.ModelBinders.Insert(0, new HttpRequestMessageModelBinder());
+
+            // Add a formatter to write out an HttpResponseMessage to the response
+            options.OutputFormatters.Insert(0, new HttpResponseMessageOutputFormatter());
         }
 
         public void Invoke(WebApiCompatShimOptions options)

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
+using System.Net;
 
 namespace WebApiCompatShimWebSite
 {
@@ -27,6 +28,33 @@ namespace WebApiCompatShimWebSite
 
             await Echo(request);
             return new EmptyResult();
+        }
+
+        public async Task<HttpResponseMessage> EchoWithResponseMessage(HttpRequestMessage request)
+        {
+            var message = string.Format(
+                "{0} {1}", 
+                request.Method.ToString(), 
+                await request.Content.ReadAsStringAsync());
+
+            var response = request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StringContent(message);
+            response.Headers.TryAddWithoutValidation("X-Test", "Hello!");
+            return response;
+        }
+
+        public async Task<HttpResponseMessage> EchoWithResponseMessageChunked(HttpRequestMessage request)
+        {
+            var message = string.Format(
+                "{0} {1}",
+                request.Method.ToString(),
+                await request.Content.ReadAsStringAsync());
+
+            var response = request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StringContent(message);
+            response.Headers.TransferEncodingChunked = true;
+            response.Headers.TryAddWithoutValidation("X-Test", "Hello!");
+            return response;
         }
 
         private async Task Echo(HttpRequestMessage request)

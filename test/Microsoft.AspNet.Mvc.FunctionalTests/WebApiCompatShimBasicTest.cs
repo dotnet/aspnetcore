@@ -3,6 +3,7 @@
 
 #if ASPNET50
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
@@ -122,6 +123,58 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expected, content);
+        }
+
+        [Fact]
+        public async Task ApiController_ResponseReturned()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var expected =
+                "POST Hello, HttpResponseMessage world!";
+
+            // Act
+            var response = await client.PostAsync(
+                "http://localhost/api/Blog/HttpRequestMessage/EchoWithResponseMessage",
+                new StringContent("Hello, HttpResponseMessage world!"));
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expected, content);
+
+            IEnumerable<string> values;
+            Assert.True(response.Headers.TryGetValues("X-Test", out values));
+            Assert.Equal(new string[] { "Hello!" }, values);
+            Assert.Equal(38, response.Content.Headers.ContentLength);
+        }
+
+        [Fact]
+        public async Task ApiController_ResponseReturned_Chunked()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var expected =
+                "POST Hello, HttpResponseMessage world!";
+
+            // Act
+            var response = await client.PostAsync(
+                "http://localhost/api/Blog/HttpRequestMessage/EchoWithResponseMessageChunked",
+                new StringContent("Hello, HttpResponseMessage world!"));
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expected, content);
+
+            IEnumerable<string> values;
+            Assert.True(response.Headers.TryGetValues("X-Test", out values));
+            Assert.Equal(new string[] { "Hello!" }, values);
+            Assert.Equal(true, response.Headers.TransferEncodingChunked);
         }
     }
 }

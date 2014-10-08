@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             = new ResourceManager("Microsoft.AspNet.Mvc.WebApiCompatShim.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The {0} only supports writing objects of type {1}.
+        /// </summary>
+        internal static string HttpResponseMessageFormatter_UnsupportedType
+        {
+            get { return GetString("HttpResponseMessageFormatter_UnsupportedType"); }
+        }
+
+        /// <summary>
+        /// The {0} only supports writing objects of type {1}.
+        /// </summary>
+        internal static string FormatHttpResponseMessageFormatter_UnsupportedType(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HttpResponseMessageFormatter_UnsupportedType"), p0, p1);
+        }
+
+        /// <summary>
         /// The key is invalid JQuery syntax because it is missing a closing bracket.
         /// </summary>
         internal static string JQuerySyntaxMissingClosingBracket
