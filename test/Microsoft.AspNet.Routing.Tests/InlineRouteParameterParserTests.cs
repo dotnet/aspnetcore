@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.Routing.Tests
         private static IInlineConstraintResolver GetConstraintResolver()
         {
             var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
-            services.SetupOptions<RouteOptions>(options =>
+            services.ConfigureOptions<RouteOptions>(options =>
                                 options
                                 .ConstraintMap
                                 .Add("test", typeof(TestRouteConstraint)));
