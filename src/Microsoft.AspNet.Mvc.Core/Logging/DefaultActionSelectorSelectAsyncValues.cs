@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Logging
 
         private string Formatter(ActionDescriptor descriptor)
         {
-            return descriptor.DisplayName;
+            return descriptor?.DisplayName ?? "No action selected";
         }
     }
 }
