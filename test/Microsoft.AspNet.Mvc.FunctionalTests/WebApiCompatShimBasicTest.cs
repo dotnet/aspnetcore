@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
@@ -222,6 +224,108 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.True(response.Headers.TryGetValues("X-Test", out values));
             Assert.Equal(new string[] { "Hello!" }, values);
             Assert.Equal(true, response.Headers.TransferEncodingChunked);
+        }
+
+        [Theory]
+        [InlineData("application/json", "application/json")]
+        [InlineData("text/xml", "text/xml")]
+        [InlineData("text/plain, text/xml; q=0.5", "text/xml")]
+        [InlineData("application/*", "application/json")]
+        public async Task ApiController_CreateResponse_Conneg(string accept, string mediaType)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(
+                HttpMethod.Get, 
+                "http://localhost/api/Blog/HttpRequestMessage/GetUser");
+
+            request.Headers.Accept.ParseAdd(accept);
+
+            // Act
+            var response = await client.SendAsync(request);
+            var user = await response.Content.ReadAsAsync<WebApiCompatShimWebSite.User>();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Test User", user.Name);
+            Assert.Equal(mediaType, response.Content.Headers.ContentType.MediaType);
+        }
+
+        [Theory]
+        [InlineData("application/json")]
+        [InlineData("text/xml")]
+        public async Task ApiController_CreateResponse_HardcodedMediaType(string mediaType)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "http://localhost/api/Blog/HttpRequestMessage/GetUser?mediaType=" + mediaType);
+
+            // Act
+            var response = await client.SendAsync(request);
+            var user = await response.Content.ReadAsAsync<WebApiCompatShimWebSite.User>();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Test User", user.Name);
+            Assert.Equal(mediaType, response.Content.Headers.ContentType.MediaType);
+        }
+
+        [Theory]
+        [InlineData("application/json", "application/json")]
+        [InlineData("text/xml", "text/xml")]
+        [InlineData("text/plain, text/xml; q=0.5", "text/xml")]
+        [InlineData("application/*", "application/json")]
+        public async Task ApiController_CreateResponse_Conneg_Error(string accept, string mediaType)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "http://localhost/api/Blog/HttpRequestMessage/Fail");
+
+            request.Headers.Accept.ParseAdd(accept);
+
+            // Act
+            var response = await client.SendAsync(request);
+            var error = await response.Content.ReadAsAsync<HttpError>();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Equal("It failed.", error.Message);
+            Assert.Equal(mediaType, response.Content.Headers.ContentType.MediaType);
+        }
+
+
+        [Fact]
+        public async Task ApiController_CreateResponse_HardcodedFormatter()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "http://localhost/api/Blog/HttpRequestMessage/GetUserJson");
+
+            // Accept header will be ignored
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/xml"));
+
+            // Act
+            var response = await client.SendAsync(request);
+            var user = await response.Content.ReadAsAsync<WebApiCompatShimWebSite.User>();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Test User", user.Name);
+            Assert.Equal("text/json", response.Content.Headers.ContentType.MediaType);
         }
     }
 }

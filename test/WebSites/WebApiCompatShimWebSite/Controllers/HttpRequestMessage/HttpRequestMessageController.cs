@@ -8,6 +8,7 @@ using System.Web.Http;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using System.Net;
+using System.Net.Http.Formatting;
 
 namespace WebApiCompatShimWebSite
 {
@@ -16,7 +17,7 @@ namespace WebApiCompatShimWebSite
         public async Task<IActionResult> EchoProperty()
         {
             await Echo(Request);
-            return new EmptyResult(); 
+            return new EmptyResult();
         }
 
         public async Task<IActionResult> EchoParameter(HttpRequestMessage request)
@@ -33,8 +34,8 @@ namespace WebApiCompatShimWebSite
         public async Task<HttpResponseMessage> EchoWithResponseMessage(HttpRequestMessage request)
         {
             var message = string.Format(
-                "{0} {1}", 
-                request.Method.ToString(), 
+                "{0} {1}",
+                request.Method.ToString(),
                 await request.Content.ReadAsStringAsync());
 
             var response = request.CreateResponse(HttpStatusCode.OK);
@@ -55,6 +56,42 @@ namespace WebApiCompatShimWebSite
             response.Headers.TransferEncodingChunked = true;
             response.Headers.TryAddWithoutValidation("X-Test", "Hello!");
             return response;
+        }
+
+        public HttpResponseMessage GetUser(string mediaType = null)
+        {
+            var user = new User()
+            {
+                Name = "Test User",
+            };
+
+            if (mediaType == null)
+            {
+                // This will perform content negotation
+                return Request.CreateResponse<User>(HttpStatusCode.OK, user);
+            }
+            else
+            {
+                // This will use the provided media type
+                return Request.CreateResponse<User>(HttpStatusCode.OK, user, mediaType);
+            }
+        }
+
+        public HttpResponseMessage GetUserJson()
+        {
+            var user = new User()
+            {
+                Name = "Test User",
+            };
+
+            return Request.CreateResponse<User>(HttpStatusCode.OK, user, new JsonMediaTypeFormatter(), "text/json");
+        }
+
+        [HttpGet]
+        public HttpResponseMessage Fail()
+        {
+            // This will perform content negotation
+            return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "It failed.");
         }
 
         private async Task Echo(HttpRequestMessage request)

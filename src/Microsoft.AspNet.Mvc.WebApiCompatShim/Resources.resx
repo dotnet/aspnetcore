@@ -117,6 +117,21 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="HttpError_BadRequest" xml:space="preserve">
+    <value>The request is invalid.</value>
+  </data>
+  <data name="HttpError_GenericError" xml:space="preserve">
+    <value>An error has occurred.</value>
+  </data>
+  <data name="HttpError_ValidModelState" xml:space="preserve">
+    <value>The model state is valid.</value>
+  </data>
+  <data name="HttpRequestMessage_CouldNotFindMatchingFormatter" xml:space="preserve">
+    <value>Could not find a formatter matching the media type '{0}' that can write an instance of '{1}'.</value>
+  </data>
+  <data name="HttpRequestMessage_MustHaveHttpContext" xml:space="preserve">
+    <value>The {0} instance is not properly initialized. Use {1} to create an {0} for the current request.</value>
+  </data>
   <data name="HttpResponseMessageFormatter_UnsupportedType" xml:space="preserve">
     <value>The {0} only supports writing objects of type {1}.</value>
   </data>

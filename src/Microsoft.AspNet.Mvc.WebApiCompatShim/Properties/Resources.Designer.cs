@@ -11,6 +11,86 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             = new ResourceManager("Microsoft.AspNet.Mvc.WebApiCompatShim.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The request is invalid.
+        /// </summary>
+        internal static string HttpError_BadRequest
+        {
+            get { return GetString("HttpError_BadRequest"); }
+        }
+
+        /// <summary>
+        /// The request is invalid.
+        /// </summary>
+        internal static string FormatHttpError_BadRequest()
+        {
+            return GetString("HttpError_BadRequest");
+        }
+
+        /// <summary>
+        /// An error has occurred.
+        /// </summary>
+        internal static string HttpError_GenericError
+        {
+            get { return GetString("HttpError_GenericError"); }
+        }
+
+        /// <summary>
+        /// An error has occurred.
+        /// </summary>
+        internal static string FormatHttpError_GenericError()
+        {
+            return GetString("HttpError_GenericError");
+        }
+
+        /// <summary>
+        /// The model state is valid.
+        /// </summary>
+        internal static string HttpError_ValidModelState
+        {
+            get { return GetString("HttpError_ValidModelState"); }
+        }
+
+        /// <summary>
+        /// The model state is valid.
+        /// </summary>
+        internal static string FormatHttpError_ValidModelState()
+        {
+            return GetString("HttpError_ValidModelState");
+        }
+
+        /// <summary>
+        /// Could not find a formatter matching the media type '{0}' that can write an instance of '{1}'.
+        /// </summary>
+        internal static string HttpRequestMessage_CouldNotFindMatchingFormatter
+        {
+            get { return GetString("HttpRequestMessage_CouldNotFindMatchingFormatter"); }
+        }
+
+        /// <summary>
+        /// Could not find a formatter matching the media type '{0}' that can write an instance of '{1}'.
+        /// </summary>
+        internal static string FormatHttpRequestMessage_CouldNotFindMatchingFormatter(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HttpRequestMessage_CouldNotFindMatchingFormatter"), p0, p1);
+        }
+
+        /// <summary>
+        /// The {0} instance is not properly initialized. Use {1} to create an {0} for the current request.
+        /// </summary>
+        internal static string HttpRequestMessage_MustHaveHttpContext
+        {
+            get { return GetString("HttpRequestMessage_MustHaveHttpContext"); }
+        }
+
+        /// <summary>
+        /// The {0} instance is not properly initialized. Use {1} to create an {0} for the current request.
+        /// </summary>
+        internal static string FormatHttpRequestMessage_MustHaveHttpContext(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HttpRequestMessage_MustHaveHttpContext"), p0, p1);
+        }
+
+        /// <summary>
         /// The {0} only supports writing objects of type {1}.
         /// </summary>
         internal static string HttpResponseMessageFormatter_UnsupportedType
