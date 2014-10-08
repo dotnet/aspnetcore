@@ -27,7 +27,7 @@ namespace MusicStore.Mocks.Twitter
 
         internal static async Task OnReturnEndpoint(TwitterReturnEndpointContext context)
         {
-            if (context.Identity != null && context.SignInAsAuthenticationType == "Microsoft.AspNet.Identity.ExternalLogin")
+            if (context.Identity != null && context.SignInAsAuthenticationType == "Microsoft.AspNet.Identity.External")
             {
                 //This way we will know all notifications were fired.
                 var manageStoreClaim = context.Identity.Claims.Where(c => c.Type == "ManageStore" && c.Value == "false").FirstOrDefault();
