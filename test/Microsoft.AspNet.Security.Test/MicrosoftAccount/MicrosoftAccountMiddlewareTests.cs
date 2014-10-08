@@ -20,6 +20,10 @@ using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
 using Shouldly;
 using Xunit;
+using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.AspNet.Security.DataHandler;
+using Microsoft.AspNet.Security.DataProtection;
 
 namespace Microsoft.AspNet.Security.Tests.MicrosoftAccount
 {
@@ -28,20 +32,19 @@ namespace Microsoft.AspNet.Security.Tests.MicrosoftAccount
         [Fact]
         public async Task ChallengeWillTriggerApplyRedirectEvent()
         {
-            var options = new MicrosoftAccountAuthenticationOptions()
-            {
-                ClientId = "Test Client Id",
-                ClientSecret = "Test Client Secret",
-                Notifications = new MicrosoftAccountAuthenticationNotifications
-                {
-                    OnApplyRedirect = context =>
-                    {
-                        context.Response.Redirect(context.RedirectUri + "&custom=test");
-                    }
-                }
-            };
             var server = CreateServer(
-                app => app.UseMicrosoftAccountAuthentication(options),
+                options =>
+                {
+                    options.ClientId = "Test Client Id";
+                    options.ClientSecret = "Test Client Secret";
+                    options.Notifications = new MicrosoftAccountAuthenticationNotifications
+                    {
+                        OnApplyRedirect = context =>
+                        {
+                            context.Response.Redirect(context.RedirectUri + "&custom=test");
+                        }
+                    };
+                },
                 context =>
                 {
                     context.Response.Challenge("Microsoft");
@@ -57,7 +60,11 @@ namespace Microsoft.AspNet.Security.Tests.MicrosoftAccount
         public async Task ChallengeWillTriggerRedirection()
         {
             var server = CreateServer(
-                app => app.UseMicrosoftAccountAuthentication("Test Client Id", "Test Client Secret"),
+                options =>
+                {
+                    options.ClientId = "Test Client Id";
+                    options.ClientSecret = "Test Client Secret";
+                },
                 context =>
                 {
                     context.Response.Challenge("Microsoft");
@@ -77,54 +84,55 @@ namespace Microsoft.AspNet.Security.Tests.MicrosoftAccount
         [Fact]
         public async Task AuthenticatedEventCanGetRefreshToken()
         {
-            var options = new MicrosoftAccountAuthenticationOptions()
-            {
-                ClientId = "Test Client Id",
-                ClientSecret = "Test Client Secret",
-                BackchannelHttpHandler = new TestHttpMessageHandler
-                {
-                    Sender = async req =>
-                    {
-                        if (req.RequestUri.AbsoluteUri == "https://login.live.com/oauth20_token.srf")
-                        {
-                            return await ReturnJsonResponse(new
-                            {
-                                access_token = "Test Access Token",
-                                expire_in = 3600,
-                                token_type = "Bearer",
-                                refresh_token = "Test Refresh Token"
-                            });
-                        }
-                        else if (req.RequestUri.GetLeftPart(UriPartial.Path) == "https://apis.live.net/v5.0/me")
-                        {
-                            return await ReturnJsonResponse(new
-                            {
-                                id = "Test User ID",
-                                name = "Test Name",
-                                first_name = "Test Given Name",
-                                last_name = "Test Family Name",
-                                emails = new
-                                {
-                                    preferred = "Test email"
-                                }
-                            });
-                        }
-
-                        return null;
-                    }
-                },
-                Notifications = new MicrosoftAccountAuthenticationNotifications
-                {
-                    OnAuthenticated = context =>
-                    {
-                        var refreshToken = context.RefreshToken;
-                        context.Identity.AddClaim(new Claim("RefreshToken", refreshToken));
-                        return Task.FromResult<object>(null);
-                    }
-                }
-            };
+            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(DataProtectionProvider.CreateNew().CreateProtector("MsftTest"));
             var server = CreateServer(
-                app => app.UseMicrosoftAccountAuthentication(options),
+                options =>
+                {
+                    options.ClientId = "Test Client Id";
+                    options.ClientSecret = "Test Client Secret";
+                    options.StateDataFormat = stateFormat;
+                    options.BackchannelHttpHandler = new TestHttpMessageHandler
+                    {
+                        Sender = async req =>
+                        {
+                            if (req.RequestUri.AbsoluteUri == "https://login.live.com/oauth20_token.srf")
+                            {
+                                return await ReturnJsonResponse(new
+                                {
+                                    access_token = "Test Access Token",
+                                    expire_in = 3600,
+                                    token_type = "Bearer",
+                                    refresh_token = "Test Refresh Token"
+                                });
+                            }
+                            else if (req.RequestUri.GetLeftPart(UriPartial.Path) == "https://apis.live.net/v5.0/me")
+                            {
+                                return await ReturnJsonResponse(new
+                                {
+                                    id = "Test User ID",
+                                    name = "Test Name",
+                                    first_name = "Test Given Name",
+                                    last_name = "Test Family Name",
+                                    emails = new
+                                    {
+                                        preferred = "Test email"
+                                    }
+                                });
+                            }
+
+                            return null;
+                        }
+                    };
+                    options.Notifications = new MicrosoftAccountAuthenticationNotifications
+                    {
+                        OnAuthenticated = context =>
+                        {
+                            var refreshToken = context.RefreshToken;
+                            context.Identity.AddClaim(new Claim("RefreshToken", refreshToken));
+                            return Task.FromResult<object>(null);
+                        }
+                    };
+                },
                 context =>
                 {
                     Describe(context.Response, (ClaimsIdentity)context.User.Identity);
@@ -135,7 +143,7 @@ namespace Microsoft.AspNet.Security.Tests.MicrosoftAccount
             var correlationValue = "TestCorrelationId";
             properties.Dictionary.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
-            var state = options.StateDataFormat.Protect(properties);
+            var state = stateFormat.Protect(properties);
             var transaction = await SendAsync(server,
                 "https://example.com/signin-microsoft?code=TestCode&state=" + Uri.EscapeDataString(state),
                 correlationKey + "=" + correlationValue);
@@ -151,19 +159,19 @@ namespace Microsoft.AspNet.Security.Tests.MicrosoftAccount
             transaction.FindClaimValue("RefreshToken").ShouldBe("Test Refresh Token");
         }
 
-        private static TestServer CreateServer(Action<IApplicationBuilder> configure, Func<HttpContext, bool> handler)
+        private static TestServer CreateServer(Action<MicrosoftAccountAuthenticationOptions> configureOptions, Func<HttpContext, bool> handler)
         {
             return TestServer.Create(app =>
             {
-                app.UseCookieAuthentication(new CookieAuthenticationOptions
+                app.UseServices(services =>
                 {
-                    AuthenticationType = "External"
+                    services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
+                    {
+                        options.SignInAsAuthenticationType = "External";
+                    });
                 });
-                app.SetDefaultSignInAsAuthenticationType("External");
-                if (configure != null)
-                {
-                    configure(app);
-                }
+                app.UseCookieAuthentication(options => options.AuthenticationType = "External");
+                app.UseMicrosoftAccountAuthentication(configureOptions);
                 app.Use(async (context, next) =>
                 {
                     if (handler == null || !handler(context))

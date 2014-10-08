@@ -9,14 +9,6 @@ namespace Microsoft.AspNet.Security.OAuth
     public class OAuthAuthenticationOptions<TNotifications> : OAuthAuthenticationOptions where TNotifications : IOAuthAuthenticationNotifications
     {
         /// <summary>
-        /// Initializes a new <see cref="OAuthAuthenticationOptions"/>.
-        /// </summary>
-        public OAuthAuthenticationOptions([NotNull] string authenticationType)
-            : base(authenticationType)
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the <see cref="IOAuthAuthenticationNotifications"/> used to handle authentication events.
         /// </summary>
         public TNotifications Notifications { get; set; }

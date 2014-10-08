@@ -15,8 +15,9 @@ namespace Microsoft.AspNet.Security.MicrosoftAccount
         /// Initializes a new <see cref="MicrosoftAccountAuthenticationOptions"/>.
         /// </summary>
         public MicrosoftAccountAuthenticationOptions()
-            : base(MicrosoftAccountAuthenticationDefaults.AuthenticationType)
         {
+            AuthenticationType = MicrosoftAccountAuthenticationDefaults.AuthenticationType;
+            Caption = AuthenticationType;
             CallbackPath = new PathString("/signin-microsoft");
             AuthorizationEndpoint = MicrosoftAccountAuthenticationDefaults.AuthorizationEndpoint;
             TokenEndpoint = MicrosoftAccountAuthenticationDefaults.TokenEndpoint;

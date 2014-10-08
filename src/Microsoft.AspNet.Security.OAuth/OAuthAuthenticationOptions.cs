@@ -18,10 +18,8 @@ namespace Microsoft.AspNet.Security.OAuth
         /// <summary>
         /// Initializes a new <see cref="OAuthAuthenticationOptions"/>.
         /// </summary>
-        public OAuthAuthenticationOptions([NotNull] string authenticationType)
-            : base(authenticationType)
+        public OAuthAuthenticationOptions()
         {
-            Caption = authenticationType;
             AuthenticationMode = AuthenticationMode.Passive;
             Scope = new List<string>();
             BackchannelTimeout = TimeSpan.FromSeconds(60);
@@ -69,9 +67,6 @@ namespace Microsoft.AspNet.Security.OAuth
         /// <summary>
         /// Get or sets the text that the user can display on a sign in user interface.
         /// </summary>
-        /// <remarks>
-        /// The default value is the authentication type.
-        /// </remarks>
         public string Caption
         {
             get { return Description.Caption; }

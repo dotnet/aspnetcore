@@ -123,9 +123,6 @@
   <data name="Exception_UnhookAuthenticationStateType" xml:space="preserve">
     <value>The state passed to UnhookAuthentication may only be the return value from HookAuthentication.</value>
   </data>
-  <data name="Exception_MissingDefaultSignInAsAuthenticationType" xml:space="preserve">
-    <value>A default value for SignInAsAuthenticationType was not found in IApplicationBuilder Properties. This can happen if your authentication middleware are added in the wrong order, or if one is missing.</value>
-  </data>
   <data name="Exception_AuthenticationTokenDoesNotProvideSyncMethods" xml:space="preserve">
     <value>The AuthenticationTokenProvider's required synchronous events have not been registered.</value>
   </data>

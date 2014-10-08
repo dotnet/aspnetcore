@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Security.Facebook;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
+using System;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -10,35 +13,23 @@ namespace Microsoft.AspNet.Builder
     /// </summary>
     public static class FacebookAuthenticationExtensions
     {
-        /// <summary>
-        /// Authenticate users using Facebook.
-        /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
-        /// <param name="appId">The appId assigned by Facebook.</param>
-        /// <param name="appSecret">The appSecret assigned by Facebook.</param>
-        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseFacebookAuthentication([NotNull] this IApplicationBuilder app, [NotNull] string appId, [NotNull] string appSecret)
+        public static IServiceCollection ConfigureFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<FacebookAuthenticationOptions> configure)
         {
-            return app.UseFacebookAuthentication(new FacebookAuthenticationOptions()
-            {
-                AppId = appId,
-                AppSecret = appSecret,
-            });
+            return services.ConfigureOptions(configure);
         }
 
         /// <summary>
         /// Authenticate users using Facebook.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
-        /// <param name="options">The middleware configuration options.</param>
         /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseFacebookAuthentication([NotNull] this IApplicationBuilder app, [NotNull] FacebookAuthenticationOptions options)
+        public static IApplicationBuilder UseFacebookAuthentication([NotNull] this IApplicationBuilder app, Action<FacebookAuthenticationOptions> configureOptions = null, string optionsName = "")
         {
-            if (string.IsNullOrEmpty(options.SignInAsAuthenticationType))
-            {
-                options.SignInAsAuthenticationType = app.GetDefaultSignInAsAuthenticationType();
-            }
-            return app.UseMiddleware<FacebookAuthenticationMiddleware>(options);
+            return app.UseMiddleware<FacebookAuthenticationMiddleware>(
+                 new OptionsAction<FacebookAuthenticationOptions>(configureOptions ?? (o => { }))
+                 {
+                     Name = optionsName
+                 });
         }
     }
 }

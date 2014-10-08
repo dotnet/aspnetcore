@@ -13,6 +13,7 @@ using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using Shouldly;
 using Xunit;
 
@@ -23,20 +24,35 @@ namespace Microsoft.AspNet.Security.Facebook
         [Fact]
         public async Task ChallengeWillTriggerApplyRedirectEvent()
         {
-            var options = new FacebookAuthenticationOptions()
-            {
-                AppId = "Test App Id",
-                AppSecret = "Test App Secret",
-                Notifications = new FacebookAuthenticationNotifications
-                {
-                    OnApplyRedirect = context =>
-                    {
-                        context.Response.Redirect(context.RedirectUri + "&custom=test");
-                    }
-                }
-            };
             var server = CreateServer(
-                app => app.UseFacebookAuthentication(options),
+                app =>
+                {
+                    app.UseServices(services =>
+                    {
+                        services.ConfigureFacebookAuthentication(options =>
+                        {
+                            options.AppId = "Test App Id";
+                            options.AppSecret = "Test App Secret";
+                            options.Notifications = new FacebookAuthenticationNotifications
+                            {
+                                OnApplyRedirect = context =>
+                                {
+                                    context.Response.Redirect(context.RedirectUri + "&custom=test");
+                                }
+                            };
+                        });
+                        services.ConfigureCookieAuthentication(options =>
+                        {
+                            options.AuthenticationType = "External";
+                        });
+                        services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
+                        {
+                            options.SignInAsAuthenticationType = "External";
+                        });
+                    });
+                    app.UseFacebookAuthentication();
+                    app.UseCookieAuthentication();
+                },
                 context =>
                 {
                     context.Response.Challenge("Facebook");
@@ -52,7 +68,27 @@ namespace Microsoft.AspNet.Security.Facebook
         public async Task ChallengeWillTriggerRedirection()
         {
             var server = CreateServer(
-                app => app.UseFacebookAuthentication("Test App Id", "Test App Secret"),
+                app =>
+                {
+                    app.UseServices(services =>
+                    {
+                        services.ConfigureFacebookAuthentication(options =>
+                        {
+                            options.AppId = "Test App Id";
+                            options.AppSecret = "Test App Secret";
+                        });
+                        services.ConfigureCookieAuthentication(options =>
+                        {
+                            options.AuthenticationType = "External";
+                        });
+                        services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
+                        {
+                            options.SignInAsAuthenticationType = "External";
+                        });
+                    });
+                    app.UseFacebookAuthentication();
+                    app.UseCookieAuthentication();
+                },
                 context =>
                 {
                     context.Response.Challenge("Facebook");
@@ -73,11 +109,6 @@ namespace Microsoft.AspNet.Security.Facebook
         {
             return TestServer.Create(app =>
             {
-                app.SetDefaultSignInAsAuthenticationType("External");
-                app.UseCookieAuthentication(new CookieAuthenticationOptions()
-                {
-                    AuthenticationType = "External"
-                });
                 if (configure != null)
                 {
                     configure(app);

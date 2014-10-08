@@ -9,6 +9,7 @@ using Microsoft.AspNet.Security.DataHandler;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Security.Cookies
 {
@@ -16,8 +17,12 @@ namespace Microsoft.AspNet.Security.Cookies
     {
         private readonly ILogger _logger;
 
-        public CookieAuthenticationMiddleware(RequestDelegate next, IDataProtectionProvider dataProtectionProvider, ILoggerFactory loggerFactory, CookieAuthenticationOptions options)
-            : base(next, options)
+        public CookieAuthenticationMiddleware(RequestDelegate next, 
+            IDataProtectionProvider dataProtectionProvider, 
+            ILoggerFactory loggerFactory, 
+            IOptionsAccessor<CookieAuthenticationOptions> options,
+            IOptionsAction<CookieAuthenticationOptions> configureOptions)
+            : base(next, options, configureOptions)
         {
             if (Options.Notifications == null)
             {
@@ -27,11 +32,11 @@ namespace Microsoft.AspNet.Security.Cookies
             {
                 Options.CookieName = CookieAuthenticationDefaults.CookiePrefix + Options.AuthenticationType;
             }
-            if (options.TicketDataFormat == null)
+            if (Options.TicketDataFormat == null)
             {
                 IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
-                    typeof(CookieAuthenticationMiddleware).FullName, options.AuthenticationType, "v1");
-                options.TicketDataFormat = new TicketDataFormat(dataProtector);
+                    typeof(CookieAuthenticationMiddleware).FullName, Options.AuthenticationType, "v1");
+                Options.TicketDataFormat = new TicketDataFormat(dataProtector);
             }
             if (Options.CookieManager == null)
             {

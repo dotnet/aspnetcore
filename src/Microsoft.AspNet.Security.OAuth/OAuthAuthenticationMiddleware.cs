@@ -10,6 +10,7 @@ using Microsoft.AspNet.Security.DataHandler;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Security.OAuth
 {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.Security.OAuth
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
     public class OAuthAuthenticationMiddleware<TOptions, TNotifications> : AuthenticationMiddleware<TOptions>
-        where TOptions : OAuthAuthenticationOptions<TNotifications>
+        where TOptions : OAuthAuthenticationOptions<TNotifications>, new()
         where TNotifications : IOAuthAuthenticationNotifications
     {
         /// <summary>
@@ -32,9 +33,16 @@ namespace Microsoft.AspNet.Security.OAuth
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            TOptions options)
-            : base(next, options)
+            IOptionsAccessor<ExternalAuthenticationOptions> externalOptions,
+            IOptionsAccessor<TOptions> options,
+            IOptionsAction<TOptions> configureOptions = null)
+            : base(next, options, configureOptions)
         {
+            // todo: review error handling
+            if (string.IsNullOrWhiteSpace(Options.AuthenticationType))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "AuthenticationType"));
+            }
             if (string.IsNullOrWhiteSpace(Options.ClientId))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientId"));
@@ -57,7 +65,7 @@ namespace Microsoft.AspNet.Security.OAuth
             if (Options.StateDataFormat == null)
             {
                 IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
-                    this.GetType().FullName, options.AuthenticationType, "v1");
+                    this.GetType().FullName, Options.AuthenticationType, "v1");
                 Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }
 
@@ -65,6 +73,15 @@ namespace Microsoft.AspNet.Security.OAuth
             Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET OAuth middleware");
             Backchannel.Timeout = Options.BackchannelTimeout;
             Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
+
+            if (string.IsNullOrEmpty(Options.SignInAsAuthenticationType))
+            {
+                Options.SignInAsAuthenticationType = externalOptions.Options.SignInAsAuthenticationType;
+            }
+            if (string.IsNullOrEmpty(Options.SignInAsAuthenticationType))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "SignInAsAuthenticationType"));
+            }
         }
 
         protected HttpClient Backchannel { get; private set; }

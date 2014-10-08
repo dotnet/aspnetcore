@@ -8,6 +8,7 @@ using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.AspNet.Security.OAuth;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Security.Facebook
 {
@@ -27,8 +28,10 @@ namespace Microsoft.AspNet.Security.Facebook
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            FacebookAuthenticationOptions options)
-            : base(next, dataProtectionProvider, loggerFactory, options)
+            IOptionsAccessor<ExternalAuthenticationOptions> externalOptions,
+            IOptionsAccessor<FacebookAuthenticationOptions> options,
+            IOptionsAction<FacebookAuthenticationOptions> configureOptions = null)
+            : base(next, dataProtectionProvider, loggerFactory, externalOptions, options, configureOptions)
         {
             if (string.IsNullOrWhiteSpace(Options.AppId))
             {

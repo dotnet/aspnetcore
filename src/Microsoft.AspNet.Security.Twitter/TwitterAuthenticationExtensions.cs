@@ -1,7 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.AspNet.Security.Twitter;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
+using System;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -10,36 +14,18 @@ namespace Microsoft.AspNet.Builder
     /// </summary>
     public static class TwitterAuthenticationExtensions
     {
-        /// <summary>
-        /// Authenticate users using Twitter
-        /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method</param>
-        /// <param name="consumerKey">The Twitter-issued consumer key</param>
-        /// <param name="consumerSecret">The Twitter-issued consumer secret</param>
-        /// <returns>The updated <see cref="IApplicationBuilder"/></returns>
-        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, [NotNull] string consumerKey, [NotNull] string consumerSecret)
+        public static IServiceCollection ConfigureTwitterAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<TwitterAuthenticationOptions> configure)
         {
-            return app.UseTwitterAuthentication(
-                new TwitterAuthenticationOptions
-                {
-                    ConsumerKey = consumerKey,
-                    ConsumerSecret = consumerSecret,
-                });
+            return services.ConfigureOptions(configure);
         }
 
-        /// <summary>
-        /// Authenticate users using Twitter
-        /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method</param>
-        /// <param name="options">Middleware configuration options</param>
-        /// <returns>The updated <see cref="IApplicationBuilder"/></returns>
-        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, [NotNull] TwitterAuthenticationOptions options)
+        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, Action<TwitterAuthenticationOptions> configureOptions = null, string optionsName = "")
         {
-            if (string.IsNullOrEmpty(options.SignInAsAuthenticationType))
-            {
-                options.SignInAsAuthenticationType = app.GetDefaultSignInAsAuthenticationType();
-            }
-            return app.UseMiddleware<TwitterAuthenticationMiddleware>(options);
+            return app.UseMiddleware<TwitterAuthenticationMiddleware>(
+                 new OptionsAction<TwitterAuthenticationOptions>(configureOptions ?? (o => { }))
+                 {
+                     Name = optionsName
+                 });
         }
     }
 }

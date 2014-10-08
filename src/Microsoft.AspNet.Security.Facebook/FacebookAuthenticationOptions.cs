@@ -15,8 +15,9 @@ namespace Microsoft.AspNet.Security.Facebook
         /// Initializes a new <see cref="FacebookAuthenticationOptions"/>.
         /// </summary>
         public FacebookAuthenticationOptions()
-            : base(FacebookAuthenticationDefaults.AuthenticationType)
         {
+            AuthenticationType = FacebookAuthenticationDefaults.AuthenticationType;
+            Caption = AuthenticationType;
             CallbackPath = new PathString("/signin-facebook");
             SendAppSecretProof = true;
             AuthorizationEndpoint = FacebookAuthenticationDefaults.AuthorizationEndpoint;

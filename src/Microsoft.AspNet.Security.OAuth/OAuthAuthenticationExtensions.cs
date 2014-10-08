@@ -4,6 +4,8 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNet.Security.OAuth;
+using Microsoft.AspNet.Security.Infrastructure;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -18,17 +20,21 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
         /// <param name="options">The middleware configuration options.</param>
         /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseOAuthAuthentication([NotNull] this IApplicationBuilder app, [NotNull] OAuthAuthenticationOptions<IOAuthAuthenticationNotifications> options)
+        public static IApplicationBuilder UseOAuthAuthentication([NotNull] this IApplicationBuilder app, [NotNull] string authenticationType, Action<OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>> configureOptions = null)
         {
-            if (string.IsNullOrEmpty(options.SignInAsAuthenticationType))
-            {
-                options.SignInAsAuthenticationType = app.GetDefaultSignInAsAuthenticationType();
-            }
-            if (options.Notifications == null)
-            {
-                options.Notifications = new OAuthAuthenticationNotifications();
-            }
-            return app.UseMiddleware<OAuthAuthenticationMiddleware<OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>, IOAuthAuthenticationNotifications>>(options);
+            return app.UseMiddleware<OAuthAuthenticationMiddleware<OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>, IOAuthAuthenticationNotifications>>(
+                new OptionsAction<OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>>(options =>
+                {
+                    options.AuthenticationType = authenticationType;
+                    options.Caption = authenticationType;
+                    if (configureOptions != null)
+                    {
+                        configureOptions(options);
+                    }
+                }) 
+                {
+                    Name = authenticationType,
+                });
         }
     }
 }

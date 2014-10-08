@@ -19,8 +19,9 @@ namespace Microsoft.AspNet.Security.Google
         /// Initializes a new <see cref="GoogleAuthenticationOptions"/>.
         /// </summary>
         public GoogleAuthenticationOptions()
-            : base(GoogleAuthenticationDefaults.AuthenticationType)
         {
+            AuthenticationType = GoogleAuthenticationDefaults.AuthenticationType;
+            Caption = AuthenticationType;
             CallbackPath = new PathString("/signin-google");
             AuthorizationEndpoint = GoogleAuthenticationDefaults.AuthorizationEndpoint;
             TokenEndpoint = GoogleAuthenticationDefaults.TokenEndpoint;

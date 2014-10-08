@@ -21,8 +21,8 @@ namespace Microsoft.AspNet.Security.Cookies
         /// Create an instance of the options initialized with the default values
         /// </summary>
         public CookieAuthenticationOptions()
-            : base(CookieAuthenticationDefaults.AuthenticationType)
         {
+            AuthenticationType = CookieAuthenticationDefaults.AuthenticationType;
             ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
             CookiePath = "/";
             ExpireTimeSpan = TimeSpan.FromDays(14);
