@@ -21,6 +21,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             // Add webapi behaviors to controllers with the appropriate attributes
             options.ApplicationModelConventions.Add(new WebApiActionConventionsGlobalModelConvention());
             options.ApplicationModelConventions.Add(new WebApiOverloadingGlobalModelConvention());
+
+            // Add a model binder to be able to bind HttpRequestMessage
+            options.ModelBinders.Insert(0, new HttpRequestMessageModelBinder());
         }
 
         public void Invoke(WebApiCompatShimOptions options)

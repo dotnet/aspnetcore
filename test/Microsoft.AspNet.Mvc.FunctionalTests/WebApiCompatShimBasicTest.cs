@@ -101,6 +101,28 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expected, content);
         }
+
+        [Fact]
+        public async Task ApiController_RequestParameter()
+        { 
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var expected =
+                "POST http://localhost/api/Blog/HttpRequestMessage/EchoParameter localhost " +
+                "17 Hello, the world!";
+
+            // Act
+            var response = await client.PostAsync(
+                "http://localhost/api/Blog/HttpRequestMessage/EchoParameter",
+                new StringContent("Hello, the world!"));
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expected, content);
+        }
     }
 }
 #endif
