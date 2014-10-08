@@ -66,15 +66,15 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
         public AttributeRouteModel AttributeRouteModel { get; set; }
 
         /// <summary>
-        /// If <c>true</c>, <see cref="ApiDescription"/> objects will be created for this action. If <c>null</c>
-        /// then the value of <see cref="ControllerModel.ApiExplorerIsVisible"/> will be used.
+        /// If <c>true</c>, <see cref="Description.ApiDescription"/> objects will be created for this action. 
+        /// If <c>null</c> then the value of <see cref="ControllerModel.ApiExplorerIsVisible"/> will be used.
         /// </summary>
         public bool? ApiExplorerIsVisible { get; set; }
 
         /// <summary>
-        /// The value for <see cref="ApiDescription.GroupName"/> of <see cref="ApiDescription"/> objects created
-        /// for actions defined by this controller. If <c>null</c> then the value of 
-        /// <see cref="ControllerModel.ApiExplorerGroupName"/> will be used.
+        /// The value for <see cref="Description.ApiDescription.GroupName"/> of 
+        /// <see cref="Description.ApiDescription"/> objects created for actions defined by this controller.
+        /// If <c>null</c> then the value of <see cref="ControllerModel.ApiExplorerGroupName"/> will be used.
         /// </summary>
         public string ApiExplorerGroupName { get; set; }
     }
