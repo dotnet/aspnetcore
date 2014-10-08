@@ -25,6 +25,14 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
             Name = templateProvider.Name;
         }
 
+        public AttributeRouteModel([NotNull] AttributeRouteModel other)
+        {
+            Attribute = other.Attribute;
+            Name = other.Name;
+            Order = other.Order;
+            Template = other.Template;
+        }
+
         public IRouteTemplateProvider Attribute { get; private set; }
 
         public string Template { get; set; }

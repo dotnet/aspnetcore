@@ -4,8 +4,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.Description;
-using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModel
 {
@@ -22,6 +20,31 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
             Parameters = new List<ParameterModel>();
         }
 
+        public ActionModel([NotNull] ActionModel other)
+        {
+            ActionMethod = other.ActionMethod;
+            ActionName = other.ActionName;
+            ApiExplorerGroupName = other.ApiExplorerGroupName;
+            ApiExplorerIsVisible = other.ApiExplorerIsVisible;
+            IsActionNameMatchRequired = other.IsActionNameMatchRequired;
+
+            // Not making a deep copy of the controller, this action still belongs to the same controller.
+            Controller = other.Controller;
+
+            // These are just metadata, safe to create new collections
+            ActionConstraints = new List<IActionConstraintMetadata>(other.ActionConstraints);
+            Attributes = new List<object>(other.Attributes);
+            Filters = new List<IFilter>(other.Filters);
+            HttpMethods = new List<string>(other.HttpMethods);
+
+            // Make a deep copy of other 'model' types.
+            Parameters = new List<ParameterModel>(other.Parameters.Select(p => new ParameterModel(p)));
+
+            if (other.AttributeRouteModel != null)
+            {
+                AttributeRouteModel = new AttributeRouteModel(other.AttributeRouteModel);
+            }
+        }
         public List<IActionConstraintMetadata> ActionConstraints { get; private set; }
 
         public MethodInfo ActionMethod { get; private set; }

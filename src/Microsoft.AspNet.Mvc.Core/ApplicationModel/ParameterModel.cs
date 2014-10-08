@@ -15,6 +15,15 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
             Attributes = new List<object>();
         }
 
+        public ParameterModel([NotNull] ParameterModel other)
+        {
+            Action = other.Action;
+            Attributes = new List<object>(other.Attributes);
+            IsOptional = other.IsOptional;
+            ParameterInfo = other.ParameterInfo;
+            ParameterName = other.ParameterName;
+        }
+
         public ActionModel Action { get; set; }
 
         public List<object> Attributes { get; private set; }

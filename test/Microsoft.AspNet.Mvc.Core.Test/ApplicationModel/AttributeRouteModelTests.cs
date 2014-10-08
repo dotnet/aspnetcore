@@ -10,6 +10,49 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
 {
     public class AttributeRouteModelTests
     {
+        [Fact]
+        public void CopyConstructor_CopiesAllProperties()
+        {
+            // Arrange
+            var route = new AttributeRouteModel(new HttpGetAttribute("/api/Products"));
+
+            route.Name = "products";
+            route.Order = 5;
+
+            // Act
+            var route2 = new AttributeRouteModel(route);
+
+            // Assert
+            foreach (var property in typeof(AttributeRouteModel).GetProperties())
+            {
+                var value1 = property.GetValue(route);
+                var value2 = property.GetValue(route2);
+
+                if (typeof(IEnumerable<object>).IsAssignableFrom(property.PropertyType))
+                {
+                    Assert.Equal<object>((IEnumerable<object>)value1, (IEnumerable<object>)value2);
+
+                    // Ensure non-default value
+                    Assert.NotEmpty((IEnumerable<object>)value1);
+                }
+                else if (property.PropertyType.IsValueType ||
+                    Nullable.GetUnderlyingType(property.PropertyType) != null)
+                {
+                    Assert.Equal(value1, value2);
+
+                    // Ensure non-default value
+                    Assert.NotEqual(value1, Activator.CreateInstance(property.PropertyType));
+                }
+                else
+                {
+                    Assert.Same(value1, value2);
+
+                    // Ensure non-default value
+                    Assert.NotNull(value1);
+                }
+            }
+        }
+
         [Theory]
         [InlineData(null, null, null)]
         [InlineData("", null, "")]

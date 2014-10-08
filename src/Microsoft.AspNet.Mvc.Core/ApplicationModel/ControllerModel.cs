@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModel
@@ -19,6 +19,28 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
             ActionConstraints = new List<IActionConstraintMetadata>();
             Filters = new List<IFilter>();
             RouteConstraints = new List<RouteConstraintAttribute>();
+        }
+
+        public ControllerModel([NotNull] ControllerModel other)
+        {
+            ApiExplorerGroupName = other.ApiExplorerGroupName;
+            ApiExplorerIsVisible = other.ApiExplorerIsVisible;
+            ControllerName = other.ControllerName;
+            ControllerType = other.ControllerType;
+
+            // Still part of the same application
+            Application = other.Application;
+
+            // These are just metadata, safe to create new collections
+            ActionConstraints = new List<IActionConstraintMetadata>(other.ActionConstraints);
+            Attributes = new List<object>(other.Attributes);
+            Filters = new List<IFilter>(other.Filters);
+            RouteConstraints = new List<RouteConstraintAttribute>(other.RouteConstraints);
+
+            // Make a deep copy of other 'model' types.
+            Actions = new List<ActionModel>(other.Actions.Select(a => new ActionModel(a)));
+            AttributeRoutes = new List<AttributeRouteModel>(
+                other.AttributeRoutes.Select(a => new AttributeRouteModel(a)));
         }
 
         public List<IActionConstraintMetadata> ActionConstraints { get; private set; }
