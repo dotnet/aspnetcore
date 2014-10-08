@@ -19,7 +19,7 @@ namespace FiltersWebSite
             {
                 services.AddMvc(configuration);
 
-                services.SetupOptions<MvcOptions>(options =>
+                services.ConfigureOptions<MvcOptions>(options =>
                 {
                     options.Filters.Add(new GlobalExceptionFilter());
                 });

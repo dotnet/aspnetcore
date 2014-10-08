@@ -19,7 +19,7 @@ namespace ModelBindingWebSite
             {
                 // Add MVC services to the services container
                 services.AddMvc(configuration)
-                        .SetupOptions<MvcOptions>(m =>
+                        .ConfigureOptions<MvcOptions>(m =>
                         {
                             m.MaxModelValidationErrors = 8;
                         });

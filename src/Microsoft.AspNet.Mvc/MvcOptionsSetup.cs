@@ -10,16 +10,16 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Sets up default options for <see cref="MvcOptions"/>.
     /// </summary>
-    public class MvcOptionsSetup : IOptionsSetup<MvcOptions>
+    public class MvcOptionsSetup : OptionsAction<MvcOptions>
     {
-        /// <inheritdoc />
-        public int Order
+        /// <remarks>Sets the Order to -1 to allow MvcOptionsSetup to run before a user call to ConfigureOptions.</remarks>
+        public MvcOptionsSetup() : base(ConfigureMvc)
         {
-            get { return DefaultOrder.DefaultFrameworkSortOrder; }
+            Order = -1;
         }
 
         /// <inheritdoc />
-        public void Setup(MvcOptions options)
+        public static void ConfigureMvc(MvcOptions options)
         {
             // Set up ViewEngines
             options.ViewEngines.Add(typeof(RazorViewEngine));

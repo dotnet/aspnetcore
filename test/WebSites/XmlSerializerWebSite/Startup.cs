@@ -20,7 +20,7 @@ namespace XmlSerializerWebSite
                 // Add MVC services to the services container
                 services.AddMvc(configuration);
 
-                services.SetupOptions<MvcOptions>(options =>
+                services.ConfigureOptions<MvcOptions>(options =>
                     {
                         options.InputFormatters.Clear();
                         options.InputFormatters.Insert(0, new XmlSerializerInputFormatter());

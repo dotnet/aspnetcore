@@ -26,7 +26,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         private static void AddMvcRouteOptions(IServiceCollection services)
         {
-            services.SetupOptions<RouteOptions>(routeOptions =>
+            services.ConfigureOptions<RouteOptions>(routeOptions =>
                                                     routeOptions.ConstraintMap
                                                          .Add("exists",
                                                               typeof(KnownRouteValueConstraint)));

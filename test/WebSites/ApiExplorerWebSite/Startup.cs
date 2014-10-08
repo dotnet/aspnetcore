@@ -19,7 +19,7 @@ namespace ApiExplorer
                 services.AddMvc(configuration);
                 services.AddSingleton<ApiExplorerDataFilter>();
 
-                services.SetupOptions<MvcOptions>(options =>
+                services.ConfigureOptions<MvcOptions>(options =>
                 {
                     options.Filters.AddService(typeof(ApiExplorerDataFilter));
 

@@ -18,7 +18,7 @@ namespace CompositeViewEngine
             {
                 // Add a view engine as the first one in the list.
                 services.AddMvc(configuration)
-                    .SetupOptions<MvcOptions>(options =>
+                    .ConfigureOptions<MvcOptions>(options =>
                     {
                         options.ViewEngines.Insert(0, typeof(TestViewEngine));
                     });

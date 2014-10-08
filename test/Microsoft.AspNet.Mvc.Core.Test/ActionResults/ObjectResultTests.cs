@@ -521,7 +521,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         {
             var optionsSetup = new MvcOptionsSetup();
             var options = new MvcOptions();
-            optionsSetup.Setup(options);
+            optionsSetup.Invoke(options);
             var optionsAccessor = new Mock<IOptionsAccessor<MvcOptions>>();
             optionsAccessor.SetupGet(o => o.Options).Returns(options);
 

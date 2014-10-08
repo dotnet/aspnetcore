@@ -13,5 +13,10 @@ namespace Microsoft.AspNet.Mvc
 	    }
 
         public MvcOptions Options { get; private set; }
+
+        public MvcOptions GetNamedOptions(string name)
+        {
+            return Options;
+        }
     }
 }

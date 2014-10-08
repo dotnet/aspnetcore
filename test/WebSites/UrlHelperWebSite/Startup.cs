@@ -17,7 +17,7 @@ namespace UrlHelperWebSite
             // Set up application services
             app.UseServices(services =>
             {
-                services.SetupOptions<AppOptions>(optionsSetup =>
+                services.ConfigureOptions<AppOptions>(optionsSetup =>
                 {
                     optionsSetup.ServeCDNContent = Convert.ToBoolean(configuration.Get("ServeCDNContent"));
                     optionsSetup.CDNServerBaseUrl = configuration.Get("CDNServerBaseUrl");
