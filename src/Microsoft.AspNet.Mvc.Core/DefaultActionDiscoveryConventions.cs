@@ -170,14 +170,29 @@ namespace Microsoft.AspNet.Mvc
         {
             var httpMethodProviders = actionAttributes.HttpMethodProviderAttributes;
             var httpMethods = httpMethodProviders.SelectMany(x => x.HttpMethods).Distinct().ToArray();
-
-            yield return new ActionInfo()
+            if (httpMethods.Length > 0)
             {
-                HttpMethods = httpMethods,
-                ActionName = actionName,
-                Attributes = actionAttributes.Attributes,
-                RequireActionNameMatch = true,
-            };
+                foreach (var httpMethod in httpMethods)
+                {
+                    yield return new ActionInfo()
+                    {
+                        HttpMethods = new string[] { httpMethod },
+                        ActionName = actionName,
+                        Attributes = actionAttributes.Attributes,
+                        RequireActionNameMatch = true,
+                    };
+                }
+            }
+            else
+            {
+                yield return new ActionInfo()
+                {
+                    HttpMethods = httpMethods,
+                    ActionName = actionName,
+                    Attributes = actionAttributes.Attributes,
+                    RequireActionNameMatch = true,
+                };
+            }
         }
 
         private static IEnumerable<ActionInfo> GetAttributeRoutedActions(

@@ -181,12 +181,17 @@ namespace Microsoft.AspNet.Mvc
             var actionInfos = conventions.GetActions(typeInfo.GetMethod(actionName), typeInfo);
 
             // Assert
-            var action = Assert.Single(actionInfos);
-            Assert.Equal("Update", action.ActionName);
-            Assert.True(action.RequireActionNameMatch);
-            Assert.Equal(new[] { "PUT", "PATCH" }, action.HttpMethods);
-            Assert.Null(action.AttributeRoute);
-            Assert.IsType<CustomHttpMethodsAttribute>(Assert.Single(action.Attributes));
+            Assert.Equal(2, actionInfos.Count());
+            Assert.Single(actionInfos, a => a.HttpMethods.Contains("PUT"));
+            Assert.Single(actionInfos, a => a.HttpMethods.Contains("PATCH"));
+
+            foreach (var action in actionInfos)
+            {
+                Assert.Equal("Update", action.ActionName);
+                Assert.True(action.RequireActionNameMatch);
+                Assert.Null(action.AttributeRoute);
+                Assert.IsType<CustomHttpMethodsAttribute>(Assert.Single(action.Attributes));
+            }
         }
 
         [Fact]
@@ -224,15 +229,21 @@ namespace Microsoft.AspNet.Mvc
             var actionInfos = conventions.GetActions(typeInfo.GetMethod(actionName), typeInfo);
 
             // Assert
-            var action = Assert.Single(actionInfos);
-            Assert.Equal("Details", action.ActionName);
-            Assert.True(action.RequireActionNameMatch);
-            Assert.Equal(new[] { "GET", "POST" }, action.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
-            Assert.Null(action.AttributeRoute);
+            Assert.Equal(2, actionInfos.Count());
+            Assert.Single(actionInfos, a => a.HttpMethods.Contains("GET"));
+            Assert.Single(actionInfos, a => a.HttpMethods.Contains("POST"));
 
-            Assert.Equal(2, action.Attributes.Length);
-            Assert.Single(action.Attributes, a => a is HttpGetAttribute);
-            Assert.Single(action.Attributes, a => a is HttpPostAttribute);
+            foreach (var action in actionInfos)
+            {
+
+                Assert.Equal("Details", action.ActionName);
+                Assert.True(action.RequireActionNameMatch);
+                Assert.Null(action.AttributeRoute);
+
+                Assert.Equal(2, action.Attributes.Length);
+                Assert.Single(action.Attributes, a => a is HttpGetAttribute);
+                Assert.Single(action.Attributes, a => a is HttpPostAttribute);
+            }
         }
 
         [Fact]
@@ -247,16 +258,22 @@ namespace Microsoft.AspNet.Mvc
             var actionInfos = conventions.GetActions(typeInfo.GetMethod(actionName), typeInfo);
 
             // Assert
-            var action = Assert.Single(actionInfos);
-            Assert.Equal("List", action.ActionName);
-            Assert.True(action.RequireActionNameMatch);
-            Assert.Equal(new[] { "GET", "POST", "PUT" }, action.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
-            Assert.Null(action.AttributeRoute);
+            Assert.Equal(3, actionInfos.Count());
+            Assert.Single(actionInfos, a => a.HttpMethods.Contains("GET"));
+            Assert.Single(actionInfos, a => a.HttpMethods.Contains("POST"));
+            Assert.Single(actionInfos, a => a.HttpMethods.Contains("PUT"));
 
-            Assert.Equal(3, action.Attributes.Length);
-            Assert.Single(action.Attributes, a => a is HttpPutAttribute);
-            Assert.Single(action.Attributes, a => a is HttpGetAttribute);
-            Assert.Single(action.Attributes, a => a is AcceptVerbsAttribute);
+            foreach (var action in actionInfos)
+            {
+                Assert.Equal("List", action.ActionName);
+                Assert.True(action.RequireActionNameMatch);
+                Assert.Null(action.AttributeRoute);
+
+                Assert.Equal(3, action.Attributes.Length);
+                Assert.Single(action.Attributes, a => a is HttpPutAttribute);
+                Assert.Single(action.Attributes, a => a is HttpGetAttribute);
+                Assert.Single(action.Attributes, a => a is AcceptVerbsAttribute);
+            }
         }
 
         [Fact]
