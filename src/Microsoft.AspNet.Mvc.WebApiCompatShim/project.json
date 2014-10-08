@@ -1,0 +1,18 @@
+﻿{
+    "version": "6.0.0-*",
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+    "dependencies": {
+        "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
+        "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
+        "Microsoft.AspNet.WebApi.Client": "5.2.2"
+    },
+    "frameworks": {
+        "aspnet50": {
+            "frameworkAssemblies": {
+                "System.Net.Http": "4.0.0.0"
+            }
+        }
+    }
+}
