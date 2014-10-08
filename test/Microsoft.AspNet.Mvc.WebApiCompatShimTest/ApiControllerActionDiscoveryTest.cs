@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Microsoft.Framework.OptionsModel;
@@ -16,8 +17,6 @@ namespace System.Web.Http
 {
     public class ApiControllerActionDiscoveryTest
     {
-        // For now we just want to verify that an ApiController is-a controller and produces
-        // actions. When we implement the conventions for action discovery, this test will be revised.
         [Fact]
         public void GetActions_ApiControllerWithControllerSuffix_IsController()
         {
@@ -32,9 +31,9 @@ namespace System.Web.Http
 
             // Assert
             var controllerType = typeof(TestControllers.ProductsController).GetTypeInfo();
-            var filtered = results.Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType).ToArray();
+            var actions = results.Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType).ToArray();
 
-            Assert.Equal(3, filtered.Length);
+            Assert.NotEmpty(actions);
         }
 
         [Fact]
@@ -51,9 +50,179 @@ namespace System.Web.Http
 
             // Assert
             var controllerType = typeof(TestControllers.Blog).GetTypeInfo();
-            var filtered = results.Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType).ToArray();
+            var actions = results.Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType).ToArray();
 
-            Assert.Empty(filtered);
+            Assert.Empty(actions);
+        }
+
+        [Fact]
+        public void GetActions_CreatesNamedAndUnnamedAction()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var context = new ActionDescriptorProviderContext();
+            provider.Invoke(context);
+
+            var results = context.Results.Cast<ControllerActionDescriptor>();
+
+            // Assert
+            var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
+            var actions = results
+                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.MethodInfo.Name == "GetAll")
+                .ToArray();
+
+            Assert.Equal(2, actions.Length);
+
+            var action = Assert.Single(
+                actions,
+                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "GetAll"));
+            Assert.Equal(
+                new string[] { "GET" },
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+
+            action = Assert.Single(
+                actions,
+                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
+            Assert.Equal(
+                new string[] { "GET" },
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+        }
+
+        [Fact]
+        public void GetActions_CreatesNamedAndUnnamedAction_DefaultVerbIsPost()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var context = new ActionDescriptorProviderContext();
+            provider.Invoke(context);
+
+            var results = context.Results.Cast<ControllerActionDescriptor>();
+
+            // Assert
+            var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
+            var actions = results
+                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.MethodInfo.Name == "Edit")
+                .ToArray();
+
+            Assert.Equal(2, actions.Length);
+
+            var action = Assert.Single(
+                actions,
+                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "Edit"));
+            Assert.Equal(
+                new string[] { "POST" },
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+
+            action = Assert.Single(
+                actions,
+                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
+            Assert.Equal(
+                new string[] { "POST" },
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+        }
+
+        [Fact]
+        public void GetActions_CreatesNamedAndUnnamedAction_RespectsVerbAttribute()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var context = new ActionDescriptorProviderContext();
+            provider.Invoke(context);
+
+            var results = context.Results.Cast<ControllerActionDescriptor>();
+
+            // Assert
+            var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
+            var actions = results
+                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.MethodInfo.Name == "Delete")
+                .ToArray();
+
+            Assert.Equal(2, actions.Length);
+
+            var action = Assert.Single(
+                actions,
+                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "Delete"));
+            Assert.Equal(
+                new string[] { "PUT" },
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+
+            action = Assert.Single(
+                actions,
+                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
+            Assert.Equal(
+                new string[] { "PUT" },
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+        }
+
+        // The method name is used to infer a verb, not the action name
+        [Fact]
+        public void GetActions_CreatesNamedAndUnnamedAction_VerbBasedOnMethodName()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var context = new ActionDescriptorProviderContext();
+            provider.Invoke(context);
+
+            var results = context.Results.Cast<ControllerActionDescriptor>();
+
+            // Assert
+            var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
+            var actions = results
+                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.MethodInfo.Name == "Options")
+                .ToArray();
+
+            Assert.Equal(2, actions.Length);
+
+            var action = Assert.Single(
+                actions,
+                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "GetOptions"));
+            Assert.Equal(
+                new string[] { "OPTIONS" },
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+
+            action = Assert.Single(
+                actions,
+                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
+            Assert.Equal(
+                new string[] { "OPTIONS" },
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+        }
+
+        [Fact]
+        public void GetActions_AllWebApiActionsAreOverloaded()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var context = new ActionDescriptorProviderContext();
+            provider.Invoke(context);
+
+            var results = context.Results.Cast<ControllerActionDescriptor>();
+
+            // Assert
+            var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
+            var actions = results
+                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .ToArray();
+
+            Assert.NotEmpty(actions);
+            foreach (var action in actions)
+            {
+                Assert.Single(action.ActionConstraints, c => c is OverloadActionConstraint);
+            }
         }
 
         private INestedProviderManager<ActionDescriptorProviderContext> CreateProvider()
@@ -70,13 +239,17 @@ namespace System.Web.Http
 
             var conventions = new NamespaceLimitedActionDiscoveryConventions();
 
+            var options = new MvcOptions();
+            options.ApplicationModelConventions.Add(new WebApiActionConventionsGlobalModelConvention());
+            options.ApplicationModelConventions.Add(new WebApiOverloadingGlobalModelConvention());
+
             var optionsAccessor = new Mock<IOptionsAccessor<MvcOptions>>();
             optionsAccessor
                 .SetupGet(o => o.Options)
-                .Returns(new MvcOptions());
+                .Returns(options);
 
             var provider = new ControllerActionDescriptorProvider(
-                assemblyProvider.Object, 
+                assemblyProvider.Object,
                 conventions,
                 filterProvider.Object,
                 optionsAccessor.Object);
@@ -92,7 +265,7 @@ namespace System.Web.Http
         {
             public override bool IsController(TypeInfo typeInfo)
             {
-                return 
+                return
                     typeInfo.Namespace == "System.Web.Http.TestControllers" &&
                     base.IsController(typeInfo);
             }
@@ -110,8 +283,20 @@ namespace System.Web.Http.TestControllers
         {
             return null;
         }
+    }
 
-        public IActionResult Get(int id)
+    // Not a controller, because there's no controller suffix
+    public class Blog : ApiController
+    {
+        public IActionResult GetBlogPosts()
+        {
+            return null;
+        }
+    }
+
+    public class StoreController : ApiController
+    {
+        public IActionResult GetAll()
         {
             return null;
         }
@@ -120,12 +305,15 @@ namespace System.Web.Http.TestControllers
         {
             return null;
         }
-    }
 
-    // Not a controller, because there's no controller suffix
-    public class Blog : ApiController
-    {
-        public IActionResult GetBlogPosts()
+        [HttpPut]
+        public IActionResult Delete(int id)
+        {
+            return null;
+        }
+
+        [ActionName("GetOptions")]
+        public IActionResult Options()
         {
             return null;
         }

@@ -5,9 +5,12 @@ using System.Security.Principal;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.WebApiCompatShim;
 
 namespace System.Web.Http
 {
+    [UseWebApiActionConventions]
+    [UseWebApiOverloading]
     public abstract class ApiController : IDisposable
     {
         /// <summary>Gets the action context.</summary>

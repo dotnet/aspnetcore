@@ -18,7 +18,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 
         public void Invoke(MvcOptions options)
         {
-            // Placeholder
+            // Add webapi behaviors to controllers with the appropriate attributes
+            options.ApplicationModelConventions.Add(new WebApiActionConventionsGlobalModelConvention());
+            options.ApplicationModelConventions.Add(new WebApiOverloadingGlobalModelConvention());
         }
 
         public void Invoke(WebApiCompatShimOptions options)

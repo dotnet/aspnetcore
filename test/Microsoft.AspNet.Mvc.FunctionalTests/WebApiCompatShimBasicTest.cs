@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/BasicApi/WriteToHttpContext");
+            var response = await client.GetAsync("http://localhost/api/Blog/BasicApi/WriteToHttpContext");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -44,13 +44,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/BasicApi/GenerateUrl");
+            var response = await client.GetAsync("http://localhost/api/Blog/BasicApi/GenerateUrl");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(
-                "Visited: /BasicApi/GenerateUrl",
+                "Visited: /api/Blog/BasicApi/GenerateUrl",
                 content);
         }
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await client.GetAsync("http://localhost/BasicApi/GetFormatters");
+            var response = await client.GetAsync("http://localhost/api/Blog/BasicApi/GetFormatters");
             var content = await response.Content.ReadAsStringAsync();
 
             var formatters = JsonConvert.DeserializeObject<string[]>(content);
