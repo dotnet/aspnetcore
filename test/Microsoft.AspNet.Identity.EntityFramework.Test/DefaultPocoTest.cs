@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             var context = CreateContext(true);
             var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
 
-            builder.UseServices(services =>
+            builder.UsePerRequestServices(services =>
             {
                 services.AddEntityFramework().AddSqlServer();
                 services.AddIdentitySqlServer();

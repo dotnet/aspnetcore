@@ -66,7 +66,7 @@ namespace IdentitySamples
         public void Configure(IApplicationBuilder app)
         {
             app.UseErrorPage(ErrorPageOptions.ShowAll)
-               .UseServices()
+               .UsePerRequestServices()
                .UseStaticFiles()
                .UseIdentity()
                .UseFacebookAuthentication()

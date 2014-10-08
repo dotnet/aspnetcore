@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             response.Setup(r => r.SignIn(It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent), It.IsAny<ClaimsIdentity>())).Verifiable();
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
-            app.UseServices(services =>
+            app.UsePerRequestServices(services =>
             {
                 services.AddInstance(contextAccessor.Object);
                 services.AddIdentity<ApplicationUser, IdentityRole>().AddInMemory();

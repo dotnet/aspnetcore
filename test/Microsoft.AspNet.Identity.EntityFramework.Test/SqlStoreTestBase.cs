@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             EnsureDatabase();
             var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
 
-            builder.UseServices(services =>
+            builder.UsePerRequestServices(services =>
             {
                 services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
                 services.AddEntityFramework().AddSqlServer();
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             EnsureDatabase();
             var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
 
-            builder.UseServices(services =>
+            builder.UsePerRequestServices(services =>
             {
                 services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
                 services.AddEntityFramework().AddSqlServer();
