@@ -55,5 +55,10 @@ namespace BasicWebSite.Controllers
             Context.Response.StatusCode = 204;
             await Context.Response.WriteAsync("Hello world");
         }
+
+        public IActionResult JsonTextInView()
+        {
+            return View();
+        }
     }
 }

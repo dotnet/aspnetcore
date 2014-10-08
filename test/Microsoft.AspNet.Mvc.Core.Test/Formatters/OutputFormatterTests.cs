@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                        () => testFormatter.WriteResponseContentHeaders(formatterContext));
+                        () => testFormatter.WriteResponseHeaders(formatterContext));
             Assert.Equal("No encoding found for output formatter " +
                          "'Microsoft.AspNet.Mvc.Test.OutputFormatterTests+TestOutputFormatter'." +
                          " There must be at least one supported encoding registered in order for the" +
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.Test
             formatterContext.ActionContext = actionContext;
 
             // Act
-            testFormatter.WriteResponseContentHeaders(formatterContext);
+            testFormatter.WriteResponseHeaders(formatterContext);
 
             // Assert
             Assert.Equal(Encodings.UTF16EncodingLittleEndian.WebName, formatterContext.SelectedEncoding.WebName);

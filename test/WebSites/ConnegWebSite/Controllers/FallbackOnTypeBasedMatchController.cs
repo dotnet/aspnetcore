@@ -28,7 +28,7 @@ namespace ConnegWebsite
             // JsonOutputFormatter cannot write in the first attempt because it does not support the 
             // request content type.
             objectResult.Formatters.Add(new PlainTextFormatter());
-            objectResult.Formatters.Add(new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(), false));
+            objectResult.Formatters.Add(new JsonOutputFormatter());
 
             return objectResult;
         }
@@ -49,7 +49,7 @@ namespace ConnegWebsite
             var objectResult = new ObjectResult(input);
             objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
             objectResult.Formatters.Add(new PlainTextFormatter());
-            objectResult.Formatters.Add(new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(), false));
+            objectResult.Formatters.Add(new JsonOutputFormatter());
             return objectResult;
         }
 

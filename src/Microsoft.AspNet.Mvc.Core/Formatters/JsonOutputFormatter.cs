@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
@@ -10,29 +11,33 @@ namespace Microsoft.AspNet.Mvc
 {
     public class JsonOutputFormatter : OutputFormatter
     {
-        private readonly JsonSerializerSettings _settings;
-        private readonly bool _indent;
-
-        public JsonOutputFormatter([NotNull] JsonSerializerSettings settings, bool indent)
+        private JsonSerializerSettings _serializerSettings;
+        
+        public JsonOutputFormatter()
         {
-            _settings = settings;
-            _indent = indent;
             SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(Encodings.UTF16EncodingLittleEndian);
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/json"));
+
+            _serializerSettings = new JsonSerializerSettings();
         }
-
-        public static JsonSerializerSettings CreateDefaultSettings()
+        
+        /// <summary>
+        /// Gets or sets the <see cref="JsonSerializerSettings"/> used to configure the <see cref="JsonSerializer"/>.
+        /// </summary>
+        public JsonSerializerSettings SerializerSettings
         {
-            return new JsonSerializerSettings()
+            get { return _serializerSettings; }
+            set
             {
-                MissingMemberHandling = MissingMemberHandling.Ignore,
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
 
-                // Do not change this setting
-                // Setting this to None prevents Json.NET from loading malicious, unsafe, or security-sensitive types.
-                TypeNameHandling = TypeNameHandling.None
-            };
+                _serializerSettings = value;
+            }
         }
 
         public void WriteObject([NotNull] TextWriter writer, object value)
@@ -47,11 +52,6 @@ namespace Microsoft.AspNet.Mvc
         private JsonWriter CreateJsonWriter(TextWriter writer)
         {
             var jsonWriter = new JsonTextWriter(writer);
-            if (_indent)
-            {
-                jsonWriter.Formatting = Formatting.Indented;
-            }
-
             jsonWriter.CloseOutput = false;
 
             return jsonWriter;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc
 
         private JsonSerializer CreateJsonSerializer()
         {
-            var jsonSerializer = JsonSerializer.Create(_settings);
+            var jsonSerializer = JsonSerializer.Create(_serializerSettings);
             return jsonSerializer;
         }
 

@@ -28,9 +28,7 @@ namespace ApiExplorer
                         typeof(ApiExplorerVisbilityDisabledByConventionController)));
 
                     options.OutputFormatters.Clear();
-                    options.OutputFormatters.Add(new JsonOutputFormatter(
-                        JsonOutputFormatter.CreateDefaultSettings(), 
-                        indent: false));
+                    options.OutputFormatters.Add(new JsonOutputFormatter());
                     options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
                 });
             });

@@ -85,8 +85,7 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Scoped<ICompositeValueProviderFactory, CompositeValueProviderFactory>();
             yield return describe.Transient<IOutputFormattersProvider, DefaultOutputFormattersProvider>();
 
-            yield return describe.Instance<JsonOutputFormatter>(
-                new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(), indent: false));
+            yield return describe.Instance<JsonOutputFormatter>(new JsonOutputFormatter());
 
             yield return describe.Transient<IModelValidatorProviderProvider, DefaultModelValidatorProviderProvider>();
             yield return describe.Scoped<ICompositeModelValidatorProvider, CompositeModelValidatorProvider>();

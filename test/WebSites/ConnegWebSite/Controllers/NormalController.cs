@@ -3,6 +3,8 @@
 
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace ConnegWebsite
 {
@@ -15,8 +17,10 @@ namespace ConnegWebsite
             {
                 result.Formatters.Add(new PlainTextFormatter());
                 result.Formatters.Add(new CustomFormatter("application/custom"));
-                result.Formatters.Add(new JsonOutputFormatter(JsonOutputFormatter.CreateDefaultSettings(),
-                                                              indent: true));
+
+                var jsonFormatter = new JsonOutputFormatter();
+                jsonFormatter.SerializerSettings.Formatting = Formatting.Indented;
+                result.Formatters.Add(jsonFormatter);
             }
 
             base.OnActionExecuted(context);

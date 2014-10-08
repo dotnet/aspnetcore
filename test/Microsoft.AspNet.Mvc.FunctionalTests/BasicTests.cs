@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using BasicWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -184,6 +185,29 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task JsonViewComponent_RendersJson()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = new HttpClient(server.CreateHandler(), false);
+            var expectedBody = JsonConvert.SerializeObject(new BasicWebSite.Models.Person()
+            {
+                Id = 10,
+                Name = "John"
+            });
+
+            // Act
+            var response = await client.GetAsync("https://localhost/Home/JsonTextInView");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
+
+            var actualBody = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedBody, actualBody);
         }
 
         public static IEnumerable<object[]> HtmlHelperLinkGenerationData
