@@ -15,9 +15,9 @@ using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.SqlServer.Test
+namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
-    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.SqlServer.Test")]
+    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
     public class CustomPocoTest
     {
         private readonly string ConnectionString = @"Server=(localdb)\v11.0;Database=CustomUserContextTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";

@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Entity;
 
-namespace Microsoft.AspNet.Identity.SqlServer
+namespace Microsoft.AspNet.Identity.EntityFramework
 {
     public class RoleStore<TRole> : RoleStore<TRole, DbContext, string>
         where TRole : IdentityRole

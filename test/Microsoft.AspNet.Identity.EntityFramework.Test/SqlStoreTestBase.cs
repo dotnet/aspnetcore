@@ -15,7 +15,7 @@ using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.SqlServer.Test
+namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
 
     public abstract class SqlStoreTestBase<TUser, TRole, TKey> : UserManagerTestBase<TUser, TRole, TKey>

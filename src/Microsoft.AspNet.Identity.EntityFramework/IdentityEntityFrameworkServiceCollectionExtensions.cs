@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.SqlServer;
+using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using System;

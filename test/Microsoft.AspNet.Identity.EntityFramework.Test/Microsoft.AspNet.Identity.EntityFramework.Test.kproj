@@ -6,9 +6,17 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>ad42bafb-1993-4faf-a280-3711a9f33e2f</ProjectGuid>
+    <ProjectGuid>37236ea3-915d-46d5-997c-df513c500e4b</ProjectGuid>
     <OutputType>Library</OutputType>
   </PropertyGroup>
+
+  <PropertyGroup Condition="$(OutputType) == 'Console'">
+    <DebuggerFlavor>ConsoleDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(OutputType) == 'Web'">
+    <DebuggerFlavor>WebDebugger</DebuggerFlavor>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">

@@ -4,9 +4,9 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.SqlServer.Test
+namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
-    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.SqlServer.Test")]
+    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
     public class StringUser : IdentityUser
     {
         public StringUser()
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         }
     }
 
-    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.SqlServer.Test")]
+    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
     public class UserStoreStringKeyTest : SqlStoreTestBase<StringUser, StringRole, string>
     {
         private readonly string _connectionString = @"Server=(localdb)\v11.0;Database=SqlUserStoreStringTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";

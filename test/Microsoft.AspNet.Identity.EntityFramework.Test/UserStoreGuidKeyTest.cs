@@ -9,7 +9,7 @@ using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Logging;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.SqlServer.Test
+namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
     public class GuidUser : IdentityUser<Guid>
     {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Identity.SqlServer.Test
         }
     }
 
-    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.SqlServer.Test")]
+    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
     public class UserStoreGuidTest : SqlStoreTestBase<GuidUser, GuidRole, Guid>
     {
         private readonly string _connectionString = @"Server=(localdb)\v11.0;Database=SqlUserStoreGuidTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
