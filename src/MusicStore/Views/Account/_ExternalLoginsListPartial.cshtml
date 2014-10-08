@@ -1,11 +1,12 @@
-﻿@model MusicStore.Models.ExternalLoginListViewModel
-@using Microsoft.AspNet.Http;
+﻿@using MusicStore.Models;
 @using Microsoft.AspNet.Http.Security;
-
+@using Microsoft.AspNet.Identity;
+@model ExternalLoginListViewModel
+@inject SignInManager<ApplicationUser> SignInManager
 <h4>Use another service to log in.</h4>
 <hr />
 @{
-    var loginProviders = Context.GetExternalAuthenticationTypes();
+    var loginProviders = SignInManager.GetExternalAuthenticationTypes();
     if (loginProviders.Count() == 0)
     {
         <div>

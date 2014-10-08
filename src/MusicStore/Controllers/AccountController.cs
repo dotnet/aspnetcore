@@ -5,7 +5,6 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using MusicStore.Models;
-using Microsoft.AspNet.Http;
 using System.Security.Claims;
 
 namespace MusicStore.Controllers
