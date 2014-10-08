@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.WebUtilities
         {
             IDictionary<string, string[]> form = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
             var accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            ParseDelimited(text, new[] { '&' }, AppendItemCallback, accumulator);
+            ParseDelimited(text, Ampersand, AppendItemCallback, accumulator);
             foreach (var kv in accumulator)
             {
                 form.Add(kv.Key, kv.Value.ToArray());
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.WebUtilities
             return store.TryGetValue(key, out values) ? values : null;
         }
 
-        private static readonly char[] AmpersandAndSemicolon = new[] { '&', ';' };
+        private static readonly char[] Ampersand = new[] { '&' };
 
         internal static IReadableStringCollection GetQuery(string queryString)
         {
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.WebUtilities
                 queryString = queryString.Substring(1);
             }
             var accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            ParseDelimited(queryString, AmpersandAndSemicolon, AppendItemCallback, accumulator);
+            ParseDelimited(queryString, Ampersand, AppendItemCallback, accumulator);
             return new ReadableStringCollection(accumulator.ToDictionary(
                     item => item.Key,
                     item => item.Value.ToArray(),

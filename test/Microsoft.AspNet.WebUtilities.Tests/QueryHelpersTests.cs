@@ -36,18 +36,9 @@ namespace Microsoft.AspNet.WebUtilities
         }
 
         [Fact]
-        public void ParseQueryWithSemicolonWorks()
-        {
-            var collection = QueryHelpers.ParseQuery("?key1=value1;key2=value2");
-            Assert.Equal(2, collection.Count);
-            Assert.Equal("value1", collection["key1"]);
-            Assert.Equal("value2", collection["key2"]);
-        }
-
-        [Fact]
         public void ParseQueryWithEmptyValuesWorks()
         {
-            var collection = QueryHelpers.ParseQuery("?key1=;key2=");
+            var collection = QueryHelpers.ParseQuery("?key1=&key2=");
             Assert.Equal(2, collection.Count);
             Assert.Equal(string.Empty, collection["key1"]);
             Assert.Equal(string.Empty, collection["key2"]);
@@ -56,7 +47,7 @@ namespace Microsoft.AspNet.WebUtilities
         [Fact]
         public void ParseQueryWithEmptyKeyWorks()
         {
-            var collection = QueryHelpers.ParseQuery("?=value1;=");
+            var collection = QueryHelpers.ParseQuery("?=value1&=");
             Assert.Equal(1, collection.Count);
             Assert.Equal("value1,", collection[""]);
         }
