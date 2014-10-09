@@ -54,12 +54,7 @@ namespace Microsoft.AspNet.Hosting
             // TODO: Do we expect this to be provide by the runtime eventually?
             yield return describer.Singleton<ILoggerFactory, LoggerFactory>();
 
-            yield return new ServiceDescriptor
-            {
-                ServiceType = typeof(IContextAccessor<>),
-                ImplementationType = typeof(ContextAccessor<>),
-                Lifecycle = LifecycleKind.Scoped
-            };
+            yield return describer.Scoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
 
             if (PlatformHelper.IsMono)
             {
