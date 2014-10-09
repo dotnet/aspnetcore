@@ -40,7 +40,7 @@ namespace MusicStore
             //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
             app.UseErrorPage(ErrorPageOptions.ShowAll);
 
-            app.UseServices(services =>
+            app.UsePerRequestServices(services =>
             {
                 //If this type is present - we're on mono
                 var runningOnMono = Type.GetType("Mono.Runtime") != null;
