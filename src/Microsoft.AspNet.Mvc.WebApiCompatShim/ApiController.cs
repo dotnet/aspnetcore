@@ -7,6 +7,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
+using Microsoft.Framework.DependencyInjection;
 
 namespace System.Web.Http
 {
@@ -81,6 +82,40 @@ namespace System.Web.Http
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Validates the given entity and adds the validation errors to the <see cref="ApiController.ModelState"/>
+        /// under an empty prefix.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity to be validated.</typeparam>
+        /// <param name="entity">The entity being validated.</param>
+        public void Validate<TEntity>(TEntity entity)
+        {
+            Validate(entity, keyPrefix: string.Empty);
+        }
+
+        /// <summary>
+        /// Validates the given entity and adds the validation errors to the <see cref="ApiController.ModelState"/>.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity to be validated.</typeparam>
+        /// <param name="entity">The entity being validated.</param>
+        /// <param name="keyPrefix">
+        /// The key prefix under which the model state errors would be added in the 
+        /// <see cref="ApiController.ModelState"/>.
+        /// </param>
+        public void Validate<TEntity>(TEntity entity, string keyPrefix)
+        {
+            var validator = Context.RequestServices.GetService<IBodyModelValidator>();
+            var metadataProvider = Context.RequestServices.GetService<IModelMetadataProvider>();
+            var modelMetadata = metadataProvider.GetMetadataForType(() => entity, typeof(TEntity));
+            var validatorProvider = Context.RequestServices.GetService<ICompositeModelValidatorProvider>();
+            var modelValidationContext = new ModelValidationContext(metadataProvider,
+                                                                    validatorProvider,
+                                                                    ModelState,
+                                                                    modelMetadata,
+                                                                    containerMetadata: null);
+            validator.Validate(modelValidationContext, keyPrefix);
         }
 
         protected virtual void Dispose(bool disposing)

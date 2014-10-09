@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -44,6 +46,53 @@ namespace WebApiCompatShimWebSite
         public string[] GetFormatters()
         {
             return OptionsAccessor.Options.Formatters.Select(f => f.GetType().FullName).ToArray();
+        }
+        
+        [HttpGet]
+        public bool ValidateObject_Passes()
+        {
+            var entity = new TestEntity { ID = 42 };
+            Validate(entity);
+            return ModelState.IsValid;
+        }
+
+        [HttpGet]
+        public object ValidateObjectFails()
+        {
+            var entity = new TestEntity { ID = -1 };
+            Validate(entity);
+            return CreateValidationDictionary();
+        }
+
+        [HttpGet]
+        public object ValidateObjectWithPrefixFails(string prefix)
+        {
+            var entity = new TestEntity { ID = -1 };
+            Validate(entity, prefix);
+            return CreateValidationDictionary();
+        }
+
+        private class TestEntity
+        {
+            [Range(0, 100)]
+            public int ID { get; set; }
+        }
+
+        private Dictionary<string, string> CreateValidationDictionary()
+        {
+            var result = new Dictionary<string, string>();
+            foreach (var item in ModelState)
+            {
+                var error = item.Value.Errors.SingleOrDefault();
+                if (error != null)
+                {
+                    var value = error.Exception != null ? error.Exception.Message :
+                                                          error.ErrorMessage;
+                    result.Add(item.Key, value);
+                }
+            }
+
+            return result;
         }
     }
 }
