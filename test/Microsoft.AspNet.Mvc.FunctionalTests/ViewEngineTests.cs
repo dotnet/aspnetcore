@@ -49,6 +49,12 @@ ViewWithNestedLayout-Content
 </nested-layout>
 </layout>"
                 };
+
+                yield return new[]
+                {
+                    "ViewWithDataFromController",
+                    "<h1>hello from controller</h1>"
+                };
             }
         }
 
@@ -137,6 +143,55 @@ component-content";
             // Act
             var body = await client.GetStringAsync("http://localhost/TemplateExpander?language-expander-value=" +
                                                    value);
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
+
+        public static IEnumerable<object[]> PartialRazorViews_DoNotRenderLayoutData
+        {
+            get
+            {
+                yield return new[]
+                {
+                    "ViewWithoutLayout", @"ViewWithoutLayout-Content"
+                };
+                yield return new[]
+                {
+                    "PartialViewWithNamePassedIn", @"ViewWithLayout-Content"
+                };
+                yield return new[]
+                {
+                    "ViewWithFullPath", "ViewWithFullPath-content"
+                };
+                yield return new[]
+                {
+                    "ViewWithNestedLayout", "ViewWithNestedLayout-Content"
+                };
+                yield return new[]
+                {
+                    "PartialWithDataFromController", "<h1>hello from controller</h1>"
+                };
+                yield return new[]
+                {
+                    "PartialWithModel", string.Join(Environment.NewLine,
+                                                    "my name is judge",
+                                                    "<partial>98052",
+                                                    "</partial>")
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(PartialRazorViews_DoNotRenderLayoutData))]
+        public async Task PartialRazorViews_DoNotRenderLayout(string actionName, string expected)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/PartialViewEngine/" + actionName);
 
             // Assert
             Assert.Equal(expected, body.Trim());

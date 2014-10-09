@@ -6,16 +6,16 @@ using Microsoft.AspNet.Mvc.Rendering;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Represents a <see cref="ViewResultBase"/> that renders a view to the response.
+    /// Represents a <see cref="ViewResultBase"/> that renders a partial view.
     /// </summary>
-    public class ViewResult : ViewResultBase
+    public class PartialViewResult : ViewResultBase
     {
         /// <inheritdoc />
         protected override ViewEngineResult FindView([NotNull] IViewEngine viewEngine,
                                                      [NotNull] ActionContext context,
                                                      [NotNull] string viewName)
         {
-            return viewEngine.FindView(context, viewName);
+            return viewEngine.FindPartialView(context, viewName);
         }
     }
 }

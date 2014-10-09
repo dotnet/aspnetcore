@@ -42,5 +42,11 @@ namespace RazorWebSite.Controllers
             ViewData["Title"] = "Controller title";
             return View("ViewWithTitle");
         }
+
+        public IActionResult ViewWithDataFromController()
+        {
+            ViewData["data-from-controller"] = "hello from controller";
+            return View("ViewWithDataFromController");
+        }
     }
 }

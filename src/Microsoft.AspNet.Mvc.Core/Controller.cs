@@ -188,6 +188,62 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Creates a <see cref="PartialViewResult"/> object that renders a partial view to the response.
+        /// </summary>
+        /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual PartialViewResult PartialView()
+        {
+            return PartialView(viewName: null);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PartialViewResult"/> object by specifying a <paramref name="viewName"/>.
+        /// </summary>
+        /// <param name="viewName">The name of the view that is rendered to the response.</param>
+        /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual PartialViewResult PartialView(string viewName)
+        {
+            return PartialView(viewName, model: null);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PartialViewResult"/> object by specifying a <paramref name="model"/>
+        /// to be rendered by the partial view.
+        /// </summary>
+        /// <param name="model">The model that is rendered by the partial view.</param>
+        /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual PartialViewResult PartialView(object model)
+        {
+            return PartialView(viewName: null, model: model);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PartialViewResult"/> object by specifying a <paramref name="viewName"/>
+        /// and the <paramref name="model"/> to be rendered by the partial view.
+        /// </summary>
+        /// <param name="viewName">The name of the partial view that is rendered to the response.</param>
+        /// <param name="model">The model that is rendered by the partial view.</param>
+        /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual PartialViewResult PartialView(string viewName, object model)
+        {
+            // Do not override ViewData.Model unless passed a non-null value.
+            if (model != null)
+            {
+                ViewData.Model = model;
+            }
+
+            return new PartialViewResult()
+            {
+                ViewName = viewName,
+                ViewData = ViewData,
+            };
+        }
+
+        /// <summary>
         /// Creates a <see cref="ContentResult"/> object by specifying a <paramref name="content"/> string.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
