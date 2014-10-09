@@ -4,6 +4,8 @@
         "Microsoft.AspNet.FeatureModel": "1.0.0-*",
         "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+        "Microsoft.AspNet.RequestContainer": "1.0.0-*",
+        "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
