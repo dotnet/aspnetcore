@@ -143,6 +143,7 @@ namespace E2ETests
             var startIndex = responseContent.IndexOf("[[<a href=\"", 0) + "[[<a href=\"".Length;
             var endIndex = responseContent.IndexOf("\">link</a>]]", startIndex);
             var confirmUrl = responseContent.Substring(startIndex, endIndex - startIndex);
+            confirmUrl = WebUtility.HtmlDecode(confirmUrl);
             response = httpClient.GetAsync(confirmUrl).Result;
             ThrowIfResponseStatusNotOk(response);
             responseContent = response.Content.ReadAsStringAsync().Result;
