@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc
 
             // This provider needs access to the per-request services, but might be used many times for a given
             // request.
-            yield return describe.Scoped<INestedProvider<ActionConstraintProviderContext>, 
+            yield return describe.Scoped<INestedProvider<ActionConstraintProviderContext>,
                 DefaultActionConstraintProvider>();
 
             yield return describe.Transient<IActionInvokerFactory, ActionInvokerFactory>();
@@ -124,27 +124,12 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<INestedProvider<ApiDescriptionProviderContext>,
                 DefaultApiDescriptionProvider>();
 
-            yield return
-               describe.Describe(
-                   typeof(INestedProviderManager<>),
-                   typeof(NestedProviderManager<>),
-                   implementationInstance: null,
-                   lifecycle: LifecycleKind.Transient);
+            yield return describe.Transient(typeof(INestedProviderManager<>), typeof(NestedProviderManager<>));
 
-            yield return
-                describe.Describe(
-                    typeof(INestedProviderManagerAsync<>),
-                    typeof(NestedProviderManagerAsync<>),
-                    implementationInstance: null,
-                    lifecycle: LifecycleKind.Transient);
+            yield return describe.Transient(typeof(INestedProviderManagerAsync<>), typeof(NestedProviderManagerAsync<>));
 
             yield return describe.Transient<IHtmlHelper, HtmlHelper>();
-            yield return
-                describe.Describe(
-                    typeof(IHtmlHelper<>),
-                    typeof(HtmlHelper<>),
-                    implementationInstance: null,
-                    lifecycle: LifecycleKind.Transient);
+            yield return describe.Transient(typeof(IHtmlHelper<>), typeof(HtmlHelper<>));
 
             yield return describe.Transient<MvcMarkerService, MvcMarkerService>();
         }
