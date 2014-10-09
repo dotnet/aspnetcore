@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc;
 using System.Linq;
+using System.Threading;
+using Microsoft.AspNet.Mvc;
 using ModelBindingWebSite.Models;
 
 namespace ModelBindingWebSite.Controllers
@@ -26,6 +27,16 @@ namespace ModelBindingWebSite.Controllers
             return CreateValidationDictionary();
         }
 
+        public bool ActionWithCancellationToken(CancellationToken token)
+        {
+            return token == ActionContext.HttpContext.RequestAborted;
+        }
+
+        public bool ActionWithCancellationTokenModel(CancellationTokenModel wrapper)
+        {
+            return wrapper.CancellationToken == ActionContext.HttpContext.RequestAborted;
+        }
+
         private Dictionary<string, string> CreateValidationDictionary()
         {
             var result = new Dictionary<string, string>();
@@ -41,6 +52,11 @@ namespace ModelBindingWebSite.Controllers
             }
 
             return result;
+        }
+
+        public class CancellationTokenModel
+        {
+            public CancellationToken CancellationToken { get; set; }
         }
     }
 }

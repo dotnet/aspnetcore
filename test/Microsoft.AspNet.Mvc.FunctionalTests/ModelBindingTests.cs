@@ -19,6 +19,37 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
 
         [Fact]
+        public async Task ModelBindCancellationTokenParameteres()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/ActionWithCancellationToken");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("true", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ModelBindCancellationToken_ForProperties()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync(
+                "http://localhost/Home/ActionWithCancellationTokenModel?wrapper=bogusValue");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("true", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
         public async Task ModelBindingBindsBase64StringsToByteArrays()
         {
             // Arrange
