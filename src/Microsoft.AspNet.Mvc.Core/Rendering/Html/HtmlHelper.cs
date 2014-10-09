@@ -189,7 +189,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public HtmlString AntiForgeryToken()
         {
-            return _antiForgeryInstance.GetHtml(ViewContext.HttpContext);
+            var tagBuilder = _antiForgeryInstance.GetHtml(ViewContext.HttpContext);
+            return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
 
         /// <inheritdoc />

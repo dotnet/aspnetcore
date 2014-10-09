@@ -42,10 +42,10 @@ namespace Microsoft.AspNet.Mvc
         /// This method has a side effect:
         /// A response cookie is set if there is no valid cookie associated with the request.
         /// </remarks>
-        public HtmlString GetHtml([NotNull] HttpContext context)
+        public TagBuilder GetHtml([NotNull] HttpContext context)
         {
             var builder = _worker.GetFormInputElement(context);
-            return builder.ToHtmlString(TagRenderMode.SelfClosing);
+            return builder;
         }
 
         /// <summary>
