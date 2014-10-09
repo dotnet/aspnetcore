@@ -44,12 +44,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         public virtual void Contextualize([NotNull] IRazorPage razorPage,
-                                          bool isPartial,
-                                          IPageExecutionListenerFeature pageExecutionListener)
+                                          bool isPartial)
         {
             _razorPage = razorPage;
             _isPartial = isPartial;
-            _pageExecutionFeature = pageExecutionListener;
         }
 
         /// <inheritdoc />
@@ -60,6 +58,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var message = Resources.FormatViewMustBeContextualized(nameof(Contextualize), nameof(RenderAsync));
                 throw new InvalidOperationException(message);
             }
+
+            _pageExecutionFeature = context.HttpContext.GetFeature<IPageExecutionListenerFeature>();
 
             if (!_isPartial)
             {
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private async Task RenderViewStartAsync(ViewContext context)
         {
-            var viewStarts = _viewStartProvider.GetViewStartPages(_razorPage.Path, EnableInstrumentation);
+            var viewStarts = _viewStartProvider.GetViewStartPages(_razorPage.Path);
 
             foreach (var viewStart in viewStarts)
             {
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     throw new InvalidOperationException(message);
                 }
 
-                var layoutPage = _pageFactory.CreateInstance(previousPage.Layout, EnableInstrumentation);
+                var layoutPage = _pageFactory.CreateInstance(previousPage.Layout);
                 if (layoutPage == null)
                 {
                     var message = Resources.FormatLayoutCannotBeLocated(previousPage.Layout);

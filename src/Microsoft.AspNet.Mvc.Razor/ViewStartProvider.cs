@@ -23,10 +23,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public IEnumerable<IRazorPage> GetViewStartPages([NotNull] string path, bool enableInstrumentation)
+        public IEnumerable<IRazorPage> GetViewStartPages([NotNull] string path)
         {
             var viewStartLocations = ViewStartUtility.GetViewStartLocations(_fileSystem, path);
-            var viewStarts = viewStartLocations.Select(p => _pageFactory.CreateInstance(p, enableInstrumentation))
+            var viewStarts = viewStartLocations.Select(_pageFactory.CreateInstance)
                                                .Where(p => p != null)
                                                .ToArray();
 

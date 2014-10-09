@@ -6,10 +6,10 @@ using Microsoft.AspNet.FileSystems;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-	public interface ICompilerCache
-	{
+    public interface ICompilerCache
+    {
         CompilationResult GetOrAdd([NotNull] RelativeFileInfo fileInfo,
                                    bool enableInstrumentation,
                                    [NotNull] Func<CompilationResult> compile);
-	}
+    }
 }

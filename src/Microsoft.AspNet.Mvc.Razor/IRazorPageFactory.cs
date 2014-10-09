@@ -12,8 +12,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Creates a <see cref="IRazorPage"/> for the specified path.
         /// </summary>
         /// <param name="relativePath">The path to locate the page.</param>
-        /// <param name="enableInstrumentation">Indicates that execution of the page should be instrumented.</param>
         /// <returns>The IRazorPage instance if it exists, null otherwise.</returns>
-        IRazorPage CreateInstance(string relativePath, bool enableInstrumentation);
+        IRazorPage CreateInstance(string relativePath);
     }
 }

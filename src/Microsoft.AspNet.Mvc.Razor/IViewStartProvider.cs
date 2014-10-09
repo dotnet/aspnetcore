@@ -15,8 +15,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// that are applicable to the specified view.
         /// </summary>
         /// <param name="path">The path of the page to locate ViewStart files for.</param>
-        /// <param name="enableInstrumentation">Indicates that execution of the page should be instrumented.</param>
         /// <returns>A sequence of <see cref="IRazorPage"/> that represent ViewStart.</returns>
-        IEnumerable<IRazorPage> GetViewStartPages(string path, bool enableInstrumentation);
+        IEnumerable<IRazorPage> GetViewStartPages(string path);
     }
 }

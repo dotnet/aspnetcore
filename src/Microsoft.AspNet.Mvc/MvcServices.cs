@@ -59,7 +59,8 @@ namespace Microsoft.AspNet.Mvc
             // specific services.
             yield return describe.Transient<IViewEngineProvider, DefaultViewEngineProvider>();
             yield return describe.Scoped<ICompositeViewEngine, CompositeViewEngine>();
-            yield return describe.Singleton<IViewStartProvider, ViewStartProvider>();
+            // The ViewStartProvider needs to be able to consume scoped instances of IRazorPageFactory
+            yield return describe.Scoped<IViewStartProvider, ViewStartProvider>();
             yield return describe.Transient<IRazorView, RazorView>();
 
             // Transient since the IViewLocationExpanders returned by the instance is cached by view engines.

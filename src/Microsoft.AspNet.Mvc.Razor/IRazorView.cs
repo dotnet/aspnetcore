@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.PageExecutionInstrumentation;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -18,8 +17,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="razorPage">The <see cref="IRazorPage"/> instance to execute.</param>
         /// <param name="isPartial">Determines if the view is to be executed as a partial.</param>
-        void Contextualize(IRazorPage razorPage,
-                           bool isPartial,
-                           IPageExecutionListenerFeature pageExecutionListenerFeature);
+        void Contextualize(IRazorPage razorPage, bool isPartial);
     }
 }

@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Arrange
             var pageFactory = new Mock<IRazorPageFactory>();
             var page = Mock.Of<IRazorPage>();
-            pageFactory.Setup(p => p.CreateInstance(It.IsAny<string>(), false))
+            pageFactory.Setup(p => p.CreateInstance(It.IsAny<string>()))
                        .Returns(Mock.Of<IRazorPage>());
             var viewEngine = CreateViewEngine(pageFactory.Object);
             var context = GetActionContext(_controllerTestContext);
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Arrange
             var pageFactory = new Mock<IRazorPageFactory>();
             var page = Mock.Of<IRazorPage>();
-            pageFactory.Setup(p => p.CreateInstance("fake-path1/bar/test-view.rzr", false))
+            pageFactory.Setup(p => p.CreateInstance("fake-path1/bar/test-view.rzr"))
                        .Returns(Mock.Of<IRazorPage>())
                        .Verifiable();
             var viewEngine = new OverloadedLocationViewEngine(pageFactory.Object,
@@ -224,7 +224,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Arrange
             var pageFactory = new Mock<IRazorPageFactory>();
             var page = Mock.Of<IRazorPage>();
-            pageFactory.Setup(p => p.CreateInstance("fake-area-path/foo/bar/test-view2.rzr", false))
+            pageFactory.Setup(p => p.CreateInstance("fake-area-path/foo/bar/test-view2.rzr"))
                        .Returns(Mock.Of<IRazorPage>())
                        .Verifiable();
             var viewEngine = new OverloadedLocationViewEngine(pageFactory.Object,
@@ -273,7 +273,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactory>();
-            pageFactory.Setup(p => p.CreateInstance("test-string/bar.cshtml", false))
+            pageFactory.Setup(p => p.CreateInstance("test-string/bar.cshtml"))
                        .Returns(Mock.Of<IRazorPage>())
                        .Verifiable();
             var expander1Result = new[] { "some-seed" };
@@ -325,9 +325,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactory>();
-            pageFactory.Setup(p => p.CreateInstance("/Views/bar/baz.cshtml", false))
+            pageFactory.Setup(p => p.CreateInstance("/Views/bar/baz.cshtml"))
                        .Verifiable();
-            pageFactory.Setup(p => p.CreateInstance("/Views/Shared/baz.cshtml", false))
+            pageFactory.Setup(p => p.CreateInstance("/Views/Shared/baz.cshtml"))
                        .Returns(Mock.Of<IRazorPage>())
                        .Verifiable();
             var cache = GetViewLocationCache();
@@ -353,7 +353,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactory>(MockBehavior.Strict);
-            pageFactory.Setup(p => p.CreateInstance("some-view-location", false))
+            pageFactory.Setup(p => p.CreateInstance("some-view-location"))
                        .Returns(Mock.Of<IRazorPage>())
                        .Verifiable();
             var expander = new Mock<IViewLocationExpander>(MockBehavior.Strict);
@@ -384,10 +384,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactory>();
-            pageFactory.Setup(p => p.CreateInstance("expired-location", false))
+            pageFactory.Setup(p => p.CreateInstance("expired-location"))
                        .Returns((IRazorPage)null)
                        .Verifiable();
-            pageFactory.Setup(p => p.CreateInstance("some-view-location", false))
+            pageFactory.Setup(p => p.CreateInstance("some-view-location"))
                        .Returns(Mock.Of<IRazorPage>())
                        .Verifiable();
             var cacheMock = new Mock<IViewLocationCache>();

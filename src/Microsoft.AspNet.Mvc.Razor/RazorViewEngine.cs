@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -37,9 +36,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IRazorPageFactory _pageFactory;
         private readonly IReadOnlyList<IViewLocationExpander> _viewLocationExpanders;
         private readonly IViewLocationCache _viewLocationCache;
-        // The RazorViewEngine is Request scoped which allows us to cache these value for the lifetime of a Request.
-        private bool _isPageExecutionFeatureInitialized;
-        private IPageExecutionListenerFeature _pageExecutionListenerFeature;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RazorViewEngine" /> class.
@@ -95,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 if (viewName.EndsWith(ViewExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    var page = _pageFactory.CreateInstance(viewName, IsInstrumentationEnabled(context));
+                    var page = _pageFactory.CreateInstance(viewName);
                     if (page != null)
                     {
                         return CreateFoundResult(context, page, viewName, partial);
@@ -137,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewLocation = _viewLocationCache.Get(expanderContext);
             if (!string.IsNullOrEmpty(viewLocation))
             {
-                var page = _pageFactory.CreateInstance(viewLocation, IsInstrumentationEnabled(context));
+                var page = _pageFactory.CreateInstance(viewLocation);
 
                 if (page != null)
                 {
@@ -163,9 +159,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                     viewName,
                                                     controllerName,
                                                     areaName);
-
-                var isInstrumentated = IsInstrumentationEnabled(context);
-                var page = _pageFactory.CreateInstance(transformedPath, isInstrumentated);
+                var page = _pageFactory.CreateInstance(transformedPath);
                 if (page != null)
                 {
                     // 3a. We found a page. Cache the set of values that produced it and return a found result.
@@ -190,26 +184,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var services = actionContext.HttpContext.RequestServices;
             var view = services.GetService<IRazorView>();
-            Debug.Assert(_isPageExecutionFeatureInitialized, "IsInstrumentationEnabled must be called prior to this.");
 
-            view.Contextualize(page, partial, _pageExecutionListenerFeature);
+            view.Contextualize(page, partial);
             return ViewEngineResult.Found(viewName, view);
         }
 
         private static bool IsSpecificPath(string name)
         {
             return name[0] == '~' || name[0] == '/';
-        }
-
-        private bool IsInstrumentationEnabled(ActionContext context)
-        {
-            if (!_isPageExecutionFeatureInitialized)
-            {
-                _isPageExecutionFeatureInitialized = true;
-                _pageExecutionListenerFeature = context.HttpContext.GetFeature<IPageExecutionListenerFeature>();
-            }
-
-            return _pageExecutionListenerFeature != null;
         }
     }
 }
