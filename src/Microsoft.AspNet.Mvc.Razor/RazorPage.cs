@@ -25,7 +25,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly Stack<TextWriter> _writerScopes;
         private TextWriter _originalWriter;
         private IUrlHelper _urlHelper;
-        private ITypeActivator _typeActivator;
         private ITagHelperActivator _tagHelperActivator;
         private bool _renderedBody;
 
@@ -114,19 +113,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public abstract Task ExecuteAsync();
 
-        private ITypeActivator TypeActivator
-        {
-            get
-            {
-                if(_typeActivator == null)
-                {
-                    _typeActivator = ViewContext.HttpContext.RequestServices.GetService<ITypeActivator>();
-                }
-
-                return _typeActivator;
-            }
-        }
-
         private ITagHelperActivator TagHelperActivator
         {
             get
@@ -139,19 +125,17 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return _tagHelperActivator;
             }
         }
-
         /// <summary>
         /// Creates and activates a <see cref="ITagHelper"/>.
         /// </summary>
         /// <typeparam name="TTagHelper">A <see cref="ITagHelper"/> type.</typeparam>
         /// <returns>The activated <see cref="ITagHelper"/>.</returns>
         /// <remarks>
-        /// If the <see cref= "ITagHelper" /> implements <see cref="ICanHasViewContext"/> the 
-        /// <see cref="ICanHasViewContext.Contextualize(ViewContext)"/> method is called with <see cref="ViewContext"/>.
+        /// <typeparamref name="TTagHelper"/> must have a parameterless constructor.
         /// </remarks>
-        public TTagHelper CreateTagHelper<TTagHelper>() where TTagHelper : ITagHelper
+        public TTagHelper CreateTagHelper<TTagHelper>() where TTagHelper : ITagHelper, new()
         {
-            var tagHelper = TypeActivator.CreateInstance<TTagHelper>(ViewContext.HttpContext.RequestServices);
+            var tagHelper = new TTagHelper();
 
             TagHelperActivator.Activate(tagHelper, ViewContext);
 
