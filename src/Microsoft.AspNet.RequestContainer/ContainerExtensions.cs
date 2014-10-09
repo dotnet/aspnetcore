@@ -31,33 +31,33 @@ namespace Microsoft.AspNet.Builder
             });
         }
 
-        public static IApplicationBuilder UseServices(this IApplicationBuilder builder)
+        public static IApplicationBuilder UsePerRequestServices(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
 
-        public static IApplicationBuilder UseServices(this IApplicationBuilder builder, IServiceProvider applicationServices)
+        public static IApplicationBuilder UsePerRequestServices(this IApplicationBuilder builder, IServiceProvider applicationServices)
         {
             builder.ApplicationServices = applicationServices;
 
             return builder.UseMiddleware(typeof(ContainerMiddleware));
         }
 
-        public static IApplicationBuilder UseServices(this IApplicationBuilder builder, IEnumerable<IServiceDescriptor> applicationServices)
+        public static IApplicationBuilder UsePerRequestServices(this IApplicationBuilder builder, IEnumerable<IServiceDescriptor> applicationServices)
         {
-            return builder.UseServices(services => services.Add(applicationServices));
+            return builder.UsePerRequestServices(services => services.Add(applicationServices));
         }
 
-        public static IApplicationBuilder UseServices(this IApplicationBuilder builder, Action<ServiceCollection> configureServices)
+        public static IApplicationBuilder UsePerRequestServices(this IApplicationBuilder builder, Action<ServiceCollection> configureServices)
         {
-            return builder.UseServices(serviceCollection =>
+            return builder.UsePerRequestServices(serviceCollection =>
             {
                 configureServices(serviceCollection);
                 return serviceCollection.BuildServiceProvider(builder.ApplicationServices);
             });
         }
 
-        public static IApplicationBuilder UseServices(this IApplicationBuilder builder, Func<ServiceCollection, IServiceProvider> configureServices)
+        public static IApplicationBuilder UsePerRequestServices(this IApplicationBuilder builder, Func<ServiceCollection, IServiceProvider> configureServices)
         {
             var serviceCollection = new ServiceCollection();
 

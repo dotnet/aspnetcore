@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Hosting.Tests
             var baseServiceProvider = new ServiceCollection().BuildServiceProvider();
             var builder = new ApplicationBuilder(baseServiceProvider);
 
-            builder.UseServices(serviceCollection => { });
+            builder.UsePerRequestServices(serviceCollection => { });
 
             var optionsAccessor = builder.ApplicationServices.GetService<IOptionsAccessor<object>>();
             Assert.NotNull(optionsAccessor);
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Hosting.Tests
             var builder = new ApplicationBuilder(baseServiceProvider);
             IServiceProvider serviceProvider = null;
 
-            builder.UseServices(serviceCollection =>
+            builder.UsePerRequestServices(serviceCollection =>
             {
                 serviceProvider = serviceCollection.BuildServiceProvider(builder.ApplicationServices);
                 return serviceProvider;
