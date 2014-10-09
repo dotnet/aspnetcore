@@ -14,7 +14,7 @@ namespace CompositeViewEngine
             var configuration = app.GetTestConfiguration();
 
             // Set up application services
-            app.UseServices(services =>
+            app.UsePerRequestServices(services =>
             {
                 // Add a view engine as the first one in the list.
                 services.AddMvc(configuration)

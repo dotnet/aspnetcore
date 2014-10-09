@@ -15,7 +15,7 @@ namespace ModelBindingWebSite
             var configuration = app.GetTestConfiguration();
 
             // Set up application services
-            app.UseServices(services =>
+            app.UsePerRequestServices(services =>
             {
                 // Add MVC services to the services container
                 services.AddMvc(configuration)

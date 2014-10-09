@@ -31,7 +31,7 @@ namespace MvcSample.Web
             {
                 app.UseMiddleware<MonitoringMiddlware>();
 
-                app.UseServices(services =>
+                app.UsePerRequestServices(services =>
                 {
                     services.AddMvc();
                     services.AddSingleton<PassThroughAttribute>();
@@ -72,7 +72,7 @@ namespace MvcSample.Web
             else
 #endif
             {
-                app.UseServices(services =>
+                app.UsePerRequestServices(services =>
                 {
                     services.AddMvc();
                     services.AddSingleton<PassThroughAttribute>();

@@ -15,7 +15,7 @@ namespace FiltersWebSite
         {
             var configuration = app.GetTestConfiguration();
 
-            app.UseServices(services =>
+            app.UsePerRequestServices(services =>
             {
                 services.AddMvc(configuration);
 

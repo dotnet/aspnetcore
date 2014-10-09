@@ -15,7 +15,7 @@ namespace UrlHelperWebSite
             configuration.AddJsonFile("config.json");
 
             // Set up application services
-            app.UseServices(services =>
+            app.UsePerRequestServices(services =>
             {
                 services.ConfigureOptions<AppOptions>(optionsSetup =>
                 {
