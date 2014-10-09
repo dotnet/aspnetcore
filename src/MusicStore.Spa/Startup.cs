@@ -22,7 +22,7 @@ namespace MusicStore.Spa
                 .AddJsonFile("Config.json")
                 .AddEnvironmentVariables();
 
-            app.UseServices(services =>
+            app.UsePerRequestServices(services =>
             {
                 // Add options accessors to the service container
                 services.SetupOptions<IdentityDbContextOptions>(options =>
