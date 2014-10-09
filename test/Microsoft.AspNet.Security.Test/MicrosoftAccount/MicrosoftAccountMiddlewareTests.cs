@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Security.Tests.MicrosoftAccount
         {
             return TestServer.Create(app =>
             {
-                app.UseServices(services =>
+                app.UsePerRequestServices(services =>
                 {
                     services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
                     {

@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Security.Twitter
         {
             return TestServer.Create(app =>
             {
-                app.UseServices(services =>
+                app.UsePerRequestServices(services =>
                 {
                     services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
                     {

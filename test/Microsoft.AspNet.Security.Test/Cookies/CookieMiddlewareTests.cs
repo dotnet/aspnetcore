@@ -369,7 +369,7 @@ namespace Microsoft.AspNet.Security.Cookies
         {
             return TestServer.Create(app =>
             {
-                app.UseServices(services => { });
+                app.UsePerRequestServices(services => { });
                 app.UseCookieAuthentication(configureOptions);
                 app.Use(async (context, next) =>
                 {

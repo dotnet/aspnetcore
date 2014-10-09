@@ -465,7 +465,7 @@ namespace Microsoft.AspNet.Security.Google
         {
             return TestServer.Create(app =>
             {
-                app.UseServices(services =>
+                app.UsePerRequestServices(services =>
                 {
                     services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
                     {

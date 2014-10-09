@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Security.Facebook
             var server = CreateServer(
                 app =>
                 {
-                    app.UseServices(services =>
+                    app.UsePerRequestServices(services =>
                     {
                         services.ConfigureFacebookAuthentication(options =>
                         {
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Security.Facebook
             var server = CreateServer(
                 app =>
                 {
-                    app.UseServices(services =>
+                    app.UsePerRequestServices(services =>
                     {
                         services.ConfigureFacebookAuthentication(options =>
                         {
