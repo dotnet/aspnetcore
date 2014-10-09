@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
 using Xunit;
 
@@ -62,6 +63,14 @@ namespace E2ETests
 
                 //Static files are served?
                 VerifyStaticContentServed();
+
+                if (serverType != ServerType.Helios)
+                {
+                    if (Directory.GetFiles(startParameters.ApplicationPath, "*.cmd", SearchOption.TopDirectoryOnly).Length > 0)
+                    {
+                        throw new Exception("pack-exclude parameter values are not honored");
+                    }
+                }
 
                 var testCompletionTime = DateTime.Now;
                 Console.WriteLine("[Time]: All tests completed in '{0}' seconds", (testCompletionTime - initializationCompleteTime).TotalSeconds);

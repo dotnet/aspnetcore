@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Security.MicrosoftAccount;
+﻿using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Security.MicrosoftAccount;
 using Microsoft.AspNet.Security.OAuth;
 using MusicStore.Mocks.Common;
 using System;
@@ -34,7 +35,7 @@ namespace MusicStore.Mocks.MicrosoftAccount
 
         internal static async Task OnReturnEndpoint(OAuthReturnEndpointContext context)
         {
-            if (context.Identity != null && context.SignInAsAuthenticationType == "Microsoft.AspNet.Identity.External")
+            if (context.Identity != null && context.SignInAsAuthenticationType == IdentityOptions.ExternalCookieAuthenticationType)
             {
                 //This way we will know all notifications were fired.
                 var manageStoreClaim = context.Identity.Claims.Where(c => c.Type == "ManageStore" && c.Value == "false").FirstOrDefault();
