@@ -66,7 +66,7 @@ namespace MusicStore
             //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
             app.UseErrorPage(ErrorPageOptions.ShowAll);
 
-            app.UseServices(services =>
+            app.UsePerRequestServices(services =>
             {
                 // Add EF services to the services container
                 services.AddEntityFramework()

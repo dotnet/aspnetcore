@@ -7,10 +7,6 @@ using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
-using Microsoft.AspNet.Security.Facebook;
-using Microsoft.AspNet.Security.Google;
-using Microsoft.AspNet.Security.Twitter;
-using Microsoft.AspNet.Security.MicrosoftAccount;
 using Microsoft.Framework.Cache.Memory;
 
 namespace MusicStore
@@ -108,7 +104,7 @@ namespace MusicStore
             app.UseErrorPage(ErrorPageOptions.ShowAll);
 
             // Add services from ConfigureServices
-            app.UseServices();
+            app.UsePerRequestServices();
 
             //Configure SignalR
             app.UseSignalR();
