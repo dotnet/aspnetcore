@@ -134,19 +134,16 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 Writer.WriteStartInstrumentationContext(Context, chunk.Association, isLiteral: true);
             }
 
-            if (!string.IsNullOrEmpty(Context.TargetWriterName))
+            if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
             {
-                if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
-                {
-                    RenderPreWriteStart();
-                }
+                RenderPreWriteStart();
+            }
 
-                Writer.WriteStringLiteral(chunk.Text);
+            Writer.WriteStringLiteral(chunk.Text);
 
-                if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
-                {
-                    Writer.WriteEndMethodInvocation();
-                }
+            if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
+            {
+                Writer.WriteEndMethodInvocation();
             }
 
             if (Context.Host.EnableInstrumentation)
