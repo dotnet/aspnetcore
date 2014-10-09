@@ -44,10 +44,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.DoesNotThrow(() => factory.ReleaseController(controller));
         }
 
-        private class MyController : Controller, IDisposable
+        private class MyController : Controller
         {
             public bool Disposed { get; set; }
-            public void Dispose()
+
+            protected override void Dispose(bool disposing)
             {
                 Disposed = true;
             }

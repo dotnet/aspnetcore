@@ -8,25 +8,75 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class Controller : IActionFilter, IAsyncActionFilter, IOrderedFilter
+    public class Controller : IActionFilter, IAsyncActionFilter, IOrderedFilter, IDisposable
     {
         private DynamicViewData _viewBag;
+        private IViewEngine _viewEngine;
+
+        public IServiceProvider Resolver
+        {
+            get
+            {
+                return ActionContext?.HttpContext?.RequestServices;
+            }
+        }
 
         public HttpContext Context
         {
             get
             {
-                if (ActionContext == null)
+                return ActionContext?.HttpContext;
+            }
+        }
+
+        public HttpRequest Request
+        {
+            get
+            {
+                return ActionContext?.HttpContext?.Request;
+            }
+        }
+
+        public HttpResponse Response
+        {
+            get
+            {
+                return ActionContext?.HttpContext?.Response;
+            }
+        }
+
+        public RouteData RouteData
+        {
+            get
+            {
+                return ActionContext?.RouteData;
+            }
+        }
+
+        public IViewEngine ViewEngine
+        {
+            get
+            {
+                if (_viewEngine == null)
                 {
-                    return null;
+                    _viewEngine = ActionContext?.
+                        HttpContext?.
+                        RequestServices.GetService<ICompositeViewEngine>();
                 }
 
-                return ActionContext.HttpContext;
+                return _viewEngine;
+            }
+
+            set
+            {
+                _viewEngine = value;
             }
         }
 
@@ -34,12 +84,7 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                if (ViewData == null)
-                {
-                    return null;
-                }
-
-                return ViewData.ModelState;
+                return ViewData?.ModelState;
             }
         }
 
@@ -56,12 +101,7 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                if (Context == null)
-                {
-                    return null;
-                }
-
-                return Context.User;
+                return Context?.User;
             }
         }
 
@@ -143,6 +183,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewName = viewName,
                 ViewData = ViewData,
+                ViewEngine = _viewEngine,
             };
         }
 
@@ -622,5 +663,17 @@ namespace Microsoft.AspNet.Mvc
                                                                 valueProvider,
                                                                 bindingContext.ValidatorProvider);
         }
+
+        [NonAction]
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
     }
 }
