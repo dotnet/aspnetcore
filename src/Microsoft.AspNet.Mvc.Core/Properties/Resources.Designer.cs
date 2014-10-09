@@ -1515,19 +1515,19 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// "The path to the file must be absolute: {0}"
+        /// Could not find file: {0}
         /// </summary>
-        internal static string FileResult_InvalidPathType_RelativeOrVirtualPath
+        internal static string FileResult_InvalidPath
         {
-            get { return GetString("FileResult_InvalidPathType_RelativeOrVirtualPath"); }
+            get { return GetString("FileResult_InvalidPath"); }
         }
 
         /// <summary>
-        /// "The path to the file must be absolute: {0}"
+        /// Could not find file: {0}
         /// </summary>
-        internal static string FormatFileResult_InvalidPathType_RelativeOrVirtualPath(object p0)
+        internal static string FormatFileResult_InvalidPath(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("FileResult_InvalidPathType_RelativeOrVirtualPath"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("FileResult_InvalidPath"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)
