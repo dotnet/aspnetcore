@@ -100,6 +100,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.WebApi
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TagHelperSample.Web", "samples\TagHelperSample.Web\TagHelperSample.Web.kproj", "{2223120F-D675-40DA-8CD8-11DC14A0B2C7}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TagHelpers", "src\Microsoft.AspNet.Mvc.TagHelpers\Microsoft.AspNet.Mvc.TagHelpers.kproj", "{B2347320-308E-4D2B-AEC8-005DFA68B0C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -530,6 +532,16 @@ Global
 		{2223120F-D675-40DA-8CD8-11DC14A0B2C7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{2223120F-D675-40DA-8CD8-11DC14A0B2C7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{2223120F-D675-40DA-8CD8-11DC14A0B2C7}.Release|x86.ActiveCfg = Release|Any CPU
+		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -578,5 +590,6 @@ Global
 		{B2B7BC91-688E-4C1E-A71F-CE948D958DDF} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{5DE8E4D9-AACD-4B5F-819F-F091383FB996} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{2223120F-D675-40DA-8CD8-11DC14A0B2C7} = {DAAE4C74-D06F-4874-A166-33305D2643CE}
+		{B2347320-308E-4D2B-AEC8-005DFA68B0C9} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 	EndGlobalSection
 EndGlobal
