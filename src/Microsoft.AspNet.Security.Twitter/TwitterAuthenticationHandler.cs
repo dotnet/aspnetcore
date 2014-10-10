@@ -104,7 +104,13 @@ namespace Microsoft.AspNet.Security.Twitter
                     ClaimsIdentity.DefaultRoleClaimType);
                 context.Properties = requestToken.Properties;
 
-                Response.Cookies.Delete(StateCookie);
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = Request.IsSecure
+                };
+
+                Response.Cookies.Delete(StateCookie, cookieOptions);
 
                 await Options.Notifications.Authenticated(context);
 
