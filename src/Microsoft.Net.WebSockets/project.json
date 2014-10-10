@@ -8,7 +8,7 @@
         "net45": { },
         "aspnetcore50": {
             "dependencies": {
-                "Microsoft.Win32.Primitives": "4.0.0.0",
+                "Microsoft.Win32.Primitives": "4.0.0-beta-*",
                 "System.Collections": "4.0.10-beta-*",
                 "System.Collections.Concurrent": "4.0.0-beta-*",
                 "System.Diagnostics.Contracts": "4.0.0-beta-*",
