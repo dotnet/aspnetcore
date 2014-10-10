@@ -303,7 +303,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(mediaType, response.Content.Headers.ContentType.MediaType);
         }
 
-
         [Fact]
         public async Task ApiController_CreateResponse_HardcodedFormatter()
         {
@@ -326,6 +325,42 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Test User", user.Name);
             Assert.Equal("text/json", response.Content.Headers.ContentType.MediaType);
+        }
+
+        [Theory]
+        [InlineData("http://localhost/Mvc/Index", HttpStatusCode.OK)]
+        [InlineData("http://localhost/api/Blog/Mvc/Index", HttpStatusCode.NotFound)]
+        public async Task WebApiRouting_AccessMvcController(string url, HttpStatusCode expected)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(expected, response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("http://localhost/BasicApi/GenerateUrl", HttpStatusCode.NotFound)]
+        [InlineData("http://localhost/api/Blog/BasicApi/GenerateUrl", HttpStatusCode.OK)]
+        public async Task WebApiRouting_AccessWebApiController(string url, HttpStatusCode expected)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(expected, response.StatusCode);
         }
     }
 }

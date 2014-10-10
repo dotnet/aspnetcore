@@ -225,6 +225,31 @@ namespace System.Web.Http
             }
         }
 
+        [Fact]
+        public void GetActions_AllWebApiActionsAreInWebApiArea()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var context = new ActionDescriptorProviderContext();
+            provider.Invoke(context);
+
+            var results = context.Results.Cast<ControllerActionDescriptor>();
+
+            // Assert
+            var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
+            var actions = results
+                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .ToArray();
+
+            Assert.NotEmpty(actions);
+            foreach (var action in actions)
+            {
+                Assert.Single(action.RouteConstraints, c => c.RouteKey == "area" && c.RouteValue == "api");
+            }
+        }
+
         private INestedProviderManager<ActionDescriptorProviderContext> CreateProvider()
         {
             var assemblyProvider = new Mock<IControllerAssemblyProvider>();
@@ -240,8 +265,9 @@ namespace System.Web.Http
             var conventions = new NamespaceLimitedActionDiscoveryConventions();
 
             var options = new MvcOptions();
-            options.ApplicationModelConventions.Add(new WebApiActionConventionsGlobalModelConvention());
-            options.ApplicationModelConventions.Add(new WebApiOverloadingGlobalModelConvention());
+
+            var setup = new WebApiCompatShimOptionsSetup();
+            setup.Invoke(options);
 
             var optionsAccessor = new Mock<IOptionsAccessor<MvcOptions>>();
             optionsAccessor

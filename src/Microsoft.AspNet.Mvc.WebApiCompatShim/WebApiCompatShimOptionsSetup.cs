@@ -8,6 +8,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
     public class WebApiCompatShimOptionsSetup : IOptionsAction<MvcOptions>, IOptionsAction<WebApiCompatShimOptions>
     {
+        public readonly static string DefaultAreaName = "api";
+
         public int Order
         {
             // We want to run after the default MvcOptionsSetup.
@@ -21,6 +23,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             // Add webapi behaviors to controllers with the appropriate attributes
             options.ApplicationModelConventions.Add(new WebApiActionConventionsGlobalModelConvention());
             options.ApplicationModelConventions.Add(new WebApiOverloadingGlobalModelConvention());
+            options.ApplicationModelConventions.Add(new WebApiRoutesGlobalModelConvention(area: DefaultAreaName));
 
             // Add a model binder to be able to bind HttpRequestMessage
             options.ModelBinders.Insert(0, new HttpRequestMessageModelBinder());
