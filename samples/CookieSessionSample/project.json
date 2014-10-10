@@ -1,4 +1,4 @@
-﻿{
+{
   "dependencies": {
     "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",

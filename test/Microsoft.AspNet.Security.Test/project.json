@@ -25,7 +25,7 @@
                 "Shouldly": "1.1.1.1"
             },
             "frameworkAssemblies": {
-                "System.Net.Http": "4.0.0.0"
+                "System.Net.Http": "4.0.0-beta-*"
             }
         }
     }
