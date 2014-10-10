@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 #if ASPNET50
@@ -805,9 +807,176 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 #endif
 
+        [Fact]
+        public void ControllerExposes_RequestServices()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            var serviceProvider = Mock.Of<IServiceProvider>();
+            var httpContext = new Mock<HttpContext>();
+            httpContext.Setup(c => c.RequestServices)
+                           .Returns(serviceProvider);
+
+            controller.ActionContext = new ActionContext(httpContext.Object,
+                                                  Mock.Of<RouteData>(),
+                                                  new ActionDescriptor());
+
+            // Act
+            var innerServiceProvider = controller.Resolver;
+
+            // Assert
+            Assert.Same(serviceProvider, innerServiceProvider);
+        }
+
+        [Fact]
+        public void ControllerExposes_Request()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            var request = Mock.Of<HttpRequest>();
+            var httpContext = new Mock<HttpContext>();
+            httpContext.Setup(c => c.Request)
+                           .Returns(request);
+
+            controller.ActionContext = new ActionContext(httpContext.Object,
+                                                  Mock.Of<RouteData>(),
+                                                  new ActionDescriptor());
+
+            // Act
+            var innerRequest = controller.Request;
+
+            // Assert
+            Assert.Same(request, innerRequest);
+        }
+
+        [Fact]
+        public void ControllerExposes_Response()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            var response = Mock.Of<HttpResponse>();
+            var httpContext = new Mock<HttpContext>();
+            httpContext.Setup(c => c.Response)
+                           .Returns(response);
+
+            controller.ActionContext = new ActionContext(httpContext.Object,
+                                                  Mock.Of<RouteData>(),
+                                                  new ActionDescriptor());
+
+            // Act
+            var innerResponse = controller.Response;
+
+            // Assert
+            Assert.Same(response, innerResponse);
+        }
+
+        [Fact]
+        public void ControllerExposes_RouteData()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            var routeData = Mock.Of<RouteData>();
+
+            controller.ActionContext = new ActionContext(Mock.Of<HttpContext>(),
+                                                  routeData,
+                                                  new ActionDescriptor());
+
+            // Act
+            var innerRouteData = controller.RouteData;
+
+            // Assert
+            Assert.Same(routeData, innerRouteData);
+        }
+
+        [Fact]
+        public void ControllerDispose_CallsDispose()
+        {
+            // Arrange
+            var controller = new DisposableController();
+
+            // Act
+            controller.Dispose();
+
+            // Assert
+            Assert.True(controller.DisposeCalled);
+        }
+
+        [Fact]
+        public void ControllerExpose_ViewEngine()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            var viewEngine = Mock.Of<ICompositeViewEngine>();
+
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider
+                .Setup(s => s.GetService(It.Is<Type>(t => t == typeof(ICompositeViewEngine))))
+                .Returns(viewEngine);
+
+            var httpContext = new Mock<HttpContext>();
+                httpContext
+                    .Setup(c => c.RequestServices)
+                    .Returns(serviceProvider.Object);
+
+            controller.ActionContext = new ActionContext(httpContext.Object,
+                                                  Mock.Of<RouteData>(),
+                                                  new ActionDescriptor());
+
+            // Act
+            var innerViewEngine = controller.ViewEngine;
+
+            // Assert
+            Assert.Same(viewEngine, innerViewEngine);
+        }
+
+        [Fact]
+        public void ControllerView_UsesControllerViewEngine()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            var viewEngine = Mock.Of<ICompositeViewEngine>();
+
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider
+                .Setup(s => s.GetService(It.Is<Type>(t => t == typeof(ICompositeViewEngine))))
+                .Returns(viewEngine);
+
+            var httpContext = new Mock<HttpContext>();
+            httpContext
+                .Setup(c => c.RequestServices)
+                .Returns(serviceProvider.Object);
+
+            controller.ActionContext = new ActionContext(httpContext.Object,
+                                                  Mock.Of<RouteData>(),
+                                                  new ActionDescriptor());
+
+            // Act
+            var unsused = controller.ViewEngine;
+            var result = controller.View();
+
+            // Assert
+            Assert.Same(viewEngine, result.ViewEngine);
+        }
+
         private class MyModel
         {
             public string Foo { get; set; }
+        }
+
+        private class DisposableController : Controller
+        {
+            public bool DisposeCalled { get; private set; }
+
+            protected override void Dispose(bool disposing)
+            {
+                DisposeCalled = true;
+            }
         }
     }
 }
