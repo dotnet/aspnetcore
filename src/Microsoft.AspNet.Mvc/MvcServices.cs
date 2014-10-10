@@ -33,9 +33,6 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<IOptionsAction<MvcOptions>, MvcOptionsSetup>();
 
-            // Only want one ITagHelperActivator so it can cache Type activation information. Types won't conflict.
-            yield return describe.Singleton<ITagHelperActivator, DefaultTagHelperActivator>();
-
             yield return describe.Transient<IControllerFactory, DefaultControllerFactory>();
             yield return describe.Singleton<IControllerActivator, DefaultControllerActivator>();
 
@@ -68,6 +65,9 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IViewLocationExpanderProvider, DefaultViewLocationExpanderProvider>();
             // Caches view locations that are valid for the lifetime of the application.
             yield return describe.Singleton<IViewLocationCache, DefaultViewLocationCache>();
+
+            // Only want one ITagHelperActivator so it can cache Type activation information. Types won't conflict.
+            yield return describe.Singleton<ITagHelperActivator, DefaultTagHelperActivator>();
 
             yield return describe.Singleton<IRazorPageActivator, RazorPageActivator>();
             // Virtual path view factory needs to stay scoped so views can get get scoped services.
