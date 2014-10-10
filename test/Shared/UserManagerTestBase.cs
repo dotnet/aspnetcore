@@ -552,7 +552,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = CreateManager();
             manager.RegisterTokenProvider(new DataProtectorTokenProvider<TUser>(new DataProtectionTokenProviderOptions(),
-                   DataProtectionProvider.CreateFromDpapi().CreateProtector("ASP.NET Identity")));
+                   new EphemeralDataProtectionProvider().CreateProtector("ASP.NET Identity")));
             manager.Options.EmailConfirmationTokenProvider = "DataProtection";
             var user = new TUser() { UserName = "test" };
             Assert.False(user.EmailConfirmed);

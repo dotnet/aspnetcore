@@ -101,8 +101,9 @@ namespace Microsoft.Framework.DependencyInjection
                     new DataProtectionTokenProviderOptions
                     {
                         Name = Resources.DefaultTokenProvider,
-                    }, 
-                    DataProtectionProvider.CreateFromDpapi().CreateProtector("ASP.NET Identity")))
+                    },
+                    // TODO: This needs to get IDataProtectionProvider from the environment 
+                    new EphemeralDataProtectionProvider().CreateProtector("ASP.NET Identity")))
                 .AddTokenProvider(new PhoneNumberTokenProvider<TUser>())
                 .AddTokenProvider(new EmailTokenProvider<TUser>());
         }
