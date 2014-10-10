@@ -12,17 +12,28 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class VirtualPathRazorPageFactory : IRazorPageFactory
     {
-        private readonly IRazorCompilationService _compilationService;
+        private IRazorCompilationService _compilationService;
+        private IRazorCompilationService CompilationService
+        {
+            get
+            {
+                if (_compilationService == null)
+                {
+                    _compilationService = _serviceProvider.GetService<IRazorCompilationService>();
+                }
+
+                return _compilationService;
+            }
+        }
+
         private readonly ITypeActivator _activator;
         private readonly IServiceProvider _serviceProvider;
         private readonly IFileInfoCache _fileInfoCache;
 
-        public VirtualPathRazorPageFactory(IRazorCompilationService compilationService,
-                                           ITypeActivator typeActivator,
+        public VirtualPathRazorPageFactory(ITypeActivator typeActivator,
                                            IServiceProvider serviceProvider,
                                            IFileInfoCache fileInfoCache)
         {
-            _compilationService = compilationService;
             _activator = typeActivator;
             _serviceProvider = serviceProvider;
             _fileInfoCache = fileInfoCache;
@@ -47,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     RelativePath = relativePath,
                 };
 
-                var result = _compilationService.Compile(relativeFileInfo, enableInstrumentation);
+                var result = CompilationService.Compile(relativeFileInfo, enableInstrumentation);
                 var page = (IRazorPage)_activator.CreateInstance(_serviceProvider, result.CompiledType);
                 page.Path = relativePath;
 

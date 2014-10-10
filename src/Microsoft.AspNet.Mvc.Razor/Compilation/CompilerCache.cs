@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                     // There shouldn't be any duplicates and if there are any the first will win.
                     // If the result doesn't match the one on disk its going to recompile anyways.
-                    _cache.TryAdd(fileInfo.RelativePath, cacheEntry);
+                    _cache.TryAdd(NormalizePath(fileInfo.RelativePath), cacheEntry);
                 }
             }
         }
@@ -68,8 +68,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                                           bool enableInstrumentation,
                                           [NotNull] Func<CompilationResult> compile)
         {
+
             CompilerCacheEntry cacheEntry;
-            if (!_cache.TryGetValue(fileInfo.RelativePath, out cacheEntry))
+            if (!_cache.TryGetValue(NormalizePath(fileInfo.RelativePath), out cacheEntry))
             {
                 return OnCacheMiss(fileInfo, enableInstrumentation, compile);
             }
@@ -114,9 +115,17 @@ namespace Microsoft.AspNet.Mvc.Razor
             var result = compile();
 
             var cacheEntry = new CompilerCacheEntry(file, result.CompiledType, isInstrumented);
-            _cache[file.RelativePath] = cacheEntry;
+            _cache[NormalizePath(file.RelativePath)] = cacheEntry;
 
             return result;
+        }
+
+        private string NormalizePath(string path)
+        {
+            path = path.Replace('/', '\\');
+            path = path.TrimStart('\\');
+
+            return path;
         }
     }
 }

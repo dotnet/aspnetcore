@@ -163,7 +163,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                     viewName,
                                                     controllerName,
                                                     areaName);
-                var page = _pageFactory.CreateInstance(transformedPath, IsInstrumentationEnabled(context));
+
+                var isInstrumentated = IsInstrumentationEnabled(context);
+                var page = _pageFactory.CreateInstance(transformedPath, isInstrumentated);
                 if (page != null)
                 {
                     // 3a. We found a page. Cache the set of values that produced it and return a found result.

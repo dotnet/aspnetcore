@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -34,10 +35,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var fileInfo = new Mock<IFileInfo>();
             fileInfo.Setup(f => f.PhysicalPath).Returns(viewPath);
             fileInfo.Setup(f => f.CreateReadStream()).Returns(Stream.Null);
+
             var compiler = new Mock<ICompilationService>();
             compiler.Setup(c => c.Compile(fileInfo.Object, It.IsAny<string>()))
                     .Returns(CompilationResult.Successful(typeof(RazorCompilationServiceTest)));
-            var razorService = new RazorCompilationService(compiler.Object, ap.Object, host.Object);
+
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(sp => sp.GetService(It.Is<Type>(t => t == typeof(ICompilationService))))
+                           .Returns(compiler.Object);
+
+            var razorService = new RazorCompilationService(serviceProvider.Object, ap.Object, host.Object);
 
             var relativeFileInfo = new RelativeFileInfo()
             {
@@ -61,8 +68,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var host = new Mock<IMvcRazorHost>();
             host.SetupAllProperties();
             host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
-                .Returns(GetGeneratorResult());
-            var assemblyProvider = new Mock<IControllerAssemblyProvider>();
+                .Returns(GetGeneratorResult());            var assemblyProvider = new Mock<IControllerAssemblyProvider>();
             assemblyProvider.SetupGet(e => e.CandidateAssemblies)
                             .Returns(Enumerable.Empty<Assembly>());
 
@@ -70,7 +76,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             compiler.Setup(c => c.Compile(It.IsAny<IFileInfo>(), It.IsAny<string>()))
                     .Returns(CompilationResult.Successful(GetType()));
 
-            var razorService = new RazorCompilationService(compiler.Object, assemblyProvider.Object, host.Object);
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(sp => sp.GetService(It.Is<Type>(t => t == typeof(ICompilationService))))
+                           .Returns(compiler.Object);
+
+            var razorService = new RazorCompilationService(serviceProvider.Object, assemblyProvider.Object, host.Object);
             var relativeFileInfo = new RelativeFileInfo()
             {
                 FileInfo = Mock.Of<IFileInfo>(),

@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Microsoft.AspNet.Razor;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -14,15 +16,31 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </remarks>
     public class RazorCompilationService : IRazorCompilationService
     {
+        private readonly IServiceProvider _serviceProvider;
+
         private readonly CompilerCache _cache;
-        private readonly ICompilationService _baseCompilationService;
+        private ICompilationService _compilationService;
+
+        private ICompilationService CompilationService
+        {
+            get
+            {
+                if (_compilationService == null)
+                {
+                    _compilationService = _serviceProvider.GetService<ICompilationService>();
+                }
+
+                return _compilationService;
+            }
+        }
+
         private readonly IMvcRazorHost _razorHost;
 
-        public RazorCompilationService(ICompilationService compilationService,
+        public RazorCompilationService(IServiceProvider serviceProvider,
                                        IControllerAssemblyProvider _controllerAssemblyProvider,
                                        IMvcRazorHost razorHost)
         {
-            _baseCompilationService = compilationService;
+            _serviceProvider = serviceProvider;
             _razorHost = razorHost;
             _cache = new CompilerCache(_controllerAssemblyProvider.CandidateAssemblies);
         }
@@ -50,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return CompilationResult.Failed(file.FileInfo, results.GeneratedCode, messages);
             }
 
-            return _baseCompilationService.Compile(file.FileInfo, results.GeneratedCode);
+            return CompilationService.Compile(file.FileInfo, results.GeneratedCode);
         }
     }
 }
