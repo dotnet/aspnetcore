@@ -5,16 +5,16 @@
         "aspnetcore50": {
             "dependencies": {
                 "Microsoft.Net.WebSocketAbstractions": "1.0.0-*",
-                "System.Diagnostics.Contracts": "4.0.0.0",
-                "System.Linq": "4.0.0.0",
-                "System.Runtime": "4.0.20.0",
-                "System.Runtime.InteropServices": "4.0.20.0",
-                "System.Runtime.Extensions": "4.0.10.0",
-                "System.Security.Cryptography.Encryption": "4.0.0.0",
-                "System.Security.Cryptography.Hashing.Algorithms": "4.0.0.0",
-                "System.Threading": "4.0.0.0",
-                "System.Threading.Tasks": "4.0.10.0",
-                "System.Threading.Timer": "4.0.0.0"
+                "System.Diagnostics.Contracts": "4.0.0-beta-*",
+                "System.Linq": "4.0.0-beta-*",
+                "System.Runtime": "4.0.20-beta-*",
+                "System.Runtime.InteropServices": "4.0.20-beta-*",
+                "System.Runtime.Extensions": "4.0.10-beta-*",
+                "System.Security.Cryptography.Encryption": "4.0.0-beta-*",
+                "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",
+                "System.Threading": "4.0.0-beta-*",
+                "System.Threading.Tasks": "4.0.10-beta-*",
+                "System.Threading.Timer": "4.0.0-beta-*"
             }
         }
     }
