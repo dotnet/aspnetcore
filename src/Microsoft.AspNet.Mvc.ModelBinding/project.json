@@ -42,7 +42,7 @@
         "System.Runtime.Extensions": "4.0.10-beta-*",
         "System.Runtime.InteropServices": "4.0.20-beta-*",
         "System.Runtime.Serialization.Primitives": "4.0.0-beta-*",
-        "System.Runtime.Serialization.Xml": "4.0.0-beta-*",
+        "System.Runtime.Serialization.Xml": "4.0.10-beta-*",
         "System.Text.Encoding": "4.0.10-beta-*",
         "System.Text.Encoding.Extensions": "4.0.10-beta-*",
         "System.Threading": "4.0.0-beta-*",

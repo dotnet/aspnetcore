@@ -26,7 +26,7 @@
     },
     "aspnetcore50": {
       "dependencies": {
-        "Microsoft.CSharp": "4.0.0.0",
+        "Microsoft.CSharp": "4.0.0-beta-*",
         "System.Collections": "4.0.10-beta-*",
         "System.Collections.Concurrent": "4.0.0-beta-*",
         "System.ComponentModel": "4.0.0-beta-*",
@@ -46,7 +46,7 @@
         "System.Runtime": "4.0.20-beta-*",
         "System.Runtime.Extensions": "4.0.10-beta-*",
         "System.Runtime.InteropServices": "4.0.20-beta-*",
-        "System.Runtime.Serialization.Xml": "4.0.0-beta-*",
+        "System.Runtime.Serialization.Xml": "4.0.10-beta-*",
         "System.Security.Claims": "1.0.0-*",
         "System.Security.Cryptography.Encryption": "4.0.0-beta-*",
         "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",
