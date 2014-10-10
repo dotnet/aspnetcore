@@ -223,11 +223,11 @@ namespace Microsoft.AspNet.Security.Google
                 options.StateDataFormat = stateFormat;
                 options.BackchannelHttpHandler = new TestHttpMessageHandler
                 {
-                    Sender = async req =>
+                    Sender = req =>
                     {
                         if (req.RequestUri.AbsoluteUri == "https://accounts.google.com/o/oauth2/token")
                         {
-                            return await ReturnJsonResponse(new
+                            return ReturnJsonResponse(new
                             {
                                 access_token = "Test Access Token",
                                 expire_in = 3600,
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Security.Google
                         }
                         else if (req.RequestUri.GetLeftPart(UriPartial.Path) == "https://www.googleapis.com/plus/v1/people/me")
                         {
-                            return await ReturnJsonResponse(new
+                            return ReturnJsonResponse(new
                             {
                                 id = "Test User ID",
                                 displayName = "Test Name",
@@ -299,7 +299,7 @@ namespace Microsoft.AspNet.Security.Google
                 {
                     Sender = req =>
                     {
-                        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest));
+                        return new HttpResponseMessage(HttpStatusCode.BadRequest);
                     }
                 };
             });
@@ -357,11 +357,11 @@ namespace Microsoft.AspNet.Security.Google
                 options.StateDataFormat = stateFormat;
                 options.BackchannelHttpHandler = new TestHttpMessageHandler
                 {
-                    Sender = async req =>
+                    Sender = req =>
                     {
                         if (req.RequestUri.AbsoluteUri == "https://accounts.google.com/o/oauth2/token")
                         {
-                            return await ReturnJsonResponse(new
+                            return ReturnJsonResponse(new
                             {
                                 access_token = "Test Access Token",
                                 expire_in = 3600,
@@ -371,7 +371,7 @@ namespace Microsoft.AspNet.Security.Google
                         }
                         else if (req.RequestUri.GetLeftPart(UriPartial.Path) == "https://www.googleapis.com/plus/v1/people/me")
                         {
-                            return await ReturnJsonResponse(new
+                            return ReturnJsonResponse(new
                             {
                                 id = "Test User ID",
                                 displayName = "Test Name",
@@ -426,10 +426,10 @@ namespace Microsoft.AspNet.Security.Google
             transaction.FindClaimValue("RefreshToken").ShouldBe("Test Refresh Token");
         }
 
-        private static async Task<HttpResponseMessage> ReturnJsonResponse(object content)
+        private static HttpResponseMessage ReturnJsonResponse(object content)
         {
             var res = new HttpResponseMessage(HttpStatusCode.OK);
-            var text = await Task.Factory.StartNew(() => JsonConvert.SerializeObject(content));
+            var text = JsonConvert.SerializeObject(content);
             res.Content = new StringContent(text, Encoding.UTF8, "application/json");
             return res;
         }
@@ -524,16 +524,16 @@ namespace Microsoft.AspNet.Security.Google
 
         private class TestHttpMessageHandler : HttpMessageHandler
         {
-            public Func<HttpRequestMessage, Task<HttpResponseMessage>> Sender { get; set; }
+            public Func<HttpRequestMessage, HttpResponseMessage> Sender { get; set; }
 
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
             {
                 if (Sender != null)
                 {
-                    return await Sender(request);
+                    return Task.FromResult(Sender(request));
                 }
 
-                return null;
+                return Task.FromResult<HttpResponseMessage>(null);
             }
         }
 

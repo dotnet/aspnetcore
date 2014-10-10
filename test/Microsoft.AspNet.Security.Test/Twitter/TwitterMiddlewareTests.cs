@@ -43,15 +43,15 @@ namespace Microsoft.AspNet.Security.Twitter
                         {
                             if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
                             {
-                                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                                return new HttpResponseMessage(HttpStatusCode.OK)
                                 {
                                     Content =
                                         new StringContent("oauth_callback_confirmed=true&oauth_token=test_oauth_token&oauth_token_secret=test_oauth_token_secret",
                                             Encoding.UTF8,
                                             "application/x-www-form-urlencoded")
-                                });
+                                };
                             }
-                            return Task.FromResult<HttpResponseMessage>(null);
+                            return null;
                         }
                     };
                     options.BackchannelCertificateValidator = null;
@@ -81,15 +81,15 @@ namespace Microsoft.AspNet.Security.Twitter
                         {
                             if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
                             {
-                                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                                return new HttpResponseMessage(HttpStatusCode.OK)
                                 {
                                     Content =
                                         new StringContent("oauth_callback_confirmed=true&oauth_token=test_oauth_token&oauth_token_secret=test_oauth_token_secret",
                                             Encoding.UTF8,
                                             "application/x-www-form-urlencoded")
-                                });
+                                };
                             }
-                            return Task.FromResult<HttpResponseMessage>(null);
+                            return null;
                         }
                     };
                     options.BackchannelCertificateValidator = null;
@@ -155,26 +155,18 @@ namespace Microsoft.AspNet.Security.Twitter
             return transaction;
         }
 
-        private static async Task<HttpResponseMessage> ReturnJsonResponse(object content)
-        {
-            var res = new HttpResponseMessage(HttpStatusCode.OK);
-            var text = await Task.Factory.StartNew(() => JsonConvert.SerializeObject(content));
-            res.Content = new StringContent(text, Encoding.UTF8, "application/json");
-            return res;
-        }
-
         private class TestHttpMessageHandler : HttpMessageHandler
         {
-            public Func<HttpRequestMessage, Task<HttpResponseMessage>> Sender { get; set; }
+            public Func<HttpRequestMessage, HttpResponseMessage> Sender { get; set; }
 
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
             {
                 if (Sender != null)
                 {
-                    return await Sender(request);
+                    return Task.FromResult(Sender(request));
                 }
 
-                return null;
+                return Task.FromResult<HttpResponseMessage>(null);
             }
         }
 
