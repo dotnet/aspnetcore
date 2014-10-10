@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.Security.Test
 
             // Act
             // Assert
-            Exception ex = Assert.Throws<AggregateException>(() => authorizationService.Authorize(Enumerable.Empty<Claim>(), null));
+            Exception ex = Assert.Throws<InvalidOperationException>(() => authorizationService.Authorize(Enumerable.Empty<Claim>(), null));
         }
  
         [Fact]

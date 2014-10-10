@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
                 () =>
                 {
                     return Task.FromResult(AuthenticateCore());
-                }).Result;
+                }).GetAwaiter().GetResult();
         }
 
         protected abstract AuthenticationTicket AuthenticateCore();
@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
                 {
                     ApplyResponseCore();
                     return Task.FromResult(0);
-                }).Wait(); // Block if the async version is in progress.
+                }).GetAwaiter().GetResult(); // Block if the async version is in progress.
         }
 
         protected virtual void ApplyResponseCore()

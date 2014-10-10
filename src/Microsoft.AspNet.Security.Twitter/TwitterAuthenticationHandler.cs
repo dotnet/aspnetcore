@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Security.Twitter
 
         protected override AuthenticationTicket AuthenticateCore()
         {
-            return AuthenticateCoreAsync().Result;
+            return AuthenticateCoreAsync().GetAwaiter().GetResult();
         }
 
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Security.Twitter
         }
         protected override void ApplyResponseChallenge()
         {
-            ApplyResponseChallengeAsync().Wait();
+            ApplyResponseChallengeAsync().GetAwaiter().GetResult();
         }
 
         protected override async Task ApplyResponseChallengeAsync()

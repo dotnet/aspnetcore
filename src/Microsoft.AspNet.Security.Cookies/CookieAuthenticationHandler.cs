@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Security.Cookies
 
         protected override AuthenticationTicket AuthenticateCore()
         {
-            return AuthenticateCoreAsync().Result;
+            return AuthenticateCoreAsync().GetAwaiter().GetResult();
         }
 
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Security.Cookies
 
         protected override void ApplyResponseGrant()
         {
-            ApplyResponseGrantAsync().Wait();
+            ApplyResponseGrantAsync().GetAwaiter().GetResult();
         }
 
         protected override async Task ApplyResponseGrantAsync()

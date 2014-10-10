@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Security.OAuth
 
         protected override AuthenticationTicket AuthenticateCore()
         {
-            return AuthenticateCoreAsync().Result;
+            return AuthenticateCoreAsync().GetAwaiter().GetResult();
         }
 
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
