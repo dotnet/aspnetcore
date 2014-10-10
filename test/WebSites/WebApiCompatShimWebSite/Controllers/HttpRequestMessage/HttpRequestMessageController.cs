@@ -2,13 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
-using System.Net;
-using System.Net.Http.Formatting;
 
 namespace WebApiCompatShimWebSite
 {
@@ -92,6 +95,80 @@ namespace WebApiCompatShimWebSite
         {
             // This will perform content negotation
             return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "It failed.");
+        }
+
+        [HttpGet]
+        public HttpResponseMessage ReturnByteArrayContent()
+        {
+            var response = new HttpResponseMessage();
+            response.Content = new ByteArrayContent(Encoding.UTF8.GetBytes("Hello from ByteArrayContent!!"));
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/plain");
+
+            return response;
+        }
+
+        [HttpGet]
+        public HttpResponseMessage ReturnStreamContent()
+        {
+            var response = new HttpResponseMessage();
+            response.Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("This content is from a file")));
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
+
+            return response;
+        }
+
+        // NOTE: PushStreamContent's contract is to close the stream in order to signal
+        // that the user has done writing to it. However, the stream that is provided here is
+        // a wrapper delegating stream which actually doesn't close the actual response stream.
+
+        [HttpGet]
+        public HttpResponseMessage ReturnPushStreamContentSync()
+        {
+            var response = new HttpResponseMessage();
+            // Here we are using a non-Task returning action delegate
+            response.Content = new PushStreamContent((responseStream, httpContent, transportContext) =>
+            {
+                using (var streamWriter = new StreamWriter(responseStream))
+                {
+                    streamWriter.Write("Hello from PushStreamContent Sync!!");
+                }
+            });
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+
+            return response;
+        }
+
+        [HttpGet]
+        public HttpResponseMessage ReturnPushStreamContent()
+        {
+            var response = new HttpResponseMessage();
+            response.Content = new PushStreamContent(async (responseStream, httpContent, transportContext) =>
+            {
+                using (var streamWriter = new StreamWriter(responseStream))
+                {
+                    await streamWriter.WriteAsync("Hello from PushStreamContent!!");
+                }
+            });
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+
+            return response;
+        }
+
+        [HttpGet]
+        public HttpResponseMessage ReturnPushStreamContentWithCustomHeaders()
+        {
+            var response = new HttpResponseMessage();
+            response.Headers.Add("Multiple", new[] { "value1", "value2" });
+            response.Content = new PushStreamContent(async (responseStream, httpContent, transportContext) =>
+            {
+                using (var streamWriter = new StreamWriter(responseStream))
+                {
+                    await streamWriter.WriteAsync("Hello from PushStreamContent with custom headers!!");
+                }
+            });
+
+            return response;
         }
 
         private async Task Echo(HttpRequestMessage request)
