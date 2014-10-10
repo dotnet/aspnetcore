@@ -10,7 +10,7 @@
         "aspnet50": { },
         "aspnetcore50": {
             "dependencies": {
-                "System.Console": "4.0.0.0"
+                "System.Console": "4.0.0-beta-*"
             }
         }
     }

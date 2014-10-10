@@ -12,21 +12,21 @@
     "aspnet50": { },
     "aspnetcore50": {
       "dependencies": {
-        "System.Collections": "4.0.10.0",
-        "System.Console": "4.0.0.0",
-        "System.Diagnostics.Debug": "4.0.10.0",
-        "System.Diagnostics.Tools": "4.0.0.0",
-        "System.Globalization": "4.0.10.0",
-        "System.IO": "4.0.10.0",
-        "System.Linq": "4.0.0.0",
-        "System.Reflection": "4.0.10.0",
-        "System.Resources.ResourceManager": "4.0.0.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.InteropServices": "4.0.20.0",
+        "System.Collections": "4.0.10-beta-*",
+        "System.Console": "4.0.0-beta-*",
+        "System.Diagnostics.Debug": "4.0.10-beta-*",
+        "System.Diagnostics.Tools": "4.0.0-beta-*",
+        "System.Globalization": "4.0.10-beta-*",
+        "System.IO": "4.0.10-beta-*",
+        "System.Linq": "4.0.0-beta-*",
+        "System.Reflection": "4.0.10-beta-*",
+        "System.Resources.ResourceManager": "4.0.0-beta-*",
+        "System.Runtime": "4.0.20-beta-*",
+        "System.Runtime.Extensions": "4.0.10-beta-*",
+        "System.Runtime.InteropServices": "4.0.20-beta-*",
         "System.Security.Claims":  "1.0.0-*",
-        "System.Text.Encoding": "4.0.10.0",
-        "System.Threading.Tasks": "4.0.10.0"
+        "System.Text.Encoding": "4.0.10-beta-*",
+        "System.Threading.Tasks": "4.0.10-beta-*"
       }
     }
   }
