@@ -13,9 +13,9 @@
     "frameworks": {
         "aspnet50": {
             "frameworkAssemblies": {
-                "System.Xml": "4.0.0.0",
-                "System.Data": "4.0.0.0",
-                "System.Net.Http": "4.0.0.0"
+                "System.Xml": "4.0.0-beta-*",
+                "System.Data": "4.0.0-beta-*",
+                "System.Net.Http": "4.0.0-beta-*"
             }
         }
     }
