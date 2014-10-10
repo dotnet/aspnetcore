@@ -41,19 +41,9 @@ namespace Microsoft.AspNet.Hosting
 
             yield return describer.Scoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
 
-            if (PlatformHelper.IsMono)
+            foreach (var service in DataProtectionServices.GetDefaultServices())
             {
-#if ASPNET50
-                yield return describer.Instance<IDataProtectionProvider>(DataProtectionProvider.CreateFromLegacyDpapi());
-#endif
-            }
-            else
-            {
-                // The default IDataProtectionProvider is a singleton.
-                // Note: DPAPI isn't usable in IIS where the user profile hasn't been loaded, but loading DPAPI
-                // is deferred until the first call to Protect / Unprotect. It's up to an IIS-based host to
-                // replace this service as part of application initialization.
-                yield return describer.Instance<IDataProtectionProvider>(DataProtectionProvider.CreateFromDpapi());
+                yield return service;
             }
         }
     }
