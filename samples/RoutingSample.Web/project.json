@@ -9,9 +9,9 @@
     "aspnet50": { },
     "aspnetcore50": {
       "dependencies": {
-        "System.Diagnostics.Debug": "4.0.10.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Threading.Tasks": "4.0.10.0"
+        "System.Diagnostics.Debug": "4.0.10-beta-*",
+        "System.Runtime": "4.0.20-beta-*",
+        "System.Threading.Tasks": "4.0.10-beta-*"
       }
     }
   }

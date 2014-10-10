@@ -11,13 +11,13 @@
     "frameworks": {
         "aspnetcore50": {
             "dependencies": {
-                "System.Collections": "4.0.10.0",
-                "System.Linq": "4.0.0.0",
-                "System.Runtime": "4.0.20.0",
-                "System.Runtime.Extensions": "4.0.10.0",
-                "System.Threading": "4.0.0.0",
-                "System.Threading.Tasks": "4.0.10.0",
-                "System.Text.RegularExpressions": "4.0.0.0"
+                "System.Collections": "4.0.10-beta-*",
+                "System.Linq": "4.0.0-beta-*",
+                "System.Runtime": "4.0.20-beta-*",
+                "System.Runtime.Extensions": "4.0.10-beta-*",
+                "System.Threading": "4.0.0-beta-*",
+                "System.Threading.Tasks": "4.0.10-beta-*",
+                "System.Text.RegularExpressions": "4.0.0-beta-*"
             }
         },
         "aspnet50": {
