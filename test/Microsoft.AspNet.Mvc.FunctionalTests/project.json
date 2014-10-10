@@ -47,7 +47,7 @@
         },
         "aspnetcore50": {
             "dependencies": {
-                "System.Xml.XmlDocument": "4.0.0.0"
+                "System.Xml.XmlDocument": "4.0.0-beta-*"
             }
         }
     }
