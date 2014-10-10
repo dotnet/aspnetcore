@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.Runtime;
 using Moq;
 using Xunit;
 
@@ -16,30 +15,16 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private const string FileName = "myView.cshtml";
 
-        public IApplicationEnvironment ApplicationEnvironment
-        {
-            get
-            {
-                var mock = new Mock<IApplicationEnvironment>(MockBehavior.Strict);
-                mock.Setup(ae => ae.ApplicationBasePath).Returns(Directory.GetCurrentDirectory());
-
-                return mock.Object;
-            }
-        }
-
-        public RazorViewEngineOptions Options
-        {
-            get
-            {
-                return new RazorViewEngineOptions();
-            }
-        }
+        public DummyFileSystem TestFileSystem { get; } = new DummyFileSystem();
 
         public IOptionsAccessor<RazorViewEngineOptions> OptionsAccessor
         {
             get
             {
-                var options = Options;
+                var options = new RazorViewEngineOptions
+                {
+                    FileSystem = TestFileSystem
+                };
 
                 var mock = new Mock<IOptionsAccessor<RazorViewEngineOptions>>(MockBehavior.Strict);
                 mock.Setup(oa => oa.Options).Returns(options);
@@ -50,18 +35,18 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public ControllableExpiringFileInfoCache GetCache(IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
         {
-            return new ControllableExpiringFileInfoCache(ApplicationEnvironment, optionsAccessor);
+            return new ControllableExpiringFileInfoCache(optionsAccessor);
         }
 
-        public void CreateFile(string FileName, ControllableExpiringFileInfoCache cache)
+        public void CreateFile(string fileName)
         {
             var fileInfo = new DummyFileInfo()
             {
-                Name = FileName,
+                Name = fileName,
                 LastModified = DateTime.Now,
             };
 
-            cache.UnderlyingFileSystem.AddFile(fileInfo);
+            TestFileSystem.AddFile(fileInfo);
         }
 
         public void Sleep(ControllableExpiringFileInfoCache cache, int offsetMilliseconds)
@@ -96,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var cache = GetCache(OptionsAccessor);
 
-            CreateFile(FileName, cache);
+            CreateFile(FileName);
 
             // Act
             var fileInfo1 = cache.GetFileInfo(FileName);
@@ -114,12 +99,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var cache = GetCache(OptionsAccessor);
 
-            CreateFile(FileName, cache);
+            CreateFile(FileName);
 
             // Act
             var fileInfo1 = cache.GetFileInfo(FileName);
 
-            CreateFile(FileName, cache);
+            CreateFile(FileName);
 
             var fileInfo2 = cache.GetFileInfo(FileName);
 
@@ -139,13 +124,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var cache = GetCache(optionsAccessor);
 
-            CreateFile(FileName, cache);
+            CreateFile(FileName);
 
             // Act
             var fileInfo1 = cache.GetFileInfo(FileName);
 
             Sleep(optionsAccessor, cache, 500);
-            CreateFile(FileName, cache);
+            CreateFile(FileName);
 
             var fileInfo2 = cache.GetFileInfo(FileName);
 
@@ -164,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var cache = GetCache(optionsAccessor);
 
-            CreateFile(FileName, cache);
+            CreateFile(FileName);
 
             // Act
             var fileInfo1 = cache.GetFileInfo(FileName);
@@ -213,7 +198,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             string FileName = "myfile4.cshtml";
             var cache = GetCache(optionsAccessor);
 
-            CreateFile(FileName, cache);
+            CreateFile(FileName);
 
             // Act
             var fileInfo1 = cache.GetFileInfo(FileName);
@@ -254,7 +239,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             string FileName = "myfile5.cshtml";
             var cache = GetCache(optionsAccessor);
 
-            CreateFile(FileName, cache);
+            CreateFile(FileName);
 
             // Act
             var fileInfo1 = cache.GetFileInfo(FileName);
@@ -280,7 +265,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             string FileName = "myfile6.cshtml";
             var cache = GetCache(optionsAccessor);
 
-            CreateFile(FileName, cache);
+            CreateFile(FileName);
 
             // Act
             var fileInfo1 = cache.GetFileInfo(FileName);
@@ -305,7 +290,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             string FileName = "myfile7.cshtml";
             var cache = GetCache(optionsAccessor);
 
-            CreateFile(FileName, cache);
+            CreateFile(FileName);
 
             // Act
             var fileInfo1 = cache.GetFileInfo(FileName);
@@ -322,14 +307,12 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public class ControllableExpiringFileInfoCache : ExpiringFileInfoCache
         {
-            public ControllableExpiringFileInfoCache(IApplicationEnvironment env,
-                                                     IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
-                : base(env, optionsAccessor)
+            public ControllableExpiringFileInfoCache(IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
+                : base(optionsAccessor)
             {
             }
 
             private DateTime? _internalUtcNow { get; set; }
-            private DummyFileSystem _underlyingFileSystem = new DummyFileSystem();
 
             protected override DateTime UtcNow
             {
@@ -344,14 +327,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
             }
 
-            protected override IFileSystem FileSystem
-            {
-                get
-                {
-                    return UnderlyingFileSystem;
-                }
-            }
-
             public void Sleep(int milliSeconds)
             {
                 if (milliSeconds <= 0)
@@ -360,14 +335,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
 
                 _internalUtcNow = UtcNow.AddMilliseconds(milliSeconds);
-            }
-
-            public DummyFileSystem UnderlyingFileSystem
-            {
-                get
-                {
-                    return _underlyingFileSystem;
-                }
             }
         }
 

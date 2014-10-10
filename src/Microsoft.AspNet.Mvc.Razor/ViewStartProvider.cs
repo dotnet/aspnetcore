@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.FileSystems;
-using Microsoft.Framework.Runtime;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -15,10 +15,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IFileSystem _fileSystem;
         private readonly IRazorPageFactory _pageFactory;
 
-        public ViewStartProvider(IApplicationEnvironment appEnv,
-                                 IRazorPageFactory pageFactory)
+        public ViewStartProvider(IRazorPageFactory pageFactory,
+                                 IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
         {
-            _fileSystem = new PhysicalFileSystem(appEnv.ApplicationBasePath);
+            _fileSystem = optionsAccessor.Options.FileSystem;
             _pageFactory = pageFactory;
         }
 

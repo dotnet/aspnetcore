@@ -35,6 +35,8 @@ namespace Microsoft.AspNet.Mvc
             // Options and core services.
             //
             yield return describe.Transient<IOptionsAction<MvcOptions>, MvcOptionsSetup>();
+            yield return describe.Transient<IOptionsAction<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>();
+
             yield return describe.Transient<IAssemblyProvider, DefaultAssemblyProvider>();
             yield return describe.Transient(typeof(INestedProviderManager<>), typeof(NestedProviderManager<>));
             yield return describe.Transient(typeof(INestedProviderManagerAsync<>), typeof(NestedProviderManagerAsync<>));
@@ -106,7 +108,11 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Singleton<IFileInfoCache, ExpiringFileInfoCache>();
 
             // The host is designed to be discarded after consumption and is very inexpensive to initialize.
-            yield return describe.Transient<IMvcRazorHost, MvcRazorHost>();
+            yield return describe.Transient<IMvcRazorHost>(serviceProvider =>
+            {
+                var optionsAccessor = serviceProvider.GetService<IOptionsAccessor<RazorViewEngineOptions>>();
+                return new MvcRazorHost(optionsAccessor.Options.FileSystem);
+            });
 
             yield return describe.Singleton<ICompilerCache, CompilerCache>();
             yield return describe.Singleton<ICompilationService, RoslynCompilationService>();

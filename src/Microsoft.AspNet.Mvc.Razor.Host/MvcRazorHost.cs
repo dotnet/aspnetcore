@@ -11,10 +11,6 @@ using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
-#if ASPNET50 || ASPNETCORE50
-using Microsoft.Framework.Runtime;
-#endif
-
 namespace Microsoft.AspNet.Mvc.Razor
 {
     public class MvcRazorHost : RazorEngineHost, IMvcRazorHost
@@ -41,17 +37,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         // This field holds the type name without the generic decoration (MyBaseType)
         private readonly string _baseType;
 
-#if ASPNET50 || ASPNETCORE50
-        /// <summary>
-        /// Initializes a new instance of <see cref="MvcRazorHost"/> with the specified
-        /// <param name="appEnvironment"/>.
-        /// </summary>
-        /// <param name="appEnvironment">Contains information about the executing application.</param>
-        public MvcRazorHost(IApplicationEnvironment appEnvironment)
-            : this(new PhysicalFileSystem(appEnvironment.ApplicationBasePath))
-        {
-        }
-#elif NET45
+#if NET45
         /// <summary>
         /// Initializes a new instance of <see cref="MvcRazorHost"/> with the specified
         /// <param name="root"/>.
@@ -62,12 +48,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
         }
 #endif
-
         /// <summary>
         /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="fileSystem"/>.
         /// </summary>
         /// <param name="fileSystem">A <see cref="IFileSystem"/> rooted at the application base path.</param>
-        protected internal MvcRazorHost([NotNull] IFileSystem fileSystem)
+        public MvcRazorHost(IFileSystem fileSystem)
             : base(new CSharpRazorCodeLanguage())
         {
             _fileSystem = fileSystem;

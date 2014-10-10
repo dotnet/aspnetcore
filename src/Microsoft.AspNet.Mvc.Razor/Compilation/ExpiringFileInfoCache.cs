@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -17,15 +16,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly ConcurrentDictionary<string, ExpiringFileInfo> _fileInfoCache =
             new ConcurrentDictionary<string, ExpiringFileInfo>(StringComparer.Ordinal);
 
-        private readonly PhysicalFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
         private readonly TimeSpan _offset;
 
-        protected virtual IFileSystem FileSystem
+        public ExpiringFileInfoCache(IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
         {
-            get
-            {
-                return _fileSystem;
-            }
+            _fileSystem = optionsAccessor.Options.FileSystem;
+            _offset = optionsAccessor.Options.ExpirationBeforeCheckingFilesOnDisk;
         }
 
         protected virtual DateTime UtcNow
@@ -34,14 +31,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 return DateTime.UtcNow;
             }
-        }
-
-        public ExpiringFileInfoCache(IApplicationEnvironment env,
-                                     IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
-        {
-            // TODO: Inject the IFileSystem but only when we get it from the host
-            _fileSystem = new PhysicalFileSystem(env.ApplicationBasePath);
-            _offset = optionsAccessor.Options.ExpirationBeforeCheckingFilesOnDisk;
         }
 
         /// <inheritdoc />
@@ -59,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                FileSystem.TryGetFileInfo(virtualPath, out fileInfo);
+                _fileSystem.TryGetFileInfo(virtualPath, out fileInfo);
 
                 expiringFileInfo = new ExpiringFileInfo()
                 {

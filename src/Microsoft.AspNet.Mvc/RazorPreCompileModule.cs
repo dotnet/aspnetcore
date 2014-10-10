@@ -6,9 +6,10 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Framework.Runtime;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -21,9 +22,16 @@ namespace Microsoft.AspNet.Mvc
             _appServices = services;
         }
 
+        protected virtual string FileExtension { get; } = ".cshtml";
+
         public virtual void BeforeCompile(IBeforeCompileContext context)
         {
             var sc = new ServiceCollection();
+            var appEnv = _appServices.GetService<IApplicationEnvironment>();
+
+            var setup = new RazorViewEngineOptionsSetup(appEnv);
+            var accessor = new OptionsAccessor<RazorViewEngineOptions>(new[] { setup });
+            sc.AddInstance<IOptionsAccessor<RazorViewEngineOptions>>(accessor);
             sc.Add(MvcServices.GetDefaultServices());
             var sp = sc.BuildServiceProvider(_appServices);
 

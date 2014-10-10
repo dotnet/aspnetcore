@@ -8,6 +8,7 @@ using Microsoft.AspNet.FileSystems;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -18,28 +19,25 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IFileSystem _fileSystem;
         private readonly IMvcRazorHost _host;
 
-        protected virtual string FileExtension
-        {
-            get
-            {
-                return ".cshtml";
-            }
-        }
-
         public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider) :
-            this(designTimeServiceProvider, designTimeServiceProvider.GetService<IMvcRazorHost>())
+            this(designTimeServiceProvider, 
+                 designTimeServiceProvider.GetService<IMvcRazorHost>(),
+                 designTimeServiceProvider.GetService<IOptionsAccessor<RazorViewEngineOptions>>())
         {
         }
 
         public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider,
-                                [NotNull] IMvcRazorHost host)
+                                [NotNull] IMvcRazorHost host,
+                                [NotNull] IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
         {
             _serviceProvider = designTimeServiceProvider;
             _host = host;
 
             var appEnv = _serviceProvider.GetService<IApplicationEnvironment>();
-            _fileSystem = new PhysicalFileSystem(appEnv.ApplicationBasePath);
+            _fileSystem = optionsAccessor.Options.FileSystem;
         }
+
+        protected virtual string FileExtension { get; } = ".cshtml";
 
         public virtual void CompileViews([NotNull] IBeforeCompileContext context)
         {

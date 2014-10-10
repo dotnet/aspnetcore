@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -13,6 +14,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class RazorViewEngineOptions
     {
         private TimeSpan _expirationBeforeCheckingFilesOnDisk = TimeSpan.FromSeconds(2);
+        private IFileSystem _fileSystem;
 
         /// <summary>
         /// Controls the <see cref="ExpiringFileInfoCache" /> caching behavior.
@@ -47,5 +49,28 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         public IList<ViewLocationExpanderDescriptor> ViewLocationExpanders { get; }
             = new List<ViewLocationExpanderDescriptor>();
+
+        /// <summary>
+        /// Gets or sets the <see cref="IFileSystem" /> used by <see cref="RazorViewEngine"/> to locate Razor files on
+        /// disk.
+        /// </summary>
+        /// <remarks>
+        /// At startup, this is initialized to an instance of <see cref="PhysicalFileSystem"/> that is rooted at the
+        /// application root.
+        /// </remarks>
+        public IFileSystem FileSystem
+        {
+            get { return _fileSystem; }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _fileSystem = value;
+            }
+        }
     }
 }
