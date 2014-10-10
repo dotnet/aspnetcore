@@ -13,7 +13,7 @@
     "frameworks": {
         "aspnet50": {
             "frameworkAssemblies": {
-                "System.Net.Http": "4.0.0-beta-*"
+                "System.Net.Http": ""
             }
         },
         "aspnetcore50": {

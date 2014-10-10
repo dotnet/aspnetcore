@@ -12,8 +12,8 @@
     "frameworks": {
         "aspnet50": {
             "frameworkAssemblies": {
-                "System.Net.Http.WebRequest": "4.0.0-beta-*",
-                "System.Net.Http": "4.0.0-beta-*"
+                "System.Net.Http.WebRequest": "",
+                "System.Net.Http": ""
             }
         },
         "aspnetcore50": {
