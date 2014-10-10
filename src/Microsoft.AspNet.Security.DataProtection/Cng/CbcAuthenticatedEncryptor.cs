@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
             }
             finally
             {
-                // Buffer contains sensitive key material; nuke.
+                // Buffer contains sensitive key material; delete.
                 UnsafeBufferUtil.SecureZeroMemory(pbTempSubkeys, cbTempSubkeys);
             }
         }
@@ -397,7 +397,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
             }
             finally
             {
-                // Buffer contains sensitive material; nuke it.
+                // Buffer contains sensitive material; delete it.
                 UnsafeBufferUtil.SecureZeroMemory(pbTempSubkeys, cbTempSubkeys);
             }
         }

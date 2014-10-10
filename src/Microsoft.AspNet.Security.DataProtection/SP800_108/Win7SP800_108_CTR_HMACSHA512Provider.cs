@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Security.DataProtection.SP800_108
                     BitHelpers.WriteTo(pbTempInputCounter, i);
 
                     // Step 4b: Hash. Win7 doesn't allow reusing hash algorithm objects after the final hash
-                    // has been computed, so we'll just keep calling DuplicateHash on the original virgin
+                    // has been computed, so we'll just keep calling DuplicateHash on the original
                     // hash handle. This offers a slight performance increase over allocating a new hash
                     // handle for each iteration. We don't need to mess with any of this on Win8 since on
                     // that platform we use BCryptKeyDerivation directly, which offers superior performance.

@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Security.DataProtection.SP800_108
                     CryptoUtil.Assert(prfOutputSizeInBytes == prfOutput.Length, "prfOutputSizeInBytes == prfOutput.Length");
                     int numBytesToCopyThisIteration = Math.Min(prfOutputSizeInBytes, outputCount);
                     Buffer.BlockCopy(prfOutput, 0, output.Array, outputOffset, numBytesToCopyThisIteration);
-                    Array.Clear(prfOutput, 0, prfOutput.Length); // contains key material, so nuke it
+                    Array.Clear(prfOutput, 0, prfOutput.Length); // contains key material, so delete it
 
                     // adjust offsets
                     outputOffset += numBytesToCopyThisIteration;

@@ -270,7 +270,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
                     }
                     finally
                     {
-                        // nuke since these contain secret material
+                        // delete since these contain secret material
                         Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
                         Array.Clear(decryptionSubkey, 0, decryptionSubkey.Length);
                         Array.Clear(validationSubkey, 0, validationSubkey.Length);
@@ -382,7 +382,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
                     }
                     finally
                     {
-                        // nuke since these contain secret material
+                        // delete since these contain secret material
                         Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
                         Array.Clear(encryptionSubkey, 0, encryptionSubkey.Length);
                         Array.Clear(validationSubkey, 0, validationSubkey.Length);

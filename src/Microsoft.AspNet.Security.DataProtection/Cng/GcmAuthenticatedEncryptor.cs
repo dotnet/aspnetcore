@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
                 }
                 finally
                 {
-                    // The buffer contains key material, so nuke it.
+                    // The buffer contains key material, so delete it.
                     UnsafeBufferUtil.SecureZeroMemory(pbSymmetricDecryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes);
                 }
             }
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
                 }
                 finally
                 {
-                    // The buffer contains key material, so nuke it.
+                    // The buffer contains key material, so delete it.
                     UnsafeBufferUtil.SecureZeroMemory(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes);
                 }
             }
