@@ -3,7 +3,7 @@
   "frameworks": {
     "net45": {
         "frameworkAssemblies": {
-            "System.Security": "4.0.0-beta-*"
+            "System.Security": ""
         }
     },
     "aspnetcore50": {
