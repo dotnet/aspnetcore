@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Azure
         internal static readonly XNamespace XmlNamespace = XNamespace.Get("http://www.asp.net/dataProtection/2014/azure");
         internal static readonly XName KeyRingElementName = XmlNamespace.GetName("keyRing");
 
-        public BlobStorageXmlRepository([NotNull] IOptionsAccessor<BlobStorageXmlRepositoryOptions> optionsAccessor)
+        public BlobStorageXmlRepository([NotNull] IOptions<BlobStorageXmlRepositoryOptions> optionsAccessor)
         {
             Directory = optionsAccessor.Options.Directory;
             CryptoUtil.Assert(Directory != null, "Directory != null");

@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Security.DataProtection
             return _dataProtectionProvider.CreateProtector(purpose);
         }
 
-        private sealed class DefaultOptionsAccessor<T> : IOptionsAccessor<T> where T : class, new()
+        private sealed class DefaultOptionsAccessor<T> : IOptions<T> where T : class, new()
         {
             public T Options { get; } = new T();
 

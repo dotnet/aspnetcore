@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Security.DataProtection
         }
 
         public DefaultDataProtectionProvider(
-            [NotNull] IOptionsAccessor<DataProtectionOptions> optionsAccessor,
+            [NotNull] IOptions<DataProtectionOptions> optionsAccessor,
             [NotNull] IKeyManager keyManager)
         {
             KeyRingBasedDataProtectionProvider rootProvider = new KeyRingBasedDataProtectionProvider(new KeyRingProvider(keyManager));
