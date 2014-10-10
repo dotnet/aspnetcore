@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -17,6 +18,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 type.Equals(typeof(Guid)) ||
                 type.Equals(typeof(DateTimeOffset)) ||
                 type.Equals(typeof(TimeSpan));
+        }
+
+        internal static bool HasStringConverter(Type type)
+        {
+            return TypeDescriptor.GetConverter(type).CanConvertFrom(typeof(string));
         }
     }
 }

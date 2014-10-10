@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
 
-            if (!ValueProviderResult.CanConvertFromString(bindingContext.ModelType))
+            if (!TypeHelper.HasStringConverter(bindingContext.ModelType))
             {
                 // this type cannot be converted
                 return false;

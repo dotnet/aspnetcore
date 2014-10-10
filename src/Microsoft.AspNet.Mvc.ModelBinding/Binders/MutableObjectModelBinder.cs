@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static bool CanBindType(Type modelType)
         {
             // Simple types cannot use this binder
-            var isComplexType = !ValueProviderResult.CanConvertFromString(modelType);
+            var isComplexType = !TypeHelper.HasStringConverter(modelType);
             if (!isComplexType)
             {
                 return false;

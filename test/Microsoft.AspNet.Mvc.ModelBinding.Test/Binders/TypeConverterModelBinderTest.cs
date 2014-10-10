@@ -34,6 +34,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Theory]
+        [InlineData(typeof(byte))]
+        [InlineData(typeof(short))]
         [InlineData(typeof(int))]
         [InlineData(typeof(long))]
         [InlineData(typeof(Guid))]
@@ -62,8 +64,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_Error_FormatExceptionsTurnedIntoStringsInModelState()
         {
             // Arrange
-            var message = TestPlatformHelper.IsMono ? "Input string was not in the correct format" :
-                                                      "Input string was not in a correct format.";
+            var message = "The parameter conversion from type 'System.String' to type 'System.Int32' failed." +
+                " See the inner exception for more information.";
             var bindingContext = GetBindingContext(typeof(int));
             bindingContext.ValueProvider = new SimpleHttpValueProvider
             {
@@ -78,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Assert
             Assert.True(retVal);
             Assert.Null(bindingContext.Model);
-            Assert.Equal(false, bindingContext.ModelState.IsValid);
+            Assert.False(bindingContext.ModelState.IsValid);
             var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
             Assert.Equal(message, error.ErrorMessage);
         }

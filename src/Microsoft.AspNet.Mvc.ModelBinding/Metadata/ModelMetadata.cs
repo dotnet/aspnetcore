@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public virtual bool IsComplexType
         {
-            get { return !ValueProviderResult.CanConvertFromString(ModelType); }
+            get { return !TypeHelper.HasStringConverter(ModelType); }
         }
 
         public bool IsNullableValueType
