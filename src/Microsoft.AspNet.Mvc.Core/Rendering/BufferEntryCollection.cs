@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Rendering
 {
     /// <summary>
     /// Represents a hierarchy of strings and provides an enumerator that iterates over it as a sequence.

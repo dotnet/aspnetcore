@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     var htmlString = value as HtmlString;
                     if (htmlString != null)
                     {
-                        writer.Write(htmlString.ToString());
+                        writer.Write(htmlString);
                     }
                     else
                     {

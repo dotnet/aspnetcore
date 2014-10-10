@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PageExecutionInstrumentation;
@@ -522,6 +523,32 @@ Layout end
 
             // Assert
             context.Verify();
+        }
+
+        [Fact]
+        public async Task Write_WithHtmlString_WritesValueWithoutEncoding()
+        {
+            // Arrange
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
+            var stringCollectionWriter = new StringCollectionTextWriter(Encoding.UTF8);
+            stringCollectionWriter.Write("text1");
+            stringCollectionWriter.Write("text2");
+
+            var page = CreatePage(p =>
+            {
+                p.Write(new HtmlString("Hello world"));
+                p.Write(new HtmlString(stringCollectionWriter));
+            });
+            page.ViewContext.Writer = writer;
+
+            // Act
+            await page.ExecuteAsync();
+
+            // Assert
+            var buffer = writer.BufferedWriter.Buffer;
+            Assert.Equal(2, buffer.BufferEntries.Count);
+            Assert.Equal("Hello world", buffer.BufferEntries[0]);
+            Assert.Same(stringCollectionWriter.Buffer.BufferEntries, buffer.BufferEntries[1]);
         }
 
         private static TestableRazorPage CreatePage(Action<TestableRazorPage> executeAction,

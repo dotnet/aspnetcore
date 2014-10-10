@@ -330,11 +330,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public async Task<HtmlString> PartialAsync([NotNull] string partialViewName, object model,
                                                    ViewDataDictionary viewData)
         {
-            using (var writer = new StringWriter(CultureInfo.CurrentCulture))
+            using (var writer = new StringCollectionTextWriter(Encoding.UTF8))
             {
                 await RenderPartialCoreAsync(partialViewName, model, viewData, writer);
 
-                return new HtmlString(writer.ToString());
+                return new HtmlString(writer);
             }
         }
 

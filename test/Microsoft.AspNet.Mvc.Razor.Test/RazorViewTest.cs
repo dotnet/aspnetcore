@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_AsPartial_DoesNotCreateOutputBuffer()
+        public async Task RenderAsync_AsPartial_DoesNotBufferOutput()
         {
             // Arrange
             TextWriter actual = null;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             Assert.Same(expected, actual);
-            Assert.Equal("Hello world", expected.ToString());
+            Assert.Equal("Hello world", viewContext.Writer.ToString());
         }
 
         [Fact]
@@ -653,20 +653,26 @@ section-content-2";
         public async Task RenderAsync_UsesPageExecutionFeatureFromRequest_ToGetExecutionContext()
         {
             // Arrange
-            var writer = Mock.Of<TextWriter>();
+            var writer = new StringWriter();
             var executed = false;
             var feature = new Mock<IPageExecutionListenerFeature>(MockBehavior.Strict);
 
             var pageContext = Mock.Of<IPageExecutionContext>();
-            feature.Setup(f => f.GetContext("/MyPartialPage.cshtml", writer))
+            feature.Setup(f => f.GetContext("/MyPartialPage.cshtml", It.IsAny<RazorTextWriter>()))
                     .Returns(pageContext)
                     .Verifiable();
 
+            feature.Setup(f => f.DecorateWriter(It.IsAny<RazorTextWriter>()))
+                   .Returns((RazorTextWriter r) => r)
+                   .Verifiable();
+
             var page = new TestableRazorPage(v =>
             {
-                Assert.Same(writer, v.Output);
+                Assert.IsType<RazorTextWriter>(v.Output);
                 Assert.Same(pageContext, v.PageExecutionContext);
                 executed = true;
+
+                v.Write("Hello world");
             });
             page.Path = "/MyPartialPage.cshtml";
 
@@ -684,6 +690,7 @@ section-content-2";
             // Assert
             feature.Verify();
             Assert.True(executed);
+            Assert.Equal("Hello world", viewContext.Writer.ToString());
         }
 
         [Theory]

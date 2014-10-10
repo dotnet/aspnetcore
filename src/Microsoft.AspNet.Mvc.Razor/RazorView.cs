@@ -61,13 +61,30 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             _pageExecutionFeature = context.HttpContext.GetFeature<IPageExecutionListenerFeature>();
 
-            if (!_isPartial)
+            if (_isPartial)
+            {
+                await RenderPartialAsync(context);
+            }
+            else
             {
                 var bodyWriter = await RenderPageAsync(_razorPage, context, executeViewStart: true);
                 await RenderLayoutAsync(context, bodyWriter);
             }
+        }
+
+        private async Task RenderPartialAsync(ViewContext context)
+        {
+            if (EnableInstrumentation)
+            {
+                // When instrmenting, we need to Decorate the output in an instrumented writer which
+                // RenderPageAsync does.
+                var bodyWriter = await RenderPageAsync(_razorPage, context, executeViewStart: false);
+                await bodyWriter.CopyToAsync(context.Writer);
+            }
             else
             {
+                // For the non-instrumented case, we don't need to buffer contents. For Html.Partial, the writer is 
+                // an in memory writer and for Partial views, we directly write to the Response.
                 await RenderPageCoreAsync(_razorPage, context);
             }
         }

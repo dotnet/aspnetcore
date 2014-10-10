@@ -17,5 +17,10 @@ namespace RazorInstrumentationWebSite
         {
             return View();
         }
+
+        public ActionResult ViewWithPartial()
+        {
+            return View();
+        }
     }
 }
