@@ -70,5 +70,23 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 "The field Designation must match the regular expression '[0-9a-zA-Z]*'.",
                 await response.Content.ReadAsStringAsync());
         }
+
+        [Fact]
+        public async Task CheckIfExcludedFieldsAreNotValidated()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var sampleString = "RandomString";
+            var input = "{ NameThatThrowsOnGet:'" + sampleString + "'}";
+            var content = new StringContent(input, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await client.PostAsync("http://localhost/Validation/GetDeveloperName", content);
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Developer's get was not accessed after set.", await response.Content.ReadAsStringAsync());
+        }
     }
 }

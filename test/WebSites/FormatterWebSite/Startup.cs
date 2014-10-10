@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 
@@ -18,6 +19,11 @@ namespace FormatterWebSite
             {
                 // Add MVC services to the services container
                 services.AddMvc(configuration);
+
+                services.Configure<MvcOptions>(options =>
+                {
+                    options.ExcludeFromValidationDelegates.Add(typeof(Developer));
+                });
             });
 
             // Add MVC to the request pipeline
@@ -25,7 +31,6 @@ namespace FormatterWebSite
             {
                 routes.MapRoute("ActionAsMethod", "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
-
             });
         }
     }

@@ -8,6 +8,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 
 namespace System.Web.Http
 {
@@ -107,15 +108,18 @@ namespace System.Web.Http
         /// </param>
         public void Validate<TEntity>(TEntity entity, string keyPrefix)
         {
+            var mvcOptions = Context.RequestServices.GetRequiredService<IOptions<MvcOptions>>();
             var validator = Context.RequestServices.GetRequiredService<IBodyModelValidator>();
             var metadataProvider = Context.RequestServices.GetRequiredService<IModelMetadataProvider>();
             var modelMetadata = metadataProvider.GetMetadataForType(() => entity, typeof(TEntity));
             var validatorProvider = Context.RequestServices.GetRequiredService<ICompositeModelValidatorProvider>();
-            var modelValidationContext = new ModelValidationContext(metadataProvider,
-                                                                    validatorProvider,
-                                                                    ModelState,
-                                                                    modelMetadata,
-                                                                    containerMetadata: null);
+            var modelValidationContext = new ModelValidationContext(
+                metadataProvider,
+                validatorProvider,
+                ModelState,
+                modelMetadata,
+                containerMetadata: null,
+                excludeFromValidationDelegate: mvcOptions.Options.ExcludeFromValidationDelegates);
             validator.Validate(modelValidationContext, keyPrefix);
         }
 

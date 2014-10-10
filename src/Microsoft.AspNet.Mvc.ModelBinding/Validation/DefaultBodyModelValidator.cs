@@ -17,7 +17,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class DefaultBodyModelValidator : IBodyModelValidator
     {
         /// <inheritdoc />
-        public bool Validate([NotNull] ModelValidationContext modelValidationContext, string keyPrefix)
+        public bool Validate(
+            [NotNull] ModelValidationContext modelValidationContext,
+            string keyPrefix)
         {
             var metadata = modelValidationContext.ModelMetadata;
             var validationContext = new ValidationContext()
@@ -54,7 +56,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // We don't need to recursively traverse the graph for types that shouldn't be validated
             var modelType = metadata.Model.GetType();
-            if (TypeHelper.IsSimpleType(modelType))
+            if (TypeHelper.IsSimpleType(modelType) ||
+                    IsTypeExcludedFromValidation(
+                        validationContext.ModelValidationContext.ExcludeFromValidationDelegate, modelType))
             {
                 return ShallowValidate(metadata, validationContext, validators);
             }
@@ -190,6 +194,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             return isValid;
+        }
+
+        private bool IsTypeExcludedFromValidation(
+            IReadOnlyList<ExcludeFromValidationDelegate> predicates, Type type)
+        {
+            // This can be set to null in ModelBinding scenarios which does not flow through this path.
+            if (predicates == null)
+            {
+                return false;
+            }
+
+            return predicates.Any(t => t(type));
         }
 
         private static Type GetElementType(Type type)

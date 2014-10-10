@@ -9,7 +9,6 @@ using System.Linq;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -235,8 +234,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        // This case should be handled in a better way.
-        // Issue - https://github.com/aspnet/Mvc/issues/1206 tracks this.
         [Fact]
         [ReplaceCulture]
         public void BodyValidator_Throws_IfPropertyAccessorThrows()
@@ -251,6 +248,62 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
                 });
+        }
+
+        public static IEnumerable<object[]> ObjectsWithPropertiesWhichThrowOnGet
+        {
+            get
+            {
+                yield return new object[] {
+                    new Uri("/api/values", UriKind.Relative),
+                    typeof(Uri),
+                    new List<Type>() { typeof(Uri) }
+                };
+                yield return new object[] {
+                    new DerivedUri("/api/values", UriKind.Relative),
+                    typeof(Uri),
+                    new List<Type>() { typeof(Uri) }
+                };
+                yield return new object[] { new Dictionary<string, Uri> {
+                    { "values",  new Uri("/api/values", UriKind.Relative) },
+                    { "hello",  new Uri("/api/hello", UriKind.Relative) }
+                }, typeof(Uri), new List<Type>() { typeof(Uri) } };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ObjectsWithPropertiesWhichThrowOnGet))]
+        [ReplaceCulture]
+        public void BodyValidator_DoesNotThrow_IfExcludedPropertyAccessorsThrow(
+            object input, Type type, List<Type> excludedTypes)
+        {
+            // Arrange
+            var validationContext = GetModelValidationContext(input, type, excludedTypes);
+
+            // Act & Assert
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
+                });
+            Assert.True(validationContext.ModelState.IsValid);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void BodyValidator_Throws_IfPropertyGetterThrows()
+        {
+            // Arrange
+            var validationContext = GetModelValidationContext(
+                new Uri("/api/values", UriKind.Relative), typeof(Uri), new List<Type>());
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(
+                () =>
+                {
+                    new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
+                });
+            Assert.True(validationContext.ModelState.IsValid);
         }
 
         [Fact]
@@ -290,7 +343,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 () => new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty));
         }
 
-        private ModelValidationContext GetModelValidationContext(object model, Type type)
+        private ModelValidationContext GetModelValidationContext(
+            object model, Type type, List<Type> excludedTypes = null)
         {
             var modelStateDictionary = new ModelStateDictionary();
             var provider = new Mock<IModelValidatorProviderProvider>();
@@ -301,6 +355,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                        new DataMemberModelValidatorProvider()
                     });
             var modelMetadataProvider = new EmptyModelMetadataProvider();
+            List<ExcludeFromValidationDelegate> excludedValidationTypesPredicate =
+                new List<ExcludeFromValidationDelegate>();
+            if (excludedTypes != null)
+            {
+                excludedValidationTypesPredicate = new List<ExcludeFromValidationDelegate>()
+                {
+                    (excludedType) =>
+                    {
+                        return excludedTypes.Any(t => t.IsAssignableFrom(excludedType));
+                    }
+                };
+            }
+
             return new ModelValidationContext(
                 modelMetadataProvider,
                 new CompositeModelValidatorProvider(provider.Object),
@@ -311,7 +378,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     modelAccessor: () => model,
                     modelType: type,
                     propertyName: null),
-                containerMetadata: null);
+                containerMetadata: null,
+                excludeFromValidationDelegate: excludedValidationTypesPredicate);
         }
 
         public class Person
@@ -413,6 +481,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public Team Dev { get; set; }
 
             public Team Test { get; set; }
+        }
+
+        public class DerivedUri : Uri
+        {
+            public DerivedUri(string uri, UriKind kind) :base(uri, kind)
+            {
+            }
+
+            [Required]
+            public string UriPurpose { get; set; }
         }
     }
 }

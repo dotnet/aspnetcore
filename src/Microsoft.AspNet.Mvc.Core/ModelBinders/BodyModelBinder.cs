@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -20,14 +21,17 @@ namespace Microsoft.AspNet.Mvc
         private readonly ActionContext _actionContext;
         private readonly IInputFormatterSelector _formatterSelector;
         private readonly IBodyModelValidator _bodyModelValidator;
+        private readonly IOptions<MvcOptions> _mvcOptions;
 
         public BodyModelBinder([NotNull] IContextAccessor<ActionContext> context,
                                [NotNull] IInputFormatterSelector selector,
-                               [NotNull] IBodyModelValidator bodyModelValidator)
+                               [NotNull] IBodyModelValidator bodyModelValidator,
+                               [NotNull] IOptions<MvcOptions> mvcOptions)
         {
             _actionContext = context.Value;
             _formatterSelector = selector;
             _bodyModelValidator = bodyModelValidator;
+            _mvcOptions = mvcOptions;
         }
 
         protected override async Task<bool> BindAsync(ModelBindingContext bindingContext, IBodyBinderMarker marker)
@@ -48,7 +52,13 @@ namespace Microsoft.AspNet.Mvc
             bindingContext.Model = await formatter.ReadAsync(formatterContext);
 
             // Validate the deserialized object
-            var validationContext = new ModelValidationContext(bindingContext, bindingContext.ModelMetadata);
+            var validationContext = new ModelValidationContext(
+                bindingContext.MetadataProvider,
+                bindingContext.ValidatorProvider,
+                bindingContext.ModelState,
+                bindingContext.ModelMetadata,
+                containerMetadata: null,
+                excludeFromValidationDelegate: _mvcOptions.Options.ExcludeFromValidationDelegates);
             _bodyModelValidator.Validate(validationContext, bindingContext.ModelName);
             return true;
         }

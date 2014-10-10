@@ -9,6 +9,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
@@ -31,8 +32,8 @@ namespace Microsoft.AspNet.Mvc
 
             var bindingContext = GetBindingContext(typeof(Person), inputFormatter: mockInputFormatter.Object);
             bindingContext.ModelMetadata.Marker = Mock.Of<IBodyBinderMarker>();
-
-            var binder = GetBodyBinder(mockInputFormatter.Object, mockValidator.Object);
+            
+            var binder = GetBodyBinder(mockInputFormatter.Object, mockValidator.Object, null);
 
             // Act
             var binderResult = await binder.BindModelAsync(bindingContext);
@@ -87,7 +88,7 @@ namespace Microsoft.AspNet.Mvc
                 ModelMetadata = metadataProvider.GetMetadataForType(null, modelType),
                 ModelName = "someName",
                 ValueProvider = Mock.Of<IValueProvider>(),
-                ModelBinder = GetBodyBinder(inputFormatter, null),
+                ModelBinder = GetBodyBinder(inputFormatter, null, null),
                 MetadataProvider = metadataProvider,
                 HttpContext = new DefaultHttpContext(),
                 ModelState = new ModelStateDictionary()
@@ -96,7 +97,8 @@ namespace Microsoft.AspNet.Mvc
             return bindingContext;
         }
 
-        private static BodyModelBinder GetBodyBinder(IInputFormatter inputFormatter, IBodyModelValidator validator)
+        private static BodyModelBinder GetBodyBinder(
+            IInputFormatter inputFormatter, IBodyModelValidator validator, IOptions<MvcOptions> mvcOptions)
         {
             var actionContext = CreateActionContext(new DefaultHttpContext());
             var inputFormatterSelector = new Mock<IInputFormatterSelector>();
@@ -111,9 +113,19 @@ namespace Microsoft.AspNet.Mvc
                 validator = mockValidator.Object;
             }
 
+            if (mvcOptions == null)
+            {
+                var options = new Mock<MvcOptions>();
+                options.CallBase = true;
+                var mockMvcOptions = new Mock<IOptions<MvcOptions>>();
+                mockMvcOptions.SetupGet(o => o.Options).Returns(options.Object);
+                mvcOptions = mockMvcOptions.Object;
+            }
+
             var binder = new BodyModelBinder(actionContext,
-                                              inputFormatterSelector.Object,
-                                              validator);
+                                        inputFormatterSelector.Object,
+                                        validator,
+                                        mvcOptions);
             return binder;
         }
 

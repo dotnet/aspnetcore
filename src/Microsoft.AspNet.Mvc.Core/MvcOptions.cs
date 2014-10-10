@@ -3,9 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.OptionDescriptors;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -68,6 +69,13 @@ namespace Microsoft.AspNet.Mvc
         /// a list of <see cref="IInputFormatter"/> by <see cref="IInputFormattersProvider"/>.
         /// </summary>
         public List<InputFormatterDescriptor> InputFormatters { get; private set; }
+
+        /// <summary>
+        /// Gets a list of <see cref="ExcludedValidationTypesPredicates"/> which return whether the given type
+        /// should be excluded from Validation in <see cref="IBodyModelValidator"/>
+        /// </summary>
+        public List<ExcludeFromValidationDelegate> ExcludeFromValidationDelegates { get; }
+            = new List<ExcludeFromValidationDelegate>();
 
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further
