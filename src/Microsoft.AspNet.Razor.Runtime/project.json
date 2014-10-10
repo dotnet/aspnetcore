@@ -7,7 +7,7 @@
         "net45": { },
         "aspnetcore50": { 
             "dependencies": {
-                "System.Reflection.Extensions": "4.0.0.0"
+                "System.Reflection.Extensions": "4.0.0-beta-*"
             }
         }
     }
