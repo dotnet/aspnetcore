@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.Security.Google
         [Fact]
         public async Task ReplyPathWillAuthenticateValidAuthorizeCodeAndState()
         {
-            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(DataProtectionProvider.CreateNew().CreateProtector("GoogleTest"));
+            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
             var server = CreateServer(options =>
             {
                 options.ClientId = "Test Id";
@@ -289,7 +289,7 @@ namespace Microsoft.AspNet.Security.Google
         [Fact]
         public async Task ReplyPathWillRejectIfCodeIsInvalid()
         {
-            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(DataProtectionProvider.CreateNew().CreateProtector("GoogleTest"));
+            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
             var server = CreateServer(options =>
             {
                 options.ClientId = "Test Id";
@@ -319,7 +319,7 @@ namespace Microsoft.AspNet.Security.Google
         [Fact]
         public async Task ReplyPathWillRejectIfAccessTokenIsMissing()
         {
-            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(DataProtectionProvider.CreateNew().CreateProtector("GoogleTest"));
+            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
             var server = CreateServer(options =>
             {
                 options.ClientId = "Test Id";
@@ -349,7 +349,7 @@ namespace Microsoft.AspNet.Security.Google
         [Fact]
         public async Task AuthenticatedEventCanGetRefreshToken()
         {
-            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(DataProtectionProvider.CreateNew().CreateProtector("GoogleTest"));
+            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
             var server = CreateServer(options =>
             {
                 options.ClientId = "Test Id";

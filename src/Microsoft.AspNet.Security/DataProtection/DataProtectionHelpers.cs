@@ -13,7 +13,8 @@ namespace Microsoft.AspNet.Security.DataProtection
         {
             if (dataProtectionProvider == null)
             {
-                dataProtectionProvider = DataProtectionProvider.CreateFromDpapi();
+                // TODO: Get this from the environment.
+                dataProtectionProvider = new EphemeralDataProtectionProvider();
             }
 
             return dataProtectionProvider.CreateProtector(string.Join(";", purposes));

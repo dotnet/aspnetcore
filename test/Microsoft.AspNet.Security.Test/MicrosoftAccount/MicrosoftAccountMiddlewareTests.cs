@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Security.Tests.MicrosoftAccount
         [Fact]
         public async Task AuthenticatedEventCanGetRefreshToken()
         {
-            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(DataProtectionProvider.CreateNew().CreateProtector("MsftTest"));
+            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("MsftTest"));
             var server = CreateServer(
                 options =>
                 {
