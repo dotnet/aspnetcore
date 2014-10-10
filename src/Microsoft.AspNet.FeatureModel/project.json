@@ -5,13 +5,13 @@
     "aspnet50": {},
     "aspnetcore50": {
       "dependencies": {
-        "System.Collections": "4.0.10.0",
-        "System.Linq": "4.0.0.0",
-        "System.Reflection": "4.0.10.0",
-        "System.Reflection.TypeExtensions": "4.0.0.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.InteropServices": "4.0.20.0",
-        "System.Threading": "4.0.0.0"
+        "System.Collections": "4.0.10-beta-*",
+        "System.Linq": "4.0.0-beta-*",
+        "System.Reflection": "4.0.10-beta-*",
+        "System.Reflection.TypeExtensions": "4.0.0-beta-*",
+        "System.Runtime": "4.0.20-beta-*",
+        "System.Runtime.InteropServices": "4.0.20-beta-*",
+        "System.Threading": "4.0.0-beta-*"
       }
     }
   }

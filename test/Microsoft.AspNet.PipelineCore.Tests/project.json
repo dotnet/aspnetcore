@@ -15,7 +15,7 @@
                 "Moq": "4.2.1312.1622"
             },
             "frameworkAssemblies": {
-                "System.Net.Http": "4.0.0.0"
+                "System.Net.Http": "4.0.0-beta-*"
             }
         }
     }
