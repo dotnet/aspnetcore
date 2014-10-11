@@ -62,8 +62,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private static IEnumerable<TagHelperAttributeDescriptor> GetAttributeDescriptors(Type type)
         {
-            var typeInfo = type.GetTypeInfo();
-            var properties = typeInfo.DeclaredProperties.Where(IsValidProperty);
+            var properties = type.GetRuntimeProperties().Where(IsValidProperty);
             var attributeDescriptors = properties.Select(ToAttributeDescriptor);
 
             return attributeDescriptors;

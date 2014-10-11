@@ -23,6 +23,28 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
+        public void CreateDescriptor_BuildsDescriptorsWithInheritedProperties()
+        {
+            // Arrange
+            var intProperty = typeof(InheritedSingleAttributeTagHelper).GetProperty(
+                nameof(InheritedSingleAttributeTagHelper.IntAttribute));
+            var expectedDescriptor = new TagHelperDescriptor(
+                "InheritedSingleAttribute",
+                typeof(InheritedSingleAttributeTagHelper).FullName,
+                ContentBehavior.None,
+                new[] {
+                    new TagHelperAttributeDescriptor(nameof(InheritedSingleAttributeTagHelper.IntAttribute), intProperty)
+                });
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(InheritedSingleAttributeTagHelper));
+
+            // Assert
+            var descriptor = Assert.Single(descriptors);
+            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
         public void CreateDescriptor_BuildsDescriptorsWithConventionNames()
         {
             // Arrange
@@ -255,6 +277,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         [TagName("span")]
         [TagName("div", "p")]
         private class MultipleAttributeTagHelper
+        {
+        }
+
+        private class InheritedSingleAttributeTagHelper : SingleAttributeTagHelper
         {
         }
     }
