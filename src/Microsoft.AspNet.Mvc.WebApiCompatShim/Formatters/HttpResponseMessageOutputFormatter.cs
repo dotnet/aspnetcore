@@ -40,29 +40,32 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 throw new InvalidOperationException(message);
             }
 
-            response.StatusCode = (int)responseMessage.StatusCode;
-
-            var responseFeature = context.ActionContext.HttpContext.GetFeature<IHttpResponseFeature>();
-            if (responseFeature != null)
+            using (responseMessage)
             {
-                responseFeature.ReasonPhrase = responseMessage.ReasonPhrase;
-            }
+                response.StatusCode = (int)responseMessage.StatusCode;
 
-            var responseHeaders = responseMessage.Headers;
-            foreach (var header in responseHeaders)
-            {
-                response.Headers.AppendValues(header.Key, header.Value.ToArray());
-            }
+                var responseFeature = context.ActionContext.HttpContext.GetFeature<IHttpResponseFeature>();
+                if (responseFeature != null)
+                {
+                    responseFeature.ReasonPhrase = responseMessage.ReasonPhrase;
+                }
 
-            if (responseMessage.Content != null)
-            {
-                var contentHeaders = responseMessage.Content.Headers;
-                foreach (var header in contentHeaders)
+                var responseHeaders = responseMessage.Headers;
+                foreach (var header in responseHeaders)
                 {
                     response.Headers.AppendValues(header.Key, header.Value.ToArray());
                 }
 
-                await responseMessage.Content.CopyToAsync(response.Body);
+                if (responseMessage.Content != null)
+                {
+                    var contentHeaders = responseMessage.Content.Headers;
+                    foreach (var header in contentHeaders)
+                    {
+                        response.Headers.AppendValues(header.Key, header.Value.ToArray());
+                    }
+
+                    await responseMessage.Content.CopyToAsync(response.Body);
+                }
             }
         }
     }
