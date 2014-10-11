@@ -25,6 +25,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             options.ApplicationModelConventions.Add(new WebApiOverloadingGlobalModelConvention());
             options.ApplicationModelConventions.Add(new WebApiRoutesGlobalModelConvention(area: DefaultAreaName));
 
+            // Add an action filter for handling the HttpResponseException.
+            options.Filters.Add(new HttpResponseExceptionActionFilter());
+
             // Add a model binder to be able to bind HttpRequestMessage
             options.ModelBinders.Insert(0, new HttpRequestMessageModelBinder());
 

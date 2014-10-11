@@ -138,6 +138,22 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             return string.Format(CultureInfo.CurrentCulture, GetString("MaxHttpCollectionKeyLimitReached"), p0, p1);
         }
 
+        /// <summary>
+        /// Processing of the HTTP request resulted in an exception. Please see the HTTP response returned by the 'Response' property of this exception for details.
+        /// </summary>
+        internal static string HttpResponseExceptionMessage
+        {
+            get { return GetString("HttpResponseExceptionMessage"); }
+        }
+
+        /// <summary>
+        /// Processing of the HTTP request resulted in an exception. Please see the HTTP response returned by the 'Response' property of this exception for details.
+        /// </summary>
+        internal static string FormatHttpResponseExceptionMessage()
+        {
+            return GetString("HttpResponseExceptionMessage");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

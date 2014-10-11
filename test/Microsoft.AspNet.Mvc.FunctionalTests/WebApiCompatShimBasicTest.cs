@@ -84,6 +84,78 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ActionThrowsHttpResponseException_WithStatusCode()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync(
+                "http://localhost/api/Blog/HttpResponseException/ThrowsHttpResponseExceptionWithHttpStatusCode");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal(string.Empty, content);
+        }
+
+        [Fact]
+        public async Task ActionThrowsHttpResponseException_WithResponse()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync(
+                "http://localhost/api/Blog/HttpResponseException"+
+                "/ThrowsHttpResponseExceptionWithHttpResponseMessage?message=send some message");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("send some message", content);
+        }
+
+        [Fact]
+        public async Task ActionThrowsHttpResponseException_EnsureGlobalHttpresponseExceptionActionFilter_IsInvoked()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync(
+                "http://localhost/api/Blog/HttpResponseException/ThrowsHttpResponseExceptionEnsureGlobalFilterRunsLast");
+
+            // Assert
+            // Ensure we do not get a no content result.
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal(string.Empty, content);
+        }
+
+        [Fact]
+        public async Task ActionThrowsHttpResponseException_EnsureGlobalFilterConvention_IsApplied()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync(
+                "http://localhost/api/Blog/"+
+                "HttpResponseException/ThrowsHttpResponseExceptionInjectAFilterToHandleHttpResponseException");
+
+            // Assert
+            // Ensure we do get a no content result.
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal(string.Empty, content);
+        }
+
+        [Fact]
         public async Task ApiController_CanValidateCustomObjectWithPrefix_Fails()
         {
             // Arrange

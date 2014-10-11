@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 
@@ -16,10 +17,9 @@ namespace WebApiCompatShimWebSite
             app.UseServices(services =>
             {
                 services.AddMvc(configuration);
-
                 services.AddWebApiConventions();
             });
-            
+
             app.UseMvc(routes =>
             {
                 // This route can't access any of our webapi controllers

@@ -141,4 +141,7 @@
   <data name="MaxHttpCollectionKeyLimitReached" xml:space="preserve">
     <value>The number of keys in a NameValueCollection has exceeded the limit of '{0}'. You can adjust it by modifying the MaxHttpCollectionKeys property on the '{1}' class.</value>
   </data>
+  <data name="HttpResponseExceptionMessage" xml:space="preserve">
+    <value>Processing of the HTTP request resulted in an exception. Please see the HTTP response returned by the 'Response' property of this exception for details.</value>
+  </data>
 </root>
