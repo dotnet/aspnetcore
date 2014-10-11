@@ -68,11 +68,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return attributeDescriptors;
         }
 
-        // TODO: Make the HTML attribute name support names from a AttributeNameAttribute: 
-        // https://github.com/aspnet/Razor/issues/121
         private static TagHelperAttributeDescriptor ToAttributeDescriptor(PropertyInfo property)
         {
-            return new TagHelperAttributeDescriptor(property.Name, property);
+            var attributeNameAttribute = property.GetCustomAttribute<HtmlAttributeNameAttribute>(inherit: false);
+            var attributeName = attributeNameAttribute != null ? 
+                                attributeNameAttribute.Name : 
+                                property.Name;
+
+            return new TagHelperAttributeDescriptor(attributeName, property);
         }
 
         private static ContentBehavior GetContentBehavior(Type type)

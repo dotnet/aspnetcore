@@ -8,7 +8,7 @@ using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
-    public class CompleteTagHelperDescriptorComparer : TagHelperDescriptorComparer
+    public class CompleteTagHelperDescriptorComparer : TagHelperDescriptorComparer, IEqualityComparer<TagHelperDescriptor>
     {
         public new static readonly CompleteTagHelperDescriptorComparer Default =
             new CompleteTagHelperDescriptorComparer();
@@ -17,14 +17,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
         }
 
-        public new bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
+        bool IEqualityComparer<TagHelperDescriptor>.Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
         {
             return base.Equals(descriptorX, descriptorY) &&
                    descriptorX.Attributes.SequenceEqual(descriptorY.Attributes,
                                                         CompleteTagHelperAttributeDescriptorComparer.Default);
         }
 
-        public new int GetHashCode(TagHelperDescriptor descriptor)
+        int IEqualityComparer<TagHelperDescriptor>.GetHashCode(TagHelperDescriptor descriptor)
         {
             return HashCodeCombiner.Start()
                                    .Add(base.GetHashCode())

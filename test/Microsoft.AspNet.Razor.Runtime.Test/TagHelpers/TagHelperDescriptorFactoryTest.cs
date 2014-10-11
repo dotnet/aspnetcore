@@ -9,6 +9,85 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     public class TagHelperDescriptorFactoryTest
     {
         [Fact]
+        public void CreateDescriptor_OverridesAttributeNameFromAttribute()
+        {
+            // Arrange
+            var validProperty1 = typeof(OverriddenAttributeTagHelper).GetProperty(
+                nameof(OverriddenAttributeTagHelper.ValidAttribute1));
+            var validProperty2 = typeof(OverriddenAttributeTagHelper).GetProperty(
+                nameof(OverriddenAttributeTagHelper.ValidAttribute2));
+            var expectedDescriptors = new[] {
+                new TagHelperDescriptor(
+                    "OverriddenAttribute",
+                    typeof(OverriddenAttributeTagHelper).FullName,
+                    ContentBehavior.None,
+                    new[] {
+                        new TagHelperAttributeDescriptor("SomethingElse", validProperty1),
+                        new TagHelperAttributeDescriptor("Something-Else", validProperty2)
+                    })
+            };
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(OverriddenAttributeTagHelper));
+
+            // Assert
+            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void CreateDescriptor_DoesNotInheritOverridenAttributeName()
+        {
+            // Arrange
+            var validProperty1 = typeof(InheritedOverriddenAttributeTagHelper).GetProperty(
+                nameof(InheritedOverriddenAttributeTagHelper.ValidAttribute1));
+            var validProperty2 = typeof(InheritedOverriddenAttributeTagHelper).GetProperty(
+                nameof(InheritedOverriddenAttributeTagHelper.ValidAttribute2));
+            var expectedDescriptors = new[] {
+                new TagHelperDescriptor(
+                    "InheritedOverriddenAttribute",
+                    typeof(InheritedOverriddenAttributeTagHelper).FullName,
+                    ContentBehavior.None,
+                    new[] {
+                        new TagHelperAttributeDescriptor(nameof(InheritedOverriddenAttributeTagHelper.ValidAttribute1),
+                                                         validProperty1),
+                        new TagHelperAttributeDescriptor("Something-Else", validProperty2)
+                    })
+            };
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(InheritedOverriddenAttributeTagHelper));
+
+            // Assert
+            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void CreateDescriptor_AllowsOverridenAttributeNameOnUnimplementedVirtual()
+        {
+            // Arrange
+            var validProperty1 = typeof(InheritedNotOverriddenAttributeTagHelper).GetProperty(
+                nameof(InheritedNotOverriddenAttributeTagHelper.ValidAttribute1));
+            var validProperty2 = typeof(InheritedNotOverriddenAttributeTagHelper).GetProperty(
+                nameof(InheritedNotOverriddenAttributeTagHelper.ValidAttribute2));
+            var expectedDescriptors = new[] {
+                new TagHelperDescriptor(
+                    "InheritedNotOverriddenAttribute",
+                    typeof(InheritedNotOverriddenAttributeTagHelper).FullName,
+                    ContentBehavior.None,
+                    new[] {
+                        new TagHelperAttributeDescriptor("SomethingElse", validProperty1),
+                        new TagHelperAttributeDescriptor("Something-Else", validProperty2)
+                    })
+            };
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(InheritedNotOverriddenAttributeTagHelper));
+
+            // Assert
+            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
         public void CreateDescriptor_BuildsDescriptorsFromSimpleTypes()
         {
             // Arrange
@@ -19,7 +98,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -41,7 +120,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -62,7 +141,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -84,7 +163,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -107,7 +186,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -124,7 +203,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -142,7 +221,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -171,7 +250,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(MultiTagTagHelper));
 
             // Assert
-            Assert.Equal(descriptors, expectedDescriptors, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -192,7 +271,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(descriptor, expectedDescriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -208,7 +287,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(DuplicateTagNameTagHelper));
 
             // Assert
-            Assert.Equal(descriptors, expectedDescriptors, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -225,7 +304,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(OverrideNameTagHelper));
 
             // Assert
-            Assert.Equal(descriptors, expectedDescriptors, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -242,7 +321,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(MultipleAttributeTagHelper));
 
             // Assert
-            Assert.Equal(descriptors, expectedDescriptors, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
         }
 
         [ContentBehavior(ContentBehavior.Append)]
@@ -281,6 +360,24 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         private class InheritedSingleAttributeTagHelper : SingleAttributeTagHelper
+        {
+        }
+
+        private class OverriddenAttributeTagHelper
+        {
+            [HtmlAttributeName("SomethingElse")]
+            public virtual string ValidAttribute1 { get; set; }
+
+            [HtmlAttributeName("Something-Else")]
+            public string ValidAttribute2 { get; set; }
+        }
+
+        private class InheritedOverriddenAttributeTagHelper : OverriddenAttributeTagHelper
+        {
+            public override string ValidAttribute1 { get; set; }
+        }
+
+        private class InheritedNotOverriddenAttributeTagHelper : OverriddenAttributeTagHelper
         {
         }
     }

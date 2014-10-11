@@ -94,6 +94,22 @@ namespace Microsoft.AspNet.Razor.Runtime
             return string.Format(CultureInfo.CurrentCulture, GetString("TagNameAttribute_AdditionalTagsCannotContainNull"), p0);
         }
 
+        /// <summary>
+        /// The value cannot be null or empty.
+        /// </summary>
+        internal static string ArgumentCannotBeNullOrEmpty
+        {
+            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// The value cannot be null or empty.
+        /// </summary>
+        internal static string FormatArgumentCannotBeNullOrEmpty()
+        {
+            return GetString("ArgumentCannotBeNullOrEmpty");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
