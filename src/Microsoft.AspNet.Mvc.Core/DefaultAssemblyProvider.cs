@@ -9,7 +9,7 @@ using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class DefaultControllerAssemblyProvider : IControllerAssemblyProvider
+    public class DefaultAssemblyProvider : IAssemblyProvider
     {
         // List of Mvc assemblies that we'll use as roots for controller discovery.
         private static readonly HashSet<string> _mvcAssemblyList = new HashSet<string>(StringComparer.Ordinal)
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc
 
         private readonly ILibraryManager _libraryManager;
 
-        public DefaultControllerAssemblyProvider(ILibraryManager libraryManager)
+        public DefaultAssemblyProvider(ILibraryManager libraryManager)
         {
             _libraryManager = libraryManager;
         }

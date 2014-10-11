@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     /// This is a generic type because it needs to instantiated by a service provider to replace
     /// a built-in MVC service.
     /// </remarks>
-    public class TestAssemblyProvider<T> : IControllerAssemblyProvider
+    public class TestAssemblyProvider<T> : IAssemblyProvider
     {
 	    public TestAssemblyProvider()
 	    {

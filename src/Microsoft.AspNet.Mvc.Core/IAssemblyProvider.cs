@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IControllerAssemblyProvider
+    public interface IAssemblyProvider
     {
         IEnumerable<Assembly> CandidateAssemblies { get; }
     }

@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var configuration = new TestConfigurationProvider();
             configuration.Configuration.Set(
-                typeof(IControllerAssemblyProvider).FullName,
+                typeof(IAssemblyProvider).FullName,
                 providerType.AssemblyQualifiedName);
 
             services.AddInstance(

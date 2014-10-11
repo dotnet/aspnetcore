@@ -21,17 +21,17 @@ namespace Microsoft.AspNet.Mvc
         // the reflected model is null.
         private const int DefaultAttributeRouteOrder = 0;
 
-        private readonly IControllerAssemblyProvider _controllerAssemblyProvider;
+        private readonly IAssemblyProvider _assemblyProvider;
         private readonly IActionDiscoveryConventions _conventions;
         private readonly IReadOnlyList<IFilter> _globalFilters;
         private readonly IEnumerable<IGlobalModelConvention> _modelConventions;
 
-        public ControllerActionDescriptorProvider(IControllerAssemblyProvider controllerAssemblyProvider,
+        public ControllerActionDescriptorProvider(IAssemblyProvider assemblyProvider,
                                                  IActionDiscoveryConventions conventions,
                                                  IGlobalFilterProvider globalFilters,
                                                  IOptionsAccessor<MvcOptions> optionsAccessor)
         {
-            _controllerAssemblyProvider = controllerAssemblyProvider;
+            _assemblyProvider = assemblyProvider;
             _conventions = conventions;
             _globalFilters = globalFilters.Filters;
             _modelConventions = optionsAccessor.Options.ApplicationModelConventions;
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc
             var applicationModel = new GlobalModel();
             applicationModel.Filters.AddRange(_globalFilters);
 
-            var assemblies = _controllerAssemblyProvider.CandidateAssemblies;
+            var assemblies = _assemblyProvider.CandidateAssemblies;
             var types = assemblies.SelectMany(a => a.DefinedTypes);
             var controllerTypes = types.Where(_conventions.IsController);
 

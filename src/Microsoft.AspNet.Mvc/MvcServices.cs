@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc
                 DefaultActionConstraintProvider>();
 
             yield return describe.Transient<IActionInvokerFactory, ActionInvokerFactory>();
-            yield return describe.Transient<IControllerAssemblyProvider, DefaultControllerAssemblyProvider>();
+            yield return describe.Transient<IAssemblyProvider, DefaultAssemblyProvider>();
             yield return describe.Transient<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
 
             // The host is designed to be discarded after consumption and is very inexpensive to initialize.

@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 .Returns(GetGeneratorResult())
                 .Verifiable();
 
-            var ap = new Mock<IControllerAssemblyProvider>();
+            var ap = new Mock<IAssemblyProvider>();
             ap.SetupGet(e => e.CandidateAssemblies)
                 .Returns(Enumerable.Empty<Assembly>())
                 .Verifiable();
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var host = new Mock<IMvcRazorHost>();
             host.SetupAllProperties();
             host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
-                .Returns(GetGeneratorResult());            var assemblyProvider = new Mock<IControllerAssemblyProvider>();
+                .Returns(GetGeneratorResult());            var assemblyProvider = new Mock<IAssemblyProvider>();
             assemblyProvider.SetupGet(e => e.CandidateAssemblies)
                             .Returns(Enumerable.Empty<Assembly>());
 

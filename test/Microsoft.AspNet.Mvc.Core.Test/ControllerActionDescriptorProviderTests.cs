@@ -1334,7 +1334,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             var conventions = new StaticActionDiscoveryConventions(controllerTypeInfo);
 
-            var assemblyProvider = new Mock<IControllerAssemblyProvider>();
+            var assemblyProvider = new Mock<IAssemblyProvider>();
             assemblyProvider
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(new Assembly[] { controllerTypeInfo.Assembly });
@@ -1353,7 +1353,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             var conventions = new StaticActionDiscoveryConventions(controllerTypeInfo);
 
-            var assemblyProvider = new Mock<IControllerAssemblyProvider>();
+            var assemblyProvider = new Mock<IAssemblyProvider>();
             assemblyProvider
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(new Assembly[] { controllerTypeInfo.First().Assembly });
@@ -1373,7 +1373,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             var conventions = new StaticActionDiscoveryConventions(type);
 
-            var assemblyProvider = new Mock<IControllerAssemblyProvider>();
+            var assemblyProvider = new Mock<IAssemblyProvider>();
             assemblyProvider
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(new Assembly[] { type.Assembly });
@@ -1389,7 +1389,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             var conventions = new StaticActionDiscoveryConventions(controllerTypeInfos);
 
-            var assemblyProvider = new Mock<IControllerAssemblyProvider>();
+            var assemblyProvider = new Mock<IAssemblyProvider>();
             assemblyProvider
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(controllerTypeInfos.Select(cti => cti.Assembly).Distinct());

@@ -7,9 +7,9 @@ using System.Reflection;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// An implementation of IControllerAssemblyProvider that provides just this assembly.
+    /// An implementation of IAssemblyProvider that provides just this assembly.
     /// </summary>
-    public class StaticControllerAssemblyProvider : IControllerAssemblyProvider
+    public class StaticAssemblyProvider : IAssemblyProvider
     {
         public IEnumerable<Assembly> CandidateAssemblies
         {

@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Mvc
         private ControllerActionDescriptorProvider GetActionDescriptorProvider(
             IActionDiscoveryConventions actionDiscoveryConventions  = null)
         {
-            var controllerAssemblyProvider = new StaticControllerAssemblyProvider();
+            var assemblyProvider = new StaticAssemblyProvider();
 
             if (actionDiscoveryConventions == null)
             {
@@ -208,7 +208,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return new ControllerActionDescriptorProvider(
-                                        controllerAssemblyProvider,
+                                        assemblyProvider,
                                         actionDiscoveryConventions,
                                         new TestGlobalFilterProvider(),
                                         new MockMvcOptionsAccessor());

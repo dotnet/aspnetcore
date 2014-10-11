@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core
 {
-    public class DefaultControllerAssemblyProviderTests
+    public class DefaultAssemblyProviderTests
     {
         [Fact]
         public void CandidateAssemblies_IgnoresMvcAssemblies()
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Core
                         CreateLibraryInfo("SomeRandomAssembly"),
                    })
                    .Verifiable();
-            var provider = new DefaultControllerAssemblyProvider(manager.Object);
+            var provider = new DefaultAssemblyProvider(manager.Object);
 
             // Act
             var candidates = provider.GetCandidateLibraries();
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Core
                    .Returns(new[] { CreateLibraryInfo("Bar") });
             manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc"))
                    .Returns(new[] { CreateLibraryInfo("Baz") });
-            var provider = new DefaultControllerAssemblyProvider(manager.Object);
+            var provider = new DefaultAssemblyProvider(manager.Object);
 
             // Act
             var candidates = provider.GetCandidateLibraries();

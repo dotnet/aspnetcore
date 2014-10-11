@@ -252,7 +252,7 @@ namespace System.Web.Http
 
         private INestedProviderManager<ActionDescriptorProviderContext> CreateProvider()
         {
-            var assemblyProvider = new Mock<IControllerAssemblyProvider>();
+            var assemblyProvider = new Mock<IAssemblyProvider>();
             assemblyProvider
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(new Assembly[] { typeof(ApiControllerActionDiscoveryTest).Assembly });

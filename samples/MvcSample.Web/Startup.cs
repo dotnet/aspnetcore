@@ -41,7 +41,7 @@ namespace MvcSample.Web
                     // Setup services with a test AssemblyProvider so that only the
                     // sample's assemblies are loaded. This prevents loading controllers from other assemblies
                     // when the sample is used in the Functional Tests.
-                    services.AddTransient<IControllerAssemblyProvider, TestAssemblyProvider<Startup>>();
+                    services.AddTransient<IAssemblyProvider, TestAssemblyProvider<Startup>>();
                     services.ConfigureOptions<MvcOptions>(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
@@ -81,7 +81,7 @@ namespace MvcSample.Web
                     // Setup services with a test AssemblyProvider so that only the
                     // sample's assemblies are loaded. This prevents loading controllers from other assemblies
                     // when the sample is used in the Functional Tests.
-                    services.AddTransient<IControllerAssemblyProvider, TestAssemblyProvider<Startup>>();
+                    services.AddTransient<IAssemblyProvider, TestAssemblyProvider<Startup>>();
 
                     services.ConfigureOptions<MvcOptions>(options =>
                     {

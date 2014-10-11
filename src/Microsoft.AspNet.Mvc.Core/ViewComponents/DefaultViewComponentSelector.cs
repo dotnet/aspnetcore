@@ -9,9 +9,9 @@ namespace Microsoft.AspNet.Mvc
 {
     public class DefaultViewComponentSelector : IViewComponentSelector
     {
-        private readonly IControllerAssemblyProvider _assemblyProvider;
+        private readonly IAssemblyProvider _assemblyProvider;
 
-        public DefaultViewComponentSelector(IControllerAssemblyProvider assemblyProvider)
+        public DefaultViewComponentSelector(IAssemblyProvider assemblyProvider)
         {
             _assemblyProvider = assemblyProvider;
         }

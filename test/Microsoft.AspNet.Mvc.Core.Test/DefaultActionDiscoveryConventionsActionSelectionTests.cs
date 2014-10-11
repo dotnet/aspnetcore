@@ -100,10 +100,10 @@ namespace Microsoft.AspNet.Mvc
         private ControllerActionDescriptorProvider GetActionDescriptorProvider(DefaultActionDiscoveryConventions actionDiscoveryConventions)
         {
             var assemblies = new Assembly[] { typeof(DefaultActionDiscoveryConventionsActionSelectionTests).GetTypeInfo().Assembly, };
-            var controllerAssemblyProvider = new Mock<IControllerAssemblyProvider>();
-            controllerAssemblyProvider.SetupGet(x => x.CandidateAssemblies).Returns(assemblies);
+            var AssemblyProvider = new Mock<IAssemblyProvider>();
+            AssemblyProvider.SetupGet(x => x.CandidateAssemblies).Returns(assemblies);
             return new ControllerActionDescriptorProvider(
-                                        controllerAssemblyProvider.Object,
+                                        AssemblyProvider.Object,
                                         actionDiscoveryConventions,
                                         new TestGlobalFilterProvider(),
                                         new MockMvcOptionsAccessor());

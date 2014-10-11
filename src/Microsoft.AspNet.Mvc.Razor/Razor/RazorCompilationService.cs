@@ -37,12 +37,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IMvcRazorHost _razorHost;
 
         public RazorCompilationService(IServiceProvider serviceProvider,
-                                       IControllerAssemblyProvider _controllerAssemblyProvider,
+                                       IAssemblyProvider _assemblyProvider,
                                        IMvcRazorHost razorHost)
         {
             _serviceProvider = serviceProvider;
             _razorHost = razorHost;
-            _cache = new CompilerCache(_controllerAssemblyProvider.CandidateAssemblies);
+            _cache = new CompilerCache(_assemblyProvider.CandidateAssemblies);
         }
 
         /// <inheritdoc />
