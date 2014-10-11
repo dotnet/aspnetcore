@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// An entry in <see cref="CompilerCache"/> that contain metadata about precompiled and dynamically compiled file.
+    /// An entry in <see cref="ICompilerCache"/> that contain metadata about precompiled and dynamically compiled file.
     /// </summary>
     public class CompilerCacheEntry
     {

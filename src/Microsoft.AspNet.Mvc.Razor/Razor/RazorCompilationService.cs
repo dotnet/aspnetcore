@@ -16,42 +16,18 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </remarks>
     public class RazorCompilationService : IRazorCompilationService
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        private readonly CompilerCache _cache;
-        private ICompilationService _compilationService;
-
-        private ICompilationService CompilationService
-        {
-            get
-            {
-                if (_compilationService == null)
-                {
-                    _compilationService = _serviceProvider.GetService<ICompilationService>();
-                }
-
-                return _compilationService;
-            }
-        }
-
+        private readonly ICompilationService _compilationService;
         private readonly IMvcRazorHost _razorHost;
 
-        public RazorCompilationService(IServiceProvider serviceProvider,
-                                       IAssemblyProvider _assemblyProvider,
+        public RazorCompilationService(ICompilationService compilationService,
                                        IMvcRazorHost razorHost)
         {
-            _serviceProvider = serviceProvider;
+            _compilationService = compilationService;
             _razorHost = razorHost;
-            _cache = new CompilerCache(_assemblyProvider.CandidateAssemblies);
         }
 
         /// <inheritdoc />
         public CompilationResult Compile([NotNull] RelativeFileInfo file, bool isInstrumented)
-        {
-            return _cache.GetOrAdd(file, isInstrumented, () => CompileCore(file, isInstrumented));
-        }
-
-        internal CompilationResult CompileCore(RelativeFileInfo file, bool isInstrumented)
         {
             _razorHost.EnableInstrumentation = isInstrumented;
 
@@ -68,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return CompilationResult.Failed(file.FileInfo, results.GeneratedCode, messages);
             }
 
-            return CompilationService.Compile(file.FileInfo, results.GeneratedCode);
+            return _compilationService.Compile(file.FileInfo, results.GeneratedCode);
         }
     }
 }

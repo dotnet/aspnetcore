@@ -19,17 +19,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData(@"src\work\myapp", @"src\work\myapp\views\index\home.cshtml")]
         [InlineData(@"src\work\myapp\", @"src\work\myapp\views\index\home.cshtml")]
-        public void CompileCoreCalculatesRootRelativePath(string appPath, string viewPath)
+        public void CompileCalculatesRootRelativePath(string appPath, string viewPath)
         {
             // Arrange
             var host = new Mock<IMvcRazorHost>();
             host.Setup(h => h.GenerateCode(@"views\index\home.cshtml", It.IsAny<Stream>()))
                 .Returns(GetGeneratorResult())
-                .Verifiable();
-
-            var ap = new Mock<IAssemblyProvider>();
-            ap.SetupGet(e => e.CandidateAssemblies)
-                .Returns(Enumerable.Empty<Assembly>())
                 .Verifiable();
 
             var fileInfo = new Mock<IFileInfo>();
@@ -40,11 +35,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             compiler.Setup(c => c.Compile(fileInfo.Object, It.IsAny<string>()))
                     .Returns(CompilationResult.Successful(typeof(RazorCompilationServiceTest)));
 
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(sp => sp.GetService(It.Is<Type>(t => t == typeof(ICompilationService))))
-                           .Returns(compiler.Object);
-
-            var razorService = new RazorCompilationService(serviceProvider.Object, ap.Object, host.Object);
+            var razorService = new RazorCompilationService(compiler.Object, host.Object);
 
             var relativeFileInfo = new RelativeFileInfo()
             {
@@ -53,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             };
 
             // Act
-            razorService.CompileCore(relativeFileInfo, isInstrumented: false);
+            razorService.Compile(relativeFileInfo, isInstrumented: false);
 
             // Assert
             host.Verify();
@@ -62,25 +53,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void CompileCoreSetsEnableInstrumentationOnHost(bool enableInstrumentation)
+        public void CompileSetsEnableInstrumentationOnHost(bool enableInstrumentation)
         {
             // Arrange
             var host = new Mock<IMvcRazorHost>();
             host.SetupAllProperties();
             host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
-                .Returns(GetGeneratorResult());            var assemblyProvider = new Mock<IAssemblyProvider>();
-            assemblyProvider.SetupGet(e => e.CandidateAssemblies)
-                            .Returns(Enumerable.Empty<Assembly>());
+                .Returns(GetGeneratorResult());
 
             var compiler = new Mock<ICompilationService>();
             compiler.Setup(c => c.Compile(It.IsAny<IFileInfo>(), It.IsAny<string>()))
                     .Returns(CompilationResult.Successful(GetType()));
 
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(sp => sp.GetService(It.Is<Type>(t => t == typeof(ICompilationService))))
-                           .Returns(compiler.Object);
+            var razorService = new RazorCompilationService(compiler.Object, host.Object);
 
-            var razorService = new RazorCompilationService(serviceProvider.Object, assemblyProvider.Object, host.Object);
             var relativeFileInfo = new RelativeFileInfo()
             {
                 FileInfo = Mock.Of<IFileInfo>(),
@@ -88,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             };
 
             // Act
-            razorService.CompileCore(relativeFileInfo, isInstrumented: enableInstrumentation);
+            razorService.Compile(relativeFileInfo, isInstrumented: enableInstrumentation);
 
             // Assert
             Assert.Equal(enableInstrumentation, host.Object.EnableInstrumentation);

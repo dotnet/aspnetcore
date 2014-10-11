@@ -9,13 +9,13 @@ using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class CompilerCache
+    public class CompilerCache : ICompilerCache
     {
         private readonly ConcurrentDictionary<string, CompilerCacheEntry> _cache;
         private static readonly Type[] EmptyType = new Type[0];
 
-        public CompilerCache([NotNull] IEnumerable<Assembly> assemblies)
-            : this(GetFileInfos(assemblies))
+        public CompilerCache([NotNull] IAssemblyProvider provider)
+            : this(GetFileInfos(provider.CandidateAssemblies))
         {
         }
 

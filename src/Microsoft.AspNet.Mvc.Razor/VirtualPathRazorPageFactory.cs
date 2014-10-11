@@ -12,30 +12,36 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class VirtualPathRazorPageFactory : IRazorPageFactory
     {
-        private IRazorCompilationService _compilationService;
-        private IRazorCompilationService CompilationService
-        {
-            get
-            {
-                if (_compilationService == null)
-                {
-                    _compilationService = _serviceProvider.GetService<IRazorCompilationService>();
-                }
-
-                return _compilationService;
-            }
-        }
-
         private readonly ITypeActivator _activator;
         private readonly IServiceProvider _serviceProvider;
         private readonly IFileInfoCache _fileInfoCache;
+        private readonly ICompilerCache _compilerCache;
+
+        private IRazorCompilationService _razorcompilationService;
+
+        private IRazorCompilationService RazorCompilationService
+        {
+            get
+            {
+                if (_razorcompilationService == null)
+                {
+                    // it is ok to use the cached service provider because this service has
+                    // a lifetime of Scoped.
+                    _razorcompilationService = _serviceProvider.GetService<IRazorCompilationService>();                
+                }
+
+                return _razorcompilationService;
+            }
+        }
 
         public VirtualPathRazorPageFactory(ITypeActivator typeActivator,
                                            IServiceProvider serviceProvider,
+                                           ICompilerCache compilerCache,
                                            IFileInfoCache fileInfoCache)
         {
             _activator = typeActivator;
             _serviceProvider = serviceProvider;
+            _compilerCache = compilerCache;
             _fileInfoCache = fileInfoCache;
         }
 
@@ -58,7 +64,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                     RelativePath = relativePath,
                 };
 
-                var result = CompilationService.Compile(relativeFileInfo, enableInstrumentation);
+                var result = _compilerCache.GetOrAdd(relativeFileInfo, enableInstrumentation, () => 
+                    RazorCompilationService.Compile(relativeFileInfo, enableInstrumentation));
+
                 var page = (IRazorPage)_activator.CreateInstance(_serviceProvider, result.CompiledType);
                 page.Path = relativePath;
 

@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// Represents the result of compilation that does not come from the <see cref="CompilerCache" />.
+    /// Represents the result of compilation that does not come from the <see cref="ICompilerCache" />.
     /// </summary>
     public class UncachedCompilationResult : CompilationResult
     {
