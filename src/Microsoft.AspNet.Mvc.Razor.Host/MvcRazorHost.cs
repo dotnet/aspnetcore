@@ -36,6 +36,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>. 
         // This field holds the type name without the generic decoration (MyBaseType)
         private readonly string _baseType;
+        private ChunkInheritanceUtility _chunkInheritanceUtility;
 
 #if NET45
         /// <summary>
@@ -154,6 +155,20 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return "CreateModelExpression"; }
         }
 
+        private ChunkInheritanceUtility ChunkInheritanceUtility
+        {
+            get
+            {
+                if (_chunkInheritanceUtility == null)
+                {
+                    // This needs to be lazily evaluated to support DefaultInheritedChunks being virtual.
+                    _chunkInheritanceUtility = new ChunkInheritanceUtility(this, _fileSystem, DefaultInheritedChunks);
+                }
+
+                return _chunkInheritanceUtility;
+            }
+        }
+
         /// <inheritdoc />
         public GeneratorResults GenerateCode(string rootRelativePath, Stream inputStream)
         {
@@ -161,6 +176,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             var className = MainClassNamePrefix + ParserHelpers.SanitizeClassName(rootRelativePath);
             var engine = new RazorTemplateEngine(this);
             return engine.GenerateCode(inputStream, className, DefaultNamespace, rootRelativePath);
+        }
+
+        /// <inheritdoc />
+        public override RazorParser DecorateRazorParser([NotNull] RazorParser razorParser, string sourceFileName)
+        {
+            var inheritedChunks = ChunkInheritanceUtility.GetInheritedChunks(sourceFileName);
+            return new MvcRazorParser(razorParser, inheritedChunks);
         }
 
         /// <inheritdoc />
@@ -173,25 +195,20 @@ namespace Microsoft.AspNet.Mvc.Razor
         public override CodeBuilder DecorateCodeBuilder([NotNull] CodeBuilder incomingBuilder,
                                                         [NotNull] CodeBuilderContext context)
         {
-            UpdateCodeBuilder(context);
+            var inheritedChunks = ChunkInheritanceUtility.GetInheritedChunks(context.SourceFile);
+
+            ChunkInheritanceUtility.MergeInheritedChunks(context.CodeTreeBuilder.CodeTree,
+                                                         inheritedChunks,
+                                                         DefaultModel);
 
             return new MvcCSharpCodeBuilder(context,
-                                            DefaultModel, 
+                                            DefaultModel,
                                             ActivateAttribute,
                                             new GeneratedTagHelperAttributeContext
                                             {
                                                 ModelExpressionTypeName = ModelExpressionType,
                                                 CreateModelExpressionMethodName = CreateModelExpressionMethod
                                             });
-        }
-
-        private void UpdateCodeBuilder(CodeGeneratorContext context)
-        {
-            var chunkUtility = new ChunkInheritanceUtility(context.CodeTreeBuilder.CodeTree,
-                                                           DefaultInheritedChunks,
-                                                           DefaultModel);
-            var inheritedChunks = chunkUtility.GetInheritedChunks(this, _fileSystem, context.SourceFile);
-            chunkUtility.MergeInheritedChunks(inheritedChunks);
         }
     }
 }

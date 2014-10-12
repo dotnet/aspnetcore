@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var fileInfo = new Mock<IFileInfo>();
             fileInfo.Setup(f => f.CreateReadStream())
-                    .Returns(new MemoryStream(Encoding.UTF8.GetBytes(contents)));
+                    .Returns(() => new MemoryStream(Encoding.UTF8.GetBytes(contents)));
             fileInfo.SetupGet(f => f.PhysicalPath)
                     .Returns(path);
             fileInfo.SetupGet(f => f.Name)

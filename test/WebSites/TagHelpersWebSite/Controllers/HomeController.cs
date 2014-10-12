@@ -29,5 +29,15 @@ namespace TagHelpersWebSite.Controllers
         {
             return View();
         }
+
+        public ViewResult NestedViewStartTagHelper()
+        {
+            return View();
+        }
+
+        public ViewResult ViewWithLayoutAndNestedTagHelper()
+        {
+            return View();
+        }
     }
 }

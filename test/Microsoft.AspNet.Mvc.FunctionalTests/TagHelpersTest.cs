@@ -51,5 +51,26 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
             Assert.Equal(expectedContent, responseContent);
         }
+
+        [Theory]
+        [InlineData("NestedViewStartTagHelper")]
+        [InlineData("ViewWithLayoutAndNestedTagHelper")]
+        public async Task TagHelpersAreInheritedFromViewStartPages(string action)
+        {
+            // Arrange
+            var expected = string.Join(Environment.NewLine,
+                                       "<root>root-content</root>",
+                                       "",
+                                       "",
+                                       "<nested>nested-content</nested>");
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var result = await client.GetStringAsync("http://localhost/Home/" + action);
+
+            // Assert
+            Assert.Equal(expected, result.Trim());
+        }
     }
 }
