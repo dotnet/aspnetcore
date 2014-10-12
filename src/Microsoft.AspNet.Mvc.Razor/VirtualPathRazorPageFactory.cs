@@ -40,8 +40,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 if (_razorcompilationService == null)
                 {
-                    // it is ok to use the cached service provider because this service has
-                    // a lifetime of Scoped.
+                    // it is ok to use the cached service provider because both this, and the
+                    // resolved service are in a lifetime of Scoped.
+                    // We don't want to get it upgront because it will force Roslyn to load.
                     _razorcompilationService = _serviceProvider.GetService<IRazorCompilationService>();
                 }
 

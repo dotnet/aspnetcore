@@ -9,11 +9,19 @@ using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
+    /// <inheritdoc />
     public class CompilerCache : ICompilerCache
     {
         private readonly ConcurrentDictionary<string, CompilerCacheEntry> _cache;
         private static readonly Type[] EmptyType = new Type[0];
 
+        /// <summary>
+        /// Sets up the runtime compilation cache.
+        /// </summary>
+        /// <param name="provider">
+        /// An <see cref="IAssemblyProvider"/> representing the assemblies
+        /// used to search for pre-compiled views.
+        /// </param>
         public CompilerCache([NotNull] IAssemblyProvider provider)
             : this(GetFileInfos(provider.CandidateAssemblies))
         {
@@ -64,6 +72,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             return false;
         }
 
+        /// <inheritdoc />
         public CompilationResult GetOrAdd([NotNull] RelativeFileInfo fileInfo,
                                           bool enableInstrumentation,
                                           [NotNull] Func<CompilationResult> compile)

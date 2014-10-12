@@ -14,7 +14,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="fileInfo">A <see cref="RelativeFileInfo"/> instance that represents the file to compile.
         /// </param>
         /// <param name="isInstrumented">Indicates that the page should be instrumented.</param>
-        /// <returns>A <see cref="CompilationResult"/> that represents the results of parsing and compiling the file.
+        /// <returns>
+        /// A <see cref="CompilationResult"/> that represents the results of parsing and compiling the file.
         /// </returns>
         CompilationResult Compile(RelativeFileInfo fileInfo, bool isInstrumented);
     }
