@@ -10,13 +10,13 @@
     <div class="form-horizontal">
         @* validation summary tag helper will target just <div/> elements and append the list of errors *@
         @* - i.e. this helper, like <select/> helper has ContentBehavior.Append *@
-        @* validation-model-errors-only="true" implies validation-summary="true" *@
-        @* helper does nothing if model is valid and (client-side validation is disabled or validation-model-errors-only="true") *@
+        @* helper does nothing if model is valid and (client-side validation is disabled or validation-summary="ModelOnly") *@
         @* don't need a bound attribute to match Html.ValidationSummary()'s headerTag parameter; users wrap message as they wish *@
         @* initially at least, will not remove the <div/> if list isn't generated *@
         @* - should helper remove the <div/> if list isn't generated? *@
         @* - (Html.ValidationSummary returns empty string despite non-empty message parameter) *@
-        <div validation-summary="true" validation-model-errors-only="true">
+        @* Acceptable values are: "None", "ModelOnly" and "All" *@
+        <div validation-summary="ModelOnly">
             <span style="color:red">This is my message</span>
         </div>
 
