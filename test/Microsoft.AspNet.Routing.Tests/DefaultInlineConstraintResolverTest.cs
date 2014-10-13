@@ -22,6 +22,17 @@ namespace Microsoft.AspNet.Routing.Tests
             var routeOptions = new RouteOptions();
             _constraintResolver = GetInlineConstraintResolver(routeOptions);
         }
+
+        [Fact]
+        public void ResolveConstraint_RequiredConstraint_ResolvesCorrectly()
+        {
+            // Arrange & Act
+            var constraint = _constraintResolver.ResolveConstraint("required");
+
+            // Assert
+            Assert.IsType<RequiredRouteConstraint>(constraint);
+        }
+
         [Fact]
         public void ResolveConstraint_IntConstraint_ResolvesCorrectly()
         {
