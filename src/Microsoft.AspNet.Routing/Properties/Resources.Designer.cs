@@ -299,7 +299,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The route parameter name '{0}' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{{', '}}', '/'. The '?' character marks a parameter as optional, and can only occur at the end of the parameter.
+        /// The route parameter name '{0}' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{{', '}}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter.
         /// </summary>
         internal static string TemplateRoute_InvalidParameterName
         {
@@ -307,7 +307,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The route parameter name '{0}' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{{', '}}', '/'. The '?' character marks a parameter as optional, and can only occur at the end of the parameter.
+        /// The route parameter name '{0}' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{{', '}}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter.
         /// </summary>
         internal static string FormatTemplateRoute_InvalidParameterName(object p0)
         {

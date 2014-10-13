@@ -172,7 +172,7 @@
     <value>The literal section '{0}' is invalid. Literal sections cannot contain the '?' character.</value>
   </data>
   <data name="TemplateRoute_InvalidParameterName" xml:space="preserve">
-    <value>The route parameter name '{0}' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{{', '}}', '/'. The '?' character marks a parameter as optional, and can only occur at the end of the parameter.</value>
+    <value>The route parameter name '{0}' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{{', '}}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter.</value>
   </data>
   <data name="TemplateRoute_InvalidRouteTemplate" xml:space="preserve">
     <value>The route template cannot start with a '/' or '~' character.</value>

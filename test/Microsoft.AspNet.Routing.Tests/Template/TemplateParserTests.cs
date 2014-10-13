@@ -284,8 +284,31 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("foo/{*}", _inlineConstraintResolver),
-                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. " + 
-                "The '?' character marks a parameter as optional, and can only occur at the end of the parameter." + Environment.NewLine +
+                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot" +
+                " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional," +
+                " and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
+                " and can occur only at the start of the parameter." + Environment.NewLine +
+                "Parameter name: routeTemplate");
+        }
+
+        [Theory]
+        [InlineData("{**}", "*")]
+        [InlineData("{a*}", "a*")]
+        [InlineData("{*a*}", "a*")]
+        [InlineData("{*a*:int}", "a*")]
+        [InlineData("{*a*=5}", "a*")]
+        [InlineData("{*a*b=5}", "a*b")]
+        public void ParseRouteParameter_ThrowsIf_ParameterContainsAsterisk(string template, string parameterName)
+        {
+            // Arrange
+            var expectedMessage = "The route parameter name '" + parameterName + "' is invalid. Route parameter " +
+                "names must be non-empty and cannot contain these characters: '{', '}', '/'. The '?' character " +
+                "marks a parameter as optional, and can occur only at the end of the parameter. The '*' character " +
+                "marks a parameter as catch-all, and can occur only at the start of the parameter.";
+
+            // Act & Assert
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse(template, _inlineConstraintResolver), expectedMessage + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -339,8 +362,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{a}/{a{aa}/{z}", _inlineConstraintResolver),
-                "The route parameter name 'a{aa' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. " +
-                "The '?' character marks a parameter as optional, and can only occur at the end of the parameter." + Environment.NewLine +
+                "The route parameter name 'a{aa' is invalid. Route parameter names must be non-empty and cannot" +
+                " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and" +
+                " can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
+                " and can occur only at the start of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -349,8 +374,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{a}/{}/{z}", _inlineConstraintResolver),
-                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. " +
-                "The '?' character marks a parameter as optional, and can only occur at the end of the parameter." + Environment.NewLine +
+                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot" +
+                " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and" +
+                " can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
+                " and can occur only at the start of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -359,8 +386,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{Controller}.mvc/{?}", _inlineConstraintResolver),
-                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. " +
-                "The '?' character marks a parameter as optional, and can only occur at the end of the parameter." + Environment.NewLine +
+                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot" +
+                " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and" +
+                " can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
+                " and can occur only at the start of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -423,8 +452,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{foor?b}", _inlineConstraintResolver),
-                "The route parameter name 'foor?b' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. " +
-                "The '?' character marks a parameter as optional, and can only occur at the end of the parameter." + Environment.NewLine +
+                "The route parameter name 'foor?b' is invalid. Route parameter names must be non-empty and cannot" +
+                " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and" +
+                " can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
+                " and can occur only at the start of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 

@@ -15,7 +15,8 @@ namespace Microsoft.AspNet.Routing.Template
         private const char CloseBrace = '}';
         private const char EqualsSign = '=';
         private const char QuestionMark = '?';
-        
+        private const char Asterisk = '*';
+
         public static RouteTemplate Parse(string routeTemplate, IInlineConstraintResolver constraintResolver)
         {
             if (routeTemplate == null)
@@ -358,7 +359,7 @@ namespace Microsoft.AspNet.Routing.Template
             for (var i = 0; i < parameterName.Length; i++)
             {
                 var c = parameterName[i];
-                if (c == Separator || c == OpenBrace || c == CloseBrace || c == QuestionMark)
+                if (c == Separator || c == OpenBrace || c == CloseBrace || c == QuestionMark || c == Asterisk)
                 {
                     context.Error = String.Format(CultureInfo.CurrentCulture,
                                                   Resources.TemplateRoute_InvalidParameterName, parameterName);
