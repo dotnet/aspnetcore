@@ -10,7 +10,7 @@ namespace HelloMvc
         {
             app.UseErrorPage();
 
-            app.UseServices(services =>
+            app.UsePerRequestServices(services =>
             {
                 services.AddMvc();
             });
