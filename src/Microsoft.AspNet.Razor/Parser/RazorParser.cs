@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.Parser.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
@@ -17,33 +18,60 @@ namespace Microsoft.AspNet.Razor.Parser
 {
     public class RazorParser
     {
-        private ITagHelperDescriptorResolver _tagHelperDescriptorResolver;
-
+        /// <summary>
+        /// Initializes a new instance of <see cref="RazorParser"/>.
+        /// </summary>
+        /// <param name="codeParser">The <see cref="ParserBase"/> used for parsing code content.</param>
+        /// <param name="markupParser">The <see cref="ParserBase"/> used for parsing markpup content.</param>
+        /// <param name="tagHelperDescriptorResolver">The <see cref=ITagHelperDescriptorResolver"/> used to resolve
+        /// <see cref="TagHelperDescriptor"/>s.</param>
         public RazorParser([NotNull] ParserBase codeParser,
                            [NotNull] ParserBase markupParser,
                            ITagHelperDescriptorResolver tagHelperDescriptorResolver)
+            : this(codeParser,
+                  markupParser,
+                  tagHelperDescriptorResolver,
+                  GetDefaultRewriters(markupParser))
         {
-            _tagHelperDescriptorResolver = tagHelperDescriptorResolver;
-            MarkupParser = markupParser;
-            CodeParser = codeParser;
-
-            Optimizers = new List<ISyntaxTreeRewriter>()
-            {
-                // TODO: Modify the below WhiteSpaceRewriter & ConditionalAttributeCollapser to handle 
-                // TagHelperBlock's: https://github.com/aspnet/Razor/issues/117
-
-                // Move whitespace from start of expression block to markup
-                new WhiteSpaceRewriter(MarkupParser.BuildSpan),
-                // Collapse conditional attributes where the entire value is literal
-                new ConditionalAttributeCollapser(MarkupParser.BuildSpan),
-            };
         }
 
-        internal ParserBase CodeParser { get; private set; }
-        internal ParserBase MarkupParser { get; private set; }
-        internal IList<ISyntaxTreeRewriter> Optimizers { get; private set; }
+        /// <summary>
+        /// Initializes a new instance of <see cref="RazorParser"/> from the specified <paramref name="parser" />.
+        /// </summary>
+        /// <param name="parser">The <see cref="RazorParser"/> to copy values from.</param>
+        public RazorParser([NotNull] RazorParser parser)
+           : this(parser.CodeParser, parser.MarkupParser, parser.TagHelperDescriptorResolver, parser.Optimizers)
+        {
+            DesignTimeMode = parser.DesignTimeMode;
+        }
+
+        private RazorParser(ParserBase codeParser,
+                            ParserBase markupParser,
+                            ITagHelperDescriptorResolver tagHelperDescriptorResolver,
+                            IEnumerable<ISyntaxTreeRewriter> optimizers)
+        {
+            CodeParser = codeParser;
+            MarkupParser = markupParser;
+            TagHelperDescriptorResolver = tagHelperDescriptorResolver;
+            Optimizers = optimizers.ToList();
+        }
 
         public bool DesignTimeMode { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref=ITagHelperDescriptorResolver"/> used to resolve
+        /// <see cref="TagHelperDescriptor"/>s.</param>
+        /// </summary>
+        protected ITagHelperDescriptorResolver TagHelperDescriptorResolver { get; private set; }
+
+        // Internal for unit testing
+        internal ParserBase CodeParser { get; private set; }
+
+        // Internal for unit testing
+        internal ParserBase MarkupParser { get; private set; }
+
+        // Internal for unit testing
+        internal List<ISyntaxTreeRewriter> Optimizers { get; private set; }
 
         public virtual void Parse(TextReader input, ParserVisitor visitor)
         {
@@ -142,10 +170,10 @@ namespace Microsoft.AspNet.Razor.Parser
                 rewriter.Rewrite(rewritingContext);
             }
 
-            if (_tagHelperDescriptorResolver != null)
+            if (TagHelperDescriptorResolver != null)
             {
-                var tagHelperRegistrationVisitor = new TagHelperRegistrationVisitor(_tagHelperDescriptorResolver);
-                var tagHelperProvider = tagHelperRegistrationVisitor.CreateProvider(rewritingContext.SyntaxTree);
+                var descriptors = GetTagHelperDescriptors(rewritingContext.SyntaxTree);
+                var tagHelperProvider = new TagHelperDescriptorProvider(descriptors);
 
                 var tagHelperParseTreeRewriter = new TagHelperParseTreeRewriter(tagHelperProvider);
                 // Rewrite the document to utilize tag helpers
@@ -172,6 +200,32 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // Return the new result
             return new ParserResults(syntaxTree, errors);
+        }
+
+        /// <summary>
+        /// Returns a sequence of <see cref="TagHelperDescriptor"/>s for tag helpers that are registered in the 
+        /// specified <paramref name="documentRoot"/>.
+        /// </summary>
+        /// <param name="documentRoot">The <see cref="Block"/> to scan for tag helper registrations in.</param>
+        /// <returns></returns>
+        protected virtual IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors([NotNull] Block documentRoot)
+        {
+            var tagHelperRegistrationVisitor = new TagHelperRegistrationVisitor(TagHelperDescriptorResolver);
+            return tagHelperRegistrationVisitor.GetDescriptors(documentRoot);
+        }
+
+        private static IEnumerable<ISyntaxTreeRewriter> GetDefaultRewriters(ParserBase markupParser)
+        {
+            return new ISyntaxTreeRewriter[]
+            {
+                // TODO: Modify the below WhiteSpaceRewriter & ConditionalAttributeCollapser to handle 
+                // TagHelperBlock's: https://github.com/aspnet/Razor/issues/117
+
+                // Move whitespace from start of expression block to markup
+                new WhiteSpaceRewriter(markupParser.BuildSpan),
+                // Collapse conditional attributes where the entire value is literal
+                new ConditionalAttributeCollapser(markupParser.BuildSpan),
+            };
         }
     }
 }

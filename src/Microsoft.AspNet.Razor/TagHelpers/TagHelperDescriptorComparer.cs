@@ -18,11 +18,6 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </summary>
         public static readonly TagHelperDescriptorComparer Default = new TagHelperDescriptorComparer();
 
-        // Internal for testing
-        internal TagHelperDescriptorComparer()
-        {
-        }
-
         /// <summary>
         /// Determines if the two given tag helpers are equal.
         /// </summary>

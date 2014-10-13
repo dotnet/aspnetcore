@@ -2,10 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Framework;
+using Moq;
+using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser
@@ -18,9 +23,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             var factory = SpanFactory.CreateCsHtml();
 
             // Arrange
-            RazorParser parser = new RazorParser(new CSharpCodeParser(), 
-                                                 new HtmlMarkupParser(),
-                                                 tagHelperDescriptorResolver: null);
+            var parser = new RazorParser(new CSharpCodeParser(),
+                                         new HtmlMarkupParser(),
+                                         tagHelperDescriptorResolver: null);
 
             // Act/Assert
             ParserTestBase.EvaluateResults(parser.Parse(new StringReader("foo @bar baz")),
@@ -40,12 +45,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             var factory = SpanFactory.CreateCsHtml();
 
             // Arrange
-            RazorParser parser = new RazorParser(new CSharpCodeParser(), 
-                                                 new HtmlMarkupParser(),
-                                                 tagHelperDescriptorResolver: null);
+            var parser = new RazorParser(new CSharpCodeParser(),
+                                         new HtmlMarkupParser(),
+                                         tagHelperDescriptorResolver: null);
 
             // Act
-            ParserResults results = parser.Parse(new StringReader("foo @bar baz"));
+            var results = parser.Parse(new StringReader("foo @bar baz"));
 
             // Assert
             ParserTestBase.EvaluateResults(results,
@@ -60,6 +65,27 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         }
 
         [Fact]
+        public void GetTagHelperDescriptors_IsInvokedToLocateTagHelperDescriptors()
+        {
+            // Arrange
+            var factory = SpanFactory.CreateCsHtml();
+            var parser = new Mock<RazorParser>(new CSharpCodeParser(),
+                                               new HtmlMarkupParser(),
+                                               Mock.Of<ITagHelperDescriptorResolver>());
+            parser.CallBase = true;
+            parser.Protected()
+                  .Setup<IEnumerable<TagHelperDescriptor>>("GetTagHelperDescriptors", ItExpr.IsAny<Block>())
+                  .Returns(Enumerable.Empty<TagHelperDescriptor>())
+                  .Verifiable();
+
+            // Act
+            parser.Object.Parse(new StringReader("<p>Hello world. The time is @DateTime.UtcNow</p>"));
+
+            // Assert
+            parser.Verify();
+        }
+
+        [Fact]
         public void ParseMethodSetsUpRunWithSpecifiedCodeParserMarkupParserAndListenerAndPassesToMarkupParser()
         {
             RunParseWithListenerTest((parser, reader) => parser.Parse(reader));
@@ -68,16 +94,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         private static void RunParseWithListenerTest(Action<RazorParser, TextReader> parserAction)
         {
             // Arrange
-            ParserBase markupParser = new MockMarkupParser();
-            ParserBase codeParser = new CSharpCodeParser();
-            RazorParser parser = new RazorParser(codeParser, markupParser, tagHelperDescriptorResolver: null);
-            TextReader expectedReader = new StringReader("foo");
+            var markupParser = new MockMarkupParser();
+            var codeParser = new CSharpCodeParser();
+            var parser = new RazorParser(codeParser, markupParser, tagHelperDescriptorResolver: null);
+            var expectedReader = new StringReader("foo");
 
             // Act
             parserAction(parser, expectedReader);
 
             // Assert
-            ParserContext actualContext = markupParser.Context;
+            var actualContext = markupParser.Context;
             Assert.NotNull(actualContext);
             Assert.Same(markupParser, actualContext.MarkupParser);
             Assert.Same(markupParser, actualContext.ActiveParser);

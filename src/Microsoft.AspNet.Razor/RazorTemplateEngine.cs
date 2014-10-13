@@ -68,26 +68,28 @@ namespace Microsoft.AspNet.Razor
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so we don't want to dispose it")]
         public ParserResults ParseTemplate(ITextBuffer input, CancellationToken? cancelToken)
         {
-            return ParseTemplateCore(input.ToDocument(), cancelToken);
+            return ParseTemplateCore(input.ToDocument(), sourceFileName: null, cancelToken: cancelToken);
         }
 
         // See ParseTemplate(ITextBuffer, CancellationToken?), 
         // this overload simply wraps a TextReader in a TextBuffer (see ITextBuffer and BufferingTextReader)
-        public ParserResults ParseTemplate(TextReader input)
+        public ParserResults ParseTemplate(TextReader input, string sourceFileName)
         {
-            return ParseTemplate(input, null);
+            return ParseTemplateCore(new SeekableTextReader(input), sourceFileName, cancelToken: null);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so we don't want to dispose it")]
         public ParserResults ParseTemplate(TextReader input, CancellationToken? cancelToken)
         {
-            return ParseTemplateCore(new SeekableTextReader(input), cancelToken);
+            return ParseTemplateCore(new SeekableTextReader(input), sourceFileName: null, cancelToken: cancelToken);
         }
 
-        protected internal virtual ParserResults ParseTemplateCore(ITextDocument input, CancellationToken? cancelToken)
+        protected internal virtual ParserResults ParseTemplateCore(ITextDocument input,
+                                                                   string sourceFileName,
+                                                                   CancellationToken? cancelToken)
         {
             // Construct the parser
-            RazorParser parser = CreateParser();
+            var parser = CreateParser(sourceFileName);
             Debug.Assert(parser != null);
             return parser.Parse(input);
         }
@@ -243,7 +245,7 @@ namespace Microsoft.AspNet.Razor
             rootNamespace = (rootNamespace ?? Host.DefaultNamespace) ?? DefaultNamespace;
 
             // Run the parser
-            var parser = CreateParser();
+            var parser = CreateParser(sourceFileName);
             Debug.Assert(parser != null);
             var results = parser.Parse(input);
 
@@ -267,17 +269,19 @@ namespace Microsoft.AspNet.Razor
                 Host.CodeLanguage.CreateCodeGenerator(className, rootNamespace, sourceFileName, Host));
         }
 
-        protected internal virtual RazorParser CreateParser()
+        protected internal virtual RazorParser CreateParser(string sourceFileName)
         {
             var codeParser = Host.CodeLanguage.CreateCodeParser();
             var markupParser = Host.CreateMarkupParser();
 
-            return new RazorParser(Host.DecorateCodeParser(codeParser),
-                                   Host.DecorateMarkupParser(markupParser),
-                                   Host.TagHelperDescriptorResolver)
+            var parser = new RazorParser(Host.DecorateCodeParser(codeParser),
+                                         Host.DecorateMarkupParser(markupParser),
+                                         Host.TagHelperDescriptorResolver)
             {
                 DesignTimeMode = Host.DesignTimeMode
             };
+
+            return Host.DecorateRazorParser(parser, sourceFileName);
         }
 
         protected internal virtual CodeBuilder CreateCodeBuilder(CodeBuilderContext context)

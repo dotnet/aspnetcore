@@ -7,27 +7,31 @@ using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 
-namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
+namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 {
+    /// <summary>
+    /// A <see cref="ParserVisitor"/> that generates <see cref="TagHelperDescriptor"/>s from
+    /// tag helper code generators in a Razor document.
+    /// </summary>
     public class TagHelperRegistrationVisitor : ParserVisitor
     {
         private readonly ITagHelperDescriptorResolver _descriptorResolver;
 
-        private HashSet<TagHelperDescriptor> _descriptors;
+        private List<TagHelperDescriptor> _descriptors;
 
         public TagHelperRegistrationVisitor(ITagHelperDescriptorResolver descriptorResolver)
         {
             _descriptorResolver = descriptorResolver;
         }
 
-        public TagHelperDescriptorProvider CreateProvider(Block root)
+        public IEnumerable<TagHelperDescriptor> GetDescriptors([NotNull] Block root)
         {
-            _descriptors = new HashSet<TagHelperDescriptor>(TagHelperDescriptorComparer.Default);
+            _descriptors = new List<TagHelperDescriptor>();
 
             // This will recurse through the syntax tree.
             VisitBlock(root);
 
-            return new TagHelperDescriptorProvider(_descriptors);
+            return _descriptors;
         }
 
         public override void VisitSpan(Span span)
@@ -50,10 +54,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 var descriptors = _descriptorResolver.Resolve(addGenerator.LookupText);
 
                 // Add all the found descriptors to our HashSet.
-                foreach (var descriptor in descriptors)
-                {
-                    _descriptors.Add(descriptor);
-                }
+                _descriptors.AddRange(descriptors);
             }
         }
     }

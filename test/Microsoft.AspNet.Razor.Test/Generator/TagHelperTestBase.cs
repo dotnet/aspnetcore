@@ -57,9 +57,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 _tagHelperDescriptors = tagHelperDescriptors;
             }
 
-            protected internal override RazorParser CreateParser()
+            protected internal override RazorParser CreateParser(string fileName)
             {
-                var parser = base.CreateParser();
+                var parser = base.CreateParser(fileName);
 
                 return new RazorParser(parser.CodeParser,
                                        parser.MarkupParser,

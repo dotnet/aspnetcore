@@ -166,6 +166,19 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
+        /// Provides an opportunity for derived types to modify the instance of <see cref="RazorParser"/>
+        /// used by the <see cref="RazorTemplateEngine"/> to parse the Razor tree.
+        /// </summary>
+        /// <param name="incomingRazorParser">The <see cref="RazorParser"/></param>
+        /// <param name="sourceFileName">The file name of the Razor file being parsed.</param>
+        /// <returns>Either the same code parser, after modifications, or a different code parser.</returns>
+        public virtual RazorParser DecorateRazorParser([NotNull] RazorParser incomingRazorParser,
+                                                       string sourceFileName)
+        {
+            return incomingRazorParser;
+        }
+
+        /// <summary>
         /// Gets an instance of the code parser and is provided an opportunity to decorate or replace it
         /// </summary>
         /// <param name="incomingCodeParser">The code parser</param>
