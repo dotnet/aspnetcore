@@ -86,7 +86,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                     new Block(
                         new BlockBuilder { Type = BlockType.Comment }),
                         new RazorError[0],
-                        new CodeBuilderResult("", new LineMapping[0]));
+                        new CodeBuilderResult("", new LineMapping[0]),
+                        new CodeTree());
         }
     }
 }
