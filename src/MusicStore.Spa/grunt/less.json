@@ -4,7 +4,7 @@
             "cleancss": false
         },
         "files": {
-            "wwwroot/css/site.css": "Client/**/*.less"
+            "wwwroot/css/site.css": "wwwroot/**/*.less"
         }
     },
     "release": {
@@ -12,7 +12,7 @@
             "cleancss": true
         },
         "files": {
-            "wwwroot/css/site.css": "Client/**/*.less"
+            "wwwroot/css/site.css": "wwwroot/**/*.less"
         }
     }
 }

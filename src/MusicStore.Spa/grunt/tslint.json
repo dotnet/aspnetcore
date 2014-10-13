@@ -53,6 +53,6 @@
         }
     },
     "files": {
-        "src": [ "Client/**/*.ts", "!**/*.ng.ts" ]
+        "src": [ "ng-apps/**/*.ts", "!**/*.ng.ts" ]
     }
 }

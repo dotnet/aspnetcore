@@ -1,10 +1,10 @@
 ﻿{
     "typescript": {
-        "files": ["Client/**/*.ts", "!**/*.ng.ts"],
+        "files": ["ng-apps/**/*.ts", "!**/*.ng.ts"],
         "tasks": ["ts"]
     },
-    "dev": {
-        "files": ["bower_components/<%= staticFilePattern %>", "Client/<%= staticFilePattern %>"],
-        "tasks": ["dev"]
+    "bower": {
+        "files": ["bower_components/**/*.*"],
+        "tasks": ["bower:install"]
     }
 }

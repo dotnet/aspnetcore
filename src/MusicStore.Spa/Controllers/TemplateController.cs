@@ -5,7 +5,7 @@ namespace MusicStore.Controllers
 {
     public class TemplateController : Controller
     {
-        private static readonly string _templateBasePath = "/Client/ng-apps/";
+        private static readonly string _templateBasePath = "/ng-apps/";
 
         // GET: Template
         [Route("ng-apps/{*path}")]

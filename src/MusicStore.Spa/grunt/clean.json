@@ -1,5 +1,5 @@
 ﻿{
     "options": { "force": true },
-    "assets": [ "wwwroot/*", "!wwwroot/bin", "!wwwroot/lib" ],
-    "tsng": [ "client/**/*.ng.ts" ]
+    "assets": [ "wwwroot/ng-apps" ],
+    "tsng": [ "ng-apps/**/*.ng.ts" ]
 }

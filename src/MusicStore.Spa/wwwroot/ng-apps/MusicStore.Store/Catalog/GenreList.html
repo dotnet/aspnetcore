@@ -1,0 +1,12 @@
+﻿<div ng-controller="MusicStore.Store.Catalog.GenreListController as viewModel">
+    <h3>Browse Genres</h3>
+
+    <p>
+        Select from {{ viewModel.genres.length }} genres:
+    </p>
+    <ul class="list-group">
+        <li ng-repeat="genre in viewModel.genres" class="list-group-item">
+            <a ng-href="#/albums/genres/{{ genre.GenreId }}">{{ genre.Name }}</a>
+        </li>
+    </ul>
+</div>

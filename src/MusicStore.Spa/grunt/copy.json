@@ -1,19 +1,13 @@
 ﻿{
-    "fix": {
-        "_": "This is to work around an issue with the dt-angular bower package https://github.com/dt-bower/dt-angular/issues/4",
-        "files": {
-            "bower_components/jquery/jquery.d.ts": [ "bower_components/dt-jquery/jquery.d.ts" ]
-        }
-    },
     "assets": {
         "files": [
             {
                 "expand": true,
-                "cwd": "Client/",
+                "cwd": "ng-apps/",
                 "src": [
                     "<%= staticFilePattern %>"
                 ],
-                "dest": "wwwroot/",
+                "dest": "wwwroot/ng-apps",
                 "options": { "force": true }
             }
         ]
