@@ -9,32 +9,38 @@ namespace Microsoft.AspNet.Razor
 {
     public class GeneratorResults : ParserResults
     {
-        public GeneratorResults(ParserResults parserResults, CodeBuilderResult codeBuilderResult)
+        public GeneratorResults(ParserResults parserResults, CodeBuilderResult codeBuilderResult, CodeTree codeTree)
             : this(parserResults.Document, 
                    parserResults.ParserErrors, 
-                   codeBuilderResult)
+                   codeBuilderResult,
+                   codeTree)
         {
         }
 
         public GeneratorResults(Block document,
                                 IList<RazorError> parserErrors,
-                                CodeBuilderResult codeBuilderResult)
-            : this(parserErrors.Count == 0, document, parserErrors, codeBuilderResult)
+                                CodeBuilderResult codeBuilderResult,
+                                CodeTree codeTree)
+            : this(parserErrors.Count == 0, document, parserErrors, codeBuilderResult, codeTree)
         {
         }
 
         protected GeneratorResults(bool success,
                                    Block document,
                                    IList<RazorError> parserErrors,
-                                   CodeBuilderResult codeBuilderResult)
+                                   CodeBuilderResult codeBuilderResult,
+                                   CodeTree codeTree)
             : base(success, document, parserErrors)
         {
             GeneratedCode = codeBuilderResult.Code;
             DesignTimeLineMappings = codeBuilderResult.DesignTimeLineMappings;
+            CodeTree = codeTree;
         }
 
         public string GeneratedCode { get; private set; }
 
         public IList<LineMapping> DesignTimeLineMappings { get; private set; }
+
+        public CodeTree CodeTree { get; private set; }
     }
 }

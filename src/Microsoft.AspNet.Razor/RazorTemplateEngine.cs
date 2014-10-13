@@ -243,12 +243,12 @@ namespace Microsoft.AspNet.Razor
             rootNamespace = (rootNamespace ?? Host.DefaultNamespace) ?? DefaultNamespace;
 
             // Run the parser
-            RazorParser parser = CreateParser();
+            var parser = CreateParser();
             Debug.Assert(parser != null);
-            ParserResults results = parser.Parse(input);
+            var results = parser.Parse(input);
 
             // Generate code
-            RazorCodeGenerator generator = CreateCodeGenerator(className, rootNamespace, sourceFileName);
+            var generator = CreateCodeGenerator(className, rootNamespace, sourceFileName);
             generator.DesignTimeMode = Host.DesignTimeMode;
             generator.Visit(results);
 
@@ -258,7 +258,7 @@ namespace Microsoft.AspNet.Razor
             var builderResult = builder.Build();
 
             // Collect results and return
-            return new GeneratorResults(results, builderResult);
+            return new GeneratorResults(results, builderResult, codeBuilderContext.CodeTreeBuilder.CodeTree);
         }
 
         protected internal virtual RazorCodeGenerator CreateCodeGenerator(string className, string rootNamespace, string sourceFileName)
