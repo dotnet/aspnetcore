@@ -1,19 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering.Expressions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -22,6 +11,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
     /// </summary>
     public interface IHtmlGenerator
     {
+        string IdAttributeDotReplacement { get; set; }
+
         string Encode(string value);
 
         string Encode(object value);
@@ -100,11 +91,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string name,
             string labelText,
             object htmlAttributes);
-
-        /// <remarks>
-        /// Not used directly in HtmlHelper. Exposed publicly for use in DefaultDisplayTemplates.
-        /// </remarks>
-        TagBuilder GenerateOption(SelectListItem item, string encodedText);
 
         TagBuilder GeneratePassword(
             [NotNull] ViewContext viewContext,

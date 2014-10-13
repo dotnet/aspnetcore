@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             foreach (var item in TriStateValues(value))
             {
                 var encodedText = html.Encode(item.Text);
-                var option = HtmlHelper.GenerateOption(item, encodedText);
+                var option = DefaultHtmlGenerator.GenerateOption(item, encodedText);
                 builder.Append(option);
             }
 

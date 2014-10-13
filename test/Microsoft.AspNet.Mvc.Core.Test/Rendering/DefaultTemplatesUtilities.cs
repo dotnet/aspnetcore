@@ -145,15 +145,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 .Setup(o => o.RequestServices)
                 .Returns(serviceProvider.Object);
 
-            var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, new StringWriter());
+            var htmlGenerator = new DefaultHtmlGenerator(
+                actionBindingContextProvider.Object,
+                GetAntiForgeryInstance(),
+                provider,
+                urlHelper);
 
             // TemplateRenderer will Contextualize this transient service.
-            var innerHelper = (IHtmlHelper)new HtmlHelper(
-                viewEngine,
-                provider,
-                urlHelper,
-                GetAntiForgeryInstance(),
-                actionBindingContextProvider.Object);
+            var innerHelper = (IHtmlHelper)new HtmlHelper(htmlGenerator, viewEngine, provider);
             if (innerHelperWrapper != null)
             {
                 innerHelper = innerHelperWrapper(innerHelper);
@@ -162,12 +161,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 .Setup(s => s.GetService(typeof(IHtmlHelper)))
                 .Returns(() => innerHelper);
 
-            var htmlHelper = new HtmlHelper<TModel>(
-                viewEngine,
-                provider,
-                urlHelper,
-                GetAntiForgeryInstance(),
-                actionBindingContextProvider.Object);
+            var htmlHelper = new HtmlHelper<TModel>(htmlGenerator, viewEngine, provider);
+            var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, new StringWriter());
             htmlHelper.Contextualize(viewContext);
 
             return htmlHelper;

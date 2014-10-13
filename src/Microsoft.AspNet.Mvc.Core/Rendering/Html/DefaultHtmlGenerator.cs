@@ -26,8 +26,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private readonly IModelMetadataProvider _metadataProvider;
         private readonly IUrlHelper _urlHelper;
 
-        public string IdAttributeDotReplacement { get; set; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
         /// </summary>
@@ -42,6 +40,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             _metadataProvider = metadataProvider;
             _urlHelper = urlHelper;
         }
+
+        /// <inheritdoc />
+        public string IdAttributeDotReplacement { get; set; }
 
         /// <inheritdoc />
         public string Encode(string value)
@@ -248,32 +249,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             tagBuilder.Attributes.Add("for", idString);
             tagBuilder.SetInnerText(resolvedLabelText);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes), replaceExisting: true);
-
-            return tagBuilder;
-        }
-
-        /// <inheritdoc />
-        public virtual TagBuilder GenerateOption(SelectListItem item, string encodedText)
-        {
-            var tagBuilder = new TagBuilder("option")
-            {
-                InnerHtml = encodedText,
-            };
-
-            if (item.Value != null)
-            {
-                tagBuilder.Attributes["value"] = item.Value;
-            }
-
-            if (item.Selected)
-            {
-                tagBuilder.Attributes["selected"] = "selected";
-            }
-
-            if (item.Disabled)
-            {
-                tagBuilder.Attributes["disabled"] = "disabled";
-            }
 
             return tagBuilder;
         }
@@ -725,6 +700,56 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     new ClientModelValidationContext(metadata, _metadataProvider)));
         }
 
+        internal static string EvalString(ViewContext viewContext, string key, string format)
+        {
+            return Convert.ToString(viewContext.ViewData.Eval(key, format), CultureInfo.CurrentCulture);
+        }
+
+        /// <remarks>
+        /// Not used directly in HtmlHelper. Exposed for use in DefaultDisplayTemplates.
+        /// </remarks>
+        internal static TagBuilder GenerateOption(SelectListItem item, string encodedText)
+        {
+            var tagBuilder = new TagBuilder("option")
+            {
+                InnerHtml = encodedText,
+            };
+
+            if (item.Value != null)
+            {
+                tagBuilder.Attributes["value"] = item.Value;
+            }
+
+            if (item.Selected)
+            {
+                tagBuilder.Attributes["selected"] = "selected";
+            }
+
+            if (item.Disabled)
+            {
+                tagBuilder.Attributes["disabled"] = "disabled";
+            }
+
+            return tagBuilder;
+        }
+
+        internal static string GetFullHtmlFieldName(ViewContext viewContext, string name)
+        {
+            var fullName = viewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            return fullName;
+        }
+
+        internal static object GetModelStateValue(ViewContext viewContext, string key, Type destinationType)
+        {
+            ModelState modelState;
+            if (viewContext.ViewData.ModelState.TryGetValue(key, out modelState) && modelState.Value != null)
+            {
+                return modelState.Value.ConvertTo(destinationType, culture: null);
+            }
+
+            return null;
+        }
+
         protected virtual TagBuilder GenerateInput(
             [NotNull] ViewContext viewContext,
             InputType inputType,
@@ -843,6 +868,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder;
         }
 
+        // Only render attributes if client-side validation is enabled, and then only if we've
+        // never rendered validation for a field with this name in this form.
         protected virtual IDictionary<string, object> GetValidationAttributes(
             ViewContext viewContext,
             ModelMetadata metadata,
@@ -876,13 +903,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return Convert.ToString(viewContext.ViewData.Eval(key), CultureInfo.CurrentCulture);
         }
 
-        // Only render attributes if client-side validation is enabled, and then only if we've
-        // never rendered validation for a field with this name in this form.
-        private static string EvalString(ViewContext viewContext, string key, string format)
-        {
-            return Convert.ToString(viewContext.ViewData.Eval(key, format), CultureInfo.CurrentCulture);
-        }
-
         // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
         private static IDictionary<string, object> GetHtmlAttributeDictionaryOrNull(object htmlAttributes)
         {
@@ -897,12 +917,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             return htmlAttributeDictionary;
-        }
-
-        private static string GetFullHtmlFieldName(ViewContext viewContext, string name)
-        {
-            var fullName = viewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-            return fullName;
         }
 
         private static string GetInputTypeString(InputType inputType)
@@ -922,17 +936,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             default:
                 return "text";
             }
-        }
-
-        private static object GetModelStateValue(ViewContext viewContext, string key, Type destinationType)
-        {
-            ModelState modelState;
-            if (viewContext.ViewData.ModelState.TryGetValue(key, out modelState) && modelState.Value != null)
-            {
-                return modelState.Value.ConvertTo(destinationType, culture: null);
-            }
-
-            return null;
         }
 
         private static IEnumerable<SelectListItem> GetSelectListItems([NotNull] ViewContext viewContext, string name)

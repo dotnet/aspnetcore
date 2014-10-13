@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
@@ -29,12 +26,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public static readonly string ValidationSummaryCssClassName = "validation-summary-errors";
         public static readonly string ValidationSummaryValidCssClassName = "validation-summary-valid";
 
-        private const string HiddenListItem = @"<li style=""display:none""></li>";
-
-        private readonly IUrlHelper _urlHelper;
+        private readonly IHtmlGenerator _htmlGenerator;
         private readonly ICompositeViewEngine _viewEngine;
-        private readonly AntiForgery _antiForgeryInstance;
-        private readonly IActionBindingContextProvider _actionBindingContextProvider;
 
         private ViewContext _viewContext;
 
@@ -42,17 +35,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Initializes a new instance of the <see cref="HtmlHelper"/> class.
         /// </summary>
         public HtmlHelper(
+            [NotNull] IHtmlGenerator htmlGenerator,
             [NotNull] ICompositeViewEngine viewEngine,
-            [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] IUrlHelper urlHelper,
-            [NotNull] AntiForgery antiForgeryInstance,
-            [NotNull] IActionBindingContextProvider actionBindingContextProvider)
+            [NotNull] IModelMetadataProvider metadataProvider)
         {
             _viewEngine = viewEngine;
+            _htmlGenerator = htmlGenerator;
             MetadataProvider = metadataProvider;
-            _urlHelper = urlHelper;
-            _antiForgeryInstance = antiForgeryInstance;
-            _actionBindingContextProvider = actionBindingContextProvider;
 
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = "_";
@@ -72,7 +61,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public string IdAttributeDotReplacement { get; set; }
+        public string IdAttributeDotReplacement
+        {
+            get
+            {
+                return _htmlGenerator.IdAttributeDotReplacement;
+            }
+            set
+            {
+                _htmlGenerator.IdAttributeDotReplacement = value;
+            }
+        }
 
         /// <inheritdoc />
         public ViewContext ViewContext
@@ -112,21 +111,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         /// <inheritdoc />
         public IModelMetadataProvider MetadataProvider { get; private set; }
-
-        /// <inheritdoc />
-        public HtmlString ActionLink(
-            [NotNull] string linkText,
-            string actionName,
-            string controllerName,
-            string protocol,
-            string hostname,
-            string fragment,
-            object routeValues,
-            object htmlAttributes)
-        {
-            var url = _urlHelper.Action(actionName, controllerName, routeValues, protocol, hostname, fragment);
-            return GenerateLink(linkText, url, GetHtmlAttributeDictionaryOrNull(htmlAttributes));
-        }
 
         /// <summary>
         /// Creates a dictionary from an object, by adding each public instance property as a key with its associated
@@ -187,18 +171,54 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public HtmlString ActionLink(
+            [NotNull] string linkText,
+            string actionName,
+            string controllerName,
+            string protocol,
+            string hostname,
+            string fragment,
+            object routeValues,
+            object htmlAttributes)
+        {
+            var tagBuilder = _htmlGenerator.GenerateActionLink(
+                linkText,
+                actionName,
+                controllerName,
+                protocol,
+                hostname,
+                fragment,
+                routeValues,
+                htmlAttributes);
+            if (tagBuilder == null)
+            {
+                return HtmlString.Empty;
+            }
+
+            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+        }
+
+        /// <inheritdoc />
         public HtmlString AntiForgeryToken()
         {
-            var tagBuilder = _antiForgeryInstance.GetHtml(ViewContext.HttpContext);
+            var tagBuilder = _htmlGenerator.GenerateAntiForgery(ViewContext);
+            if (tagBuilder == null)
+            {
+                return HtmlString.Empty;
+            }
+
             return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
 
         /// <inheritdoc />
-        public MvcForm BeginForm(string actionName, string controllerName, object routeValues, FormMethod method,
-                                 object htmlAttributes)
+        public MvcForm BeginForm(
+            string actionName,
+            string controllerName,
+            object routeValues,
+            FormMethod method,
+            object htmlAttributes)
         {
-            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
-            return GenerateForm(actionName, controllerName, routeValues, method, htmlAttributeDictionary);
+            return GenerateForm(actionName, controllerName, routeValues, method, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -217,19 +237,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public string Encode(string value)
         {
-            return (!string.IsNullOrEmpty(value)) ? WebUtility.HtmlEncode(value) : string.Empty;
+            return _htmlGenerator.Encode(value);
         }
 
         /// <inheritdoc />
         public string Encode(object value)
         {
-            return value != null ? WebUtility.HtmlEncode(value.ToString()) : string.Empty;
+            return _htmlGenerator.Encode(value);
         }
 
         /// <inheritdoc />
         public string FormatValue(object value, string format)
         {
-            return ViewDataDictionary.FormatValue(value, format);
+            return _htmlGenerator.FormatValue(value, format);
         }
 
         /// <inheritdoc />
@@ -431,8 +451,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object routeValues,
             object htmlAttributes)
         {
-            var url = _urlHelper.RouteUrl(routeName, routeValues, protocol, hostName, fragment);
-            return GenerateLink(linkText, url, GetHtmlAttributeDictionaryOrNull(htmlAttributes));
+            var tagBuilder = _htmlGenerator.GenerateRouteLink(
+                linkText,
+                routeName,
+                protocol,
+                hostName,
+                fragment,
+                routeValues,
+                htmlAttributes);
+            if (tagBuilder == null)
+            {
+                return HtmlString.Empty;
+            }
+
+            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
         /// <inheritdoc />
@@ -448,11 +480,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes,
             string tag)
         {
-            return GenerateValidationSummary(
-                excludePropertyErrors,
-                message,
-                GetHtmlAttributeDictionaryOrNull(htmlAttributes),
-                tag);
+            return GenerateValidationSummary(excludePropertyErrors, message, htmlAttributes, tag);
         }
 
         /// <summary>
@@ -508,89 +536,24 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return new MvcForm(ViewContext);
         }
 
-        protected bool EvalBoolean(string key)
-        {
-            return Convert.ToBoolean(ViewData.Eval(key), CultureInfo.InvariantCulture);
-        }
-
-        protected string EvalString(string key)
-        {
-            return Convert.ToString(ViewData.Eval(key), CultureInfo.CurrentCulture);
-        }
-
-        protected string EvalString(string key, string format)
-        {
-            return Convert.ToString(ViewData.Eval(key, format), CultureInfo.CurrentCulture);
-        }
-
-        protected object GetModelStateValue(string key, Type destinationType)
-        {
-            ModelState modelState;
-            if (ViewData.ModelState.TryGetValue(key, out modelState) && modelState.Value != null)
-            {
-                return modelState.Value.ConvertTo(destinationType, culture: null);
-            }
-
-            return null;
-        }
-
-        // Only render attributes if client-side validation is enabled, and then only if we've
-        // never rendered validation for a field with this name in this form.
-        protected virtual IDictionary<string, object> GetValidationAttributes(ModelMetadata metadata, string name)
-        {
-            var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
-            if (formContext == null)
-            {
-                return null;
-            }
-
-            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-            if (formContext.RenderedField(fullName))
-            {
-                return null;
-            }
-
-            formContext.RenderedField(fullName, true);
-            var clientRules = GetClientValidationRules(metadata, name);
-            return UnobtrusiveValidationAttributesGenerator.GetValidationAttributes(clientRules);
-        }
-
         protected virtual HtmlString GenerateCheckBox(ModelMetadata metadata, string name, bool? isChecked,
             object htmlAttributes)
         {
-            if (metadata != null)
-            {
-                // CheckBoxFor() case. That API does not support passing isChecked directly.
-                Contract.Assert(!isChecked.HasValue);
-
-                if (metadata.Model != null)
-                {
-                    bool modelChecked;
-                    if (Boolean.TryParse(metadata.Model.ToString(), out modelChecked))
-                    {
-                        isChecked = modelChecked;
-                    }
-                }
-            }
-
-            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
-            var explicitValue = isChecked.HasValue;
-            if (explicitValue && htmlAttributeDictionary != null)
-            {
-                // Explicit value must override dictionary
-                htmlAttributeDictionary.Remove("checked");
-            }
-
-            return GenerateInput(InputType.CheckBox,
+            var checkbox = _htmlGenerator.GenerateCheckBox(
+                ViewContext,
                 metadata,
                 name,
-                value: "true",
-                useViewData: !explicitValue,
-                isChecked: isChecked ?? false,
-                setId: true,
-                isExplicitValue: false,
-                format: null,
-                htmlAttributes: htmlAttributeDictionary);
+                isChecked,
+                htmlAttributes);
+            var hidden = _htmlGenerator.GenerateHiddenForCheckbox(ViewContext, metadata, name);
+            if (checkbox == null || hidden == null)
+            {
+                return HtmlString.Empty;
+            }
+
+            var elements = checkbox.ToString(TagRenderMode.SelfClosing) + hidden.ToString(TagRenderMode.SelfClosing);
+
+            return new HtmlString(elements);
         }
 
         protected virtual string GenerateDisplayName([NotNull] ModelMetadata metadata, string htmlFieldName)
@@ -616,8 +579,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected HtmlString GenerateDropDown(ModelMetadata metadata, string expression,
             IEnumerable<SelectListItem> selectList, string optionLabel, object htmlAttributes)
         {
-            return GenerateSelect(metadata, optionLabel, expression, selectList, allowMultiple: false,
+            var tagBuilder = _htmlGenerator.GenerateSelect(
+                ViewContext,
+                metadata,
+                optionLabel,
+                name: expression,
+                selectList: selectList,
+                allowMultiple: false,
                 htmlAttributes: htmlAttributes);
+            if (tagBuilder == null)
+            {
+                return HtmlString.Empty;
+            }
+
+            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
         protected virtual HtmlString GenerateEditor(ModelMetadata metadata, string htmlFieldName, string templateName,
@@ -659,34 +634,24 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
-        protected virtual MvcForm GenerateForm(string actionName, string controllerName, object routeValues,
-                                               FormMethod method, IDictionary<string, object> htmlAttributes)
+        protected virtual MvcForm GenerateForm(
+            string actionName,
+            string controllerName,
+            object routeValues,
+            FormMethod method,
+            object htmlAttributes)
         {
-            var tagBuilder = new TagBuilder("form");
-            tagBuilder.MergeAttributes(htmlAttributes);
-
-            string formAction;
-            if (actionName == null && controllerName == null && routeValues == null && method == FormMethod.Post &&
-                htmlAttributes == null)
+            var tagBuilder = _htmlGenerator.GenerateForm(
+                ViewContext,
+                actionName,
+                controllerName,
+                routeValues,
+                GetFormMethodString(method),
+                htmlAttributes);
+            if (tagBuilder != null)
             {
-                // Submit to the original URL in the special case that user called the BeginForm() overload without
-                // parameters. Also reachable in the even-more-unusual case that user called another BeginForm()
-                // overload with default argument values.
-                var request = ViewContext.HttpContext.Request;
-                formAction = request.PathBase + request.Path + request.QueryString;
+                ViewContext.Writer.Write(tagBuilder.ToString(TagRenderMode.StartTag));
             }
-            else
-            {
-                formAction = _urlHelper.Action(action: actionName, controller: controllerName, values: routeValues);
-            }
-
-            // action is implicitly generated, so htmlAttributes take precedence.
-            tagBuilder.MergeAttribute("action", formAction);
-
-            // method is an explicit parameter, so it takes precedence over the htmlAttributes.
-            tagBuilder.MergeAttribute("method", HtmlHelper.GetFormMethodString(method), replaceExisting: true);
-
-            ViewContext.Writer.Write(tagBuilder.ToString(TagRenderMode.StartTag));
 
             return CreateForm();
         }
@@ -698,29 +663,26 @@ namespace Microsoft.AspNet.Mvc.Rendering
             bool useViewData,
             object htmlAttributes)
         {
-            // Special-case opaque values and arbitrary binary data.
-            var byteArrayValue = value as byte[];
-            if (byteArrayValue != null)
+            var tagBuilder =
+                _htmlGenerator.GenerateHidden(
+                    ViewContext,
+                    metadata,
+                    name,
+                    value,
+                    useViewData,
+                    htmlAttributes);
+            if (tagBuilder == null)
             {
-                value = Convert.ToBase64String(byteArrayValue);
+                return HtmlString.Empty;
             }
 
-            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
-            return GenerateInput(InputType.Hidden,
-                metadata,
-                name,
-                value,
-                useViewData,
-                isChecked: false,
-                setId: true,
-                isExplicitValue: true,
-                format: null,
-                htmlAttributes: htmlAttributeDictionary);
+            return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
 
         protected virtual string GenerateId(string expression)
         {
-            return ViewData.TemplateInfo.GetFullHtmlFieldName(expression);
+            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, name: expression);
+            return fullName;
         }
 
         protected virtual HtmlString GenerateLabel([NotNull] ModelMetadata metadata,
@@ -728,41 +690,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                                     string labelText,
                                                     object htmlAttributes)
         {
-            var resolvedLabelText = labelText ?? metadata.DisplayName ?? metadata.PropertyName;
-            if (resolvedLabelText == null)
-            {
-                resolvedLabelText =
-                    string.IsNullOrEmpty(htmlFieldName) ? string.Empty : htmlFieldName.Split('.').Last();
-            }
-
-            if (string.IsNullOrEmpty(resolvedLabelText))
+            var tagBuilder = _htmlGenerator.GenerateLabel(
+                ViewContext,
+                metadata,
+                name: htmlFieldName,
+                labelText: labelText,
+                htmlAttributes: htmlAttributes);
+            if (tagBuilder == null)
             {
                 return HtmlString.Empty;
             }
-
-            var tag = new TagBuilder("label");
-            tag.Attributes.Add(
-                            "for",
-                            TagBuilder.CreateSanitizedId(
-                                        ViewData.TemplateInfo.GetFullHtmlFieldName(htmlFieldName),
-                                        IdAttributeDotReplacement));
-            tag.SetInnerText(resolvedLabelText);
-            tag.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes), replaceExisting: true);
-            return tag.ToHtmlString(TagRenderMode.Normal);
-        }
-
-        protected virtual HtmlString GenerateLink(
-            [NotNull] string linkText,
-            [NotNull] string url,
-            IDictionary<string, object> htmlAttributes)
-        {
-            var tagBuilder = new TagBuilder("a")
-            {
-                InnerHtml = WebUtility.HtmlEncode(linkText),
-            };
-
-            tagBuilder.MergeAttributes(htmlAttributes);
-            tagBuilder.MergeAttribute("href", url);
 
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
@@ -773,229 +710,77 @@ namespace Microsoft.AspNet.Mvc.Rendering
             IEnumerable<SelectListItem> selectList,
             object htmlAttributes)
         {
-            return GenerateSelect(
+            var tagBuilder = _htmlGenerator.GenerateSelect(
+                ViewContext,
                 metadata,
                 optionLabel: null,
                 name: name,
                 selectList: selectList,
                 allowMultiple: true,
                 htmlAttributes: htmlAttributes);
+            if (tagBuilder == null)
+            {
+                return HtmlString.Empty;
+            }
+
+            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
         protected virtual string GenerateName(string name)
         {
-            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, name);
             return fullName;
         }
 
         protected virtual HtmlString GeneratePassword(ModelMetadata metadata, string name, object value,
             object htmlAttributes)
         {
-            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
-            return GenerateInput(InputType.Password,
+            var tagBuilder = _htmlGenerator.GeneratePassword(
+                ViewContext,
                 metadata,
                 name,
                 value,
-                useViewData: false,
-                isChecked: false,
-                setId: true,
-                isExplicitValue: true,
-                format: null,
-                htmlAttributes: htmlAttributeDictionary);
+                htmlAttributes);
+            if (tagBuilder == null)
+            {
+                return HtmlString.Empty;
+            }
+
+            return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
 
         protected virtual HtmlString GenerateRadioButton(ModelMetadata metadata, string name, object value,
             bool? isChecked, object htmlAttributes)
         {
-            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
-            if (metadata == null)
-            {
-                // RadioButton() case. Do not override checked attribute if isChecked is implicit.
-                if (!isChecked.HasValue &&
-                    (htmlAttributeDictionary == null || !htmlAttributeDictionary.ContainsKey("checked")))
-                {
-                    // Note value may be null if isChecked is non-null.
-                    if (value == null)
-                    {
-                        throw new ArgumentNullException("value");
-                    }
-
-                    // isChecked not provided nor found in the given attributes; fall back to view data.
-                    var valueString = Convert.ToString(value, CultureInfo.CurrentCulture);
-                    isChecked = !string.IsNullOrEmpty(name) &&
-                        string.Equals(EvalString(name), valueString, StringComparison.OrdinalIgnoreCase);
-                }
-            }
-            else
-            {
-                // RadioButtonFor() case. That API does not support passing isChecked directly.
-                Contract.Assert(!isChecked.HasValue);
-
-                // Need a value to determine isChecked.
-                Contract.Assert(value != null);
-
-                var model = metadata.Model;
-                var valueString = Convert.ToString(value, CultureInfo.CurrentCulture);
-                isChecked = model != null &&
-                    string.Equals(model.ToString(), valueString, StringComparison.OrdinalIgnoreCase);
-            }
-
-            var explicitValue = isChecked.HasValue;
-            if (explicitValue && htmlAttributeDictionary != null)
-            {
-                // Explicit value must override dictionary
-                htmlAttributeDictionary.Remove("checked");
-            }
-
-            return GenerateInput(InputType.Radio,
+            var tagBuilder = _htmlGenerator.GenerateRadioButton(
+                ViewContext,
                 metadata,
                 name,
                 value,
-                useViewData: false,
-                isChecked: isChecked ?? false,
-                setId: true,
-                isExplicitValue: true,
-                format: null,
-                htmlAttributes: htmlAttributeDictionary);
-        }
-
-        protected virtual HtmlString GenerateSelect(ModelMetadata metadata,
-            string optionLabel, string name, IEnumerable<SelectListItem> selectList, bool allowMultiple,
-            object htmlAttributes)
-        {
-            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-            if (string.IsNullOrEmpty(fullName))
+                isChecked,
+                htmlAttributes);
+            if (tagBuilder == null)
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
+                return HtmlString.Empty;
             }
 
-            var usedViewData = false;
-
-            // If we got a null selectList, try to use ViewData to get the list of items.
-            if (selectList == null)
-            {
-                if (string.IsNullOrEmpty(name))
-                {
-                    // Avoid ViewData.Eval() throwing an ArgumentException with a different parameter name. Note this
-                    // is an extreme case since users must pass a non-null selectList to use CheckBox() or ListBox()
-                    // in a template, where a null or empty name has meaning.
-                    throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
-                }
-
-                selectList = GetSelectListItems(name);
-                usedViewData = true;
-            }
-
-            var defaultValue = (allowMultiple) ?
-                GetModelStateValue(fullName, typeof(string[])) :
-                GetModelStateValue(fullName, typeof(string));
-
-            // If we haven't already used ViewData to get the entire list of items then we need to
-            // use the ViewData-supplied value before using the parameter-supplied value.
-            if (defaultValue == null && !string.IsNullOrEmpty(name))
-            {
-                if (!usedViewData)
-                {
-                    defaultValue = ViewData.Eval(name);
-                }
-                else if (metadata != null)
-                {
-                    defaultValue = metadata.Model;
-                }
-            }
-
-            if (defaultValue != null)
-            {
-                selectList = UpdateSelectListItemsWithDefaultValue(selectList, defaultValue, allowMultiple);
-            }
-
-            // Convert each ListItem to an <option> tag and wrap them with <optgroup> if requested.
-            var listItemBuilder = GenerateGroupsAndOptions(optionLabel, selectList);
-
-            var tagBuilder = new TagBuilder("select")
-            {
-                InnerHtml = listItemBuilder.ToString()
-            };
-            tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
-            tagBuilder.MergeAttribute("name", fullName, true /* replaceExisting */);
-            tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
-            if (allowMultiple)
-            {
-                tagBuilder.MergeAttribute("multiple", "multiple");
-            }
-
-            // If there are any errors for a named field, we add the css attribute.
-            ModelState modelState;
-            if (ViewData.ModelState.TryGetValue(fullName, out modelState))
-            {
-                if (modelState.Errors.Count > 0)
-                {
-                    tagBuilder.AddCssClass(ValidationInputCssClassName);
-                }
-            }
-
-            tagBuilder.MergeAttributes(GetValidationAttributes(metadata, name));
-
-            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
 
         protected virtual HtmlString GenerateTextArea(ModelMetadata metadata, string name,
             int rows, int columns, object htmlAttributes)
         {
-            if (rows < 0)
+            var tagBuilder = _htmlGenerator.GenerateTextArea(
+                ViewContext,
+                metadata,
+                name,
+                rows,
+                columns,
+                htmlAttributes);
+            if (tagBuilder == null)
             {
-                throw new ArgumentOutOfRangeException("rows", Resources.HtmlHelper_TextAreaParameterOutOfRange);
+                return HtmlString.Empty;
             }
-
-            if (columns < 0)
-            {
-                throw new ArgumentOutOfRangeException("columns", Resources.HtmlHelper_TextAreaParameterOutOfRange);
-            }
-
-            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-            if (string.IsNullOrEmpty(fullName))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
-            }
-
-            ModelState modelState;
-            ViewData.ModelState.TryGetValue(fullName, out modelState);
-
-            var value = string.Empty;
-            if (modelState != null && modelState.Value != null)
-            {
-                value = modelState.Value.AttemptedValue;
-            }
-            else if (metadata.Model != null)
-            {
-                value = metadata.Model.ToString();
-            }
-
-            var tagBuilder = new TagBuilder("textarea");
-            tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
-            tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes), true);
-            if (rows > 0)
-            {
-                tagBuilder.MergeAttribute("rows", rows.ToString(CultureInfo.InvariantCulture), true);
-            }
-
-            if (columns > 0)
-            {
-                tagBuilder.MergeAttribute("columns", columns.ToString(CultureInfo.InvariantCulture), true);
-            }
-
-            tagBuilder.MergeAttribute("name", fullName, true);
-            tagBuilder.MergeAttributes(GetValidationAttributes(metadata, name));
-
-            // If there are any errors for a named field, we add this CSS attribute.
-            if (modelState != null && modelState.Errors.Count > 0)
-            {
-                tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
-            }
-
-            // The first newline is always trimmed when a TextArea is rendered, so we add an extra one
-            // in case the value being rendered is something like "\r\nHello".
-            tagBuilder.InnerHtml = Environment.NewLine + WebUtility.HtmlEncode(value);
 
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
@@ -1003,124 +788,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected virtual HtmlString GenerateTextBox(ModelMetadata metadata, string name, object value, string format,
             object htmlAttributes)
         {
-            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
-            return GenerateInput(InputType.Text,
+            var tagBuilder = _htmlGenerator.GenerateTextBox(
+                ViewContext,
                 metadata,
                 name,
                 value,
-                useViewData: (metadata == null && value == null),
-                isChecked: false,
-                setId: true,
-                isExplicitValue: true,
-                format: format,
-                htmlAttributes: htmlAttributeDictionary);
-        }
-
-        protected virtual HtmlString GenerateInput(InputType inputType, ModelMetadata metadata, string name,
-            object value, bool useViewData, bool isChecked, bool setId, bool isExplicitValue, string format,
-            IDictionary<string, object> htmlAttributes)
-        {
-            // Not valid to use TextBoxForModel() and so on in a top-level view; would end up with an unnamed input
-            // elements. But we support the *ForModel() methods in any lower-level template, once HtmlFieldPrefix is
-            // non-empty.
-            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-            if (string.IsNullOrEmpty(fullName))
+                format,
+                htmlAttributes);
+            if (tagBuilder == null)
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
-            }
-
-            var tagBuilder = new TagBuilder("input");
-            tagBuilder.MergeAttributes(htmlAttributes);
-            tagBuilder.MergeAttribute("type", GetInputTypeString(inputType));
-            tagBuilder.MergeAttribute("name", fullName, replaceExisting: true);
-
-            var valueParameter = FormatValue(value, format);
-            var usedModelState = false;
-            switch (inputType)
-            {
-                case InputType.CheckBox:
-                    var modelStateWasChecked = GetModelStateValue(fullName, typeof(bool)) as bool?;
-                    if (modelStateWasChecked.HasValue)
-                    {
-                        isChecked = modelStateWasChecked.Value;
-                        usedModelState = true;
-                    }
-
-                    goto case InputType.Radio;
-
-                case InputType.Radio:
-                    if (!usedModelState)
-                    {
-                        var modelStateValue = GetModelStateValue(fullName, typeof(string)) as string;
-                        if (modelStateValue != null)
-                        {
-                            isChecked = string.Equals(modelStateValue, valueParameter, StringComparison.Ordinal);
-                            usedModelState = true;
-                        }
-                    }
-
-                    if (!usedModelState && useViewData)
-                    {
-                        isChecked = EvalBoolean(fullName);
-                    }
-
-                    if (isChecked)
-                    {
-                        tagBuilder.MergeAttribute("checked", "checked");
-                    }
-
-                    tagBuilder.MergeAttribute("value", valueParameter, isExplicitValue);
-                    break;
-
-                case InputType.Password:
-                    if (value != null)
-                    {
-                        tagBuilder.MergeAttribute("value", valueParameter, isExplicitValue);
-                    }
-
-                    break;
-
-                case InputType.Text:
-                default:
-                    var attributeValue = (string)GetModelStateValue(fullName, typeof(string));
-                    if (attributeValue == null)
-                    {
-                        attributeValue = useViewData ? EvalString(fullName, format) : valueParameter;
-                    }
-
-                    tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
-                    break;
-            }
-
-            if (setId)
-            {
-                tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
-            }
-
-            // If there are any errors for a named field, we add the CSS attribute.
-            ModelState modelState;
-            if (ViewData.ModelState.TryGetValue(fullName, out modelState) && modelState.Errors.Count > 0)
-            {
-                tagBuilder.AddCssClass(ValidationInputCssClassName);
-            }
-
-            tagBuilder.MergeAttributes(GetValidationAttributes(metadata, name));
-
-            if (inputType == InputType.CheckBox)
-            {
-                // Generate an additional <input type="hidden".../> for checkboxes. This
-                // addresses scenarios where unchecked checkboxes are not sent in the request.
-                // Sending a hidden input makes it possible to know that the checkbox was present
-                // on the page when the request was submitted.
-                var inputItemBuilder = new StringBuilder();
-                inputItemBuilder.Append(tagBuilder.ToString(TagRenderMode.SelfClosing));
-
-                var hiddenInput = new TagBuilder("input");
-                hiddenInput.MergeAttribute("type", GetInputTypeString(InputType.Hidden));
-                hiddenInput.MergeAttribute("name", fullName);
-                hiddenInput.MergeAttribute("value", "false");
-                inputItemBuilder.Append(hiddenInput.ToString(TagRenderMode.SelfClosing));
-                return new HtmlString(inputItemBuilder.ToString());
+                return HtmlString.Empty;
             }
 
             return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
@@ -1131,155 +808,45 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes,
             string tag)
         {
-            var modelName = ViewData.TemplateInfo.GetFullHtmlFieldName(expression);
-            if (string.IsNullOrEmpty(modelName))
+            var tagBuilder = _htmlGenerator.GenerateValidationMessage(
+                ViewContext,
+                name: expression,
+                message: message,
+                tag: tag,
+                htmlAttributes: htmlAttributes);
+            if (tagBuilder == null)
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "expression");
+                return HtmlString.Empty;
             }
 
-            var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
-            if (!ViewData.ModelState.ContainsKey(modelName) && formContext == null)
-            {
-                return null;
-            }
-
-            ModelState modelState;
-            var tryGetModelStateResult = ViewData.ModelState.TryGetValue(modelName, out modelState);
-            var modelErrors = tryGetModelStateResult ? modelState.Errors : null;
-
-            ModelError modelError = null;
-            if (modelErrors != null && modelErrors.Count != 0)
-            {
-                modelError = modelErrors.FirstOrDefault(m => !string.IsNullOrEmpty(m.ErrorMessage)) ?? modelErrors[0];
-            }
-
-            if (modelError == null && formContext == null)
-            {
-                return null;
-            }
-
-            // Even if there are no model errors, we generate the span and add the validation message
-            // if formContext is not null.
-            if (string.IsNullOrEmpty(tag))
-            {
-                tag = ViewContext.ValidationMessageElement;
-            }
-            var builder = new TagBuilder(tag);
-            builder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
-
-            // Only the style of the span is changed according to the errors if message is null or empty.
-            // Otherwise the content and style is handled by the client-side validation.
-            builder.AddCssClass((modelError != null) ?
-                ValidationMessageCssClassName :
-                ValidationMessageValidCssClassName);
-
-            if (!string.IsNullOrEmpty(message))
-            {
-                builder.SetInnerText(message);
-            }
-            else if (modelError != null)
-            {
-                builder.SetInnerText(ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState));
-            }
-
-            if (formContext != null)
-            {
-                builder.MergeAttribute("data-valmsg-for", modelName);
-
-                var replaceValidationMessageContents = string.IsNullOrEmpty(message);
-                builder.MergeAttribute("data-valmsg-replace",
-                    replaceValidationMessageContents.ToString().ToLowerInvariant());
-            }
-
-            return builder.ToHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
         protected virtual HtmlString GenerateValidationSummary(
             bool excludePropertyErrors,
             string message,
-            IDictionary<string, object> htmlAttributes,
+            object htmlAttributes,
             string tag)
         {
-            var formContext = ViewContext.ClientValidationEnabled ? ViewContext.FormContext : null;
-            if (ViewData.ModelState.IsValid && (formContext == null || excludePropertyErrors))
+            var tagBuilder = _htmlGenerator.GenerateValidationSummary(
+                ViewContext,
+                excludePropertyErrors,
+                message,
+                headerTag: tag,
+                htmlAttributes: htmlAttributes);
+            if (tagBuilder == null)
             {
-                // No client side validation/updates
                 return HtmlString.Empty;
             }
 
-            string wrappedMessage;
-            if (!string.IsNullOrEmpty(message))
-            {
-                if (string.IsNullOrEmpty(tag))
-                {
-                    tag = ViewContext.ValidationSummaryMessageElement;
-                }
-                var messageTag = new TagBuilder(tag);
-                messageTag.SetInnerText(message);
-                wrappedMessage = messageTag.ToString(TagRenderMode.Normal) + Environment.NewLine;
-            }
-            else
-            {
-                wrappedMessage = null;
-            }
-
-            // If excludePropertyErrors is true, describe any validation issue with the current model in a single item.
-            // Otherwise, list individual property errors.
-            var htmlSummary = new StringBuilder();
-            var modelStates = ValidationHelpers.GetModelStateList(ViewData, excludePropertyErrors);
-
-            foreach (var modelState in modelStates)
-            {
-                foreach (var modelError in modelState.Errors)
-                {
-                    var errorText = ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState: null);
-
-                    if (!string.IsNullOrEmpty(errorText))
-                    {
-                        var listItem = new TagBuilder("li");
-                        listItem.SetInnerText(errorText);
-                        htmlSummary.AppendLine(listItem.ToString(TagRenderMode.Normal));
-                    }
-                }
-            }
-
-            if (htmlSummary.Length == 0)
-            {
-                htmlSummary.AppendLine(HiddenListItem);
-            }
-
-            var unorderedList = new TagBuilder("ul")
-            {
-                InnerHtml = htmlSummary.ToString()
-            };
-
-            var divBuilder = new TagBuilder("div");
-            divBuilder.MergeAttributes(htmlAttributes);
-
-            if (ViewData.ModelState.IsValid)
-            {
-                divBuilder.AddCssClass(HtmlHelper.ValidationSummaryValidCssClassName);
-            }
-            else
-            {
-                divBuilder.AddCssClass(HtmlHelper.ValidationSummaryCssClassName);
-            }
-
-            divBuilder.InnerHtml = wrappedMessage + unorderedList.ToString(TagRenderMode.Normal);
-
-            if (formContext != null && !excludePropertyErrors)
-            {
-                // Inform the client where to replace the list of property errors after validation.
-                divBuilder.MergeAttribute("data-valmsg-summary", "true");
-            }
-
-            return divBuilder.ToHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
         protected virtual string GenerateValue(string name, object value, string format, bool useViewData)
         {
-            var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-            var attemptedValue = (string)GetModelStateValue(fullName, typeof(string));
+            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, name);
+            var attemptedValue = 
+                (string)DefaultHtmlGenerator.GetModelStateValue(ViewContext, fullName, typeof(string));
 
             string resolvedValue;
             if (attemptedValue != null)
@@ -1298,7 +865,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 else
                 {
                     // case 2(b): format the value from ViewData
-                    resolvedValue = EvalString(name, format);
+                    resolvedValue = DefaultHtmlGenerator.EvalString(ViewContext, name, format);
                 }
             }
             else
@@ -1315,195 +882,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             ModelMetadata metadata,
             string name)
         {
-            var actionBindingContext = _actionBindingContextProvider.GetActionBindingContextAsync(ViewContext).Result;
-            metadata = metadata ?? ExpressionMetadataProvider.FromStringExpression(name, ViewData, MetadataProvider);
-            return actionBindingContext.ValidatorProvider
-                                       .GetValidators(metadata)
-                                       .OfType<IClientModelValidator>()
-                                       .SelectMany(v => v.GetClientValidationRules(
-                                            new ClientModelValidationContext(metadata, MetadataProvider)));
-        }
-
-        // Only need a dictionary if htmlAttributes is non-null. TagBuilder.MergeAttributes() is fine with null.
-        private static IDictionary<string, object> GetHtmlAttributeDictionaryOrNull(object htmlAttributes)
-        {
-            IDictionary<string, object> htmlAttributeDictionary = null;
-            if (htmlAttributes != null)
-            {
-                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
-                if (htmlAttributeDictionary == null)
-                {
-                    htmlAttributeDictionary = AnonymousObjectToHtmlAttributes(htmlAttributes);
-                }
-            }
-
-            return htmlAttributeDictionary;
-        }
-
-        private static string GetInputTypeString(InputType inputType)
-        {
-            switch (inputType)
-            {
-                case InputType.CheckBox:
-                    return "checkbox";
-                case InputType.Hidden:
-                    return "hidden";
-                case InputType.Password:
-                    return "password";
-                case InputType.Radio:
-                    return "radio";
-                case InputType.Text:
-                    return "text";
-                default:
-                    return "text";
-            }
-        }
-
-        private StringBuilder GenerateGroupsAndOptions(string optionLabel, IEnumerable<SelectListItem> selectList)
-        {
-            var listItemBuilder = new StringBuilder();
-
-            // Make optionLabel the first item that gets rendered.
-            if (optionLabel != null)
-            {
-                listItemBuilder.AppendLine(GenerateOption(new SelectListItem()
-                {
-                    Text = optionLabel,
-                    Value = string.Empty,
-                    Selected = false,
-                }));
-            }
-
-            // Group items in the SelectList if requested.
-            // Treat each item with Group == null as a member of a unique group
-            // so they are added according to the original order.
-            var groupedSelectList = selectList.GroupBy<SelectListItem, int>(
-                item => (item.Group == null) ? item.GetHashCode() : item.Group.GetHashCode());
-            foreach (var group in groupedSelectList)
-            {
-                var optGroup = group.First().Group;
-
-                // Wrap if requested.
-                TagBuilder groupBuilder = null;
-                if (optGroup != null)
-                {
-                    groupBuilder = new TagBuilder("optgroup");
-                    if (optGroup.Name != null)
-                    {
-                        groupBuilder.MergeAttribute("label", optGroup.Name);
-                    }
-
-                    if (optGroup.Disabled)
-                    {
-                        groupBuilder.MergeAttribute("disabled", "disabled");
-                    }
-
-                    listItemBuilder.AppendLine(groupBuilder.ToString(TagRenderMode.StartTag));
-                }
-
-                foreach (var item in group)
-                {
-                    listItemBuilder.AppendLine(GenerateOption(item));
-                }
-
-                if (optGroup != null)
-                {
-                    listItemBuilder.AppendLine(groupBuilder.ToString(TagRenderMode.EndTag));
-                }
-            }
-
-            return listItemBuilder;
-        }
-
-        private string GenerateOption(SelectListItem item)
-        {
-            var encodedText = Encode(item.Text);
-            return GenerateOption(item, encodedText);
-        }
-
-        internal static string GenerateOption(SelectListItem item, string encodedText)
-        {
-            var builder = new TagBuilder("option")
-            {
-                InnerHtml = encodedText,
-            };
-
-            if (item.Value != null)
-            {
-                builder.Attributes["value"] = item.Value;
-            }
-
-            if (item.Selected)
-            {
-                builder.Attributes["selected"] = "selected";
-            }
-
-            if (item.Disabled)
-            {
-                builder.Attributes["disabled"] = "disabled";
-            }
-
-            return builder.ToString(TagRenderMode.Normal);
-        }
-
-        private IEnumerable<SelectListItem> GetSelectListItems(string name)
-        {
-            var value = ViewData.Eval(name);
-            if (value == null)
-            {
-                throw new InvalidOperationException(Resources.FormatHtmlHelper_MissingSelectData(
-                    "IEnumerable<SelectListItem>", name));
-            }
-
-            var selectList = value as IEnumerable<SelectListItem>;
-            if (selectList == null)
-            {
-                throw new InvalidOperationException(Resources.FormatHtmlHelper_WrongSelectDataType(
-                    name, value.GetType().FullName, "IEnumerable<SelectListItem>"));
-            }
-
-            return selectList;
-        }
-
-        private IEnumerable<SelectListItem> UpdateSelectListItemsWithDefaultValue(
-            IEnumerable<SelectListItem> selectList,
-            object defaultValue,
-            bool allowMultiple)
-        {
-            IEnumerable defaultValues;
-            if (allowMultiple)
-            {
-                defaultValues = defaultValue as IEnumerable;
-                if (defaultValues == null || defaultValues is string)
-                {
-                    throw new InvalidOperationException(
-                        Resources.FormatHtmlHelper_SelectExpressionNotEnumerable("expression"));
-                }
-            }
-            else
-            {
-                defaultValues = new[] { defaultValue };
-            }
-
-            var values = from object value in defaultValues
-                         select Convert.ToString(value, CultureInfo.CurrentCulture);
-
-            // ToString() by default returns an enum value's name.  But selectList may use numeric values.
-            var enumValues = from Enum value in defaultValues.OfType<Enum>()
-                             select value.ToString("d");
-            values = values.Concat(enumValues);
-
-            var selectedValues = new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
-            var newSelectList = new List<SelectListItem>();
-            foreach (SelectListItem item in selectList)
-            {
-                item.Selected = (item.Value != null) ?
-                    selectedValues.Contains(item.Value) :
-                    selectedValues.Contains(item.Text);
-                newSelectList.Add(item);
-            }
-
-            return newSelectList;
+            return _htmlGenerator.GetClientValidationRules(ViewContext, metadata, name);
         }
     }
 }
