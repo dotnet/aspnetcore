@@ -55,6 +55,8 @@ namespace MusicStore.Spa
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UsePerRequestServices();
+
             // Initialize the sample data
             SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
             SampleData.InitializeIdentityDatabaseAsync(app.ApplicationServices).Wait();
