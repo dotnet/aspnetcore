@@ -47,6 +47,11 @@ namespace MusicStore.Models
             builder.Entity<CartItem>().Key(ci => ci.CartItemId);
             builder.Entity<OrderDetail>().Key(od => od.OrderDetailId);
 
+            // TODO: Remove this when we start using auto generated values
+            builder.Entity<Artist>().Property(a => a.ArtistId).GenerateValuesOnAdd(generateValues: false);
+            builder.Entity<Album>().Property(a => a.ArtistId).GenerateValuesOnAdd(generateValues: false);
+            builder.Entity<Genre>().Property(g => g.GenreId).GenerateValuesOnAdd(generateValues: false);
+
             builder.Entity<Album>(b =>
                 {
                     b.ForeignKey<Genre>(a => a.GenreId);
