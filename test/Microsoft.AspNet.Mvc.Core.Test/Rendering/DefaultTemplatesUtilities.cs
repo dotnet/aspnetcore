@@ -6,17 +6,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 
-namespace Microsoft.AspNet.Mvc.Core
+namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class DefaultTemplatesUtilities
     {
@@ -141,6 +139,12 @@ namespace Microsoft.AspNet.Mvc.Core
             htmlHelper.Contextualize(viewContext);
 
             return htmlHelper;
+        }
+
+        public static string FormatOutput(IHtmlHelper helper, object model)
+        {
+            var metadata = helper.MetadataProvider.GetMetadataForType(() => model, model.GetType());
+            return FormatOutput(metadata);
         }
 
         private static ICompositeViewEngine CreateViewEngine()
