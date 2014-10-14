@@ -68,7 +68,7 @@ namespace E2ETests
                 {
                     if (Directory.GetFiles(startParameters.ApplicationPath, "*.cmd", SearchOption.TopDirectoryOnly).Length > 0)
                     {
-                        throw new Exception("pack-exclude parameter values are not honored");
+                        throw new Exception("packExclude parameter values are not honored");
                     }
                 }
 
