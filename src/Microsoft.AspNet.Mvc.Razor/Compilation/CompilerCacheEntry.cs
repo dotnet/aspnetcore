@@ -22,6 +22,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             Length = info.Length;
             LastModified = info.LastModified;
             Hash = info.Hash;
+            // Precompiled views are always instrumented.
+            IsInstrumented = true;
         }
 
         /// <summary>

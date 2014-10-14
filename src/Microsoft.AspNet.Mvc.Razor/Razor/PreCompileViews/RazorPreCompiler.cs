@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             _serviceProvider = designTimeServiceProvider;
             _host = host;
+            _host.EnableInstrumentation = true;
 
             var appEnv = _serviceProvider.GetService<IApplicationEnvironment>();
             _fileSystem = optionsAccessor.Options.FileSystem;
