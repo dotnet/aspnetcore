@@ -44,6 +44,10 @@ namespace Microsoft.AspNet.Server.Kestrel
                         architecture, 
                         "libuv.dll");
                 }
+                else if ((int)Environment.OSVersion.Platform == 4)
+                {
+                    libraryPath = "libuv.so.1";
+                }
                 else
                 {
                     libraryPath = Path.Combine(
