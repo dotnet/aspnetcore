@@ -16,40 +16,45 @@ namespace MusicStore.Spa
 {
     public class Startup
     {
-        public void Configure(IApplicationBuilder app)
+        public Startup()
         {
-            var configuration = new Configuration()
-                .AddJsonFile("Config.json")
-                .AddEnvironmentVariables();
+            Configuration = new Configuration()
+                        .AddJsonFile("Config.json")
+                        .AddEnvironmentVariables();
+        }
 
-            app.UsePerRequestServices(services =>
+        public IConfiguration Configuration { get; set; }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add options accessors to the service container
+            services.ConfigureOptions<IdentityDbContextOptions>(options =>
             {
-                // Add options accessors to the service container
-                services.SetupOptions<IdentityDbContextOptions>(options =>
-                {
-                    options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
-                    options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
-                    options.UseSqlServer(configuration.Get("Data:IdentityConnection:ConnectionString"));
-                });
-
-                services.SetupOptions<MusicStoreDbContextOptions>(options =>
-                    options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString")));
-
-                // Add MVC services to the service container
-                services.AddMvc();
-
-                // Add EF services to the service container
-                services.AddEntityFramework()
-                    .AddSqlServer();
-
-                // Add Identity services to the services container
-                services.AddDefaultIdentity<ApplicationDbContext, ApplicationUser, IdentityRole>(configuration);
-
-                // Add application services to the service container
-                services.AddScoped<MusicStoreContext>();
-                services.AddTransient(typeof(IHtmlHelper<>), typeof(AngularHtmlHelper<>));
+                options.DefaultAdminUserName = Configuration.Get("DefaultAdminUsername");
+                options.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
+                options.UseSqlServer(Configuration.Get("Data:IdentityConnection:ConnectionString"));
             });
 
+            services.ConfigureOptions<MusicStoreDbContextOptions>(options =>
+                options.UseSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString")));
+
+            // Add MVC services to the service container
+            services.AddMvc();
+
+            // Add EF services to the service container
+            services.AddEntityFramework()
+                .AddSqlServer();
+
+            // Add Identity services to the services container
+            services.AddDefaultIdentity<ApplicationDbContext, ApplicationUser, IdentityRole>(Configuration);
+
+            // Add application services to the service container
+            services.AddScoped<MusicStoreContext>();
+            services.AddTransient(typeof(IHtmlHelper<>), typeof(AngularHtmlHelper<>));
+        }
+
+        public void Configure(IApplicationBuilder app)
+        {
             // Initialize the sample data
             SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
             SampleData.InitializeIdentityDatabaseAsync(app.ApplicationServices).Wait();
