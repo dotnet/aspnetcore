@@ -1,14 +1,15 @@
 {
-  "version": "1.0.0-*",
-  "dependencies": {
-    "Microsoft.AspNet.Http": "1.0.0-*"
-  },
-  "frameworks": {
-    "aspnet50": {},
-    "aspnetcore50": {
-      "dependencies": {
-        "System.Runtime": "4.0.20-beta-*"
-      }
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.AspNet.Http": "1.0.0-*"
+    },
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Diagnostics.Debug": "4.0.10-beta-*",
+                "System.Runtime": "4.0.20-beta-*"
+            }
+        }
     }
-  }
 }
