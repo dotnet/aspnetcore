@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -20,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
     /// </summary>
     public class RoslynCompilationService : ICompilationService
     {
+        private readonly Lazy<bool> _supportsPdbGeneration = new Lazy<bool>(SupportsPdbGeneration);
         private readonly ConcurrentDictionary<string, AssemblyMetadata> _metadataFileCache =
             new ConcurrentDictionary<string, AssemblyMetadata>(StringComparer.OrdinalIgnoreCase);
 
@@ -70,13 +72,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 {
                     EmitResult result;
 
-                    if (PlatformHelper.IsMono)
+                    if (_supportsPdbGeneration.Value)
                     {
-                        result = compilation.Emit(ms, pdbStream: null);
+                        result = compilation.Emit(ms, pdbStream: pdb);
                     }
                     else
                     {
-                        result = compilation.Emit(ms, pdbStream: pdb);
+                        result = compilation.Emit(ms);
                     }
 
                     if (!result.Success)
@@ -94,14 +96,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     Assembly assembly;
                     ms.Seek(0, SeekOrigin.Begin);
 
-                    if (PlatformHelper.IsMono)
-                    {
-                        assembly = _loader.LoadStream(ms, pdbStream: null);
-                    }
-                    else
+                    if (_supportsPdbGeneration.Value)
                     {
                         pdb.Seek(0, SeekOrigin.Begin);
                         assembly = _loader.LoadStream(ms, pdb);
+                    }
+                    else
+                    {
+                        assembly = _loader.LoadStream(ms, pdbStream: null);
                     }
 
                     var type = assembly.GetExportedTypes()
@@ -186,6 +188,26 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private static bool IsError(Diagnostic diagnostic)
         {
             return diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error;
+        }
+
+        private static bool SupportsPdbGeneration()
+        {
+            try
+            {
+                if (PlatformHelper.IsMono)
+                {
+                    return false;
+                }
+
+                // Check for the pdb writer component that roslyn uses to generate pdbs
+                const string SymWriterGuid = "0AE2DEB0-F901-478b-BB9F-881EE8066788";
+
+                return Marshal.GetTypeFromCLSID(new Guid(SymWriterGuid)) != null;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
