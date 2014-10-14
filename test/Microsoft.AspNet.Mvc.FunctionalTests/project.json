@@ -15,7 +15,6 @@
         "FiltersWebSite": "1.0.0",
         "FormatterWebSite": "1.0.0",
         "InlineConstraintsWebSite": "1.0.0",
-        "VersioningWebSite": "1.0.0",
         "ModelBindingWebSite": "1.0.0",
         "MvcSample.Web": "1.0.0",
         "RoutingWebSite": "1.0.0",
@@ -24,18 +23,14 @@
         "TagHelpersWebSite": "1.0.0",
         "UrlHelperWebSite": "1.0.0",
         "ValueProvidersSite": "1.0.0",
+        "VersioningWebSite": "1.0.0",
         "ViewComponentWebSite":  "1.0.0",
         "XmlSerializerWebSite": "1.0.0",
         "WebApiCompatShimWebSite": "1.0.0",
 
         "Microsoft.AspNet.TestHost": "1.0.0-*",
-        "Microsoft.AspNet.PipelineCore": "1.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
-        "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
-        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-        "Microsoft.Framework.Logging": "1.0.0-*",
-        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {
@@ -47,10 +42,6 @@
                 "AutofacWebSite": "1.0.0"
             }
         },
-        "aspnetcore50": {
-            "dependencies": {
-                "System.Xml.XmlDocument": "4.0.0-beta-*"
-            }
-        }
+        "aspnetcore50": {}
     }
 }

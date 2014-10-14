@@ -3,16 +3,10 @@
         "warningsAsErrors": "true"
     },
     "dependencies": {
-        "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.Mvc.ModelBinding": "",
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
-        "Microsoft.AspNet.Routing": "1.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
-        "Microsoft.DataAnnotations": "1.0.0-*",
-        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Moq": "4.2.1312.1622",
-        "Newtonsoft.Json": "6.0.4",
         "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {

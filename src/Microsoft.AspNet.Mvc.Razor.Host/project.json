@@ -9,45 +9,17 @@
         "Microsoft.AspNet.Razor.Runtime": "4.0.0-*"
     },
     "frameworks": {
-        "net45": {
-            "frameworkAssemblies": {
-                "System.Collections": "",
-                "System.Runtime": "",
-                "System.Xml": "",
-                "System.Xml.Linq": ""
-            }
-        },
+        "net45": {},
         "aspnet50": {
-            "frameworkAssemblies": {
-                "System.Collections": "",
-                "System.Runtime": "",
-                "System.Xml": "",
-                "System.Xml.Linq": ""
-            },
             "dependencies": {
                 "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
             }
         },
         "aspnetcore50": {
             "dependencies": {
-                "System.Collections": "4.0.10-beta-*",
                 "System.Collections.Concurrent": "4.0.0-beta-*",
-                "System.ComponentModel": "4.0.0-beta-*",
                 "System.Diagnostics.Contracts": "4.0.0-beta-*",
-                "System.Diagnostics.Debug": "4.0.10-beta-*",
-                "System.Diagnostics.Tools": "4.0.0-beta-*",
-                "System.Dynamic.Runtime": "4.0.0-beta-*",
-                "System.Globalization": "4.0.10-beta-*",
-                "System.IO": "4.0.10-beta-*",
-                "System.IO.FileSystem": "4.0.0-beta-*",
-                "System.Linq": "4.0.0-beta-*",
-                "System.Reflection": "4.0.10-beta-*",
-                "System.Resources.ResourceManager": "4.0.0-beta-*",
-                "System.Runtime": "4.0.20-beta-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*",
-                "System.Runtime.InteropServices": "4.0.20-beta-*",
-                "System.Threading.Tasks": "4.0.10-beta-*",
-                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" },
+                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
             }
         }
     }

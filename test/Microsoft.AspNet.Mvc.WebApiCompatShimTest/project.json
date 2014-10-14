@@ -3,7 +3,6 @@
         "warningsAsErrors": false
     },
     "dependencies": {
-        "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Mvc.WebApiCompatShim": "6.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*",
         "Moq": "4.2.1312.1622",
@@ -13,15 +12,7 @@
         "test": "Xunit.KRunner"
     },
     "frameworks": {
-        "aspnet50": {
-            "frameworkAssemblies": {
-                "System.Net.Http": "4.0.0.0"
-            }
-        },
-        "aspnetcore50": {
-            "dependencies": {
-                "System.Net.Http": "4.0.0-beta-*"
-            }
-        }
+        "aspnet50": {},
+        "aspnetcore50": {}
     }
 }

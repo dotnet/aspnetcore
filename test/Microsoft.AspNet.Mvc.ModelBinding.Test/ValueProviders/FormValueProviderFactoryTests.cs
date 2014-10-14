@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if ASPNET50
+using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;
-using System;
-using System.Threading;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
@@ -22,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var context = CreateContext("some-content-type");
             var factory = new FormValueProviderFactory();
-            
+
             // Act
             var result = factory.GetValueProvider(context);
 
@@ -58,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             context.SetupGet(c => c.Request).Returns(request.Object);
 
             return new ValueProviderFactoryContext(
-                context.Object, 
+                context.Object,
                 new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
         }
     }

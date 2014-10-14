@@ -5,15 +5,9 @@
     },
     "dependencies": {
         "K.Roslyn": "1.0.0-*",
-        "Microsoft.AspNet.FileSystems": "1.0.0-*",
-        "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.ModelBinding": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
-        "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
-        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-        "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*"
     },
     "frameworks": {
         "aspnet50": {
@@ -22,33 +16,9 @@
                 "System.IO": "",
                 "System.Runtime": "",
                 "System.Text.Encoding": "",
-                "System.Threading.Tasks": "",
-                "System.Xml": "",
-                "System.Xml.Linq": ""
+                "System.Threading.Tasks": ""
             }
         },
-        "aspnetcore50": {
-            "dependencies": {
-                "System.Collections": "4.0.10-beta-*",
-                "System.Collections.Concurrent": "4.0.0-beta-*",
-                "System.ComponentModel": "4.0.0-beta-*",
-                "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",
-                "System.Diagnostics.Contracts": "4.0.0-beta-*",
-                "System.Diagnostics.Debug": "4.0.10-beta-*",
-                "System.Diagnostics.Tools": "4.0.0-beta-*",
-                "System.Dynamic.Runtime": "4.0.0-beta-*",
-                "System.Globalization": "4.0.10-beta-*",
-                "System.IO": "4.0.10-beta-*",
-                "System.IO.FileSystem": "4.0.0-beta-*",
-                "System.Linq": "4.0.0-beta-*",
-                "System.Reflection": "4.0.10-beta-*",
-                "System.Resources.ResourceManager": "4.0.0-beta-*",
-                "System.Runtime": "4.0.20-beta-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*",
-                "System.Runtime.InteropServices": "4.0.20-beta-*",
-                "System.Text.Encoding": "4.0.10-beta-*",
-                "System.Threading.Tasks": "4.0.10-beta-*"
-            }
-        }
+        "aspnetcore50": {}
     }
 }

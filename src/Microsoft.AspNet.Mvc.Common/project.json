@@ -5,13 +5,10 @@
 
     },
     "frameworks": {
-        "aspnet50": { },
+        "aspnet50": {},
         "aspnetcore50": {
             "dependencies": {
-                "System.Linq": "4.0.0-beta-*",
-                "System.Reflection": "4.0.10-beta-*",
                 "System.Reflection.Extensions": "4.0.0-beta-*",
-                "System.Runtime": "4.0.20-beta-*",
                 "System.Text.Encoding.Extensions": "4.0.10-beta-*"
             }
         }
