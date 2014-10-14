@@ -4,7 +4,6 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Http": "1.0.0-*",
-        "Microsoft.AspNet.Mvc": "",
         "Microsoft.AspNet.Mvc.ModelBinding": "",
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
         "Microsoft.AspNet.Routing": "1.0.0-*",

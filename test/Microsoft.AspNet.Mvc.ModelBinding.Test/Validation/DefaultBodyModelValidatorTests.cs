@@ -6,10 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
@@ -295,19 +292,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private ModelValidationContext GetModelValidationContext(object model, Type type)
         {
             var modelStateDictionary = new ModelStateDictionary();
-            var mvcOptions = new MvcOptions();
-            var setup = new MvcOptionsSetup();
-            setup.Invoke(mvcOptions);
-            var accessor = new Mock<IOptionsAccessor<MvcOptions>>();
-            accessor.SetupGet(a => a.Options)
-                    .Returns(mvcOptions);
+            var provider = new Mock<IModelValidatorProviderProvider>();
+            provider.SetupGet(p => p.ModelValidatorProviders)
+                    .Returns(new IModelValidatorProvider[]
+                    {
+                       new DataAnnotationsModelValidatorProvider(),
+                       new DataMemberModelValidatorProvider()
+                    });
             var modelMetadataProvider = new EmptyModelMetadataProvider();
             return new ModelValidationContext(
                 modelMetadataProvider,
-                new CompositeModelValidatorProvider(
-                    new DefaultModelValidatorProviderProvider(
-                        accessor.Object, Mock.Of<ITypeActivator>(),
-                        Mock.Of<IServiceProvider>())),
+                new CompositeModelValidatorProvider(provider.Object),
                 modelStateDictionary,
                 new ModelMetadata(
                     provider: modelMetadataProvider,
