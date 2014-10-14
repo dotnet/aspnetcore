@@ -97,12 +97,34 @@ namespace MusicStore
             services.AddInstance<IMemoryCache>(new MemoryCache());
         }
 
+        //This method is invoked when KRE_ENV is 'Development' or is not defined
+        //The allowed values are Development,Staging and Production
+        public void ConfigureDevelopment(IApplicationBuilder app)
+        {
+            //Display custom error page in production when error occurs
+            //During development use the ErrorPage middleware to display error information in the browser
+            app.UseErrorPage(ErrorPageOptions.ShowAll);
+            Configure(app);
+        }
+
+        //This method is invoked when KRE_ENV is 'Staging'
+        //The allowed values are Development,Staging and Production
+        public void ConfigureStaging(IApplicationBuilder app)
+        {
+            app.UseErrorHandler("/Home/Error");
+            Configure(app);
+        }
+
+        //This method is invoked when KRE_ENV is 'Production'
+        //The allowed values are Development,Staging and Production
+        public void ConfigureProduction(IApplicationBuilder app)
+        {
+            app.UseErrorHandler("/Home/Error");
+            Configure(app);
+        }
+
         public void Configure(IApplicationBuilder app)
         {
-            //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
-            //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
-            app.UseErrorPage(ErrorPageOptions.ShowAll);
-
             // Add services from ConfigureServices
             app.UsePerRequestServices();
 
