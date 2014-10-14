@@ -8,7 +8,7 @@ namespace TagHelperSample.Web
     {
         public void Configure(IApplicationBuilder app)
         {
-            app.UseServices(services => services.AddMvc());
+            app.UsePerRequestServices(services => services.AddMvc());
             app.UseMvc();
         }
     }

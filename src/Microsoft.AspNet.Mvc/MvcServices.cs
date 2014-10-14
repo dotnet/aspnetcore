@@ -138,6 +138,10 @@ namespace Microsoft.AspNet.Mvc
             // Only want one ITagHelperActivator so it can cache Type activation information. Types won't conflict.
             yield return describe.Singleton<ITagHelperActivator, DefaultTagHelperActivator>();
 
+            // DefaultHtmlGenerator is pretty much stateless but depends on Scoped services such as IUrlHelper and
+            // IActionBindingContextProvider. Therefore it too is scoped.
+            yield return describe.Transient<IHtmlGenerator, DefaultHtmlGenerator>();
+
             yield return describe.Transient<IViewComponentSelector, DefaultViewComponentSelector>();
             yield return describe.Singleton<IViewComponentActivator, DefaultViewComponentActivator>();
             yield return describe.Transient<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
