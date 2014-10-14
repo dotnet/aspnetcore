@@ -27,11 +27,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         // use it on all the rest of the tests.
         private readonly Assembly _resourcesAssembly = typeof(BasicTests).GetTypeInfo().Assembly;
 
+        [Theory]
         [InlineData("http://localhost/")]
         [InlineData("http://localhost/Home")]
         [InlineData("http://localhost/Home/Index")]
-        [InlineData("http://localhost/Users")]
-        [InlineData("http://localhost/Monitor/CountActionDescriptorInvocations")]
         public async Task CanRender_ViewsWithLayout(string url)
         {
             // Arrange
