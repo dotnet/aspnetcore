@@ -123,6 +123,9 @@
   <data name="Common_PropertyNotFound" xml:space="preserve">
     <value>The property {0}.{1} could not be found.</value>
   </data>
+  <data name="Common_ParameterNotFound" xml:space="preserve">
+    <value>The parameter '{0}' could not be found.</value>
+  </data>
   <data name="DataAnnotationsModelValidatorProvider_ConstructorRequirements" xml:space="preserve">
     <value>The type '{0}' must have a public constructor which accepts a single parameter of type '{1}'.</value>
   </data>

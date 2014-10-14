@@ -3,10 +3,12 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    [AttributeUsage(AttributeTargets.Parameter)]
-    public sealed class FromBodyAttribute : Attribute
+    /// <summary>
+    /// Represents a marker used to identify a particular binder applies to a model.
+    /// </summary>
+    public interface IBinderMarker
     {
     }
 }

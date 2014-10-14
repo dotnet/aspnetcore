@@ -56,6 +56,7 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Singleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>();
             yield return describe.Scoped<IActionSelector, DefaultActionSelector>();
+            yield return describe.Transient<IControllerActionArgumentBinder, DefaultControllerActionArgumentBinder>();
 
             yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,
                                 ControllerActionDescriptorProvider>();
@@ -83,8 +84,8 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Scoped<ICompositeModelBinder, CompositeModelBinder>();
             yield return describe.Transient<IValueProviderFactoryProvider, DefaultValueProviderFactoryProvider>();
             yield return describe.Scoped<ICompositeValueProviderFactory, CompositeValueProviderFactory>();
+            yield return describe.Transient<IValueProviderFactoryProvider, DefaultValueProviderFactoryProvider>();
             yield return describe.Transient<IOutputFormattersProvider, DefaultOutputFormattersProvider>();
-
             yield return describe.Instance<JsonOutputFormatter>(new JsonOutputFormatter());
 
             yield return describe.Transient<IModelValidatorProviderProvider, DefaultModelValidatorProviderProvider>();

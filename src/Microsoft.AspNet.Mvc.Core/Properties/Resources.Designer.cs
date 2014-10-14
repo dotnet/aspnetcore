@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.Mvc.Core
             = new ResourceManager("Microsoft.AspNet.Mvc.Core.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// More than one parameter is bound to the HTTP request's content.
+        /// </summary>
+        internal static string MultipleBodyParametersAreNotAllowed
+        {
+            get { return GetString("MultipleBodyParametersAreNotAllowed"); }
+        }
+
+        /// <summary>
+        /// More than one parameter is bound to the HTTP request's content.
+        /// </summary>
+        internal static string FormatMultipleBodyParametersAreNotAllowed()
+        {
+            return GetString("MultipleBodyParametersAreNotAllowed");
+        }
+
+        /// <summary>
         /// The provided anti-forgery token failed a custom data check.
         /// </summary>
         internal static string AntiForgeryToken_AdditionalDataCheckFailed
@@ -413,17 +429,17 @@ namespace Microsoft.AspNet.Mvc.Core
         /// <summary>
         /// The action descriptor must be of type '{0}'.
         /// </summary>
-        internal static string DefaultControllerFactory_ActionDescriptorMustBeReflected
+        internal static string ActionDescriptorMustBeBasedOnControllerAction
         {
-            get { return GetString("DefaultControllerFactory_ActionDescriptorMustBeReflected"); }
+            get { return GetString("ActionDescriptorMustBeBasedOnControllerAction"); }
         }
 
         /// <summary>
         /// The action descriptor must be of type '{0}'.
         /// </summary>
-        internal static string FormatDefaultControllerFactory_ActionDescriptorMustBeReflected(object p0)
+        internal static string FormatActionDescriptorMustBeBasedOnControllerAction(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultControllerFactory_ActionDescriptorMustBeReflected"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("ActionDescriptorMustBeBasedOnControllerAction"), p0);
         }
 
         /// <summary>

@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class DictionaryBasedValueProvider : IValueProvider
+    public class DictionaryBasedValueProvider<TBinderMarker> : MakerAwareValueProvider<TBinderMarker>
+        where TBinderMarker : IValueBinderMarker
     {
         private readonly IDictionary<string, object> _values;
 
@@ -16,12 +17,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _values = values;
         }
 
-        public Task<bool> ContainsPrefixAsync(string key)
+        public override Task<bool> ContainsPrefixAsync(string key)
         {
             return Task.FromResult(_values.ContainsKey(key));
         }
 
-        public Task<ValueProviderResult> GetValueAsync([NotNull] string key)
+        public override Task<ValueProviderResult> GetValueAsync([NotNull] string key)
         {
             object value;
             ValueProviderResult result;

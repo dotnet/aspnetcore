@@ -48,6 +48,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _isRequired = !modelType.AllowsNullValue();
         }
 
+        /// <summary>
+        /// Gets or sets a binder marker for this model.
+        /// </summary>
+        public IBinderMarker Marker { get; set; }
+
         public Type ContainerType
         {
             get { return _containerType; }

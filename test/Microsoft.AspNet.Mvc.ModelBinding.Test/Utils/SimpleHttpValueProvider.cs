@@ -68,5 +68,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             return Task.FromResult(result);
         }
+
+        public bool IsValidFor(Type valueProviderMarkerType)
+        {
+            // since this is not aware for any marker type, it should return false.
+            return false;
+        }
     }
 }

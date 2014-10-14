@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using ModelBindingWebSite;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -17,6 +19,93 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private readonly IServiceProvider _services = TestHelper.CreateServices("ModelBindingWebSite");
         private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
+
+        [Theory]
+        [InlineData("RestrictValueProvidersUsingFromRoute", "valueFromRoute")]
+        [InlineData("RestrictValueProvidersUsingFromQuery", "valueFromQuery")]
+        [InlineData("RestrictValueProvidersUsingFromForm", "valueFromForm")]
+        public async Task CompositeModelBinder_Restricts_ValueProviders(string actionName, string expectedValue)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Provide all three values, it should bind based on the attribute on the action method.
+            var request = new HttpRequestMessage(HttpMethod.Post, 
+                string.Format("http://localhost/CompositeTest/{0}/valueFromRoute?param=valueFromQuery", actionName));
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("param", "valueFromForm"),
+            };
+
+            request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedValue, await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task MultipleParametersMarkedWithFromBody_Throws()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+               client.GetAsync("http://localhost/MultipleParametersFromBody/MultipleParametersFromBodyThrows"));
+
+            Assert.Equal("More than one parameter is bound to the HTTP request's content.",
+                         ex.Message);
+        }
+
+        [Fact]
+        public async Task ParametersWithNoMarkersUseTheAvailableValueProviders()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await
+                     client.GetAsync("http://localhost/WithMarker" +
+                     "/ParametersWithNoMarkersUseTheAvailableValueProviders" +
+                     "?Name=somename&Age=12");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var emp = JsonConvert.DeserializeObject<Employee>(
+                            await response.Content.ReadAsStringAsync());
+            Assert.Null(emp.Department);
+            Assert.Equal("somename", emp.Name);
+            Assert.Equal(12, emp.Age);
+        }
+
+        [Fact]
+        public async Task ParametersAreAlwaysCreated()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await
+                     client.GetAsync("http://localhost/WithoutMarker" +
+                     "/GetPersonParameter" +
+                     "?Name=somename&Age=12");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var person = JsonConvert.DeserializeObject<Person>(
+                            await response.Content.ReadAsStringAsync());
+            Assert.NotNull(person);
+            Assert.Equal("somename", person.Name);
+            Assert.Equal(12, person.Age);
+        }
 
         [Fact]
         public async Task ModelBindCancellationTokenParameteres()

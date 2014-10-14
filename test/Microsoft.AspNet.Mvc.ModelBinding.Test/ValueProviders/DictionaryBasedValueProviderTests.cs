@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 { "test-key", "value" }
             };
-            var provider = new DictionaryBasedValueProvider(values);
+            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
             
             // Act
             var result = await provider.GetValueAsync("not-test-key");
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 { "test-key", "test-value" }
             };
-            var provider = new DictionaryBasedValueProvider(values);
+            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
 
             // Act
             var result = await provider.GetValueAsync("test-key");
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 { "test-key", null }
             };
-            var provider = new DictionaryBasedValueProvider(values);
+            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
 
             // Act
             var result = await provider.GetValueAsync("test-key");
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 { "test-key", "test-value" }
             };
-            var provider = new DictionaryBasedValueProvider(values);
+            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
 
             // Act
             var result = await provider.ContainsPrefixAsync("not-test-key");
@@ -88,13 +88,46 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 { "test-key", "test-value" }
             };
-            var provider = new DictionaryBasedValueProvider(values);
+            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
 
             // Act
             var result = await provider.ContainsPrefixAsync("test-key");
 
             // Assert
             Assert.True(result);
+        }
+
+        public static IEnumerable<object[]> RegisteredAsMarkerClasses
+        {
+            get
+            {
+                yield return new object[] { new TestValueBinderMarker() };
+                yield return new object[] { new DerivedValueBinder() };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RegisteredAsMarkerClasses))]
+        public void FilterReturnsItself_ForAnyClassRegisteredAsGenericParam(IValueBinderMarker binderMarker)
+        {
+            // Arrange
+            var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+
+            // Act
+            var result = provider.Filter(binderMarker);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<DictionaryBasedValueProvider<TestValueBinderMarker>>(result);
+        }
+
+        private class TestValueBinderMarker : IValueBinderMarker
+        {
+        }
+
+        private class DerivedValueBinder :TestValueBinderMarker
+        {
         }
     }
 }

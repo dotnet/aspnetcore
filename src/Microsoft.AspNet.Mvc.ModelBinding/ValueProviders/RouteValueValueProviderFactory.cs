@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         public IValueProvider GetValueProvider([NotNull] ValueProviderFactoryContext context)
         {
-            return new DictionaryBasedValueProvider(context.RouteValues);
+            return new DictionaryBasedValueProvider<IRouteDataMarker>(context.RouteValues);
         }
     }
 }

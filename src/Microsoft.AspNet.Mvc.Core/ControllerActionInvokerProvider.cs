@@ -10,22 +10,19 @@ namespace Microsoft.AspNet.Mvc
     public class ControllerActionInvokerProvider : IActionInvokerProvider
     {
         private readonly IControllerFactory _controllerFactory;
-        private readonly IActionBindingContextProvider _bindingProvider;
         private readonly IInputFormattersProvider _inputFormattersProvider;
         private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
-        private readonly IBodyModelValidator _modelValidator;
+        private readonly IControllerActionArgumentBinder _actionInvocationInfoProvider;
 
         public ControllerActionInvokerProvider(IControllerFactory controllerFactory,
-                                              IActionBindingContextProvider bindingProvider,
                                               IInputFormattersProvider inputFormattersProvider,
                                               INestedProviderManager<FilterProviderContext> filterProvider,
-                                              IBodyModelValidator modelValidator)
+                                              IControllerActionArgumentBinder actionInvocationInfoProvider)
         {
             _controllerFactory = controllerFactory;
-            _bindingProvider = bindingProvider;
             _inputFormattersProvider = inputFormattersProvider;
             _filterProvider = filterProvider;
-            _modelValidator = modelValidator;
+            _actionInvocationInfoProvider = actionInvocationInfoProvider;
         }
 
         public int Order
@@ -41,12 +38,11 @@ namespace Microsoft.AspNet.Mvc
             {
                 context.Result = new ControllerActionInvoker(
                                     context.ActionContext,
-                                    _bindingProvider,
                                     _filterProvider,
                                     _controllerFactory,
                                     actionDescriptor,
                                     _inputFormattersProvider,
-                                    _modelValidator);
+                                    _actionInvocationInfoProvider);
             }
 
             callNext();

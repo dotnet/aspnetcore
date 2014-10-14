@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
             if (actionDescriptor == null)
             {
                 throw new ArgumentException(
-                    Resources.FormatDefaultControllerFactory_ActionDescriptorMustBeReflected(
+                    Resources.FormatActionDescriptorMustBeBasedOnControllerAction(
                         typeof(ControllerActionDescriptor)),
                     "actionContext");
             }

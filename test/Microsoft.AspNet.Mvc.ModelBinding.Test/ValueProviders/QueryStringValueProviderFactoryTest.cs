@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = _factory.GetValueProvider(factoryContext);
 
             // Assert
-            var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider>(result);
+            var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider<IQueryBinderMarker>>(result);
             Assert.Equal(CultureInfo.InvariantCulture, valueProvider.Culture);
         }
 #endif

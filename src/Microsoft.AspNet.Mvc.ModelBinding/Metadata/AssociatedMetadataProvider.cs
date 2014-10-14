@@ -46,6 +46,36 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return CreateMetadataFromPrototype(prototype, modelAccessor);
         }
 
+        public IEnumerable<ModelMetadata> GetMetadataForParameters([NotNull] MethodInfo methodInfo)
+        {
+            var parameters = methodInfo.GetParameters();
+            foreach (var parameter in parameters)
+            {
+                // Name can be null if the methodinfo represents an open delegate.
+                if (!string.IsNullOrEmpty(parameter.Name))
+                {
+                    yield return GetMetadataForParameterCore(
+                        modelAccessor: null, parameterName: parameter.Name, parameter: parameter);
+                }
+            }
+        }
+     
+        public ModelMetadata GetMetadataForParameter(
+            Func<object> modelAccessor, 
+            [NotNull] MethodInfo methodInfo, 
+            [NotNull] string parameterName)
+        {
+            var parameter = methodInfo.GetParameters().FirstOrDefault(
+                param => StringComparer.Ordinal.Equals(param.Name, parameterName));
+            if (parameter == null)
+            {
+                var message = Resources.FormatCommon_ParameterNotFound(parameterName);
+                throw new ArgumentException(message, nameof(parameterName));
+            }
+
+            return GetMetadataForParameterCore(modelAccessor, parameterName, parameter);
+        }
+
         // Override for creating the prototype metadata (without the accessor)
         protected abstract TModelMetadata CreateMetadataPrototype(IEnumerable<Attribute> attributes,
                                                                   Type containerType,
@@ -55,6 +85,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // Override for applying the prototype + modelAccess to yield the final metadata
         protected abstract TModelMetadata CreateMetadataFromPrototype(TModelMetadata prototype,
                                                                       Func<object> modelAccessor);
+
+        private ModelMetadata GetMetadataForParameterCore(Func<object> modelAccessor,
+                                                          string parameterName,
+                                                          ParameterInfo parameter)
+        {
+            var parameterInfo = 
+                CreateParameterInfo(parameter.ParameterType,
+                                    parameter.GetCustomAttributes(),
+                                    parameterName);
+            var typePrototype = GetTypeInformation(parameter.ParameterType).Prototype;
+            return CreateMetadataFromPrototype(parameterInfo.Prototype, modelAccessor);
+        }
 
         private IEnumerable<ModelMetadata> GetMetadataForPropertiesCore(object container, Type containerType)
         {
@@ -78,6 +120,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 metadata.IsReadOnly = true;
             }
+
             return metadata;
         }
 
@@ -136,6 +179,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                     property.Name),
                 IsReadOnly = !property.CanWrite || property.SetMethod.IsPrivate
             };
+        }
+
+        private ParameterInformation CreateParameterInfo(Type parameterType, IEnumerable<Attribute> attributes, string parameterName)
+        {
+            var metadataProtoType = CreateMetadataPrototype(attributes: attributes,
+                                                    containerType: null,
+                                                    modelType: parameterType,
+                                                    propertyName: parameterName);
+      
+            return new ParameterInformation
+            {
+                Prototype =  metadataProtoType
+            };
+        }
+
+        private sealed class ParameterInformation
+        {
+            public TModelMetadata Prototype { get; set; }
         }
 
         private sealed class TypeInformation

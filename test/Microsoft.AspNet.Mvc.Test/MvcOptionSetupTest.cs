@@ -35,14 +35,15 @@ namespace Microsoft.AspNet.Mvc
             setup.Configure(mvcOptions);
 
             // Assert
-            Assert.Equal(7, mvcOptions.ModelBinders.Count);
-            Assert.Equal(typeof(TypeConverterModelBinder), mvcOptions.ModelBinders[0].OptionType);
-            Assert.Equal(typeof(TypeMatchModelBinder), mvcOptions.ModelBinders[1].OptionType);
-            Assert.Equal(typeof(CancellationTokenModelBinder), mvcOptions.ModelBinders[2].OptionType);
-            Assert.Equal(typeof(ByteArrayModelBinder), mvcOptions.ModelBinders[3].OptionType);
-            Assert.Equal(typeof(GenericModelBinder), mvcOptions.ModelBinders[4].OptionType);
-            Assert.Equal(typeof(MutableObjectModelBinder), mvcOptions.ModelBinders[5].OptionType);
-            Assert.Equal(typeof(ComplexModelDtoModelBinder), mvcOptions.ModelBinders[6].OptionType);
+            Assert.Equal(8, mvcOptions.ModelBinders.Count);
+            Assert.Equal(typeof(BodyModelBinder), mvcOptions.ModelBinders[0].OptionType);
+            Assert.Equal(typeof(TypeConverterModelBinder), mvcOptions.ModelBinders[1].OptionType);
+            Assert.Equal(typeof(TypeMatchModelBinder), mvcOptions.ModelBinders[2].OptionType);
+            Assert.Equal(typeof(CancellationTokenModelBinder), mvcOptions.ModelBinders[3].OptionType);
+            Assert.Equal(typeof(ByteArrayModelBinder), mvcOptions.ModelBinders[4].OptionType);
+            Assert.Equal(typeof(GenericModelBinder), mvcOptions.ModelBinders[5].OptionType);
+            Assert.Equal(typeof(MutableObjectModelBinder), mvcOptions.ModelBinders[6].OptionType);
+            Assert.Equal(typeof(ComplexModelDtoModelBinder), mvcOptions.ModelBinders[7].OptionType);
         }
 
         [Fact]

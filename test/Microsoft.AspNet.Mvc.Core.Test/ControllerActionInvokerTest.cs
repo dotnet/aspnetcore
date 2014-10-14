@@ -1339,187 +1339,16 @@ namespace Microsoft.AspNet.Mvc
 
             var invoker = new TestControllerActionInvoker(
                 actionContext,
-                actionBindingContextProvider.Object,
                 filterProvider.Object,
                 controllerFactory,
                 actionDescriptor,
                 inputFormattersProvider.Object,
-                new DefaultBodyModelValidator());
+                Mock.Of<IControllerActionArgumentBinder>());
 
             return invoker;
         }
 
-        [Fact]
-        public async Task GetActionArguments_DoesNotAddActionArgumentsToModelStateDictionary_IfBinderReturnsFalse()
-        {
-            // Arrange
-            Func<object, int> method = x => 1;
-            var actionDescriptor = new ControllerActionDescriptor
-            {
-                MethodInfo = method.Method,
-                Parameters = new List<ParameterDescriptor>
-                            {
-                                new ParameterDescriptor
-                                {
-                                    Name = "foo",
-                                    ParameterBindingInfo = new ParameterBindingInfo("foo", typeof(object))
-                                }
-                            }
-            };
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(Task.FromResult(result: false));
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
-                                                  actionDescriptor);
-            var bindingContext = new ActionBindingContext(actionContext,
-                                                          Mock.Of<IModelMetadataProvider>(),
-                                                          binder.Object,
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
-
-            var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
-            actionBindingContextProvider.Setup(p => p.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-                                        .Returns(Task.FromResult(bindingContext));
-            var inputFormattersProvider = new Mock<IInputFormattersProvider>();
-            inputFormattersProvider.SetupGet(o => o.InputFormatters)
-                                            .Returns(new List<IInputFormatter>());
-            var invoker = new ControllerActionInvoker(actionContext,
-                                                     actionBindingContextProvider.Object,
-                                                     Mock.Of<INestedProviderManager<FilterProviderContext>>(),
-                                                     Mock.Of<IControllerFactory>(),
-                                                     actionDescriptor,
-                                                     inputFormattersProvider.Object,
-                                                     new DefaultBodyModelValidator());
-
-            var modelStateDictionary = new ModelStateDictionary();
-
-            // Act
-            var result = await invoker.GetActionArguments(modelStateDictionary);
-
-            // Assert
-            Assert.Empty(result);
-        }
-
-        [Fact]
-        public async Task GetActionArguments_AddsActionArgumentsToModelStateDictionary_IfBinderReturnsTrue()
-        {
-            // Arrange
-            Func<object, int> method = x => 1;
-            var actionDescriptor = new ControllerActionDescriptor
-            {
-                MethodInfo = method.Method,
-                Parameters = new List<ParameterDescriptor>
-                            {
-                                new ParameterDescriptor
-                                {
-                                    Name = "foo",
-                                    ParameterBindingInfo = new ParameterBindingInfo("foo", typeof(object))
-                                }
-                            }
-            };
-            var value = "Hello world";
-            var binder = new Mock<IModelBinder>();
-            var metadataProvider = new EmptyModelMetadataProvider();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
-                  {
-                      context.ModelMetadata = metadataProvider.GetMetadataForType(modelAccessor: null,
-                                                                                  modelType: typeof(string));
-                      context.Model = value;
-                  })
-                  .Returns(Task.FromResult(result: true));
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
-                                                  actionDescriptor);
-            var bindingContext = new ActionBindingContext(actionContext,
-                                                          Mock.Of<IModelMetadataProvider>(),
-                                                          binder.Object,
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
-
-            var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
-            actionBindingContextProvider.Setup(p => p.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-                                        .Returns(Task.FromResult(bindingContext));
-            var inputFormattersProvider = new Mock<IInputFormattersProvider>();
-            inputFormattersProvider.SetupGet(o => o.InputFormatters)
-                                            .Returns(new List<IInputFormatter>());
-            var invoker = new ControllerActionInvoker(actionContext,
-                                                     actionBindingContextProvider.Object,
-                                                     Mock.Of<INestedProviderManager<FilterProviderContext>>(),
-                                                     Mock.Of<IControllerFactory>(),
-                                                     actionDescriptor,
-                                                     inputFormattersProvider.Object,
-                                                     new DefaultBodyModelValidator());
-
-            var modelStateDictionary = new ModelStateDictionary();
-
-            // Act
-            var result = await invoker.GetActionArguments(modelStateDictionary);
-
-            // Assert
-            Assert.Equal(1, result.Count);
-            Assert.Equal(value, result["foo"]);
-        }
-
-        [Fact]
-        public async Task GetActionArguments_NoInputFormatterFound_SetsModelStateError()
-        {
-            var actionDescriptor = new ControllerActionDescriptor
-            {
-                MethodInfo = typeof(TestController).GetTypeInfo().GetMethod("ActionMethodWithDefaultValues"),
-                Parameters = new List<ParameterDescriptor>
-                            {
-                                new ParameterDescriptor
-                                {
-                                    Name = "bodyParam",
-                                    BodyParameterInfo = new BodyParameterInfo(typeof(Person))
-                                }
-                            },
-                FilterDescriptors = new List<FilterDescriptor>()
-            };
-
-            var context = new DefaultHttpContext();
-            var routeContext = new RouteContext(context);
-            var actionContext = new ActionContext(routeContext,
-                                                  actionDescriptor);
-            var bindingContext = new ActionBindingContext(actionContext,
-                                                          Mock.Of<IModelMetadataProvider>(),
-                                                          Mock.Of<IModelBinder>(),
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
-
-            var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
-            actionBindingContextProvider.Setup(p => p.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-                                        .Returns(Task.FromResult(bindingContext));
-            var controllerFactory = new Mock<IControllerFactory>();
-            controllerFactory.Setup(c => c.CreateController(It.IsAny<ActionContext>()))
-                             .Returns(new TestController());
-            var inputFormattersProvider = new Mock<IInputFormattersProvider>();
-            inputFormattersProvider.SetupGet(o => o.InputFormatters)
-                                            .Returns(new List<IInputFormatter>());
-            var invoker = new ControllerActionInvoker(actionContext,
-                                                     actionBindingContextProvider.Object,
-                                                     Mock.Of<INestedProviderManager<FilterProviderContext>>(),
-                                                     controllerFactory.Object,
-                                                     actionDescriptor,
-                                                     inputFormattersProvider.Object,
-                                                     new DefaultBodyModelValidator());
-
-
-            var modelStateDictionary = new ModelStateDictionary();
-
-            // Act
-            var result = await invoker.GetActionArguments(modelStateDictionary);
-
-            // Assert
-            Assert.Empty(result);
-            Assert.DoesNotContain("bodyParam", result.Keys);
-            Assert.False(actionContext.ModelState.IsValid);
-            Assert.Equal("Unsupported content type '" + context.Request.ContentType + "'.",
-                         actionContext.ModelState["bodyParam"].Errors[0].ErrorMessage);
-        }
+    
 
         [Fact]
         public async Task Invoke_UsesDefaultValuesIfNotBound()
@@ -1568,12 +1397,13 @@ namespace Microsoft.AspNet.Mvc
             inputFormattersProvider.SetupGet(o => o.InputFormatters)
                                             .Returns(new List<IInputFormatter>());
             var invoker = new ControllerActionInvoker(actionContext,
-                                                     actionBindingContextProvider.Object,
                                                      Mock.Of<INestedProviderManager<FilterProviderContext>>(),
                                                      controllerFactory.Object,
                                                      actionDescriptor,
                                                      inputFormattersProvider.Object,
-                                                     new DefaultBodyModelValidator());
+                                                     new DefaultControllerActionArgumentBinder(
+                                                         actionBindingContextProvider.Object, 
+                                                         new DefaultBodyModelValidator()));
 
             // Act
             await invoker.InvokeAsync();
@@ -1629,19 +1459,17 @@ namespace Microsoft.AspNet.Mvc
 
             public TestControllerActionInvoker(
                 ActionContext actionContext,
-                IActionBindingContextProvider bindingContextProvider,
                 INestedProviderManager<FilterProviderContext> filterProvider,
                 Mock<IControllerFactory> controllerFactoryMock,
                 ControllerActionDescriptor descriptor,
                 IInputFormattersProvider inputFormattersProvider,
-                IBodyModelValidator bodyModelValidator) :
+                IControllerActionArgumentBinder controllerActionArgumentBinder) :
                     base(actionContext,
-                        bindingContextProvider,
                         filterProvider,
                         controllerFactoryMock.Object,
                         descriptor,
                         inputFormattersProvider,
-                        bodyModelValidator)
+                        controllerActionArgumentBinder)
             {
                 _factoryMock = controllerFactoryMock;
             }

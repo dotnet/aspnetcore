@@ -43,6 +43,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
+        /// The parameter '{0}' could not be found.
+        /// </summary>
+        internal static string Common_ParameterNotFound
+        {
+            get { return GetString("Common_ParameterNotFound"); }
+        }
+
+        /// <summary>
+        /// The parameter '{0}' could not be found.
+        /// </summary>
+        internal static string FormatCommon_ParameterNotFound(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Common_ParameterNotFound"), p0);
+        }
+
+        /// <summary>
         /// The type '{0}' must have a public constructor which accepts a single parameter of type '{1}'.
         /// </summary>
         internal static string DataAnnotationsModelValidatorProvider_ConstructorRequirements

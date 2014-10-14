@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
@@ -15,19 +16,20 @@ namespace Microsoft.AspNet.Mvc
         private readonly ControllerActionDescriptor _descriptor;
         private readonly IControllerFactory _controllerFactory;
         private readonly IInputFormattersProvider _inputFormattersProvider;
+        private readonly IControllerActionArgumentBinder _actionInvocationProvider;
 
         public ControllerActionInvoker([NotNull] ActionContext actionContext,
-                                      [NotNull] IActionBindingContextProvider bindingContextProvider,
                                       [NotNull] INestedProviderManager<FilterProviderContext> filterProvider,
                                       [NotNull] IControllerFactory controllerFactory,
                                       [NotNull] ControllerActionDescriptor descriptor,
                                       [NotNull] IInputFormattersProvider inputFormattersProvider,
-                                      [NotNull] IBodyModelValidator modelValidator)
-            : base(actionContext, bindingContextProvider, filterProvider, modelValidator)
+                                      [NotNull] IControllerActionArgumentBinder controllerActionArgumentBinder)
+            : base(actionContext, filterProvider)
         {
             _descriptor = descriptor;
             _controllerFactory = controllerFactory;
             _inputFormattersProvider = inputFormattersProvider;
+            _actionInvocationProvider = controllerActionArgumentBinder;
             if (descriptor.MethodInfo == null)
             {
                 throw new ArgumentException(
@@ -65,6 +67,11 @@ namespace Microsoft.AspNet.Mvc
                 actionMethodInfo.ReturnType,
                 actionReturnValue);
             return actionResult;
+        }
+
+        protected override Task<IDictionary<string, object>> GetActionArgumentsAsync(ActionContext context)
+        {
+            return _actionInvocationProvider.GetActionArgumentsAsync(context);
         }
 
         // Marking as internal for Unit Testing purposes.

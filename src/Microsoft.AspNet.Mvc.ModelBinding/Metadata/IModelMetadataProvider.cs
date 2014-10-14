@@ -3,15 +3,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public interface IModelMetadataProvider
     {
-        IEnumerable<ModelMetadata> GetMetadataForProperties(object container, Type containerType);
+        IEnumerable<ModelMetadata> GetMetadataForProperties(object container, [NotNull] Type containerType);
 
-        ModelMetadata GetMetadataForProperty(Func<object> modelAccessor, Type containerType, string propertyName);
+        ModelMetadata GetMetadataForProperty(Func<object> modelAccessor, [NotNull] Type containerType, [NotNull] string propertyName);
 
-        ModelMetadata GetMetadataForType(Func<object> modelAccessor, Type modelType);
+        ModelMetadata GetMetadataForType(Func<object> modelAccessor, [NotNull] Type modelType);
+
+        IEnumerable<ModelMetadata> GetMetadataForParameters([NotNull] MethodInfo methodInfo);
+
+        ModelMetadata GetMetadataForParameter(Func<object> modelAccessor, [NotNull] MethodInfo methodInfo, [NotNull] string parameterName);
     }
 }

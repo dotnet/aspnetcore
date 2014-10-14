@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             CacheKey = prototype.CacheKey;
             PrototypeCache = prototype.PrototypeCache;
-
+            Marker = prototype.Marker;
             _isComplexType = prototype.IsComplexType;
             _isComplexTypeComputed = true;
         }

@@ -5,14 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class ReadableStringCollectionValueProvider : IEnumerableValueProvider
+    public class ReadableStringCollectionValueProvider<TBinderMarker> : MakerAwareValueProvider<TBinderMarker>, IEnumerableValueProvider
+        where TBinderMarker : IValueBinderMarker
     {
         private readonly CultureInfo _culture;
         private PrefixContainer _prefixContainer;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        public virtual async Task<bool> ContainsPrefixAsync(string prefix)
+        public override async Task<bool> ContainsPrefixAsync(string prefix)
         {
             var prefixContainer = await GetPrefixContainerAsync();
             return prefixContainer.ContainsPrefix(prefix);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return prefixContainer.GetKeysFromPrefix(prefix);
         }
 
-        public virtual async Task<ValueProviderResult> GetValueAsync([NotNull] string key)
+        public override async Task<ValueProviderResult> GetValueAsync([NotNull] string key)
         {
             var collection = await GetValueCollectionAsync();
             var values = collection.GetValues(key);

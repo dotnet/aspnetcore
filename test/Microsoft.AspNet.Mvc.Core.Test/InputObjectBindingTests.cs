@@ -19,112 +19,6 @@ namespace Microsoft.AspNet.Mvc
 {
     public class InputObjectBindingTests
     {
-        [Fact]
-        public async Task GetArguments_UsingInputFormatter_DeserializesWithoutErrors_WhenValidationAttributesAreAbsent()
-        {
-            // Arrange
-            var sampleName = "SampleName";
-            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                            "<Person><Name>" + sampleName + "</Name></Person>";
-            var modelStateDictionary = new ModelStateDictionary();
-            var invoker = GetControllerActionInvoker(
-                input, typeof(Person), new XmlSerializerInputFormatter(), "application/xml");
-
-            // Act
-            var result = await invoker.GetActionArguments(modelStateDictionary);
-
-            // Assert
-            Assert.True(modelStateDictionary.IsValid);
-            Assert.Equal(0, modelStateDictionary.ErrorCount);
-            var model = result["foo"] as Person;
-            Assert.Equal(sampleName, model.Name);
-        }
-
-        [Fact]
-        public async Task GetArguments_UsingInputFormatter_DeserializesWithValidationError()
-        {
-            // Arrange
-            var sampleName = "SampleName";
-            var sampleUserName = "No5";
-            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                            "<User><Name>" + sampleName + "</Name><UserName>" + sampleUserName + "</UserName></User>";
-            var modelStateDictionary = new ModelStateDictionary();
-            var invoker = GetControllerActionInvoker(input, typeof(User), new XmlSerializerInputFormatter(), "application/xml");
-
-            // Act
-            var result = await invoker.GetActionArguments(modelStateDictionary);
-
-            // Assert
-            Assert.False(modelStateDictionary.IsValid);
-            Assert.Equal(1, modelStateDictionary.ErrorCount);
-            Assert.Equal(
-                ValidationAttributeUtil.GetMinLengthErrorMessage(5, "UserName"),
-                Assert.Single(Assert.Single(modelStateDictionary.Values).Errors).ErrorMessage);
-            var model = result["foo"] as User;
-            Assert.Equal(sampleName, model.Name);
-            Assert.Equal(sampleUserName, model.UserName);
-        }
-
-        [Fact]
-        public async Task GetArguments_UsingInputFormatter_DeserializesArrays()
-        {
-            // Arrange
-            var sampleFirstUser = "FirstUser";
-            var sampleFirstUserName = "fuser";
-            var sampleSecondUser = "SecondUser";
-            var sampleSecondUserName = "suser";
-            var input = "{'Users': [{Name : '" + sampleFirstUser + "', UserName: '" + sampleFirstUserName +
-                "'}, {Name: '" + sampleSecondUser + "', UserName: '" + sampleSecondUserName + "'}]}";
-            var modelStateDictionary = new ModelStateDictionary();
-            var invoker = GetControllerActionInvoker(input, typeof(Customers), new JsonInputFormatter(), "application/xml");
-
-            // Act
-            var result = await invoker.GetActionArguments(modelStateDictionary);
-
-            // Assert
-            Assert.True(modelStateDictionary.IsValid);
-            Assert.Equal(0, modelStateDictionary.ErrorCount);
-            var model = result["foo"] as Customers;
-            Assert.Equal(2, model.Users.Count);
-            Assert.Equal(sampleFirstUser, model.Users[0].Name);
-            Assert.Equal(sampleFirstUserName, model.Users[0].UserName);
-            Assert.Equal(sampleSecondUser, model.Users[1].Name);
-            Assert.Equal(sampleSecondUserName, model.Users[1].UserName);
-        }
-
-        [Fact]
-        public async Task GetArguments_UsingInputFormatter_DeserializesArrays_WithErrors()
-        {
-            // Arrange
-            var sampleFirstUser = "FirstUser";
-            var sampleFirstUserName = "fusr";
-            var sampleSecondUser = "SecondUser";
-            var sampleSecondUserName = "susr";
-            var input = "{'Users': [{Name : '" + sampleFirstUser + "', UserName: '" + sampleFirstUserName +
-                "'}, {Name: '" + sampleSecondUser + "', UserName: '" + sampleSecondUserName + "'}]}";
-            var modelStateDictionary = new ModelStateDictionary();
-            var invoker = GetControllerActionInvoker(input, typeof(Customers), new JsonInputFormatter(), "application/xml");
-
-            // Act
-            var result = await invoker.GetActionArguments(modelStateDictionary);
-
-            // Assert
-            Assert.False(modelStateDictionary.IsValid);
-            Assert.Equal(2, modelStateDictionary.ErrorCount);
-            var model = result["foo"] as Customers;
-            Assert.Equal(
-                ValidationAttributeUtil.GetMinLengthErrorMessage(5, "UserName"),
-                modelStateDictionary["foo.Users[0].UserName"].Errors[0].ErrorMessage);
-            Assert.Equal(
-                ValidationAttributeUtil.GetMinLengthErrorMessage(5, "UserName"),
-                modelStateDictionary["foo.Users[1].UserName"].Errors[0].ErrorMessage);
-            Assert.Equal(2, model.Users.Count);
-            Assert.Equal(sampleFirstUser, model.Users[0].Name);
-            Assert.Equal(sampleFirstUserName, model.Users[0].UserName);
-            Assert.Equal(sampleSecondUser, model.Users[1].Name);
-            Assert.Equal(sampleSecondUserName, model.Users[1].UserName);
-        }
-
         private static ControllerActionInvoker GetControllerActionInvoker(
             string input, Type parameterType, IInputFormatter selectedFormatter, string contentType)
         {
@@ -174,12 +68,11 @@ namespace Microsoft.AspNet.Mvc
             inputFormattersProvider.SetupGet(o => o.InputFormatters)
                                             .Returns(new List<IInputFormatter>());
             return new ControllerActionInvoker(actionContext,
-                                                     actionBindingContextProvider.Object,
                                                      Mock.Of<INestedProviderManager<FilterProviderContext>>(),
                                                      Mock.Of<IControllerFactory>(),
                                                      actionDescriptor,
                                                      inputFormattersProvider.Object,
-                                                     new DefaultBodyModelValidator());
+                                                     Mock.Of<IControllerActionArgumentBinder>());
         }
 
         private static ActionContext GetActionContext(byte[] contentBytes,

@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="MultipleBodyParametersAreNotAllowed" xml:space="preserve">
+    <value>More than one parameter is bound to the HTTP request's content.</value>
+  </data>
   <data name="AntiForgeryToken_AdditionalDataCheckFailed" xml:space="preserve">
     <value>The provided anti-forgery token failed a custom data check.</value>
   </data>
@@ -192,7 +195,7 @@
   <data name="ActionInvokerFactory_CouldNotCreateInvoker" xml:space="preserve">
     <value>An action invoker could not be created for action '{0}'.</value>
   </data>
-  <data name="DefaultControllerFactory_ActionDescriptorMustBeReflected" xml:space="preserve">
+  <data name="ActionDescriptorMustBeBasedOnControllerAction" xml:space="preserve">
     <value>The action descriptor must be of type '{0}'.</value>
   </data>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">

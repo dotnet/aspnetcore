@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -32,6 +33,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                    propertyName, 
                    new CachedDataAnnotationsMetadataAttributes(attributes))
         {
+            Marker = attributes.OfType<IBinderMarker>().FirstOrDefault();
         }
 
         protected override bool ComputeConvertEmptyStringToNull()
