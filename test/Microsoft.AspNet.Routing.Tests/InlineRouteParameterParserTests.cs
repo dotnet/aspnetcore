@@ -296,12 +296,12 @@ namespace Microsoft.AspNet.Routing.Tests
         private static IInlineConstraintResolver GetConstraintResolver()
         {
             var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
-            services.ConfigureOptions<RouteOptions>(options =>
+            services.Configure<RouteOptions>(options =>
                                 options
                                 .ConstraintMap
                                 .Add("test", typeof(TestRouteConstraint)));
             var serviceProvider = services.BuildServiceProvider();
-            var accessor = serviceProvider.GetService<IOptionsAccessor<RouteOptions>>();
+            var accessor = serviceProvider.GetService<IOptions<RouteOptions>>();
             return new DefaultInlineConstraintResolver(serviceProvider, accessor);
         }
 

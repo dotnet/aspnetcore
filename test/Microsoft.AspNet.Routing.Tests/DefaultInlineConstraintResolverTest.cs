@@ -300,7 +300,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
         private IInlineConstraintResolver GetInlineConstraintResolver(RouteOptions routeOptions)
         {
-            var optionsAccessor = new Mock<IOptionsAccessor<RouteOptions>>();
+            var optionsAccessor = new Mock<IOptions<RouteOptions>>();
             optionsAccessor.SetupGet(o => o.Options).Returns(routeOptions);
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(o => o.GetService(It.Is<Type>(type => type == typeof(ITypeActivator))))

@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.Framework.DependencyInjection;
@@ -34,22 +35,25 @@ namespace Microsoft.AspNet.Builder
 
         public async Task Invoke(HttpContext httpContext)
         {
-            EnsureLogger(httpContext);
-            using (_logger.BeginScope("RouterMiddleware.Invoke"))
+            using (RequestServicesContainer.EnsureRequestServices(httpContext))
             {
-                var context = new RouteContext(httpContext);
-                context.RouteData.Routers.Add(Router);
-
-                await Router.RouteAsync(context);
-
-                if (_logger.IsEnabled(TraceType.Information))
+                EnsureLogger(httpContext);
+                using (_logger.BeginScope("RouterMiddleware.Invoke"))
                 {
-                    _logger.WriteValues(new RouterMiddlewareInvokeValues() { Handled = context.IsHandled });
-                }
+                    var context = new RouteContext(httpContext);
+                    context.RouteData.Routers.Add(Router);
 
-                if (!context.IsHandled)
-                {
-                    await Next.Invoke(httpContext);
+                    await Router.RouteAsync(context);
+
+                    if (_logger.IsEnabled(TraceType.Information))
+                    {
+                        _logger.WriteValues(new RouterMiddlewareInvokeValues() { Handled = context.IsHandled });
+                    }
+
+                    if (!context.IsHandled)
+                    {
+                        await Next.Invoke(httpContext);
+                    }
                 }
             }
         }

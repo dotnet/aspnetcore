@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Routing
         private readonly IServiceProvider _serviceProvider;
 
         public DefaultInlineConstraintResolver(IServiceProvider serviceProvider,
-                                               IOptionsAccessor<RouteOptions> routeOptions)
+                                               IOptions<RouteOptions> routeOptions)
         {
             _serviceProvider = serviceProvider;
             _inlineConstraintMap = routeOptions.Options.ConstraintMap;

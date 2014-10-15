@@ -823,7 +823,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
             var serviceProvider = services.BuildServiceProvider();
-            var accessor = serviceProvider.GetService<IOptionsAccessor<RouteOptions>>();
+            var accessor = serviceProvider.GetService<IOptions<RouteOptions>>();
             return new DefaultInlineConstraintResolver(serviceProvider, accessor);
         }
     }
