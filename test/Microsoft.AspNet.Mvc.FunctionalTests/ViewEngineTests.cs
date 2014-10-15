@@ -196,5 +196,25 @@ component-content";
             // Assert
             Assert.Equal(expected, body.Trim());
         }
+
+        [Fact]
+        public async Task LayoutValueIsPassedBetweenNestedViewStarts()
+        {
+            // Arrange
+            var expected = string.Join(Environment.NewLine,
+                                       "<title>viewstart-value</title>",
+                                       "",
+                                       "~/Views/NestedViewStarts/NestedViewStarts/Layout.cshtml",
+                                       "index-content");
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/NestedViewStarts");
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
     }
 }
+ 

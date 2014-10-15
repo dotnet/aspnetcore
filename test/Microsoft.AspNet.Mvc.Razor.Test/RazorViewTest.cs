@@ -714,6 +714,80 @@ section-content-2";
             Assert.True(executed);
         }
 
+        [Fact]
+        public async Task RenderAsync_CopiesLayoutPropertyFromViewStart()
+        {
+            // Arrange
+            var expectedViewStart = "Layout1";
+            var expectedPage = "Layout2";
+            string actualViewStart = null;
+            string actualPage = null;
+            var page = new TestableRazorPage(v =>
+            {
+                actualPage = v.Layout;
+                // Clear it out because we don't care about rendering the layout in this test.
+                v.Layout = null;
+            });
+            var viewStart1 = new TestableRazorPage(v =>
+            {
+                v.Layout = expectedViewStart;
+            });
+            var viewStart2 = new TestableRazorPage(v =>
+            {
+                actualViewStart = v.Layout;
+                v.Layout = expectedPage;
+            });
+            var pageFactory = Mock.Of<IRazorPageFactory>();
+
+            var view = new RazorView(pageFactory,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider(viewStart1, viewStart2));
+            view.Contextualize(page, isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.Equal(expectedViewStart, actualViewStart);
+            Assert.Equal(expectedPage, actualPage);
+        }
+
+        [Fact]
+        public async Task ResettingLayout_InViewStartCausesItToBeResetInPage()
+        {
+            // Arrange
+            var expected = "Layout";
+            string actual = null;
+
+            var page = new TestableRazorPage(v =>
+            {
+                Assert.Null(v.Layout);
+            });
+            var viewStart1 = new TestableRazorPage(v =>
+            {
+                v.Layout = expected;
+            });
+            var viewStart2 = new TestableRazorPage(v =>
+            {
+                actual = v.Layout;
+                v.Layout = null;
+            });
+            var pageFactory = Mock.Of<IRazorPageFactory>();
+
+            var view = new RazorView(pageFactory,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider(viewStart1, viewStart2));
+            view.Contextualize(page, isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
         private static TextWriter CreateBufferedWriter()
         {
             var mockWriter = new Mock<TextWriter>();

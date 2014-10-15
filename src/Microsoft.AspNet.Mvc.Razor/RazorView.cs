@@ -150,13 +150,17 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var viewStarts = _viewStartProvider.GetViewStartPages(_razorPage.Path);
 
+            string layout = null;
             foreach (var viewStart in viewStarts)
             {
+                // Copy the layout value from the previous view start (if any) to the current.
+                viewStart.Layout = layout;
                 await RenderPageCoreAsync(viewStart, context);
-
-                // Copy over interesting properties from the ViewStart page to the entry page.
-                _razorPage.Layout = viewStart.Layout;
+                layout = viewStart.Layout;
             }
+
+            // Copy over interesting properties from the ViewStart page to the entry page.
+            _razorPage.Layout = layout;
         }
 
         private async Task RenderLayoutAsync(ViewContext context,
