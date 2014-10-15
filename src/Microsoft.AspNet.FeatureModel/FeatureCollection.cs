@@ -66,7 +66,12 @@ namespace Microsoft.AspNet.FeatureModel
         void SetInterface(Type type, object feature)
         {
             if (type == null) throw new ArgumentNullException("type");
-            if (feature == null) throw new ArgumentNullException("feature");
+
+            if (feature == null)
+            {
+                Remove(type);
+                return;
+            }
 
             lock (_containerSync)
             {
@@ -167,7 +172,20 @@ namespace Microsoft.AspNet.FeatureModel
 
         public bool Remove(Type key)
         {
-            throw new NotImplementedException();
+            if (key == null) throw new ArgumentNullException("key");
+
+            lock (_containerSync)
+            {
+                Type priorFeatureType;
+                if (_featureTypeByName.TryGetValue(key.FullName, out priorFeatureType))
+                {
+                    _featureTypeByName.Remove(key.FullName);
+                    _featureByFeatureType.Remove(priorFeatureType);
+                    Interlocked.Increment(ref _containerRevision);
+                    return true;
+                }
+                return false;
+            }
         }
 
         public bool TryGetValue(Type key, out object value)
