@@ -12,12 +12,12 @@ namespace RazorWebSite
             var configuration = app.GetTestConfiguration();
 
             // Set up application services
-            app.UsePerRequestServices(services =>
+            app.UseServices(services =>
             {
                 // Add MVC services to the services container
                 services.AddMvc(configuration);
                 services.AddTransient<InjectedHelper>();
-                services.ConfigureOptions<RazorViewEngineOptions>(options =>
+                services.Configure<RazorViewEngineOptions>(options =>
                 {
                     var expander = new LanguageViewLocationExpander(
                             context => context.HttpContext.Request.Query["language-expander-value"]);

@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var options = new MvcOptions();
             options.ModelValidatorProviders.Add(type);
             options.ModelValidatorProviders.Add(validationProvider);
-            var accessor = new Mock<IOptionsAccessor<MvcOptions>>();
+            var accessor = new Mock<IOptions<MvcOptions>>();
             accessor.SetupGet(a => a.Options)
                     .Returns(options);
             var provider = new DefaultModelValidatorProviderProvider(accessor.Object,

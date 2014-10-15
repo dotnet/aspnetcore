@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc
         public ControllerActionDescriptorProvider(IAssemblyProvider assemblyProvider,
                                                  IActionDiscoveryConventions conventions,
                                                  IGlobalFilterProvider globalFilters,
-                                                 IOptionsAccessor<MvcOptions> optionsAccessor)
+                                                 IOptions<MvcOptions> optionsAccessor)
         {
             _assemblyProvider = assemblyProvider;
             _conventions = conventions;

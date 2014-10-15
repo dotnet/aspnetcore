@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expectedMessage = "Unable to find the required services. Please add all the required " +
-                "services by calling 'IServiceCollection.AddMvc()' inside the call to 'IApplicationBuilder.UsePerRequestServices(...)' " +
+                "services by calling 'IServiceCollection.AddMvc()' inside the call to 'IApplicationBuilder.UseServices(...)' " +
                 "or 'IApplicationBuilder.UseMvc(...)' in the application startup code.";
 
             // Act & Assert

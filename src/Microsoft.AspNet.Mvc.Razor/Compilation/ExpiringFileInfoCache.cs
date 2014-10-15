@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IFileSystem _fileSystem;
         private readonly TimeSpan _offset;
 
-        public ExpiringFileInfoCache(IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
+        public ExpiringFileInfoCache(IOptions<RazorViewEngineOptions> optionsAccessor)
         {
             _fileSystem = optionsAccessor.Options.FileSystem;
             _offset = optionsAccessor.Options.ExpirationBeforeCheckingFilesOnDisk;

@@ -1369,7 +1369,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
         private ControllerActionDescriptorProvider GetProvider(
             TypeInfo type, 
-            IOptionsAccessor<MvcOptions> options)
+            IOptions<MvcOptions> options)
         {
             var conventions = new StaticActionDiscoveryConventions(type);
 

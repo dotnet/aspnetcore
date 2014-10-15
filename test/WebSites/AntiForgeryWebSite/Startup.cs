@@ -9,7 +9,7 @@ namespace AntiForgeryWebSite
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-            app.UsePerRequestServices(services =>
+            app.UseServices(services =>
             {
                 services.AddMvc(configuration);
             });

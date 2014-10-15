@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc
             var setup = new MvcOptionsSetup();
 
             // Act
-            setup.Invoke(mvcOptions);
+            setup.Configure(mvcOptions);
 
             // Assert
             Assert.Equal(1, mvcOptions.ViewEngines.Count);
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
             var setup = new MvcOptionsSetup();
 
             // Act
-            setup.Invoke(mvcOptions);
+            setup.Configure(mvcOptions);
 
             // Assert
             Assert.Equal(7, mvcOptions.ModelBinders.Count);
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc
             var setup = new MvcOptionsSetup();
 
             // Act
-            setup.Invoke(mvcOptions);
+            setup.Configure(mvcOptions);
 
             // Assert
             var valueProviders = mvcOptions.ValueProviderFactories;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc
             var setup = new MvcOptionsSetup();
 
             // Act
-            setup.Invoke(mvcOptions);
+            setup.Configure(mvcOptions);
 
             // Assert
             Assert.Equal(4, mvcOptions.OutputFormatters.Count);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc
             var setup = new MvcOptionsSetup();
 
             // Act
-            setup.Invoke(mvcOptions);
+            setup.Configure(mvcOptions);
 
             // Assert
             Assert.Equal(2, mvcOptions.InputFormatters.Count);
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc
             var setup = new MvcOptionsSetup();
 
             // Act
-            setup.Invoke(mvcOptions);
+            setup.Configure(mvcOptions);
 
             // Assert
             Assert.Equal(2, mvcOptions.ModelValidatorProviders.Count);

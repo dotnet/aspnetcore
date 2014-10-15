@@ -14,11 +14,11 @@ namespace ValueProvidersSite
             var configuration = app.GetTestConfiguration();
 
             // Set up application services
-            app.UsePerRequestServices(services =>
+            app.UseServices(services =>
             {
                 // Add MVC services to the services container
                 services.AddMvc(configuration)
-                        .ConfigureOptions<MvcOptions>(options =>
+                        .Configure<MvcOptions>(options =>
                         {
                             options.ValueProviderFactories.Insert(1, new CustomValueProviderFactory());
                         });

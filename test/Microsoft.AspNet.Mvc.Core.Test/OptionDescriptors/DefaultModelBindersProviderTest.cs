@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var options = new MvcOptions();
             options.ModelBinders.Add(binder);
             options.ModelBinders.Add(typeof(TestModelBinder));
-            var optionsAccessor = new Mock<IOptionsAccessor<MvcOptions>>();
+            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor.SetupGet(o => o.Options)
                            .Returns(options);
             var activator = new TypeActivator();

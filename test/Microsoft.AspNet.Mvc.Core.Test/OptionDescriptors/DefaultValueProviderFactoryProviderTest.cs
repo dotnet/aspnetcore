@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var options = new MvcOptions();
             options.ValueProviderFactories.Add(valueProviderFactory);
             options.ValueProviderFactories.Add(type);
-            var accessor = new Mock<IOptionsAccessor<MvcOptions>>();
+            var accessor = new Mock<IOptions<MvcOptions>>();
             accessor.SetupGet(a => a.Options)
                     .Returns(options);
             var provider = new DefaultValueProviderFactoryProvider(accessor.Object,

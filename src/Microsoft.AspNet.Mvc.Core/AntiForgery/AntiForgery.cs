@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc
         public AntiForgery([NotNull] IClaimUidExtractor claimUidExtractor,
                            [NotNull] IDataProtectionProvider dataProtectionProvider,
                            [NotNull] IAntiForgeryAdditionalDataProvider additionalDataProvider,
-                           [NotNull] IOptionsAccessor<MvcOptions> mvcOptions)
+                           [NotNull] IOptions<MvcOptions> mvcOptions)
         {
             var config = mvcOptions.Options.AntiForgeryOptions;
             var serializer = new AntiForgeryTokenSerializer(dataProtectionProvider.CreateProtector(_purpose));

@@ -30,8 +30,8 @@ namespace Microsoft.AspNet.Mvc
             var appEnv = _appServices.GetService<IApplicationEnvironment>();
 
             var setup = new RazorViewEngineOptionsSetup(appEnv);
-            var accessor = new OptionsAccessor<RazorViewEngineOptions>(new[] { setup });
-            sc.AddInstance<IOptionsAccessor<RazorViewEngineOptions>>(accessor);
+            var accessor = new OptionsManager<RazorViewEngineOptions>(new[] { setup });
+            sc.AddInstance<IOptions<RazorViewEngineOptions>>(accessor);
             sc.Add(MvcServices.GetDefaultServices());
             var sp = sc.BuildServiceProvider(_appServices);
 

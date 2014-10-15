@@ -131,8 +131,8 @@ namespace Microsoft.AspNet.Mvc
             var mvcOptions = new MvcOptions();
             var setup = new MvcOptionsSetup();
 
-            setup.Invoke(mvcOptions);
-            var accessor = new Mock<IOptionsAccessor<MvcOptions>>();
+            setup.Configure(mvcOptions);
+            var accessor = new Mock<IOptions<MvcOptions>>();
             accessor.SetupGet(a => a.Options)
                     .Returns(mvcOptions);
             var validatorProvider = new DefaultModelValidatorProviderProvider(

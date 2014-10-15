@@ -22,13 +22,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider) :
             this(designTimeServiceProvider, 
                  designTimeServiceProvider.GetService<IMvcRazorHost>(),
-                 designTimeServiceProvider.GetService<IOptionsAccessor<RazorViewEngineOptions>>())
+                 designTimeServiceProvider.GetService<IOptions<RazorViewEngineOptions>>())
         {
         }
 
         public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider,
                                 [NotNull] IMvcRazorHost host,
-                                [NotNull] IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
+                                [NotNull] IOptions<RazorViewEngineOptions> optionsAccessor)
         {
             _serviceProvider = designTimeServiceProvider;
             _host = host;

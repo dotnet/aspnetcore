@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IRazorPageFactory _pageFactory;
 
         public ViewStartProvider(IRazorPageFactory pageFactory,
-                                 IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
+                                 IOptions<RazorViewEngineOptions> optionsAccessor)
         {
             _fileSystem = optionsAccessor.Options.FileSystem;
             _pageFactory = pageFactory;

@@ -14,9 +14,9 @@ namespace UrlHelperWebSite
             var configuration = app.GetTestConfiguration();
 
             // Set up application services
-            app.UsePerRequestServices(services =>
+            app.UseServices(services =>
             {
-                services.ConfigureOptions<AppOptions>(optionsSetup =>
+                services.Configure<AppOptions>(optionsSetup =>
                 {
                     optionsSetup.ServeCDNContent = true;
                     optionsSetup.CDNServerBaseUrl = "http://cdn.contoso.com";

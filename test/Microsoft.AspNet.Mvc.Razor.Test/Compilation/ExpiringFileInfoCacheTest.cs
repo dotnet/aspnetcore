@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public DummyFileSystem TestFileSystem { get; } = new DummyFileSystem();
 
-        public IOptionsAccessor<RazorViewEngineOptions> OptionsAccessor
+        public IOptions<RazorViewEngineOptions> OptionsAccessor
         {
             get
             {
@@ -26,14 +26,14 @@ namespace Microsoft.AspNet.Mvc.Razor
                     FileSystem = TestFileSystem
                 };
 
-                var mock = new Mock<IOptionsAccessor<RazorViewEngineOptions>>(MockBehavior.Strict);
+                var mock = new Mock<IOptions<RazorViewEngineOptions>>(MockBehavior.Strict);
                 mock.Setup(oa => oa.Options).Returns(options);
 
                 return mock.Object;
             }
         }
 
-        public ControllableExpiringFileInfoCache GetCache(IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
+        public ControllableExpiringFileInfoCache GetCache(IOptions<RazorViewEngineOptions> optionsAccessor)
         {
             return new ControllableExpiringFileInfoCache(optionsAccessor);
         }
@@ -54,14 +54,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             cache.Sleep(offsetMilliseconds);
         }
 
-        public void Sleep(IOptionsAccessor<RazorViewEngineOptions> accessor, ControllableExpiringFileInfoCache cache, int offsetMilliSeconds)
+        public void Sleep(IOptions<RazorViewEngineOptions> accessor, ControllableExpiringFileInfoCache cache, int offsetMilliSeconds)
         {
             var baseMilliSeconds = (int)accessor.Options.ExpirationBeforeCheckingFilesOnDisk.TotalMilliseconds;
 
             cache.Sleep(baseMilliSeconds + offsetMilliSeconds);
         }
 
-        public void SetExpiration(IOptionsAccessor<RazorViewEngineOptions> accessor, TimeSpan expiration)
+        public void SetExpiration(IOptions<RazorViewEngineOptions> accessor, TimeSpan expiration)
         {
             accessor.Options.ExpirationBeforeCheckingFilesOnDisk = expiration;
         }
@@ -307,7 +307,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public class ControllableExpiringFileInfoCache : ExpiringFileInfoCache
         {
-            public ControllableExpiringFileInfoCache(IOptionsAccessor<RazorViewEngineOptions> optionsAccessor)
+            public ControllableExpiringFileInfoCache(IOptions<RazorViewEngineOptions> optionsAccessor)
                 : base(optionsAccessor)
             {
             }

@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         private static decimal Compute(string template)
         {
-            var options = new Mock<IOptionsAccessor<RouteOptions>>();
+            var options = new Mock<IOptions<RouteOptions>>();
             options.SetupGet(o => o.Options).Returns(new RouteOptions());
 
             var constraintResolver = new DefaultInlineConstraintResolver(

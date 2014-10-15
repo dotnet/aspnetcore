@@ -31,7 +31,7 @@ namespace MvcSample.Web
             {
                 app.UseMiddleware<MonitoringMiddlware>();
 
-                app.UsePerRequestServices(services =>
+                app.UseServices(services =>
                 {
                     services.AddMvc();
                     services.AddSingleton<PassThroughAttribute>();
@@ -42,11 +42,11 @@ namespace MvcSample.Web
                     // sample's assemblies are loaded. This prevents loading controllers from other assemblies
                     // when the sample is used in the Functional Tests.
                     services.AddTransient<IAssemblyProvider, TestAssemblyProvider<Startup>>();
-                    services.ConfigureOptions<MvcOptions>(options =>
+                    services.Configure<MvcOptions>(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
                     });
-                    services.ConfigureOptions<RazorViewEngineOptions>(options =>
+                    services.Configure<RazorViewEngineOptions>(options =>
                     {
                         var expander = new LanguageViewLocationExpander(
                             context => context.HttpContext.Request.Query["language"]);
@@ -72,7 +72,7 @@ namespace MvcSample.Web
             else
 #endif
             {
-                app.UsePerRequestServices(services =>
+                app.UseServices(services =>
                 {
                     services.AddMvc();
                     services.AddSingleton<PassThroughAttribute>();
@@ -83,7 +83,7 @@ namespace MvcSample.Web
                     // when the sample is used in the Functional Tests.
                     services.AddTransient<IAssemblyProvider, TestAssemblyProvider<Startup>>();
 
-                    services.ConfigureOptions<MvcOptions>(options =>
+                    services.Configure<MvcOptions>(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
                     });

@@ -15,12 +15,12 @@ namespace XmlSerializerWebSite
             var configuration = app.GetTestConfiguration();
 
             // Set up application services
-            app.UsePerRequestServices(services =>
+            app.UseServices(services =>
             {
                 // Add MVC services to the services container
                 services.AddMvc(configuration);
 
-                services.ConfigureOptions<MvcOptions>(options =>
+                services.Configure<MvcOptions>(options =>
                     {
                         options.InputFormatters.Clear();
                         options.InputFormatters.Insert(0, new XmlSerializerInputFormatter());

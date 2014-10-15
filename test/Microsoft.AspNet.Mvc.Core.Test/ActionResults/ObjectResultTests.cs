@@ -521,12 +521,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         {
             var optionsSetup = new MvcOptionsSetup();
             var options = new MvcOptions();
-            optionsSetup.Invoke(options);
-            var optionsAccessor = new Mock<IOptionsAccessor<MvcOptions>>();
+            optionsSetup.Configure(options);
+            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor.SetupGet(o => o.Options).Returns(options);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IOptionsAccessor<MvcOptions>>(optionsAccessor.Object);
+            serviceCollection.AddInstance<IOptions<MvcOptions>>(optionsAccessor.Object);
             return serviceCollection.BuildServiceProvider();
         }
 

@@ -5,7 +5,7 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class MockMvcOptionsAccessor : IOptionsAccessor<MvcOptions>
+    public class MockMvcOptionsAccessor : IOptions<MvcOptions>
     {
 	    public MockMvcOptionsAccessor()
 	    {

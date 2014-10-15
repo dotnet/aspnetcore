@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 .Setup(s => s.GetService(typeof(IActionDescriptorsCollectionProvider)))
                 .Returns(actionDescriptorProvider.Object);
 
-            var routeOptions = new Mock<IOptionsAccessor<RouteOptions>>();
+            var routeOptions = new Mock<IOptions<RouteOptions>>();
             routeOptions
                 .SetupGet(o => o.Options)
                 .Returns(new RouteOptions());

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             {
                 throw new InvalidOperationException(Resources.FormatUnableToFindServices(
                     "IServiceCollection.AddMvc()",
-                    "IApplicationBuilder.UsePerRequestServices(...)",
+                    "IApplicationBuilder.UseServices(...)",
                     "IApplicationBuilder.UseMvc(...)"));
             }
         }

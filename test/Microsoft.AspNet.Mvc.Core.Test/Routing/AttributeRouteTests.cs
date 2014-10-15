@@ -1211,7 +1211,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             var services = Mock.Of<IServiceProvider>();
 
             var options = new RouteOptions();
-            var optionsMock = new Mock<IOptionsAccessor<RouteOptions>>();
+            var optionsMock = new Mock<IOptions<RouteOptions>>();
             optionsMock.SetupGet(o => o.Options).Returns(options);
 
             return new DefaultInlineConstraintResolver(services, optionsMock.Object);

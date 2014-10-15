@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Sets up default options for <see cref="RazorViewEngineOptions"/>.
     /// </summary>
-    public class RazorViewEngineOptionsSetup : OptionsAction<RazorViewEngineOptions>
+    public class RazorViewEngineOptionsSetup : ConfigureOptions<RazorViewEngineOptions>
     {
         /// <summary>
         /// Initializes a new instance of <see cref="RazorViewEngineOptions"/>.

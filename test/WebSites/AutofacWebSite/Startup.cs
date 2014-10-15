@@ -13,7 +13,7 @@ namespace AutofacWebSite
         {
             var configuration = app.GetTestConfiguration();
 
-            app.UsePerRequestServices(services => {
+            app.UseServices(services => {
                 services.AddMvc(configuration);
                 services.AddTransient<HelloWorldBuilder>();
 

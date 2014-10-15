@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Razor.OptionDescriptors
         /// <param name="serviceProvider">A <see cref="IServiceProvider"/> instance that retrieves services from the 
         /// service collection.</param>
         public DefaultViewLocationExpanderProvider(
-            IOptionsAccessor<RazorViewEngineOptions> optionsAccessor,
+            IOptions<RazorViewEngineOptions> optionsAccessor,
             ITypeActivator typeActivator,
             IServiceProvider serviceProvider)
             : base(optionsAccessor.Options.ViewLocationExpanders, typeActivator, serviceProvider)

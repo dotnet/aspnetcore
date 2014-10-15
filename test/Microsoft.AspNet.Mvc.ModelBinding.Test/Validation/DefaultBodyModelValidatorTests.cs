@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {

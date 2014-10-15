@@ -38,7 +38,7 @@ namespace InlineConstraints
             }
 
             // Set up application services
-            app.UsePerRequestServices(services =>
+            app.UseServices(services =>
             {
                 // Add MVC services to the services container
                 services.AddMvc(configuration);

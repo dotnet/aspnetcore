@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var expected = 199;
-            var optionsAccessor = new Mock<IOptionsAccessor<MvcOptions>>();
+            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             var options = new MvcOptions
             {
                 MaxModelValidationErrors = expected
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Mvc
             IActionSelector actionSelector = null,
             IActionInvokerFactory invokerFactory = null,
             ILoggerFactory loggerFactory = null,
-            IOptionsAccessor<MvcOptions> optionsAccessor = null)
+            IOptions<MvcOptions> optionsAccessor = null)
         {
             var mockContextAccessor = new Mock<IContextAccessor<ActionContext>>();
             mockContextAccessor.Setup(c => c.SetContextSource(
@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (optionsAccessor == null)
             {
-                var mockOptionsAccessor = new Mock<IOptionsAccessor<MvcOptions>>();
+                var mockOptionsAccessor = new Mock<IOptions<MvcOptions>>();
                 mockOptionsAccessor.SetupGet(o => o.Options)
                                    .Returns(new MvcOptions());
 
@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Mvc
                 .Returns(loggerFactory);
             httpContext.Setup(h => h.RequestServices.GetService(typeof(IEnumerable<MvcMarkerService>)))
                  .Returns(new List<MvcMarkerService> { new MvcMarkerService() });
-            httpContext.Setup(h => h.RequestServices.GetService(typeof(IOptionsAccessor<MvcOptions>)))
+            httpContext.Setup(h => h.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                  .Returns(optionsAccessor);
 
             return new RouteContext(httpContext.Object);

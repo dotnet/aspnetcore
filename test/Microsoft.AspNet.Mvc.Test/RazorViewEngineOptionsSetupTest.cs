@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc
             var optionsSetup = new RazorViewEngineOptionsSetup(appEnv.Object);
 
             // Act
-            optionsSetup.Invoke(options);
+            optionsSetup.Configure(options);
 
             // Assert
             Assert.NotNull(options.FileSystem);

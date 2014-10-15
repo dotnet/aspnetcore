@@ -30,11 +30,11 @@ namespace System.Net.Http
             var options = new WebApiCompatShimOptions();
             options.Formatters.AddRange(new MediaTypeFormatterCollection());
 
-            var optionsAccessor = new Mock<IOptionsAccessor<WebApiCompatShimOptions>>();
+            var optionsAccessor = new Mock<IOptions<WebApiCompatShimOptions>>();
             optionsAccessor.SetupGet(o => o.Options).Returns(options);
 
             services
-                .Setup(s => s.GetService(typeof(IOptionsAccessor<WebApiCompatShimOptions>)))
+                .Setup(s => s.GetService(typeof(IOptions<WebApiCompatShimOptions>)))
                 .Returns(optionsAccessor.Object);
 
             context.RequestServices = services.Object;
@@ -63,11 +63,11 @@ namespace System.Net.Http
             var options = new WebApiCompatShimOptions();
             options.Formatters.AddRange(new MediaTypeFormatterCollection());
 
-            var optionsAccessor = new Mock<IOptionsAccessor<WebApiCompatShimOptions>>();
+            var optionsAccessor = new Mock<IOptions<WebApiCompatShimOptions>>();
             optionsAccessor.SetupGet(o => o.Options).Returns(options);
 
             services
-                .Setup(s => s.GetService(typeof(IOptionsAccessor<WebApiCompatShimOptions>)))
+                .Setup(s => s.GetService(typeof(IOptions<WebApiCompatShimOptions>)))
                 .Returns(optionsAccessor.Object);
 
             context.RequestServices = services.Object;
@@ -326,12 +326,12 @@ namespace System.Net.Http
                 options.Formatters.Add(formatter);
             }
 
-            var optionsAccessor = new Mock<IOptionsAccessor<WebApiCompatShimOptions>>();
+            var optionsAccessor = new Mock<IOptions<WebApiCompatShimOptions>>();
             optionsAccessor.SetupGet(o => o.Options).Returns(options);
 
             var services = new Mock<IServiceProvider>(MockBehavior.Strict);
             services
-                .Setup(s => s.GetService(typeof(IOptionsAccessor<WebApiCompatShimOptions>)))
+                .Setup(s => s.GetService(typeof(IOptions<WebApiCompatShimOptions>)))
                 .Returns(optionsAccessor.Object);
 
             if (contentNegotiator != null)

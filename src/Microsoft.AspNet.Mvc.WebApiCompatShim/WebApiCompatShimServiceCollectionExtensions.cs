@@ -10,7 +10,7 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection AddWebApiConventions(this IServiceCollection services)
         {
-            services.AddOptionsAction<WebApiCompatShimOptionsSetup>();
+            services.ConfigureOptions<WebApiCompatShimOptionsSetup>();
 
             // The constructors on DefaultContentNegotiator aren't DI friendly, so just
             // new it up.

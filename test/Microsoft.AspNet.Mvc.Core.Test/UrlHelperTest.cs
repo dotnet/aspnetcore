@@ -641,7 +641,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .Returns<VirtualPathContext>(rc => null);
             rt.DefaultHandler = target.Object;
             var serviceProviderMock = new Mock<IServiceProvider>();
-            var accessorMock = new Mock<IOptionsAccessor<RouteOptions>>();
+            var accessorMock = new Mock<IOptions<RouteOptions>>();
             accessorMock.SetupGet(o => o.Options).Returns(new RouteOptions());
             serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
                                .Returns(new DefaultInlineConstraintResolver(serviceProviderMock.Object,

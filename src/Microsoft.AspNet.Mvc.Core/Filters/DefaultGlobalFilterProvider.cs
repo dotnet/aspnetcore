@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         /// Creates a new instance of <see cref="DefaultGlobalFilterProvider"/>.
         /// </summary>
         /// <param name="optionsAccessor">The options accessor for <see cref="MvcOptions"/>.</param>
-        public DefaultGlobalFilterProvider(IOptionsAccessor<MvcOptions> optionsAccessor)
+        public DefaultGlobalFilterProvider(IOptions<MvcOptions> optionsAccessor)
         {
             var filters = optionsAccessor.Options.Filters;
             _filters = filters.ToList();

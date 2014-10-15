@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         /// <param name="serviceProvider">A <see cref="IServiceProvider"/> instance that retrieves services from the 
         /// service collection.</param>
         public DefaultModelBindersProvider(
-                IOptionsAccessor<MvcOptions> optionsAccessor,
+                IOptions<MvcOptions> optionsAccessor,
                 ITypeActivator typeActivator,
                 IServiceProvider serviceProvider)
             : base(optionsAccessor.Options.ModelBinders, typeActivator, serviceProvider)

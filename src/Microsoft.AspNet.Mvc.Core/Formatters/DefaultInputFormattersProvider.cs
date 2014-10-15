@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         /// <param name="typeActivator">An <see cref="ITypeActivator"/> instance used to instantiate types.</param>
         /// <param name="serviceProvider">A <see cref="IServiceProvider"/> instance that retrieves services from the 
         /// service collection.</param>
-        public DefaultInputFormattersProvider(IOptionsAccessor<MvcOptions> optionsAccessor,
+        public DefaultInputFormattersProvider(IOptions<MvcOptions> optionsAccessor,
                                               ITypeActivator typeActivator,
                                               IServiceProvider serviceProvider)
             : base(optionsAccessor.Options.InputFormatters, typeActivator, serviceProvider)

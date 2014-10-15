@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Sets up default options for <see cref="MvcOptions"/>.
     /// </summary>
-    public class MvcOptionsSetup : OptionsAction<MvcOptions>
+    public class MvcOptionsSetup : ConfigureOptions<MvcOptions>
     {
         /// <remarks>Sets the Order to -1 to allow MvcOptionsSetup to run before a user call to ConfigureOptions.</remarks>
         public MvcOptionsSetup() : base(ConfigureMvc)

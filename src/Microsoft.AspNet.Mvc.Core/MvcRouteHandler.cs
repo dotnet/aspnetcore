@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc
 
                 var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
 
-                var optionsAccessor = services.GetService<IOptionsAccessor<MvcOptions>>();
+                var optionsAccessor = services.GetService<IOptions<MvcOptions>>();
                 actionContext.ModelState.MaxAllowedErrors = optionsAccessor.Options.MaxModelValidationErrors;
 
                 var contextAccessor = services.GetService<IContextAccessor<ActionContext>>();

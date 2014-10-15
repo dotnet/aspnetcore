@@ -14,12 +14,12 @@ namespace ApiExplorer
         {
             var configuration = app.GetTestConfiguration();
 
-            app.UsePerRequestServices(services =>
+            app.UseServices(services =>
             {
                 services.AddMvc(configuration);
                 services.AddSingleton<ApiExplorerDataFilter>();
 
-                services.ConfigureOptions<MvcOptions>(options =>
+                services.Configure<MvcOptions>(options =>
                 {
                     options.Filters.AddService(typeof(ApiExplorerDataFilter));
 

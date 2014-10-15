@@ -6,7 +6,7 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
-    public class WebApiCompatShimOptionsSetup : IOptionsAction<MvcOptions>, IOptionsAction<WebApiCompatShimOptions>
+    public class WebApiCompatShimOptionsSetup : IConfigureOptions<MvcOptions>, IConfigureOptions<WebApiCompatShimOptions>
     {
         public readonly static string DefaultAreaName = "api";
 
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 
         public string Name { get; set; }
 
-        public void Invoke(MvcOptions options)
+        public void Configure(MvcOptions options, string name = "")
         {
             // Add webapi behaviors to controllers with the appropriate attributes
             options.ApplicationModelConventions.Add(new WebApiActionConventionsGlobalModelConvention());
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             options.OutputFormatters.Insert(0, new HttpResponseMessageOutputFormatter());
         }
 
-        public void Invoke(WebApiCompatShimOptions options)
+        public void Configure(WebApiCompatShimOptions options, string name = "")
         {
             // Add the default formatters
             options.Formatters.AddRange(new MediaTypeFormatterCollection());

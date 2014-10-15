@@ -214,7 +214,7 @@ namespace System.Net.Http
             if (formatters == null)
             {
                 // Get the default formatters from options
-                var options = context.RequestServices.GetService<IOptionsAccessor<WebApiCompatShimOptions>>();
+                var options = context.RequestServices.GetService<IOptions<WebApiCompatShimOptions>>();
                 formatters = options.Options.Formatters;
             }
 
@@ -266,7 +266,7 @@ namespace System.Net.Http
             var context = GetHttpContext(request);
 
             // Get the default formatters from options
-            var options = context.RequestServices.GetService<IOptionsAccessor<WebApiCompatShimOptions>>();
+            var options = context.RequestServices.GetService<IOptions<WebApiCompatShimOptions>>();
             var formatters = options.Options.Formatters;
 
             var formatter = formatters.FindWriter(typeof(T), mediaType);

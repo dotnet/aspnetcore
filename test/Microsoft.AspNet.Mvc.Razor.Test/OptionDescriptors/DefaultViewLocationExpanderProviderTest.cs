@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Razor.OptionDescriptors
             var options = new RazorViewEngineOptions();
             options.ViewLocationExpanders.Add(type);
             options.ViewLocationExpanders.Add(expander);
-            var accessor = new Mock<IOptionsAccessor<RazorViewEngineOptions>>();
+            var accessor = new Mock<IOptions<RazorViewEngineOptions>>();
             accessor.SetupGet(a => a.Options)
                     .Returns(options);
             var provider = new DefaultViewLocationExpanderProvider(accessor.Object,

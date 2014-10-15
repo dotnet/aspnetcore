@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var options = new MvcOptions();
             options.ViewEngines.Add(viewEngine);
             options.ViewEngines.Add(type);
-            var accessor = new Mock<IOptionsAccessor<MvcOptions>>();
+            var accessor = new Mock<IOptions<MvcOptions>>();
             accessor.SetupGet(a => a.Options)
                     .Returns(options);
             var provider = new DefaultViewEngineProvider(accessor.Object, typeActivator, serviceProvider.Object);
