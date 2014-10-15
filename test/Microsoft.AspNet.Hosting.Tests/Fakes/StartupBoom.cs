@@ -3,10 +3,10 @@
 
 namespace Microsoft.AspNet.Hosting.Fakes
 {
-    public class FakeOptions
+    public class StartupBoom
     {
-        public bool Configured { get; set; }
-        public string Environment { get; set; }
-        public string Message { get; set; }
+        public StartupBoom()
+        {
+        }
     }
 }

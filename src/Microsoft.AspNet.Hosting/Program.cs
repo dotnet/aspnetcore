@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Hosting
             // The application name is a "good enough" mechanism to identify this application
             // on the machine and to prevent subkeys from being shared across multiple applications
             // by default.
-            serviceCollection.ConfigureOptions<DataProtectionOptions>(options =>
+            serviceCollection.Configure<DataProtectionOptions>(options =>
             {
                 options.ApplicationDiscriminator = appEnv.ApplicationName;
             });

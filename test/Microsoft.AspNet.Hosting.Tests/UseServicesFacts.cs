@@ -7,6 +7,8 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
 using Xunit;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.PipelineCore;
 
 namespace Microsoft.AspNet.Hosting.Tests
 {
@@ -18,9 +20,9 @@ namespace Microsoft.AspNet.Hosting.Tests
             var baseServiceProvider = new ServiceCollection().BuildServiceProvider();
             var builder = new ApplicationBuilder(baseServiceProvider);
 
-            builder.UsePerRequestServices(serviceCollection => { });
+            builder.UseServices(serviceCollection => { });
 
-            var optionsAccessor = builder.ApplicationServices.GetService<IOptionsAccessor<object>>();
+            var optionsAccessor = builder.ApplicationServices.GetService<IOptions<object>>();
             Assert.NotNull(optionsAccessor);
         }
 
@@ -32,14 +34,14 @@ namespace Microsoft.AspNet.Hosting.Tests
             var builder = new ApplicationBuilder(baseServiceProvider);
             IServiceProvider serviceProvider = null;
 
-            builder.UsePerRequestServices(serviceCollection =>
+            builder.UseServices(serviceCollection =>
             {
                 serviceProvider = serviceCollection.BuildServiceProvider(builder.ApplicationServices);
                 return serviceProvider;
             });
 
             Assert.Same(serviceProvider, builder.ApplicationServices);
-            var optionsAccessor = builder.ApplicationServices.GetService<IOptionsAccessor<object>>();
+            var optionsAccessor = builder.ApplicationServices.GetService<IOptions<object>>();
             Assert.NotNull(optionsAccessor);
         }
     }

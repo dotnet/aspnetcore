@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Builder;
@@ -27,16 +28,17 @@ namespace Microsoft.AspNet.Hosting.Startup
 
         private MethodInfo FindMethod(Type startupType, string methodName, string environmentName, Type returnType = null, bool required = true)
         {
-            var methodNameWithEnv = methodName + environmentName;
+            var methodNameWithEnv = string.Format(CultureInfo.InvariantCulture, methodName, environmentName);
+            var methodNameWithNoEnv = string.Format(CultureInfo.InvariantCulture, methodName, "");
             var methodInfo = startupType.GetTypeInfo().GetDeclaredMethod(methodNameWithEnv)
-                ?? startupType.GetTypeInfo().GetDeclaredMethod(methodName);
+                ?? startupType.GetTypeInfo().GetDeclaredMethod(methodNameWithNoEnv);
             if (methodInfo == null)
             {
                 if (required)
                 {
                     throw new Exception(string.Format("TODO: {0} or {1} method not found",
                         methodNameWithEnv,
-                        methodName));
+                        methodNameWithNoEnv));
 
                 }
                 return null;
@@ -134,9 +136,9 @@ namespace Microsoft.AspNet.Hosting.Startup
                     applicationName));
             }
 
-            var configureMethod = FindMethod(type, "Configure", environmentName, typeof(void), required: true);
+            var configureMethod = FindMethod(type, "Configure{0}", environmentName, typeof(void), required: true);
             // TODO: accept IServiceProvider method as well?
-            var servicesMethod = FindMethod(type, "ConfigureServices", environmentName, typeof(void), required: false);
+            var servicesMethod = FindMethod(type, "Configure{0}Services", environmentName, typeof(void), required: false);
 
             object instance = null;
             if (!configureMethod.IsStatic || (servicesMethod != null && !servicesMethod.IsStatic))

@@ -3,10 +3,6 @@
 
 namespace Microsoft.AspNet.Hosting.Fakes
 {
-    public class FakeOptions
-    {
-        public bool Configured { get; set; }
-        public string Environment { get; set; }
-        public string Message { get; set; }
-    }
+    public interface IFakeService { }
+    public class FakeService : IFakeService { }
 }

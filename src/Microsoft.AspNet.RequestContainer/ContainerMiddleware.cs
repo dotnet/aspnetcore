@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.RequestContainer
             _rootHttpContextAccessor.SetContextSource(AccessRootHttpContext, ExchangeRootHttpContext);
         }
 
-        private HttpContext AccessRootHttpContext()
+        internal static HttpContext AccessRootHttpContext()
         {
 #if ASPNET50
             var handle = CallContext.LogicalGetData(LogicalDataKey) as ObjectHandle;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.RequestContainer
 #endif 
         }
 
-        private HttpContext ExchangeRootHttpContext(HttpContext httpContext)
+        internal static HttpContext ExchangeRootHttpContext(HttpContext httpContext)
         {
 #if ASPNET50
             var prior = CallContext.LogicalGetData(LogicalDataKey) as ObjectHandle;
@@ -92,29 +92,9 @@ namespace Microsoft.AspNet.RequestContainer
                 appHttpContextAccessor = priorApplicationServices.GetService<IContextAccessor<HttpContext>>();
             }
 
-            using (var scope = appServiceScopeFactory.CreateScope())
+            using (var container = new RequestServicesContainer(httpContext, appServiceScopeFactory, appHttpContextAccessor, appServiceProvider))
             {
-                var scopeServiceProvider = scope.ServiceProvider;
-                var scopeHttpContextAccessor = scopeServiceProvider.GetService<IContextAccessor<HttpContext>>();
-
-                httpContext.ApplicationServices = appServiceProvider;
-                httpContext.RequestServices = scopeServiceProvider;
-
-                var priorAppHttpContext = appHttpContextAccessor.SetValue(httpContext);
-                var priorScopeHttpContext = scopeHttpContextAccessor.SetValue(httpContext);
-                
-                try
-                {
-                    await _next.Invoke(httpContext);
-                }
-                finally
-                {
-                    scopeHttpContextAccessor.SetValue(priorScopeHttpContext);
-                    appHttpContextAccessor.SetValue(priorAppHttpContext);
-
-                    httpContext.RequestServices = priorRequestServices;
-                    httpContext.ApplicationServices = priorApplicationServices;
-                }
+                await _next.Invoke(httpContext);
             }
         }
     }

@@ -9,6 +9,7 @@ using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -40,6 +41,11 @@ namespace Microsoft.AspNet.Hosting
             yield return describer.Singleton<ILoggerFactory, LoggerFactory>();
 
             yield return describer.Scoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
+
+            foreach (var service in OptionsServices.GetDefaultServices())
+            {
+                yield return service;
+            }
 
             foreach (var service in DataProtectionServices.GetDefaultServices())
             {
