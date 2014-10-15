@@ -21,14 +21,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         private readonly string ConnectionString = @"Server=(localdb)\v11.0;Database=DefaultSchemaTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
         public IdentityDbContext CreateContext(bool ensureCreated = false)
         {
-            var services = new ServiceCollection();
-            services.Add(OptionsServices.GetDefaultServices());
-            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
-            services.AddEntityFramework().AddSqlServer();
-            services.ConfigureOptions<DbContextOptions>(options => options.UseSqlServer(ConnectionString));
+            var services = UserStoreTest.ConfigureDbServices(ConnectionString);
             var serviceProvider = services.BuildServiceProvider();
             var db = new IdentityDbContext(serviceProvider, 
-                serviceProvider.GetService<IOptionsAccessor<DbContextOptions>>().Options);
+                serviceProvider.GetService<IOptions<DbContextOptions>>().Options);
             if (ensureCreated)
             {
                 db.Database.EnsureCreated();
@@ -55,12 +51,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             var context = CreateContext(true);
             var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
 
-            builder.UsePerRequestServices(services =>
+            builder.UseServices(services =>
             {
-                services.AddEntityFramework().AddSqlServer();
+                UserStoreTest.ConfigureDbServices(ConnectionString, services);
                 services.AddIdentitySqlServer();
-                services.ConfigureOptions<DbContextOptions>(options =>
-                    options.UseSqlServer(ConnectionString));
                 // todo: constructor resolution doesn't work well with IdentityDbContext since it has 4 constructors
                 services.AddInstance(context);
             });

@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         {
             var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
 
-            builder.UsePerRequestServices(services => services.AddIdentity<ApplicationUser>().AddInMemory());
+            builder.UseServices(services => services.AddIdentity<ApplicationUser>().AddInMemory());
 
             var userStore = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
             var roleStore = builder.ApplicationServices.GetService<IRoleStore<IdentityRole>>();
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         public void VerifyUseInMemoryLifetimes()
         {
             var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
-            builder.UsePerRequestServices(services => services.AddIdentity<ApplicationUser>().AddInMemory());
+            builder.UseServices(services => services.AddIdentity<ApplicationUser>().AddInMemory());
 
             var userStore = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
             var roleStore = builder.ApplicationServices.GetService<IRoleStore<IdentityRole>>();

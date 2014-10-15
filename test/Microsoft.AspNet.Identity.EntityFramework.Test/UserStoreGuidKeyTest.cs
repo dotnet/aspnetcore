@@ -77,8 +77,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             {
                 context = CreateTestContext();
             }
-            var services = new ServiceCollection();
-            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
+            var services = UserStoreTest.ConfigureDbServices(ConnectionString);
             services.AddIdentity<GuidUser, GuidRole>().AddRoleStore(new ApplicationRoleStore((ApplicationDbContext)context));
             return services.BuildServiceProvider().GetService<RoleManager<GuidRole>>();
         }

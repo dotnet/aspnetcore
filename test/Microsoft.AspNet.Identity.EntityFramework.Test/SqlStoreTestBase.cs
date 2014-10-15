@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         public class ApplicationDbContext : IdentityDbContext<TUser, TRole, TKey>
         {
-            public ApplicationDbContext(IServiceProvider services, IOptionsAccessor<DbContextOptions> options) : base(services, options.Options) { }
+            public ApplicationDbContext(IServiceProvider services, IOptions<DbContextOptions> options) : base(services, options.Options) { }
         }
 
         [TestPriority(-1000)]
@@ -46,28 +46,17 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         public void DropDb()
         {
-            var services = new ServiceCollection();
-            services.AddEntityFramework().AddSqlServer();
-            services.Add(OptionsServices.GetDefaultServices());
-            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
-            services.ConfigureOptions<DbContextOptions>(options =>
-                options.UseSqlServer(ConnectionString));
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = UserStoreTest.ConfigureDbServices(ConnectionString).BuildServiceProvider();
             var db = new ApplicationDbContext(serviceProvider,
-                serviceProvider.GetService<IOptionsAccessor<DbContextOptions>>());
+                serviceProvider.GetService<IOptions<DbContextOptions>>());
             db.Database.EnsureDeleted();
         }
 
         public ApplicationDbContext CreateContext(bool delete = false)
         {
-            var services = new ServiceCollection();
-            services.AddEntityFramework().AddSqlServer();
-            services.Add(OptionsServices.GetDefaultServices());
-            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
-            services.ConfigureOptions<DbContextOptions>(options => options.UseSqlServer(ConnectionString));
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = UserStoreTest.ConfigureDbServices(ConnectionString).BuildServiceProvider();
             var db = new ApplicationDbContext(serviceProvider,
-                serviceProvider.GetService<IOptionsAccessor<DbContextOptions>>());
+                serviceProvider.GetService<IOptions<DbContextOptions>>());
             if (delete)
             {
                 db.Database.EnsureDeleted();
@@ -96,7 +85,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             {
                 context = CreateTestContext();
             }
-            var services = new ServiceCollection();
+            var services = UserStoreTest.ConfigureDbServices(ConnectionString);
             services.AddIdentity<TUser, TRole>().AddRoleStore(new RoleStore<TRole, ApplicationDbContext, TKey>((ApplicationDbContext)context));
             return services.BuildServiceProvider().GetService<RoleManager<TRole>>();
         }
@@ -112,13 +101,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             EnsureDatabase();
             var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
 
-            builder.UsePerRequestServices(services =>
+            builder.UseServices(services =>
             {
-                services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
-                services.AddEntityFramework().AddSqlServer();
+                UserStoreTest.ConfigureDbServices(ConnectionString, services);
                 services.AddIdentitySqlServer<ApplicationDbContext, TUser, TRole, TKey>();
-                services.ConfigureOptions<DbContextOptions>(options =>
-                    options.UseSqlServer(ConnectionString));
             });
 
             var userStore = builder.ApplicationServices.GetService<IUserStore<TUser>>();
@@ -140,10 +126,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             EnsureDatabase();
             var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
 
-            builder.UsePerRequestServices(services =>
+            builder.UseServices(services =>
             {
-                services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
-                services.AddEntityFramework().AddSqlServer();
+                UserStoreTest.ConfigureDbServices(ConnectionString, services);
                 services.AddIdentitySqlServer<ApplicationDbContext, TUser, TRole, TKey>();
                 services.ConfigureIdentity(options =>
                 {
@@ -154,8 +139,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                     options.Password.RequireDigit = false;
                     options.User.UserNameValidationRegex = null;
                 });
-                services.ConfigureOptions<DbContextOptions>(options =>
-                    options.UseSqlServer(ConnectionString));
             });
 
             var userStore = builder.ApplicationServices.GetService<IUserStore<TUser>>();

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var userManager = MockHelpers.MockUserManager<TestUser>().Object;
             var roleManager = MockHelpers.MockRoleManager<TestRole>().Object;
-            var options = new Mock<IOptionsAccessor<IdentityOptions>>();
+            var options = new Mock<IOptions<IdentityOptions>>();
             Assert.Throws<ArgumentNullException>("optionsAccessor",
                 () => new ClaimsIdentityFactory<TestUser, TestRole>(userManager, roleManager, options.Object));
             var identityOptions = new IdentityOptions();
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Identity.Test
                 roleManager.Setup(m => m.GetClaimsAsync(local, CancellationToken.None)).ReturnsAsync(localClaims);
             }
 
-            var options = new Mock<IOptionsAccessor<IdentityOptions>>();
+            var options = new Mock<IOptions<IdentityOptions>>();
             var identityOptions = new IdentityOptions();
             options.Setup(a => a.Options).Returns(identityOptions);
             var factory = new ClaimsIdentityFactory<TestUser, TestRole>(userManager.Object, roleManager.Object, options.Object);

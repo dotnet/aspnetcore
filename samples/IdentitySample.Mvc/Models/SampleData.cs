@@ -36,7 +36,7 @@ namespace IdentitySample.Models
         /// <returns></returns>
         private static async Task CreateAdminUser(IServiceProvider serviceProvider)
         {
-            var options = serviceProvider.GetService<IOptionsAccessor<IdentityDbContextOptions>>().Options;
+            var options = serviceProvider.GetService<IOptions<IdentityDbContextOptions>>().Options;
             const string adminRole = "Administrator";
 
             var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();

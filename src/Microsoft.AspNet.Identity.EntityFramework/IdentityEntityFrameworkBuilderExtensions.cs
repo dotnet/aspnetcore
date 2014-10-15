@@ -35,7 +35,6 @@ namespace Microsoft.Framework.DependencyInjection
         {
             builder.Services.AddScoped<IUserStore<TUser>, UserStore<TUser, TRole, TContext>>();
             builder.Services.AddScoped<IRoleStore<TRole>, RoleStore<TRole, TContext>>();
-            builder.Services.AddScoped<TContext>();
             return builder;
         }
 

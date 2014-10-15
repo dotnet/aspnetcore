@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Identity
     public class SignInManager<TUser> where TUser : class
     {
         public SignInManager(UserManager<TUser> userManager, IContextAccessor<HttpContext> contextAccessor, 
-            IClaimsIdentityFactory<TUser> claimsFactory, IOptionsAccessor<IdentityOptions> optionsAccessor)
+            IClaimsIdentityFactory<TUser> claimsFactory, IOptions<IdentityOptions> optionsAccessor)
         {
             if (userManager == null)
             {
@@ -94,6 +94,15 @@ namespace Microsoft.AspNet.Identity
             return UserManager.SupportsUserLockout && await UserManager.IsLockedOutAsync(user, token);
         }
 
+        private Task ResetLockout(TUser user, CancellationToken token)
+        {
+            if (UserManager.SupportsUserLockout)
+            {
+                return UserManager.ResetAccessFailedCountAsync(user, token);
+            }
+            return Task.FromResult(0);
+        }
+
         /// <summary>
         /// Validates that the claims identity has a security stamp matching the users
         /// Returns the user if it matches, null otherwise
@@ -131,6 +140,7 @@ namespace Microsoft.AspNet.Identity
             }
             if (await UserManager.CheckPasswordAsync(user, password, cancellationToken))
             {
+                await ResetLockout(user, cancellationToken);
                 return await SignInOrTwoFactorAsync(user, isPersistent, cancellationToken);
             }
             if (UserManager.SupportsUserLockout && shouldLockout)
@@ -224,7 +234,7 @@ namespace Microsoft.AspNet.Identity
             if (await UserManager.VerifyTwoFactorTokenAsync(user, provider, code, cancellationToken))
             {
                 // When token is verified correctly, clear the access failed count used for lockout
-                await UserManager.ResetAccessFailedCountAsync(user, cancellationToken);
+                await ResetLockout(user, cancellationToken);
                 // Cleanup external cookie
                 if (twoFactorInfo.LoginProvider != null)
                 {

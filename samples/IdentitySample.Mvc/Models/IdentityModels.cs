@@ -10,7 +10,7 @@ namespace IdentitySample.Models
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDbContext(IServiceProvider serviceProvider, IOptionsAccessor<IdentityDbContextOptions> optionsAccessor)
+        public ApplicationDbContext(IServiceProvider serviceProvider, IOptions<IdentityDbContextOptions> optionsAccessor)
                    : base(serviceProvider, optionsAccessor.Options)
         {
         }

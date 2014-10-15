@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException("app");
             }
             app.UseCookieAuthentication(null, IdentityOptions.ExternalCookieAuthenticationType);
-            app.UseCookieAuthentication(null, IdentityOptions.ApplicationCookieAuthenticationType);
             app.UseCookieAuthentication(null, IdentityOptions.TwoFactorRememberMeCookieAuthenticationType);
             app.UseCookieAuthentication(null, IdentityOptions.TwoFactorUserIdCookieAuthenticationType);
             app.UseCookieAuthentication(null, IdentityOptions.ApplicationCookieAuthenticationType);

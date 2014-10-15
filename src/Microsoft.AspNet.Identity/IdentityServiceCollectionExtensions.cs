@@ -15,7 +15,7 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection ConfigureIdentity(this IServiceCollection services, Action<IdentityOptions> configure)
         {
-            return services.ConfigureOptions(configure);
+            return services.Configure(configure);
         }
 
         public static IdentityBuilder<IdentityUser, IdentityRole> AddIdentity(this IServiceCollection services, 
@@ -36,7 +36,7 @@ namespace Microsoft.Framework.DependencyInjection
         {
             if (identityConfig != null)
             {
-                services.ConfigureOptions<IdentityOptions>(identityConfig);
+                services.Configure<IdentityOptions>(identityConfig);
             }
             if (configureOptions != null)
             {
@@ -50,12 +50,12 @@ namespace Microsoft.Framework.DependencyInjection
             services.AddScoped<RoleManager<TRole>>();
             services.AddScoped<IClaimsIdentityFactory<TUser>, ClaimsIdentityFactory<TUser, TRole>>();
 
-            services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
+            services.Configure<ExternalAuthenticationOptions>(options =>
             {
                 options.SignInAsAuthenticationType = IdentityOptions.ExternalCookieAuthenticationType;
             });
 
-            services.ConfigureOptions<CookieAuthenticationOptions>(options =>
+            services.Configure<CookieAuthenticationOptions>(options =>
             {
                 options.AuthenticationType = IdentityOptions.ApplicationCookieAuthenticationType;
                 //CookieName = ".AspNet.Identity." + ClaimsIdentityOptions.DefaultAuthenticationType,
@@ -66,7 +66,7 @@ namespace Microsoft.Framework.DependencyInjection
                 };
             }, IdentityOptions.ApplicationCookieAuthenticationType);
 
-            services.ConfigureOptions<CookieAuthenticationOptions>(options =>
+            services.Configure<CookieAuthenticationOptions>(options =>
             {
                 options.AuthenticationType = IdentityOptions.ExternalCookieAuthenticationType;
                 options.AuthenticationMode = AuthenticationMode.Passive;
@@ -74,14 +74,14 @@ namespace Microsoft.Framework.DependencyInjection
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
             }, IdentityOptions.ExternalCookieAuthenticationType);
 
-            services.ConfigureOptions<CookieAuthenticationOptions>(options =>
+            services.Configure<CookieAuthenticationOptions>(options =>
             {
                 options.AuthenticationType = IdentityOptions.TwoFactorRememberMeCookieAuthenticationType;
                 options.AuthenticationMode = AuthenticationMode.Passive;
                 options.CookieName = IdentityOptions.TwoFactorRememberMeCookieAuthenticationType;
             }, IdentityOptions.TwoFactorRememberMeCookieAuthenticationType);
 
-            services.ConfigureOptions<CookieAuthenticationOptions>(options =>
+            services.Configure<CookieAuthenticationOptions>(options =>
             {
                 options.AuthenticationType = IdentityOptions.TwoFactorUserIdCookieAuthenticationType;
                 options.AuthenticationMode = AuthenticationMode.Passive;

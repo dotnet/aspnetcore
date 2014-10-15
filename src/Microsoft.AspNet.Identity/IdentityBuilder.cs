@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Identity
 
         public IdentityBuilder<TUser, TRole> ConfigureIdentity(Action<IdentityOptions> action, int order = 0)
         {
-            Services.AddOptionsAction(new OptionsAction<IdentityOptions>(action) { Order = order });
+            Services.Configure(action, order);
             return this;
         }
 

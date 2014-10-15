@@ -24,6 +24,7 @@
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:41532",
         "run": "run server.urls=http://localhost:41532"
     },
+    "webroot": ".",
     "frameworks": {
         "aspnet50": {
         },

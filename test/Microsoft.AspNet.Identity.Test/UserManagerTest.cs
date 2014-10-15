@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             public IUserStore<TestUser> StorePublic { get { return Store; } }
 
-            public TestManager(IUserStore<TestUser> store, IOptionsAccessor<IdentityOptions> optionsAccessor,
+            public TestManager(IUserStore<TestUser> store, IOptions<IdentityOptions> optionsAccessor,
                 IPasswordHasher<TestUser> passwordHasher, IUserValidator<TestUser> userValidator,
                 IPasswordValidator<TestUser> passwordValidator)
                 : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null, null) { }
@@ -517,7 +517,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ManagerPublicNullChecks()
         {
             var store = new NotImplementedStore();
-            var optionsAccessor = new OptionsAccessor<IdentityOptions>(null);
+            var optionsAccessor = new OptionsManager<IdentityOptions>(null);
             var passwordHasher = new PasswordHasher<TestUser>();
             var userValidator = new UserValidator<TestUser>();
             var passwordValidator = new PasswordValidator<TestUser>();

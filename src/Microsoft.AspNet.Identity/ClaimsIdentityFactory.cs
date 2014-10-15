@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Identity
         where TRole : class
     {
         public ClaimsIdentityFactory(UserManager<TUser> userManager, RoleManager<TRole> roleManager, 
-            IOptionsAccessor<IdentityOptions> optionsAccessor)
+            IOptions<IdentityOptions> optionsAccessor)
         {
             if (userManager == null)
             {

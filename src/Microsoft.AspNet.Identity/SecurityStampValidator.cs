@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Identity
             if (issuedUtc != null)
             {
                 var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
-                var identityOptions = context.HttpContext.RequestServices.GetService<IOptionsAccessor<IdentityOptions>>().Options;
+                var identityOptions = context.HttpContext.RequestServices.GetService<IOptions<IdentityOptions>>().Options;
                 validate = timeElapsed > identityOptions.SecurityStampValidationInterval;
             }
             if (validate)

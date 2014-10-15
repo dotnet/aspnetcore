@@ -29,7 +29,7 @@ namespace IdentitySamples
         {
             services.AddEntityFramework().AddSqlServer();
             services.AddScoped<ApplicationDbContext>();
-            services.ConfigureOptions<IdentityDbContextOptions>(options =>
+            services.Configure<IdentityDbContextOptions>(options =>
             {
                 options.DefaultAdminUserName = Configuration.Get("DefaultAdminUsername");
                 options.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
@@ -66,7 +66,6 @@ namespace IdentitySamples
         public void Configure(IApplicationBuilder app)
         {
             app.UseErrorPage(ErrorPageOptions.ShowAll)
-               .UsePerRequestServices()
                .UseStaticFiles()
                .UseIdentity()
                .UseFacebookAuthentication()

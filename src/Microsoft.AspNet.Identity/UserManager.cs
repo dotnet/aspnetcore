@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="userValidator"></param>
         /// <param name="passwordValidator"></param>
         /// <param name="claimsIdentityFactory"></param>
-        public UserManager(IUserStore<TUser> store, IOptionsAccessor<IdentityOptions> optionsAccessor,
+        public UserManager(IUserStore<TUser> store, IOptions<IdentityOptions> optionsAccessor,
             IPasswordHasher<TUser> passwordHasher, IUserValidator<TUser> userValidator,
             IPasswordValidator<TUser> passwordValidator, IUserNameNormalizer userNameNormalizer,
             IEnumerable<IUserTokenProvider<TUser>> tokenProviders)

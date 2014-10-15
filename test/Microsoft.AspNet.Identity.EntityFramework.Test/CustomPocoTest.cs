@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             public DbSet<User<TKey>> Users { get; set; }
 
             public CustomDbContext(IServiceProvider services) :
-                base(services, services.GetService<IOptionsAccessor<DbContextOptions>>().Options)
+                base(services, services.GetService<IOptions<DbContextOptions>>().Options)
             { }
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -48,12 +48,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         public CustomDbContext<TKey> GetContext<TKey>() where TKey : IEquatable<TKey>
         {
-            var services = new ServiceCollection();
-            services.Add(OptionsServices.GetDefaultServices());
-            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
-            services.AddEntityFramework().AddSqlServer();
-            services.ConfigureOptions<DbContextOptions>(options => options.UseSqlServer(ConnectionString));
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = UserStoreTest.ConfigureDbServices(ConnectionString).BuildServiceProvider();
             return new CustomDbContext<TKey>(serviceProvider);
         }
 
