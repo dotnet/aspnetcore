@@ -6,13 +6,28 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
+#if !ASPNETCORE50
 using Moq;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
     public class HttpResponseExceptionActionFilterTest
     {
+        [Fact]
+        public void OrderIsSetToMaxValue()
+        {
+            // Arrange
+            var filter = new HttpResponseExceptionActionFilter();
+            var expectedFilterOrder = int.MaxValue - 10;
+
+            // Act & Assert
+            Assert.Equal(expectedFilterOrder, filter.Order);
+        }
+
+#if !ASPNETCORE50
+
         [Fact]
         public void OnActionExecuting_IsNoOp()
         {
@@ -30,17 +45,6 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 
             // Assert
             Assert.Null(context.Result);
-        }
-
-        [Fact]
-        public void OrderIsSetToMaxValue()
-        {
-            // Arrange
-            var filter = new HttpResponseExceptionActionFilter();
-            var expectedFilterOrder = int.MaxValue - 10;
-
-            // Act & Assert
-            Assert.Equal(expectedFilterOrder, filter.Order);
         }
 
         [Fact]
@@ -71,5 +75,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             Assert.Equal(context.HttpContext.GetHttpRequestMessage(), response.RequestMessage);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
+
+#endif
+
     }
 }

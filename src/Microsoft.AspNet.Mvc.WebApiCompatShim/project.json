@@ -1,7 +1,7 @@
 ﻿{
     "version": "6.0.0-*",
     "compilationOptions": {
-        "warningsAsErrors": true
+        "warningsAsErrors": false
     },
     "dependencies": {
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
@@ -12,6 +12,11 @@
         "aspnet50": {
             "frameworkAssemblies": {
                 "System.Net.Http": "4.0.0.0"
+            }
+        },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Net.Http": "4.0.0-beta-*"
             }
         }
     }

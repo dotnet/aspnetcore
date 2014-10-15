@@ -24,7 +24,8 @@
         "ValueProvidersSite": "1.0.0",
         "XmlSerializerWebSite": "1.0.0",
         "UrlHelperWebSite": "1.0.0",
-        
+        "WebApiCompatShimWebSite": "1.0.0",
+
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
@@ -33,7 +34,6 @@
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
-        "Microsoft.AspNet.PipelineCore": "1.0.0-*",
         "TagHelpersWebSite": "1.0.0",
         "Xunit.KRunner": "1.0.0-*"
     },
@@ -43,8 +43,7 @@
     "frameworks": {
         "aspnet50": {
             "dependencies": {
-                "AutofacWebSite": "1.0.0",
-                "WebApiCompatShimWebSite": "1.0.0"
+                "AutofacWebSite": "1.0.0"
             }
         },
         "aspnetcore50": {

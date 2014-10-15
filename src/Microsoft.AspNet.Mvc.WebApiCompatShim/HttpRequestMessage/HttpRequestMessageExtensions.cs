@@ -20,6 +20,9 @@ namespace System.Net.Http
     /// </summary>
     public static class HttpRequestMessageExtensions
     {
+
+#if !ASPNETCORE50
+
         /// <summary>
         /// Helper method for creating an <see cref="HttpResponseMessage"/> message with a "416 (Requested Range Not Satisfiable)" status code.
         /// This response can be used in combination with the <see cref="ByteRangeStreamContent"/> to indicate that the requested range or
@@ -40,6 +43,8 @@ namespace System.Net.Http
             rangeNotSatisfiableResponse.Content.Headers.ContentRange = invalidByteRangeException.ContentRange;
             return rangeNotSatisfiableResponse;
         }
+
+#endif
 
         /// <summary>
         /// Helper method that performs content negotiation and creates a <see cref="HttpResponseMessage"/> representing an error

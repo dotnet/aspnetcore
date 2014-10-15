@@ -8,13 +8,46 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.Framework.OptionsModel;
+#if !ASPNETCORE50
 using Moq;
+#endif
 using Xunit;
 
 namespace System.Net.Http
 {
     public class HttpRequestMessageExtensionsTest
     {
+        [Fact]
+        public void CreateResponse_MatchingMediaType_WhenMediaTypeStringIsInvalidFormat_Throws()
+        {
+            HttpRequestMessage request = CreateRequest(new DefaultHttpContext());
+
+            var ex = Assert.Throws<FormatException>(
+                () => request.CreateResponse(HttpStatusCode.OK, CreateValue(), "foo/bar; param=value"));
+
+            Assert.Equal("The format of value 'foo/bar; param=value' is invalid.", ex.Message);
+        }
+
+        [Fact]
+        public void CreateResponse_MatchingMediaType_WhenRequestDoesNotHaveHttpContextThrows()
+        {
+            HttpRequestMessage request = CreateRequest(null);
+
+            // Arrange
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => request.CreateResponse(HttpStatusCode.OK, CreateValue(), mediaType: "foo/bar"));
+
+            Assert.Equal(
+                "The HttpRequestMessage instance is not properly initialized. " +
+                "Use HttpRequestMessageHttpContextExtensions.GetHttpRequestMessage to create an HttpRequestMessage " +
+                "for the current request.",
+                ex.Message);
+        }
+
+#if !ASPNETCORE50
+
         [Fact]
         public void CreateResponse_DoingConneg_OnlyContent_RetrievesContentNegotiatorFromServices()
         {
@@ -108,36 +141,6 @@ namespace System.Net.Http
             var objectContent = Assert.IsType<ObjectContent<string>>(response.Content);
             Assert.Equal("42", objectContent.Value);
             Assert.Same(formatter, objectContent.Formatter);
-        }
-
-
-        [Fact]
-        public void CreateResponse_MatchingMediaType_WhenMediaTypeStringIsInvalidFormat_Throws()
-        {
-            HttpRequestMessage request = CreateRequest(new DefaultHttpContext());
-
-            var ex = Assert.Throws<FormatException>(
-                () => request.CreateResponse(HttpStatusCode.OK, CreateValue(), "foo/bar; param=value"));
-
-            Assert.Equal("The format of value 'foo/bar; param=value' is invalid.", ex.Message);
-        }
-
-        [Fact]
-        public void CreateResponse_MatchingMediaType_WhenRequestDoesNotHaveHttpContextThrows()
-        {
-            HttpRequestMessage request = CreateRequest(null);
-
-            // Arrange
-
-            // Act
-            var ex = Assert.Throws<InvalidOperationException>(
-                () => request.CreateResponse(HttpStatusCode.OK, CreateValue(), mediaType: "foo/bar"));
-
-            Assert.Equal(
-                "The HttpRequestMessage instance is not properly initialized. " +
-                "Use HttpRequestMessageHttpContextExtensions.GetHttpRequestMessage to create an HttpRequestMessage " +
-                "for the current request.",
-                ex.Message);
         }
 
         [Fact]
@@ -299,20 +302,8 @@ namespace System.Net.Http
             Assert.Same(expectedContentRange, response.Content.Headers.ContentRange);
         }
 
-        private static HttpRequestMessage CreateRequest(HttpContext context)
-        {
-            var request = new HttpRequestMessage();
-            request.Properties.Add(nameof(HttpContext), context);
-            return request;
-        }
-
-        private static object CreateValue()
-        {
-            return new object();
-        }
-
         private static IServiceProvider CreateServices(
-            IContentNegotiator contentNegotiator  = null, 
+            IContentNegotiator contentNegotiator = null,
             MediaTypeFormatter formatter = null)
         {
             var options = new WebApiCompatShimOptions();
@@ -342,6 +333,18 @@ namespace System.Net.Http
             }
 
             return services.Object;
+        }
+#endif
+        private static object CreateValue()
+        {
+            return new object();
+        }
+
+        private static HttpRequestMessage CreateRequest(HttpContext context)
+        {
+            var request = new HttpRequestMessage();
+            request.Properties.Add(nameof(HttpContext), context);
+            return request;
         }
     }
 }
