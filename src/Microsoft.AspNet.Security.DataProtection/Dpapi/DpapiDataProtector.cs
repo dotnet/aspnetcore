@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Microsoft.AspNet.Security.DataProtection.Dpapi
 {
@@ -12,8 +11,6 @@ namespace Microsoft.AspNet.Security.DataProtection.Dpapi
     // or for Windows machines where we can't depend on the user profile.
     internal sealed class DpapiDataProtector : IDataProtector
     {
-        private static readonly UTF8Encoding _secureUtf8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
-
         private readonly byte[] _combinedPurposes;
         private readonly DataProtectionScope _scope;
         private readonly IProtectedData _shim;
@@ -31,7 +28,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Dpapi
             using (var memoryStream = new MemoryStream())
             {
                 memoryStream.Write(_combinedPurposes, 0, _combinedPurposes.Length);
-                using (var writer = new BinaryWriter(memoryStream, _secureUtf8Encoding, leaveOpen: true))
+                using (var writer = new BinaryWriter(memoryStream, CryptoUtil.SecureUtf8Encoding, leaveOpen: true))
                 {
                     writer.Write(purpose);
                 }

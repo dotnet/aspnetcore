@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text;
 
 #if !ASPNETCORE50
 using System.Runtime.ConstrainedExecution;
@@ -15,6 +16,9 @@ namespace Microsoft.AspNet.Security.DataProtection
 {
     internal unsafe static class CryptoUtil
     {
+        // UTF8 encoding that fails on invalid chars
+        public static readonly UTF8Encoding SecureUtf8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
         // This isn't a typical Debug.Assert; the check is always performed, even in retail builds.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Assert(bool condition, string message)

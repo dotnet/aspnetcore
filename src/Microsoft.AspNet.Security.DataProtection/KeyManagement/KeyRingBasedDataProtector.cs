@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption;
 
@@ -278,10 +277,9 @@ namespace Microsoft.AspNet.Security.DataProtection.KeyManagement
         private sealed class PurposeBinaryWriter : BinaryWriter
         {
             // Strings should never contain invalid UTF16 chars, so we'll use a secure encoding.
-            private static readonly UTF8Encoding _secureEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
             private static readonly byte[] _guidBuffer = new byte[sizeof(Guid)];
 
-            public PurposeBinaryWriter(MemoryStream stream) : base(stream, _secureEncoding, leaveOpen: true) { }
+            public PurposeBinaryWriter(MemoryStream stream) : base(stream, CryptoUtil.SecureUtf8Encoding, leaveOpen: true) { }
 
             public new void Write7BitEncodedInt(int value)
             {
