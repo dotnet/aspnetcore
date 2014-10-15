@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private static AntiForgery GetAntiForgery()
         {
             // AntiForgery must be passed to TestableHtmlGenerator constructor but will never be called.
-            var optionsAccessor = new Mock<IOptionsAccessor<MvcOptions>>();
+            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor
                 .SetupGet(o => o.Options)
                 .Returns(new MvcOptions());
