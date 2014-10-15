@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
@@ -14,33 +12,16 @@ namespace Microsoft.AspNet.Builder
 {
     public static class ContainerExtensions
     {
-        public static IApplicationBuilder UseMiddleware<T>(this IApplicationBuilder builder, params object[] args)
-        {
-            return builder.UseMiddleware(typeof(T), args);
-        }
-
-        public static IApplicationBuilder UseMiddleware(this IApplicationBuilder builder, Type middleware, params object[] args)
-        {
-            // TODO: move this ext method someplace nice
-            return builder.Use(next =>
-            {
-                var typeActivator = builder.ApplicationServices.GetService<ITypeActivator>();
-                var instance = typeActivator.CreateInstance(builder.ApplicationServices, middleware, new[] { next }.Concat(args).ToArray());
-                var methodinfo = middleware.GetMethod("Invoke", BindingFlags.Instance | BindingFlags.Public);
-                return (RequestDelegate)methodinfo.CreateDelegate(typeof(RequestDelegate), instance);
-            });
-        }
-
         public static IApplicationBuilder UseRequestServices(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware(typeof(ContainerMiddleware));
+            return builder.UseMiddleware<ContainerMiddleware>();
         }
 
         public static IApplicationBuilder UseRequestServices(this IApplicationBuilder builder, IServiceProvider applicationServices)
         {
             builder.ApplicationServices = applicationServices;
 
-            return builder.UseMiddleware(typeof(ContainerMiddleware));
+            return builder.UseMiddleware<ContainerMiddleware>();
         }
 
         public static IApplicationBuilder UseServices(this IApplicationBuilder builder, IEnumerable<IServiceDescriptor> applicationServices)
@@ -64,7 +45,7 @@ namespace Microsoft.AspNet.Builder
             serviceCollection.Add(OptionsServices.GetDefaultServices());
             builder.ApplicationServices = configureServices(serviceCollection);
 
-            return builder.UseMiddleware(typeof(ContainerMiddleware));
+            return builder.UseMiddleware<ContainerMiddleware>();
         }
     }
 }
