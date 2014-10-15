@@ -21,7 +21,8 @@ namespace Microsoft.AspNet.Security.DataProtection.SafeHandles
     {
         // Called by P/Invoke when returning SafeHandles
         private SafeLibraryHandle()
-            : base(ownsHandle: true) { }
+            : base(ownsHandle: true)
+        { }
 
         /// <summary>
         /// Returns a value stating whether the library exports a given proc.
@@ -30,33 +31,6 @@ namespace Microsoft.AspNet.Security.DataProtection.SafeHandles
         {
             IntPtr pfnProc = UnsafeNativeMethods.GetProcAddress(this, lpProcName);
             return (pfnProc != IntPtr.Zero);
-        }
-
-        /// <summary>
-        /// Gets a delegate pointing to a given export from this library.
-        /// </summary>
-        public TDelegate GetProcAddress<TDelegate>(string lpProcName, bool throwIfNotFound = true) where TDelegate : class
-        {
-            Debug.Assert(typeof(Delegate).IsAssignableFrom(typeof(TDelegate)), "TDelegate must be a delegate type!");
-
-            IntPtr pfnProc = UnsafeNativeMethods.GetProcAddress(this, lpProcName);
-            if (pfnProc == IntPtr.Zero)
-            {
-                if (throwIfNotFound)
-                {
-                    UnsafeNativeMethods.ThrowExceptionForLastWin32Error();
-                }
-                else
-                {
-                    return null;
-                }
-            }
-
-#if ASPNETCORE50
-            return Marshal.GetDelegateForFunctionPointer<TDelegate>(pfnProc);
-#else
-            return (TDelegate)(object)Marshal.GetDelegateForFunctionPointer(pfnProc, typeof(TDelegate));
-#endif
         }
 
         /// <summary>
@@ -114,11 +88,34 @@ namespace Microsoft.AspNet.Security.DataProtection.SafeHandles
         }
 
         /// <summary>
+        /// Gets a delegate pointing to a given export from this library.
+        /// </summary>
+        public TDelegate GetProcAddress<TDelegate>(string lpProcName, bool throwIfNotFound = true) where TDelegate : class
+        {
+            Debug.Assert(typeof(Delegate).IsAssignableFrom(typeof(TDelegate)), "TDelegate must be a delegate type!");
+
+            IntPtr pfnProc = UnsafeNativeMethods.GetProcAddress(this, lpProcName);
+            if (pfnProc == IntPtr.Zero)
+            {
+                if (throwIfNotFound)
+                {
+                    UnsafeNativeMethods.ThrowExceptionForLastWin32Error();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            return Marshal.GetDelegateForFunctionPointer<TDelegate>(pfnProc);
+        }
+
+        /// <summary>
         /// Opens a library. If 'filename' is not a fully-qualified path, the default search path is used.
         /// </summary>
         public static SafeLibraryHandle Open(string filename)
         {
-            SafeLibraryHandle handle = UnsafeNativeMethods.LoadLibrary(filename);
+            SafeLibraryHandle handle = UnsafeNativeMethods.LoadLibraryEx(filename, IntPtr.Zero, 0);
             if (handle == null || handle.IsInvalid)
             {
                 UnsafeNativeMethods.ThrowExceptionForLastWin32Error();
@@ -137,10 +134,19 @@ namespace Microsoft.AspNet.Security.DataProtection.SafeHandles
 #endif
         private static class UnsafeNativeMethods
         {
+#if ASPNETCORE50
+            private const string CORE_LIBRARY_LOADER_LIB = "api-ms-win-core-libraryloader-l1-1-0.dll";
+            private const string CORE_LOCALIZATION_LIB = "api-ms-win-core-localization-l1-2-0.dll";
+#else
             private const string KERNEL32_LIB = "kernel32.dll";
+#endif
 
             // http://msdn.microsoft.com/en-us/library/windows/desktop/ms679351(v=vs.85).aspx
+#if ASPNETCORE50
+            [DllImport(CORE_LOCALIZATION_LIB, EntryPoint = "FormatMessageW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+#else
             [DllImport(KERNEL32_LIB, EntryPoint = "FormatMessageW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+#endif
             public static extern int FormatMessage(
                 [In] uint dwFlags,
                 [In] SafeLibraryHandle lpSource,
@@ -153,30 +159,46 @@ namespace Microsoft.AspNet.Security.DataProtection.SafeHandles
 
             // http://msdn.microsoft.com/en-us/library/ms683152(v=vs.85).aspx
             [return: MarshalAs(UnmanagedType.Bool)]
-#if !ASPNETCORE50
+#if ASPNETCORE50
+            [DllImport(CORE_LIBRARY_LOADER_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+#else
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
             [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+#endif
             internal static extern bool FreeLibrary(IntPtr hModule);
 
             // http://msdn.microsoft.com/en-us/library/ms683200(v=vs.85).aspx
             [return: MarshalAs(UnmanagedType.Bool)]
-            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#if ASPNETCORE50
+            [DllImport(CORE_LIBRARY_LOADER_LIB, EntryPoint = "GetModuleHandleExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#else
+            [DllImport(KERNEL32_LIB, EntryPoint = "GetModuleHandleExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#endif
             internal static extern bool GetModuleHandleEx(
                 [In] uint dwFlags,
                 [In] SafeLibraryHandle lpModuleName, // can point to a location within the module if GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS is set
                 [Out] out IntPtr phModule);
 
             // http://msdn.microsoft.com/en-us/library/ms683212(v=vs.85).aspx
-            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+#if ASPNETCORE50
+            [DllImport(CORE_LIBRARY_LOADER_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#else
+            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#endif
             internal static extern IntPtr GetProcAddress(
                 [In] SafeLibraryHandle hModule,
                 [In, MarshalAs(UnmanagedType.LPStr)] string lpProcName);
 
-            // http://msdn.microsoft.com/en-us/library/ms684175(v=vs.85).aspx
-            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
-            internal static extern SafeLibraryHandle LoadLibrary(
-                [In, MarshalAs(UnmanagedType.LPWStr)] string lpFileName);
+            // http://msdn.microsoft.com/en-us/library/windows/desktop/ms684179(v=vs.85).aspx
+#if ASPNETCORE50
+            [DllImport(CORE_LIBRARY_LOADER_LIB, EntryPoint = "LoadLibraryExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#else
+            [DllImport(KERNEL32_LIB, EntryPoint = "LoadLibraryExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#endif
+            internal static extern SafeLibraryHandle LoadLibraryEx(
+                [In, MarshalAs(UnmanagedType.LPWStr)] string lpFileName,
+                [In] IntPtr hFile,
+                [In] uint dwFlags);
 
             internal static void ThrowExceptionForLastWin32Error()
             {
