@@ -47,6 +47,16 @@ namespace Microsoft.AspNet.Mvc.Razor
                 path = path.Substring(1);
             }
 
+            if (string.Equals(ViewStartFileName, Path.GetFileName(path), StringComparison.OrdinalIgnoreCase))
+            {
+                // If the specified path is a ViewStart file, then the first view start that applies to it is the
+                // parent view start.
+                if (!fileSystem.TryGetParentPath(path, out path))
+                {
+                    return Enumerable.Empty<string>();
+                }
+            }
+
             var viewStartLocations = new List<string>();
 
             while (fileSystem.TryGetParentPath(path, out path))
