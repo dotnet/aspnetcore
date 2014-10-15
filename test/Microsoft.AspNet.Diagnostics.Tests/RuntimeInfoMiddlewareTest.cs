@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -154,6 +155,14 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             }
 
             public string Type
+            {
+                get
+                {
+                    throw new NotImplementedException("Should not be needed by this middleware");
+                }
+            }
+
+            public IEnumerable<AssemblyName> LoadableAssemblies
             {
                 get
                 {
