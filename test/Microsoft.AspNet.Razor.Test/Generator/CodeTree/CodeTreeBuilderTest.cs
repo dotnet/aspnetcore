@@ -6,11 +6,36 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using System.Linq;
 using Xunit;
+using Microsoft.AspNet.Razor.Parser;
 
 namespace Microsoft.AspNet.Razor
 {
     public class CodeTreeBuilderTest
     {
+        [Fact]
+        public void AddAddTagHelperChunk_AddsChunkToTopLevelCodeTree()
+        {
+            // Arrange
+            var spanFactory = SpanFactory.CreateCsHtml();
+            var builder = new CodeTreeBuilder();
+            var block = new ExpressionBlock();
+            var addTagHelperDirective = spanFactory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ");
+
+            // Act 
+            builder.StartChunkBlock<ExpressionBlockChunk>(block);
+            builder.AddAddTagHelperChunk("some text", addTagHelperDirective);
+            builder.EndChunkBlock();
+
+            // Assert
+            Assert.Equal(2, builder.CodeTree.Chunks.Count);
+
+            var chunkBlock = Assert.IsType<ExpressionBlockChunk>(builder.CodeTree.Chunks.First());
+            Assert.Empty(chunkBlock.Children);
+
+            var addTagHelperChunk = Assert.IsType<AddTagHelperChunk>(builder.CodeTree.Chunks.Last());
+            Assert.Equal(addTagHelperChunk.LookupText, "some text");
+        }
+
         [Fact]
         public void AddLiteralChunk_AddsChunkToCodeTree()
         {

@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             AddChunk(new AddTagHelperChunk
             {
                 LookupText = lookupText
-            }, association);
+            }, association, topLevel: true);
         }
 
         public void AddLiteralChunk(string literal, SyntaxTreeNode association)
