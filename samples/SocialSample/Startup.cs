@@ -26,7 +26,7 @@ namespace CookieSample
 
             app.UseServices(services =>
             {
-                services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
+                services.Configure<ExternalAuthenticationOptions>(options =>
                 {
                     options.SignInAsAuthenticationType = CookieAuthenticationDefaults.AuthenticationType;
                 });

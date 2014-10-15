@@ -1,7 +1,7 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.AspNet.RequestContainer": "1.0.0-*",
+        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
         "Microsoft.AspNet.Security": "1.0.0-*",
         "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
         "Microsoft.AspNet.Security.OAuth": "1.0.0-*",
