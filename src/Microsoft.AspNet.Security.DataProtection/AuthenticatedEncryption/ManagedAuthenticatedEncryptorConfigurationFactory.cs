@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
     {
         private readonly ManagedAuthenticatedEncryptorConfigurationOptions _options;
 
-        public ManagedAuthenticatedEncryptorConfigurationFactory([NotNull] IOptionsAccessor<ManagedAuthenticatedEncryptorConfigurationOptions> optionsAccessor)
+        public ManagedAuthenticatedEncryptorConfigurationFactory([NotNull] IOptions<ManagedAuthenticatedEncryptorConfigurationOptions> optionsAccessor)
         {
             _options = optionsAccessor.Options.Clone();
         }

@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
     {
         private readonly CngGcmAuthenticatedEncryptorConfigurationOptions _options;
 
-        public CngGcmAuthenticatedEncryptorConfigurationFactory([NotNull] IOptionsAccessor<CngGcmAuthenticatedEncryptorConfigurationOptions> optionsAccessor)
+        public CngGcmAuthenticatedEncryptorConfigurationFactory([NotNull] IOptions<CngGcmAuthenticatedEncryptorConfigurationOptions> optionsAccessor)
         {
             _options = optionsAccessor.Options.Clone();
         }
