@@ -36,9 +36,9 @@ namespace Microsoft.AspNet.Security.Twitter
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            IOptionsAccessor<ExternalAuthenticationOptions> externalOptions,
-            IOptionsAccessor<TwitterAuthenticationOptions> options,
-            IOptionsAction<TwitterAuthenticationOptions> configureOptions = null)
+            IOptions<ExternalAuthenticationOptions> externalOptions,
+            IOptions<TwitterAuthenticationOptions> options,
+            ConfigureOptions<TwitterAuthenticationOptions> configureOptions = null)
             : base(next, options, configureOptions)
         {
             if (string.IsNullOrWhiteSpace(Options.ConsumerSecret))

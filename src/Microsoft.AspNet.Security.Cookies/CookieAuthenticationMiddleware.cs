@@ -20,8 +20,8 @@ namespace Microsoft.AspNet.Security.Cookies
         public CookieAuthenticationMiddleware(RequestDelegate next, 
             IDataProtectionProvider dataProtectionProvider, 
             ILoggerFactory loggerFactory, 
-            IOptionsAccessor<CookieAuthenticationOptions> options,
-            IOptionsAction<CookieAuthenticationOptions> configureOptions)
+            IOptions<CookieAuthenticationOptions> options,
+            ConfigureOptions<CookieAuthenticationOptions> configureOptions)
             : base(next, options, configureOptions)
         {
             if (Options.Notifications == null)

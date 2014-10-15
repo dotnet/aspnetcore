@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Builder
         public static IApplicationBuilder UseOAuthAuthentication([NotNull] this IApplicationBuilder app, [NotNull] string authenticationType, Action<OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>> configureOptions = null)
         {
             return app.UseMiddleware<OAuthAuthenticationMiddleware<OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>, IOAuthAuthenticationNotifications>>(
-                new OptionsAction<OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>>(options =>
+                new ConfigureOptions<OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>>(options =>
                 {
                     options.AuthenticationType = authenticationType;
                     options.Caption = authenticationType;

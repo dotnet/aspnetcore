@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Security.Facebook
             var server = CreateServer(
                 app =>
                 {
-                    app.UsePerRequestServices(services =>
+                    app.UseServices(services =>
                     {
                         services.ConfigureFacebookAuthentication(options =>
                         {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Security.Facebook
                         {
                             options.AuthenticationType = "External";
                         });
-                        services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
+                        services.Configure<ExternalAuthenticationOptions>(options =>
                         {
                             options.SignInAsAuthenticationType = "External";
                         });
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Security.Facebook
             var server = CreateServer(
                 app =>
                 {
-                    app.UsePerRequestServices(services =>
+                    app.UseServices(services =>
                     {
                         services.ConfigureFacebookAuthentication(options =>
                         {
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Security.Facebook
                         {
                             options.AuthenticationType = "External";
                         });
-                        services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
+                        services.Configure<ExternalAuthenticationOptions>(options =>
                         {
                             options.SignInAsAuthenticationType = "External";
                         });

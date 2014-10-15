@@ -15,13 +15,13 @@ namespace Microsoft.AspNet.Builder
     {
         public static IServiceCollection ConfigureMicrosoftAccountAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<MicrosoftAccountAuthenticationOptions> configure)
         {
-            return services.ConfigureOptions(configure);
+            return services.Configure(configure);
         }
 
         public static IApplicationBuilder UseMicrosoftAccountAuthentication([NotNull] this IApplicationBuilder app, Action<MicrosoftAccountAuthenticationOptions> configureOptions = null, string optionsName = "")
         {
             return app.UseMiddleware<MicrosoftAccountAuthenticationMiddleware>(
-                 new OptionsAction<MicrosoftAccountAuthenticationOptions>(configureOptions ?? (o => { }))
+                 new ConfigureOptions<MicrosoftAccountAuthenticationOptions>(configureOptions ?? (o => { }))
                  {
                      Name = optionsName
                  });

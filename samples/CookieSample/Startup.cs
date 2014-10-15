@@ -9,7 +9,7 @@ namespace CookieSample
     {
         public void Configure(IApplicationBuilder app)
         {
-            app.UsePerRequestServices(services => { });
+            app.UseServices(services => { });
             app.UseCookieAuthentication(options =>
             {
             });

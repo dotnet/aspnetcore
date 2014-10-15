@@ -32,9 +32,9 @@ namespace Microsoft.AspNet.Security.Google
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            IOptionsAccessor<ExternalAuthenticationOptions> externalOptions,
-            IOptionsAccessor<GoogleAuthenticationOptions> options,
-            IOptionsAction<GoogleAuthenticationOptions> configureOptions = null)
+            IOptions<ExternalAuthenticationOptions> externalOptions,
+            IOptions<GoogleAuthenticationOptions> options,
+            ConfigureOptions<GoogleAuthenticationOptions> configureOptions = null)
             : base(next, dataProtectionProvider, loggerFactory, externalOptions, options, configureOptions)
         {
             if (Options.Notifications == null)

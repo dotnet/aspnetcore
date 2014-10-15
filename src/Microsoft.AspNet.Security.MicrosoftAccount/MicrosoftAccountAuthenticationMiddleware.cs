@@ -28,9 +28,9 @@ namespace Microsoft.AspNet.Security.MicrosoftAccount
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            IOptionsAccessor<ExternalAuthenticationOptions> externalOptions,
-            IOptionsAccessor<MicrosoftAccountAuthenticationOptions> options,
-            IOptionsAction<MicrosoftAccountAuthenticationOptions> configureOptions = null)
+            IOptions<ExternalAuthenticationOptions> externalOptions,
+            IOptions<MicrosoftAccountAuthenticationOptions> options,
+            ConfigureOptions<MicrosoftAccountAuthenticationOptions> configureOptions = null)
             : base(next, dataProtectionProvider, loggerFactory, externalOptions, options, configureOptions)
         {
             if (Options.Notifications == null)

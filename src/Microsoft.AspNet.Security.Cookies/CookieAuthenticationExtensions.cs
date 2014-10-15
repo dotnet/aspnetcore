@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Builder
     {
         public static IServiceCollection ConfigureCookieAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<CookieAuthenticationOptions> configure)
         {
-            return services.ConfigureOptions(configure);
+            return services.Configure(configure);
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Builder
         public static IApplicationBuilder UseCookieAuthentication([NotNull] this IApplicationBuilder app, Action<CookieAuthenticationOptions> configureOptions = null, string optionsName = "")
         {
             return app.UseMiddleware<CookieAuthenticationMiddleware>(
-                new OptionsAction<CookieAuthenticationOptions>(configureOptions ?? (o => { }))
+                new ConfigureOptions<CookieAuthenticationOptions>(configureOptions ?? (o => { }))
                 {
                     Name = optionsName
                 });

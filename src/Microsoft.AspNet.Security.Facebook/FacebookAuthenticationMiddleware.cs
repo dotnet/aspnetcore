@@ -28,9 +28,9 @@ namespace Microsoft.AspNet.Security.Facebook
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            IOptionsAccessor<ExternalAuthenticationOptions> externalOptions,
-            IOptionsAccessor<FacebookAuthenticationOptions> options,
-            IOptionsAction<FacebookAuthenticationOptions> configureOptions = null)
+            IOptions<ExternalAuthenticationOptions> externalOptions,
+            IOptions<FacebookAuthenticationOptions> options,
+            ConfigureOptions<FacebookAuthenticationOptions> configureOptions = null)
             : base(next, dataProtectionProvider, loggerFactory, externalOptions, options, configureOptions)
         {
             if (string.IsNullOrWhiteSpace(Options.AppId))

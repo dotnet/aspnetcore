@@ -16,13 +16,13 @@ namespace Microsoft.AspNet.Builder
     {
         public static IServiceCollection ConfigureTwitterAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<TwitterAuthenticationOptions> configure)
         {
-            return services.ConfigureOptions(configure);
+            return services.Configure(configure);
         }
 
         public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, Action<TwitterAuthenticationOptions> configureOptions = null, string optionsName = "")
         {
             return app.UseMiddleware<TwitterAuthenticationMiddleware>(
-                 new OptionsAction<TwitterAuthenticationOptions>(configureOptions ?? (o => { }))
+                 new ConfigureOptions<TwitterAuthenticationOptions>(configureOptions ?? (o => { }))
                  {
                      Name = optionsName
                  });

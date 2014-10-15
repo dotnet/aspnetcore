@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Builder
     {
         public static IServiceCollection ConfigureFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<FacebookAuthenticationOptions> configure)
         {
-            return services.ConfigureOptions(configure);
+            return services.Configure(configure);
         }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Builder
         public static IApplicationBuilder UseFacebookAuthentication([NotNull] this IApplicationBuilder app, Action<FacebookAuthenticationOptions> configureOptions = null, string optionsName = "")
         {
             return app.UseMiddleware<FacebookAuthenticationMiddleware>(
-                 new OptionsAction<FacebookAuthenticationOptions>(configureOptions ?? (o => { }))
+                 new ConfigureOptions<FacebookAuthenticationOptions>(configureOptions ?? (o => { }))
                  {
                      Name = optionsName
                  });

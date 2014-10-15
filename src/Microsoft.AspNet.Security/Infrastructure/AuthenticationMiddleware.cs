@@ -14,12 +14,12 @@ namespace Microsoft.AspNet.Security.Infrastructure
     {
         private readonly RequestDelegate _next;
 
-        protected AuthenticationMiddleware([NotNull] RequestDelegate next, [NotNull] IOptionsAccessor<TOptions> options, IOptionsAction<TOptions> configureOptions)
+        protected AuthenticationMiddleware([NotNull] RequestDelegate next, [NotNull] IOptions<TOptions> options, ConfigureOptions<TOptions> configureOptions)
         {
             if (configureOptions != null)
             {
                 Options = options.GetNamedOptions(configureOptions.Name);
-                configureOptions.Invoke(Options);
+                configureOptions.Configure(Options, configureOptions.Name);
             }
             else
             {

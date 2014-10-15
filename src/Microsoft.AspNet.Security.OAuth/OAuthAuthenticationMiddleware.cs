@@ -33,9 +33,9 @@ namespace Microsoft.AspNet.Security.OAuth
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            IOptionsAccessor<ExternalAuthenticationOptions> externalOptions,
-            IOptionsAccessor<TOptions> options,
-            IOptionsAction<TOptions> configureOptions = null)
+            IOptions<ExternalAuthenticationOptions> externalOptions,
+            IOptions<TOptions> options,
+            ConfigureOptions<TOptions> configureOptions = null)
             : base(next, options, configureOptions)
         {
             // todo: review error handling

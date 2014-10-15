@@ -24,7 +24,7 @@ namespace CookieSample
         {
             app.UseErrorPage();
 
-            app.UsePerRequestServices(services =>
+            app.UseServices(services =>
             {
                 services.ConfigureOptions<ExternalAuthenticationOptions>(options =>
                 {

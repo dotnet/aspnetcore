@@ -30,8 +30,8 @@ namespace Microsoft.AspNet.Security.OAuth
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            IOptionsAccessor<OAuthBearerAuthenticationOptions> options,
-            IOptionsAction<OAuthBearerAuthenticationOptions> configureOptions)
+            IOptions<OAuthBearerAuthenticationOptions> options,
+            ConfigureOptions<OAuthBearerAuthenticationOptions> configureOptions)
             : base(next, options, configureOptions)
         {
             _logger = loggerFactory.Create<OAuthBearerAuthenticationMiddleware>();

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Builder
     {
         public static IServiceCollection ConfigureGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<GoogleAuthenticationOptions> configure)
         {
-            return services.ConfigureOptions(configure);
+            return services.Configure(configure);
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Builder
         public static IApplicationBuilder UseGoogleAuthentication([NotNull] this IApplicationBuilder app, Action<GoogleAuthenticationOptions> configureOptions = null, string optionsName = "")
         {
             return app.UseMiddleware<GoogleAuthenticationMiddleware>(
-                 new OptionsAction<GoogleAuthenticationOptions>(configureOptions ?? (o => { }))
+                 new ConfigureOptions<GoogleAuthenticationOptions>(configureOptions ?? (o => { }))
                  {
                      Name = optionsName
                  });
