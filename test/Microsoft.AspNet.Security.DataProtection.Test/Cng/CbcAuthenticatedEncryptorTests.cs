@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
 {
-    public unsafe class CbcAuthenticatedEncryptorTests
+    public class CbcAuthenticatedEncryptorTests
     {
         [Fact]
         public void Encrypt_Decrypt_RoundTrips()

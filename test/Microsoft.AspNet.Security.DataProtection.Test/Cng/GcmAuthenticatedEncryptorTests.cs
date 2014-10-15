@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
 {
-    public unsafe class GcmAuthenticatedEncryptorTests
+    public class GcmAuthenticatedEncryptorTests
     {
         [Fact]
         public void Encrypt_Decrypt_RoundTrips()

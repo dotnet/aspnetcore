@@ -3,8 +3,8 @@
 
 using System;
 using Microsoft.AspNet.Security.DataProtection.Cng;
+using Microsoft.AspNet.Security.DataProtection.Managed;
 using Microsoft.AspNet.Security.DataProtection.SafeHandles;
-using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
@@ -13,14 +13,14 @@ namespace Microsoft.AspNet.Security.DataProtection
         // from wincrypt.h
         private const uint CRYPTPROTECTMEMORY_BLOCK_SIZE = 16;
 
-        private readonly SecureLocalAllocHandle _encryptedMemoryHandle;
+        private readonly SecureLocalAllocHandle _localAllocHandle;
         private readonly uint _plaintextLength;
 
         public ProtectedMemoryBlob(ArraySegment<byte> plaintext)
         {
             plaintext.Validate();
 
-            _encryptedMemoryHandle = Protect(plaintext);
+            _localAllocHandle = Protect(plaintext);
             _plaintextLength = (uint)plaintext.Count;
         }
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Security.DataProtection
                 throw new ArgumentOutOfRangeException("plaintextLength");
             }
 
-            _encryptedMemoryHandle = Protect(plaintext, (uint)plaintextLength);
+            _localAllocHandle = Protect(plaintext, (uint)plaintextLength);
             _plaintextLength = (uint)plaintextLength;
         }
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Security.DataProtection
             if (other != null)
             {
                 // Fast-track: simple deep copy scenario.
-                this._encryptedMemoryHandle = other._encryptedMemoryHandle.Duplicate();
+                this._localAllocHandle = other._localAllocHandle.Duplicate();
                 this._plaintextLength = other._plaintextLength;
             }
             else
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Security.DataProtection
                     try
                     {
                         secret.WriteSecretIntoBuffer(new ArraySegment<byte>(tempPlaintextBuffer));
-                        _encryptedMemoryHandle = Protect(pbTempPlaintextBuffer, (uint)tempPlaintextBuffer.Length);
+                        _localAllocHandle = Protect(pbTempPlaintextBuffer, (uint)tempPlaintextBuffer.Length);
                         _plaintextLength = (uint)tempPlaintextBuffer.Length;
                     }
                     finally
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Security.DataProtection
 
         public void Dispose()
         {
-            _encryptedMemoryHandle.Dispose();
+            _localAllocHandle.Dispose();
         }
 
         private static SecureLocalAllocHandle Protect(ArraySegment<byte> plaintext)
@@ -102,6 +102,16 @@ namespace Microsoft.AspNet.Security.DataProtection
 
         private static SecureLocalAllocHandle Protect(byte* pbPlaintext, uint cbPlaintext)
         {
+            // If we're not running on a platform that supports CryptProtectMemory,
+            // shove the plaintext directly into a LocalAlloc handle. Ideally we'd
+            // mark this memory page as non-pageable, but this is fraught with peril.
+            if (!OSVersionUtil.IsBCryptOnWin7OrLaterAvailable())
+            {
+                SecureLocalAllocHandle handle = SecureLocalAllocHandle.Allocate((IntPtr)checked((int)cbPlaintext));
+                UnsafeBufferUtil.BlockCopy(from: pbPlaintext, to: handle, byteCount: cbPlaintext);
+                return handle;
+            }
+
             // We need to make sure we're a multiple of CRYPTPROTECTMEMORY_BLOCK_SIZE.
             uint numTotalBytesToAllocate = cbPlaintext;
             uint numBytesPaddingRequired = CRYPTPROTECTMEMORY_BLOCK_SIZE - (numTotalBytesToAllocate % CRYPTPROTECTMEMORY_BLOCK_SIZE);
@@ -135,6 +145,12 @@ namespace Microsoft.AspNet.Security.DataProtection
             }
             else
             {
+                // Don't use CNG if we're not on Windows.
+                if (!OSVersionUtil.IsBCryptOnWin7OrLaterAvailable())
+                {
+                    return new ProtectedMemoryBlob(ManagedGenRandomImpl.Instance.GenRandom(numBytes));
+                }
+
                 byte[] bytes = new byte[numBytes];
                 fixed (byte* pbBytes = bytes)
                 {
@@ -153,18 +169,26 @@ namespace Microsoft.AspNet.Security.DataProtection
 
         private void UnprotectInto(byte* pbBuffer)
         {
+            // If we're not running on a platform that supports CryptProtectMemory,
+            // the handle contains plaintext bytes.
+            if (!OSVersionUtil.IsBCryptOnWin7OrLaterAvailable())
+            {
+                UnsafeBufferUtil.BlockCopy(from: _localAllocHandle, to: pbBuffer, byteCount: _plaintextLength);
+                return;
+            }
+
             if (_plaintextLength % CRYPTPROTECTMEMORY_BLOCK_SIZE == 0)
             {
                 // Case 1: Secret length is an exact multiple of the block size. Copy directly to the buffer and decrypt there.
                 // We go through this code path even for empty plaintexts since we still want SafeHandle dispose semantics.
-                UnsafeBufferUtil.BlockCopy(from: _encryptedMemoryHandle, to: pbBuffer, byteCount: _plaintextLength);
+                UnsafeBufferUtil.BlockCopy(from: _localAllocHandle, to: pbBuffer, byteCount: _plaintextLength);
                 MemoryProtection.CryptUnprotectMemory(pbBuffer, _plaintextLength);
             }
             else
             {
                 // Case 2: Secret length is not a multiple of the block size. We'll need to duplicate the data and
                 // perform the decryption in the duplicate buffer, then copy the plaintext data over.
-                using (var duplicateHandle = _encryptedMemoryHandle.Duplicate())
+                using (var duplicateHandle = _localAllocHandle.Duplicate())
                 {
                     MemoryProtection.CryptUnprotectMemory(duplicateHandle, checked((uint)duplicateHandle.Length));
                     UnsafeBufferUtil.BlockCopy(from: duplicateHandle, to: pbBuffer, byteCount: _plaintextLength);

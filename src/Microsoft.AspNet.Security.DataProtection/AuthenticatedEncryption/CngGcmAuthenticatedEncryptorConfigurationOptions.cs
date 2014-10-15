@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
     /// Options for configuring an authenticated encryption mechanism which uses
     /// Windows CNG encryption algorithms in Galois/Counter Mode.
     /// </summary>
-    public sealed class CngGcmAuthenticatedEncryptorConfigurationOptions
+    public sealed class CngGcmAuthenticatedEncryptorConfigurationOptions : IInternalConfigurationOptions
     {
         /// <summary>
         /// The name of the algorithm to use for symmetric encryption.
@@ -119,6 +119,11 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyCannotBeNullOrEmpty(propertyName);
             }
             return value;
+        }
+
+        IAuthenticatedEncryptor IInternalConfigurationOptions.CreateAuthenticatedEncryptor(ISecret secret)
+        {
+            return CreateAuthenticatedEncryptor(secret);
         }
     }
 }

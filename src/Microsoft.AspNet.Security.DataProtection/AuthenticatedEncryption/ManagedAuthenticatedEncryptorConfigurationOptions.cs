@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
     /// Options for configuring an authenticated encryption mechanism which uses
     /// managed SymmetricAlgorithm and KeyedHashAlgorithm implementations.
     /// </summary>
-    public sealed class ManagedAuthenticatedEncryptorConfigurationOptions
+    public sealed class ManagedAuthenticatedEncryptorConfigurationOptions : IInternalConfigurationOptions
     {
         /// <summary>
         /// The type of the algorithm to use for symmetric encryption.
@@ -100,6 +100,11 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
 
             // The algorithm must have a default ctor
             return ((IActivator<KeyedHashAlgorithm>)Activator.CreateInstance(typeof(AlgorithmActivator<>).MakeGenericType(ValidationAlgorithmType))).Creator;
+        }
+
+        IAuthenticatedEncryptor IInternalConfigurationOptions.CreateAuthenticatedEncryptor(ISecret secret)
+        {
+            return CreateAuthenticatedEncryptor(secret);
         }
 
         private interface IActivator<out T>

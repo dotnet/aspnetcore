@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
     /// Options for configuring an authenticated encryption mechanism which uses
     /// Windows CNG algorithms in CBC encryption + HMAC validation modes.
     /// </summary>
-    public sealed class CngCbcAuthenticatedEncryptorConfigurationOptions
+    public sealed class CngCbcAuthenticatedEncryptorConfigurationOptions : IInternalConfigurationOptions
     {
         /// <summary>
         /// The name of the algorithm to use for symmetric encryption.
@@ -177,6 +177,11 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyCannotBeNullOrEmpty(propertyName);
             }
             return value;
+        }
+
+        IAuthenticatedEncryptor IInternalConfigurationOptions.CreateAuthenticatedEncryptor(ISecret secret)
+        {
+            return CreateAuthenticatedEncryptor(secret);
         }
     }
 }

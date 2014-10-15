@@ -28,12 +28,12 @@ namespace Microsoft.AspNet.Security.DataProtection
             if (OSVersionUtil.IsBCryptOnWin7OrLaterAvailable())
             {
                 // Fastest implementation: AES-GCM
-                keyringProvider = new CngEphemeralKeyRing();
+                keyringProvider = new EphemeralKeyRing<CngGcmAuthenticatedEncryptorConfigurationOptions>();
             }
             else
             {
                 // Slowest implementation: managed CBC + HMAC
-                keyringProvider = new ManagedEphemeralKeyRing();
+                keyringProvider = new EphemeralKeyRing<ManagedAuthenticatedEncryptorConfigurationOptions>();
             }
 
             _dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyringProvider);
@@ -55,29 +55,13 @@ namespace Microsoft.AspNet.Security.DataProtection
             }
         }
 
-        // A special key ring that only understands one key id and which uses CNG.
-        private sealed class CngEphemeralKeyRing : IKeyRing, IKeyRingProvider
+        private sealed class EphemeralKeyRing<T> : IKeyRing, IKeyRingProvider
+            where T : IInternalConfigurationOptions, new()
         {
-            public IAuthenticatedEncryptor DefaultAuthenticatedEncryptor { get; } = new CngGcmAuthenticatedEncryptorConfigurationFactory(new DefaultOptionsAccessor<CngGcmAuthenticatedEncryptorConfigurationOptions>()).CreateNewConfiguration().CreateEncryptorInstance();
+            // Currently hardcoded to a 512-bit KDK.
+            private const int NUM_BYTES_IN_KDK = 512 / 8;
 
-            public Guid DefaultKeyId { get; } = default(Guid);
-
-            public IAuthenticatedEncryptor GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked)
-            {
-                isRevoked = false;
-                return (keyId == default(Guid)) ? DefaultAuthenticatedEncryptor : null;
-            }
-
-            public IKeyRing GetCurrentKeyRing()
-            {
-                return this;
-            }
-        }
-
-        // A special key ring that only understands one key id and which uses managed CBC + HMAC.
-        private sealed class ManagedEphemeralKeyRing : IKeyRing, IKeyRingProvider
-        {
-            public IAuthenticatedEncryptor DefaultAuthenticatedEncryptor { get; } = new ManagedAuthenticatedEncryptorConfigurationFactory(new DefaultOptionsAccessor<ManagedAuthenticatedEncryptorConfigurationOptions>()).CreateNewConfiguration().CreateEncryptorInstance();
+            public IAuthenticatedEncryptor DefaultAuthenticatedEncryptor { get; } = new T().CreateAuthenticatedEncryptor(ProtectedMemoryBlob.Random(NUM_BYTES_IN_KDK));
 
             public Guid DefaultKeyId { get; } = default(Guid);
 
