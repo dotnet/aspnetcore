@@ -44,7 +44,7 @@ namespace MusicStore
             services.AddScoped<MusicStoreContext>();
 
             // Configure DbContext           
-            services.ConfigureOptions<MusicStoreDbContextOptions>(options =>
+            services.Configure<MusicStoreDbContextOptions>(options =>
             {
                 options.DefaultAdminUserName = Configuration.Get("DefaultAdminUsername");
                 options.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
@@ -125,9 +125,6 @@ namespace MusicStore
 
         public void Configure(IApplicationBuilder app)
         {
-            // Add services from ConfigureServices
-            app.UsePerRequestServices();
-
             //Configure SignalR
             app.UseSignalR();
 

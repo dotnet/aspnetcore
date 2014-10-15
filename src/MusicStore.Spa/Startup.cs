@@ -28,14 +28,14 @@ namespace MusicStore.Spa
         public void ConfigureServices(IServiceCollection services)
         {
             // Add options accessors to the service container
-            services.ConfigureOptions<IdentityDbContextOptions>(options =>
+            services.Configure<IdentityDbContextOptions>(options =>
             {
                 options.DefaultAdminUserName = Configuration.Get("DefaultAdminUsername");
                 options.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
                 options.UseSqlServer(Configuration.Get("Data:IdentityConnection:ConnectionString"));
             });
 
-            services.ConfigureOptions<MusicStoreDbContextOptions>(options =>
+            services.Configure<MusicStoreDbContextOptions>(options =>
                 options.UseSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString")));
 
             // Add MVC services to the service container
@@ -55,8 +55,6 @@ namespace MusicStore.Spa
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UsePerRequestServices();
-
             // Initialize the sample data
             SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
             SampleData.InitializeIdentityDatabaseAsync(app.ApplicationServices).Wait();

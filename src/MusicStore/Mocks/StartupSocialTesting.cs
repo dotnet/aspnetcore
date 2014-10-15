@@ -40,7 +40,7 @@ namespace MusicStore
             //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
             app.UseErrorPage(ErrorPageOptions.ShowAll);
 
-            app.UsePerRequestServices(services =>
+            app.UseServices(services =>
             {
                 //If this type is present - we're on mono
                 var runningOnMono = Type.GetType("Mono.Runtime") != null;
@@ -60,7 +60,7 @@ namespace MusicStore
                 services.AddScoped<MusicStoreContext>();
 
                 // Configure DbContext           
-                services.ConfigureOptions<MusicStoreDbContextOptions>(options =>
+                services.Configure<MusicStoreDbContextOptions>(options =>
                 {
                     options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
                     options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
