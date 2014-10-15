@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                return GetCandidateLibraries().Select(Load);
+                return GetCandidateLibraries().SelectMany(l => l.LoadableAssemblies).Select(Load);
             }
         }
 
@@ -47,9 +47,9 @@ namespace Microsoft.AspNet.Mvc
                                    .Where(IsCandidateLibrary);
         }
 
-        private static Assembly Load(ILibraryInformation library)
+        private static Assembly Load(AssemblyName assemblyName)
         {
-            return Assembly.Load(new AssemblyName(library.Name));
+            return Assembly.Load(assemblyName);
         }
 
         private static bool IsCandidateLibrary(ILibraryInformation library)
