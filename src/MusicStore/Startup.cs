@@ -104,6 +104,12 @@ namespace MusicStore
             //Display custom error page in production when error occurs
             //During development use the ErrorPage middleware to display error information in the browser
             app.UseErrorPage(ErrorPageOptions.ShowAll);
+
+            // Add the runtime information page that can be used by developers
+            // to see what packages are used by the application
+            // default path is: /runtimeinfo
+            app.UseRuntimeInfoPage();
+
             Configure(app);
         }
 
