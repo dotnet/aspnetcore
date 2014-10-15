@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.Security.DataProtection.Cng;
 using Microsoft.AspNet.Security.DataProtection.KeyManagement;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
@@ -43,16 +42,6 @@ namespace Microsoft.AspNet.Security.DataProtection
         {
             // just forward to the underlying provider
             return _dataProtectionProvider.CreateProtector(purpose);
-        }
-
-        private sealed class DefaultOptionsAccessor<T> : IOptionsAccessor<T> where T : class, new()
-        {
-            public T Options { get; } = new T();
-
-            public T GetNamedOptions(string name)
-            {
-                return Options;
-            }
         }
 
         private sealed class EphemeralKeyRing<T> : IKeyRing, IKeyRingProvider
