@@ -9,8 +9,6 @@
         },
         "aspnetcore50" : { 
             "dependencies": {
-                "System.Reflection": "4.0.10-beta-*",
-                "System.Reflection.Extensions": "4.0.0-beta-*",
                 "System.Reflection.TypeExtensions": "4.0.0-beta-*",
                 "System.Runtime": "4.0.20-beta-*"
             }

@@ -14,6 +14,7 @@ using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.HttpFeature.Security;
+using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
 using Microsoft.AspNet.PipelineCore.Security;
 
@@ -31,6 +32,7 @@ namespace Microsoft.AspNet.PipelineCore
         private FeatureReference<IHttpAuthenticationFeature> _authentication;
         private FeatureReference<IHttpRequestLifetimeFeature> _lifetime;
         private FeatureReference<IHttpWebSocketFeature> _webSockets;
+        private FeatureReference<ISessionFeature> _session;
         private IFeatureCollection _features;
 
         public DefaultHttpContext()
@@ -51,6 +53,7 @@ namespace Microsoft.AspNet.PipelineCore
             _authentication = FeatureReference<IHttpAuthenticationFeature>.Default;
             _lifetime = FeatureReference<IHttpRequestLifetimeFeature>.Default;
             _webSockets = FeatureReference<IHttpWebSocketFeature>.Default;
+            _session = FeatureReference<ISessionFeature>.Default;
         }
 
         IItemsFeature ItemsFeature
@@ -76,6 +79,11 @@ namespace Microsoft.AspNet.PipelineCore
         private IHttpWebSocketFeature WebSocketFeature
         {
             get { return _webSockets.Fetch(_features); }
+        }
+
+        private ISessionFeature SessionFeature
+        {
+            get { return _session.Fetch(_features); }
         }
 
         public override HttpRequest Request { get { return _request; } }
@@ -126,6 +134,27 @@ namespace Microsoft.AspNet.PipelineCore
                     return lifetime.RequestAborted;
                 }
                 return CancellationToken.None;
+            }
+        }
+
+        public override ISessionCollection Session
+        {
+            get
+            {
+                var feature = SessionFeature;
+                if (feature == null)
+                {
+                    throw new InvalidOperationException("Session has not been configured for this application or request.");
+                }
+                if (feature.Session == null)
+                {
+                    if (feature.Factory == null)
+                    {
+                        throw new InvalidOperationException("No ISessionFactory available to create the ISession.");
+                    }
+                    feature.Session = feature.Factory.Create();
+                }
+                return new SessionCollection(feature.Session);
             }
         }
 

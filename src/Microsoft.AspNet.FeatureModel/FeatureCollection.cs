@@ -31,9 +31,8 @@ namespace Microsoft.AspNet.FeatureModel
             return GetInterface(null);
         }
 
-        public object GetInterface(Type type)
+        public object GetInterface([NotNull] Type type)
         {
-            if (type == null) throw new ArgumentNullException("type");
             object feature;
             if (_featureByFeatureType.TryGetValue(type, out feature))
             {
@@ -63,10 +62,8 @@ namespace Microsoft.AspNet.FeatureModel
             return null;
         }
 
-        void SetInterface(Type type, object feature)
+        void SetInterface([NotNull] Type type, object feature)
         {
-            if (type == null) throw new ArgumentNullException("type");
-
             if (feature == null)
             {
                 Remove(type);
@@ -153,16 +150,13 @@ namespace Microsoft.AspNet.FeatureModel
             get { return false; }
         }
 
-        public bool ContainsKey(Type key)
+        public bool ContainsKey([NotNull] Type key)
         {
-            if (key == null) throw new ArgumentNullException("key");
             return GetInterface(key) != null;
         }
 
-        public void Add(Type key, object value)
+        public void Add([NotNull] Type key, [NotNull] object value)
         {
-            if (key == null) throw new ArgumentNullException("key");
-            if (value == null) throw new ArgumentNullException("value");
             if (ContainsKey(key))
             {
                 throw new ArgumentException();
@@ -170,10 +164,8 @@ namespace Microsoft.AspNet.FeatureModel
             SetInterface(key, value);
         }
 
-        public bool Remove(Type key)
+        public bool Remove([NotNull] Type key)
         {
-            if (key == null) throw new ArgumentNullException("key");
-
             lock (_containerSync)
             {
                 Type priorFeatureType;
@@ -188,7 +180,7 @@ namespace Microsoft.AspNet.FeatureModel
             }
         }
 
-        public bool TryGetValue(Type key, out object value)
+        public bool TryGetValue([NotNull] Type key, out object value)
         {
             value = GetInterface(key);
             return value != null;

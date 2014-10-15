@@ -28,6 +28,8 @@ namespace Microsoft.AspNet.Http
 
         public abstract CancellationToken RequestAborted { get; }
 
+        public abstract ISessionCollection Session { get; }
+
         public abstract bool IsWebSocketRequest { get; }
 
         public abstract IList<string> WebSocketRequestedProtocols { get; }
