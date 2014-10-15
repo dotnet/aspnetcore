@@ -12,6 +12,17 @@ namespace Microsoft.AspNet.Security.DataProtection
     public static class DataProtectionExtensions
     {
         /// <summary>
+        /// Creates a time-limited data protector based on an existing protector.
+        /// </summary>
+        /// <param name="protector">The existing protector from which to derive a time-limited protector.</param>
+        /// <returns>A time-limited data protector.</returns>
+        public static ITimeLimitedDataProtector AsTimeLimitedDataProtector([NotNull] this IDataProtector protector)
+        {
+            return (protector as ITimeLimitedDataProtector)
+                ?? new TimeLimitedDataProtector(protector.CreateProtector(TimeLimitedDataProtector.PurposeString));
+        }
+
+        /// <summary>
         /// Cryptographically protects a piece of plaintext data.
         /// </summary>
         /// <param name="protector">The data protector to use for this operation.</param>

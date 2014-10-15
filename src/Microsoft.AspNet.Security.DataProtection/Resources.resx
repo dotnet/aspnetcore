@@ -153,4 +153,7 @@
   <data name="Common_PayloadProducedByNewerVersion" xml:space="preserve">
     <value>The protected payload cannot be decrypted because it was protected with a newer version of the protection provider.</value>
   </data>
+  <data name="TimeLimitedDataProtector_PayloadExpired" xml:space="preserve">
+    <value>The payload expired at {0}.</value>
+  </data>
 </root>

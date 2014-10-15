@@ -70,5 +70,11 @@ namespace Microsoft.AspNet.Security.DataProtection
             return new CryptographicException(Resources.Common_DecryptionFailed, inner);
         }
 
+        public static CryptographicException TimeLimitedDataProtector_PayloadExpired(ulong utcTicksExpiration)
+        {
+            DateTimeOffset expiration = new DateTimeOffset((long)utcTicksExpiration, TimeSpan.Zero).ToLocalTime();
+            string message = String.Format(CultureInfo.CurrentCulture, Resources.TimeLimitedDataProtector_PayloadExpired, expiration);
+            return new CryptographicException(message);
+        }
     }
 }

@@ -12,6 +12,34 @@ namespace Microsoft.AspNet.Security.DataProtection.Test
     public class DataProtectionExtensionsTests
     {
         [Fact]
+        public void AsTimeLimitedProtector_ProtectorIsAlreadyTimeLimited_ReturnsThis()
+        {
+            // Arrange
+            var originalProtector = new Mock<ITimeLimitedDataProtector>().Object;
+
+            // Act
+            var retVal = originalProtector.AsTimeLimitedDataProtector();
+
+            // Assert
+            Assert.Same(originalProtector, retVal);
+        }
+
+        [Fact]
+        public void AsTimeLimitedProtector_ProtectorIsNotTimeLimited_CreatesNewProtector()
+        {
+            // Arrange
+            var innerProtector = new Mock<IDataProtector>().Object;
+            var outerProtectorMock = new Mock<IDataProtector>();
+            outerProtectorMock.Setup(o => o.CreateProtector("Microsoft.AspNet.Security.DataProtection.TimeLimitedDataProtector")).Returns(innerProtector);
+
+            // Act
+            var timeLimitedProtector = (TimeLimitedDataProtector)outerProtectorMock.Object.AsTimeLimitedDataProtector();
+
+            // Assert
+            Assert.Same(innerProtector, timeLimitedProtector.InnerProtector);
+        }
+
+        [Fact]
         public void Protect_InvalidUtf_Failure()
         {
             // Arrange
