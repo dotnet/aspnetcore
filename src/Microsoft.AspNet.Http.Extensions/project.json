@@ -1,13 +1,17 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.AspNet.Http": "1.0.0-*"
+        "Microsoft.AspNet.Http": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*"
     },
     "frameworks" : {
         "aspnet50" : {
         },
         "aspnetcore50" : { 
             "dependencies": {
+                "System.Reflection": "4.0.10-beta-*",
+                "System.Reflection.Extensions": "4.0.0-beta-*",
+                "System.Reflection.TypeExtensions": "4.0.0-beta-*",
                 "System.Runtime": "4.0.20-beta-*"
             }
         }
