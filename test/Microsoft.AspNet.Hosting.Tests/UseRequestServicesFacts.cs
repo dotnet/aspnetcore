@@ -40,8 +40,10 @@ namespace Microsoft.AspNet.Hosting.Tests
             Assert.True(foundRequestServicesAfter);
         }
 
-        [Fact]
-        public void EnsureRequestServicesSetsRequestServices()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void EnsureRequestServicesSetsRequestServices(bool initializeApplicationServices)
         {
             var baseServiceProvider = new ServiceCollection()
                 .Add(HostingServices.GetDefaultServices())
@@ -56,7 +58,7 @@ namespace Microsoft.AspNet.Hosting.Tests
             });
             builder.Use(next => async c =>
             {
-                using (var container = RequestServicesContainer.EnsureRequestServices(c))
+                using (var container = RequestServicesContainer.EnsureRequestServices(c, baseServiceProvider))
                 {
                     await next.Invoke(c);
                 }
@@ -69,7 +71,10 @@ namespace Microsoft.AspNet.Hosting.Tests
             });
 
             var context = new DefaultHttpContext();
-            context.ApplicationServices = baseServiceProvider;
+            if (initializeApplicationServices)
+            {
+                context.ApplicationServices = baseServiceProvider;
+            }
             builder.Build().Invoke(context);
             Assert.False(foundRequestServicesBefore);
             Assert.True(foundRequestServicesAfter);

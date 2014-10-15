@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.RequestContainer
         private IContextAccessor<HttpContext> AppContextAccessor { get; set; }
 
         // CONSIDER: this could be an extension method on HttpContext instead
-        public static RequestServicesContainer EnsureRequestServices(HttpContext httpContext)
+        public static RequestServicesContainer EnsureRequestServices(HttpContext httpContext, IServiceProvider services)
         {
             // All done if we already have a request services
             if (httpContext.RequestServices != null)
@@ -63,21 +63,23 @@ namespace Microsoft.AspNet.RequestContainer
                 return null;
             }
 
-            if (httpContext.ApplicationServices == null)
+            var serviceProvider = httpContext.ApplicationServices ?? services;
+
+            if (serviceProvider == null)
             {
-                throw new InvalidOperationException("TODO: httpContext.ApplicationServices is null!");
+                throw new InvalidOperationException("TODO: services and httpContext.ApplicationServices are both null!");
             }
 
             // Matches constructor of RequestContainer
-            var rootServiceProvider = httpContext.ApplicationServices.GetService<IServiceProvider>();
-            var rootHttpContextAccessor = httpContext.ApplicationServices.GetService<IContextAccessor<HttpContext>>();
-            var rootServiceScopeFactory = httpContext.ApplicationServices.GetService<IServiceScopeFactory>();
+            var rootServiceProvider = serviceProvider.GetService<IServiceProvider>();
+            var rootHttpContextAccessor = serviceProvider.GetService<IContextAccessor<HttpContext>>();
+            var rootServiceScopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
 
             rootHttpContextAccessor.SetContextSource(ContainerMiddleware.AccessRootHttpContext, ContainerMiddleware.ExchangeRootHttpContext);
 
             // Pre Scope setup
-            var priorApplicationServices = httpContext.ApplicationServices;
-            var priorRequestServices = httpContext.RequestServices;
+            var priorApplicationServices = serviceProvider;
+            var priorRequestServices = serviceProvider;
 
             var appServiceProvider = rootServiceProvider;
             var appServiceScopeFactory = rootServiceScopeFactory;
