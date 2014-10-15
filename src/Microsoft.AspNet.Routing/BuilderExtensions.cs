@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Builder
     {
         public static IApplicationBuilder UseRouter([NotNull] this IApplicationBuilder builder, [NotNull] IRouter router)
         {
-            return builder.Use((next) => new RouterMiddleware(next, router).Invoke);
+            return builder.UseMiddleware<RouterMiddleware>(router);
         }
     }
 }

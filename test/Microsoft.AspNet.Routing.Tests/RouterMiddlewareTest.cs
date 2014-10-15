@@ -10,6 +10,7 @@ using Microsoft.Framework.Logging;
 using Moq;
 #endif
 using Xunit;
+using System;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -31,13 +32,15 @@ namespace Microsoft.AspNet.Routing
             mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
                 .Returns(loggerFactory);
 
+            var mockServiceProvider = new Mock<IServiceProvider>();
+
             RequestDelegate next = (c) =>
             {
                 return Task.FromResult<object>(null);
             };
 
             var router = new TestRouter(isHandled);
-            var middleware = new RouterMiddleware(next, router);
+            var middleware = new RouterMiddleware(next, mockServiceProvider.Object, router);
 
             // Act
             await middleware.Invoke(mockContext.Object);
@@ -79,7 +82,8 @@ namespace Microsoft.AspNet.Routing
             };
 
             var router = new TestRouter(isHandled);
-            var middleware = new RouterMiddleware(next, router);
+            var mockServiceProvider = new Mock<IServiceProvider>();
+            var middleware = new RouterMiddleware(next, mockServiceProvider.Object, router);
 
             // Act
             await middleware.Invoke(mockContext.Object);
@@ -114,7 +118,8 @@ namespace Microsoft.AspNet.Routing
             };
 
             var router = new TestRouter(isHandled);
-            var middleware = new RouterMiddleware(next, router);
+            var mockServiceProvider = new Mock<IServiceProvider>();
+            var middleware = new RouterMiddleware(next, mockServiceProvider.Object, router);
 
             // Act
             await middleware.Invoke(mockContext.Object);
@@ -158,7 +163,8 @@ namespace Microsoft.AspNet.Routing
             };
 
             var router = new TestRouter(isHandled);
-            var middleware = new RouterMiddleware(next, router);
+            var mockServiceProvider = new Mock<IServiceProvider>();
+            var middleware = new RouterMiddleware(next, mockServiceProvider.Object, router);
 
             // Act
             await middleware.Invoke(mockContext.Object);
