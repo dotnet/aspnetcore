@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNet.Mvc;
 
 namespace BasicWebSite
@@ -20,7 +21,7 @@ namespace BasicWebSite
             {
                 if (actualType != null && service.GetType().AssemblyQualifiedName == actualType)
                 {
-                    var orderProperty = elementType.GetProperty("Order");
+                    var orderProperty = elementType.GetTypeInfo().GetDeclaredProperty("Order");
                     return (int)orderProperty.GetValue(service);
                 }
                 else if (actualType == null)
