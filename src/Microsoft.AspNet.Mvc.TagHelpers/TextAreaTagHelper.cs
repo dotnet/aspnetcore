@@ -40,18 +40,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                 if (tagBuilder != null)
                 {
-                    output.SelfClosing = false;
-
-                    // TODO: Use infrastructure from PR #1322 to copy from tagBuilder.
-                    foreach (var attribute in tagBuilder.Attributes)
-                    {
-                        if (!output.Attributes.ContainsKey(attribute.Key))
-                        {
-                            output.Attributes.Add(attribute.Key, attribute.Value);
-                        }
-                    }
-
+                    // Overwrite current Content to ensure expression result round-trips correctly.
                     output.Content = tagBuilder.InnerHtml;
+
+                    output.MergeAttributes(tagBuilder);
+                    output.SelfClosing = false;
                     output.TagName = tagBuilder.TagName;
                 }
             }

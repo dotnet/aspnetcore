@@ -78,13 +78,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Merges the given <see cref="tagBuilder"/>'s <see cref="TagBuilder.Attributes"/> into the 
+        /// Merges the given <paramref name="tagBuilder"/>'s <see cref="TagBuilder.Attributes"/> into the 
         /// <paramref name="tagHelperOutput"/>.
         /// </summary>
         /// <param name="tagHelperOutput">The <see cref="TagHelperOutput"/> this method extends.</param>
         /// <param name="tagBuilder">The <see cref="TagBuilder"/> to merge attributes from.</param>
         /// <remarks>Existing <see cref="TagHelperOutput.Attributes"/> on the given <paramref name="tagHelperOutput"/>
-        /// are not overriden; "class" attributes are merged with spaces.</remarks>
+        /// are not overridden; "class" attributes are merged with spaces.</remarks>
         public static void MergeAttributes(this TagHelperOutput tagHelperOutput, TagBuilder tagBuilder)
         {
             foreach (var attribute in tagBuilder.Attributes)
