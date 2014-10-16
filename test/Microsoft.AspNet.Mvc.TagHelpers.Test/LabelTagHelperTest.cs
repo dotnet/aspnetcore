@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Xunit;
@@ -160,8 +159,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
             Model model = null;
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
-            var activator = new DefaultTagHelperActivator();
-            activator.Activate(tagHelper, viewContext);
+            tagHelper.ViewContext = viewContext;
+            tagHelper.Generator = htmlGenerator;
 
             // Act
             await tagHelper.ProcessAsync(tagHelperContext, output);

@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Moq;
@@ -65,9 +63,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = TestableHtmlGenerator.GetViewContext(model: null,
                                                                    htmlGenerator: htmlGenerator,
                                                                    metadataProvider: metadataProvider);
-
-            var activator = new DefaultTagHelperActivator();
-            activator.Activate(anchorTagHelper, viewContext);
+            anchorTagHelper.Generator = htmlGenerator;
 
             // Act
             await anchorTagHelper.ProcessAsync(tagHelperContext, output);
@@ -106,8 +102,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     string.Empty, "Default", "http", "contoso.com", "hello=world", null, null))
                 .Returns(new TagBuilder("a"))
                 .Verifiable();
-
-            SetGenerator(anchorTagHelper, generator.Object);
+            anchorTagHelper.Generator = generator.Object;
 
             // Act & Assert
             await anchorTagHelper.ProcessAsync(context, output);
@@ -142,8 +137,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     string.Empty, "Index", "Home", "http", "contoso.com", "hello=world", null, null))
                 .Returns(new TagBuilder("a"))
                 .Verifiable();
-
-            SetGenerator(anchorTagHelper, generator.Object);
+            anchorTagHelper.Generator = generator.Object;
 
             // Act & Assert
             await anchorTagHelper.ProcessAsync(context, output);
@@ -188,10 +182,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                async () =>
-                {
-                    await anchorTagHelper.ProcessAsync(context: null, output: output);
-                });
+                () => anchorTagHelper.ProcessAsync(context: null, output: output));
 
             Assert.Equal(expectedErrorMessage, ex.Message);
         }
@@ -216,20 +207,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                async () =>
-                {
-                    await anchorTagHelper.ProcessAsync(context: null, output: output);
-                });
+                () => anchorTagHelper.ProcessAsync(context: null, output: output));
 
             Assert.Equal(expectedErrorMessage, ex.Message);
-        }
-
-        private void SetGenerator(ITagHelper tagHelper, IHtmlGenerator generator)
-        {
-            var tagHelperType = tagHelper.GetType();
-
-            tagHelperType.GetProperty("Generator", BindingFlags.NonPublic | BindingFlags.Instance)
-                         .SetValue(tagHelper, generator);
         }
     }
 }

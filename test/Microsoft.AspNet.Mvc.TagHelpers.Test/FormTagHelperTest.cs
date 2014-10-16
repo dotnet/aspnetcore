@@ -4,12 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
 using Moq;
@@ -65,8 +63,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                                                    metadataProvider: metadataProvider);
             var expectedContent = "Something" + htmlGenerator.GenerateAntiForgery(viewContext)
                                                              .ToString(TagRenderMode.SelfClosing);
-            var activator = new DefaultTagHelperActivator();
-            activator.Activate(formTagHelper, viewContext);
+            formTagHelper.ViewContext = viewContext;
+            formTagHelper.Generator = htmlGenerator;
 
             // Act
             await formTagHelper.ProcessAsync(tagHelperContext, output);
@@ -115,8 +113,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             generator.Setup(mock => mock.GenerateAntiForgery(viewContext))
                      .Returns(new TagBuilder("input"));
-
-            SetViewContextAndGenerator(formTagHelper, viewContext, generator.Object);
+            formTagHelper.ViewContext = viewContext;
+            formTagHelper.Generator = generator.Object;
 
             // Act
             await formTagHelper.ProcessAsync(context, output);
@@ -175,8 +173,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     })
                 .Returns(new TagBuilder("form"))
                 .Verifiable();
-
-            SetViewContextAndGenerator(formTagHelper, testViewContext, generator.Object);
+            formTagHelper.ViewContext = testViewContext;
+            formTagHelper.Generator = generator.Object;
 
             // Act & Assert
             await formTagHelper.ProcessAsync(context, output);
@@ -211,10 +209,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Setup(mock => mock.GenerateForm(viewContext, "Index", "Home", null, "POST", null))
                 .Returns(new TagBuilder("form"))
                 .Verifiable();
-
-            SetViewContextAndGenerator(formTagHelper,
-                                       viewContext,
-                                       generator.Object);
+            formTagHelper.ViewContext = viewContext;
+            formTagHelper.Generator = generator.Object;
 
             // Act & Assert
             await formTagHelper.ProcessAsync(context, output);
@@ -273,9 +269,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Action = "http://www.contoso.com",
                 AntiForgery = antiForgery,
             };
-            SetViewContextAndGenerator(formTagHelper,
-                                       viewContext,
-                                       generator.Object);
+            formTagHelper.ViewContext = viewContext;
+            formTagHelper.Generator = generator.Object;
+
             var output = new TagHelperOutput("form",
                                              attributes: new Dictionary<string, string>(),
                                              content: string.Empty);
@@ -313,10 +309,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 content: string.Empty);
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            {
-                await formTagHelper.ProcessAsync(context: null, output: tagHelperOutput);
-            });
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => formTagHelper.ProcessAsync(context: null, output: tagHelperOutput));
 
             Assert.Equal(expectedErrorMessage, ex.Message);
         }
@@ -341,10 +335,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 content: string.Empty);
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            {
-                await formTagHelper.ProcessAsync(context: null, output: tagHelperOutput);
-            });
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => formTagHelper.ProcessAsync(context: null, output: tagHelperOutput));
 
             Assert.Equal(expectedErrorMessage, ex.Message);
         }
@@ -352,7 +344,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private static ViewContext CreateViewContext()
         {
             var actionContext = new ActionContext(
-                new Mock<HttpContext>().Object,
+                new DefaultHttpContext(),
                 new RouteData(),
                 new ActionDescriptor());
 
@@ -361,19 +353,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Mock.Of<IView>(),
                 new ViewDataDictionary(
                     new DataAnnotationsModelMetadataProvider()),
-                new StringWriter());
-        }
-
-        private static void SetViewContextAndGenerator(ITagHelper tagHelper,
-                                                ViewContext viewContext,
-                                                IHtmlGenerator generator)
-        {
-            var tagHelperType = tagHelper.GetType();
-
-            tagHelperType.GetProperty("ViewContext", BindingFlags.NonPublic | BindingFlags.Instance)
-                         .SetValue(tagHelper, viewContext);
-            tagHelperType.GetProperty("Generator", BindingFlags.NonPublic | BindingFlags.Instance)
-                         .SetValue(tagHelper, generator);
+                TextWriter.Null);
         }
     }
 }

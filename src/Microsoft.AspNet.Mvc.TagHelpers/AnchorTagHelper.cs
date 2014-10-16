@@ -18,8 +18,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string RouteAttributePrefix = "route-";
         private const string Href = "href";
 
+        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
-        private IHtmlGenerator Generator { get; set; }
+        protected internal IHtmlGenerator Generator { get; set; }
 
         /// <summary>
         /// The name of the action method.

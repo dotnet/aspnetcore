@@ -3,12 +3,10 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
 using Moq;
@@ -46,9 +44,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = TestableHtmlGenerator.GetViewContext(model: null,
                                                                    htmlGenerator: htmlGenerator,
                                                                    metadataProvider: metadataProvider);
-
-            var activator = new DefaultTagHelperActivator();
-            activator.Activate(validationMessageTagHelper, viewContext);
+            validationMessageTagHelper.ViewContext = viewContext;
+            validationMessageTagHelper.Generator = htmlGenerator;
 
             // Act
             await validationMessageTagHelper.ProcessAsync(tagHelperContext, output);
@@ -82,12 +79,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedViewContext = CreateViewContext();
             var generator = new Mock<IHtmlGenerator>();
             generator
-                .Setup(mock => 
+                .Setup(mock =>
                     mock.GenerateValidationMessage(expectedViewContext, "Hello", null, null, null))
                 .Returns(new TagBuilder("span"))
                 .Verifiable();
-
-            SetViewContextAndGenerator(validationMessageTagHelper, expectedViewContext, generator.Object);
+            validationMessageTagHelper.Generator = generator.Object;
+            validationMessageTagHelper.ViewContext = expectedViewContext;
 
             // Act & Assert
             await validationMessageTagHelper.ProcessAsync(context: null, output: output);
@@ -120,7 +117,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             tagBuilder.Attributes.Add("data-foo", "bar");
             tagBuilder.Attributes.Add("data-hello", "world");
 
-            var expectedViewContext = CreateViewContext();
             var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var setup = generator
                 .Setup(mock => mock.GenerateValidationMessage(
@@ -130,8 +126,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     It.IsAny<string>(),
                     It.IsAny<object>()))
                 .Returns(tagBuilder);
-
-            SetViewContextAndGenerator(validationMessageTagHelper, expectedViewContext, generator.Object);
+            var viewContext = CreateViewContext();
+            validationMessageTagHelper.ViewContext = viewContext;
+            validationMessageTagHelper.Generator = generator.Object;
 
             // Act
             await validationMessageTagHelper.ProcessAsync(context: null, output: output);
@@ -155,10 +152,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 "span",
                 attributes: new Dictionary<string, string>(),
                 content: "Content of validation message");
-            var expectedViewContext = CreateViewContext();
+            var viewContext = CreateViewContext();
             var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
-
-            SetViewContextAndGenerator(validationMessageTagHelper, expectedViewContext, generator.Object);
+            validationMessageTagHelper.ViewContext = viewContext;
+            validationMessageTagHelper.Generator = generator.Object;
 
             // Act
             await validationMessageTagHelper.ProcessAsync(context: null, output: output);
@@ -184,7 +181,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private static ViewContext CreateViewContext()
         {
             var actionContext = new ActionContext(
-                new Mock<HttpContext>().Object,
+                new DefaultHttpContext(),
                 new RouteData(),
                 new ActionDescriptor());
 
@@ -193,19 +190,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Mock.Of<IView>(),
                 new ViewDataDictionary(
                     new DataAnnotationsModelMetadataProvider()),
-                new StringWriter());
-        }
-
-        private static void SetViewContextAndGenerator(ITagHelper tagHelper,
-                                                       ViewContext viewContext,
-                                                       IHtmlGenerator generator)
-        {
-            var tagHelperType = tagHelper.GetType();
-
-            tagHelperType.GetProperty("ViewContext", BindingFlags.NonPublic | BindingFlags.Instance)
-                         .SetValue(tagHelper, viewContext);
-            tagHelperType.GetProperty("Generator", BindingFlags.NonPublic | BindingFlags.Instance)
-                         .SetValue(tagHelper, generator);
+                TextWriter.Null);
         }
     }
 }

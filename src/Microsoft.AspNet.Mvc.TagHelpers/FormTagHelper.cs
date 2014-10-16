@@ -18,11 +18,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     {
         private const string RouteAttributePrefix = "route-";
 
+        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
-        private ViewContext ViewContext { get; set; }
+        protected internal ViewContext ViewContext { get; set; }
 
+        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
-        private IHtmlGenerator Generator { get; set; }
+        protected internal IHtmlGenerator Generator { get; set; }
 
         /// <summary>
         /// The name of the action method.

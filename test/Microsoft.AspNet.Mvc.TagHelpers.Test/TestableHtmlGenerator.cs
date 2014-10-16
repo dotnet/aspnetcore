@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.OptionsModel;
@@ -50,22 +50,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             IHtmlGenerator htmlGenerator,
             IModelMetadataProvider metadataProvider)
         {
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider
-                .Setup(provider => provider.GetService(typeof(IHtmlGenerator)))
-                .Returns(htmlGenerator);
-
-            var httpContext = new Mock<HttpContext>();
-            httpContext
-                .Setup(context => context.RequestServices)
-                .Returns(serviceProvider.Object);
-
-            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary(metadataProvider)
             {
                 Model = model,
             };
-            var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, new StringWriter());
+            var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, TextWriter.Null);
 
             return viewContext;
         }

@@ -4,11 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -259,8 +256,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                   "are 'All', 'ModelOnly' and 'None'.";
 
             // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => 
-                validationSummaryTagHelper.ProcessAsync(context: null, output: output));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => validationSummaryTagHelper.ProcessAsync(context: null, output: output));
 
             // Assert
             Assert.Equal(expectedMessage, ex.Message);

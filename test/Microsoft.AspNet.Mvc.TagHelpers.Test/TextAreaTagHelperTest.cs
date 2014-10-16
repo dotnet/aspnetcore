@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Xunit;
@@ -57,8 +56,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text, "NestedModel.Text",
                         Environment.NewLine + "inner text" },
 
-                        // Top-level indexing does not work end-to-end due to code generation issue #1345.
-                        // TODO: Remove above comment when #1345 is fixed.
+                    // Top-level indexing does not work end-to-end due to code generation issue #1345.
+                    // TODO: Remove above comment when #1345 is fixed.
                     { models, typeof(Model), () => models[0].Text, "[0].Text",
                         Environment.NewLine },
                     { models, typeof(Model), () => models[1].Text, "[1].Text",
@@ -119,8 +118,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 }
             };
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
-            var activator = new DefaultTagHelperActivator();
-            activator.Activate(tagHelper, viewContext);
+            tagHelper.ViewContext = viewContext;
+            tagHelper.Generator = htmlGenerator;
 
             // Act
             await tagHelper.ProcessAsync(tagHelperContext, output);
@@ -166,8 +165,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             Model model = null;
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
-            var activator = new DefaultTagHelperActivator();
-            activator.Activate(tagHelper, viewContext);
+            tagHelper.ViewContext = viewContext;
+            tagHelper.Generator = htmlGenerator;
 
             // Act
             await tagHelper.ProcessAsync(tagHelperContext, output);
