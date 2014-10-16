@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// based on <see cref="IValueBinderMarker"/>.
     /// </summary>
     /// <typeparam name="TBinderMarker">Represents a type implementing <see cref="IValueBinderMarker"/></typeparam>
-    public abstract class MakerAwareValueProvider<TBinderMarker> : IMarkerAwareValueProvider
+    public abstract class MarkerAwareValueProvider<TBinderMarker> : IMarkerAwareValueProvider
         where TBinderMarker : IValueBinderMarker
     {
         public abstract Task<bool> ContainsPrefixAsync(string prefix);

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class DictionaryBasedValueProvider<TBinderMarker> : MakerAwareValueProvider<TBinderMarker>
+    public class DictionaryBasedValueProvider<TBinderMarker> : MarkerAwareValueProvider<TBinderMarker>
         where TBinderMarker : IValueBinderMarker
     {
         private readonly IDictionary<string, object> _values;

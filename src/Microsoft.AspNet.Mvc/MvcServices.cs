@@ -84,7 +84,6 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Scoped<ICompositeModelBinder, CompositeModelBinder>();
             yield return describe.Transient<IValueProviderFactoryProvider, DefaultValueProviderFactoryProvider>();
             yield return describe.Scoped<ICompositeValueProviderFactory, CompositeValueProviderFactory>();
-            yield return describe.Transient<IValueProviderFactoryProvider, DefaultValueProviderFactoryProvider>();
             yield return describe.Transient<IOutputFormattersProvider, DefaultOutputFormattersProvider>();
             yield return describe.Instance<JsonOutputFormatter>(new JsonOutputFormatter());
 
