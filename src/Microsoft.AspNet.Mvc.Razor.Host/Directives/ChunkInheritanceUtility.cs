@@ -72,10 +72,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         }
 
         /// <summary>
-        /// Merges a list of chunks into the specified <paramref name="codeTree/>.
+        /// Merges a list of chunks into the specified <paramref name="codeTree"/>.
         /// </summary>
-        /// <param name="codeTree">The <see cref="CodeTree"/> to mere</param>
-        /// <param name="inherited">The list of chunks to merge.</param>
+        /// <param name="codeTree">The <see cref="CodeTree"/> to merge.</param>
+        /// <param name="inherited">The <see credit="IReadOnlyList{T}"/> of <see cref="Chunk"/> to merge.</param>
+        /// <param name="defaultModel">The list of chunks to merge.</param>
         public void MergeInheritedChunks([NotNull] CodeTree codeTree,
                                          [NotNull] IReadOnlyList<Chunk> inherited,
                                          string defaultModel)
