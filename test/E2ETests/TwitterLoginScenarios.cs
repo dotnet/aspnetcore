@@ -58,9 +58,8 @@ namespace E2ETests
             ThrowIfResponseStatusNotOk(response);
             responseContent = response.Content.ReadAsStringAsync().Result;
 
-            //Correlation cookie not getting cleared after successful signin?
-            //https://github.com/aspnet/Security/issues/69
-            //Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl))["__TwitterState"]);
+            //Check correlation cookie not getting cleared after successful signin
+            Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl))["__TwitterState"]);
             Assert.Equal(ApplicationBaseUrl + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
             //Twitter does not give back the email claim for some reason. 
             //Assert.Contains("AspnetvnextTest@gmail.com", responseContent, StringComparison.OrdinalIgnoreCase);
