@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private static IHtmlHelper MakeHtmlHelper(ViewContext viewContext, ViewDataDictionary viewData)
         {
-            var newHelper = viewContext.HttpContext.RequestServices.GetService<IHtmlHelper>();
+            var newHelper = viewContext.HttpContext.RequestServices.GetRequiredService<IHtmlHelper>();
 
             var contextable = newHelper as ICanHasViewContext;
             if (contextable != null)

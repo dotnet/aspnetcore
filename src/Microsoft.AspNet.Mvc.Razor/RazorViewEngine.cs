@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // and might store state. We'll use the service container to create new instances as we require.
 
             var services = actionContext.HttpContext.RequestServices;
-            var view = services.GetService<IRazorView>();
+            var view = services.GetRequiredService<IRazorView>();
 
             view.Contextualize(page, partial);
             return ViewEngineResult.Found(viewName, view);

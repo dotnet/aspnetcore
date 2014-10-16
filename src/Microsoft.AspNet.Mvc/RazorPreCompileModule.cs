@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
         public virtual void BeforeCompile(IBeforeCompileContext context)
         {
             var sc = new ServiceCollection();
-            var appEnv = _appServices.GetService<IApplicationEnvironment>();
+            var appEnv = _appServices.GetRequiredService<IApplicationEnvironment>();
 
             var setup = new RazorViewEngineOptionsSetup(appEnv);
             var accessor = new OptionsManager<RazorViewEngineOptions>(new[] { setup });

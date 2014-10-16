@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc
         private static ActionDescriptorsCollection GetAndValidateActionDescriptorsCollection(HttpContext httpContext)
         {
             var provider = httpContext.RequestServices
-                                      .GetService<IActionDescriptorsCollectionProvider>();
+                                      .GetRequiredService<IActionDescriptorsCollectionProvider>();
             var descriptors = provider.ActionDescriptors;
 
             if (descriptors == null)

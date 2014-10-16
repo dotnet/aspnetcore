@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Builder
     {
         public static Configuration GetTestConfiguration(this IApplicationBuilder app)
         {
-            var configurationProvider = app.ApplicationServices.GetService<ITestConfigurationProvider>();
+            var configurationProvider = app.ApplicationServices.GetRequiredService<ITestConfigurationProvider>();
             var configuration = configurationProvider == null
                 ? new Configuration()
                 : configurationProvider.Configuration;

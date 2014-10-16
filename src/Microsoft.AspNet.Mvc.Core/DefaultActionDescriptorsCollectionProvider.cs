@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc
         private ActionDescriptorsCollection GetCollection()
         {
             var actionDescriptorProvider = 
-                _serviceProvider.GetService<INestedProviderManager<ActionDescriptorProviderContext>>();            
+                _serviceProvider.GetRequiredService<INestedProviderManager<ActionDescriptorProviderContext>>();            
             var actionDescriptorProviderContext = new ActionDescriptorProviderContext();
 
             actionDescriptorProvider.Invoke(actionDescriptorProviderContext);

@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public static IServiceProvider CreateServices(string applicationWebSiteName, string applicationPath)
         {
             var originalProvider = CallContextServiceLocator.Locator.ServiceProvider;
-            var appEnvironment = originalProvider.GetService<IApplicationEnvironment>();
+            var appEnvironment = originalProvider.GetRequiredService<IApplicationEnvironment>();
 
             // When an application executes in a regular context, the application base path points to the root
             // directory where the application is located, for example MvcSample.Web. However, when executing

@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
 
         public IFilter CreateInstance(IServiceProvider serviceProvider)
         {
-            var antiForgery = serviceProvider.GetService<AntiForgery>();
+            var antiForgery = serviceProvider.GetRequiredService<AntiForgery>();
             return new ValidateAntiForgeryTokenAuthorizationFilter(antiForgery);
         }
     }

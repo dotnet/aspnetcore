@@ -20,7 +20,7 @@ namespace InlineConstraints
 
             configuration.AddEnvironmentVariables();
 
-            var commandLineBuilder = app.ApplicationServices.GetService<ICommandLineArgumentBuilder>();
+            var commandLineBuilder = app.ApplicationServices.GetRequiredService<ICommandLineArgumentBuilder>();
             string appConfigPath;
             if (configuration.TryGet("AppConfigPath", out appConfigPath))
             {
@@ -33,7 +33,7 @@ namespace InlineConstraints
             }
             else
             {
-                var basePath = app.ApplicationServices.GetService<IApplicationEnvironment>().ApplicationBasePath;
+                var basePath = app.ApplicationServices.GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
                 configuration.AddJsonFile(Path.Combine(basePath, @"App_Data\config.json"));
             }
 

@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
 
         public IFilter CreateInstance([NotNull] IServiceProvider serviceProvider)
         {
-            var activator = serviceProvider.GetService<ITypeActivator>();
+            var activator = serviceProvider.GetRequiredService<ITypeActivator>();
             var obj = activator.CreateInstance(serviceProvider, ImplementationType, Arguments ?? new object[0]);
 
             var filter = obj as IFilter;

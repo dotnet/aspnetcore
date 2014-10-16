@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
 
         public override async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
-            var viewEngine = ViewEngine ?? context.HttpContext.RequestServices.GetService<ICompositeViewEngine>();
+            var viewEngine = ViewEngine ?? context.HttpContext.RequestServices.GetRequiredService<ICompositeViewEngine>();
 
             var viewName = ViewName ?? context.ActionDescriptor.Name;
             var view = FindViewInternal(viewEngine, context, viewName);

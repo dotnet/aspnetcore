@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc
             var defaultFormatters = formatterContext.ActionContext
                                                     .HttpContext
                                                     .RequestServices
-                                                    .GetService<IOutputFormattersProvider>()
+                                                    .GetRequiredService<IOutputFormattersProvider>()
                                                     .OutputFormatters;
 
             var formatter = _objectResult.SelectFormatter(formatterContext, defaultFormatters);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc
                 formatter = _defaultFormatter ?? formatterContext.ActionContext
                                                                  .HttpContext
                                                                  .RequestServices
-                                                                 .GetService<JsonOutputFormatter>();
+                                                                 .GetRequiredService<JsonOutputFormatter>();
             }
 
             return formatter;

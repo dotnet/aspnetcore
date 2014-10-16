@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc
             }
             else
             {
-                var authorizationService = httpContext.RequestServices.GetService<IAuthorizationService>();
+                var authorizationService = httpContext.RequestServices.GetRequiredService<IAuthorizationService>();
 
                 if (authorizationService == null)
                 {

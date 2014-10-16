@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             var actions = GetActionDescriptors(services);
 
-            var inlineConstraintResolver = services.GetService<IInlineConstraintResolver>();
+            var inlineConstraintResolver = services.GetRequiredService<IInlineConstraintResolver>();
             var routeInfos = GetRouteInfos(inlineConstraintResolver, actions);
 
             // We're creating one AttributeRouteGenerationEntry per action. This allows us to match the intended
@@ -79,12 +79,12 @@ namespace Microsoft.AspNet.Mvc.Routing
                 target,
                 matchingEntries,
                 generationEntries,
-                services.GetService<ILoggerFactory>());
+                services.GetRequiredService<ILoggerFactory>());
         }
 
         private static IReadOnlyList<ActionDescriptor> GetActionDescriptors(IServiceProvider services)
         {
-            var actionDescriptorProvider = services.GetService<IActionDescriptorsCollectionProvider>();
+            var actionDescriptorProvider = services.GetRequiredService<IActionDescriptorsCollectionProvider>();
 
             var actionDescriptorsCollection = actionDescriptorProvider.ActionDescriptors;
             return actionDescriptorsCollection.Items;

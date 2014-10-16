@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     _viewEngine = ActionContext?.
                         HttpContext?.
-                        RequestServices.GetService<ICompositeViewEngine>();
+                        RequestServices.GetRequiredService<ICompositeViewEngine>();
                 }
 
                 return _viewEngine;

@@ -56,7 +56,7 @@ namespace ConnegWebsite
         public IActionResult OverrideTheFallback_WithDefaultFormatters(int input)
         {
             var objectResult = new ObjectResult(input);
-            var formattersProvider = ActionContext.HttpContext.RequestServices.GetService<IOutputFormattersProvider>();
+            var formattersProvider = ActionContext.HttpContext.RequestServices.GetRequiredService<IOutputFormattersProvider>();
             objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
             foreach (var formatter in formattersProvider.OutputFormatters)
             {

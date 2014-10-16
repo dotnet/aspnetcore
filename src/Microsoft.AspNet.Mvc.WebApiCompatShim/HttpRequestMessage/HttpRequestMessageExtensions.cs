@@ -214,11 +214,11 @@ namespace System.Net.Http
             if (formatters == null)
             {
                 // Get the default formatters from options
-                var options = context.RequestServices.GetService<IOptions<WebApiCompatShimOptions>>();
+                var options = context.RequestServices.GetRequiredService<IOptions<WebApiCompatShimOptions>>();
                 formatters = options.Options.Formatters;
             }
 
-            var contentNegotiator = context.RequestServices.GetService<IContentNegotiator>();
+            var contentNegotiator = context.RequestServices.GetRequiredService<IContentNegotiator>();
 
             var result = contentNegotiator.Negotiate(typeof(T), request, formatters);
             if (result?.Formatter == null)
@@ -266,7 +266,7 @@ namespace System.Net.Http
             var context = GetHttpContext(request);
 
             // Get the default formatters from options
-            var options = context.RequestServices.GetService<IOptions<WebApiCompatShimOptions>>();
+            var options = context.RequestServices.GetRequiredService<IOptions<WebApiCompatShimOptions>>();
             var formatters = options.Options.Formatters;
 
             var formatter = formatters.FindWriter(typeof(T), mediaType);

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc
 
         public AntiForgeryToken GetCookieToken(HttpContext httpContext)
         {
-            var contextAccessor = httpContext.RequestServices.GetService<IContextAccessor<AntiForgeryContext>>();
+            var contextAccessor = httpContext.RequestServices.GetRequiredService<IContextAccessor<AntiForgeryContext>>();
             if (contextAccessor.Value != null)
             {
                 return contextAccessor.Value.CookieToken;
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Add the cookie to the request based context.
             // This is useful if the cookie needs to be reloaded in the context of the same request.
-            var contextAccessor = httpContext.RequestServices.GetService<IContextAccessor<AntiForgeryContext>>();
+            var contextAccessor = httpContext.RequestServices.GetRequiredService<IContextAccessor<AntiForgeryContext>>();
             Contract.Assert(contextAccessor.Value == null, "AntiForgeryContext should be set only once per request.");
             contextAccessor.SetValue(new AntiForgeryContext() { CookieToken = token });
 

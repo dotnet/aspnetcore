@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc
                     {
                         var serviceProvider = context.HttpContext.RequestServices;
                         return new ViewDataDictionary(
-                            serviceProvider.GetService<IModelMetadataProvider>(),
+                            serviceProvider.GetRequiredService<IModelMetadataProvider>(),
                             context.ModelState);
                     }
                 }

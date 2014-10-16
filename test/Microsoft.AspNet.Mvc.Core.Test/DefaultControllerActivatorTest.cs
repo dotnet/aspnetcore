@@ -21,6 +21,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var services = new Mock<IServiceProvider>();
             services.Setup(s => s.GetService(typeof(IUrlHelper)))
                     .Returns(Mock.Of<IUrlHelper>());
+            services.Setup(s => s.GetService(typeof(IModelMetadataProvider)))
+                    .Returns(Mock.Of<IModelMetadataProvider>());
 
             var httpRequest = Mock.Of<HttpRequest>();
             var httpContext = new Mock<HttpContext>();
@@ -83,6 +85,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var services = new Mock<IServiceProvider>();
             services.Setup(s => s.GetService(typeof(IUrlHelper)))
                     .Returns(urlHelper);
+            services.Setup(s => s.GetService(typeof(IModelMetadataProvider)))
+                    .Returns(Mock.Of<IModelMetadataProvider>());
 
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
@@ -109,6 +113,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var services = new Mock<IServiceProvider>();
             services.Setup(s => s.GetService(typeof(IUrlHelper)))
                     .Returns(Mock.Of<IUrlHelper>());
+            services.Setup(s => s.GetService(typeof(IModelMetadataProvider)))
+                    .Returns(Mock.Of<IModelMetadataProvider>());
 
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.Response)

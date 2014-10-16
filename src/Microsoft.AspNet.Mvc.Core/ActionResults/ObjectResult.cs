@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 formatters = context.HttpContext
                                     .RequestServices
-                                    .GetService<IOutputFormattersProvider>()
+                                    .GetRequiredService<IOutputFormattersProvider>()
                                     .OutputFormatters;
             }
             else

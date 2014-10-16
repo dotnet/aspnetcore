@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task RoutingToANonExistantArea_WithExistConstraint_RoutesToCorrectAction()
         {
-            var svc = _provider.GetService<ICommandLineArgumentBuilder>();
+            var svc = _provider.GetRequiredService<ICommandLineArgumentBuilder>();
             svc.AddArgument("--TemplateCollection:areaRoute:TemplateValue=" +
                             "{area:exists}/{controller=Home}/{action=Index}");
             svc.AddArgument("--TemplateCollection:actionAsMethod:TemplateValue=" +
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RoutingToANonExistantArea_WithoutExistConstraint_RoutesToIncorrectAction()
         {
             // Arrange
-            var svc = _provider.GetService<ICommandLineArgumentBuilder>();
+            var svc = _provider.GetRequiredService<ICommandLineArgumentBuilder>();
             svc.AddArgument("--TemplateCollection:areaRoute:TemplateValue=" +
                             "{area}/{controller=Home}/{action=Index}");
             svc.AddArgument("--TemplateCollection:actionAsMethod:TemplateValue" +

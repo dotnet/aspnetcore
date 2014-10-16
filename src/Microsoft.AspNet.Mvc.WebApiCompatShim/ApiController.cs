@@ -107,10 +107,10 @@ namespace System.Web.Http
         /// </param>
         public void Validate<TEntity>(TEntity entity, string keyPrefix)
         {
-            var validator = Context.RequestServices.GetService<IBodyModelValidator>();
-            var metadataProvider = Context.RequestServices.GetService<IModelMetadataProvider>();
+            var validator = Context.RequestServices.GetRequiredService<IBodyModelValidator>();
+            var metadataProvider = Context.RequestServices.GetRequiredService<IModelMetadataProvider>();
             var modelMetadata = metadataProvider.GetMetadataForType(() => entity, typeof(TEntity));
-            var validatorProvider = Context.RequestServices.GetService<ICompositeModelValidatorProvider>();
+            var validatorProvider = Context.RequestServices.GetRequiredService<ICompositeModelValidatorProvider>();
             var modelValidationContext = new ModelValidationContext(metadataProvider,
                                                                     validatorProvider,
                                                                     ModelState,

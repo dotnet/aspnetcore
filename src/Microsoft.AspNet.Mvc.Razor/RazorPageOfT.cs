@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (_provider == null)
             {
-                _provider = Context.RequestServices.GetService<IModelMetadataProvider>();
+                _provider = Context.RequestServices.GetRequiredService<IModelMetadataProvider>();
             }
 
             var name = ExpressionHelper.GetExpressionText(expression);

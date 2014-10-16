@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (property.PropertyType.IsAssignableFrom(typeof(TProperty)))
             {
-                property.SetValue(obj, services.GetService<TProperty>());
+                property.SetValue(obj, services.GetRequiredService<TProperty>());
             }
         }
     }

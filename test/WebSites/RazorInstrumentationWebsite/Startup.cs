@@ -27,7 +27,7 @@ namespace RazorInstrumentationWebSite
             {
                 if (!string.IsNullOrEmpty(context.Request.Headers["ENABLE-RAZOR-INSTRUMENTATION"]))
                 {
-                    var pageExecutionContext = context.ApplicationServices.GetService<TestPageExecutionContext>();
+                    var pageExecutionContext = context.ApplicationServices.GetRequiredService<TestPageExecutionContext>();
                     var listenerFeature = new TestPageExecutionListenerFeature(pageExecutionContext);
                     context.SetFeature<IPageExecutionListenerFeature>(listenerFeature);
                 }

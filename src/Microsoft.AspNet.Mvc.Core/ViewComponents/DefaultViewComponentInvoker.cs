@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc
 
         private object CreateComponent([NotNull] ViewContext context)
         {
-            var activator = _serviceProvider.GetService<ITypeActivator>();
+            var activator = _serviceProvider.GetRequiredService<ITypeActivator>();
             var component = activator.CreateInstance(_serviceProvider, _componentType.AsType());
             _viewComponentActivator.Activate(component, context);
             return component;

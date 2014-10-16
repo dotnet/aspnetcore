@@ -74,7 +74,7 @@ namespace MvcSample.Web
                 });
 
                 var valueProviderFactory = context.RouteContext.HttpContext.RequestServices
-                    .GetService<ICompositeValueProviderFactory>();
+                    .GetRequiredService<ICompositeValueProviderFactory>();
 
                 var factoryContext = new ValueProviderFactoryContext(
                     context.RouteContext.HttpContext, 

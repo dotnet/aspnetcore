@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 if (_tagHelperActivator == null)
                 {
-                    _tagHelperActivator = ViewContext.HttpContext.RequestServices.GetService<ITagHelperActivator>();
+                    _tagHelperActivator = ViewContext.HttpContext.RequestServices.GetRequiredService<ITagHelperActivator>();
                 }
 
                 return _tagHelperActivator;
@@ -393,7 +393,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (_urlHelper == null)
             {
-                _urlHelper = Context.RequestServices.GetService<IUrlHelper>();
+                _urlHelper = Context.RequestServices.GetRequiredService<IUrlHelper>();
             }
 
             return _urlHelper.Content(contentPath);

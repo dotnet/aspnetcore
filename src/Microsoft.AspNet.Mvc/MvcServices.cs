@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc
             // The host is designed to be discarded after consumption and is very inexpensive to initialize.
             yield return describe.Transient<IMvcRazorHost>(serviceProvider =>
             {
-                var optionsAccessor = serviceProvider.GetService<IOptions<RazorViewEngineOptions>>();
+                var optionsAccessor = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>();
                 return new MvcRazorHost(optionsAccessor.Options.FileSystem);
             });
 

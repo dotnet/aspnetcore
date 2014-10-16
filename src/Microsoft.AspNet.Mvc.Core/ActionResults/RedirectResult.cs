@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc
             var destinationUrl = Url;
             var urlHelper = context.HttpContext
                                    .RequestServices
-                                   .GetService<IUrlHelper>();
+                                   .GetRequiredService<IUrlHelper>();
 
             // IsLocalUrl is called to handle  Urls starting with '~/'.
             if (urlHelper.IsLocalUrl(destinationUrl))

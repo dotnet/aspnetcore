@@ -21,8 +21,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider) :
             this(designTimeServiceProvider, 
-                 designTimeServiceProvider.GetService<IMvcRazorHost>(),
-                 designTimeServiceProvider.GetService<IOptions<RazorViewEngineOptions>>())
+                 designTimeServiceProvider.GetRequiredService<IMvcRazorHost>(),
+                 designTimeServiceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>())
         {
         }
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             _host = host;
             _host.EnableInstrumentation = true;
 
-            var appEnv = _serviceProvider.GetService<IApplicationEnvironment>();
+            var appEnv = _serviceProvider.GetRequiredService<IApplicationEnvironment>();
             _fileSystem = optionsAccessor.Options.FileSystem;
         }
 

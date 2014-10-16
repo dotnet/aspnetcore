@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // The contract of this method is to check that the values coming in from the route are valid;
             // that they match an existing action, setting IsBound = true if the values are OK.
-            var actionSelector = context.Context.RequestServices.GetService<IActionSelector>();
+            var actionSelector = context.Context.RequestServices.GetRequiredService<IActionSelector>();
             context.IsBound = actionSelector.HasValidAction(context);
 
             // We return null here because we're not responsible for generating the url, the route is.
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc
             EnsureLogger(context.HttpContext);
             using (_logger.BeginScope("MvcRouteHandler.RouteAsync"))
             {
-                var actionSelector = services.GetService<IActionSelector>();
+                var actionSelector = services.GetRequiredService<IActionSelector>();
                 var actionDescriptor = await actionSelector.SelectAsync(context);
 
                 if (actionDescriptor == null)
@@ -78,13 +78,13 @@ namespace Microsoft.AspNet.Mvc
 
                 var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
 
-                var optionsAccessor = services.GetService<IOptions<MvcOptions>>();
+                var optionsAccessor = services.GetRequiredService<IOptions<MvcOptions>>();
                 actionContext.ModelState.MaxAllowedErrors = optionsAccessor.Options.MaxModelValidationErrors;
 
-                var contextAccessor = services.GetService<IContextAccessor<ActionContext>>();
+                var contextAccessor = services.GetRequiredService<IContextAccessor<ActionContext>>();
                 using (contextAccessor.SetContextSource(() => actionContext, PreventExchange))
                 {
-                    var invokerFactory = services.GetService<IActionInvokerFactory>();
+                    var invokerFactory = services.GetRequiredService<IActionInvokerFactory>();
                     var invoker = invokerFactory.CreateInvoker(actionContext);
                     if (invoker == null)
                     {
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (_logger == null)
             {
-                var factory = context.RequestServices.GetService<ILoggerFactory>();
+                var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
                 _logger = factory.Create<MvcRouteHandler>();
             }
         }

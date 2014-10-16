@@ -33,7 +33,7 @@ namespace RoutingWebSite
                     .Where(kvp => kvp.Key != "link" && kvp.Key != "link_action" && kvp.Key != "link_controller")
                     .ToDictionary(kvp => kvp.Key.Substring("link_".Length), kvp => (object)kvp.Value[0]);
 
-                var urlHelper = _actionContext.HttpContext.RequestServices.GetService<IUrlHelper>();
+                var urlHelper = _actionContext.HttpContext.RequestServices.GetRequiredService<IUrlHelper>();
                 link = urlHelper.Action(query["link_action"], query["link_controller"], values);
             }
 
