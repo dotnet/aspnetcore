@@ -26,12 +26,13 @@ namespace Microsoft.AspNet.Security.Facebook
         /// <param name="options">Configuration options for the middleware.</param>
         public FacebookAuthenticationMiddleware(
             RequestDelegate next,
+            IServiceProvider services,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
             IOptions<ExternalAuthenticationOptions> externalOptions,
             IOptions<FacebookAuthenticationOptions> options,
             ConfigureOptions<FacebookAuthenticationOptions> configureOptions = null)
-            : base(next, dataProtectionProvider, loggerFactory, externalOptions, options, configureOptions)
+            : base(next, services, dataProtectionProvider, loggerFactory, externalOptions, options, configureOptions)
         {
             if (string.IsNullOrWhiteSpace(Options.AppId))
             {

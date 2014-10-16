@@ -21,17 +21,19 @@ namespace Microsoft.AspNet.Security.MicrosoftAccount
         /// Initializes a new <see cref="MicrosoftAccountAuthenticationMiddleware"/>.
         /// </summary>
         /// <param name="next">The next middleware in the HTTP pipeline to invoke.</param>
+        /// <param name="services"></param>
         /// <param name="dataProtectionProvider"></param>
         /// <param name="loggerFactory"></param>
         /// <param name="options">Configuration options for the middleware.</param>
         public MicrosoftAccountAuthenticationMiddleware(
             RequestDelegate next,
+            IServiceProvider services,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
             IOptions<ExternalAuthenticationOptions> externalOptions,
             IOptions<MicrosoftAccountAuthenticationOptions> options,
             ConfigureOptions<MicrosoftAccountAuthenticationOptions> configureOptions = null)
-            : base(next, dataProtectionProvider, loggerFactory, externalOptions, options, configureOptions)
+            : base(next, services, dataProtectionProvider, loggerFactory, externalOptions, options, configureOptions)
         {
             if (Options.Notifications == null)
             {

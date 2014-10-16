@@ -18,11 +18,12 @@ namespace Microsoft.AspNet.Security.Cookies
         private readonly ILogger _logger;
 
         public CookieAuthenticationMiddleware(RequestDelegate next, 
+            IServiceProvider services,
             IDataProtectionProvider dataProtectionProvider, 
             ILoggerFactory loggerFactory, 
             IOptions<CookieAuthenticationOptions> options,
             ConfigureOptions<CookieAuthenticationOptions> configureOptions)
-            : base(next, options, configureOptions)
+            : base(next, services, options, configureOptions)
         {
             if (Options.Notifications == null)
             {

@@ -7,6 +7,7 @@ using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
+using System;
 
 namespace Microsoft.AspNet.Security.OAuth
 {
@@ -28,11 +29,12 @@ namespace Microsoft.AspNet.Security.OAuth
         /// </summary>
         public OAuthBearerAuthenticationMiddleware(
             RequestDelegate next,
+            IServiceProvider services,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
             IOptions<OAuthBearerAuthenticationOptions> options,
             ConfigureOptions<OAuthBearerAuthenticationOptions> configureOptions)
-            : base(next, options, configureOptions)
+            : base(next, services, options, configureOptions)
         {
             _logger = loggerFactory.Create<OAuthBearerAuthenticationMiddleware>();
 

@@ -10,7 +10,6 @@ namespace CookieSessionSample
     {
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRequestServices();
             app.UseCookieAuthentication(options => 
             {
                 options.SessionStore = new MemoryCacheSessionStore();

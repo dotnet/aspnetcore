@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.RequestContainer;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Security.Infrastructure
@@ -13,8 +14,9 @@ namespace Microsoft.AspNet.Security.Infrastructure
     public abstract class AuthenticationMiddleware<TOptions> where TOptions : AuthenticationOptions, new()
     {
         private readonly RequestDelegate _next;
+        private readonly IServiceProvider _services;
 
-        protected AuthenticationMiddleware([NotNull] RequestDelegate next, [NotNull] IOptions<TOptions> options, ConfigureOptions<TOptions> configureOptions)
+        protected AuthenticationMiddleware([NotNull] RequestDelegate next, [NotNull] IServiceProvider services, [NotNull] IOptions<TOptions> options, ConfigureOptions<TOptions> configureOptions)
         {
             if (configureOptions != null)
             {
@@ -26,6 +28,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
                 Options = options.Options;
             }
             _next = next;
+            _services = services;
         }
 
         public string AuthenticationType { get; set; }
@@ -34,13 +37,16 @@ namespace Microsoft.AspNet.Security.Infrastructure
 
         public async Task Invoke(HttpContext context)
         {
-            AuthenticationHandler<TOptions> handler = CreateHandler();
-            await handler.Initialize(Options, context);
-            if (!await handler.InvokeAsync())
+            using (RequestServicesContainer.EnsureRequestServices(context, _services))
             {
-                await _next(context);
+                AuthenticationHandler<TOptions> handler = CreateHandler();
+                await handler.Initialize(Options, context);
+                if (!await handler.InvokeAsync())
+                {
+                    await _next(context);
+                }
+                await handler.TeardownAsync();
             }
-            await handler.TeardownAsync();
         }
 
         protected abstract AuthenticationHandler<TOptions> CreateHandler();

@@ -25,17 +25,19 @@ namespace Microsoft.AspNet.Security.Google
         /// Initializes a new <see cref="GoogleAuthenticationMiddleware"/>.
         /// </summary>
         /// <param name="next">The next middleware in the HTTP pipeline to invoke.</param>
+        /// <param name="services"></param>
         /// <param name="dataProtectionProvider"></param>
         /// <param name="loggerFactory"></param>
         /// <param name="options">Configuration options for the middleware.</param>
         public GoogleAuthenticationMiddleware(
             RequestDelegate next,
+            IServiceProvider services,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
             IOptions<ExternalAuthenticationOptions> externalOptions,
             IOptions<GoogleAuthenticationOptions> options,
             ConfigureOptions<GoogleAuthenticationOptions> configureOptions = null)
-            : base(next, dataProtectionProvider, loggerFactory, externalOptions, options, configureOptions)
+            : base(next, services, dataProtectionProvider, loggerFactory, externalOptions, options, configureOptions)
         {
             if (Options.Notifications == null)
             {
