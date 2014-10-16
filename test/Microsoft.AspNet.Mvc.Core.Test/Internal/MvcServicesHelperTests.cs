@@ -34,8 +34,8 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var services = new Mock<IServiceProvider>();
             var expectedOutput = new MvcMarkerService();
-            services.Setup(o => o.GetService(typeof(IEnumerable<MvcMarkerService>)))
-                .Returns(new List<MvcMarkerService> { expectedOutput });
+            services.Setup(o => o.GetService(typeof(MvcMarkerService)))
+                .Returns(expectedOutput);
 
             // Act & Assert
             Assert.DoesNotThrow(() => MvcServicesHelper.ThrowIfMvcNotRegistered(services.Object));

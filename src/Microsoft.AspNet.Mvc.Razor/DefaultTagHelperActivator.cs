@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 valueAccessor = (viewContext) =>
                 {
                     var serviceProvider = viewContext.HttpContext.RequestServices;
-                    var service = serviceProvider.GetService(property.PropertyType);
+                    var service = serviceProvider.GetRequiredService(property.PropertyType);
 
                     var contextable = service as ICanHasViewContext;
                     contextable?.Contextualize(viewContext);

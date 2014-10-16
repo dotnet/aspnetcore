@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
 
             var args =
                 initializeMethod.GetParameters()
-                .Select(p => services.GetService(p.ParameterType))
+                .Select(p => services.GetRequiredService(p.ParameterType))
                 .ToArray();
 
             initializeMethod.Invoke(obj, args);

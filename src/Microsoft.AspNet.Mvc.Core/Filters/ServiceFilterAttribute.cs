@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -22,7 +23,7 @@ namespace Microsoft.AspNet.Mvc
 
         public IFilter CreateInstance([NotNull] IServiceProvider serviceProvider)
         {
-            var service = serviceProvider.GetService(ServiceType);
+            var service = serviceProvider.GetRequiredService(ServiceType);
 
             var filter = service as IFilter;
             if (filter == null)

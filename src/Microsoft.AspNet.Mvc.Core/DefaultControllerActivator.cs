@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc
                 valueAccessor = (actionContext) =>
                 {
                     var serviceProvider = actionContext.HttpContext.RequestServices;
-                    return serviceProvider.GetService(property.PropertyType);
+                    return serviceProvider.GetRequiredService(property.PropertyType);
                 };
             }
 

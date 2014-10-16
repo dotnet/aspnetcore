@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 valueAccessor = context =>
                {
                    var serviceProvider = context.HttpContext.RequestServices;
-                   var value = serviceProvider.GetService(property.PropertyType);
+                   var value = serviceProvider.GetRequiredService(property.PropertyType);
                    var canHasViewContext = value as ICanHasViewContext;
                    if (canHasViewContext != null)
                    {

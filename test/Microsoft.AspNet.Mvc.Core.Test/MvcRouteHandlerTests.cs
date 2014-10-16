@@ -223,8 +223,8 @@ namespace Microsoft.AspNet.Mvc
                 .Returns(invokerFactory);
             httpContext.Setup(h => h.RequestServices.GetService(typeof(ILoggerFactory)))
                 .Returns(loggerFactory);
-            httpContext.Setup(h => h.RequestServices.GetService(typeof(IEnumerable<MvcMarkerService>)))
-                 .Returns(new List<MvcMarkerService> { new MvcMarkerService() });
+            httpContext.Setup(h => h.RequestServices.GetService(typeof(MvcMarkerService)))
+                 .Returns(new MvcMarkerService());
             httpContext.Setup(h => h.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                  .Returns(optionsAccessor);
 

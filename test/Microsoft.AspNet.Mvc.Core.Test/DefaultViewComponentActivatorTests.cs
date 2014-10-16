@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.Mvc
             var helper = Mock.Of<IHtmlHelper<object>>();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>))).Returns(helper);
+            serviceProvider.Setup(p => p.GetService(typeof(ICompositeViewEngine))).Returns(Mock.Of<ICompositeViewEngine>());
             var viewContext = GetViewContext(serviceProvider.Object);
 
             // Act
@@ -44,6 +45,7 @@ namespace Microsoft.AspNet.Mvc
             var helper = Mock.Of<IHtmlHelper<object>>();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>))).Returns(helper);
+            serviceProvider.Setup(p => p.GetService(typeof(ICompositeViewEngine))).Returns(Mock.Of<ICompositeViewEngine>());
             var viewContext = GetViewContext(serviceProvider.Object);
 
             // Act
@@ -63,6 +65,7 @@ namespace Microsoft.AspNet.Mvc
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>))).Returns(helper);
             serviceProvider.Setup(p => p.GetService(typeof(MyService))).Returns(myTestService);
+            serviceProvider.Setup(p => p.GetService(typeof(ICompositeViewEngine))).Returns(Mock.Of<ICompositeViewEngine>());
             var viewContext = GetViewContext(serviceProvider.Object);
             var instance = new TestViewComponentWithCustomDataType();
 
