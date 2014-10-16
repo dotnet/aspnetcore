@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.RequestContainer
 
             // Begin the scope
             Scope = scopeFactory.CreateScope();
-            ScopeContextAccessor = Scope.ServiceProvider.GetService<IContextAccessor<HttpContext>>();
+            ScopeContextAccessor = Scope.ServiceProvider.GetRequiredService<IContextAccessor<HttpContext>>();
 
             Context.ApplicationServices = appServiceProvider;
             Context.RequestServices = Scope.ServiceProvider;
@@ -71,9 +71,9 @@ namespace Microsoft.AspNet.RequestContainer
             }
 
             // Matches constructor of RequestContainer
-            var rootServiceProvider = serviceProvider.GetService<IServiceProvider>();
-            var rootHttpContextAccessor = serviceProvider.GetService<IContextAccessor<HttpContext>>();
-            var rootServiceScopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
+            var rootServiceProvider = serviceProvider.GetRequiredService<IServiceProvider>();
+            var rootHttpContextAccessor = serviceProvider.GetRequiredService<IContextAccessor<HttpContext>>();
+            var rootServiceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
             rootHttpContextAccessor.SetContextSource(ContainerMiddleware.AccessRootHttpContext, ContainerMiddleware.ExchangeRootHttpContext);
 
@@ -89,8 +89,8 @@ namespace Microsoft.AspNet.RequestContainer
                 priorApplicationServices != appServiceProvider)
             {
                 appServiceProvider = priorApplicationServices;
-                appServiceScopeFactory = priorApplicationServices.GetService<IServiceScopeFactory>();
-                appHttpContextAccessor = priorApplicationServices.GetService<IContextAccessor<HttpContext>>();
+                appServiceScopeFactory = priorApplicationServices.GetRequiredService<IServiceScopeFactory>();
+                appHttpContextAccessor = priorApplicationServices.GetRequiredService<IContextAccessor<HttpContext>>();
             }
 
             // Creates the scope and does the service swaps

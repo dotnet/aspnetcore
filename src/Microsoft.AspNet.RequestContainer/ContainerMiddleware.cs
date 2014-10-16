@@ -88,8 +88,8 @@ namespace Microsoft.AspNet.RequestContainer
                 priorApplicationServices != appServiceProvider)
             {
                 appServiceProvider = priorApplicationServices;
-                appServiceScopeFactory = priorApplicationServices.GetService<IServiceScopeFactory>();
-                appHttpContextAccessor = priorApplicationServices.GetService<IContextAccessor<HttpContext>>();
+                appServiceScopeFactory = priorApplicationServices.GetRequiredService<IServiceScopeFactory>();
+                appHttpContextAccessor = priorApplicationServices.GetRequiredService<IContextAccessor<HttpContext>>();
             }
 
             using (var container = new RequestServicesContainer(httpContext, appServiceScopeFactory, appHttpContextAccessor, appServiceProvider))

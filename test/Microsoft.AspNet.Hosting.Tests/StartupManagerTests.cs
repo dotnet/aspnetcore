@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Hosting
             serviceCollection.AddInstance<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
-            var manager = services.GetService<IStartupManager>();
+            var manager = services.GetRequiredService<IStartupManager>();
 
             var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Tests", "WithServices");
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Hosting
             var serviceCollection = new ServiceCollection();
             serviceCollection.Add(HostingServices.GetDefaultServices());
             var services = serviceCollection.BuildServiceProvider();
-            var manager = services.GetService<IStartupManager>();
+            var manager = services.GetRequiredService<IStartupManager>();
 
             var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Tests", environment ?? "");
 
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Hosting
 
             startup.Invoke(app);
 
-            var options = app.ApplicationServices.GetService<IOptions<FakeOptions>>().Options;
+            var options = app.ApplicationServices.GetRequiredService<IOptions<FakeOptions>>().Options;
             Assert.NotNull(options);
             Assert.True(options.Configured);
             Assert.Equal(environment, options.Environment);
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Hosting
             var serviceCollection = new ServiceCollection();
             serviceCollection.Add(HostingServices.GetDefaultServices());
             var services = serviceCollection.BuildServiceProvider();
-            var manager = services.GetService<IStartupManager>();
+            var manager = services.GetRequiredService<IStartupManager>();
 
             var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Tests", env);
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Hosting
             var serviceCollection = new ServiceCollection();
             serviceCollection.Add(HostingServices.GetDefaultServices());
             var services = serviceCollection.BuildServiceProvider();
-            var manager = services.GetService<IStartupManager>();
+            var manager = services.GetRequiredService<IStartupManager>();
 
             var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Tests", "UseServices");
 
@@ -95,10 +95,10 @@ namespace Microsoft.AspNet.Hosting
 
             startup.Invoke(app);
 
-            Assert.NotNull(app.ApplicationServices.GetService<FakeService>());
-            Assert.NotNull(app.ApplicationServices.GetService<IFakeService>());
+            Assert.NotNull(app.ApplicationServices.GetRequiredService<FakeService>());
+            Assert.NotNull(app.ApplicationServices.GetRequiredService<IFakeService>());
 
-            var options = app.ApplicationServices.GetService<IOptions<FakeOptions>>().Options;
+            var options = app.ApplicationServices.GetRequiredService<IOptions<FakeOptions>>().Options;
             Assert.NotNull(options);
             Assert.Equal("Configured", options.Message);
             Assert.False(options.Configured); // REVIEW: why doesn't the ConfigureServices ConfigureOptions get run?
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Hosting
             serviceCollection.Add(HostingServices.GetDefaultServices());
             serviceCollection.AddInstance<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
-            var manager = services.GetService<IStartupManager>();
+            var manager = services.GetRequiredService<IStartupManager>();
 
             var ex = Assert.Throws<Exception>(() => manager.LoadStartup("Microsoft.AspNet.Hosting.Tests", "Boom"));
             Assert.True(ex.Message.Contains("ConfigureBoom or Configure method not found"));

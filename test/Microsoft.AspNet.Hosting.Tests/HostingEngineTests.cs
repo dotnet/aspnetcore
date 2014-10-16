@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Hosting
             serviceCollection.Add(HostingServices.GetDefaultServices());
             var services = serviceCollection.BuildServiceProvider();
 
-            var engine = services.GetService<IHostingEngine>();
+            var engine = services.GetRequiredService<IHostingEngine>();
 
             Assert.NotNull(engine);
         }
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Hosting
             serviceCollection.Add(HostingServices.GetDefaultServices());
             var services = serviceCollection.BuildServiceProvider();
 
-            var engine = services.GetService<IHostingEngine>();
+            var engine = services.GetRequiredService<IHostingEngine>();
 
             var context = new HostingContext
             {

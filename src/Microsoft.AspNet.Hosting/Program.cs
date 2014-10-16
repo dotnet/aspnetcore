@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Hosting
             config.AddEnvironmentVariables();
             config.AddCommandLine(args);
 
-            var appEnv = _serviceProvider.GetService<IApplicationEnvironment>();
+            var appEnv = _serviceProvider.GetRequiredService<IApplicationEnvironment>();
 
             var hostingEnv = new HostingEnvironment()
             {
@@ -67,8 +67,8 @@ namespace Microsoft.AspNet.Hosting
                 EnvironmentName = hostingEnv.EnvironmentName,
             };
 
-            var engine = services.GetService<IHostingEngine>();
-            var appShutdownService = _serviceProvider.GetService<IApplicationShutdown>();
+            var engine = services.GetRequiredService<IHostingEngine>();
+            var appShutdownService = _serviceProvider.GetRequiredService<IApplicationShutdown>();
             var shutdownHandle = new ManualResetEvent(false);
 
             var serverShutdown = engine.Start(context);

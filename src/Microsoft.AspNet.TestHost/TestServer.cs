@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.TestHost
 
         public TestServer(IConfiguration config, IServiceProvider serviceProvider, Action<IApplicationBuilder> appStartup)
         {
-            var appEnv = serviceProvider.GetService<IApplicationEnvironment>();
+            var appEnv = serviceProvider.GetRequiredService<IApplicationEnvironment>();
 
             HostingContext hostContext = new HostingContext()
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.TestHost
                 ApplicationStartup = appStartup
             };
 
-            var engine = serviceProvider.GetService<IHostingEngine>();
+            var engine = serviceProvider.GetRequiredService<IHostingEngine>();
             _appInstance = engine.Start(hostContext);
         }
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.TestHost
 
         public static TestServer Create(IServiceProvider provider, Action<IApplicationBuilder> app)
         {
-            var appEnv = provider.GetService<IApplicationEnvironment>();
+            var appEnv = provider.GetRequiredService<IApplicationEnvironment>();
 
             var hostingEnv = new HostingEnvironment()
             {

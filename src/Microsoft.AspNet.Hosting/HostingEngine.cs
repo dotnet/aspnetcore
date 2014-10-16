@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Hosting
             InitalizeServerFactory(context);
             EnsureApplicationDelegate(context);
 
-            var applicationLifetime = (ApplicationLifetime)context.Services.GetService<IApplicationLifetime>();
+            var applicationLifetime = (ApplicationLifetime)context.Services.GetRequiredService<IApplicationLifetime>();
             var pipeline = new PipelineInstance(_httpContextFactory, context.ApplicationDelegate);
             var server = context.ServerFactory.Start(context.Server, pipeline.Invoke);
            

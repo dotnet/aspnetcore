@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Hosting.Startup
                 {
                     try
                     {
-                        parameters[index] = _services.GetService(parameterInfo.ParameterType);
+                        parameters[index] = _services.GetRequiredService(parameterInfo.ParameterType);
                     }
                     catch (Exception)
                     {

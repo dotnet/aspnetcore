@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Hosting
                 Services = serviceCollection.BuildServiceProvider()
             };
 
-            var engine = context.Services.GetService<IHostingEngine>();
+            var engine = context.Services.GetRequiredService<IHostingEngine>();
             if (engine == null)
             {
                 throw new Exception("TODO: IHostingEngine service not available exception");
