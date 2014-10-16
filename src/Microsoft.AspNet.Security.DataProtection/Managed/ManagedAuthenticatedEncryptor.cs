@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
                     try
                     {
                         _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
-                        DeriveKeysWithContextHeader(
+                        ManagedSP800_108_CTR_HMACSHA512.DeriveKeysWithContextHeader(
                             kdk: decryptedKdk,
                             label: additionalAuthenticatedData,
                             contextHeader: _contextHeader,
@@ -285,14 +285,6 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
             }
         }
 
-        private static void DeriveKeysWithContextHeader(byte[] kdk, ArraySegment<byte> label, byte[] contextHeader, ArraySegment<byte> context, Func<byte[], HashAlgorithm> prfFactory, ArraySegment<byte> output)
-        {
-            byte[] combinedContext = new byte[checked(contextHeader.Length + context.Count)];
-            Buffer.BlockCopy(contextHeader, 0, combinedContext, 0, contextHeader.Length);
-            Buffer.BlockCopy(context.Array, context.Offset, combinedContext, contextHeader.Length, context.Count);
-            ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(kdk, label, new ArraySegment<byte>(combinedContext), prfFactory, output);
-        }
-
         public void Dispose()
         {
             _keyDerivationKey.Dispose();
@@ -336,7 +328,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
                     try
                     {
                         _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
-                        DeriveKeysWithContextHeader(
+                        ManagedSP800_108_CTR_HMACSHA512.DeriveKeysWithContextHeader(
                             kdk: decryptedKdk,
                             label: additionalAuthenticatedData,
                             contextHeader: _contextHeader,

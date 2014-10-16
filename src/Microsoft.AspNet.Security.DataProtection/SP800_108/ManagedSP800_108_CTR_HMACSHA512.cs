@@ -53,5 +53,13 @@ namespace Microsoft.AspNet.Security.DataProtection.SP800_108
                 }
             }
         }
+
+        public static void DeriveKeysWithContextHeader(byte[] kdk, ArraySegment<byte> label, byte[] contextHeader, ArraySegment<byte> context, Func<byte[], HashAlgorithm> prfFactory, ArraySegment<byte> output)
+        {
+            byte[] combinedContext = new byte[checked(contextHeader.Length + context.Count)];
+            Buffer.BlockCopy(contextHeader, 0, combinedContext, 0, contextHeader.Length);
+            Buffer.BlockCopy(context.Array, context.Offset, combinedContext, contextHeader.Length, context.Count);
+            DeriveKeys(kdk, label, new ArraySegment<byte>(combinedContext), prfFactory, output);
+        }
     }
 }

@@ -38,8 +38,6 @@ namespace Microsoft.AspNet.Security.DataProtection.SafeHandles
         public BCryptHashHandle CreateHmac(byte* pbKey, uint cbKey)
         {
             Debug.Assert(pbKey != null);
-            Debug.Assert(cbKey != 0);
-
             return CreateHashImpl(pbKey, cbKey);
         }
 

@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Security.DataProtection.SP800_108
                     {
                         hashHandle.HashData(pbKdk, cbKdk, pbHashedKey, SHA512_DIGEST_SIZE_IN_BYTES);
                     }
-                    return CachedAlgorithmHandles.SP800_108_CTR_HMAC.GenerateSymmetricKey(pbKdk, cbKdk);
+                    return CachedAlgorithmHandles.SP800_108_CTR_HMAC.GenerateSymmetricKey(pbHashedKey, SHA512_DIGEST_SIZE_IN_BYTES);
                 }
                 finally
                 {
