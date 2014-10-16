@@ -5,10 +5,23 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc
 {
+    /// <summary>
+    /// Result type of a <see cref="ViewComponent"/>.
+    /// </summary>
     public interface IViewComponentResult
     {
+        /// <summary>
+        /// Executes the result of a <see cref="ViewComponent"/> using the specified <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="ViewComponentContext"/> for the current component execution.</param>
         void Execute([NotNull] ViewComponentContext context);
 
+        /// <summary>
+        /// Asynchronously executes the result of a <see cref="ViewComponent"/> using the specified
+        /// <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="ViewComponentContext"/> for the current component execution.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous execution.</returns>
         Task ExecuteAsync([NotNull] ViewComponentContext context);
     }
 }

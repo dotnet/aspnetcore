@@ -9,6 +9,9 @@ using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc
 {
+    /// <summary>
+    /// A <see cref="IViewComponentResult"/> that renders a partial view when executed.
+    /// </summary>
     public class ViewViewComponentResult : IViewComponentResult
     {
         // {0} is the component name, {1} is the view name.
@@ -27,11 +30,20 @@ namespace Microsoft.AspNet.Mvc
 
         public ViewDataDictionary ViewData { get; private set; }
 
+        /// <summary>
+        /// Locates and renders a view specified by <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="ViewComponentContext"/> for the current component execution.</param>
+        /// <remarks>
+        /// This method synchronously calls and blocks on <see cref="ExecuteAsync(ViewComponentContext)"/>.
+        /// </remarks>
         public void Execute([NotNull] ViewComponentContext context)
         {
-            throw new NotImplementedException("There's no support for syncronous views right now.");
+            var task = ExecuteAsync(context);
+            TaskHelper.WaitAndThrowIfFaulted(task);
         }
 
+        /// <inheritdoc />
         public async Task ExecuteAsync([NotNull] ViewComponentContext context)
         {
             string qualifiedViewName;

@@ -1,0 +1,5 @@
+﻿@{
+    ViewData["value-from-view"] = ViewContext.ActionDescriptor.Name;
+}
+@Component.Invoke("Test", "value-from-view")
+@Component.Invoke("ViewData")
