@@ -1,4 +1,5 @@
 ﻿{
+  "webroot": ".",
   "compilationOptions": {
     "warningsAsErrors": true
   },
