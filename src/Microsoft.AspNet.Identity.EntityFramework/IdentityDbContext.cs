@@ -7,20 +7,10 @@ using Microsoft.Data.Entity.Metadata;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
-    public class IdentityDbContext :
-        IdentityDbContext<IdentityUser, IdentityRole, string>
-    {
-        public IdentityDbContext() { }
-        public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
-    }
+    public class IdentityDbContext : IdentityDbContext<IdentityUser, IdentityRole, string> { }
 
-    public class IdentityDbContext<TUser> :
-        IdentityDbContext<TUser, IdentityRole, string>
-        where TUser : IdentityUser
-    {
-        public IdentityDbContext() { }
-        public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
-    }
+    public class IdentityDbContext<TUser> : IdentityDbContext<TUser, IdentityRole, string> where TUser : IdentityUser
+    { }
 
     public class IdentityDbContext<TUser, TRole, TKey> : DbContext
         where TUser : IdentityUser<TKey>
@@ -33,9 +23,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         public DbSet<IdentityUserRole<TKey>> UserRoles { get; set; }
         public DbSet<TRole> Roles { get; set; }
         public DbSet<IdentityRoleClaim<TKey>> RoleClaims { get; set; }
-
-        public IdentityDbContext() { }
-        public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

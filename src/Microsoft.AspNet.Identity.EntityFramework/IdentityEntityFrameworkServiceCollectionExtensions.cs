@@ -1,27 +1,26 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Builder;
+using System;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
-using System;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class IdentityEntityFrameworkServiceCollectionExtensions
     {
         // MOVE to builder extension
-        public static IdentityBuilder<IdentityUser, IdentityRole> AddIdentitySqlServer(this IServiceCollection services)
+        public static IdentityBuilder<IdentityUser, IdentityRole> AddIdentityEntityFramework(this IServiceCollection services)
         {
-            return services.AddIdentitySqlServer<IdentityDbContext, IdentityUser, IdentityRole>();
+            return services.AddIdentityEntityFramework<IdentityDbContext, IdentityUser, IdentityRole>();
         }
 
-        public static IdentityBuilder<IdentityUser, IdentityRole> AddIdentitySqlServer<TContext>(this IServiceCollection services)
+        public static IdentityBuilder<IdentityUser, IdentityRole> AddIdentityEntityFramework<TContext>(this IServiceCollection services)
             where TContext : DbContext
         {
-            return services.AddIdentitySqlServer<TContext, IdentityUser, IdentityRole>();
+            return services.AddIdentityEntityFramework<TContext, IdentityUser, IdentityRole>();
         }
 
         public static IdentityBuilder<TUser, TRole> AddDefaultIdentity<TContext, TUser, TRole>(this IServiceCollection services, IConfiguration config = null,
@@ -34,14 +33,14 @@ namespace Microsoft.Framework.DependencyInjection
                 .AddEntityFramework<TContext, TUser, TRole>();
         }
 
-        public static IdentityBuilder<TUser, IdentityRole> AddIdentitySqlServer<TContext, TUser>(this IServiceCollection services, Action<IdentityOptions> configureOptions = null)
+        public static IdentityBuilder<TUser, IdentityRole> AddIdentityEntityFramework<TContext, TUser>(this IServiceCollection services, Action<IdentityOptions> configureOptions = null)
             where TUser : IdentityUser, new()
             where TContext : DbContext
         {
-            return services.AddIdentitySqlServer<TContext, TUser, IdentityRole>(null, configureOptions);
+            return services.AddIdentityEntityFramework<TContext, TUser, IdentityRole>(null, configureOptions);
         }
 
-        public static IdentityBuilder<TUser, TRole> AddIdentitySqlServer<TContext, TUser, TRole>(this IServiceCollection services, IConfiguration config = null, Action<IdentityOptions> configureOptions = null)
+        public static IdentityBuilder<TUser, TRole> AddIdentityEntityFramework<TContext, TUser, TRole>(this IServiceCollection services, IConfiguration config = null, Action<IdentityOptions> configureOptions = null)
             where TUser : IdentityUser, new()
             where TRole : IdentityRole, new()
             where TContext : DbContext
@@ -49,11 +48,10 @@ namespace Microsoft.Framework.DependencyInjection
             var builder = services.AddIdentity<TUser, TRole>(config, configureOptions);
             services.AddScoped<IUserStore<TUser>, UserStore<TUser, TRole, TContext>>();
             services.AddScoped<IRoleStore<TRole>, RoleStore<TRole, TContext>>();
-            services.AddScoped<TContext>();
             return builder;
         }
 
-        public static IdentityBuilder<TUser, TRole> AddIdentitySqlServer<TContext, TUser, TRole, TKey>(this IServiceCollection services, IConfiguration config = null, Action<IdentityOptions> configureOptions = null)
+        public static IdentityBuilder<TUser, TRole> AddIdentityEntityFramework<TContext, TUser, TRole, TKey>(this IServiceCollection services, IConfiguration config = null, Action<IdentityOptions> configureOptions = null)
             where TUser : IdentityUser<TKey>, new()
             where TRole : IdentityRole<TKey>, new()
             where TContext : DbContext
@@ -62,7 +60,6 @@ namespace Microsoft.Framework.DependencyInjection
             var builder = services.AddIdentity<TUser, TRole>(config, configureOptions);
             services.AddScoped<IUserStore<TUser>, UserStore<TUser, TRole, TContext, TKey>>();
             services.AddScoped<IRoleStore<TRole>, RoleStore<TRole, TContext, TKey>>();
-            services.AddScoped<TContext>();
             return builder;
         }
     }

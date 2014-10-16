@@ -21,10 +21,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         private readonly string ConnectionString = @"Server=(localdb)\v11.0;Database=DefaultSchemaTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
         public IdentityDbContext CreateContext(bool ensureCreated = false)
         {
-            var services = UserStoreTest.ConfigureDbServices(ConnectionString);
-            var serviceProvider = services.BuildServiceProvider();
-            var db = new IdentityDbContext(serviceProvider, 
-                serviceProvider.GetService<IOptions<DbContextOptions>>().Options);
+            var db = DbUtil.Create(ConnectionString);
             if (ensureCreated)
             {
                 db.Database.EnsureCreated();
@@ -53,10 +50,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
             builder.UseServices(services =>
             {
-                UserStoreTest.ConfigureDbServices(ConnectionString, services);
-                services.AddIdentitySqlServer();
-                // todo: constructor resolution doesn't work well with IdentityDbContext since it has 4 constructors
-                services.AddInstance(context);
+                DbUtil.ConfigureDbServices<IdentityDbContext>(ConnectionString, services);
+                services.AddDefaultIdentity<IdentityDbContext, IdentityUser, IdentityRole>();
             });
 
             var userStore = builder.ApplicationServices.GetService<IUserStore<IdentityUser>>();

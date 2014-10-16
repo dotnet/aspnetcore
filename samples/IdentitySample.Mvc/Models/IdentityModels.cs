@@ -8,13 +8,7 @@ namespace IdentitySample.Models
 {
     public class ApplicationUser : IdentityUser { }
 
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
-    {
-        public ApplicationDbContext(IServiceProvider serviceProvider, IOptions<IdentityDbContextOptions> optionsAccessor)
-                   : base(serviceProvider, optionsAccessor.Options)
-        {
-        }
-    }
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser> { }
 
     public class IdentityDbContextOptions : DbContextOptions
     {

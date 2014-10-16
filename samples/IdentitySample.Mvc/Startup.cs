@@ -1,3 +1,4 @@
+using System;
 using IdentitySample.Models;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
@@ -6,7 +7,6 @@ using Microsoft.AspNet.Routing;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using System;
 
 namespace IdentitySamples
 {
@@ -27,13 +27,13 @@ namespace IdentitySamples
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddEntityFramework().AddSqlServer();
-            services.AddScoped<ApplicationDbContext>();
+            services.AddEntityFramework()
+                    .AddSqlServer()
+                    .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.Get("Data:IdentityConnection:ConnectionString")));
             services.Configure<IdentityDbContextOptions>(options =>
             {
                 options.DefaultAdminUserName = Configuration.Get("DefaultAdminUsername");
                 options.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
-                options.UseSqlServer(Configuration.Get("Data:IdentityConnection:ConnectionString"));
             });
 
             services.AddDefaultIdentity<ApplicationDbContext, ApplicationUser, IdentityRole>(Configuration, options =>

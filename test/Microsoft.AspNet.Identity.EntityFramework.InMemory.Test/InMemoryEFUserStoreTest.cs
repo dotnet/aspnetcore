@@ -8,7 +8,7 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 {
-    public class InMemoryEFUserStoreTest : UserManagerTestBase<IdentityUser, IdentityRole> 
+    public class InMemoryEFUserStoreTest : UserManagerTestBase<IdentityUser, IdentityRole>
     {
         protected override object CreateTestContext()
         {
