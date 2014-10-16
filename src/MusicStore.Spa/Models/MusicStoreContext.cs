@@ -40,7 +40,7 @@ namespace MusicStore.Models
                 {
                     b.Key(o => o.OrderId);
                     b.Property(o => o.OrderId)
-                        .ColumnName("[Order]");
+                        .ForRelational().Column("[Order]");
                 });
 
             builder.Entity<Genre>().Key(g => g.GenreId);
