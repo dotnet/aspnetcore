@@ -1,10 +1,9 @@
-﻿using IdentitySample.Models;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Mvc;
-using System.Linq;
+﻿using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using IdentitySample.Models;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Mvc;
 
 namespace IdentitySample
 {
@@ -13,7 +12,7 @@ namespace IdentitySample
     {
         public ManageController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
-            UserManager = UserManager;
+            UserManager = userManager;
             SignInManager = signInManager;
         }
 
