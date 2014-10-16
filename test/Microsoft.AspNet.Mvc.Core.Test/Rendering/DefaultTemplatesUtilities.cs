@@ -43,12 +43,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlHelper<ObjectTemplateModel> GetHtmlHelper()
         {
-            return GetHtmlHelper<ObjectTemplateModel>(null);
+            return GetHtmlHelper<ObjectTemplateModel>(model: null);
         }
 
         public static HtmlHelper<ObjectTemplateModel> GetHtmlHelper(IUrlHelper urlHelper)
         {
-            return GetHtmlHelper<ObjectTemplateModel>(null, urlHelper, CreateViewEngine(), CreateModelMetadataProvider());
+            return GetHtmlHelper<ObjectTemplateModel>(
+                model: null,
+                urlHelper: urlHelper,
+                viewEngine: CreateViewEngine(),
+                provider: CreateModelMetadataProvider());
         }
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(TModel model)
@@ -58,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlHelper<ObjectTemplateModel> GetHtmlHelper(IModelMetadataProvider provider)
         {
-            return GetHtmlHelper<ObjectTemplateModel>(null, provider);
+            return GetHtmlHelper<ObjectTemplateModel>(model: null, provider: provider);
         }
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(TModel model, IModelMetadataProvider provider)
@@ -73,9 +77,32 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(
             TModel model,
+            ICompositeViewEngine viewEngine,
+            Func<IHtmlHelper, IHtmlHelper> innerHelperWrapper)
+        {
+            return GetHtmlHelper(
+                model,
+                CreateUrlHelper(),
+                viewEngine,
+                CreateModelMetadataProvider(),
+                innerHelperWrapper);
+        }
+
+        public static HtmlHelper<TModel> GetHtmlHelper<TModel>(
+            TModel model,
             IUrlHelper urlHelper,
             ICompositeViewEngine viewEngine,
             IModelMetadataProvider provider)
+        {
+            return GetHtmlHelper(model, urlHelper, viewEngine, provider, innerHelperWrapper: null);
+        }
+
+        public static HtmlHelper<TModel> GetHtmlHelper<TModel>(
+            TModel model,
+            IUrlHelper urlHelper,
+            ICompositeViewEngine viewEngine,
+            IModelMetadataProvider provider,
+            Func<IHtmlHelper, IHtmlHelper> innerHelperWrapper)
         {
             var viewData = new ViewDataDictionary<TModel>(provider);
             viewData.Model = model;
@@ -121,14 +148,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, new StringWriter());
 
             // TemplateRenderer will Contextualize this transient service.
+            var innerHelper = (IHtmlHelper)new HtmlHelper(
+                viewEngine,
+                provider,
+                urlHelper,
+                GetAntiForgeryInstance(),
+                actionBindingContextProvider.Object);
+            if (innerHelperWrapper != null)
+            {
+                innerHelper = innerHelperWrapper(innerHelper);
+            }
             serviceProvider
                 .Setup(s => s.GetService(typeof(IHtmlHelper)))
-                .Returns(() => new HtmlHelper(
-                    viewEngine,
-                    provider,
-                    urlHelper,
-                    GetAntiForgeryInstance(),
-                    actionBindingContextProvider.Object));
+                .Returns(() => innerHelper);
 
             var htmlHelper = new HtmlHelper<TModel>(
                 viewEngine,

@@ -212,6 +212,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return htmlAttributes;
         }
 
+        public static string MultilineTemplate(IHtmlHelper html)
+        {
+            var htmlString = html.TextArea(
+                name: string.Empty,
+                value: html.ViewContext.ViewData.TemplateInfo.FormattedModelValue.ToString(),
+                rows: 0,
+                columns: 0,
+                htmlAttributes: CreateHtmlAttributes(html, "text-box multi-line"));
+            return htmlString.ToString();
+        }
+
         public static string ObjectTemplate(IHtmlHelper html)
         {
             var viewData = html.ViewData;

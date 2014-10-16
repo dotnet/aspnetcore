@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -14,6 +15,59 @@ namespace Microsoft.AspNet.Mvc.Core
 {
     public class DefaultEditorTemplatesTests
     {
+        // Mappings from templateName to expected result when using StubbyHtmlHelper.
+        public static TheoryData<string, string> TemplateNameData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    { null, "__TextBox__" },
+                    { string.Empty, "__TextBox__" },
+                    { "EmailAddress", "__TextBox__" },
+                    { "emailaddress", "__TextBox__" },
+                    { "HiddenInput", "True__Hidden__" }, // Hidden also generates value by default.
+                    { "HIDDENINPUT", "True__Hidden__" },
+                    { "MultilineText", "__TextArea__" },
+                    { "multilinetext", "__TextArea__" },
+                    { "Password", "__Password__" },
+                    { "PASSWORD", "__Password__" },
+                    { "PhoneNumber", "__TextBox__" },
+                    { "phonenumber", "__TextBox__" },
+                    { "Text", "__TextBox__" },
+                    { "TEXT", "__TextBox__" },
+                    { "Url", "__TextBox__" },
+                    { "url", "__TextBox__" },
+                    { "Date", "__TextBox__" },
+                    { "DATE", "__TextBox__" },
+                    { "DateTime", "__TextBox__" },
+                    { "datetime", "__TextBox__" },
+                    { "DateTime-local", "__TextBox__" },
+                    { "DATETIME-LOCAL", "__TextBox__" },
+                    { "Time", "__TextBox__" },
+                    { "time", "__TextBox__" },
+                    { "Byte", "__TextBox__" },
+                    { "BYTE", "__TextBox__" },
+                    { "SByte", "__TextBox__" },
+                    { "sbyte", "__TextBox__" },
+                    { "Int32", "__TextBox__" },
+                    { "INT32", "__TextBox__" },
+                    { "UInt32", "__TextBox__" },
+                    { "uint32", "__TextBox__" },
+                    { "Int64", "__TextBox__" },
+                    { "INT64", "__TextBox__" },
+                    { "UInt64", "__TextBox__" },
+                    { "uint64", "__TextBox__" },
+                    { "Boolean", "__CheckBox__" }, // String is not a Nullable type.
+                    { "BOOLEAN", "__CheckBox__" },
+                    { "Decimal", "__TextBox__" },
+                    { "decimal", "__TextBox__" },
+                    { "String", "__TextBox__" },
+                    { "STRING", "__TextBox__" },
+                };
+            }
+        }
+
         [Fact]
         public void ObjectTemplateEditsSimplePropertiesOnObjectByDefault()
         {
@@ -181,6 +235,219 @@ Environment.NewLine;
 
             // Assert
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void MultilineTextTemplate_ReturnsTextArea()
+        {
+            // Arrange
+            var expected =
+                "<textarea class=\"text-box multi-line\" id=\"FieldPrefix\" name=\"FieldPrefix\">" +
+                Environment.NewLine +
+                "Formatted string</textarea>";
+
+            var model = "Model string";
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var templateInfo = html.ViewData.TemplateInfo;
+            templateInfo.HtmlFieldPrefix = "FieldPrefix";
+
+            // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used below.
+            templateInfo.FormattedModelValue = "Formatted string";
+
+            // Act
+            var result = DefaultEditorTemplates.MultilineTemplate(html);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(TemplateNameData))]
+        public void Editor_CallsExpectedHtmlHelper(string templateName, string expectedResult)
+        {
+            // Arrange
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                model,
+                viewEngine.Object,
+                innerHelper => new StubbyHtmlHelper(innerHelper));
+            helper.ViewData["Property1"] = "True";
+
+            // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
+            helper.ViewData.TemplateInfo.FormattedModelValue = "Formatted string";
+
+            // Act
+            var result = helper.Editor(
+                "Property1",
+                templateName,
+                htmlFieldName: null,
+                additionalViewData: null);
+
+            // Assert
+            Assert.Equal(expectedResult, result.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(TemplateNameData))]
+        public void EditorFor_CallsExpectedHtmlHelper(string templateName, string expectedResult)
+        {
+            // Arrange
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                model,
+                viewEngine.Object,
+                innerHelper => new StubbyHtmlHelper(innerHelper));
+
+            // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
+            helper.ViewData.TemplateInfo.FormattedModelValue = "Formatted string";
+
+            // Act
+            var result = helper.EditorFor(
+                anotherModel => anotherModel.Property1,
+                templateName,
+                htmlFieldName: null,
+                additionalViewData: null);
+
+            // Assert
+            Assert.Equal(expectedResult, result.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(TemplateNameData))]
+        public void Editor_CallsExpectedHtmlHelper_DataTypeName(string templateName, string expectedResult)
+        {
+            // Arrange
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                model,
+                viewEngine.Object,
+                innerHelper => new StubbyHtmlHelper(innerHelper));
+            helper.ViewData["Property1"] = "True";
+            var metadata =
+                helper.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+            metadata.DataTypeName = templateName;
+
+            // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
+            helper.ViewData.TemplateInfo.FormattedModelValue = "Formatted string";
+
+            // Act
+            var result = helper.Editor(
+                "Property1",
+                templateName,
+                htmlFieldName: null,
+                additionalViewData: null);
+
+            // Assert
+            Assert.Equal(expectedResult, result.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(TemplateNameData))]
+        public void EditorFor_CallsExpectedHtmlHelper_DataTypeName(string templateName, string expectedResult)
+        {
+            // Arrange
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                model,
+                viewEngine.Object,
+                innerHelper => new StubbyHtmlHelper(innerHelper));
+            var metadata =
+                helper.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+            metadata.DataTypeName = templateName;
+
+            // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
+            helper.ViewData.TemplateInfo.FormattedModelValue = "Formatted string";
+
+            // Act
+            var result = helper.EditorFor(
+                anotherModel => anotherModel.Property1,
+                templateName,
+                htmlFieldName: null,
+                additionalViewData: null);
+
+            // Assert
+            Assert.Equal(expectedResult, result.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(TemplateNameData))]
+        public void Editor_CallsExpectedHtmlHelper_TemplateHint(string templateName, string expectedResult)
+        {
+            // Arrange
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                model,
+                viewEngine.Object,
+                innerHelper => new StubbyHtmlHelper(innerHelper));
+            helper.ViewData["Property1"] = "True";
+            var metadata =
+                helper.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+            metadata.TemplateHint = templateName;
+
+            // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
+            helper.ViewData.TemplateInfo.FormattedModelValue = "Formatted string";
+
+            // Act
+            var result = helper.Editor(
+                "Property1",
+                templateName,
+                htmlFieldName: null,
+                additionalViewData: null);
+
+            // Assert
+            Assert.Equal(expectedResult, result.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(TemplateNameData))]
+        public void EditorFor_CallsExpectedHtmlHelper_TemplateHint(string templateName, string expectedResult)
+        {
+            // Arrange
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                model,
+                viewEngine.Object,
+                innerHelper => new StubbyHtmlHelper(innerHelper));
+            var metadata =
+                helper.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+            metadata.TemplateHint = templateName;
+
+            // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
+            helper.ViewData.TemplateInfo.FormattedModelValue = "Formatted string";
+
+            // Act
+            var result = helper.EditorFor(
+                anotherModel => anotherModel.Property1,
+                templateName,
+                htmlFieldName: null,
+                additionalViewData: null);
+
+            // Assert
+            Assert.Equal(expectedResult, result.ToString());
         }
 
         [Fact]
@@ -410,6 +677,252 @@ Environment.NewLine;
             // Act and Assert
             var ex = Assert.Throws<FormatException>(() => helper.EditorFor(m => m.Property1));
             Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        private class StubbyHtmlHelper : IHtmlHelper, ICanHasViewContext
+        {
+            private readonly IHtmlHelper _innerHelper;
+
+            public StubbyHtmlHelper(IHtmlHelper innerHelper)
+            {
+                _innerHelper = innerHelper;
+            }
+
+            public Html5DateRenderingMode Html5DateRenderingMode
+            {
+                get { return _innerHelper.Html5DateRenderingMode; }
+                set { _innerHelper.Html5DateRenderingMode = value; }
+            }
+
+            public string IdAttributeDotReplacement
+            {
+                get { return _innerHelper.IdAttributeDotReplacement; }
+                set { _innerHelper.IdAttributeDotReplacement = value; }
+            }
+
+            public IModelMetadataProvider MetadataProvider
+            {
+                get { return _innerHelper.MetadataProvider; }
+            }
+
+            public dynamic ViewBag
+            {
+                get { return _innerHelper.ViewBag; }
+            }
+
+            public ViewContext ViewContext
+            {
+                get { return _innerHelper.ViewContext; }
+            }
+
+            public ViewDataDictionary ViewData
+            {
+                get { return _innerHelper.ViewData; }
+            }
+
+            public void Contextualize([NotNull] ViewContext viewContext)
+            {
+                (_innerHelper as ICanHasViewContext)?.Contextualize(viewContext);
+            }
+
+            public HtmlString ActionLink(
+                [NotNull] string linkText,
+                string actionName,
+                string controllerName,
+                string protocol,
+                string hostname,
+                string fragment,
+                object routeValues,
+                object htmlAttributes)
+            {
+                throw new NotImplementedException();
+            }
+
+            public HtmlString AntiForgeryToken()
+            {
+                throw new NotImplementedException();
+            }
+
+            public MvcForm BeginForm(
+                string actionName,
+                string controllerName,
+                object routeValues,
+                FormMethod method,
+                object htmlAttributes)
+            {
+                throw new NotImplementedException();
+            }
+
+            public HtmlString CheckBox(string name, bool? isChecked, object htmlAttributes)
+            {
+                return new HtmlString("__CheckBox__");
+            }
+
+            public HtmlString Display(
+                string expression,
+                string templateName,
+                string htmlFieldName,
+                object additionalViewData)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string DisplayName(string expression)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string DisplayText(string name)
+            {
+                throw new NotImplementedException();
+            }
+
+            public HtmlString DropDownList(
+                string name,
+                IEnumerable<SelectListItem> selectList,
+                string optionLabel,
+                object htmlAttributes)
+            {
+                return new HtmlString("__DropDownList__");
+            }
+
+            public HtmlString Editor(
+                string expression,
+                string templateName,
+                string htmlFieldName,
+                object additionalViewData)
+            {
+                return _innerHelper.Editor(expression, templateName, htmlFieldName, additionalViewData);
+            }
+
+            public string Encode(string value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string Encode(object value)
+            {
+                return _innerHelper.Encode(value);
+            }
+
+            public void EndForm()
+            {
+                throw new NotImplementedException();
+            }
+
+            public string FormatValue(object value, string format)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string GenerateIdFromName([NotNull] string name)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEnumerable<ModelClientValidationRule> GetClientValidationRules(ModelMetadata metadata, string name)
+            {
+                return Enumerable.Empty<ModelClientValidationRule>();
+            }
+
+            public HtmlString Hidden(string name, object value, object htmlAttributes)
+            {
+                return new HtmlString("__Hidden__");
+            }
+
+            public string Id(string name)
+            {
+                throw new NotImplementedException();
+            }
+
+            public HtmlString Label(string expression, string labelText, object htmlAttributes)
+            {
+                return new HtmlString("__Label__");
+            }
+
+            public HtmlString ListBox(string name, IEnumerable<SelectListItem> selectList, object htmlAttributes)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string Name(string name)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<HtmlString> PartialAsync(
+                [NotNull] string partialViewName,
+                object model,
+                ViewDataDictionary viewData)
+            {
+                throw new NotImplementedException();
+            }
+
+            public HtmlString Password(string name, object value, object htmlAttributes)
+            {
+                return new HtmlString("__Password__");
+            }
+
+            public HtmlString RadioButton(string name, object value, bool? isChecked, object htmlAttributes)
+            {
+                return new HtmlString("__RadioButton__");
+            }
+
+            public HtmlString Raw(object value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public HtmlString Raw(string value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task RenderPartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData)
+            {
+                throw new NotImplementedException();
+            }
+
+            public HtmlString RouteLink(
+                [NotNull] string linkText,
+                string routeName,
+                string protocol,
+                string hostName,
+                string fragment,
+                object routeValues,
+                object htmlAttributes)
+            {
+                throw new NotImplementedException();
+            }
+
+            public HtmlString TextArea(string name, string value, int rows, int columns, object htmlAttributes)
+            {
+                return new HtmlString("__TextArea__");
+            }
+
+            public HtmlString TextBox(string name, object value, string format, object htmlAttributes)
+            {
+                return new HtmlString("__TextBox__");
+            }
+
+            public HtmlString ValidationMessage(string modelName, string message, object htmlAttributes, string tag)
+            {
+                return new HtmlString("__ValidationMessage__");
+            }
+
+            public HtmlString ValidationSummary(
+                bool excludePropertyErrors,
+                string message,
+                object htmlAttributes,
+                string tag)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string Value(string name, string format)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
