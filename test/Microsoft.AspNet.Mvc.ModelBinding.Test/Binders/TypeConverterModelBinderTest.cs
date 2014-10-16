@@ -44,6 +44,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [InlineData(typeof(DayOfWeek))]
         public async Task BindModel_ReturnsTrue_IfTypeCanBeConverted(Type destinationType)
         {
+            if (TestPlatformHelper.IsMono &&
+                destinationType == typeof(DateTimeOffset))
+            {
+                // DateTimeOffset doesn't have a TypeConverter in Mono
+                return;
+            }
+
             // Arrange
             var bindingContext = GetBindingContext(destinationType);
             bindingContext.ValueProvider = new SimpleHttpValueProvider
