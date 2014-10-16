@@ -55,17 +55,22 @@ namespace Microsoft.AspNet.Identity
             }
             var issuedUtc = context.Properties.IssuedUtc;
 
+            if (context.HttpContext.RequestServices == null)
+            {
+                throw new InvalidOperationException("TODO: RequestServices is null, missing Use[Request]Services?");
+            }
+
             // Only validate if enough time has elapsed
             var validate = (issuedUtc == null);
             if (issuedUtc != null)
             {
                 var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
-                var identityOptions = context.HttpContext.RequestServices.GetService<IOptions<IdentityOptions>>().Options;
-                validate = timeElapsed > identityOptions.SecurityStampValidationInterval;
+                var accessor = context.HttpContext.RequestServices.GetRequiredService<IOptions<IdentityOptions>>();
+                validate = timeElapsed > accessor.Options.SecurityStampValidationInterval;
             }
             if (validate)
             {
-                var validator = context.HttpContext.RequestServices.GetService<ISecurityStampValidator>();
+                var validator = context.HttpContext.RequestServices.GetRequiredService<ISecurityStampValidator>();
                 return validator.Validate(context, context.Identity);
             }
             return Task.FromResult(0);

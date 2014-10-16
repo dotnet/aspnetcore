@@ -27,7 +27,8 @@ namespace Microsoft.AspNet.Identity.Test
             var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType);
             var ticket = new AuthenticationTicket(id, new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow });
             var context = new CookieValidateIdentityContext(httpContext.Object, ticket, new CookieAuthenticationOptions());
-            await Assert.ThrowsAsync<Exception>(() => SecurityStampValidator.ValidateIdentityAsync(context));
+            var ex = await Assert.ThrowsAsync<Exception>(() => SecurityStampValidator.ValidateIdentityAsync(context));
+            Assert.True(ex.Message.Contains("No service for type 'Microsoft.Framework.OptionsModel.IOptions"));
         }
 
         [Theory]
