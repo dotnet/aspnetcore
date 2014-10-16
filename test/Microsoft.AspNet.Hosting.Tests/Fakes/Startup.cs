@@ -3,6 +3,9 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
+using System;
 
 namespace Microsoft.AspNet.Hosting.Fakes
 {
@@ -42,6 +45,52 @@ namespace Microsoft.AspNet.Hosting.Fakes
                 o.Configured = true;
                 o.Environment = "Static";
             });
+        }
+
+        public static IServiceProvider ConfigureStaticProviderServices()
+        {
+            var services = new ServiceCollection();
+            services.Add(OptionsServices.GetDefaultServices());
+            services.Configure<FakeOptions>(o =>
+            {
+                o.Configured = true;
+                o.Environment = "StaticProvider";
+            });
+            return services.BuildServiceProvider();
+        }
+
+        public static IServiceProvider ConfigureFallbackProviderServices(IServiceProvider fallback)
+        {
+            return fallback;
+        }
+
+        public static IServiceProvider ConfigureNullServices()
+        {
+            return null;
+        }
+
+        public IServiceProvider ConfigureProviderServices()
+        {
+            var services = new ServiceCollection();
+            services.Add(OptionsServices.GetDefaultServices());
+            services.Configure<FakeOptions>(o =>
+            {
+                o.Configured = true;
+                o.Environment = "Provider";
+            });
+            return services.BuildServiceProvider();
+        }
+
+        public IServiceProvider ConfigureProviderArgsServices(IApplicationBuilder me)
+        {
+            var services = new ServiceCollection();
+            services.Add(OptionsServices.GetDefaultServices());
+            services.Configure<FakeOptions>(o =>
+            {
+                o.Configured = true;
+                o.Environment = "ProviderArgs";
+            });
+            return services.BuildServiceProvider();
         }
 
         public virtual void Configure(IApplicationBuilder builder)

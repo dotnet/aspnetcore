@@ -43,17 +43,19 @@ namespace Microsoft.AspNet.Hosting.Startup
                 }
                 return null;
             }
-
             if (returnType != null && methodInfo.ReturnType != returnType)
             {
-                throw new Exception(string.Format("TODO: {0} method does not return " + returnType.Name,
-                    methodInfo.Name));
+                if (required)
+                {
+                    throw new Exception(string.Format("TODO: {0} method does not return " + returnType.Name,
+                        methodInfo.Name));
+                }
+                return null;
             }
-
             return methodInfo;
         }
 
-        private void Invoke(MethodInfo methodInfo, object instance, IApplicationBuilder builder, IServiceCollection services = null)
+        private object Invoke(MethodInfo methodInfo, object instance, IApplicationBuilder builder, IServiceCollection services = null)
         {
             var parameterInfos = methodInfo.GetParameters();
             var parameters = new object[parameterInfos.Length];
@@ -84,7 +86,7 @@ namespace Microsoft.AspNet.Hosting.Startup
                     }
                 }
             }
-            methodInfo.Invoke(instance, parameters);
+            return methodInfo.Invoke(instance, parameters);
         }
 
         public Action<IApplicationBuilder> LoadStartup(
@@ -137,8 +139,8 @@ namespace Microsoft.AspNet.Hosting.Startup
             }
 
             var configureMethod = FindMethod(type, "Configure{0}", environmentName, typeof(void), required: true);
-            // TODO: accept IServiceProvider method as well?
-            var servicesMethod = FindMethod(type, "Configure{0}Services", environmentName, typeof(void), required: false);
+            var servicesMethod = FindMethod(type, "Configure{0}Services", environmentName, typeof(IServiceProvider), required: false)
+                ?? FindMethod(type, "Configure{0}Services", environmentName, typeof(void), required: false);
 
             object instance = null;
             if (!configureMethod.IsStatic || (servicesMethod != null && !servicesMethod.IsStatic))
@@ -149,12 +151,22 @@ namespace Microsoft.AspNet.Hosting.Startup
             {
                 if (servicesMethod != null)
                 {
-                    var services = new ServiceCollection();
-                    services.Add(OptionsServices.GetDefaultServices());
-                    Invoke(servicesMethod, instance, builder, services);
-                    if (builder != null)
+                    if (servicesMethod.ReturnType == typeof(IServiceProvider))
                     {
-                        builder.ApplicationServices = services.BuildServiceProvider(builder.ApplicationServices);
+                        // IServiceProvider ConfigureServices()
+                        builder.ApplicationServices = (Invoke(servicesMethod, instance, builder) as IServiceProvider)
+                            ?? builder.ApplicationServices; 
+                    }
+                    else
+                    {
+                        // void ConfigureServices(IServiceCollection)
+                        var services = new ServiceCollection();
+                        services.Add(OptionsServices.GetDefaultServices());
+                        Invoke(servicesMethod, instance, builder, services);
+                        if (builder != null)
+                        {
+                            builder.ApplicationServices = services.BuildServiceProvider(builder.ApplicationServices);
+                        }
                     }
                 }
                 Invoke(configureMethod, instance, builder);
