@@ -136,6 +136,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private async Task RenderPageCoreAsync(IRazorPage page, ViewContext context)
         {
+            page.IsPartial = _isPartial;
             page.ViewContext = context;
             if (EnableInstrumentation)
             {

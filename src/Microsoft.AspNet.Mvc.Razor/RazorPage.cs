@@ -58,6 +58,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         public string Layout { get; set; }
 
         /// <inheritdoc />
+        public bool IsPartial { get; set; }
+
+        /// <inheritdoc />
         public IPageExecutionContext PageExecutionContext { get; set; }
 
         /// <summary>

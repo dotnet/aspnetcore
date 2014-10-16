@@ -788,6 +788,69 @@ section-content-2";
             Assert.Equal(expected, actual);
         }
 
+        [Fact]
+        public async Task IsPartial_IsSetToFalse_ForViewStartPageAndLayoutOfAView()
+        {
+            // Arrange
+            bool? isPartialPage = null;
+            bool? isPartialLayout = null;
+            bool? isPartialViewStart = null;
+
+            var page = new TestableRazorPage(v =>
+            {
+                isPartialPage = v.IsPartial;
+            });
+            var viewStart = new TestableRazorPage(v =>
+            {
+                v.Layout = "/Layout.cshtml";
+                isPartialViewStart = v.IsPartial;
+            });
+            var layout = new TestableRazorPage(v =>
+            {
+                isPartialLayout = v.IsPartial;
+                v.RenderBodyPublic();
+            });
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance("/Layout.cshtml"))
+                       .Returns(layout);
+
+            var view = new RazorView(pageFactory.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider(viewStart));
+            view.Contextualize(page, isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.False(isPartialPage.Value);
+            Assert.False(isPartialLayout.Value);
+            Assert.False(isPartialViewStart.Value);
+        }
+
+        [Fact]
+        public async Task IsPartial_IsSetToTrue_ForPartialView()
+        {
+            // Arrange
+            bool? isPartialPage = null;
+            var page = new TestableRazorPage(v =>
+            {
+                isPartialPage = v.IsPartial;
+            });
+            var view = new RazorView(Mock.Of<IRazorPageFactory>(),
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider());
+            view.Contextualize(page, isPartial: true);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.True(isPartialPage.Value);
+        }
+
         private static TextWriter CreateBufferedWriter()
         {
             var mockWriter = new Mock<TextWriter>();
