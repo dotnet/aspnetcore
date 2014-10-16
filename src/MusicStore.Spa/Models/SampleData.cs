@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.SqlServer;
-using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
+using MusicStore.Spa;
 
 namespace MusicStore.Models
 {
@@ -25,29 +26,12 @@ namespace MusicStore.Models
                     if (await db.Database.EnsureCreatedAsync())
                     {
                         await InsertTestData(serviceProvider);
-                    }
-                }
-                else
-                {
-                    await InsertTestData(serviceProvider);
-                }
-            }
-        }
-
-        public static async Task InitializeIdentityDatabaseAsync(IServiceProvider serviceProvider)
-        {
-            using (var db = serviceProvider.GetService<ApplicationDbContext>())
-            {
-                var sqlServerDataStore = db.Configuration.DataStore as SqlServerDataStore;
-                if (sqlServerDataStore != null)
-                {
-                    if (await db.Database.EnsureCreatedAsync())
-                    {
                         await CreateAdminUser(serviceProvider);
                     }
                 }
                 else
                 {
+                    await InsertTestData(serviceProvider);
                     await CreateAdminUser(serviceProvider);
                 }
             }
@@ -55,7 +39,7 @@ namespace MusicStore.Models
 
         private static async Task CreateAdminUser(IServiceProvider serviceProvider)
         {
-            var options = serviceProvider.GetService<IOptions<IdentityDbContextOptions>>().Options;
+            var settings = serviceProvider.GetService<IOptions<SiteSettings>>().Options;
             const string adminRole = "Administrator";
 
             var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
@@ -66,11 +50,11 @@ namespace MusicStore.Models
                 await roleManager.CreateAsync(new IdentityRole(adminRole));
             }
 
-            var user = await userManager.FindByNameAsync(options.DefaultAdminUserName);
+            var user = await userManager.FindByNameAsync(settings.DefaultAdminUsername);
             if (user == null)
             {
-                user = new ApplicationUser { UserName = options.DefaultAdminUserName };
-                await userManager.CreateAsync(user, options.DefaultAdminPassword);
+                user = new ApplicationUser { UserName = settings.DefaultAdminUsername };
+                await userManager.CreateAsync(user, settings.DefaultAdminPassword);
                 await userManager.AddToRoleAsync(user, adminRole);
                 await userManager.AddClaimAsync(user, new Claim("ManageStore", "Allowed"));
             }

@@ -27,29 +27,27 @@ namespace MusicStore.Spa
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add options accessors to the service container
-            services.Configure<IdentityDbContextOptions>(options =>
+            services.Configure<SiteSettings>(settings =>
             {
-                options.DefaultAdminUserName = Configuration.Get("DefaultAdminUsername");
-                options.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
-                options.UseSqlServer(Configuration.Get("Data:IdentityConnection:ConnectionString"));
+                settings.DefaultAdminUsername = Configuration.Get("DefaultAdminUsername");
+                settings.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
             });
-
-            services.Configure<MusicStoreDbContextOptions>(options =>
-                options.UseSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString")));
 
             // Add MVC services to the service container
             services.AddMvc();
 
             // Add EF services to the service container
             services.AddEntityFramework()
-                .AddSqlServer();
+                .AddSqlServer()
+                .AddDbContext<MusicStoreContext>(options =>
+                {
+                    options.UseSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString"));
+                });
 
             // Add Identity services to the services container
-            services.AddDefaultIdentity<ApplicationDbContext, ApplicationUser, IdentityRole>(Configuration);
+            services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(Configuration);
 
             // Add application services to the service container
-            services.AddScoped<MusicStoreContext>();
             services.AddTransient(typeof(IHtmlHelper<>), typeof(AngularHtmlHelper<>));
         }
 
@@ -57,7 +55,6 @@ namespace MusicStore.Spa
         {
             // Initialize the sample data
             SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
-            SampleData.InitializeIdentityDatabaseAsync(app.ApplicationServices).Wait();
 
             // Configure the HTTP request pipeline
 

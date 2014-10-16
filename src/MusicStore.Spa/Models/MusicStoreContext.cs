@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Framework.OptionsModel;
 
 namespace MusicStore.Models
 {
-    public class MusicStoreContext : DbContext
+    public class ApplicationUser : IdentityUser { }
+
+    public class MusicStoreContext : IdentityDbContext<ApplicationUser>
     {
-        public MusicStoreContext(IServiceProvider serviceProvider, IOptions<MusicStoreDbContextOptions> optionsAccessor)
+        public MusicStoreContext(IServiceProvider serviceProvider, IOptions<DbContextOptions<MusicStoreContext>> optionsAccessor)
             : base(serviceProvider, optionsAccessor.Options)
         {
 
@@ -35,13 +39,13 @@ namespace MusicStore.Models
             builder.Entity<Album>().Key(a => a.AlbumId);
             builder.Entity<Artist>().Key(a => a.ArtistId);
 
-            builder.Entity<Order>(
-                b =>
-                {
-                    b.Key(o => o.OrderId);
-                    b.Property(o => o.OrderId)
-                        .ForRelational().Column("[Order]");
-                });
+            builder.Entity<Order>(b =>
+            {
+                b.Key(o => o.OrderId);
+                b.Property(o => o.OrderId)
+                    .ForRelational()
+                    .Column("[Order]");
+            });
 
             builder.Entity<Genre>().Key(g => g.GenreId);
             builder.Entity<CartItem>().Key(ci => ci.CartItemId);
@@ -53,16 +57,16 @@ namespace MusicStore.Models
             builder.Entity<Genre>().Property(g => g.GenreId).GenerateValuesOnAdd(generateValues: false);
 
             builder.Entity<Album>(b =>
-                {
-                    b.ForeignKey<Genre>(a => a.GenreId);
-                    b.ForeignKey<Artist>(a => a.ArtistId);
-                });
+            {
+                b.ForeignKey<Genre>(a => a.GenreId);
+                b.ForeignKey<Artist>(a => a.ArtistId);
+            });
 
             builder.Entity<OrderDetail>(b =>
-                {
-                    b.ForeignKey<Album>(a => a.AlbumId);
-                    b.ForeignKey<Order>(a => a.OrderId);
-                });
+            {
+                b.ForeignKey<Album>(a => a.AlbumId);
+                b.ForeignKey<Order>(a => a.OrderId);
+            });
 
             var genre = builder.Model.GetEntityType(typeof(Genre));
             var album = builder.Model.GetEntityType(typeof(Album));
@@ -72,11 +76,8 @@ namespace MusicStore.Models
             album.AddNavigation("OrderDetails", orderDetail.ForeignKeys.Single(k => k.ReferencedEntityType == album), pointsToPrincipal: false);
             album.AddNavigation("Genre", album.ForeignKeys.Single(k => k.ReferencedEntityType == genre), pointsToPrincipal: true);
             album.AddNavigation("Artist", album.ForeignKeys.Single(k => k.ReferencedEntityType == artist), pointsToPrincipal: true);
+
+            base.OnModelCreating(builder);
         }
-    }
-
-    public class MusicStoreDbContextOptions : DbContextOptions
-    {
-
     }
 }
