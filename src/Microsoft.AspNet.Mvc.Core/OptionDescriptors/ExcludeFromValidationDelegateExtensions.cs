@@ -8,13 +8,13 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Extensions for <see cref="MvcOptions.ExcludedValidationTypesPredicates"/>.
+    /// Extensions for <see cref="MvcOptions.ExcludeFromValidationDelegates"/>.
     /// </summary>
     public static class ExcludeFromValidationDelegateExtensions
     {
         /// <summary>
-        /// Adds a delegate to the specified <paramref name="list" /> that excludes the properties of the specified type
-        /// and and it's derived types from validation.
+        /// Adds a delegate to the specified <paramref name="list" />
+        /// that exludes the properties of the specified and it's derived types from validaton.
         /// </summary>
         /// <param name="list"><see cref="IList{T}"/> of <see cref="ExcludeFromValidationDelegate"/>.</param>
         /// <param name="type"><see cref="Type"/> which should be excluded from validation.</param>

@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc
         public List<InputFormatterDescriptor> InputFormatters { get; private set; }
 
         /// <summary>
-        /// Gets a list of <see cref="ExcludedValidationTypesPredicates"/> which return whether the given type
+        /// Gets a list of <see cref="ExcludeFromValidationDelegate"/> which return whether the given type
         /// should be excluded from Validation in <see cref="IBodyModelValidator"/>
         /// </summary>
         public List<ExcludeFromValidationDelegate> ExcludeFromValidationDelegates { get; }
