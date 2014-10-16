@@ -49,30 +49,21 @@ namespace MusicStore
                 if (runningOnMono)
                 {
                     services.AddEntityFramework()
-                            .AddInMemoryStore();
+                            .AddInMemoryStore()
+                            .AddDbContext<MusicStoreContext>(options =>
+                            {
+                                options.UseInMemoryStore();
+                            }); ;
                 }
                 else
                 {
                     services.AddEntityFramework()
-                            .AddSqlServer();
+                            .AddSqlServer()
+                            .AddDbContext<MusicStoreContext>(options =>
+                            {
+                                options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
+                            });
                 }
-
-                services.AddScoped<MusicStoreContext>();
-
-                // Configure DbContext           
-                services.Configure<MusicStoreDbContextOptions>(options =>
-                {
-                    options.DefaultAdminUserName = configuration.Get("DefaultAdminUsername");
-                    options.DefaultAdminPassword = configuration.Get("DefaultAdminPassword");
-                    if (runningOnMono)
-                    {
-                        options.UseInMemoryStore();
-                    }
-                    else
-                    {
-                        options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
-                    }
-                });
 
                 // Add Identity services to the services container
                 services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(configuration);

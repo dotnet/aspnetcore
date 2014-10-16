@@ -7,13 +7,15 @@ using Microsoft.AspNet.Identity;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.SqlServer;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace MusicStore.Models
 {
     public static class SampleData
     {
         const string imgUrl = "~/Images/placeholder.png";
+        const string defaultAdminUserName = "DefaultAdminUserName";
+        const string defaultAdminPassword = "defaultAdminPassword";
 
         public static async Task InitializeMusicStoreDatabaseAsync(IServiceProvider serviceProvider)
         {
@@ -78,7 +80,10 @@ namespace MusicStore.Models
         /// <returns></returns>
         private static async Task CreateAdminUser(IServiceProvider serviceProvider)
         {
-            var options = serviceProvider.GetService<IOptions<MusicStoreDbContextOptions>>().Options;
+            var configuration = new Configuration()
+                        .AddJsonFile("config.json")
+                        .AddEnvironmentVariables();
+
             //const string adminRole = "Administrator";
 
             var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
@@ -89,11 +94,11 @@ namespace MusicStore.Models
             //    await roleManager.CreateAsync(new IdentityRole(adminRole));
             //}
 
-            var user = await userManager.FindByNameAsync(options.DefaultAdminUserName);
+            var user = await userManager.FindByNameAsync(configuration.Get<string>(defaultAdminUserName));
             if (user == null)
             {
-                user = new ApplicationUser { UserName = options.DefaultAdminUserName };
-                await userManager.CreateAsync(user, options.DefaultAdminPassword);
+                user = new ApplicationUser { UserName = configuration.Get<string>(defaultAdminUserName) };
+                await userManager.CreateAsync(user, configuration.Get<string>(defaultAdminPassword));
                 //await userManager.AddToRoleAsync(user, adminRole);
                 await userManager.AddClaimAsync(user, new Claim("ManageStore", "Allowed"));
             }

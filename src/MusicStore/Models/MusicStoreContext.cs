@@ -1,9 +1,7 @@
-﻿using System;
-using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
-using Microsoft.Framework.OptionsModel;
 
 namespace MusicStore.Models
 {
@@ -11,8 +9,7 @@ namespace MusicStore.Models
 
     public class MusicStoreContext : IdentityDbContext<ApplicationUser>
     {
-        public MusicStoreContext(IServiceProvider serviceProvider, IOptions<MusicStoreDbContextOptions> optionsAccessor)
-                    : base(serviceProvider, optionsAccessor.Options)
+        public MusicStoreContext()
         {
 
         }
@@ -41,10 +38,4 @@ namespace MusicStore.Models
         }
     }
 
-    public class MusicStoreDbContextOptions : DbContextOptions
-    {
-        public string DefaultAdminUserName { get; set; }
-
-        public string DefaultAdminPassword { get; set; }
-    }
 }
