@@ -42,27 +42,27 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<TUser>(b =>
                 {
                     b.Key(u => u.Id);
-                    b.ToTable("AspNetUsers");
+                    b.ForRelational().Table("AspNetUsers");
                 });
 
             builder.Entity<TRole>(b =>
                 {
                     b.Key(r => r.Id);
-                    b.ToTable("AspNetRoles");
+                    b.ForRelational().Table("AspNetRoles");
                 });
 
             builder.Entity<IdentityUserClaim<TKey>>(b =>
                 {
                     b.Key(uc => uc.Id);
                     b.ManyToOne<TUser>().ForeignKey(uc => uc.UserId);
-                    b.ToTable("AspNetUserClaims");
+                    b.ForRelational().Table("AspNetUserClaims");
                 });
 
             builder.Entity<IdentityRoleClaim<TKey>>(b =>
                 {
                     b.Key(rc => rc.Id);
                     b.ManyToOne<TRole>().ForeignKey(rc => rc.RoleId);
-                    b.ToTable("AspNetRoleClaims");
+                    b.ForRelational().Table("AspNetRoleClaims");
                 });
 
             var userType = builder.Model.GetEntityType(typeof(TUser));
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<IdentityUserRole<TKey>>(b =>
                 {
                     b.Key(r => new { r.UserId, r.RoleId });
-                    b.ToTable("AspNetUserRoles");
+                    b.ForRelational().Table("AspNetUserRoles");
                 });
             // Blocks delete currently without cascade
             //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 {
                     b.Key(l => new { l.LoginProvider, l.ProviderKey });
                     b.ManyToOne<TUser>().ForeignKey(uc => uc.UserId);
-                    b.ToTable("AspNetUserLogins");
+                    b.ForRelational().Table("AspNetUserLogins");
                 });
         }
     }

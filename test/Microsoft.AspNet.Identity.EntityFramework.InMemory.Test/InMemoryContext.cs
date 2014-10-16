@@ -52,13 +52,13 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             {
                 b.Key(u => u.Id);
                 b.Property(u => u.UserName);
-                b.ToTable("AspNetUsers");
+                b.ForRelational().Table("AspNetUsers");
             });
 
             builder.Entity<TRole>(b =>
             {
                 b.Key(r => r.Id);
-                b.ToTable("AspNetRoles");
+                b.ForRelational().Table("AspNetRoles");
             });
 
             builder.Entity<TUserRole>(b =>
@@ -66,28 +66,28 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
                 b.Key(r => new { r.UserId, r.RoleId });
                 b.ForeignKey<TUser>(f => f.UserId);
                 b.ForeignKey<TRole>(f => f.RoleId);
-                b.ToTable("AspNetUserRoles");
+                b.ForRelational().Table("AspNetUserRoles");
             });
 
             builder.Entity<TUserLogin>(b =>
             {
                 b.Key(l => new { l.LoginProvider, l.ProviderKey, l.UserId });
                 b.ForeignKey<TUser>(f => f.UserId);
-                b.ToTable("AspNetUserLogins");
+                b.ForRelational().Table("AspNetUserLogins");
             });
 
             builder.Entity<TUserClaim>(b =>
             {
                 b.Key(c => c.Id);
                 b.ForeignKey<TUser>(f => f.UserId);
-                b.ToTable("AspNetUserClaims");
+                b.ForRelational().Table("AspNetUserClaims");
             });
 
             builder.Entity<IdentityRoleClaim<TKey>>(b =>
             {
                 b.Key(c => c.Id);
                 b.ForeignKey<TRole>(f => f.RoleId);
-                b.ToTable("AspNetRoleClaims");
+                b.ForRelational().Table("AspNetRoleClaims");
             });
         }
     }
