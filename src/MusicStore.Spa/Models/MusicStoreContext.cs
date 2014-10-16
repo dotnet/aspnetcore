@@ -25,12 +25,12 @@ namespace MusicStore.Models
         {
             // TODO: All this configuration needs to be done manually right now.
             //       We can remove this once EF supports the conventions again.
-            builder.Entity<Album>().ToTable("Albums");
-            builder.Entity<Artist>().ToTable("Artists");
-            builder.Entity<Order>().ToTable("Orders");
-            builder.Entity<Genre>().ToTable("Genres");
-            builder.Entity<CartItem>().ToTable("CartItems");
-            builder.Entity<OrderDetail>().ToTable("OrderDetails");
+            builder.Entity<Album>().ForRelational.Table("Albums");
+            builder.Entity<Artist>().ForRelational.Table("Artists");
+            builder.Entity<Order>().ForRelational.Table("Orders");
+            builder.Entity<Genre>().ForRelational.Table("Genres");
+            builder.Entity<CartItem>().ForRelational.Table("CartItems");
+            builder.Entity<OrderDetail>().ForRelational.Table("OrderDetails");
 
             builder.Entity<Album>().Key(a => a.AlbumId);
             builder.Entity<Artist>().Key(a => a.ArtistId);
