@@ -16,14 +16,11 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class DefaultControllerActionArgumentBinder : IControllerActionArgumentBinder
     {
-        private readonly IBodyModelValidator _modelValidator;
         private readonly IActionBindingContextProvider _bindingContextProvider;
 
-        public DefaultControllerActionArgumentBinder(IActionBindingContextProvider bindingContextProvider,
-                                                     IBodyModelValidator modelValidator)
+        public DefaultControllerActionArgumentBinder(IActionBindingContextProvider bindingContextProvider)
         {
             _bindingContextProvider = bindingContextProvider;
-            _modelValidator = modelValidator;
         }
 
         public async Task<IDictionary<string, object>> GetActionArgumentsAsync(ActionContext actionContext)
@@ -49,8 +46,8 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private async Task PopulateActionArgumentsAsync(IEnumerable<ModelMetadata> modelMetadatas,
-                                                             ActionBindingContext actionBindingContext, 
-                                                             IDictionary<string, object> invocationInfo)
+                                                        ActionBindingContext actionBindingContext, 
+                                                        IDictionary<string, object> invocationInfo)
         {
             var bodyBoundParameterCount = modelMetadatas.Count(
                                             modelMetadata => modelMetadata.Marker is IBodyBinderMarker);
@@ -61,25 +58,33 @@ namespace Microsoft.AspNet.Mvc
 
             foreach (var modelMetadata in modelMetadatas)
             {
-                var parameterType = modelMetadata.ModelType;
-                var modelBindingContext = new ModelBindingContext
-                {
-                    ModelName = modelMetadata.PropertyName,
-                    ModelMetadata = modelMetadata,
-                    ModelState = actionBindingContext.ActionContext.ModelState,
-                    ModelBinder = actionBindingContext.ModelBinder,
-                    ValidatorProvider = actionBindingContext.ValidatorProvider,
-                    MetadataProvider = actionBindingContext.MetadataProvider,
-                    HttpContext = actionBindingContext.ActionContext.HttpContext,
-                    FallbackToEmptyPrefix = true,
-                    ValueProvider = actionBindingContext.ValueProvider,
-                };
+                var modelBindingContext = GetModelBindingContext(modelMetadata, actionBindingContext);
 
                 if (await actionBindingContext.ModelBinder.BindModelAsync(modelBindingContext))
                 {
                     invocationInfo[modelMetadata.PropertyName] = modelBindingContext.Model;
                 }
             }
+        }
+
+        internal static ModelBindingContext GetModelBindingContext(ModelMetadata modelMetadata, ActionBindingContext actionBindingContext)
+        {
+            var modelBindingContext = new ModelBindingContext
+            {
+                ModelName = modelMetadata.ModelName ?? modelMetadata.PropertyName,
+                ModelMetadata = modelMetadata,
+                ModelState = actionBindingContext.ActionContext.ModelState,
+                ModelBinder = actionBindingContext.ModelBinder,
+                ValidatorProvider = actionBindingContext.ValidatorProvider,
+                MetadataProvider = actionBindingContext.MetadataProvider,
+                HttpContext = actionBindingContext.ActionContext.HttpContext,
+
+                // Fallback only if there is no explicit model name set.
+                FallbackToEmptyPrefix = modelMetadata.ModelName == null,
+                ValueProvider = actionBindingContext.ValueProvider,
+            };
+
+            return modelBindingContext;
         }
     }
 }

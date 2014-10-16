@@ -43,10 +43,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _modelAccessor = modelAccessor;
             _modelType = modelType;
             _propertyName = propertyName;
-
             _convertEmptyStringToNull = true;
             _isRequired = !modelType.AllowsNullValue();
         }
+
+        /// <summary>
+        /// Represents the name of a model if specified explicitly using <see cref="IModelNameProvider"/>.
+        /// </summary>
+        public string ModelName { get; set; }
+
+        /// <summary>
+        /// Properties which are marked as Included for this model.
+        /// </summary>
+        public IReadOnlyList<string> IncludedProperties { get; set; }
+
+        /// <summary>
+        /// Properties which are marked as Excluded for this model.
+        /// </summary>
+        public IReadOnlyList<string> ExcludedProperties { get; set; }
 
         /// <summary>
         /// Gets or sets a binder marker for this model.

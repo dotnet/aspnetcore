@@ -235,5 +235,126 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("The Field2 field is required.", json["model.Field2"]);
             Assert.Equal("The Field3 field is required.", json["model.Field3"]);
         }
+
+        [Fact]
+        public async Task BindAttribute_AppliesAtBothParameterAndTypeLevelTogether_BlacklistedAtEitherLevelIsNotBound()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
+                "BindAtParamterLevelAndBindAtTypeLevelAreBothEvaluated_BlackListingAtEitherLevelDoesNotBind" +
+                "?param1.IncludedExplicitlyAtTypeLevel=someValue&param2.ExcludedExplicitlyAtTypeLevel=someValue");
+
+            // Assert
+            var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(response);
+            Assert.Equal(2, json.Count);
+            Assert.Null(json["param1.IncludedExplicitlyAtTypeLevel"]);
+            Assert.Null(json["param2.ExcludedExplicitlyAtTypeLevel"]);
+        }
+
+        [Fact]
+        public async Task BindAttribute_AppliesAtBothParameterAndTypeLevelTogether_WhitelistedAtBothLevelsIsBound()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
+                "BindAtParamterLevelAndBindAtTypeLevelAreBothEvaluated_WhiteListingAtBothLevelBinds" +
+                "?param1.IncludedExplicitlyAtTypeLevel=someValue&param2.ExcludedExplicitlyAtTypeLevel=someValue");
+
+            // Assert
+            var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(response);
+            Assert.Equal(1, json.Count);
+            Assert.Equal("someValue", json["param1.IncludedExplicitlyAtTypeLevel"]);
+        }
+
+        [Fact]
+        public async Task BindAttribute_AppliesAtBothParameterAndTypeLevelTogether_WhitelistingAtOneLevelIsNotBound()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
+                "BindAtParamterLevelAndBindAtTypeLevelAreBothEvaluated_WhiteListingAtOnlyOneLevelDoesNotBind" +
+                "?param1.IncludedExplicitlyAtTypeLevel=someValue&param1.IncludedExplicitlyAtParameterLevel=someValue");
+
+            // Assert
+            var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(response);
+            Assert.Equal(2, json.Count);
+            Assert.Null(json["param1.IncludedExplicitlyAtParameterLevel"]);
+            Assert.Null(json["param1.IncludedExplicitlyAtTypeLevel"]);
+        }
+
+        [Fact]
+        public async Task BindAttribute_BindsUsingParameterPrefix()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
+                "BindParameterUsingParameterPrefix" +
+                "?randomPrefix.Value=someValue");
+
+            // Assert
+            Assert.Equal("someValue", response);
+        }
+
+        [Fact]
+        public async Task BindAttribute_DoesNotUseTypePrefix()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
+                "TypePrefixIsNeverUsed" +
+                "?param.Value=someValue");
+
+            // Assert
+            Assert.Equal("someValue", response);
+        }
+
+        [Fact]
+        public async Task BindAttribute_FallsBackOnEmptyPrefixIfNoParameterPrefixIsProvided()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
+                "TypePrefixIsNeverUsed" +
+                "?Value=someValue");
+
+            // Assert
+            Assert.Equal("someValue", response);
+        }
+
+        [Fact]
+        public async Task BindAttribute_DoesNotFallBackOnEmptyPrefixIfParameterPrefixIsProvided()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/BindAttribute/" +
+                "BindParameterUsingParameterPrefix" +
+                "?Value=someValue");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+        }
     }
 }

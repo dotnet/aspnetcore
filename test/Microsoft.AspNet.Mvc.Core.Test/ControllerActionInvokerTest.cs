@@ -1402,8 +1402,7 @@ namespace Microsoft.AspNet.Mvc
                                                      actionDescriptor,
                                                      inputFormattersProvider.Object,
                                                      new DefaultControllerActionArgumentBinder(
-                                                         actionBindingContextProvider.Object, 
-                                                         new DefaultBodyModelValidator()));
+                                                         actionBindingContextProvider.Object));
 
             // Act
             await invoker.InvokeAsync();

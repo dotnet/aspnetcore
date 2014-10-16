@@ -3,12 +3,117 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class CachedDataAnnotationsModelMetadataProviderTest
     {
+        [Bind(Include = nameof(IncludedAndExcludedExplicitly1) + "," + nameof(IncludedExplicitly1),
+              Exclude = nameof(IncludedAndExcludedExplicitly1) + "," + nameof(ExcludedExplicitly1),
+            Prefix = "TypePrefix")]
+        private class TypeWithExludedAndIncludedPropertiesUsingBindAttribute
+        {
+            public int ExcludedExplicitly1 { get; set; }
+
+            public int IncludedAndExcludedExplicitly1 { get; set; }
+
+            public int IncludedExplicitly1 { get; set; }
+
+            public int NotIncludedOrExcluded { get; set; }
+
+            public void ActionWithBindAttribute(
+                          [Bind(Include = "Property1, Property2,IncludedAndExcludedExplicitly1",
+                                Exclude ="Property3, Property4, IncludedAndExcludedExplicitly1",
+                                Prefix = "ParameterPrefix")]
+                TypeWithExludedAndIncludedPropertiesUsingBindAttribute param)
+            {
+            }
+        }
+
+        [Fact]
+        public void DataAnnotationsModelMetadataProvider_ReadsIncludedAndExcludedProperties_ForTypes()
+        {
+            // Arrange
+            var type = typeof(TypeWithExludedAndIncludedPropertiesUsingBindAttribute);
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var expectedIncludedPropertyNames = new[] { "IncludedAndExcludedExplicitly1", "IncludedExplicitly1" };
+            var expectedExcludedPropertyNames = new[] { "IncludedAndExcludedExplicitly1", "ExcludedExplicitly1" };
+
+            // Act 
+            var metadata = provider.GetMetadataForType(null, type);
+
+            // Assert
+            Assert.Equal(expectedIncludedPropertyNames.ToList(), metadata.IncludedProperties);
+            Assert.Equal(expectedExcludedPropertyNames.ToList(), metadata.ExcludedProperties);
+        }
+
+        [Fact]
+        public void ModelMetadataProvider_ReadsIncludedAndExcludedProperties_BothAtParameterAndTypeLevel_ForParameters()
+        {
+            // Arrange
+            var type = typeof(TypeWithExludedAndIncludedPropertiesUsingBindAttribute);
+            var methodInfo = type.GetMethod("ActionWithBindAttribute");
+            var provider = new DataAnnotationsModelMetadataProvider();
+
+            // Note it does an intersection for included and a union for excluded.
+            var expectedIncludedPropertyNames = new[] { "IncludedAndExcludedExplicitly1" };
+            var expectedExcludedPropertyNames = new[] {
+                "Property3", "Property4", "IncludedAndExcludedExplicitly1", "ExcludedExplicitly1" };
+           
+            // Act 
+            var metadata = provider.GetMetadataForParameter(null, methodInfo, "param");
+
+            // Assert
+            Assert.Equal(expectedIncludedPropertyNames.ToList(), metadata.IncludedProperties);
+            Assert.Equal(expectedExcludedPropertyNames.ToList(), metadata.ExcludedProperties);
+        }
+
+        [Fact]
+        public void ModelMetadataProvider_ReadsPrefixProperty_OnlyAtParameterLevel_ForParameters()
+        {
+            // Arrange
+            var type = typeof(TypeWithExludedAndIncludedPropertiesUsingBindAttribute);
+            var methodInfo = type.GetMethod("ActionWithBindAttribute");
+            var provider = new DataAnnotationsModelMetadataProvider();
+
+            // Act 
+            var metadata = provider.GetMetadataForParameter(null, methodInfo, "param");
+
+            // Assert
+            Assert.Equal("ParameterPrefix", metadata.ModelName);
+        }
+
+        [Fact]
+        public void DataAnnotationsModelMetadataProvider_ReadsModelNameProperty_ForTypes()
+        {
+            // Arrange
+            var type = typeof(TypeWithExludedAndIncludedPropertiesUsingBindAttribute);
+            var provider = new DataAnnotationsModelMetadataProvider();
+
+            // Act 
+            var metadata = provider.GetMetadataForType(null, type);
+
+            // Assert
+            Assert.Equal("TypePrefix", metadata.ModelName);
+        }
+
+        [Fact]
+        public void DataAnnotationsModelMetadataProvider_ReadsModelNameProperty_ForParameters()
+        {
+            // Arrange
+            var type = typeof(TypeWithExludedAndIncludedPropertiesUsingBindAttribute);
+            var methodInfo = type.GetMethod("ActionWithBindAttribute");
+            var provider = new DataAnnotationsModelMetadataProvider();
+
+            // Act 
+            var metadata = provider.GetMetadataForParameter(null, methodInfo, "param");
+
+            // Assert
+            Assert.Equal("ParameterPrefix", metadata.ModelName);
+        }
+
         [Fact]
         public void DataAnnotationsModelMetadataProvider_ReadsScaffoldColumnAttribute_ForShowForDisplay()
         {

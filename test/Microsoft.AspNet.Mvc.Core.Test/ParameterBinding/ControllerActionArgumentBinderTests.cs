@@ -14,6 +14,103 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 {
     public class ControllerActionArgumentBinderTests
     {
+        public class MySimpleModel
+        {
+        }
+
+        [Bind(Prefix = "TypePrefix")]
+        public class MySimpleModelWithTypeBasedBind
+        {
+        }
+
+        public void ParameterHasFieldPrefix([Bind(Prefix = "bar")] string foo)
+        {
+        }
+
+        public void ParameterHasEmptyFieldPrefix([Bind(Prefix = "")] MySimpleModel foo, 
+                                                 [Bind(Prefix = "")] MySimpleModelWithTypeBasedBind foo1)
+        {
+        }
+
+        public void ParameterHasPrefixAndComplexType([Bind(Prefix = "bar")] MySimpleModel foo,
+                                                     [Bind(Prefix = "bar")] MySimpleModelWithTypeBasedBind foo1)
+        {
+        }
+
+        public void ParameterHasEmptyBindAttribute([Bind] MySimpleModel foo,
+                                                   [Bind] MySimpleModelWithTypeBasedBind foo1)
+        {
+        }
+
+        [Theory]
+        [InlineData("ParameterHasFieldPrefix", false, "bar")]
+        [InlineData("ParameterHasEmptyFieldPrefix", false, "")]
+        [InlineData("ParameterHasPrefixAndComplexType", false, "bar")]
+        [InlineData("ParameterHasEmptyBindAttribute", true, "foo")]
+        public void GetModelBindingContext_ModelBindingContextIsSetWithModelName_ForParameters(
+            string actionMethodName, bool expectedFallToEmptyPrefix, string expectedModelName)
+        {
+            // Arrange
+            var type = typeof(ControllerActionArgumentBinderTests);
+            var methodInfo = type.GetMethod(actionMethodName);
+            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
+                                                  Mock.Of<ActionDescriptor>());
+
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
+                                                                         methodInfo: methodInfo,
+                                                                         parameterName: "foo");
+
+
+            var actionBindingContext = new ActionBindingContext(actionContext,
+                                                          Mock.Of<IModelMetadataProvider>(),
+                                                          Mock.Of<IModelBinder>(),
+                                                          Mock.Of<IValueProvider>(),
+                                                          Mock.Of<IInputFormatterSelector>(),
+                                                          Mock.Of<IModelValidatorProvider>());
+            // Act
+            var context = DefaultControllerActionArgumentBinder
+                            .GetModelBindingContext(modelMetadata, actionBindingContext);
+
+            // Assert
+            Assert.Equal(expectedFallToEmptyPrefix, context.FallbackToEmptyPrefix);
+            Assert.Equal(expectedModelName, context.ModelName);
+        }
+
+        [Theory]
+        [InlineData("ParameterHasEmptyFieldPrefix", false, "")]
+        [InlineData("ParameterHasPrefixAndComplexType", false, "bar")]
+        [InlineData("ParameterHasEmptyBindAttribute", true, "foo1")]
+        public void GetModelBindingContext_ModelBindingContextIsNotSet_ForTypes(
+            string actionMethodName, bool expectedFallToEmptyPrefix, string expectedModelName)
+        {
+            // Arrange
+            var type = typeof(ControllerActionArgumentBinderTests);
+            var methodInfo = type.GetMethod(actionMethodName);
+            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
+                                                  Mock.Of<ActionDescriptor>());
+
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
+                                                                         methodInfo: methodInfo,
+                                                                         parameterName: "foo1");
+
+
+            var actionBindingContext = new ActionBindingContext(actionContext,
+                                                          Mock.Of<IModelMetadataProvider>(),
+                                                          Mock.Of<IModelBinder>(),
+                                                          Mock.Of<IValueProvider>(),
+                                                          Mock.Of<IInputFormatterSelector>(),
+                                                          Mock.Of<IModelValidatorProvider>());
+            // Act
+            var context = DefaultControllerActionArgumentBinder
+                            .GetModelBindingContext(modelMetadata, actionBindingContext);
+
+            // Assert
+            Assert.Equal(expectedFallToEmptyPrefix, context.FallbackToEmptyPrefix);
+            Assert.Equal(expectedModelName, context.ModelName);
+        }
+
         [Fact]
         public async Task Parameters_WithMultipleFromBody_Throw()
         {
@@ -53,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                         .Returns(Task.FromResult(bindingContext));
                                                     
             var invoker = new DefaultControllerActionArgumentBinder(
-                actionBindingContextProvider.Object, Mock.Of<IBodyModelValidator>());
+                actionBindingContextProvider.Object);
 
             // Act
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -101,7 +198,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                         .Returns(Task.FromResult(bindingContext));
 
             var invoker = new DefaultControllerActionArgumentBinder(
-                actionBindingContextProvider.Object, Mock.Of<IBodyModelValidator>());
+                actionBindingContextProvider.Object);
 
             // Act
             var result = await invoker.GetActionArgumentsAsync(actionContext);
@@ -153,7 +250,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                         .Returns(Task.FromResult(bindingContext));
 
             var invoker = new DefaultControllerActionArgumentBinder(
-                actionBindingContextProvider.Object, Mock.Of<IBodyModelValidator>());
+                actionBindingContextProvider.Object);
 
             // Act
             var result = await invoker.GetActionArgumentsAsync(actionContext);

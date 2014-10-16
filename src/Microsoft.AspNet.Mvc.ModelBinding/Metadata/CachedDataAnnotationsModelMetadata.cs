@@ -34,6 +34,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                    new CachedDataAnnotationsMetadataAttributes(attributes))
         {
             Marker = attributes.OfType<IBinderMarker>().FirstOrDefault();
+
+            var modelNameProvider = attributes.OfType<IModelNameProvider>().FirstOrDefault();
+            ModelName = modelNameProvider?.Name;
+
+            var bindAttribute = attributes.OfType<BindAttribute>().FirstOrDefault();
+            ReadSettingsFromBindAttribute(bindAttribute);
         }
 
         protected override bool ComputeConvertEmptyStringToNull()
@@ -264,6 +270,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         Resources.FormatDataAnnotationsModelMetadataProvider_UnreadableProperty(
                         modelType.FullName, displayColumnAttribute.DisplayColumn));
             }
+        }
+
+        private void ReadSettingsFromBindAttribute(BindAttribute bindAttribute)
+        {
+            if (bindAttribute == null)
+            {
+                return;
+            }
+
+            ExcludedProperties = SplitString(bindAttribute.Exclude).ToList();
+            IncludedProperties = SplitString(bindAttribute.Include).ToList();
+        }
+
+        private static IEnumerable<string> SplitString(string original)
+        {
+            if (string.IsNullOrEmpty(original))
+            {
+                return new string[0];
+            }
+
+            var split = original.Split(',')
+                                .Select(piece => piece.Trim())
+                                .Where(trimmed => !string.IsNullOrEmpty(trimmed));
+            return split;
         }
     }
 }

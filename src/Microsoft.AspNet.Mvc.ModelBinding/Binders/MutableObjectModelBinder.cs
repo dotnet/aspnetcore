@@ -17,8 +17,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
 
-            if (!CanBindType(bindingContext.ModelType) ||
-                !await bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName))
+            if (!CanBindType(bindingContext.ModelType))
+            {
+                return false;
+            }
+
+            var topLevelObject = bindingContext.ModelMetadata.ContainerType == null;
+            var isThereAnExplicitAlias = bindingContext.ModelMetadata.ModelName != null;
+
+            
+            // The first check is necessary because if we fallback to empty prefix, we do not want to depend
+            // on a value provider to provide a value for empty prefix.
+            var containsPrefix = (bindingContext.ModelName == string.Empty && topLevelObject) ||
+                                 await bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName);
+
+            // Always create the model if
+            // 1. It is a top level object and the model name is empty.
+            // 2. There is a value provider which can provide value for the model name.
+            // 3. There is an explicit alias provided by the user and it is a top level object.
+            // The reson we depend on explicit alias is that otherwise we want the FallToEmptyPrefix codepath
+            // to kick in so that empty prefix values could be bound.
+            if (!containsPrefix && !(isThereAnExplicitAlias && topLevelObject))
             {
                 return false;
             }
@@ -149,6 +168,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var validationInfo = GetPropertyValidationInfo(bindingContext);
             return bindingContext.ModelMetadata.Properties
                                  .Where(propertyMetadata =>
+                                    IsPropertyAllowed(propertyMetadata.PropertyName,
+                                                      bindingContext.ModelMetadata.IncludedProperties,
+                                                      bindingContext.ModelMetadata.ExcludedProperties) &&
                                     (validationInfo.RequiredProperties.Contains(propertyMetadata.PropertyName) ||
                                     !validationInfo.SkipProperties.Contains(propertyMetadata.PropertyName)) &&
                                     CanUpdateProperty(propertyMetadata));
@@ -347,6 +369,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             return addedError;
+        }
+
+        private static bool IsPropertyAllowed(string propertyName,
+                                              IReadOnlyList<string> includeProperties,
+                                              IReadOnlyList<string> excludeProperties)
+        {
+            // We allow a property to be bound if its both in the include list AND not in the exclude list.
+            // An empty exclude list implies no properties are disallowed.
+            var includeProperty = (includeProperties != null) &&
+                                  includeProperties.Contains(propertyName, StringComparer.OrdinalIgnoreCase);
+
+            var excludeProperty = (excludeProperties != null) &&
+                                  excludeProperties.Contains(propertyName, StringComparer.OrdinalIgnoreCase);
+
+            return includeProperty && !excludeProperty;
         }
 
         internal sealed class PropertyValidationInfo
