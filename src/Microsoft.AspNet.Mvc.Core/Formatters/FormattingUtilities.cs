@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Runtime.Serialization;
 using System.Xml;
 
@@ -24,18 +23,14 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>XmlReaderQuotas with default values</returns>
         public static XmlDictionaryReaderQuotas GetDefaultXmlReaderQuotas()
         {
-#if ASPNET50
             return new XmlDictionaryReaderQuotas()
             {
-                MaxArrayLength = Int32.MaxValue,
-                MaxBytesPerRead = Int32.MaxValue,
+                MaxArrayLength = int.MaxValue,
+                MaxBytesPerRead = int.MaxValue,
                 MaxDepth = DefaultMaxDepth,
-                MaxNameTableCharCount = Int32.MaxValue,
-                MaxStringContentLength = Int32.MaxValue
+                MaxNameTableCharCount = int.MaxValue,
+                MaxStringContentLength = int.MaxValue
             };
-#else
-            return XmlDictionaryReaderQuotas.Max;
-#endif
         }
     }
 }
