@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Identity.Test
             var services = new ServiceCollection();
             var validator = new UserValidator<IdentityUser>();
             services.AddIdentity<IdentityUser>().AddUserValidator(validator);
-            Assert.Equal(validator, services.BuildServiceProvider().GetService<IUserValidator<IdentityUser>>());
+            Assert.Equal(validator, services.BuildServiceProvider().GetRequiredService<IUserValidator<IdentityUser>>());
         }
 
         [Fact]
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Identity.Test
             var services = new ServiceCollection();
             var validator = new PasswordValidator<IdentityUser>();
             services.AddIdentity<IdentityUser>().AddPasswordValidator(validator);
-            Assert.Equal(validator, services.BuildServiceProvider().GetService<IPasswordValidator<IdentityUser>>());
+            Assert.Equal(validator, services.BuildServiceProvider().GetRequiredService<IPasswordValidator<IdentityUser>>());
         }
 
         [Fact]
@@ -41,13 +41,13 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddIdentity<IdentityUser>();
 
             var provider = services.BuildServiceProvider();
-            var userValidator = provider.GetService<IUserValidator<IdentityUser>>() as UserValidator<IdentityUser>;
+            var userValidator = provider.GetRequiredService<IUserValidator<IdentityUser>>() as UserValidator<IdentityUser>;
             Assert.NotNull(userValidator);
 
-            var pwdValidator = provider.GetService<IPasswordValidator<IdentityUser>>() as PasswordValidator<IdentityUser>;
+            var pwdValidator = provider.GetRequiredService<IPasswordValidator<IdentityUser>>() as PasswordValidator<IdentityUser>;
             Assert.NotNull(pwdValidator);
 
-            var hasher = provider.GetService<IPasswordHasher<IdentityUser>>() as PasswordHasher<IdentityUser>;
+            var hasher = provider.GetRequiredService<IPasswordHasher<IdentityUser>>() as PasswordHasher<IdentityUser>;
             Assert.NotNull(hasher);
         }
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             services.AddIdentity<IdentityUser>().AddInstance(instance);
-            Assert.Equal(instance, services.BuildServiceProvider().GetService<TService>());
+            Assert.Equal(instance, services.BuildServiceProvider().GetRequiredService<TService>());
         }
 
     }

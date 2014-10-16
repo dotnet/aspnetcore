@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Identity.Test
             services.Add(OptionsServices.GetDefaultServices());
             services.AddTransient<IUserStore<TestUser>, NoopUserStore>();
             services.AddTransient<TestManager>();
-            var manager = services.BuildServiceProvider().GetService<TestManager>();
+            var manager = services.BuildServiceProvider().GetRequiredService<TestManager>();
             Assert.NotNull(manager.PasswordHasher);
             Assert.NotNull(manager.PasswordValidator);
             Assert.NotNull(manager.UserValidator);

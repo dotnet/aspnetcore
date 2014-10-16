@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Identity.Test
 
             var services = new ServiceCollection {OptionsServices.GetDefaultServices()};
             services.AddIdentity(config.GetSubKey("identity"));
-            var accessor = services.BuildServiceProvider().GetService<IOptions<IdentityOptions>>();
+            var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
             var options = accessor.Options;
             Assert.Equal(roleClaimType, options.ClaimsIdentity.RoleClaimType);
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Identity.Test
             var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
             services.AddIdentity(config.GetSubKey("identity"), 
                 o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });
-            var accessor = services.BuildServiceProvider().GetService<IOptions<IdentityOptions>>();
+            var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
             var options = accessor.Options;
             Assert.False(options.User.RequireUniqueEmail);
@@ -120,9 +120,9 @@ namespace Microsoft.AspNet.Identity.Test
                 services.ConfigureOptions<PasswordsNegativeLengthSetup>();
             });
 
-            var setup = builder.ApplicationServices.GetService<IConfigureOptions<IdentityOptions>>();
+            var setup = builder.ApplicationServices.GetRequiredService<IConfigureOptions<IdentityOptions>>();
             Assert.IsType(typeof(PasswordsNegativeLengthSetup), setup);
-            var optionsGetter = builder.ApplicationServices.GetService<IOptions<IdentityOptions>>();
+            var optionsGetter = builder.ApplicationServices.GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(optionsGetter);
             var myOptions = optionsGetter.Options;
             Assert.True(myOptions.Password.RequireLowercase);
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Identity.Test
                 services.AddIdentity<IdentityUser>().ConfigureIdentity(options => options.User.RequireUniqueEmail = true);
             });
 
-            var optionsGetter = app.ApplicationServices.GetService<IOptions<IdentityOptions>>();
+            var optionsGetter = app.ApplicationServices.GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(optionsGetter);
 
             var myOptions = optionsGetter.Options;

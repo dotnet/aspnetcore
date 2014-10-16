@@ -56,8 +56,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 services.AddDefaultIdentity<ApplicationDbContext, ApplicationUser, IdentityRole>();
             });
 
-            var userStore = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
-            var userManager = builder.ApplicationServices.GetService<UserManager<ApplicationUser>>();
+            var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<ApplicationUser>>();
+            var userManager = builder.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
 
             Assert.NotNull(userStore);
             Assert.NotNull(userManager);
@@ -92,8 +92,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 });
             });
 
-            var userStore = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
-            var userManager = builder.ApplicationServices.GetService<UserManager<ApplicationUser>>();
+            var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<ApplicationUser>>();
+            var userManager = builder.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
 
             Assert.NotNull(userStore);
             Assert.NotNull(userManager);
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         {
             var services = DbUtil.ConfigureDbServices(ConnectionString);
             services.AddIdentity().AddRoleStore(new RoleStore<IdentityRole>(context));
-            return services.BuildServiceProvider().GetService<RoleManager<IdentityRole>>();
+            return services.BuildServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
         }
 
         protected override RoleManager<IdentityRole> CreateRoleManager(object context)

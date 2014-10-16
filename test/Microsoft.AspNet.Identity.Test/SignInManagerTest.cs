@@ -53,8 +53,8 @@ namespace Microsoft.AspNet.Identity.Test
         //        UserName = "Yolo"
         //    };
         //    const string password = "Yol0Sw@g!";
-        //    var userManager = app.ApplicationServices.GetService<ApplicationUserManager>();
-        //    var HttpSignInManager = app.ApplicationServices.GetService<ApplicationHttpSignInManager>();
+        //    var userManager = app.ApplicationServices.GetRequiredService<ApplicationUserManager>();
+        //    var HttpSignInManager = app.ApplicationServices.GetRequiredService<ApplicationHttpSignInManager>();
 
         //    IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
         //    var result = await HttpSignInManager.PasswordSignInAsync(user.UserName, password, isPersistent, false);

@@ -12,7 +12,7 @@ namespace IdentitySample.Models
     {
         public static async Task InitializeIdentityDatabaseAsync(IServiceProvider serviceProvider)
         {
-            using (var db = serviceProvider.GetService<ApplicationDbContext>())
+            using (var db = serviceProvider.GetRequiredService<ApplicationDbContext>())
             {
                 var sqlServerDataStore = db.Configuration.DataStore as SqlServerDataStore;
                 if (sqlServerDataStore != null)
@@ -36,11 +36,11 @@ namespace IdentitySample.Models
         /// <returns></returns>
         private static async Task CreateAdminUser(IServiceProvider serviceProvider)
         {
-            var options = serviceProvider.GetService<IOptions<IdentityDbContextOptions>>().Options;
+            var options = serviceProvider.GetRequiredService<IOptions<IdentityDbContextOptions>>().Options;
             const string adminRole = "Administrator";
 
-            var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
-            var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             if (!await roleManager.RoleExistsAsync(adminRole))
             {
                 await roleManager.CreateAsync(new IdentityRole(adminRole));

@@ -29,14 +29,14 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
                 options.Password.RequireUppercase = false;
                 options.User.UserNameValidationRegex = null;
             });
-            return services.BuildServiceProvider().GetService<UserManager<IdentityUser>>();
+            return services.BuildServiceProvider().GetRequiredService<UserManager<IdentityUser>>();
         }
 
         protected override RoleManager<IdentityRole> CreateRoleManager(object context)
         {
             var services = new ServiceCollection();
             services.AddIdentity().AddInMemory();
-            return services.BuildServiceProvider().GetService<RoleManager<IdentityRole>>();
+            return services.BuildServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
         }
     }
 }

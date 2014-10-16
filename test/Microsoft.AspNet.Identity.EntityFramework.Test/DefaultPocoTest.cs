@@ -54,8 +54,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 services.AddDefaultIdentity<IdentityDbContext, IdentityUser, IdentityRole>();
             });
 
-            var userStore = builder.ApplicationServices.GetService<IUserStore<IdentityUser>>();
-            var userManager = builder.ApplicationServices.GetService<UserManager<IdentityUser>>();
+            var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();
+            var userManager = builder.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();
 
             Assert.NotNull(userStore);
             Assert.NotNull(userManager);

@@ -45,8 +45,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
                 UserName = "Yolo"
             };
             const string password = "Yol0Sw@g!";
-            var userManager = app.ApplicationServices.GetService<UserManager<ApplicationUser>>();
-            var signInManager = app.ApplicationServices.GetService<SignInManager<ApplicationUser>>();
+            var userManager = app.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
+            var signInManager = app.ApplicationServices.GetRequiredService<SignInManager<ApplicationUser>>();
 
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
             var result = await signInManager.PasswordSignInAsync(user.UserName, password, isPersistent, false);

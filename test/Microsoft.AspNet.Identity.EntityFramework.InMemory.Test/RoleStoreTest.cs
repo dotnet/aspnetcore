@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             var store = new RoleStore<IdentityRole>(new InMemoryContext());
             services.AddIdentity().AddRoleStore(store);
             var provider = services.BuildServiceProvider();
-            var manager = provider.GetService<RoleManager<IdentityRole>>();
+            var manager = provider.GetRequiredService<RoleManager<IdentityRole>>();
             Assert.NotNull(manager);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityRole("arole")));
         }
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             services.AddTransient<IRoleValidator<IdentityRole>, RoleValidator<IdentityRole>>();
             services.AddSingleton<RoleManager<IdentityRole>>();
             var provider = services.BuildServiceProvider();
-            var manager = provider.GetService<RoleManager<IdentityRole>>();
+            var manager = provider.GetRequiredService<RoleManager<IdentityRole>>();
             Assert.NotNull(manager);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityRole("someRole")));
         }

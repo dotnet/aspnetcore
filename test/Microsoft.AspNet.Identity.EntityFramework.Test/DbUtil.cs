@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         public static TContext Create<TContext>(string connectionString) where TContext : DbContext, new()
         {
             var serviceProvider = ConfigureDbServices<TContext>(connectionString).BuildServiceProvider();
-            return serviceProvider.GetService<TContext>();
+            return serviceProvider.GetRequiredService<TContext>();
         }
 
     }

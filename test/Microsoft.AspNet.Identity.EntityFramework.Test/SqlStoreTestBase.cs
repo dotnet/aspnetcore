@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 context = CreateTestContext();
             }
             services.AddIdentity<TUser, TRole>().AddRoleStore(new RoleStore<TRole, TestDbContext, TKey>((TestDbContext)context));
-            return services.BuildServiceProvider().GetService<RoleManager<TRole>>();
+            return services.BuildServiceProvider().GetRequiredService<RoleManager<TRole>>();
         }
 
         public void EnsureDatabase()
@@ -96,8 +96,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 services.AddIdentityEntityFramework<TestDbContext, TUser, TRole, TKey>();
             });
 
-            var userStore = builder.ApplicationServices.GetService<IUserStore<TUser>>();
-            var userManager = builder.ApplicationServices.GetService<UserManager<TUser>>();
+            var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<TUser>>();
+            var userManager = builder.ApplicationServices.GetRequiredService<UserManager<TUser>>();
 
             Assert.NotNull(userStore);
             Assert.NotNull(userManager);
@@ -130,8 +130,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 });
             });
 
-            var userStore = builder.ApplicationServices.GetService<IUserStore<TUser>>();
-            var userManager = builder.ApplicationServices.GetService<UserManager<TUser>>();
+            var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<TUser>>();
+            var userManager = builder.ApplicationServices.GetRequiredService<UserManager<TUser>>();
 
             Assert.NotNull(userStore);
             Assert.NotNull(userManager);

@@ -23,10 +23,10 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
 
             builder.UseServices(services => services.AddIdentity<ApplicationUser>().AddInMemory());
 
-            var userStore = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
-            var roleStore = builder.ApplicationServices.GetService<IRoleStore<IdentityRole>>();
-            var userManager = builder.ApplicationServices.GetService<UserManager<ApplicationUser>>();
-            var roleManager = builder.ApplicationServices.GetService<RoleManager<IdentityRole>>();
+            var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<ApplicationUser>>();
+            var roleStore = builder.ApplicationServices.GetRequiredService<IRoleStore<IdentityRole>>();
+            var userManager = builder.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = builder.ApplicationServices.GetRequiredService<RoleManager<IdentityRole>>();
 
             Assert.NotNull(userStore);
             Assert.NotNull(userManager);
@@ -42,20 +42,20 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
             builder.UseServices(services => services.AddIdentity<ApplicationUser>().AddInMemory());
 
-            var userStore = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
-            var roleStore = builder.ApplicationServices.GetService<IRoleStore<IdentityRole>>();
-            var userManager = builder.ApplicationServices.GetService<UserManager<ApplicationUser>>();
-            var roleManager = builder.ApplicationServices.GetService<RoleManager<IdentityRole>>();
+            var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<ApplicationUser>>();
+            var roleStore = builder.ApplicationServices.GetRequiredService<IRoleStore<IdentityRole>>();
+            var userManager = builder.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = builder.ApplicationServices.GetRequiredService<RoleManager<IdentityRole>>();
 
             Assert.NotNull(userStore);
             Assert.NotNull(userManager);
             Assert.NotNull(roleStore);
             Assert.NotNull(roleManager);
 
-            var userStore2 = builder.ApplicationServices.GetService<IUserStore<ApplicationUser>>();
-            var roleStore2 = builder.ApplicationServices.GetService<IRoleStore<IdentityRole>>();
-            var userManager2 = builder.ApplicationServices.GetService<UserManager<ApplicationUser>>();
-            var roleManager2 = builder.ApplicationServices.GetService<RoleManager<IdentityRole>>();
+            var userStore2 = builder.ApplicationServices.GetRequiredService<IUserStore<ApplicationUser>>();
+            var roleStore2 = builder.ApplicationServices.GetRequiredService<IRoleStore<IdentityRole>>();
+            var userManager2 = builder.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager2 = builder.ApplicationServices.GetRequiredService<RoleManager<IdentityRole>>();
 
             // Stores are singleton, managers are scoped
             Assert.Equal(userStore, userStore2);
@@ -70,8 +70,8 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             const string userName = "admin";
             const string roleName = "Admins";
             const string password = "1qaz@WSX";
-            var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
-            var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
             var user = new ApplicationUser { UserName = userName };
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));

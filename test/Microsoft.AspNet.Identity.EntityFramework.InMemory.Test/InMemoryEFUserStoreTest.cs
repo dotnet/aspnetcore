@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
                 options.Password.RequireUppercase = false;
                 options.User.UserNameValidationRegex = null;
             });
-            return services.BuildServiceProvider().GetService<UserManager<IdentityUser>>();
+            return services.BuildServiceProvider().GetRequiredService<UserManager<IdentityUser>>();
         }
 
         protected override RoleManager<IdentityRole> CreateRoleManager(object context)
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             services.Add(OptionsServices.GetDefaultServices());
             services.AddEntityFramework().AddInMemoryStore();
             services.AddIdentityInMemory((InMemoryContext)context);
-            return services.BuildServiceProvider().GetService<RoleManager<IdentityRole>>();
+            return services.BuildServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
         }
     }
 }
