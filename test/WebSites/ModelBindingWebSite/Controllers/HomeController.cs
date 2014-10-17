@@ -37,6 +37,18 @@ namespace ModelBindingWebSite.Controllers
             return wrapper.CancellationToken == ActionContext.HttpContext.RequestAborted;
         }
 
+        [HttpGet("Home/ActionWithPersonFromUrlWithPrefix/{person.name}/{person.age}")]
+        public Person ActionWithPersonFromUrlWithPrefix([FromRoute] Person person)
+        {
+            return person;
+        }
+
+        [HttpGet("Home/ActionWithPersonFromUrlWithoutPrefix/{name}/{age}")]
+        public Person ActionWithPersonFromUrlWithoutPrefix([FromRoute] Person person)
+        {
+            return person;
+        }
+
         private Dictionary<string, string> CreateValidationDictionary()
         {
             var result = new Dictionary<string, string>();

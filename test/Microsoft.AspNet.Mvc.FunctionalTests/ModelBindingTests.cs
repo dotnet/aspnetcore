@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Provide all three values, it should bind based on the attribute on the action method.
-            var request = new HttpRequestMessage(HttpMethod.Post, 
+            var request = new HttpRequestMessage(HttpMethod.Post,
                 string.Format("http://localhost/CompositeTest/{0}/valueFromRoute?param=valueFromQuery", actionName));
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
@@ -105,6 +105,31 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.NotNull(person);
             Assert.Equal("somename", person.Name);
             Assert.Equal(12, person.Age);
+        }
+
+        [Theory]
+        [InlineData("http://localhost/Home/ActionWithPersonFromUrlWithPrefix/Javier/26")]
+        [InlineData("http://localhost/Home/ActionWithPersonFromUrlWithoutPrefix/Javier/26")]
+        public async Task CanBind_ComplexData_FromRouteData(string url)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await
+                     client.GetAsync(url);
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.NotNull(body);
+
+            var person = JsonConvert.DeserializeObject<Person>(body);
+            Assert.NotNull(person);
+            Assert.Equal("Javier", person.Name);
+            Assert.Equal(26, person.Age);
         }
 
         [Fact]

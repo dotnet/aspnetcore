@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -11,6 +12,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         where TBinderMarker : IValueBinderMarker
     {
         private readonly IDictionary<string, object> _values;
+        private PrefixContainer _prefixContainer;
 
         public DictionaryBasedValueProvider(IDictionary<string, object> values)
         {
@@ -19,7 +21,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public override Task<bool> ContainsPrefixAsync(string key)
         {
-            return Task.FromResult(_values.ContainsKey(key));
+            var prefixContainer = GetOrCreatePrefixContainer();
+            return Task.FromResult(prefixContainer.ContainsPrefix(key));
+        }
+
+        private PrefixContainer GetOrCreatePrefixContainer()
+        {
+            if (_prefixContainer == null)
+            {
+                _prefixContainer = new PrefixContainer(_values.Keys);
+            }
+
+            return _prefixContainer;
         }
 
         public override Task<ValueProviderResult> GetValueAsync([NotNull] string key)
