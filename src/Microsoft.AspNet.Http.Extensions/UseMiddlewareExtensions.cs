@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Builder
         {
             return builder.Use(next =>
             {
-                var typeActivator = builder.ApplicationServices.GetService<ITypeActivator>();
+                var typeActivator = builder.ApplicationServices.GetRequiredService<ITypeActivator>();
                 var instance = typeActivator.CreateInstance(builder.ApplicationServices, middleware, new[] { next }.Concat(args).ToArray());
                 var methodinfo = middleware.GetMethod("Invoke", BindingFlags.Instance | BindingFlags.Public);
                 return (RequestDelegate)methodinfo.CreateDelegate(typeof(RequestDelegate), instance);
