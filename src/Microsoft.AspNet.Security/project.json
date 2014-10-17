@@ -27,7 +27,7 @@
                 "System.Runtime": "4.0.20-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*",
                 "System.Runtime.InteropServices": "4.0.20-beta-*",
-                "System.Security.Claims": "1.0.0-*",
+                "System.Security.Claims": "4.0.0-beta-*",
                 "System.Security.Cryptography.RandomNumberGenerator": "4.0.0-beta-*",
                 "System.Security.Principal": "4.0.0-beta-*",
                 "System.Threading": "4.0.0-beta-*",
