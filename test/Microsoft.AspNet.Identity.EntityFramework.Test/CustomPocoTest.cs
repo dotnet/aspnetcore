@@ -4,15 +4,9 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.Services;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test

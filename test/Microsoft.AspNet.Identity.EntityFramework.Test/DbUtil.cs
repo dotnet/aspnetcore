@@ -3,7 +3,6 @@
 
 using Microsoft.AspNet.Hosting;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Services;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Logging;
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             services.Add(HostingServices.GetDefaultServices());
             services.AddEntityFramework().AddSqlServer().AddDbContext<TContext>(options => options.UseSqlServer(connectionString));
             services.Add(OptionsServices.GetDefaultServices());
-            services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
+            services.AddInstance<ILoggerFactory>(new LoggerFactory());
             return services;
         }
 

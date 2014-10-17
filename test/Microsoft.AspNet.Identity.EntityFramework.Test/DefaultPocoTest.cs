@@ -5,12 +5,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity.Test;
-using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Services;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test

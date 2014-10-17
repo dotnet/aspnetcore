@@ -9,7 +9,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Services;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Logging;
@@ -77,7 +76,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
             builder.UseServices(services =>
             {
-                services.AddInstance<ILoggerFactory>(new NullLoggerFactory());
+                services.AddInstance<ILoggerFactory>(new LoggerFactory());
                 services.Add(HostingServices.GetDefaultServices());
                 services.AddEntityFramework()
                         .AddSqlServer()
@@ -111,7 +110,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             using (var db = CreateContext())
             {
                 var guid = Guid.NewGuid().ToString();
-                db.Users.Add(new IdentityUser {Id = guid, UserName = guid});
+                db.Users.Add(new IdentityUser { Id = guid, UserName = guid });
                 db.SaveChanges();
                 Assert.True(db.Users.Any(u => u.UserName == guid));
                 Assert.NotNull(db.Users.FirstOrDefault(u => u.UserName == guid));
@@ -278,7 +277,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         {
             var manager = CreateManager();
             var guid = Guid.NewGuid().ToString();
-            var user = new IdentityUser { UserName = "New"+guid };
+            var user = new IdentityUser { UserName = "New" + guid };
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.DeleteAsync(user));
         }
