@@ -37,7 +37,6 @@ namespace SelfHostServer
             {
                 if (context.IsWebSocketRequest)
                 {
-                    Console.WriteLine("WebSocket");
                     byte[] bytes = Encoding.ASCII.GetBytes("Hello World: " + DateTime.Now);
                     WebSocket webSocket = await context.AcceptWebSocketAsync();
                     await webSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);

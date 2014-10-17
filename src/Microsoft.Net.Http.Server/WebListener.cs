@@ -27,7 +27,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
@@ -36,8 +35,6 @@ using Microsoft.Framework.Logging;
 
 namespace Microsoft.Net.Http.Server
 {
-    using AppFunc = Func<object, Task>;
-
     /// <summary>
     /// An HTTP server wrapping the Http.Sys APIs that accepts requests.
     /// </summary>
