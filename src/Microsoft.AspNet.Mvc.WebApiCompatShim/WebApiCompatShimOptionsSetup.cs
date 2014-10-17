@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         {
             // Add webapi behaviors to controllers with the appropriate attributes
             options.ApplicationModelConventions.Add(new WebApiActionConventionsGlobalModelConvention());
+            options.ApplicationModelConventions.Add(new WebApiParameterConventionsGlobalModelConvention());
             options.ApplicationModelConventions.Add(new WebApiOverloadingGlobalModelConvention());
             options.ApplicationModelConventions.Add(new WebApiRoutesGlobalModelConvention(area: DefaultAreaName));
 

@@ -252,6 +252,87 @@ namespace System.Web.Http
             }
         }
 
+        [Fact]
+        public void GetActions_Parameters_SimpleTypeFromUriByDefault()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var context = new ActionDescriptorProviderContext();
+            provider.Invoke(context);
+
+            var results = context.Results.Cast<ControllerActionDescriptor>();
+
+            // Assert
+            var controllerType = typeof(TestControllers.EmployeesController).GetTypeInfo();
+            var actions = results
+                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.Name == "Get")
+                .ToArray();
+
+            Assert.NotEmpty(actions);
+            foreach (var action in actions)
+            {
+                var parameter = Assert.Single(action.Parameters);
+                Assert.IsType<FromUriAttribute>(parameter.BinderMarker);
+            }
+        }
+
+        [Fact]
+        public void GetActions_Parameters_ComplexTypeFromBodyByDefault()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var context = new ActionDescriptorProviderContext();
+            provider.Invoke(context);
+
+            var results = context.Results.Cast<ControllerActionDescriptor>();
+
+            // Assert
+            var controllerType = typeof(TestControllers.EmployeesController).GetTypeInfo();
+            var actions = results
+                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.Name == "Put")
+                .ToArray();
+
+            Assert.NotEmpty(actions);
+            foreach (var action in actions)
+            {
+                var parameter = Assert.Single(action.Parameters);
+                Assert.IsType<FromBodyAttribute>(parameter.BinderMarker);
+            }
+        }
+
+        [Fact]
+        public void GetActions_Parameters_BinderMarker()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var context = new ActionDescriptorProviderContext();
+            provider.Invoke(context);
+
+            var results = context.Results.Cast<ControllerActionDescriptor>();
+
+            // Assert
+            var controllerType = typeof(TestControllers.EmployeesController).GetTypeInfo();
+            var actions = results
+                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.Name == "Post")
+                .ToArray();
+
+            Assert.NotEmpty(actions);
+            foreach (var action in actions)
+            {
+                var parameter = Assert.Single(action.Parameters);
+                Assert.IsType<ModelBinderAttribute>(parameter.BinderMarker);
+            }
+        }
+
         private INestedProviderManager<ActionDescriptorProviderContext> CreateProvider()
         {
             var assemblyProvider = new Mock<IAssemblyProvider>();
@@ -345,6 +426,28 @@ namespace System.Web.Http.TestControllers
         {
             return null;
         }
+    }
+
+    public class EmployeesController : ApiController
+    {
+        public IActionResult Get(int id)
+        {
+            return null;
+        }
+
+        public IActionResult Put(Employee employee)
+        {
+            return null;
+        }
+
+        public IActionResult Post([ModelBinder] Employee employee)
+        {
+            return null;
+        }
+    }
+
+    public class Employee
+    {
     }
 }
 #endif

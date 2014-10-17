@@ -63,7 +63,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 "Property3", "Property4", "IncludedAndExcludedExplicitly1", "ExcludedExplicitly1" };
            
             // Act 
-            var metadata = provider.GetMetadataForParameter(null, methodInfo, "param");
+            var metadata = provider.GetMetadataForParameter(
+                modelAccessor: null,
+                methodInfo: methodInfo,
+                parameterName: "param",
+                binderMarker: null);
 
             // Assert
             Assert.Equal(expectedIncludedPropertyNames.ToList(), metadata.IncludedProperties);
@@ -79,7 +83,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new DataAnnotationsModelMetadataProvider();
 
             // Act 
-            var metadata = provider.GetMetadataForParameter(null, methodInfo, "param");
+            var metadata = provider.GetMetadataForParameter(
+                modelAccessor: null, 
+                methodInfo: methodInfo, 
+                parameterName: "param", 
+                binderMarker: null);
 
             // Assert
             Assert.Equal("ParameterPrefix", metadata.ModelName);
@@ -108,7 +116,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new DataAnnotationsModelMetadataProvider();
 
             // Act 
-            var metadata = provider.GetMetadataForParameter(null, methodInfo, "param");
+            var metadata = provider.GetMetadataForParameter(
+                modelAccessor: null, 
+                methodInfo: methodInfo, 
+                parameterName: "param", 
+                binderMarker: null);
 
             // Assert
             Assert.Equal("ParameterPrefix", metadata.ModelName);

@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using MvcSample.Web.Models;
 
 namespace MvcSample.Web
@@ -61,74 +58,11 @@ namespace MvcSample.Web
             return result;
         }
 
-        private class OverloadAttribute : Attribute, IActionConstraint
+        private class OverloadAttribute : Attribute, IActionConstraintFactory
         {
-            public int Order { get; } = Int32.MaxValue;
-
-            public bool Accept(ActionConstraintContext context)
+            public IActionConstraint CreateInstance(IServiceProvider services)
             {
-                var candidates = context.Candidates.Select(a => new
-                {
-                    Action = a,
-                    Parameters = GetOverloadableParameters(a.Action),
-                });
-
-                var valueProviderFactory = context.RouteContext.HttpContext.RequestServices
-                    .GetRequiredService<ICompositeValueProviderFactory>();
-
-                var factoryContext = new ValueProviderFactoryContext(
-                    context.RouteContext.HttpContext, 
-                    context.RouteContext.RouteData.Values);
-                var valueProvider = valueProviderFactory.GetValueProvider(factoryContext);
-
-                foreach (var group in candidates.GroupBy(c => c.Parameters.Count).OrderByDescending(g => g.Key))
-                {
-                    var foundMatch = false;
-                    foreach (var candidate in group)
-                    {
-                        var allFound = true;
-                        foreach (var parameter in candidate.Parameters)
-                        {
-                            if (!(valueProvider.ContainsPrefixAsync(parameter.ParameterBindingInfo.Prefix).Result))
-                            {
-                                if (candidate.Action.Action == context.CurrentCandidate.Action)
-                                {
-                                    return false;
-                                }
-
-                                allFound = false;
-                                break;
-                            }
-                        }
-
-                        if (allFound)
-                        {
-                            foundMatch = true;
-                        }
-                    }
-
-                    if (foundMatch)
-                    {
-                        return group.Any(c => c.Action.Action == context.CurrentCandidate.Action);
-                    }
-                }
-
-                return false;
-            }
-
-            private List<ParameterDescriptor> GetOverloadableParameters(ActionDescriptor action)
-            {
-                if (action.Parameters == null)
-                {
-                    return new List<ParameterDescriptor>();
-                }
-
-                return action.Parameters.Where(
-                    p => 
-                        p.ParameterBindingInfo != null && 
-                        !p.IsOptional && 
-                        ValueProviderResult.CanConvertFromString(p.ParameterBindingInfo.ParameterType))
-                    .ToList();
+                return new OverloadActionConstraint();
             }
         }
     }

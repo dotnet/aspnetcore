@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
 
             parameter.Action = new ActionModel(typeof(TestController).GetMethod("Edit"));
             parameter.Attributes.Add(new FromBodyAttribute());
+            parameter.BinderMarker = new FromBodyAttribute();
             parameter.IsOptional = true;
             parameter.ParameterName = "id";
 

@@ -46,24 +46,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return CreateMetadataFromPrototype(prototype, modelAccessor);
         }
 
-        public IEnumerable<ModelMetadata> GetMetadataForParameters([NotNull] MethodInfo methodInfo)
-        {
-            var parameters = methodInfo.GetParameters();
-            foreach (var parameter in parameters)
-            {
-                // Name can be null if the methodinfo represents an open delegate.
-                if (!string.IsNullOrEmpty(parameter.Name))
-                {
-                    yield return GetMetadataForParameterCore(
-                        modelAccessor: null, parameterName: parameter.Name, parameter: parameter);
-                }
-            }
-        }
-     
         public ModelMetadata GetMetadataForParameter(
             Func<object> modelAccessor, 
             [NotNull] MethodInfo methodInfo, 
-            [NotNull] string parameterName)
+            [NotNull] string parameterName,
+            IBinderMarker binderMarker)
         {
             var parameter = methodInfo.GetParameters().FirstOrDefault(
                 param => StringComparer.Ordinal.Equals(param.Name, parameterName));
@@ -73,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentException(message, nameof(parameterName));
             }
 
-            return GetMetadataForParameterCore(modelAccessor, parameterName, parameter);
+            return GetMetadataForParameterCore(modelAccessor, parameterName, parameter, binderMarker);
         }
 
         // Override for creating the prototype metadata (without the accessor)
@@ -87,12 +74,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                                       Func<object> modelAccessor);
         private ModelMetadata GetMetadataForParameterCore(Func<object> modelAccessor,
                                                           string parameterName,
-                                                          ParameterInfo parameter)
+                                                          ParameterInfo parameter,
+                                                          IBinderMarker binderMarker)
         {
             var parameterInfo = 
                 CreateParameterInfo(parameter.ParameterType,
                                     parameter.GetCustomAttributes(),
-                                    parameterName);
+                                    parameterName,
+                                    binderMarker);
 
             var typeInfo = GetTypeInformation(parameter.ParameterType);
             UpdateMetadataWithTypeInfo(parameterInfo.Prototype, typeInfo);
@@ -244,13 +233,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             };
         }
 
-        private ParameterInformation CreateParameterInfo(Type parameterType, IEnumerable<Attribute> attributes, string parameterName)
+        private ParameterInformation CreateParameterInfo(
+            Type parameterType, 
+            IEnumerable<Attribute> attributes, 
+            string parameterName,
+            IBinderMarker binderMarker)
         {
             var metadataProtoType = CreateMetadataPrototype(attributes: attributes,
                                                     containerType: null,
                                                     modelType: parameterType,
                                                     propertyName: parameterName);
       
+            if (binderMarker != null)
+            {
+                metadataProtoType.Marker = binderMarker;
+            }
+
+            var nameProvider = binderMarker as IModelNameProvider;
+            if (nameProvider != null && nameProvider.Name != null)
+            {
+                metadataProtoType.ModelName = nameProvider.Name;
+            }
+
             return new ParameterInformation
             {
                 Prototype =  metadataProtoType

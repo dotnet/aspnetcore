@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                     {
                         foreach (var parameter in candidate.Parameters)
                         {
-                            if (!requestKeys.Contains(parameter.ParameterBindingInfo.Prefix))
+                            if (!requestKeys.Contains(parameter.Prefix))
                             {
                                 if (candidate.Action.Action == context.CurrentCandidate.Action)
                                 {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             return false;
         }
 
-        private List<ParameterDescriptor> GetOverloadableParameters(ActionSelectorCandidate candidate)
+        private List<OverloadedParameter> GetOverloadableParameters(ActionSelectorCandidate candidate)
         {
             if (candidate.Action.Parameters == null)
             {
@@ -86,13 +86,26 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 return null;
             }
 
-            // We only consider parameters that are bound from the URL.
-            return candidate.Action.Parameters.Where(
-                p =>
-                    p.ParameterBindingInfo != null &&
-                    !p.IsOptional &&
-                    ValueProviderResult.CanConvertFromString(p.ParameterBindingInfo.ParameterType))
-                .ToList();
+            var parameters = new List<OverloadedParameter>();
+
+            foreach (var parameter in candidate.Action.Parameters)
+            {
+                // We only consider parameters that are bound from the URL.
+                if ((parameter.BinderMarker is IRouteDataMarker || parameter.BinderMarker is IQueryBinderMarker) &&
+                    !parameter.IsOptional &&
+                    ValueProviderResult.CanConvertFromString(parameter.ParameterBindingInfo.ParameterType))
+                {
+                    var prefix = (parameter.BinderMarker as IModelNameProvider).Name ?? parameter.Name;
+
+                    parameters.Add(new OverloadedParameter()
+                    {
+                        ParameterDescriptor = parameter,
+                        Prefix = prefix,
+                    });
+                }
+            }
+
+            return parameters;
         }
 
         private static ISet<string> GetCombinedKeys(RouteContext routeContext)
@@ -120,6 +133,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             }
 
             return keys;
+        }
+
+        private class OverloadedParameter
+        {
+            public ParameterDescriptor ParameterDescriptor { get; set; }
+
+            public string Prefix { get; set; }
         }
     }
 }

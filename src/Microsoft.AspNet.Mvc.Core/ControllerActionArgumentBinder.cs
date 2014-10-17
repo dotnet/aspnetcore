@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var actionBindingContext = await _bindingContextProvider.GetActionBindingContextAsync(actionContext);
             var metadataProvider = actionBindingContext.MetadataProvider;
-            var parameters = actionContext.ActionDescriptor.Parameters;
+
             var actionDescriptor = actionContext.ActionDescriptor as ControllerActionDescriptor;
             if (actionDescriptor == null)
             {
@@ -37,33 +37,49 @@ namespace Microsoft.AspNet.Mvc
                         nameof(actionContext));
             }
 
-            var actionMethodInfo = actionDescriptor.MethodInfo;
-            var parameterMetadatas = metadataProvider.GetMetadataForParameters(actionMethodInfo);
+            var parameterMetadata = new List<ModelMetadata>();
+            foreach (var parameter in actionDescriptor.Parameters)
+            {
+                var metadata = metadataProvider.GetMetadataForParameter(
+                    modelAccessor: null,
+                    methodInfo: actionDescriptor.MethodInfo,
+                    parameterName: parameter.Name,
+                    binderMarker: parameter.BinderMarker);
 
-            var actionArguments = new Dictionary<string, object>(StringComparer.Ordinal);
-            await PopulateActionArgumentsAsync(parameterMetadatas, actionBindingContext, actionArguments);
-            return actionArguments;
-        }
+                if (metadata != null)
+                {
+                    parameterMetadata.Add(metadata);
+                }
+            }
 
-        private async Task PopulateActionArgumentsAsync(IEnumerable<ModelMetadata> modelMetadatas,
-                                                        ActionBindingContext actionBindingContext, 
-                                                        IDictionary<string, object> invocationInfo)
-        {
-            var bodyBoundParameterCount = modelMetadatas.Count(
-                                            modelMetadata => modelMetadata.Marker is IBodyBinderMarker);
+            var bodyBoundParameterCount = parameterMetadata.Count(
+                                modelMetadata => modelMetadata.Marker is IBodyBinderMarker);
             if (bodyBoundParameterCount > 1)
             {
                 throw new InvalidOperationException(Resources.MultipleBodyParametersAreNotAllowed);
             }
 
-            foreach (var modelMetadata in modelMetadatas)
+            var actionArguments = new Dictionary<string, object>(StringComparer.Ordinal);
+            foreach (var parameter in parameterMetadata)
             {
-                var modelBindingContext = GetModelBindingContext(modelMetadata, actionBindingContext);
+                await PopulateArgumentAsync(actionBindingContext, actionArguments, parameter);
+            }
 
-                if (await actionBindingContext.ModelBinder.BindModelAsync(modelBindingContext))
-                {
-                    invocationInfo[modelMetadata.PropertyName] = modelBindingContext.Model;
-                }
+            return actionArguments;
+        }
+
+        private async Task PopulateArgumentAsync(
+            ActionBindingContext actionBindingContext,
+            IDictionary<string, object> arguments,
+            ModelMetadata modelMetadata)
+        {
+
+            var parameterType = modelMetadata.ModelType;
+            var modelBindingContext = GetModelBindingContext(modelMetadata, actionBindingContext);
+
+            if (await actionBindingContext.ModelBinder.BindModelAsync(modelBindingContext))
+            {
+                arguments[modelMetadata.PropertyName] = modelBindingContext.Model;
             }
         }
 

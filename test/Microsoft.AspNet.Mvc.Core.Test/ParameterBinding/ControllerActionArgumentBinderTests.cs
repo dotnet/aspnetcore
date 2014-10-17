@@ -59,7 +59,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
                                                                          methodInfo: methodInfo,
-                                                                         parameterName: "foo");
+                                                                         parameterName: "foo",
+                                                                         binderMarker: null);
 
 
             var actionBindingContext = new ActionBindingContext(actionContext,
@@ -93,7 +94,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
                                                                          methodInfo: methodInfo,
-                                                                         parameterName: "foo1");
+                                                                         parameterName: "foo1",
+                                                                         binderMarker: null);
 
 
             var actionBindingContext = new ActionBindingContext(actionContext,

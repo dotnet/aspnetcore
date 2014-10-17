@@ -927,7 +927,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static ModelMetadata GetMetadataForParameter(MethodInfo methodInfo, string parameterName)
         {
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            return metadataProvider.GetMetadataForParameter(null, methodInfo, parameterName);
+            return metadataProvider.GetMetadataForParameter(
+                modelAccessor: null, 
+                methodInfo: methodInfo, 
+                parameterName: parameterName,
+                binderMarker: null);
         }
 
         private class Person

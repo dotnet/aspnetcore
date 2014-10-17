@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.ApplicationModel;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Routing;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
@@ -190,6 +190,8 @@ namespace Microsoft.AspNet.Mvc
             // is needed to so that the result of ToList() is List<object>
             var attributes = parameterInfo.GetCustomAttributes(inherit: true).OfType<object>().ToList();
             parameterModel.Attributes.AddRange(attributes);
+
+            parameterModel.BinderMarker = attributes.OfType<IBinderMarker>().FirstOrDefault();
 
             parameterModel.ParameterName = parameterInfo.Name;
             parameterModel.IsOptional = parameterInfo.HasDefaultValue;
@@ -508,8 +510,9 @@ namespace Microsoft.AspNet.Mvc
         {
             var parameterDescriptor = new ParameterDescriptor()
             {
+                BinderMarker = parameter.BinderMarker,
+                IsOptional = parameter.IsOptional,
                 Name = parameter.ParameterName,
-                IsOptional = parameter.IsOptional
             };
 
             var isFromBody = parameter.Attributes.OfType<FromBodyAttribute>().Any();

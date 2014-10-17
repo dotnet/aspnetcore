@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModel
 {
@@ -19,6 +20,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
         {
             Action = other.Action;
             Attributes = new List<object>(other.Attributes);
+            BinderMarker = other.BinderMarker;
             IsOptional = other.IsOptional;
             ParameterInfo = other.ParameterInfo;
             ParameterName = other.ParameterName;
@@ -27,6 +29,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
         public ActionModel Action { get; set; }
 
         public List<object> Attributes { get; private set; }
+
+        public IBinderMarker BinderMarker { get; set; }
 
         public bool IsOptional { get; set; }
 

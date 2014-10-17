@@ -15,8 +15,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         ModelMetadata GetMetadataForType(Func<object> modelAccessor, [NotNull] Type modelType);
 
-        IEnumerable<ModelMetadata> GetMetadataForParameters([NotNull] MethodInfo methodInfo);
-
-        ModelMetadata GetMetadataForParameter(Func<object> modelAccessor, [NotNull] MethodInfo methodInfo, [NotNull] string parameterName);
+        ModelMetadata GetMetadataForParameter(
+            Func<object> modelAccessor,
+            [NotNull] MethodInfo methodInfo,
+            [NotNull] string parameterName,
+            IBinderMarker binderMarker);
     }
 }

@@ -20,6 +20,7 @@ namespace System.Web.Http
 {
     [UseWebApiRoutes]
     [UseWebApiActionConventions]
+    [UseWebApiParameterConventions]
     [UseWebApiOverloading]
     public abstract class ApiController : IDisposable
     {
