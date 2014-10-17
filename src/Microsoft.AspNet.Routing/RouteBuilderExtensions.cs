@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Routing
 
             var inlineConstraintResolver = routeCollectionBuilder
                                                         .ServiceProvider
-                                                        .GetService<IInlineConstraintResolver>();
+                                                        .GetRequiredService<IInlineConstraintResolver>();
             routeCollectionBuilder.Routes.Add(new TemplateRoute(routeCollectionBuilder.DefaultHandler,
                                                                 name,
                                                                 template,

@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.Routing.Tests
                                 .ConstraintMap
                                 .Add("test", typeof(TestRouteConstraint)));
             var serviceProvider = services.BuildServiceProvider();
-            var accessor = serviceProvider.GetService<IOptions<RouteOptions>>();
+            var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
             return new DefaultInlineConstraintResolver(serviceProvider, accessor);
         }
 

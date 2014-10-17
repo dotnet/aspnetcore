@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Builder
         {
             if (_logger == null)
             {
-                var factory = context.RequestServices.GetService<ILoggerFactory>();
+                var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
                 _logger = factory.Create<RouterMiddleware>();
             }
         }
