@@ -39,6 +39,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             _antiForgery = antiForgery;
             _metadataProvider = metadataProvider;
             _urlHelper = urlHelper;
+
+            // Underscores are fine characters in id's.
+            IdAttributeDotReplacement = "_";
         }
 
         /// <inheritdoc />

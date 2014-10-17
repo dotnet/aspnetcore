@@ -42,9 +42,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             _viewEngine = viewEngine;
             _htmlGenerator = htmlGenerator;
             MetadataProvider = metadataProvider;
-
-            // Underscores are fine characters in id's.
-            IdAttributeDotReplacement = "_";
         }
 
         /// <inheritdoc />
