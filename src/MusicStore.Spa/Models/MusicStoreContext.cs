@@ -12,8 +12,7 @@ namespace MusicStore.Models
 
     public class MusicStoreContext : IdentityDbContext<ApplicationUser>
     {
-        public MusicStoreContext(IServiceProvider serviceProvider, IOptions<DbContextOptions<MusicStoreContext>> optionsAccessor)
-            : base(serviceProvider, optionsAccessor.Options)
+        public MusicStoreContext()
         {
 
         }
