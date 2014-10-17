@@ -301,8 +301,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Controller = "Home",
                 Method = "POST"
             };
-            var expectedErrorMessage = "Cannot determine an action for <form>. A <form> with a URL-based action " +
-                                       "must not have attributes starting with route- or a controller attribute.";
+            var expectedErrorMessage = "Cannot determine an 'action' for <form>. A <form> with a URL-based 'action' " +
+                                       "must not have attributes starting with 'route-' or a 'controller' attribute.";
             var tagHelperOutput = new TagHelperOutput(
                 "form",
                 attributes: new Dictionary<string, string>(),
@@ -324,8 +324,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Action = "http://www.contoso.com",
                 Method = "POST"
             };
-            var expectedErrorMessage = "Cannot determine an action for <form>. A <form> with a URL-based action " +
-                                       "must not have attributes starting with route- or a controller attribute.";
+            var expectedErrorMessage = "Cannot determine an 'action' for <form>. A <form> with a URL-based 'action' " +
+                                       "must not have attributes starting with 'route-' or a 'controller' attribute.";
             var tagHelperOutput = new TagHelperOutput(
                 "form",
                 attributes: new Dictionary<string, string>

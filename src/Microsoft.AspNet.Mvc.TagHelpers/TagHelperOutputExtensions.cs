@@ -89,7 +89,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             foreach (var attribute in tagBuilder.Attributes)
             {
-                if (!tagHelperOutput.Attributes.ContainsKey(attribute.Key))
+                // TODO: Use Attributes.ContainsKey once aspnet/Razor#186 is fixed.
+                if (!tagHelperOutput.Attributes.Any(
+                    item => string.Equals(attribute.Key, item.Key, StringComparison.OrdinalIgnoreCase)))
                 {
                     tagHelperOutput.Attributes.Add(attribute.Key, attribute.Value);
                 }

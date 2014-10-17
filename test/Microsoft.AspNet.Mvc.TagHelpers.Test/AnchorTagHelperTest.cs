@@ -176,9 +176,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 typeof(AnchorTagHelper).GetProperty(propertyName).SetValue(anchorTagHelper, "Home");
             }
 
-            var expectedErrorMessage = "Cannot determine an href for <a>. An <a> with a specified href must not " +
-                                       "have attributes starting with route- or an action, controller, route, " +
-                                       "protocol, host or fragment attribute.";
+            var expectedErrorMessage = "Cannot determine an 'href' for <a>. An <a> with a specified 'href' must not " +
+                                       "have attributes starting with 'route-' or an 'action', 'controller', " +
+                                       "'route', 'protocol', 'host', or 'fragment' attribute.";
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -202,8 +202,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 "a",
                 attributes: new Dictionary<string, string>(),
                 content: string.Empty);
-            var expectedErrorMessage = "Cannot determine an href for <a>. An <a> with a " +
-                                       "specified route must not have an action or controller attribute.";
+            var expectedErrorMessage = "Cannot determine an 'href' for <a>. An <a> with a " +
+                                       "specified 'route' must not have an 'action' or 'controller' attribute.";
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(

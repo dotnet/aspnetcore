@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             = new ResourceManager("Microsoft.AspNet.Mvc.TagHelpers.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Cannot determine an {4} for {0}. An {0} with a specified {1} must not have an {2} or {3} attribute.
+        /// Cannot determine an '{4}' for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
         /// </summary>
         internal static string AnchorTagHelper_CannotDetermineHrefRouteActionOrControllerSpecified
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine an {4} for {0}. An {0} with a specified {1} must not have an {2} or {3} attribute.
+        /// Cannot determine an '{4}' for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
         /// </summary>
         internal static string FormatAnchorTagHelper_CannotDetermineHrefRouteActionOrControllerSpecified(object p0, object p1, object p2, object p3, object p4)
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine an {8} for {0}. An {0} with a specified {8} must not have attributes starting with {7} or an {1}, {2}, {3}, {4}, {5} or {6} attribute.
+        /// Cannot determine an '{8}' for {0}. An {0} with a specified '{8}' must not have attributes starting with '{7}' or an '{1}', '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.
         /// </summary>
         internal static string AnchorTagHelper_CannotOverrideSpecifiedHref
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine an {8} for {0}. An {0} with a specified {8} must not have attributes starting with {7} or an {1}, {2}, {3}, {4}, {5} or {6} attribute.
+        /// Cannot determine an '{8}' for {0}. An {0} with a specified '{8}' must not have attributes starting with '{7}' or an '{1}', '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.
         /// </summary>
         internal static string FormatAnchorTagHelper_CannotOverrideSpecifiedHref(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7, object p8)
         {
@@ -43,7 +43,55 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine an {1} for {0}. A {0} with a URL-based {1} must not have attributes starting with {3} or a {2} attribute.
+        /// Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' if '{4}' is '{5}'.
+        /// </summary>
+        internal static string InputTagHelper_InvalidExpressionResult
+        {
+            get { return GetString("InputTagHelper_InvalidExpressionResult"); }
+        }
+
+        /// <summary>
+        /// Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' if '{4}' is '{5}'.
+        /// </summary>
+        internal static string FormatInputTagHelper_InvalidExpressionResult(object p0, object p1, object p2, object p3, object p4, object p5)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InputTagHelper_InvalidExpressionResult"), p0, p1, p2, p3, p4, p5);
+        }
+
+        /// <summary>
+        /// Unable to format without a '{1}' expression for {0}. '{2}' must be null if '{1}' is null.
+        /// </summary>
+        internal static string InputTagHelper_UnableToFormat
+        {
+            get { return GetString("InputTagHelper_UnableToFormat"); }
+        }
+
+        /// <summary>
+        /// Unable to format without a '{1}' expression for {0}. '{2}' must be null if '{1}' is null.
+        /// </summary>
+        internal static string FormatInputTagHelper_UnableToFormat(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InputTagHelper_UnableToFormat"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// '{1}' must not be null for {0} if '{2}' is '{3}'.
+        /// </summary>
+        internal static string InputTagHelper_ValueRequired
+        {
+            get { return GetString("InputTagHelper_ValueRequired"); }
+        }
+
+        /// <summary>
+        /// '{1}' must not be null for {0} if '{2}' is '{3}'.
+        /// </summary>
+        internal static string FormatInputTagHelper_ValueRequired(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InputTagHelper_ValueRequired"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// Cannot determine an '{1}' for {0}. A {0} with a URL-based '{1}' must not have attributes starting with '{3}' or a '{2}' attribute.
         /// </summary>
         internal static string FormTagHelper_CannotDetermineAction
         {
@@ -51,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine an {1} for {0}. A {0} with a URL-based {1} must not have attributes starting with {3} or a {2} attribute.
+        /// Cannot determine an '{1}' for {0}. A {0} with a URL-based '{1}' must not have attributes starting with '{3}' or a '{2}' attribute.
         /// </summary>
         internal static string FormatFormTagHelper_CannotDetermineAction(object p0, object p1, object p2, object p3)
         {
@@ -72,6 +120,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         internal static string FormatValidationSummaryTagHelper_InvalidValidationSummaryValue(object p0, object p1, object p2, object p3, object p4, object p5)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("ValidationSummaryTagHelper_InvalidValidationSummaryValue"), p0, p1, p2, p3, p4, p5);
+        }
+
+        /// <summary>
+        /// The {2} was unable to provide metadata about '{1}' expression value '{3}' for {0}.
+        /// </summary>
+        internal static string TagHelpers_NoProvidedMetadata
+        {
+            get { return GetString("TagHelpers_NoProvidedMetadata"); }
+        }
+
+        /// <summary>
+        /// The {2} was unable to provide metadata about '{1}' expression value '{3}' for {0}.
+        /// </summary>
+        internal static string FormatTagHelpers_NoProvidedMetadata(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_NoProvidedMetadata"), p0, p1, p2, p3);
         }
 
         private static string GetString(string name, params string[] formatterNames)
