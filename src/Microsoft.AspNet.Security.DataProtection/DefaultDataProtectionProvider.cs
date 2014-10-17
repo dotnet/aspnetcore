@@ -21,8 +21,7 @@ namespace Microsoft.AspNet.Security.DataProtection
             collection.Add(defaultServices);
             var serviceProvider = collection.BuildServiceProvider();
 
-            _innerProvider = (IDataProtectionProvider)serviceProvider.GetService(typeof(IDataProtectionProvider));
-            CryptoUtil.Assert(_innerProvider != null, "_innerProvider != null");
+            _innerProvider = serviceProvider.GetRequiredService<IDataProtectionProvider>();
         }
 
         public DefaultDataProtectionProvider(
