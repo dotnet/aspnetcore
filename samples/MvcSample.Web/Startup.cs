@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
@@ -21,8 +22,9 @@ namespace MvcSample.Web
         {
             app.UseFileServer();
 #if ASPNET50
+            // We use Path.Combine here so that it works on platforms other than Windows as well.
             var configuration = new Configuration()
-                                        .AddJsonFile(@"App_Data\config.json")
+                                        .AddJsonFile(Path.Combine("App_Data", "config.json"))
                                         .AddEnvironmentVariables();
             string diSystem;
 
