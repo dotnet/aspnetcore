@@ -443,7 +443,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The value cannot be null or empty.
+        /// Value cannot be null or empty.
         /// </summary>
         internal static string ArgumentCannotBeNullOrEmpty
         {
@@ -451,7 +451,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The value cannot be null or empty.
+        /// Value cannot be null or empty.
         /// </summary>
         internal static string FormatArgumentCannotBeNullOrEmpty()
         {

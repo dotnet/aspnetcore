@@ -96,8 +96,8 @@ namespace Microsoft.AspNet.Mvc.Test
             var controller = new Controller();
 
             // Act & Assert
-            ExceptionAssert.ThrowsArgument(
-                () => controller.Redirect(url: url), "url", "The value cannot be null or empty");
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(
+                () => controller.Redirect(url: url), "url");
         }
 
         [Theory]
@@ -109,8 +109,8 @@ namespace Microsoft.AspNet.Mvc.Test
             var controller = new Controller();
 
             // Act & Assert
-            ExceptionAssert.ThrowsArgument(
-                () => controller.RedirectPermanent(url: url), "url", "The value cannot be null or empty");
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(
+                () => controller.RedirectPermanent(url: url), "url");
         }
 
         [Fact]
