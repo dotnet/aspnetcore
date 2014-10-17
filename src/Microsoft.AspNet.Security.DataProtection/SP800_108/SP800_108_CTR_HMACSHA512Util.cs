@@ -27,11 +27,11 @@ namespace Microsoft.AspNet.Security.DataProtection.SP800_108
         {
             if (OSVersionUtil.IsBCryptOnWin8OrLaterAvailable())
             {
-                return new Win7SP800_108_CTR_HMACSHA512Provider(pbKdk, cbKdk);
+                return new Win8SP800_108_CTR_HMACSHA512Provider(pbKdk, cbKdk);
             }
             else
             {
-                return new Win8SP800_108_CTR_HMACSHA512Provider(pbKdk, cbKdk);
+                return new Win7SP800_108_CTR_HMACSHA512Provider(pbKdk, cbKdk);
             }
         }
 
