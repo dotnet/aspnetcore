@@ -3,7 +3,9 @@
 
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Advanced;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 {
@@ -12,7 +14,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         public static InMemoryContext CreateContext()
         {
             var services = new ServiceCollection();
-            services.AddEntityFramework().AddInMemoryStore();
+            services.AddEntityFramework().AddInMemoryStore().UseLoggerFactory<LoggerFactory>();
             var serviceProvider = services.BuildServiceProvider();
 
             var db = new InMemoryContext(serviceProvider);
