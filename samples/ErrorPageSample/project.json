@@ -1,33 +1,12 @@
 {
   "dependencies": {
     "Microsoft.AspNet.Diagnostics": "",
-    "Microsoft.AspNet.Hosting": "1.0.0-*",
-    "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.HttpFeature": "1.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
     "Microsoft.AspNet.Server.IIS": "1.0.0-*"
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
   "frameworks": {
     "aspnet50": {},
-    "aspnetcore50": {
-      "dependencies": {
-        "System.Collections": "4.0.10-beta-*",
-        "System.Console": "4.0.0-beta-*",
-        "System.Diagnostics.Debug": "4.0.10-beta-*",
-        "System.Diagnostics.Tools": "4.0.0-beta-*",
-        "System.Globalization": "4.0.10-beta-*",
-        "System.IO": "4.0.10-beta-*",
-        "System.Linq": "4.0.0-beta-*",
-        "System.Reflection": "4.0.10-beta-*",
-        "System.Resources.ResourceManager": "4.0.0-beta-*",
-        "System.Runtime": "4.0.20-beta-*",
-        "System.Runtime.Extensions": "4.0.10-beta-*",
-        "System.Runtime.InteropServices": "4.0.20-beta-*",
-        "System.Security.Claims":  "1.0.0-*",
-        "System.Text.Encoding": "4.0.10-beta-*",
-        "System.Threading.Tasks": "4.0.10-beta-*"
-      }
-    }
+    "aspnetcore50": {}
   }
 }
