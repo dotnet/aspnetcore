@@ -46,12 +46,12 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Theory]
-        [InlineData("")]
-        [InlineData("A")]
-        [InlineData("A[23]")]
-        [InlineData("A[0].B")]
-        [InlineData("A.B.C.D")]
-        public void IdAndNameHelpers_ReturnPrefixForModel(string prefix)
+        [InlineData("", "")]
+        [InlineData("A", "A")]
+        [InlineData("A[23]", "A_23_")]
+        [InlineData("A[0].B", "A_0__B")]
+        [InlineData("A.B.C.D", "A_B_C_D")]
+        public void IdAndNameHelpers_ReturnPrefixForModel(string prefix, string expectedId)
         {
             // Arrange
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
@@ -66,9 +66,9 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameForModelResult = helper.NameForModel();
 
             // Assert
-            Assert.Equal(prefix, idResult);
-            Assert.Equal(prefix, idForResult);
-            Assert.Equal(prefix, idForModelResult);
+            Assert.Equal(expectedId, idResult);
+            Assert.Equal(expectedId, idForResult);
+            Assert.Equal(expectedId, idForModelResult);
             Assert.Equal(prefix, nameResult);
             Assert.Equal(prefix, nameForResult);
             Assert.Equal(prefix, nameForModelResult);
@@ -94,16 +94,17 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Theory]
-        [InlineData(null, "Property1")]
-        [InlineData("", "Property1")]
-        [InlineData("A", "A.Property1")]
-        [InlineData("A[23]", "A[23].Property1")]
-        [InlineData("A[0].B", "A[0].B.Property1")]
-        [InlineData("A.B.C.D", "A.B.C.D.Property1")]
-        public void IdAndNameHelpers_ReturnPrefixAndPropertyName(string prefix, string expectedResult)
+        [InlineData(null, "Property1", "Property1")]
+        [InlineData("", "Property1", "Property1")]
+        [InlineData("A", "A.Property1", "A_Property1")]
+        [InlineData("A[23]", "A[23].Property1", "A_23__Property1")]
+        [InlineData("A[0].B", "A[0].B.Property1", "A_0__B_Property1")]
+        [InlineData("A.B.C.D", "A.B.C.D.Property1", "A_B_C_D_Property1")]
+        public void IdAndNameHelpers_ReturnPrefixAndPropertyName(string prefix, string expectedName, string expectedId)
         {
             // Arrange
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = prefix;
 
             // Act
             var idResult = helper.Id("Property1");
@@ -112,10 +113,10 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameForResult = helper.NameFor(m => m.Property1);
 
             // Assert
-            Assert.Equal("Property1", idResult);
-            Assert.Equal("Property1", idForResult);
-            Assert.Equal("Property1", nameResult);
-            Assert.Equal("Property1", nameForResult);
+            Assert.Equal(expectedId, idResult);
+            Assert.Equal(expectedId, idForResult);
+            Assert.Equal(expectedName, nameResult);
+            Assert.Equal(expectedName, nameForResult);
         }
 
         [Fact]
@@ -131,8 +132,8 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameForResult = helper.NameFor(m => m.Inner.Id);
 
             // Assert
-            Assert.Equal("Inner.Id", idResult);
-            Assert.Equal("Inner.Id", idForResult);
+            Assert.Equal("Inner_Id", idResult);
+            Assert.Equal("Inner_Id", idForResult);
             Assert.Equal("Inner.Id", nameResult);
             Assert.Equal("Inner.Id", nameForResult);
         }
@@ -194,10 +195,10 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Theory]
-        [InlineData("A")]
-        [InlineData("A[0].B")]
-        [InlineData("A.B.C.D")]
-        public void IdAndName_ReturnExpression_EvenIfExpressionNotFound(string expression)
+        [InlineData("A", "A")]
+        [InlineData("A[0].B", "A_0__B")]
+        [InlineData("A.B.C.D", "A_B_C_D")]
+        public void IdAndName_ReturnExpression_EvenIfExpressionNotFound(string expression, string expectedId)
         {
             // Arrange
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
@@ -207,7 +208,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var nameResult = helper.Name(expression);
 
             // Assert
-            Assert.Equal(expression, idResult);
+            Assert.Equal(expectedId, idResult);
             Assert.Equal(expression, nameResult);
         }
 

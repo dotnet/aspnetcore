@@ -679,7 +679,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected virtual string GenerateId(string expression)
         {
             var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, name: expression);
-            return fullName;
+            var id = TagBuilder.CreateSanitizedId(fullName, IdAttributeDotReplacement);
+
+            return id;
         }
 
         protected virtual HtmlString GenerateLabel([NotNull] ModelMetadata metadata,

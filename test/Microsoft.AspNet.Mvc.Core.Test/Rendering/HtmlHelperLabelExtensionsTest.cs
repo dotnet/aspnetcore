@@ -60,8 +60,8 @@ namespace Microsoft.AspNet.Mvc.Core
             var labelForResult = helper.LabelFor(m => m.Inner.Id);
 
             // Assert
-            Assert.Equal("<label for=\"Inner.Id\">Id</label>", labelResult.ToString());
-            Assert.Equal("<label for=\"Inner.Id\">Id</label>", labelForResult.ToString());
+            Assert.Equal("<label for=\"Inner_Id\">Id</label>", labelResult.ToString());
+            Assert.Equal("<label for=\"Inner_Id\">Id</label>", labelForResult.ToString());
         }
 
         [Fact]
@@ -229,13 +229,14 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Theory]
-        [InlineData("A", "A")]
-        [InlineData("A[23]", "A[23]")]
-        [InlineData("A[0].B", "B")]
-        [InlineData("A.B.C.D", "D")]
+        [InlineData("A", "A", "A")]
+        [InlineData("A[23]", "A[23]", "A_23_")]
+        [InlineData("A[0].B", "B", "A_0__B")]
+        [InlineData("A.B.C.D", "D", "A_B_C_D")]
         public void Label_DisplaysRightmostExpressionSegment_IfPropertiesNotFound(
             string expression,
-            string expectedResult)
+            string expectedText,
+            string expectedId)
         {
             // Arrange
             var metadataHelper = new MetadataHelper();
@@ -246,7 +247,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Assert
             // Label() falls back to expression name when DisplayName and PropertyName are null.
-            Assert.Equal("<label for=\"" + expression + "\">" + expectedResult + "</label>", result.ToString());
+            Assert.Equal("<label for=\"" + expectedId + "\">" + expectedText + "</label>", result.ToString());
         }
 
         [Fact]

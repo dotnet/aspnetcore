@@ -14,8 +14,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     public class InputTagHelperTest
     {
         // Model (List<Model> or Model instance), container type (Model or NestModel), model accessor,
-        // property path, expected value.
-        public static TheoryData<object, Type, Func<object>, string, string> TestDataSet
+        // property path / id, expected value.
+        public static TheoryData<object, Type, Func<object>, NameAndId, string> TestDataSet
         {
             get
             {
@@ -41,32 +41,32 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     modelWithText,
                 };
 
-                return new TheoryData<object, Type, Func<object>, string, string>
+                return new TheoryData<object, Type, Func<object>, NameAndId, string>
                 {
-                    { null, typeof(Model), () => null, "Text",
+                    { null, typeof(Model), () => null, new NameAndId("Text", "Text"),
                         string.Empty },
 
-                    { modelWithNull, typeof(Model), () => modelWithNull.Text, "Text",
+                    { modelWithNull, typeof(Model), () => modelWithNull.Text, new NameAndId("Text", "Text"),
                         string.Empty },
-                    { modelWithText, typeof(Model), () => modelWithText.Text, "Text",
+                    { modelWithText, typeof(Model), () => modelWithText.Text, new NameAndId("Text", "Text"),
                         "outer text" },
 
-                    { modelWithNull, typeof(NestedModel), () => modelWithNull.NestedModel.Text, "NestedModel.Text",
-                        string.Empty },
-                    { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text, "NestedModel.Text",
-                        "inner text" },
+                    { modelWithNull, typeof(NestedModel), () => modelWithNull.NestedModel.Text,
+                        new NameAndId("NestedModel.Text", "NestedModel_Text"), string.Empty },
+                    { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text,
+                        new NameAndId("NestedModel.Text", "NestedModel_Text"), "inner text" },
 
                     // Top-level indexing does not work end-to-end due to code generation issue #1345.
                     // TODO: Remove above comment when #1345 is fixed.
-                    { models, typeof(Model), () => models[0].Text, "[0].Text",
-                        string.Empty },
-                    { models, typeof(Model), () => models[1].Text, "[1].Text",
-                        "outer text" },
+                    { models, typeof(Model), () => models[0].Text,
+                        new NameAndId("[0].Text", "z0__Text"), string.Empty },
+                    { models, typeof(Model), () => models[1].Text,
+                        new NameAndId("[1].Text", "z1__Text"), "outer text" },
 
-                    { models, typeof(NestedModel), () => models[0].NestedModel.Text, "[0].NestedModel.Text",
-                        string.Empty },
-                    { models, typeof(NestedModel), () => models[1].NestedModel.Text, "[1].NestedModel.Text",
-                        "inner text" },
+                    { models, typeof(NestedModel), () => models[0].NestedModel.Text,
+                        new NameAndId("[0].NestedModel.Text", "z0__NestedModel_Text"), string.Empty },
+                    { models, typeof(NestedModel), () => models[1].NestedModel.Text,
+                        new NameAndId("[1].NestedModel.Text", "z1__NestedModel_Text"), "inner text" },
                 };
             }
         }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             object model,
             Type containerType,
             Func<object> modelAccessor,
-            string propertyPath,
+            NameAndId nameAndId,
             string expectedValue)
         {
             // Arrange
@@ -85,8 +85,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
                 { "type", "text" },
-                { "id", propertyPath },
-                { "name", propertyPath },
+                { "id", nameAndId.Id },
+                { "name", nameAndId.Name },
                 { "valid", "from validation attributes" },
                 { "value", expectedValue },
             };
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Property name is either nameof(Model.Text) or nameof(NestedModel.Text).
             var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
-            var modelExpression = new ModelExpression(propertyPath, metadata);
+            var modelExpression = new ModelExpression(nameAndId.Name, metadata);
 
             var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
             var htmlAttributes = new Dictionary<string, string>
@@ -183,6 +183,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedContent, output.Content);
             Assert.False(output.SelfClosing);
             Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        public class NameAndId
+        {
+            public NameAndId(string name, string id)
+            {
+                Name = name;
+                Id = id;
+            }
+
+            public string Name { get; private set; }
+
+            public string Id { get; private set; }
         }
 
         private class Model
