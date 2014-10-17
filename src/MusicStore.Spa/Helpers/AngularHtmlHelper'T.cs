@@ -1,15 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class AngularHtmlHelper<TModel> : HtmlHelper<TModel>
     {
-        public AngularHtmlHelper(ICompositeViewEngine viewEngine, IModelMetadataProvider metadataProvider, IUrlHelper urlHelper, AntiForgery antiForgeryInstance, IActionBindingContextProvider actionBindingContextProvider)
-            : base(viewEngine, metadataProvider, urlHelper, antiForgeryInstance, actionBindingContextProvider)
+        public AngularHtmlHelper(
+            IHtmlGenerator generator,
+            ICompositeViewEngine viewEngine,
+            IModelMetadataProvider metadataProvider)
+            : base(generator, viewEngine, metadataProvider)
         {
-            
+
         }
 
         // TODO: These members are required to give helper extensions access to required protected members
