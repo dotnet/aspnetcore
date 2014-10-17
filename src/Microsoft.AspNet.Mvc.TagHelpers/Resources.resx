@@ -135,7 +135,10 @@
   <data name="FormTagHelper_CannotDetermineAction" xml:space="preserve">
     <value>Cannot determine an '{1}' for {0}. A {0} with a URL-based '{1}' must not have attributes starting with '{3}' or a '{2}' attribute.</value>
   </data>
-  <data name="ValidationSummaryTagHelper_InvalidValidationSummaryValue" xml:space="preserve">
+  <data name="SelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified" xml:space="preserve">
+    <value>Cannot determine body for {0}. '{2}' must be null if '{1}' is null.</value>
+  </data>
+  <data name="TagHelpers_InvalidValue_ThreeAcceptableValues" xml:space="preserve">
     <value>Cannot parse '{1}' value '{2}' for {0}. Acceptable values are '{3}', '{4}' and '{5}'.</value>
   </data>
   <data name="TagHelpers_NoProvidedMetadata" xml:space="preserve">

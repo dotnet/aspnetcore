@@ -107,19 +107,35 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot parse '{1}' value '{2}' for {0}. Acceptable values are '{3}', '{4}' and '{5}'.
+        /// Cannot determine body for {0}. '{2}' must be null if '{1}' is null.
         /// </summary>
-        internal static string ValidationSummaryTagHelper_InvalidValidationSummaryValue
+        internal static string SelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified
         {
-            get { return GetString("ValidationSummaryTagHelper_InvalidValidationSummaryValue"); }
+            get { return GetString("SelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified"); }
+        }
+
+        /// <summary>
+        /// Cannot determine body for {0}. '{2}' must be null if '{1}' is null.
+        /// </summary>
+        internal static string FormatSelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("SelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified"), p0, p1, p2);
         }
 
         /// <summary>
         /// Cannot parse '{1}' value '{2}' for {0}. Acceptable values are '{3}', '{4}' and '{5}'.
         /// </summary>
-        internal static string FormatValidationSummaryTagHelper_InvalidValidationSummaryValue(object p0, object p1, object p2, object p3, object p4, object p5)
+        internal static string TagHelpers_InvalidValue_ThreeAcceptableValues
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ValidationSummaryTagHelper_InvalidValidationSummaryValue"), p0, p1, p2, p3, p4, p5);
+            get { return GetString("TagHelpers_InvalidValue_ThreeAcceptableValues"); }
+        }
+
+        /// <summary>
+        /// Cannot parse '{1}' value '{2}' for {0}. Acceptable values are '{3}', '{4}' and '{5}'.
+        /// </summary>
+        internal static string FormatTagHelpers_InvalidValue_ThreeAcceptableValues(object p0, object p1, object p2, object p3, object p4, object p5)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_InvalidValue_ThreeAcceptableValues"), p0, p1, p2, p3, p4, p5);
         }
 
         /// <summary>

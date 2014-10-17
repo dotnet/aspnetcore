@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 if (!Enum.TryParse(ValidationSummaryValue, ignoreCase: true, result: out validationSummaryValue))
                 {
                     throw new InvalidOperationException(
-                        Resources.FormatValidationSummaryTagHelper_InvalidValidationSummaryValue(
+                        Resources.FormatTagHelpers_InvalidValue_ThreeAcceptableValues(
                             "<div>",
                             "validation-summary",
                             ValidationSummaryValue,
