@@ -6,11 +6,6 @@
     },
     "frameworks": {
         "aspnet50": { },
-        "aspnetcore50": {
-            "dependencies": {
-                "System.Diagnostics.Contracts": "4.0.0-beta-*",
-                "System.Security.Claims": "1.0.0-*"
-            }
-        }
+        "aspnetcore50": {}
     }
 }
