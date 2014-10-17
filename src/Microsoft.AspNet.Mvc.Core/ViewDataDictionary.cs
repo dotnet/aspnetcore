@@ -51,7 +51,12 @@ namespace Microsoft.AspNet.Mvc
                    new TemplateInfo(source.TemplateInfo))
         {
             _modelMetadata = source.ModelMetadata;
-            SetModel(model);
+            // If we're constructing a derived ViewDataDictionary (or any other value type),
+            // SetModel will throw if we try to set it to null. We should not throw in that case.
+            if (model != null)
+            {
+                SetModel(model);
+            }
         }
 
         private ViewDataDictionary(IModelMetadataProvider metadataProvider,

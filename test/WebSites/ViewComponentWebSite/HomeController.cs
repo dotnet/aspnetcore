@@ -16,5 +16,10 @@ namespace ViewComponentWebSite
         {
             return new ViewResult();
         }
+
+        public ViewResult ViewWithIntegerViewComponent()
+        {
+            return new ViewResult();
+        }
     }
 }

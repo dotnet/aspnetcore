@@ -51,5 +51,18 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(expected, body.Trim());
         }
+
+        [Fact]
+        public async Task ViewComponents_SupportsValueType()
+        {
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/Home/ViewWithIntegerViewComponent");
+
+            // Assert
+            Assert.Equal("10", body.Trim());
+        }
     }
 }
