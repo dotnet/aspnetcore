@@ -8,7 +8,9 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+#if !ASPNETCORE50
 using Moq;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser
@@ -137,6 +139,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             Assert.Equal(BlockType.Expression, context.BlockStack.Peek().Type);
         }
 
+#if !ASPNETCORE50
         [Fact]
         public void EndBlockAddsCurrentBlockToParentBlock()
         {
@@ -185,6 +188,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Assert
             ParserTestBase.EvaluateResults(context.CompleteParse(), expected.Build());
         }
+#endif
 
         [Fact]
         public void SwitchActiveParserSetsMarkupParserAsActiveIfCodeParserCurrentlyActive()

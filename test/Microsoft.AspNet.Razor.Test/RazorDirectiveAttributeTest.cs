@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
+using System.Reflection;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test
@@ -21,8 +21,9 @@ namespace Microsoft.AspNet.Razor.Test
         public void EnsureRazorDirectiveProperties()
         {
             // Arrange
-            var attribute = (AttributeUsageAttribute)typeof(RazorDirectiveAttribute).GetCustomAttributes(typeof(AttributeUsageAttribute), inherit: false)
-                                                                                     .SingleOrDefault();
+            var attribute = typeof(RazorDirectiveAttribute)
+                                    .GetTypeInfo()
+                                    .GetCustomAttribute<AttributeUsageAttribute>(inherit: false);
 
             // Assert
             Assert.True(attribute.AllowMultiple);

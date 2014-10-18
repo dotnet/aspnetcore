@@ -11,6 +11,11 @@
         "test": "Xunit.KRunner"
     },
     "frameworks": {
-        "aspnet50": { }
+        "aspnet50": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Diagnostics.TraceSource": "4.0.0-beta-*"
+            }
+        }
     }
 }

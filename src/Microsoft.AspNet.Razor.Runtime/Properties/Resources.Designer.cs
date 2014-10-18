@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Runtime
         }
 
         /// <summary>
-        /// Cannot resolve TagHelper containing assembly '{0}'. Error: '{1}'.
+        /// Cannot resolve TagHelper containing assembly '{0}'.
         /// </summary>
         internal static string TagHelperTypeResolver_CannotResolveTagHelperAssembly
         {
@@ -39,11 +39,11 @@ namespace Microsoft.AspNet.Razor.Runtime
         }
 
         /// <summary>
-        /// Cannot resolve TagHelper containing assembly '{0}'. Error: '{1}'.
+        /// Cannot resolve TagHelper containing assembly '{0}'.
         /// </summary>
-        internal static string FormatTagHelperTypeResolver_CannotResolveTagHelperAssembly(object p0, object p1)
+        internal static string FormatTagHelperTypeResolver_CannotResolveTagHelperAssembly(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperTypeResolver_CannotResolveTagHelperAssembly"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperTypeResolver_CannotResolveTagHelperAssembly"), p0);
         }
 
         /// <summary>

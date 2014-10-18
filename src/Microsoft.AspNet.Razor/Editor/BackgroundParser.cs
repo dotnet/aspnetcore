@@ -427,13 +427,13 @@ namespace Microsoft.AspNet.Razor.Editor
                         else
                         {
                             RazorEditorTrace.TraceLine(RazorResources.FormatTrace_NoChangesArrived(fileNameOnly));
-#if NET45
+#if ASPNETCORE50
+                            // This does the equivalent of thread.yield under the covers.
+                            spinWait.SpinOnce();
+#else
                             // No Yield in CoreCLR
 
                             Thread.Yield();
-#else
-                            // This does the equivalent of thread.yield under the covers.
-                            spinWait.SpinOnce();
 #endif
                         }
                     }

@@ -2,12 +2,18 @@
     "version": "1.0.0",
     "dependencies": {
         "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
-        "Microsoft.AspNet.Razor.Test": "1.0.0"
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {
         "test": "Xunit.KRunner"
     },
     "frameworks": {
-        "aspnet50": { }
+        "aspnet50": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Runtime.Extensions": "4.0.10-beta-*"
+            }
+        }
     }
 }

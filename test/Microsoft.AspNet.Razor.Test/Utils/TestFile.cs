@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Razor.Test
 
         public static TestFile Create(string localResourceName)
         {
-            return new TestFile(localResourceName, Assembly.GetCallingAssembly());
+            return new TestFile(localResourceName, typeof(TestFile).GetTypeInfo().Assembly);
         }
 
         public Stream OpenRead()

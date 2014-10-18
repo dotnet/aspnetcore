@@ -57,8 +57,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             catch (Exception ex)
             {
                 throw new InvalidOperationException(
-                    Resources.FormatTagHelperTypeResolver_CannotResolveTagHelperAssembly(assemblyName.Name,
-                                                                                         ex.Message));
+                    Resources.FormatTagHelperTypeResolver_CannotResolveTagHelperAssembly(assemblyName.Name), ex);
             }
         }
 

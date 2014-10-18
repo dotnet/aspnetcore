@@ -11,7 +11,6 @@ using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Test.Utils;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Testing;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Editor
@@ -174,11 +173,6 @@ namespace Microsoft.AspNet.Razor.Test.Editor
         private TextChange CreateDummyChange()
         {
             return new TextChange(0, 0, new StringTextBuffer(String.Empty), 3, new StringTextBuffer("foo"));
-        }
-
-        private static Mock<RazorEditorParser> CreateMockParser()
-        {
-            return new Mock<RazorEditorParser>(CreateHost(), TestLinePragmaFileName) { CallBase = true };
         }
 
         private static RazorEditorParser CreateClientParser()

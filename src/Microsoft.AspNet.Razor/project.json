@@ -2,20 +2,17 @@
     "version": "4.0.0-*",
     "frameworks": {
         "net45": { },
+        "aspnet50": { },
         "aspnetcore50": {
             "dependencies": {
                 "System.Collections": "4.0.10-beta-*",
                 "System.Diagnostics.Debug": "4.0.10-beta-*",
                 "System.Diagnostics.Tools": "4.0.0-beta-*",
-                "System.Globalization": "4.0.10-beta-*",
-                "System.IO": "4.0.10-beta-*",
                 "System.IO.FileSystem": "4.0.0-beta-*",
                 "System.Linq": "4.0.0-beta-*",
                 "System.Reflection": "4.0.10-beta-*",
                 "System.Resources.ResourceManager": "4.0.0-beta-*",
-                "System.Runtime": "4.0.20-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*",
-                "System.Runtime.InteropServices": "4.0.20-beta-*",
                 "System.Threading": "4.0.0-beta-*",
                 "System.Threading.Tasks": "4.0.10-beta-*",
                 "System.Threading.Thread": "4.0.0-beta-*",

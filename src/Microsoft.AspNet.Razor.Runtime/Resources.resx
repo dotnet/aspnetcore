@@ -123,7 +123,7 @@
 "typeName, assemblyName"</value>
   </data>
   <data name="TagHelperTypeResolver_CannotResolveTagHelperAssembly" xml:space="preserve">
-    <value>Cannot resolve TagHelper containing assembly '{0}'. Error: '{1}'.</value>
+    <value>Cannot resolve TagHelper containing assembly '{0}'.</value>
   </data>
   <data name="TagHelperTypeResolver_TagHelperAssemblyNameCannotBeEmptyOrNull" xml:space="preserve">
     <value>Tag helper directive assembly name cannot be null or empty.</value>

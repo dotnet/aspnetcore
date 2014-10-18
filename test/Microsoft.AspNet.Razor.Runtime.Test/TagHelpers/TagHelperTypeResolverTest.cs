@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -40,10 +41,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperTypeResolver = new TagHelperTypeResolver();
             var expectedErrorMessage = string.Format(
                 CultureInfo.InvariantCulture,
-                "Cannot resolve TagHelper containing assembly '{0}'. Error: '{1}'.",
-                "abcd",
-                "Could not load file or assembly 'abcd' or one of its dependencies. " +
-                "The system cannot find the file specified.");
+                "Cannot resolve TagHelper containing assembly '{0}'.",
+                "abcd");
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -51,7 +50,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 tagHelperTypeResolver.Resolve("abcd");
             });
 
-            Assert.Equal(expectedErrorMessage, ex.Message, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(expectedErrorMessage, ex.Message);
+#if ASPNETCORE50
+            Assert.IsType<FileLoadException>(ex.InnerException);
+#else
+            Assert.IsType<FileNotFoundException>(ex.InnerException);
+#endif
         }
 
         [Fact]

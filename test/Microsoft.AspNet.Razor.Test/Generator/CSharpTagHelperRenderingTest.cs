@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
@@ -46,9 +45,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void TagHelpers_WithinHelpersAndSections_GeneratesExpectedOutput(string testType)
         {
             // Arrange
-            var propertyInfoMock = new Mock<PropertyInfo>();
-            propertyInfoMock.Setup(propertyInfo => propertyInfo.PropertyType).Returns(typeof(string));
-            propertyInfoMock.Setup(propertyInfo => propertyInfo.Name).Returns("BoundProperty");
+            var propertyInfo = typeof(TestType).GetProperty("BoundProperty");
             var tagHelperDescriptors = new TagHelperDescriptor[]
             {
                 new TagHelperDescriptor("MyTagHelper",
@@ -56,7 +53,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                         ContentBehavior.None,
                                         new [] {
                                             new TagHelperAttributeDescriptor("BoundProperty",
-                                                                             propertyInfoMock.Object)
+                                                                             propertyInfo)
                                         }),
                 new TagHelperDescriptor("NestedTagHelper", "NestedTagHelper", ContentBehavior.Modify)
             };
@@ -72,35 +69,29 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void TagHelpers_GenerateExpectedOutput(string testType)
         {
             // Arrange
-            var pFooPropertyInfo = new Mock<PropertyInfo>();
-            pFooPropertyInfo.Setup(propertyInfo => propertyInfo.PropertyType).Returns(typeof(int));
-            pFooPropertyInfo.Setup(propertyInfo => propertyInfo.Name).Returns("Foo");
-            var inputTypePropertyInfo = new Mock<PropertyInfo>();
-            inputTypePropertyInfo.Setup(propertyInfo => propertyInfo.PropertyType).Returns(typeof(string));
-            inputTypePropertyInfo.Setup(propertyInfo => propertyInfo.Name).Returns("Type");
-            var checkedPropertyInfo = new Mock<PropertyInfo>();
-            checkedPropertyInfo.Setup(propertyInfo => propertyInfo.PropertyType).Returns(typeof(bool));
-            checkedPropertyInfo.Setup(propertyInfo => propertyInfo.Name).Returns("Checked");
+            var pFooPropertyInfo = typeof(TestType).GetProperty("Foo");
+            var inputTypePropertyInfo = typeof(TestType).GetProperty("Type");
+            var checkedPropertyInfo = typeof(TestType).GetProperty("Checked");
             var tagHelperDescriptors = new TagHelperDescriptor[]
             {
                 new TagHelperDescriptor("p",
                                         "PTagHelper",
                                         ContentBehavior.None,
                                         new [] {
-                                            new TagHelperAttributeDescriptor("foo", pFooPropertyInfo.Object)
+                                            new TagHelperAttributeDescriptor("foo", pFooPropertyInfo)
                                         }),
                 new TagHelperDescriptor("input",
                                         "InputTagHelper",
                                         ContentBehavior.None,
                                         new TagHelperAttributeDescriptor[] {
-                                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo.Object)
+                                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                                         }),
                 new TagHelperDescriptor("input",
                                         "InputTagHelper2",
                                         ContentBehavior.None,
                                         new TagHelperAttributeDescriptor[] {
-                                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo.Object),
-                                            new TagHelperAttributeDescriptor("checked", checkedPropertyInfo.Object)
+                                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
+                                            new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
                                         })
             };
 
@@ -123,6 +114,17 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
             // Act & Assert
             RunTagHelperTest("ContentBehaviorTagHelpers", tagHelperDescriptors: tagHelperDescriptors);
+        }
+
+        private class TestType
+        {
+            public int Foo { get; set; }
+
+            public string Type { get; set; }
+
+            public bool Checked { get; set; }
+
+            public string BoundProperty { get; set; }
         }
     }
 }
