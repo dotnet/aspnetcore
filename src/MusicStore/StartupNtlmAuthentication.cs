@@ -77,7 +77,7 @@ namespace MusicStore
                         });
 
                 // Add Identity services to the services container
-                services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(configuration);
+                services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(configuration.GetSubKey("Identity"));
 
                 // Add MVC services to the services container
                 services.AddMvc();
