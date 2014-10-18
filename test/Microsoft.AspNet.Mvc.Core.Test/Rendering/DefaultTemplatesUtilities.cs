@@ -55,6 +55,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 provider: CreateModelMetadataProvider());
         }
 
+        public static HtmlHelper<TModel> GetHtmlHelperForViewData<TModel>(ViewDataDictionary<TModel> viewData)
+        {
+            return GetHtmlHelper(viewData,
+                                CreateUrlHelper(),
+                                CreateViewEngine(),
+                                CreateModelMetadataProvider(),
+                                innerHelperWrapper: null);
+        }
+
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(TModel model)
         {
             return GetHtmlHelper(model, CreateViewEngine());
@@ -107,6 +116,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var viewData = new ViewDataDictionary<TModel>(provider);
             viewData.Model = model;
 
+            return GetHtmlHelper(viewData, urlHelper, viewEngine, provider, innerHelperWrapper);
+        }
+
+        private static HtmlHelper<TModel> GetHtmlHelper<TModel>(
+            ViewDataDictionary<TModel> viewData,
+            IUrlHelper urlHelper, 
+            ICompositeViewEngine viewEngine, 
+            IModelMetadataProvider provider, 
+            Func<IHtmlHelper, IHtmlHelper> innerHelperWrapper)
+        {
             var httpContext = new Mock<HttpContext>();
             httpContext
                 .Setup(o => o.Response)
@@ -124,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                                                 Mock.Of<IModelBinder>(),
                                                                 Mock.Of<IValueProvider>(),
                                                                 Mock.Of<IInputFormatterSelector>(),
-                                                                Mock.Of<IModelValidatorProvider>());
+                                                                new DataAnnotationsModelValidatorProvider());
             var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
             actionBindingContextProvider
                .Setup(c => c.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
