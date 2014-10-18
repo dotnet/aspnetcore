@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using Microsoft.AspNet.Mvc;
 using System.Net;
 using System.Net.Http;
+using ShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace System.Web.Http
 {
     public class HttpResponseException : Exception
     {
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         /// </summary>
         /// <param name="response">The response message.</param>
         public HttpResponseException([NotNull] HttpResponseMessage response)
-            : base(Resources.HttpResponseExceptionMessage)
+            : base(ShimResources.HttpResponseExceptionMessage)
         {
             Response = response;
         }

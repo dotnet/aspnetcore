@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if !ASPNETCORE50
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Web.Http;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
-#if !ASPNETCORE50
 using Moq;
 #endif
 using Xunit;
