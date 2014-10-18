@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             EnsureModel(bindingContext);
-            var propertyMetadatas = GetMetadataForProperties(bindingContext);
+            var propertyMetadatas = GetMetadataForProperties(bindingContext).ToArray();
             var dto = CreateAndPopulateDto(bindingContext, propertyMetadatas);
 
             // post-processing, e.g. property setters and hooking up validation
@@ -166,11 +166,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual IEnumerable<ModelMetadata> GetMetadataForProperties(ModelBindingContext bindingContext)
         {
             var validationInfo = GetPropertyValidationInfo(bindingContext);
+            var propertyTypeMetadata = bindingContext.MetadataProvider
+                                                       .GetMetadataForType(null, bindingContext.ModelType);
+            Predicate<string> newPropertyFilter =
+                propertyName => bindingContext.PropertyFilter(propertyName) &&
+                                BindAttribute.IsPropertyAllowed(
+                                                propertyName,
+                                                propertyTypeMetadata.IncludedProperties,
+                                                propertyTypeMetadata.ExcludedProperties);
+
             return bindingContext.ModelMetadata.Properties
                                  .Where(propertyMetadata =>
-                                    IsPropertyAllowed(propertyMetadata.PropertyName,
-                                                      bindingContext.ModelMetadata.IncludedProperties,
-                                                      bindingContext.ModelMetadata.ExcludedProperties) &&
+                                    newPropertyFilter(propertyMetadata.PropertyName) &&
                                     (validationInfo.RequiredProperties.Contains(propertyMetadata.PropertyName) ||
                                     !validationInfo.SkipProperties.Contains(propertyMetadata.PropertyName)) &&
                                     CanUpdateProperty(propertyMetadata));

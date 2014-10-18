@@ -82,59 +82,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                     parameter.GetCustomAttributes(),
                                     parameterName,
                                     binderMarker);
-
-            var typeInfo = GetTypeInformation(parameter.ParameterType);
-            UpdateMetadataWithTypeInfo(parameterInfo.Prototype, typeInfo);
-
             return CreateMetadataFromPrototype(parameterInfo.Prototype, modelAccessor);
-        }
-
-        private void UpdateMetadataWithTypeInfo(ModelMetadata parameterPrototype, TypeInformation typeInfo)
-        {
-            // If both are empty 
-            //     Include everything.
-            // If none are empty
-            //     Include common. 
-            // If nothing common
-            //     Dont include anything.
-            if (typeInfo.Prototype.IncludedProperties == null || typeInfo.Prototype.IncludedProperties.Count == 0)
-            {
-                if (parameterPrototype.IncludedProperties == null || parameterPrototype.IncludedProperties.Count == 0)
-                {
-                    parameterPrototype.IncludedProperties = typeInfo.Properties
-                                                                    .Select(property => property.Key)
-                                                                    .ToList();
-                }
-            }
-            else
-            {
-                if (parameterPrototype.IncludedProperties == null || parameterPrototype.IncludedProperties.Count == 0)
-                {
-                    parameterPrototype.IncludedProperties = typeInfo.Prototype.IncludedProperties;
-                }
-                else
-                {
-                    parameterPrototype.IncludedProperties = parameterPrototype.IncludedProperties
-                                                               .Intersect(typeInfo.Prototype.IncludedProperties,
-                                                                       StringComparer.OrdinalIgnoreCase).ToList();
-                }
-            }
-
-            if (typeInfo.Prototype.ExcludedProperties != null)
-            {
-                if (parameterPrototype.ExcludedProperties == null || parameterPrototype.ExcludedProperties.Count == 0)
-                {
-                    parameterPrototype.ExcludedProperties = typeInfo.Prototype.ExcludedProperties;
-                }
-                else
-                {
-                    parameterPrototype.ExcludedProperties = parameterPrototype.ExcludedProperties
-                                                               .Union(typeInfo.Prototype.ExcludedProperties,
-                                                                       StringComparer.OrdinalIgnoreCase).ToList();
-                }
-            }
-
-            // Ignore the ModelName specified at Type level. (This is to be compatible with MVC).
         }
 
         private IEnumerable<ModelMetadata> GetMetadataForPropertiesCore(object container, Type containerType)
@@ -203,19 +151,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             info.Properties = properties;
-
-            if (info.Prototype != null)
-            {
-                // Update the included properties so that the properties are not ignored while binding.
-                if (info.Prototype.IncludedProperties == null ||
-                    info.Prototype.IncludedProperties.Count == 0)
-                {
-                    // Mark all properties as included.
-                    info.Prototype.IncludedProperties =
-                        info.Properties.Select(property => property.Key).ToList();
-                }
-            }
-
             return info;
         }
 
