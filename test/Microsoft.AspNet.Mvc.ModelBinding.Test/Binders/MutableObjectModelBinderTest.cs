@@ -931,7 +931,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 modelAccessor: null, 
                 methodInfo: methodInfo, 
                 parameterName: parameterName,
-                binderMarker: null);
+                binderMetadata: null);
         }
 
         private class Person

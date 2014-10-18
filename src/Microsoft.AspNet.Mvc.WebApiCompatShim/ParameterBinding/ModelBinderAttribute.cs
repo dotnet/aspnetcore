@@ -9,7 +9,7 @@ namespace System.Web.Http
     /// An attribute that specifies that the value can be bound by a model binder.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-    public class ModelBinderAttribute : Attribute, IBinderMarker
+    public class ModelBinderAttribute : Attribute, IBinderMetadata
     {
     }
 }

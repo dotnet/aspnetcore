@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
         {
             Action = other.Action;
             Attributes = new List<object>(other.Attributes);
-            BinderMarker = other.BinderMarker;
+            BinderMetadata = other.BinderMetadata;
             IsOptional = other.IsOptional;
             ParameterInfo = other.ParameterInfo;
             ParameterName = other.ParameterName;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
 
         public List<object> Attributes { get; private set; }
 
-        public IBinderMarker BinderMarker { get; set; }
+        public IBinderMetadata BinderMetadata { get; set; }
 
         public bool IsOptional { get; set; }
 

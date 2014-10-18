@@ -7,20 +7,20 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// A <see cref="IMarkerAwareValueProvider"/> value provider which can filter 
-    /// based on <see cref="IValueBinderMarker"/>.
+    /// A <see cref="IMetadataAwareValueProvider"/> value provider which can filter 
+    /// based on <see cref="IValueProviderMetadata"/>.
     /// </summary>
-    /// <typeparam name="TBinderMarker">Represents a type implementing <see cref="IValueBinderMarker"/></typeparam>
-    public abstract class MarkerAwareValueProvider<TBinderMarker> : IMarkerAwareValueProvider
-        where TBinderMarker : IValueBinderMarker
+    /// <typeparam name="TBinderMetadata">Represents a type implementing <see cref="IValueProviderMetadata"/></typeparam>
+    public abstract class MetadataAwareValueProvider<TBinderMetadata> : IMetadataAwareValueProvider
+        where TBinderMetadata : IValueProviderMetadata
     {
         public abstract Task<bool> ContainsPrefixAsync(string prefix);
 
         public abstract Task<ValueProviderResult> GetValueAsync(string key);
 
-        public virtual IValueProvider Filter(IValueBinderMarker valueBinderMarker)
+        public virtual IValueProvider Filter(IValueProviderMetadata valueBinderMetadata)
         {
-            if (valueBinderMarker is TBinderMarker)
+            if (valueBinderMetadata is TBinderMetadata)
             {
                 return this;
             }

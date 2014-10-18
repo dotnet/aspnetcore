@@ -13,10 +13,10 @@ using Microsoft.Framework.OptionsModel;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Represents a model binder which understands <see cref="IBodyBinderMarker"/> and uses 
+    /// Represents a model binder which understands <see cref="IFormatterBinderMetadata"/> and uses 
     /// InputFomatters to bind the model to request's body.
     /// </summary>
-    public class BodyModelBinder : MarkerAwareBinder<IBodyBinderMarker>
+    public class BodyModelBinder : MetadataAwareBinder<IFormatterBinderMetadata>
     {
         private readonly ActionContext _actionContext;
         private readonly IInputFormatterSelector _formatterSelector;
@@ -34,7 +34,9 @@ namespace Microsoft.AspNet.Mvc
             _mvcOptions = mvcOptions;
         }
 
-        protected override async Task<bool> BindAsync(ModelBindingContext bindingContext, IBodyBinderMarker marker)
+        protected override async Task<bool> BindAsync(
+            ModelBindingContext bindingContext, 
+            IFormatterBinderMetadata metadata)
         {
             var formatterContext = new InputFormatterContext(_actionContext, bindingContext.ModelType);
             var formatter = _formatterSelector.SelectFormatter(formatterContext);

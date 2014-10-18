@@ -4,9 +4,9 @@
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// Represents a binder marker which identifies a binder which is based on a value provider.
+    /// Interface for metadata related to model binders.
     /// </summary>
-    public interface IValueBinderMarker : IBinderMarker
+    public interface IBinderMetadata
     {
     }
 }

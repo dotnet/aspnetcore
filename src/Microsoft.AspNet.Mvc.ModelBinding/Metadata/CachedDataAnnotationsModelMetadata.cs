@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                    propertyName, 
                    new CachedDataAnnotationsMetadataAttributes(attributes))
         {
-            Marker = attributes.OfType<IBinderMarker>().FirstOrDefault();
+            BinderMetadata = attributes.OfType<IBinderMetadata>().FirstOrDefault();
 
             var modelNameProvider = attributes.OfType<IModelNameProvider>().FirstOrDefault();
             ModelName = modelNameProvider?.Name;

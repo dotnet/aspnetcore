@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
                               .Verifiable();
 
             var bindingContext = GetBindingContext(typeof(Person), inputFormatter: mockInputFormatter.Object);
-            bindingContext.ModelMetadata.Marker = Mock.Of<IBodyBinderMarker>();
+            bindingContext.ModelMetadata.BinderMetadata = Mock.Of<IFormatterBinderMetadata>();
             
             var binder = GetBodyBinder(mockInputFormatter.Object, mockValidator.Object, null);
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
-            bindingContext.ModelMetadata.Marker = Mock.Of<IBodyBinderMarker>();
+            bindingContext.ModelMetadata.BinderMetadata = Mock.Of<IFormatterBinderMetadata>();
             var binder = bindingContext.ModelBinder;
 
             // Act
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
 
-            // Returns true because it understands the marker.
+            // Returns true because it understands the metadata type.
             Assert.True(binderResult);
             Assert.Null(bindingContext.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("someName"));
@@ -65,19 +65,19 @@ namespace Microsoft.AspNet.Mvc
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task BindModel_IsMarkerAware(bool useBodyMarker)
+        public async Task BindModel_IsMetadataAware(bool useBody)
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
-            bindingContext.ModelMetadata.Marker = useBodyMarker ? Mock.Of<IBodyBinderMarker>() :
-                                                                  Mock.Of<IBinderMarker>();
+            bindingContext.ModelMetadata.BinderMetadata = useBody ? Mock.Of<IFormatterBinderMetadata>() :
+                                                                  Mock.Of<IBinderMetadata>();
             var binder = bindingContext.ModelBinder;
 
             // Act
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Equal(useBodyMarker, binderResult);
+            Assert.Equal(useBody, binderResult);
         }
 
         private static ModelBindingContext GetBindingContext(Type modelType, IInputFormatter inputFormatter)

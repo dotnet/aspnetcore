@@ -91,11 +91,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             foreach (var parameter in candidate.Action.Parameters)
             {
                 // We only consider parameters that are bound from the URL.
-                if ((parameter.BinderMarker is IRouteDataMarker || parameter.BinderMarker is IQueryBinderMarker) &&
+                if ((parameter.BinderMetadata is IRouteDataValueProviderMetadata ||
+                    parameter.BinderMetadata is IQueryValueProviderMetadata) &&
                     !parameter.IsOptional &&
                     ValueProviderResult.CanConvertFromString(parameter.ParameterBindingInfo.ParameterType))
                 {
-                    var prefix = (parameter.BinderMarker as IModelNameProvider).Name ?? parameter.Name;
+                    var nameProvider = parameter.BinderMetadata as IModelNameProvider;
+                    var prefix = nameProvider?.Name ?? parameter.Name;
 
                     parameters.Add(new OverloadedParameter()
                     {

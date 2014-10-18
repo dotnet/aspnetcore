@@ -8,8 +8,8 @@ using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class DictionaryBasedValueProvider<TBinderMarker> : MarkerAwareValueProvider<TBinderMarker>
-        where TBinderMarker : IValueBinderMarker
+    public class DictionaryBasedValueProvider<TBinderMetadata> : MetadataAwareValueProvider<TBinderMetadata>
+        where TBinderMetadata : IValueProviderMetadata
     {
         private readonly IDictionary<string, object> _values;
         private PrefixContainer _prefixContainer;

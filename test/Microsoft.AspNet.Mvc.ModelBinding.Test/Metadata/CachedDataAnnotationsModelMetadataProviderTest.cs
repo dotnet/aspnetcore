@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 modelAccessor: null,
                 methodInfo: methodInfo,
                 parameterName: "param",
-                binderMarker: null);
+                binderMetadata: null);
 
             // Assert
             Assert.Equal(expectedIncludedPropertyNames.ToList(), metadata.IncludedProperties);
@@ -86,8 +86,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var metadata = provider.GetMetadataForParameter(
                 modelAccessor: null, 
                 methodInfo: methodInfo, 
-                parameterName: "param", 
-                binderMarker: null);
+                parameterName: "param",
+                binderMetadata: null);
 
             // Assert
             Assert.Equal("ParameterPrefix", metadata.ModelName);
@@ -119,8 +119,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var metadata = provider.GetMetadataForParameter(
                 modelAccessor: null, 
                 methodInfo: methodInfo, 
-                parameterName: "param", 
-                binderMarker: null);
+                parameterName: "param",
+                binderMetadata: null);
 
             // Assert
             Assert.Equal("ParameterPrefix", metadata.ModelName);

@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             CacheKey = prototype.CacheKey;
             PrototypeCache = prototype.PrototypeCache;
-            Marker = prototype.Marker;
+            BinderMetadata = prototype.BinderMetadata;
             IncludedProperties = prototype.IncludedProperties;
             ExcludedProperties = prototype.ExcludedProperties;
             ModelName = prototype.ModelName;

@@ -275,7 +275,7 @@ namespace System.Web.Http
             foreach (var action in actions)
             {
                 var parameter = Assert.Single(action.Parameters);
-                Assert.IsType<FromUriAttribute>(parameter.BinderMarker);
+                Assert.IsType<FromUriAttribute>(parameter.BinderMetadata);
             }
         }
 
@@ -302,12 +302,12 @@ namespace System.Web.Http
             foreach (var action in actions)
             {
                 var parameter = Assert.Single(action.Parameters);
-                Assert.IsType<FromBodyAttribute>(parameter.BinderMarker);
+                Assert.IsType<FromBodyAttribute>(parameter.BinderMetadata);
             }
         }
 
         [Fact]
-        public void GetActions_Parameters_BinderMarker()
+        public void GetActions_Parameters_BinderMetadata()
         {
             // Arrange
             var provider = CreateProvider();
@@ -329,7 +329,7 @@ namespace System.Web.Http
             foreach (var action in actions)
             {
                 var parameter = Assert.Single(action.Parameters);
-                Assert.IsType<ModelBinderAttribute>(parameter.BinderMarker);
+                Assert.IsType<ModelBinderAttribute>(parameter.BinderMetadata);
             }
         }
 

@@ -12,53 +12,53 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
     public class CompositeValueProviderTests
     {
-        public static IEnumerable<object[]> RegisteredAsMarkerClasses
+        public static IEnumerable<object[]> RegisteredAsMetadataClasses
         {
             get
             {
-                yield return new object[] { new TestValueBinderMarker() };
-                yield return new object[] { new DerivedValueBinder() };
+                yield return new object[] { new TestValueProviderMetadata() };
+                yield return new object[] { new DerivedValueBinderMetadata() };
             }
         }
 
         [Theory]
-        [MemberData(nameof(RegisteredAsMarkerClasses))]
-        public void FilterReturnsItself_ForAnyClassRegisteredAsGenericParam(IValueBinderMarker binderMarker)
+        [MemberData(nameof(RegisteredAsMetadataClasses))]
+        public void FilterReturnsItself_ForAnyClassRegisteredAsGenericParam(IValueProviderMetadata metadata)
         {
             // Arrange
             var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            var unrelatedMarker = new UnrelatedValueBinderMarker();
-            var valueProvider1 = GetMockValueProvider(binderMarker);
-            var valueProvider2 = GetMockValueProvider(unrelatedMarker);
+            var unrelatedMetadata = new UnrelatedValueBinderMetadata();
+            var valueProvider1 = GetMockValueProvider(metadata);
+            var valueProvider2 = GetMockValueProvider(unrelatedMetadata);
             var provider = new CompositeValueProvider(new List<IValueProvider>() { valueProvider1.Object, valueProvider2.Object });
 
             // Act
-            var result = provider.Filter(binderMarker);
+            var result = provider.Filter(metadata);
 
             // Assert
             var valueProvider = Assert.IsType<CompositeValueProvider>(result);
             var filteredProvider = Assert.Single(valueProvider);
 
-            // should not be unrelated marker.
+            // should not be unrelated metadata.
             Assert.Same(valueProvider1.Object, filteredProvider);
         }
 
-        private Mock<IMarkerAwareValueProvider> GetMockValueProvider(IValueBinderMarker marker)
+        private Mock<IMetadataAwareValueProvider> GetMockValueProvider(IValueProviderMetadata metadata)
         {
-            var valueProvider = new Mock<IMarkerAwareValueProvider>();
-            valueProvider.Setup(o => o.Filter(marker))
+            var valueProvider = new Mock<IMetadataAwareValueProvider>();
+            valueProvider.Setup(o => o.Filter(metadata))
                          .Returns(valueProvider.Object);
             return valueProvider;
         }
-        private class TestValueBinderMarker : IValueBinderMarker
+        private class TestValueProviderMetadata : IValueProviderMetadata
         {
         }
 
-        private class DerivedValueBinder : TestValueBinderMarker
+        private class DerivedValueBinderMetadata : TestValueProviderMetadata
         {
         }
 
-        private class UnrelatedValueBinderMarker : IValueBinderMarker
+        private class UnrelatedValueBinderMetadata : IValueProviderMetadata
         {
         }
     }

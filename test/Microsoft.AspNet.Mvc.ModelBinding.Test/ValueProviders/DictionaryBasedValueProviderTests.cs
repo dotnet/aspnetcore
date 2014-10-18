@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 { "test-key", "value" }
             };
-            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+            var provider = new DictionaryBasedValueProvider<TestValueProviderMetadata>(values);
             
             // Act
             var result = await provider.GetValueAsync("not-test-key");
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 { "test-key", "test-value" }
             };
-            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+            var provider = new DictionaryBasedValueProvider<TestValueProviderMetadata>(values);
 
             // Act
             var result = await provider.GetValueAsync("test-key");
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 { "test-key", null }
             };
-            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+            var provider = new DictionaryBasedValueProvider<TestValueProviderMetadata>(values);
 
             // Act
             var result = await provider.GetValueAsync("test-key");
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 { "bar.baz", 1 },
             };
 
-            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+            var valueProvider = new DictionaryBasedValueProvider<TestValueProviderMetadata>(values);
 
             // Act
             var result = await valueProvider.ContainsPrefixAsync(prefix);
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 { "bar.baz", 2 },
             };
 
-            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+            var valueProvider = new DictionaryBasedValueProvider<TestValueProviderMetadata>(values);
 
             // Act
             var result = await valueProvider.GetValueAsync(prefix);
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 { "bar.baz", 2 },
             };
 
-            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+            var valueProvider = new DictionaryBasedValueProvider<TestValueProviderMetadata>(values);
 
             // Act
             var result = await valueProvider.GetValueAsync("bar");
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 { "test-key", "test-value" }
             };
-            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+            var provider = new DictionaryBasedValueProvider<TestValueProviderMetadata>(values);
 
             // Act
             var result = await provider.ContainsPrefixAsync("not-test-key");
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 { "test-key", "test-value" }
             };
-            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+            var provider = new DictionaryBasedValueProvider<TestValueProviderMetadata>(values);
 
             // Act
             var result = await provider.ContainsPrefixAsync("test-key");
@@ -158,36 +158,36 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.True(result);
         }
 
-        public static IEnumerable<object[]> RegisteredAsMarkerClasses
+        public static IEnumerable<object[]> RegisteredAsMetadataClasses
         {
             get
             {
-                yield return new object[] { new TestValueBinderMarker() };
-                yield return new object[] { new DerivedValueBinder() };
+                yield return new object[] { new TestValueProviderMetadata() };
+                yield return new object[] { new DerivedValueProviderMetadata() };
             }
         }
 
         [Theory]
-        [MemberData(nameof(RegisteredAsMarkerClasses))]
-        public void FilterReturnsItself_ForAnyClassRegisteredAsGenericParam(IValueBinderMarker binderMarker)
+        [MemberData(nameof(RegisteredAsMetadataClasses))]
+        public void FilterReturnsItself_ForAnyClassRegisteredAsGenericParam(IValueProviderMetadata metadata)
         {
             // Arrange
             var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            var provider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+            var provider = new DictionaryBasedValueProvider<TestValueProviderMetadata>(values);
 
             // Act
-            var result = provider.Filter(binderMarker);
+            var result = provider.Filter(metadata);
 
             // Assert
             Assert.NotNull(result);
-            Assert.IsType<DictionaryBasedValueProvider<TestValueBinderMarker>>(result);
+            Assert.IsType<DictionaryBasedValueProvider<TestValueProviderMetadata>>(result);
         }
 
-        private class TestValueBinderMarker : IValueBinderMarker
+        private class TestValueProviderMetadata : IValueProviderMetadata
         {
         }
 
-        private class DerivedValueBinder :TestValueBinderMarker
+        private class DerivedValueProviderMetadata :TestValueProviderMetadata
         {
         }
     }

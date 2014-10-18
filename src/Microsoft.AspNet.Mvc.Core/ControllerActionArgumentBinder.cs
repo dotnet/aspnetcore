@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
                     modelAccessor: null,
                     methodInfo: actionDescriptor.MethodInfo,
                     parameterName: parameter.Name,
-                    binderMarker: parameter.BinderMarker);
+                    binderMetadata: parameter.BinderMetadata);
 
                 if (metadata != null)
                 {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var bodyBoundParameterCount = parameterMetadata.Count(
-                                modelMetadata => modelMetadata.Marker is IBodyBinderMarker);
+                                modelMetadata => modelMetadata.BinderMetadata is IFormatterBinderMetadata);
             if (bodyBoundParameterCount > 1)
             {
                 throw new InvalidOperationException(Resources.MultipleBodyParametersAreNotAllowed);

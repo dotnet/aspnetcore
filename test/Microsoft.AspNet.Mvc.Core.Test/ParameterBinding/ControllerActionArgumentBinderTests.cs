@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
                                                                          methodInfo: methodInfo,
                                                                          parameterName: "foo",
-                                                                         binderMarker: null);
+                                                                         binderMetadata: null);
 
 
             var actionBindingContext = new ActionBindingContext(actionContext,
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
                                                                          methodInfo: methodInfo,
                                                                          parameterName: "foo1",
-                                                                         binderMarker: null);
+                                                                         binderMetadata: null);
 
 
             var actionBindingContext = new ActionBindingContext(actionContext,
@@ -266,10 +266,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             public string UnmarkedProperty { get; set; }
 
-            [NonValueBinderMarker]
+            [NonValueProviderBinderMetadata]
             public string NonValueBinderMarkedProperty { get; set; }
 
-            [ValueBinderMarker]
+            [ValueProviderMetadata]
             public string ValueBinderMarkedProperty { get; set; }
 
             public Person ActionWithBodyParam([FromBody] Person bodyParam)
@@ -284,11 +284,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
    
-        private class NonValueBinderMarkerAttribute : Attribute, IBinderMarker
+        private class NonValueProviderBinderMetadataAttribute : Attribute, IBinderMetadata
         {
         }
 
-        private class ValueBinderMarkerAttribute : Attribute, IValueBinderMarker
+        private class ValueProviderMetadataAttribute : Attribute, IValueProviderMetadata
         {
         }
     }

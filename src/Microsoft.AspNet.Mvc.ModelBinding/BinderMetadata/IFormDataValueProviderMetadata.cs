@@ -4,9 +4,9 @@
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// An <see cref="IModelBinder"/> which is aware of <see cref="IBinderMarker"/>.
+    /// Metadata interface that indicates model binding should use only form data value providers.
     /// </summary>
-    public interface IMarkerAwareBinder : IModelBinder
+    public interface IFormDataValueProviderMetadata : IValueProviderMetadata
     {
     }
 }

@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var backingStore = new ReadableStringCollection(new Dictionary<string, string[]>());
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(backingStore, null);
 
             // Act
             var result = await valueProvider.ContainsPrefixAsync("");
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task ContainsPrefixAsync_WithNonEmptyCollection_ReturnsTrueForEmptyPrefix()
         {
             // Arrange
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, null);
 
             // Act
             var result = await valueProvider.ContainsPrefixAsync("");
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task ContainsPrefixAsync_WithNonEmptyCollection_ReturnsTrueForKnownPrefixes()
         {
             // Arrange
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, null);
 
             // Act & Assert
             Assert.True(await valueProvider.ContainsPrefixAsync("foo"));
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task ContainsPrefixAsync_WithNonEmptyCollection_ReturnsFalseForUnknownPrefix()
         {
             // Arrange
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, null);
 
             // Act
             var result = await valueProvider.ContainsPrefixAsync("biff");
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 { "null_value", "null_value" },
                 { "prefix", "prefix" }
             };
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(_backingStore, culture: null);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, culture: null);
 
             // Act
             var result = await valueProvider.GetKeysFromPrefixAsync("");
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task GetKeysFromPrefixAsync_UnknownPrefix_ReturnsEmptyDictionary()
         {
             // Arrange
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, null);
 
             // Act
             var result = await valueProvider.GetKeysFromPrefixAsync("abc");
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task GetKeysFromPrefixAsync_KnownPrefix_ReturnsMatchingItems()
         {
             // Arrange
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, null);
 
             // Act
             var result = await valueProvider.GetKeysFromPrefixAsync("bar");
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(_backingStore, culture);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, culture);
 
             // Act
             var vpResult = await valueProvider.GetValueAsync("bar.baz");
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(_backingStore, culture);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, culture);
 
             // Act
             var vpResult = await valueProvider.GetValueAsync("foo");
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     { "key", new string[] { null, null, "value" } }
                 });
             var culture = new CultureInfo("fr-FR");
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(backingStore, culture);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(backingStore, culture);
 
             // Act
             var vpResult = await valueProvider.GetValueAsync("key");
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task GetValueAsync_ReturnsNullIfKeyNotFound()
         {
             // Arrange
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, null);
 
             // Act
             var vpResult = await valueProvider.GetValueAsync("bar");
@@ -211,35 +211,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Null(vpResult);
         }
 
-        public static IEnumerable<object[]> RegisteredAsMarkerClasses
+        public static IEnumerable<object[]> RegisteredAsMetadataClasses
         {
             get
             {
-                yield return new object[] { new TestValueBinderMarker() };
-                yield return new object[] { new DerivedValueBinder() };
+                yield return new object[] { new TestValueProviderMetadata() };
+                yield return new object[] { new DerivedValueProviderMetadata() };
             }
         }
 
         [Theory]
-        [MemberData(nameof(RegisteredAsMarkerClasses))]
-        public void FilterReturnsItself_ForAnyClassRegisteredAsGenericParam(IValueBinderMarker binderMarker)
+        [MemberData(nameof(RegisteredAsMetadataClasses))]
+        public void FilterReturnsItself_ForAnyClassRegisteredAsGenericParam(IValueProviderMetadata metadata)
         {
             // Arrange
-            var valueProvider = new ReadableStringCollectionValueProvider<TestValueBinderMarker>(_backingStore, null);
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, null);
 
             // Act
-            var result = valueProvider.Filter(binderMarker);
+            var result = valueProvider.Filter(metadata);
 
             // Assert
             Assert.NotNull(result);
-            Assert.IsType<ReadableStringCollectionValueProvider<TestValueBinderMarker>>(result);
+            Assert.IsType<ReadableStringCollectionValueProvider<TestValueProviderMetadata>>(result);
         }
 
-        private class TestValueBinderMarker : IValueBinderMarker
+        private class TestValueProviderMetadata : IValueProviderMetadata
         {
         }
 
-        private class DerivedValueBinder : TestValueBinderMarker
+        private class DerivedValueProviderMetadata : TestValueProviderMetadata
         {
         }
     }

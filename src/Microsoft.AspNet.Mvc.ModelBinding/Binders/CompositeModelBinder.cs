@@ -145,13 +145,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             // look at the value providers and see if they need to be restricted. 
-            var marker = oldBindingContext.ModelMetadata.Marker as IValueBinderMarker;
-            if (marker != null)
+            var metadata = oldBindingContext.ModelMetadata.BinderMetadata as IValueProviderMetadata;
+            if (metadata != null)
             {
-                var valueProvider = oldBindingContext.ValueProvider as IMarkerAwareValueProvider;
+                var valueProvider = oldBindingContext.ValueProvider as IMetadataAwareValueProvider;
                 if (valueProvider != null)
                 {
-                    newBindingContext.ValueProvider = valueProvider.Filter(marker);
+                    newBindingContext.ValueProvider = valueProvider.Filter(metadata);
                 }
             }
 

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class CompositeValueProvider : Collection<IValueProvider>, IEnumerableValueProvider, IMarkerAwareValueProvider
+    public class CompositeValueProvider : Collection<IValueProvider>, IEnumerableValueProvider, IMetadataAwareValueProvider
     {
         public CompositeValueProvider()
             : base()
@@ -80,12 +80,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             base.SetItem(index, item);
         }
 
-        public IValueProvider Filter(IValueBinderMarker valueBinderMarker)
+        public IValueProvider Filter(IValueProviderMetadata valueBinderMetadata)
         {
             var filteredValueProviders = new List<IValueProvider>();
-            foreach (var valueProvider in this.OfType<IMarkerAwareValueProvider>())
+            foreach (var valueProvider in this.OfType<IMetadataAwareValueProvider>())
             {
-                var result = valueProvider.Filter(valueBinderMarker);
+                var result = valueProvider.Filter(valueBinderMetadata);
                 if (result != null)
                 {
                     filteredValueProviders.Add(result);

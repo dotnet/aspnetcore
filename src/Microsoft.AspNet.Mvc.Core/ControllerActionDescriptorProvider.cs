@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.Mvc
             var attributes = parameterInfo.GetCustomAttributes(inherit: true).OfType<object>().ToList();
             parameterModel.Attributes.AddRange(attributes);
 
-            parameterModel.BinderMarker = attributes.OfType<IBinderMarker>().FirstOrDefault();
+            parameterModel.BinderMetadata = attributes.OfType<IBinderMetadata>().FirstOrDefault();
 
             parameterModel.ParameterName = parameterInfo.Name;
             parameterModel.IsOptional = parameterInfo.HasDefaultValue;
@@ -510,7 +510,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var parameterDescriptor = new ParameterDescriptor()
             {
-                BinderMarker = parameter.BinderMarker,
+                BinderMetadata = parameter.BinderMetadata,
                 IsOptional = parameter.IsOptional,
                 Name = parameter.ParameterName,
             };

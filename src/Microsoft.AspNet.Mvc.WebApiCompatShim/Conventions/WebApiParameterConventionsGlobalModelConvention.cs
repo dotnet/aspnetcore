@@ -32,19 +32,19 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 foreach (var parameter in action.Parameters)
                 {
-                    if (parameter.BinderMarker != null)
+                    if (parameter.BinderMetadata is IBinderMetadata)
                     {
                         // This has a binding behavior configured, just leave it alone.
                     }
                     else if (ValueProviderResult.CanConvertFromString(parameter.ParameterInfo.ParameterType))
                     {
                         // Simple types are by-default from the URI.
-                        parameter.BinderMarker = new FromUriAttribute();
+                        parameter.BinderMetadata = new FromUriAttribute();
                     }
                     else
                     {
                         // Complex types are by-default from the body.
-                        parameter.BinderMarker = new FromBodyAttribute();
+                        parameter.BinderMetadata = new FromBodyAttribute();
                     }
                 }
             }

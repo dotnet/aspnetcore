@@ -5,11 +5,11 @@ using Microsoft.AspNet.Mvc;
 
 namespace ModelBindingWebSite
 {
-    public class EmployeeWithMarker : Employee
+    public class EmployeeWithMetadata : Employee
     {
     }
 
-    public class DerivedEmployee : EmployeeWithMarker
+    public class DerivedEmployee : EmployeeWithMetadata
     {
 
     }

@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             {
                 { "", null }
             };
-            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMetadata>(values);
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 { "", null },
                 { "MyProperty", "MyPropertyValue" }
             };
-            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMarker>(values);
+            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMetadata>(values);
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             public string MyProperty { get; set; }
         }
 
-        private class TestValueBinderMarker : IValueBinderMarker
+        private class TestValueBinderMetadata : IValueProviderMetadata
         {
         }
     }

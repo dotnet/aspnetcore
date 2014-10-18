@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ParametersWithNoMarkersUseTheAvailableValueProviders()
+        public async Task ParametersWithNoValueProviderMetadataUseTheAvailableValueProviders()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
@@ -72,8 +72,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await
-                     client.GetAsync("http://localhost/WithMarker" +
-                     "/ParametersWithNoMarkersUseTheAvailableValueProviders" +
+                     client.GetAsync("http://localhost/WithMetadata" +
+                     "/ParametersWithNoValueProviderMetadataUseTheAvailableValueProviders" +
                      "?Name=somename&Age=12");
 
             //Assert
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await
-                     client.GetAsync("http://localhost/WithoutMarker" +
+                     client.GetAsync("http://localhost/WithoutMetadata" +
                      "/GetPersonParameter" +
                      "?Name=somename&Age=12");
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModel
@@ -17,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
 
             parameter.Action = new ActionModel(typeof(TestController).GetMethod("Edit"));
             parameter.Attributes.Add(new FromBodyAttribute());
-            parameter.BinderMarker = new FromBodyAttribute();
+            parameter.BinderMetadata = (IBinderMetadata)parameter.Attributes[0];
             parameter.IsOptional = true;
             parameter.ParameterName = "id";
 

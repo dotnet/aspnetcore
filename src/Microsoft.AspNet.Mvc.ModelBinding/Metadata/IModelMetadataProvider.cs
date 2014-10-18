@@ -19,6 +19,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Func<object> modelAccessor,
             [NotNull] MethodInfo methodInfo,
             [NotNull] string parameterName,
-            IBinderMarker binderMarker);
+            IBinderMetadata binderMetadata);
     }
 }

@@ -26,13 +26,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Items).Returns(new Dictionary<object, object>());
             context.SetupGet(c => c.Request).Returns(request.Object);
-            var factoryContext = new ValueProviderFactoryContext(context.Object, new Dictionary<String, object>(StringComparer.OrdinalIgnoreCase));
+            var factoryContext = new ValueProviderFactoryContext(
+                context.Object, 
+                new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
 
             // Act
             var result = _factory.GetValueProvider(factoryContext);
 
             // Assert
-            var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider<IQueryBinderMarker>>(result);
+            var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider<IQueryValueProviderMetadata>>(result);
             Assert.Equal(CultureInfo.InvariantCulture, valueProvider.Culture);
         }
 #endif

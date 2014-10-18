@@ -11,9 +11,9 @@ using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class ReadableStringCollectionValueProvider<TBinderMarker> : 
-        MarkerAwareValueProvider<TBinderMarker>, IEnumerableValueProvider
-        where TBinderMarker : IValueBinderMarker
+    public class ReadableStringCollectionValueProvider<TBinderMetadata> : 
+        MetadataAwareValueProvider<TBinderMetadata>, IEnumerableValueProvider
+        where TBinderMetadata : IValueProviderMetadata
     {
         private readonly CultureInfo _culture;
         private PrefixContainer _prefixContainer;

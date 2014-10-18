@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Web.Http;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Xunit;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
@@ -51,13 +52,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "quantity",
                     ParameterBindingInfo = new ParameterBindingInfo("quantity", typeof(int)),
                 },
@@ -87,13 +88,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "quantity",
                     ParameterBindingInfo = new ParameterBindingInfo("quantity", typeof(int)),
                 },
@@ -123,13 +124,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "quantity",
                     ParameterBindingInfo = new ParameterBindingInfo("quantity", typeof(int)),
                 },
@@ -159,13 +160,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "quantity",
                     IsOptional = true,
                     ParameterBindingInfo = new ParameterBindingInfo("quantity", typeof(int)),
@@ -196,13 +197,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "quantity",
                     ParameterBindingInfo = new ParameterBindingInfo("quantity", typeof(int)),
                 },
@@ -213,13 +214,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "quantity_ordered",
                     ParameterBindingInfo = new ParameterBindingInfo("quantity_ordered", typeof(int)),
                 },
@@ -253,7 +254,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
@@ -264,13 +265,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "quantity",
                     ParameterBindingInfo = new ParameterBindingInfo("quantity", typeof(int)),
                 },
@@ -301,13 +302,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "quantity",
                     IsOptional = true,
                     ParameterBindingInfo = new ParameterBindingInfo("quantity", typeof(int)),
@@ -319,13 +320,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "quantity",
                     ParameterBindingInfo = new ParameterBindingInfo("quantity", typeof(int)),
                 },
@@ -356,13 +357,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "quantity",
                     ParameterBindingInfo = new ParameterBindingInfo("quantity", typeof(int)),
                 },
@@ -373,13 +374,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "price",
                     ParameterBindingInfo = new ParameterBindingInfo("price", typeof(decimal)),
                 },
@@ -413,7 +414,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                     BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
@@ -424,13 +425,14 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
+                    IsOptional = true,
                     Name = "quantity",
                     ParameterBindingInfo = new ParameterBindingInfo("quantity", typeof(int)),
                 },
@@ -461,7 +463,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                     BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
@@ -472,13 +474,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute(),
                     Name = "id",
                     ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMarker = new FromBodyAttribute(),
+                    BinderMetadata = new FromBodyAttribute(),
                     Name = "quantity",
                     ParameterBindingInfo = new ParameterBindingInfo("quantity", typeof(int)),
                 },

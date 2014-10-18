@@ -34,11 +34,6 @@ namespace ValueProvidersSite
                 var result = new ValueProviderResult(value, value, CultureInfo.CurrentCulture);
                 return Task.FromResult(result);
             }
-
-            public bool IsValidFor(Type valueProviderMarkerType)
-            {
-                return false;
-            }
         }
     }
 }

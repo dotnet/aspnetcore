@@ -8,10 +8,10 @@ namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
     /// This attribute is used on action parameters to indicate that
-    /// they will be bound using route data of the incoming request.
+    /// they will be bound using form data of the incoming request.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-    public class FromRouteAttribute : Attribute, IRouteDataMarker
+    public class FromFormAttribute : Attribute, IFormDataValueProviderMetadata
     {
     }
 }

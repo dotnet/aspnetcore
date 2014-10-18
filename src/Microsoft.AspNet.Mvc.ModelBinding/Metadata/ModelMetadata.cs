@@ -63,9 +63,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public IReadOnlyList<string> ExcludedProperties { get; set; }
 
         /// <summary>
-        /// Gets or sets a binder marker for this model.
+        /// Gets or sets a binder metadata for this model.
         /// </summary>
-        public IBinderMarker Marker { get; set; }
+        public IBinderMetadata BinderMetadata { get; set; }
 
         public Type ContainerType
         {
