@@ -122,12 +122,13 @@ namespace Microsoft.AspNet.Mvc.Description
                 {
                     Name = "id",
                     IsOptional = true,
-                    ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int)),
+                    ParameterType = typeof(int),
                 },
                 new ParameterDescriptor()
                 {
+                    BinderMetadata = new FromBodyAttribute(),
                     Name = "username",
-                    BodyParameterInfo = new BodyParameterInfo(typeof(string)),
+                    ParameterType = typeof(string),
                 }
             };
 
@@ -224,7 +225,7 @@ namespace Microsoft.AspNet.Mvc.Description
             {
                 Name = "id",
                 IsOptional = true,
-                ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int))
+                ParameterType = typeof(int),
             };
             action.Parameters = new List<ParameterDescriptor> { parameterDescriptor };
 
@@ -277,9 +278,10 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var parameterDescriptor = new ParameterDescriptor
             {
+                BinderMetadata = new FromBodyAttribute(),
                 Name = "id",
                 IsOptional = false,
-                BodyParameterInfo = new BodyParameterInfo(typeof(int))
+                ParameterType = typeof(int),
             };
             action.Parameters = new List<ParameterDescriptor> { parameterDescriptor };
 
@@ -334,7 +336,7 @@ namespace Microsoft.AspNet.Mvc.Description
             {
                 Name = "id",
                 IsOptional = isDescriptorParameterOptional,
-                ParameterBindingInfo = new ParameterBindingInfo("id", typeof(int))
+                ParameterType = typeof(int),
             };
             action.Parameters = new List<ParameterDescriptor> { parameterDescriptor };
 

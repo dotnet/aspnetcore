@@ -1348,7 +1348,7 @@ namespace Microsoft.AspNet.Mvc
             return invoker;
         }
 
-    
+
 
         [Fact]
         public async Task Invoke_UsesDefaultValuesIfNotBound()
@@ -1360,13 +1360,13 @@ namespace Microsoft.AspNet.Mvc
                                                                .DeclaredMethods
                                                                .First(m => m.Name.Equals("ActionMethodWithDefaultValues", StringComparison.Ordinal)),
                 Parameters = new List<ParameterDescriptor>
-                            {
-                                new ParameterDescriptor
-                                {
-                                    Name = "value",
-                                    ParameterBindingInfo = new ParameterBindingInfo("value", typeof(int))
-                                }
-                            },
+                {
+                    new ParameterDescriptor
+                    {
+                        Name = "value",
+                        ParameterType = typeof(int),
+                    }
+                },
                 FilterDescriptors = new List<FilterDescriptor>()
             };
 

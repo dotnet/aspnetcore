@@ -37,13 +37,14 @@ namespace Microsoft.AspNet.Mvc
             {
                 MethodInfo = method.Method,
                 Parameters = new List<ParameterDescriptor>
-                            {
-                                new ParameterDescriptor
-                                {
-                                    Name = "foo",
-                                    BodyParameterInfo = new BodyParameterInfo(parameterType)
-                                }
-                            }
+                {
+                    new ParameterDescriptor
+                    {
+                        BinderMetadata = new FromBodyAttribute(),
+                        Name = "foo",
+                        ParameterType = parameterType,
+                    }
+                }
             };
 
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -83,6 +84,7 @@ namespace Microsoft.AspNet.Mvc
                                      new RouteData(),
                                      actionDescriptor);
         }
+
         private static HttpContext GetHttpContext(byte[] contentBytes,
                                                   string contentType)
         {

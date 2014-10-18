@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.Description
                     // Process together parameters that appear on the path template and on the
                     // action descriptor and do not come from the body.
                     TemplatePart templateParameter = null;
-                    if (parameter.BodyParameterInfo == null)
+                    if (parameter.BinderMetadata as IFormatterBinderMetadata == null)
                     {
                         templateParameter = templateParameters
                             .FirstOrDefault(p => p.Name.Equals(parameter.Name, StringComparison.OrdinalIgnoreCase));
@@ -266,18 +266,16 @@ namespace Microsoft.AspNet.Mvc.Description
                 IsOptional = parameter.IsOptional,
                 Name = parameter.Name,
                 ParameterDescriptor = parameter,
+                Type = parameter.ParameterType,
             };
 
-            if (parameter.ParameterBindingInfo != null)
+            if (parameter.BinderMetadata as IFormatterBinderMetadata != null)
+            {
+                resourceParameter.Source = ApiParameterSource.Body;
+            }
+            else
             {
                 resourceParameter.Source = ApiParameterSource.Query;
-                resourceParameter.Type = parameter.ParameterBindingInfo.ParameterType;
-            }
-
-            if (parameter.BodyParameterInfo != null)
-            {
-                resourceParameter.Type = parameter.BodyParameterInfo.ParameterType;
-                resourceParameter.Source = ApiParameterSource.Body;
             }
 
             return resourceParameter;
@@ -295,12 +293,8 @@ namespace Microsoft.AspNet.Mvc.Description
                 ParameterDescriptor = parameter,
                 Constraint = templateParameter.InlineConstraint,
                 DefaultValue = templateParameter.DefaultValue,
+                Type = parameter.ParameterType,
             };
-
-            if (parameter.ParameterBindingInfo != null)
-            {
-                resourceParameter.Type = parameter.ParameterBindingInfo.ParameterType;
-            }
 
             return resourceParameter;
         }

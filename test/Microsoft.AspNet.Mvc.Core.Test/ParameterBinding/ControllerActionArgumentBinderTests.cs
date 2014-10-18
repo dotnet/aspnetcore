@@ -172,13 +172,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             {
                 MethodInfo = method.Method,
                 Parameters = new List<ParameterDescriptor>
-                            {
-                                new ParameterDescriptor
-                                {
-                                    Name = "foo",
-                                    ParameterBindingInfo = new ParameterBindingInfo("foo", typeof(object))
-                                }
-                            }
+                {
+                    new ParameterDescriptor
+                    {
+                        Name = "foo",
+                        ParameterType = typeof(object),
+                    }
+                }
             };
             var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))

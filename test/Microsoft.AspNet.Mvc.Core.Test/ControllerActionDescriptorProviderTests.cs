@@ -127,11 +127,8 @@ namespace Microsoft.AspNet.Mvc.Test
 
             Assert.Equal("id", id.Name);
             Assert.False(id.IsOptional);
-            Assert.Null(id.BodyParameterInfo);
-
-            Assert.NotNull(id.ParameterBindingInfo);
-            Assert.Equal("id", id.ParameterBindingInfo.Prefix);
-            Assert.Equal(typeof(int), id.ParameterBindingInfo.ParameterType);
+            Assert.Null(id.BinderMetadata);
+            Assert.Equal(typeof(int), id.ParameterType);
         }
 
         [Fact]
@@ -150,20 +147,15 @@ namespace Microsoft.AspNet.Mvc.Test
 
             Assert.Equal("id", id.Name);
             Assert.False(id.IsOptional);
-            Assert.Null(id.BodyParameterInfo);
-
-            Assert.NotNull(id.ParameterBindingInfo);
-            Assert.Equal("id", id.ParameterBindingInfo.Prefix);
-            Assert.Equal(typeof(int), id.ParameterBindingInfo.ParameterType);
+            Assert.Null(id.BinderMetadata);
+            Assert.Equal(typeof(int), id.ParameterType);
 
             var entity = Assert.Single(main.Parameters, p => p.Name == "entity");
 
             Assert.Equal("entity", entity.Name);
             Assert.False(entity.IsOptional);
-            Assert.Null(entity.ParameterBindingInfo);
-
-            Assert.NotNull(entity.BodyParameterInfo);
-            Assert.Equal(typeof(TestActionParameter), entity.BodyParameterInfo.ParameterType);
+            Assert.IsType<FromBodyAttribute>(entity.BinderMetadata);
+            Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
         }
 
         [Fact]
@@ -182,31 +174,22 @@ namespace Microsoft.AspNet.Mvc.Test
 
             Assert.Equal("id", id.Name);
             Assert.False(id.IsOptional);
-            Assert.Null(id.BodyParameterInfo);
-
-            Assert.NotNull(id.ParameterBindingInfo);
-            Assert.Equal("id", id.ParameterBindingInfo.Prefix);
-            Assert.Equal(typeof(int), id.ParameterBindingInfo.ParameterType);
+            Assert.Null(id.BinderMetadata);
+            Assert.Equal(typeof(int), id.ParameterType);
 
             var upperCaseId = Assert.Single(main.Parameters, p => p.Name == "ID");
 
             Assert.Equal("ID", upperCaseId.Name);
             Assert.False(upperCaseId.IsOptional);
-            Assert.Null(upperCaseId.BodyParameterInfo);
-
-            Assert.NotNull(upperCaseId.ParameterBindingInfo);
-            Assert.Equal("ID", upperCaseId.ParameterBindingInfo.Prefix);
-            Assert.Equal(typeof(int), upperCaseId.ParameterBindingInfo.ParameterType);
+            Assert.Null(upperCaseId.BinderMetadata);
+            Assert.Equal(typeof(int), upperCaseId.ParameterType);
 
             var pascalCaseId = Assert.Single(main.Parameters, p => p.Name == "Id");
 
             Assert.Equal("Id", pascalCaseId.Name);
             Assert.False(pascalCaseId.IsOptional);
-            Assert.Null(pascalCaseId.BodyParameterInfo);
-
-            Assert.NotNull(pascalCaseId.ParameterBindingInfo);
-            Assert.Equal("Id", pascalCaseId.ParameterBindingInfo.Prefix);
-            Assert.Equal(typeof(int), pascalCaseId.ParameterBindingInfo.ParameterType);
+            Assert.Null(id.BinderMetadata);
+            Assert.Equal(typeof(int), pascalCaseId.ParameterType);
         }
 
         [Theory]
@@ -229,11 +212,8 @@ namespace Microsoft.AspNet.Mvc.Test
 
             Assert.Equal("id", id.Name);
             Assert.True(id.IsOptional);
-            Assert.Null(id.BodyParameterInfo);
-
-            Assert.NotNull(id.ParameterBindingInfo);
-            Assert.Equal("id", id.ParameterBindingInfo.Prefix);
-            Assert.Equal(parameterType, id.ParameterBindingInfo.ParameterType);
+            Assert.Null(id.BinderMetadata);
+            Assert.Equal(parameterType, id.ParameterType);
         }
 
         [Fact]
@@ -254,11 +234,8 @@ namespace Microsoft.AspNet.Mvc.Test
 
             Assert.Equal("entity", entity.Name);
             Assert.False(entity.IsOptional);
-
-            Assert.NotNull(entity.BodyParameterInfo);
-            Assert.Equal(typeof(TestActionParameter), entity.BodyParameterInfo.ParameterType);
-
-            Assert.Null(entity.ParameterBindingInfo);
+            Assert.IsType<FromBodyAttribute>(entity.BinderMetadata);
+            Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
         }
 
         [Fact]
@@ -279,11 +256,8 @@ namespace Microsoft.AspNet.Mvc.Test
 
             Assert.Equal("entity", entity.Name);
             Assert.False(entity.IsOptional);
-            Assert.Null(entity.BodyParameterInfo);
-
-            Assert.NotNull(entity.ParameterBindingInfo);
-            Assert.Equal("entity", entity.ParameterBindingInfo.Prefix);
-            Assert.Equal(typeof(TestActionParameter), entity.ParameterBindingInfo.ParameterType);
+            Assert.Null(entity.BinderMetadata);
+            Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
         }
 
         [Fact]

@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace FormatterWebSite
 {
@@ -14,7 +15,7 @@ namespace FormatterWebSite
             {
                 var bodyParameter = context.ActionDescriptor
                                           .Parameters
-                                          .FirstOrDefault(parameter => parameter.BodyParameterInfo != null);
+                                          .FirstOrDefault(parameter => parameter.BinderMetadata is IFormatterBinderMetadata);
                 if (bodyParameter != null)
                 {
                     var parameterBindingErrors = context.ModelState[bodyParameter.Name].Errors;

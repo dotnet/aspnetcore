@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 if ((parameter.BinderMetadata is IRouteDataValueProviderMetadata ||
                     parameter.BinderMetadata is IQueryValueProviderMetadata) &&
                     !parameter.IsOptional &&
-                    ValueProviderResult.CanConvertFromString(parameter.ParameterBindingInfo.ParameterType))
+                    ValueProviderResult.CanConvertFromString(parameter.ParameterType))
                 {
                     var nameProvider = parameter.BinderMetadata as IModelNameProvider;
                     var prefix = nameProvider?.Name ?? parameter.Name;
