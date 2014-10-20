@@ -44,6 +44,7 @@
                 "System.Security.Cryptography.Encryption.Aes": "4.0.0-beta-*",
                 "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",
                 "System.Security.Cryptography.RandomNumberGenerator": "4.0.0-beta-*",
+                "System.Security.Principal.Windows": "4.0.0-beta-*",
                 "System.Text.Encoding.Extensions": "4.0.10-beta-*",
                 "System.Threading": "4.0.0-beta-*",
                 "System.Xml.XDocument": "4.0.0-beta-*"

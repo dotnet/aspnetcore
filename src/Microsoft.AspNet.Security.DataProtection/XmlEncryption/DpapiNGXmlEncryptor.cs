@@ -4,14 +4,11 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Security.Principal;
 using System.Xml.Linq;
 using Microsoft.AspNet.Security.DataProtection.Cng;
 using Microsoft.AspNet.Security.DataProtection.KeyManagement;
 using Microsoft.AspNet.Security.DataProtection.SafeHandles;
-
-#if !ASPNETCORE50
-using System.Security.Principal;
-#endif
 
 namespace Microsoft.AspNet.Security.DataProtection.XmlEncryption
 {
@@ -79,7 +76,6 @@ namespace Microsoft.AspNet.Security.DataProtection.XmlEncryption
 
         private static string GetDefaultProtectionDescriptorString()
         {
-#if !ASPNETCORE50
             // Creates a SID=... protection descriptor string for the current user.
             // Reminder: DPAPI:NG provides only encryption, not authentication.
             using (WindowsIdentity currentIdentity = WindowsIdentity.GetCurrent())
@@ -87,9 +83,6 @@ namespace Microsoft.AspNet.Security.DataProtection.XmlEncryption
                 // use the SID to create an SDDL string
                 return String.Format(CultureInfo.InvariantCulture, "SID={0}", currentIdentity.User.Value);
             }
-#else
-            throw new NotImplementedException("TODO: Doesn't yet work on Core CLR.");
-#endif
         }
     }
 }
