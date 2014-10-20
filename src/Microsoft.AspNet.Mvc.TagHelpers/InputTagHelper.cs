@@ -154,9 +154,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 if (!string.IsNullOrEmpty(inputType))
                 {
                     // inputType may be more specific than default the generator chooses below.
-                    // TODO: Use Attributes.ContainsKey once aspnet/Razor#186 is fixed.
-                    if (!output.Attributes.Any(
-                        item => string.Equals("type", item.Key, StringComparison.OrdinalIgnoreCase)))
+                    if (!output.Attributes.ContainsKey("type"))
                     {
                         output.Attributes["type"] = inputType;
                     }

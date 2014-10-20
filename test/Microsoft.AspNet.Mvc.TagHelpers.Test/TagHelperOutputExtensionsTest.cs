@@ -157,6 +157,31 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedAttribute, attribute);
         }
 
+        [Theory]
+        [InlineData("class", "CLAss")]
+        [InlineData("ClaSS", "class")]
+        [InlineData("ClaSS", "cLaSs")]
+        public void MergeAttributes_AppendsClass_TagHelperOutputAttributeValues_IgnoresCase(
+            string originalName, string updateName)
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput(
+                "p",
+                attributes: new Dictionary<string, string>(),
+                content: string.Empty);
+            tagHelperOutput.Attributes.Add(originalName, "Hello");
+
+            var tagBuilder = new TagBuilder("p");
+            tagBuilder.Attributes.Add(updateName, "btn");
+
+            // Act
+            tagHelperOutput.MergeAttributes(tagBuilder);
+
+            // Assert
+            var attribute = Assert.Single(tagHelperOutput.Attributes);
+            Assert.Equal(new KeyValuePair<string, string>(originalName, "Hello btn"), attribute);
+        }
+
         [Fact]
         public void MergeAttributes_DoesNotEncode_TagHelperOutputAttributeValues()
         {

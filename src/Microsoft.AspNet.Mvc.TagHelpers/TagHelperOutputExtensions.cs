@@ -89,13 +89,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             foreach (var attribute in tagBuilder.Attributes)
             {
-                // TODO: Use Attributes.ContainsKey once aspnet/Razor#186 is fixed.
-                if (!tagHelperOutput.Attributes.Any(
-                    item => string.Equals(attribute.Key, item.Key, StringComparison.OrdinalIgnoreCase)))
+                if (!tagHelperOutput.Attributes.ContainsKey(attribute.Key))
                 {
                     tagHelperOutput.Attributes.Add(attribute.Key, attribute.Value);
                 }
-                else if (attribute.Key.Equals("class", StringComparison.Ordinal))
+                else if (attribute.Key.Equals("class", StringComparison.OrdinalIgnoreCase))
                 {
                     tagHelperOutput.Attributes["class"] += " " + attribute.Value;
                 }
