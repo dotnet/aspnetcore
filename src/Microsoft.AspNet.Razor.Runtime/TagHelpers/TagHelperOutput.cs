@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         internal TagHelperOutput(string tagName)
         {
             TagName = tagName;
-            Attributes = new Dictionary<string, string>(StringComparer.Ordinal);
+            Attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         // Internal for testing
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             TagName = tagName;
             Content = content;
-            Attributes = new Dictionary<string, string>(attributes, StringComparer.Ordinal);
+            Attributes = new Dictionary<string, string>(attributes, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

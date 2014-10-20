@@ -208,5 +208,26 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Assert
             Assert.Empty(output);
         }
+
+        [Theory]
+        [InlineData("class", "ClASs")]
+        [InlineData("CLaSs", "class")]
+        [InlineData("cLaSs", "cLasS")]
+        public void Attributes_IgnoresCase(string originalName, string updateName)
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput("p",
+                attributes: new Dictionary<string, string>
+                {
+                    { originalName, "btn" },
+                });
+
+            // Act
+            tagHelperOutput.Attributes[updateName] = "super button";
+
+            // Assert
+            var attribute = Assert.Single(tagHelperOutput.Attributes);
+            Assert.Equal(new KeyValuePair<string, string>(originalName, "super button"), attribute);
+        }
     }
 }

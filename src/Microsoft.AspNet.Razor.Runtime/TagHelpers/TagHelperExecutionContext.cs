@@ -19,8 +19,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="tagName">The HTML tag name in the Razor source.</param>
         public TagHelperExecutionContext([NotNull] string tagName)
         {
-            AllAttributes = new Dictionary<string, object>(StringComparer.Ordinal);
-            HTMLAttributes = new Dictionary<string, string>(StringComparer.Ordinal);
+            AllAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            HTMLAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             _tagHelpers = new List<ITagHelper>();
             TagName = tagName;
         }

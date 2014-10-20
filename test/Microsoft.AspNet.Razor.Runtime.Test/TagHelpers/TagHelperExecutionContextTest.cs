@@ -9,6 +9,49 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     public class TagHelperExecutionContextTest
     {
+        public static TheoryData<string, string> DictionaryCaseTestingData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    { "class", "CLaSS" },
+                    { "Class", "class" },
+                    { "Class", "claSS" }
+                };
+            }
+        }
+
+        [MemberData(nameof(DictionaryCaseTestingData))]
+        public void HtmlAttributes_IgnoresCase(string originalName, string updatedName)
+        {
+            // Arrange
+            var executionContext = new TagHelperExecutionContext("p");
+            executionContext.HTMLAttributes[originalName] = "hello";
+
+            // Act
+            executionContext.HTMLAttributes[updatedName] = "something else";
+
+            // Assert
+            var attribute = Assert.Single(executionContext.HTMLAttributes);
+            Assert.Equal(new KeyValuePair<string, string>(originalName, "something else"), attribute);
+        }
+
+        [MemberData(nameof(DictionaryCaseTestingData))]
+        public void AllAttributes_IgnoresCase(string originalName, string updatedName)
+        {
+            // Arrange
+            var executionContext = new TagHelperExecutionContext("p");
+            executionContext.AllAttributes[originalName] = false;
+
+            // Act
+            executionContext.AllAttributes[updatedName] = true;
+
+            // Assert
+            var attribute = Assert.Single(executionContext.AllAttributes);
+            Assert.Equal(new KeyValuePair<string, object>(originalName, true), attribute);
+        }
+
         [Fact]
         public void AddHtmlAttribute_MaintainsHTMLAttributes()
         {
