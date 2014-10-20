@@ -86,8 +86,7 @@ namespace MusicStore
                 services.AddSignalR();
 
                 //Add InMemoryCache
-                //Currently not able to AddSingleTon
-                services.AddInstance<IMemoryCache>(new MemoryCache());
+                services.AddSingleton<IMemoryCache, MemoryCache>();
             });
 
             //Configure SignalR

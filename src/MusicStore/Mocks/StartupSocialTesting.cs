@@ -92,8 +92,7 @@ namespace MusicStore
                 services.AddSignalR();
 
                 //Add InMemoryCache
-                //Currently not able to AddSingleTon
-                services.AddInstance<IMemoryCache>(new MemoryCache());
+                services.AddSingleton<IMemoryCache, MemoryCache>();
             });
 
             //To gracefully shutdown the server - Not for production scenarios
