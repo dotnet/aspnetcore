@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
     public static class PlatformApis
     {
-        public static bool IsWindows() 
+        public static bool IsWindows()
         {
 #if ASPNETCORE50
             return true;
@@ -18,6 +18,34 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             var p = (int)Environment.OSVersion.Platform;
             return (p != 4) && (p != 6) && (p != 128);
 #endif
+        }
+
+        [DllImport("libc")]
+        static extern int uname(IntPtr buf);
+
+        static unsafe string GetUname()
+        {
+            var buffer = new byte[8192];
+            try
+            {
+                fixed (byte* buf = buffer)
+                {
+                    if (uname((IntPtr)buf) == 0)
+                    {
+                        return Marshal.PtrToStringAnsi((IntPtr)buf);
+                    }
+                }
+                return string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        public static bool IsDarwin()
+        {
+            return string.Equals(GetUname(), "Darwin", StringComparison.Ordinal);
         }
 
         public static void Apply(Libuv libuv)
@@ -55,7 +83,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         {
             [DllImport("libdl")]
             public static extern IntPtr dlopen(String fileName, int flags);
-            
+
             [DllImport("libdl")]
             public static extern IntPtr dlsym(IntPtr handle, String symbol);
 
@@ -65,17 +93,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             [DllImport("libdl")]
             public static extern IntPtr dlerror();
 
-            public static IntPtr LoadLibrary(string dllToLoad) 
+            public static IntPtr LoadLibrary(string dllToLoad)
             {
                 return dlopen(dllToLoad, 2);
             }
 
-            public static bool FreeLibrary(IntPtr hModule) 
+            public static bool FreeLibrary(IntPtr hModule)
             {
                 return dlclose(hModule) == 0;
             }
 
-            public static IntPtr GetProcAddress(IntPtr hModule, string procedureName) 
+            public static IntPtr GetProcAddress(IntPtr hModule, string procedureName)
             {
                 dlerror();
                 var res = dlsym(hModule, procedureName);
