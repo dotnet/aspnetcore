@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
 
         private static readonly byte[] _purpose = Encoding.UTF8.GetBytes("DPAPI-Protected Secret");
 
-        public static byte[] ProtectWithDpapi(ISecret secret)
+        public static byte[] ProtectWithDpapi(ISecret secret, bool protectToLocalMachine = false)
         {
             Debug.Assert(secret != null);
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
                     secret.WriteSecretIntoBuffer(new ArraySegment<byte>(plaintextSecret));
                     fixed (byte* pbPurpose = _purpose)
                     {
-                        return ProtectWithDpapiImpl(pbPlaintextSecret, (uint)plaintextSecret.Length, pbPurpose, (uint)_purpose.Length);
+                        return ProtectWithDpapiImpl(pbPlaintextSecret, (uint)plaintextSecret.Length, pbPurpose, (uint)_purpose.Length, fLocalMachine: protectToLocalMachine);
                     }
                 }
                 finally

@@ -16,6 +16,13 @@ namespace Microsoft.AspNet.Security.DataProtection.XmlEncryption
     {
         internal static readonly XName DpapiEncryptedSecretElementName = XmlKeyManager.KeyManagementXmlNamespace.GetName("dpapiEncryptedSecret");
 
+        private readonly bool _protectToLocalMachine;
+
+        public DpapiXmlEncryptor(bool protectToLocalMachine)
+        {
+            _protectToLocalMachine = protectToLocalMachine;
+        }
+
         /// <summary>
         /// Encrypts the specified XML element using Windows DPAPI.
         /// </summary>
@@ -45,7 +52,7 @@ namespace Microsoft.AspNet.Security.DataProtection.XmlEncryption
             // <secret decryptor="{TYPE}">
             //   ... base64 data ...
             // </secret>
-            byte[] encryptedBytes = DpapiSecretSerializerHelper.ProtectWithDpapi(secret);
+            byte[] encryptedBytes = DpapiSecretSerializerHelper.ProtectWithDpapi(secret, protectToLocalMachine: _protectToLocalMachine);
             return new XElement(DpapiEncryptedSecretElementName,
                 new XAttribute("decryptor", typeof(DpapiXmlDecryptor).AssemblyQualifiedName),
                 new XAttribute("version", 1),

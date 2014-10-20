@@ -27,6 +27,7 @@
             "dependencies": {
                 "Microsoft.Framework.DependencyInjection": "1.0.0-*",
                 "Microsoft.Framework.OptionsModel": "1.0.0-*",
+                "Microsoft.Win32.Registry": "4.0.0-beta-*",
                 "System.Diagnostics.Debug": "4.0.10-beta-*",
                 "System.Diagnostics.Tools": "4.0.0-beta-*",
                 "System.Globalization": "4.0.10-beta-*",

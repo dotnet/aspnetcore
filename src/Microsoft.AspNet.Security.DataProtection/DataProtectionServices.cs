@@ -72,18 +72,33 @@ namespace Microsoft.AspNet.Security.DataProtection
                 {
                     descriptors.AddRange(new[]
                     {
-                        describe.Singleton<IXmlEncryptor, DpapiXmlEncryptor>(),
+                        describe.Instance<IXmlEncryptor>(new DpapiXmlEncryptor(protectToLocalMachine: false)),
                         describe.Instance<IXmlRepository>(new FileSystemXmlRepository(localAppDataKeysFolder))
                     });
                 }
                 else
                 {
-                    // Are we running with no user profile (e.g., IIS service)?
-                    // Fall back to DPAPI for now.
-                    // TODO: We should use the IIS auto-gen reg keys as our repository.
-                    return new[] {
-                        describe.Instance<IDataProtectionProvider>(new DpapiDataProtectionProvider(DataProtectionScope.LocalMachine))
-                    };
+                    // If we've reached this point, we have no user profile loaded.
+
+                    RegistryXmlRepository hklmRegXmlRepository = RegistryXmlRepository.GetDefaultRepositoryForHKLMRegistry();
+                    if (hklmRegXmlRepository != null)
+                    {
+                        // Have WAS and IIS created an auto-gen key folder in the HKLM registry for us?
+                        // If so, use it as the repository, and use DPAPI as the key protection mechanism.
+                        // We use same-machine DPAPI since we already know no user profile is loaded.
+                        descriptors.AddRange(new[]
+                        {
+                            describe.Instance<IXmlEncryptor>(new DpapiXmlEncryptor(protectToLocalMachine: true)),
+                            describe.Instance<IXmlRepository>(hklmRegXmlRepository)
+                        });
+                    }
+                    else
+                    {
+                        // Fall back to DPAPI for now
+                        return new[] {
+                            describe.Instance<IDataProtectionProvider>(new DpapiDataProtectionProvider(DataProtectionScope.LocalMachine))
+                        };
+                    }
                 }
             }
 
