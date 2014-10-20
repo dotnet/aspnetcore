@@ -169,6 +169,138 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [Fact]
+        public async Task RouteAsync_MergesExistingRouteData_IfRouteMatches()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:int}";
+
+            var context = CreateRouteContext("/Home/Index/5");
+            var originalRouteDataValues = new Dictionary<string, object>
+            {
+                { "country", "USA" },
+            };
+            context.RouteData.Values = originalRouteDataValues;
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var route = new TemplateRoute(mockTarget.Object, template, _inlineConstraintResolver);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(routeValues);
+
+            Assert.True(routeValues.ContainsKey("country"));
+            Assert.Equal("USA", routeValues["country"]);
+            Assert.True(routeValues.ContainsKey("id"));
+            Assert.Equal("5",routeValues["id"]);
+
+            Assert.True(context.RouteData.Values.ContainsKey("country"));
+            Assert.Equal("USA", context.RouteData.Values["country"]);
+            Assert.True(context.RouteData.Values.ContainsKey("id"));
+            Assert.Equal("5", context.RouteData.Values["id"]);
+
+            Assert.NotSame(originalRouteDataValues, context.RouteData.Values);
+        }
+
+        [Fact]
+        public async Task RouteAsync_CleansUpMergedRouteData_IfRouteDoesNotMatch()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:int}";
+
+            var context = CreateRouteContext("/Home/Index/5");
+            var originalRouteDataValues = new Dictionary<string, object>
+            {
+                { "country", "USA" },
+            };
+            context.RouteData.Values = originalRouteDataValues;
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = false;
+                })
+                .Returns(Task.FromResult(true));
+
+            var route = new TemplateRoute(mockTarget.Object, template, _inlineConstraintResolver);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(routeValues);
+
+            Assert.True(routeValues.ContainsKey("country"));
+            Assert.Equal("USA", routeValues["country"]);
+            Assert.True(routeValues.ContainsKey("id"));
+            Assert.Equal("5", routeValues["id"]);
+
+            Assert.True(context.RouteData.Values.ContainsKey("country"));
+            Assert.Equal("USA", context.RouteData.Values["country"]);
+
+            Assert.Same(originalRouteDataValues, context.RouteData.Values);
+        }
+
+        [Fact]
+        public async Task RouteAsync_CleansUpMergedRouteData_IfHandlerThrows()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:int}";
+
+            var context = CreateRouteContext("/Home/Index/5");
+            var originalRouteDataValues = new Dictionary<string, object>
+            {
+                { "country", "USA" },
+            };
+            context.RouteData.Values = originalRouteDataValues;
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = false;
+                })
+                .Throws(new Exception());
+
+            var route = new TemplateRoute(mockTarget.Object, template, _inlineConstraintResolver);
+
+            // Act
+            var ex = await Assert.ThrowsAsync<Exception>(() => route.RouteAsync(context));
+
+            // Assert
+            Assert.NotNull(routeValues);
+
+            Assert.True(routeValues.ContainsKey("country"));
+            Assert.Equal("USA", routeValues["country"]);
+            Assert.True(routeValues.ContainsKey("id"));
+            Assert.Equal("5", routeValues["id"]);
+
+            Assert.True(context.RouteData.Values.ContainsKey("country"));
+            Assert.Equal("USA", context.RouteData.Values["country"]);
+
+            Assert.Same(originalRouteDataValues, context.RouteData.Values);
+        }
+
+
+        [Fact]
         public async Task RouteAsync_MatchFailOnConstraints_DoesNotLogWhenDisabled()
         {
             // Arrange & Act
@@ -265,7 +397,7 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.False(context.IsHandled);
 
             // Issue #16 tracks this.
-            Assert.NotNull(context.RouteData.Values);
+            Assert.Null(context.RouteData.Values);
         }
 
         [Fact]
@@ -490,9 +622,9 @@ namespace Microsoft.AspNet.Routing.Template
                 .Returns<string>(null);
 
             var route = CreateRoute(target.Object, "{controller}/{action}");
-            var context = CreateVirtualPathContext(new { action = "Store" }, new { Controller = "Home", action = "Blog"});
+            var context = CreateVirtualPathContext(new { action = "Store" }, new { Controller = "Home", action = "Blog" });
 
-            var expectedValues = new RouteValueDictionary(new {controller = "Home", action = "Store"});
+            var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store" });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -513,7 +645,7 @@ namespace Microsoft.AspNet.Routing.Template
                 .Callback<VirtualPathContext>(c => { childContext = c; c.IsBound = true; })
                 .Returns<string>(null);
 
-            var route = CreateRoute(target.Object, "Admin/{controller}/{action}", new {area = "Admin"});
+            var route = CreateRoute(target.Object, "Admin/{controller}/{action}", new { area = "Admin" });
             var context = CreateVirtualPathContext(new { action = "Store" }, new { Controller = "Home", action = "Blog" });
 
             var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store", area = "Admin" });
@@ -564,7 +696,7 @@ namespace Microsoft.AspNet.Routing.Template
                 constraints: new { c = constraint });
 
             var context = CreateVirtualPathContext(
-                values: new { action = "Store" }, 
+                values: new { action = "Store" },
                 ambientValues: new { Controller = "Home", action = "Blog", extra = "42" });
 
             var expectedValues = new RouteValueDictionary(
@@ -750,7 +882,7 @@ namespace Microsoft.AspNet.Routing.Template
             var routeBuilder = CreateRouteBuilder();
 
             // Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => routeBuilder.MapRoute("mockName", 
+            ExceptionAssert.Throws<InvalidOperationException>(() => routeBuilder.MapRoute("mockName",
                 "{controller}/{action}",
                 defaults: null,
                 constraints: new { controller = "a.*", action = new Object() }),
@@ -937,10 +1069,10 @@ namespace Microsoft.AspNet.Routing.Template
             public IDictionary<string, object> Values { get; private set; }
 
             public bool Match(
-                HttpContext httpContext, 
-                IRouter route, 
-                string routeKey, 
-                IDictionary<string, object> values, 
+                HttpContext httpContext,
+                IRouter route,
+                string routeKey,
+                IDictionary<string, object> values,
                 RouteDirection routeDirection)
             {
                 Values = new RouteValueDictionary(values);
