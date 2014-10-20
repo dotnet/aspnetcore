@@ -33,6 +33,7 @@
                 "System.Security.Claims": "4.0.0-beta-*",
                 "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
                 "System.Security.Principal": "4.0.0-beta-*",
+                "System.Security.Principal.Windows": "4.0.0-beta-*",
                 "System.Text.Encoding": "4.0.10-beta-*",
                 "System.Text.Encoding.Extensions": "4.0.10-beta-*",
                 "System.Threading": "4.0.0-beta-*",

@@ -163,9 +163,7 @@ namespace Microsoft.Net.Http.Server
                 && requestInfo->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
                 && requestInfo->pInfo->AuthStatus == UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
             {
-#if !ASPNETCORE50
                 return true;
-#endif
             }
             return false;
         }
@@ -176,10 +174,8 @@ namespace Microsoft.Net.Http.Server
                 && requestInfo->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
                 && requestInfo->pInfo->AuthStatus == UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
             {
-#if !ASPNETCORE50
                 return new WindowsPrincipal(new WindowsIdentity(requestInfo->pInfo->AccessToken,
                     GetAuthTypeFromRequest(requestInfo->pInfo->AuthType).ToString()));
-#endif
             }
             return new ClaimsPrincipal(new ClaimsIdentity()); // Anonymous / !IsAuthenticated
         }
