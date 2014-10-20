@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 foreach (var helper in HtmlAttributePropertyHelper.GetProperties(htmlAttributes))
                 {
-                    dictionary.Add(helper.Name, helper.GetValue(htmlAttributes));
+                    dictionary[helper.Name] = helper.GetValue(htmlAttributes);
                 }
             }
 

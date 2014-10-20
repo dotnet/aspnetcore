@@ -131,9 +131,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CheckBoxReplacesUnderscoresInHtmlAttributesWithDashes()
         {
             // Arrange
-            var expected = @"<input Property1-Property3=""Property3ObjValue"" checked=""checked"" id=""Property1"" " +
-                           @"name=""Property1"" type=""checkbox"" value=""true"" />" +
-                           @"<input name=""Property1"" type=""hidden"" value=""false"" />";
+            var expected = @"<input checked=""checked"" id=""Property1"" name=""Property1"" " +
+                           @"Property1-Property3=""Property3ObjValue"" type=""checkbox"" value=""true"" /><input " +
+                           @"name=""Property1"" type=""hidden"" value=""false"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
             var htmlAttributes = new { Property1_Property3 = "Property3ObjValue" };
 
@@ -148,8 +148,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CheckBoxWithPrefix_ReplaceDotsInIdByDefaultWithUnderscores()
         {
             // Arrange
-            var expected = @"<input Property3=""Property3Value"" id=""MyPrefix_Property1"" " +
-                           @"name=""MyPrefix.Property1"" type=""checkbox"" value=""true"" /><input " +
+            var expected = @"<input id=""MyPrefix_Property1"" name=""MyPrefix.Property1"" " +
+                           @"Property3=""Property3Value"" type=""checkbox"" value=""true"" /><input " +
                            @"name=""MyPrefix.Property1"" type=""hidden"" value=""false"" />";
             var dictionary = new RouteValueDictionary(new { Property3 = "Property3Value" });
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
@@ -166,8 +166,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CheckBoxWithPrefix_ReplacesDotsInIdWithIdDotReplacement()
         {
             // Arrange
-            var expected = @"<input Property3=""Property3Value"" id=""MyPrefix!!!Property1"" " +
-                           @"name=""MyPrefix.Property1"" type=""checkbox"" value=""true"" /><input " +
+            var expected = @"<input id=""MyPrefix!!!Property1"" name=""MyPrefix.Property1"" " +
+                           @"Property3=""Property3Value"" type=""checkbox"" value=""true"" /><input " +
                            @"name=""MyPrefix.Property1"" type=""hidden"" value=""false"" />";
             var dictionary = new Dictionary<string, object> { { "Property3", "Property3Value" } };
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CheckBoxWithPrefixAndEmptyName()
         {
             // Arrange
-            var expected = @"<input Property3=""Property3Value"" id=""MyPrefix"" name=""MyPrefix"" " +
+            var expected = @"<input id=""MyPrefix"" name=""MyPrefix"" Property3=""Property3Value"" " +
                            @"type=""checkbox"" value=""true"" /><input name=""MyPrefix"" type=""hidden"" " +
                            @"value=""false"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model: false);
@@ -288,9 +288,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CheckBoxForWithObjectAttributeWithUnderscores()
         {
             // Arrange
-            var expected = @"<input Property1-Property3=""Property3ObjValue"" checked=""checked"" id=""Property1"" " +
-                           @"name=""Property1"" type=""checkbox"" value=""true"" />" +
-                           @"<input name=""Property1"" type=""hidden"" value=""false"" />";
+            var expected = @"<input checked=""checked"" id=""Property1"" name=""Property1"" " +
+                           @"Property1-Property3=""Property3ObjValue"" type=""checkbox"" value=""true"" /><input " +
+                           @"name=""Property1"" type=""hidden"" value=""false"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
             var htmlAttributes = new { Property1_Property3 = "Property3ObjValue" };
 
@@ -305,9 +305,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CheckBoxForWithAttributeDictionary()
         {
             // Arrange
-            var expected = @"<input Property3=""Property3Value"" checked=""checked"" id=""Property1"" " +
-                           @"name=""Property1"" type=""checkbox"" value=""true"" /><input name=""Property1"" " +
-                           @"type=""hidden"" value=""false"" />";
+            var expected = @"<input checked=""checked"" id=""Property1"" name=""Property1"" " +
+                           @"Property3=""Property3Value"" type=""checkbox"" value=""true"" /><input " +
+                           @"name=""Property1"" type=""hidden"" value=""false"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
             var attributes = new Dictionary<string, object> { { "Property3", "Property3Value" } };
 
@@ -322,7 +322,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CheckBoxForWithPrefix()
         {
             // Arrange
-            var expected = @"<input Property3=""PropValue"" id=""MyPrefix_Property1"" name=""MyPrefix.Property1"" " +
+            var expected = @"<input id=""MyPrefix_Property1"" name=""MyPrefix.Property1"" Property3=""PropValue"" " +
                            @"type=""checkbox"" value=""true"" /><input name=""MyPrefix.Property1"" type=""hidden"" " +
                            @"value=""false"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());

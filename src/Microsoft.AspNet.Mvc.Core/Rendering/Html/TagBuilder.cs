@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             TagName = tagName;
-            Attributes = new SortedDictionary<string, string>(StringComparer.Ordinal);
+            Attributes = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         public IDictionary<string, string> Attributes { get; private set; }
@@ -110,7 +110,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             foreach (var attribute in Attributes)
             {
                 var key = attribute.Key;
-                if (string.Equals(key, "id", StringComparison.Ordinal) && string.IsNullOrEmpty(attribute.Value))
+                if (string.Equals(key, "id", StringComparison.OrdinalIgnoreCase) && 
+                    string.IsNullOrEmpty(attribute.Value))
                 {
                     continue;
                 }

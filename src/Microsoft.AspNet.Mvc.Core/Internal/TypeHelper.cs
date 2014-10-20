@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 foreach (var helper in PropertyHelper.GetProperties(value))
                 {
-                    dictionary.Add(helper.Name, helper.GetValue(value));
+                    dictionary[helper.Name] = helper.GetValue(value);
                 }
             }
 
