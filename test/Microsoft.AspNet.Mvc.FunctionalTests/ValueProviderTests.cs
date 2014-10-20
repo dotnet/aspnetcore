@@ -56,5 +56,25 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal("route-value", body.Trim());
         }
+
+        [Theory]
+        [InlineData("http://localhost/Home/GetFlagValuesAsString?flags=1", "Value1")]
+        [InlineData("http://localhost/Home/GetFlagValuesAsString?flags=5", "Value1, Value4")]
+        [InlineData("http://localhost/Home/GetFlagValuesAsString?flags=7", "Value1, Value2, Value4")]
+        [InlineData("http://localhost/Home/GetFlagValuesAsString?flags=0", "0")]
+        [InlineData("http://localhost/Home/GetFlagValuesAsInt?flags=Value1", "1")]
+        [InlineData("http://localhost/Home/GetFlagValuesAsInt?flags=Value1,Value2", "3")]
+        public async Task ValueProvider_DeserializesEnumsWithFlags(string url, string expected)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync(url);
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
     }
 }

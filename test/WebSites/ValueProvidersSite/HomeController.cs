@@ -22,5 +22,15 @@ namespace ValueProvidersSite
         {
             return test;
         }
+
+        public string GetFlagValuesAsString(FlagsEnum flags)
+        {
+            return flags.ToString();
+        }
+
+        public int GetFlagValuesAsInt(FlagsEnum flags)
+        {
+            return (int)flags;
+        }
     }
 }
