@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -39,6 +41,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 View = view,
                 ViewName = viewName,
             };
+        }
+
+        public ViewEngineResult EnsureSuccessful()
+        {
+            if (!Success)
+            {
+                var locations = string.Empty;
+                if (SearchedLocations != null)
+                {
+                    locations = Environment.NewLine + string.Join(Environment.NewLine, SearchedLocations);
+                }
+
+                throw new InvalidOperationException(Resources.FormatViewEngine_ViewNotFound(ViewName, locations));
+            }
+
+            return this;
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Act
             await formatter.WriteAsync(outputFormatterContext);
-            
+
             // Assert
             Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
             outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var sampleInput = new DummyClass { SampleInt = 10 };
-            var outputFormatterContext = 
+            var outputFormatterContext =
                 GetOutputFormatterContext(sampleInput, sampleInput.GetType(), "application/xml; charset=utf-16");
             var formatter = new XmlSerializerOutputFormatter(
                 XmlOutputFormatter.GetDefaultXmlWriterSettings());
@@ -277,9 +277,9 @@ namespace Microsoft.AspNet.Mvc.Core
             // Act
             var result = formatter.GetSupportedContentTypes(
                 declaredType, runtimeType, MediaTypeHeaderValue.Parse("application/xml"));
-            
+
             // Assert
-            if(expectedOutput != null)
+            if (expectedOutput != null)
             {
                 Assert.Equal(expectedOutput, Assert.Single(result).RawValue);
             }

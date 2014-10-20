@@ -88,20 +88,9 @@ namespace Microsoft.AspNet.Mvc
 
         private IView FindView(ActionContext context, string viewName)
         {
-            var result = _viewEngine.FindPartialView(context, viewName);
-            if (!result.Success)
-            {
-                var locations = string.Empty;
-                if (result.SearchedLocations != null)
-                {
-                    locations = Environment.NewLine +
-                        string.Join(Environment.NewLine, result.SearchedLocations);
-                }
-
-                throw new InvalidOperationException(Resources.FormatViewEngine_ViewNotFound(viewName, locations));
-            }
-
-            return result.View;
+            return _viewEngine.FindPartialView(context, viewName)
+                              .EnsureSuccessful()
+                              .View;
         }
     }
 }

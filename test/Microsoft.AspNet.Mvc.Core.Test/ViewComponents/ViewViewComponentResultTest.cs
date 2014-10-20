@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
             var view = Mock.Of<IView>();
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                      .Returns(ViewEngineResult.NotFound("some-view", new[] { "location1", "location2" }))
+                      .Returns(ViewEngineResult.NotFound("Components/Object/some-view", new[] { "location1", "location2" }))
                       .Verifiable();
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
             var result = new ViewViewComponentResult(viewEngine.Object, "some-view", viewData);
@@ -118,7 +118,7 @@ bar.";
             var view = Mock.Of<IView>();
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                      .Returns(ViewEngineResult.NotFound("some-view", new[] { "foo", "bar" }))
+                      .Returns(ViewEngineResult.NotFound("Components/Object/some-view", new[] { "foo", "bar" }))
                       .Verifiable();
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
             var result = new ViewViewComponentResult(viewEngine.Object, "some-view", viewData);
