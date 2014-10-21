@@ -50,7 +50,7 @@ namespace MusicStore
             }
 
             // Add Identity services to the services container
-            services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(Configuration);
+            services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(Configuration.GetSubKey("Identity"));
 
             services.ConfigureFacebookAuthentication(options =>
             {
