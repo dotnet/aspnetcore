@@ -166,7 +166,7 @@ namespace Microsoft.Net.Http.Server
 
         public override bool Equals(object obj)
         {
-            return string.Equals(Whole, obj as string, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(Whole, Convert.ToString(obj), StringComparison.OrdinalIgnoreCase);
         }
 
         public override int GetHashCode()

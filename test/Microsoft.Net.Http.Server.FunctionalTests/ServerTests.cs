@@ -181,6 +181,69 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
+        [Fact]
+        public async Task Server_HotAddPrefix_Success()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                var responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                Assert.Equal(string.Empty, context.Request.PathBase);
+                Assert.Equal("/", context.Request.Path);
+                context.Dispose();
+
+                var response = await responseTask;
+                Assert.Equal(string.Empty, response);
+
+                address += "pathbase/";
+                server.UrlPrefixes.Add(address);
+
+                responseTask = SendRequestAsync(address);
+
+                context = await server.GetContextAsync();
+                Assert.Equal("/pathbase", context.Request.PathBase);
+                Assert.Equal("/", context.Request.Path);
+                context.Dispose();
+
+                response = await responseTask;
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [Fact]
+        public async Task Server_HotRemovePrefix_Success()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                address += "pathbase/";
+                server.UrlPrefixes.Add(address);
+                var responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                Assert.Equal("/pathbase", context.Request.PathBase);
+                Assert.Equal("/", context.Request.Path);
+                context.Dispose();
+
+                var response = await responseTask;
+                Assert.Equal(string.Empty, response);
+
+                Assert.True(server.UrlPrefixes.Remove(address));
+
+                responseTask = SendRequestAsync(address);
+
+                context = await server.GetContextAsync();
+                Assert.Equal(string.Empty, context.Request.PathBase);
+                Assert.Equal("/pathbase/", context.Request.Path);
+                context.Dispose();
+
+                response = await responseTask;
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
         private async Task<string> SendRequestAsync(string uri)
         {
             ServicePointManager.DefaultConnectionLimit = 100;

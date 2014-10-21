@@ -85,7 +85,7 @@ namespace Microsoft.Net.Http.Server
 
         private object _internalLock;
 
-        private List<UrlPrefix> _urlPrefixes = new List<UrlPrefix>();
+        private UrlPrefixCollection _urlPrefixes;
 
         // The native request queue
         private long? _requestQueueLength;
@@ -103,6 +103,7 @@ namespace Microsoft.Net.Http.Server
             _state = State.Stopped;
             _internalLock = new object();
 
+            _urlPrefixes = new UrlPrefixCollection(this);
             _timeoutManager = new TimeoutManager(this);
             _authManager = new AuthenticationManager(this);
             _connectionCancellationTokens = new ConcurrentDictionary<ulong, ConnectionCancellation>();
@@ -120,7 +121,7 @@ namespace Microsoft.Net.Http.Server
             get { return _logger; }
         }
 
-        public List<UrlPrefix> UrlPrefixes
+        public UrlPrefixCollection UrlPrefixes
         {
             get { return _urlPrefixes; }
         }
@@ -131,6 +132,11 @@ namespace Microsoft.Net.Http.Server
             {
                 return _requestQueueHandle;
             }
+        }
+
+        internal ulong UrlGroupId
+        {
+            get { return _urlGroupId; }
         }
 
         /// <summary>
@@ -258,29 +264,6 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal void RemoveAll(bool clear)
-        {
-            CheckDisposed();
-            // go through the uri list and unregister for each one of them
-            if (_urlPrefixes.Count > 0)
-            {
-                LogHelper.LogInfo(_logger, "RemoveAll");
-                if (_state == State.Started)
-                {
-                    foreach (UrlPrefix registeredPrefix in _urlPrefixes)
-                    {
-                        // ignore possible failures
-                        InternalRemovePrefix(registeredPrefix.Whole);
-                    }
-                }
-
-                if (clear)
-                {
-                    _urlPrefixes.Clear();
-                }
-            }
-        }
-
         private IntPtr DangerousGetHandle()
         {
             return _requestQueueHandle.DangerousGetHandle();
@@ -379,7 +362,7 @@ namespace Microsoft.Net.Http.Server
                     // All resources are set up correctly. Now add all prefixes.
                     try
                     {
-                        AddAllPrefixes();
+                        _urlPrefixes.RegisterAllPrefixes();
                     }
                     catch (WebListenerException)
                     {
@@ -489,7 +472,7 @@ namespace Microsoft.Net.Http.Server
                     }
                     LogHelper.LogInfo(_logger, "Stop");
 
-                    RemoveAll(false);
+                    _urlPrefixes.UnregisterAllPrefixes();
 
                     _state = State.Stopped;
 
@@ -586,62 +569,6 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private uint InternalAddPrefix(string uriPrefix, int contextId)
-        {
-            uint statusCode = 0;
-
-            statusCode =
-                UnsafeNclNativeMethods.HttpApi.HttpAddUrlToUrlGroup(
-                    _urlGroupId,
-                    uriPrefix,
-                    (ulong)contextId,
-                    0);
-
-            return statusCode;
-        }
-
-        private bool InternalRemovePrefix(string uriPrefix)
-        {
-            uint statusCode = 0;
-
-            statusCode =
-                UnsafeNclNativeMethods.HttpApi.HttpRemoveUrlFromUrlGroup(
-                    _urlGroupId,
-                    uriPrefix,
-                    0);
-
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_NOT_FOUND)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        private void AddAllPrefixes()
-        {
-            // go through the uri list and register for each one of them
-            if (_urlPrefixes.Count > 0)
-            {
-                for (int i = 0; i < _urlPrefixes.Count; i++)
-                {
-                    // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
-                    UrlPrefix registeredPrefix = _urlPrefixes[i];
-                    uint statusCode = InternalAddPrefix(registeredPrefix.Whole, i);
-                    if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
-                    {
-                        if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
-                        {
-                            throw new WebListenerException((int)statusCode, String.Format(Resources.Exception_PrefixAlreadyRegistered, registeredPrefix.Whole));
-                        }
-                        else
-                        {
-                            throw new WebListenerException((int)statusCode);
-                        }
-                    }
-                }
-            }
-        }
-
         internal unsafe bool ValidateRequest(NativeRequestContext requestMemory)
         {
             // Block potential DOS attacks
@@ -713,7 +640,7 @@ namespace Microsoft.Net.Http.Server
 
         private CancellationToken GetConnectionCancellation(ulong connectionId)
         {
-            // Read case is performance senstive 
+            // Read case is performance sensitive 
             ConnectionCancellation cancellation;
             if (!_connectionCancellationTokens.TryGetValue(connectionId, out cancellation))
             {

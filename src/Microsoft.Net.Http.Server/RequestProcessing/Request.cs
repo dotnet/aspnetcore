@@ -106,7 +106,7 @@ namespace Microsoft.Net.Http.Server
                 _cookedUrlQuery = Marshal.PtrToStringUni((IntPtr)cookedUrl.pQueryString, cookedUrl.QueryStringLength / 2);
             }
 
-            UrlPrefix prefix = httpContext.Server.UrlPrefixes[(int)_contextId];
+            UrlPrefix prefix = httpContext.Server.UrlPrefixes.GetPrefix((int)_contextId);
             string orriginalPath = RequestPath;
 
             // These paths are both unescaped already.
