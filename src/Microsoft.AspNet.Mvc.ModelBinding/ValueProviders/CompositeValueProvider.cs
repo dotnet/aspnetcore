@@ -9,18 +9,30 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
+    /// <summary>
+    /// Represents a <see cref="IValueProvider"/> whose values come from a collection of <see cref="IValueProvider"/>s.
+    /// </summary>
     public class CompositeValueProvider : Collection<IValueProvider>, IEnumerableValueProvider, IMetadataAwareValueProvider
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="CompositeValueProvider"/>.
+        /// </summary>
         public CompositeValueProvider()
             : base()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CompositeValueProvider"/>.
+        /// </summary>
+        /// <param name="valueProviders">The sequence of <see cref="IValueProvider"/> to add to this instance of
+        /// <see cref="CompositeValueProvider"/>.</param>
         public CompositeValueProvider(IEnumerable<IValueProvider> valueProviders)
             : base(valueProviders.ToList())
         {
         }
 
+        /// <inheritdoc />
         public virtual async Task<bool> ContainsPrefixAsync(string prefix)
         {
             for (var i = 0; i < Count; i++)
@@ -33,6 +45,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return false;
         }
 
+        /// <inheritdoc />
         public virtual async Task<ValueProviderResult> GetValueAsync(string key)
         {
             // Performance-sensitive
@@ -50,36 +63,37 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return null;
         }
 
+        /// <inheritdoc />
         public virtual async Task<IDictionary<string, string>> GetKeysFromPrefixAsync(string prefix)
         {
             foreach (var valueProvider in this)
             {
-                var result = await GetKeysFromPrefixFromProvider(valueProvider, prefix);
-                if (result != null && result.Count > 0)
+                var enumeratedProvider = valueProvider as IEnumerableValueProvider;
+                if (enumeratedProvider != null)
                 {
-                    return result;
+                    var result = await enumeratedProvider.GetKeysFromPrefixAsync(prefix);
+                    if (result != null && result.Count > 0)
+                    {
+                        return result;
+                    }
                 }
             }
             return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        private static Task<IDictionary<string, string>> GetKeysFromPrefixFromProvider(IValueProvider provider,
-                                                                                       string prefix)
-        {
-            var enumeratedProvider = provider as IEnumerableValueProvider;
-            return (enumeratedProvider != null) ? enumeratedProvider.GetKeysFromPrefixAsync(prefix) : null;
-        }
-
+        /// <inheritdoc />
         protected override void InsertItem(int index, [NotNull] IValueProvider item)
         {
             base.InsertItem(index, item);
         }
 
+        /// <inheritdoc />
         protected override void SetItem(int index, [NotNull] IValueProvider item)
         {
             base.SetItem(index, item);
         }
 
+        /// <inheritdoc />
         public IValueProvider Filter(IValueProviderMetadata valueBinderMetadata)
         {
             var filteredValueProviders = new List<IValueProvider>();

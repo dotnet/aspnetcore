@@ -5,10 +5,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class CompositeValueProviderTests
     {
@@ -19,6 +20,46 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 yield return new object[] { new TestValueProviderMetadata() };
                 yield return new object[] { new DerivedValueBinderMetadata() };
             }
+        }
+
+        [Fact]
+        public async Task GetKeysFromPrefixAsync_ReturnsResultFromFirstValueProviderThatReturnsValues()
+        {
+            // Arrange
+            var provider1 = Mock.Of<IValueProvider>();
+            var dictionary =  new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { "prefix-test", "some-value" },
+            };
+            var provider2 = new Mock<IEnumerableValueProvider>();
+            provider2.Setup(p => p.GetKeysFromPrefixAsync("prefix"))
+                     .Returns(Task.FromResult<IDictionary<string, string>>(dictionary))
+                     .Verifiable();
+            var provider = new CompositeValueProvider(new[] { provider1, provider2.Object });
+
+            // Act
+            var values = await provider.GetKeysFromPrefixAsync("prefix");
+
+            // Assert
+            var result = Assert.Single(values);
+            Assert.Equal("prefix-test", result.Key);
+            Assert.Equal("some-value", result.Value);
+            provider2.Verify();
+        }
+
+        [Fact]
+        public async Task GetKeysFromPrefixAsync_ReturnsEmptyDictionaryIfNoValueProviderReturnsValues()
+        {
+            // Arrange
+            var provider1 = Mock.Of<IValueProvider>();
+            var provider2 = Mock.Of<IValueProvider>();
+            var provider = new CompositeValueProvider(new[] { provider1, provider2 });
+
+            // Act
+            var values = await provider.GetKeysFromPrefixAsync("prefix");
+
+            // Assert
+            Assert.Empty(values);
         }
 
         [Theory]
