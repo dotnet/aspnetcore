@@ -518,7 +518,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var store = new NotImplementedStore();
             var optionsAccessor = new OptionsManager<IdentityOptions>(null);
-            var passwordHasher = new PasswordHasher<TestUser>();
+            var passwordHasher = new PasswordHasher<TestUser>(new PasswordHasherOptionsAccessor());
             var userValidator = new UserValidator<TestUser>();
             var passwordValidator = new PasswordValidator<TestUser>();
 

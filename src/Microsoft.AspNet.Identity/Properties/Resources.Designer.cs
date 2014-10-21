@@ -187,6 +187,22 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
+        /// The provided PasswordHasherCompatibilityMode is invalid.
+        /// </summary>
+        internal static string InvalidPasswordHasherCompatibilityMode
+        {
+            get { return GetString("InvalidPasswordHasherCompatibilityMode"); }
+        }
+
+        /// <summary>
+        /// The provided PasswordHasherCompatibilityMode is invalid.
+        /// </summary>
+        internal static string FormatInvalidPasswordHasherCompatibilityMode()
+        {
+            return GetString("InvalidPasswordHasherCompatibilityMode");
+        }
+
+        /// <summary>
         /// Invalid token.
         /// </summary>
         internal static string InvalidToken

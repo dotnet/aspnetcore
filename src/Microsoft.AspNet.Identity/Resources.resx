@@ -161,6 +161,10 @@
     <value>Email '{0}' is invalid.</value>
     <comment>invalid email</comment>
   </data>
+  <data name="InvalidPasswordHasherCompatibilityMode" xml:space="preserve">
+    <value>The provided PasswordHasherCompatibilityMode is invalid.</value>
+    <comment>Error when the password hasher doesn't understand the format it's being asked to produce.</comment>
+  </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>Invalid token.</value>
     <comment>Error when a token is not recognized</comment>

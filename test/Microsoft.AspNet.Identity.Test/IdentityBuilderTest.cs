@@ -4,6 +4,7 @@
 using System.Security.Claims;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void CanSpecifyPasswordHasherInstance()
         {
-            CanOverride<IPasswordHasher<IdentityUser>>(new PasswordHasher<IdentityUser>());
+            CanOverride<IPasswordHasher<IdentityUser>>(new PasswordHasher<IdentityUser>(new PasswordHasherOptionsAccessor()));
         }
 
         [Fact]
@@ -39,6 +40,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             services.AddIdentity<IdentityUser>();
+            services.Add(OptionsServices.GetDefaultServices());
 
             var provider = services.BuildServiceProvider();
             var userValidator = provider.GetRequiredService<IUserValidator<IdentityUser>>() as UserValidator<IdentityUser>;

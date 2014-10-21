@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Identity.Test
             return new Mock<UserManager<TUser>>(
                 store.Object,
                 options,
-                new PasswordHasher<TUser>(),
+                new PasswordHasher<TUser>(new PasswordHasherOptionsAccessor()),
                 new UserValidator<TUser>(),
                 new PasswordValidator<TUser>(),
                 new UpperInvariantUserNameNormalizer(),
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var options = new OptionsManager<IdentityOptions>(null);
             var validator = new Mock<UserValidator<TUser>>();
-            var userManager = new UserManager<TUser>(store, options, new PasswordHasher<TUser>(), 
+            var userManager = new UserManager<TUser>(store, options, new PasswordHasher<TUser>(new PasswordHasherOptionsAccessor()), 
                 validator.Object, new PasswordValidator<TUser>(), new UpperInvariantUserNameNormalizer(), null);
             validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>(), CancellationToken.None))
                 .Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
