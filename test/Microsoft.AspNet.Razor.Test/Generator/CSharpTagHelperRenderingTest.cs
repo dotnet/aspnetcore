@@ -12,6 +12,23 @@ namespace Microsoft.AspNet.Razor.Test.Generator
     public class CSharpTagHelperRenderingTest : TagHelperTestBase
     {
         [Fact]
+        public void CSharpCodeGenerator_CorrectlyGeneratesMappings_ForRemoveTagHelperDirective()
+        {
+            // Act & Assert
+            RunTagHelperTest("RemoveTagHelperDirective",
+                             designTimeMode: true,
+                             expectedDesignTimePragmas: new List<LineMapping>()
+                             {
+                                    BuildLineMapping(documentAbsoluteIndex: 17,
+                                                     documentLineIndex: 0,
+                                                     generatedAbsoluteIndex: 442,
+                                                     generatedLineIndex: 14,
+                                                     characterOffsetIndex: 17,
+                                                     contentLength: 11)
+                             });
+        }
+
+        [Fact]
         public void CSharpCodeGenerator_CorrectlyGeneratesMappings_ForAddTagHelperDirective()
         {
             // Act & Assert
@@ -65,6 +82,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         [Theory]
         [InlineData("SingleTagHelper")]
         [InlineData("BasicTagHelpers")]
+        [InlineData("BasicTagHelpers.RemoveTagHelper")]
         [InlineData("ComplexTagHelpers")]
         public void TagHelpers_GenerateExpectedOutput(string testType)
         {

@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.Razor.Parser
         internal static ISet<string> DefaultKeywords = new HashSet<string>()
         {
             SyntaxConstants.CSharp.AddTagHelperKeyword,
+            SyntaxConstants.CSharp.RemoveTagHelperKeyword,
             "if",
             "do",
             "try",

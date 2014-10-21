@@ -37,6 +37,30 @@ namespace Microsoft.AspNet.Razor
         }
 
         [Fact]
+        public void AddRemoveTagHelperChunk_AddsChunkToTopLevelCodeTree()
+        {
+            // Arrange
+            var spanFactory = SpanFactory.CreateCsHtml();
+            var builder = new CodeTreeBuilder();
+            var block = new ExpressionBlock();
+            var removeTagHelperDirective = spanFactory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ");
+
+            // Act 
+            builder.StartChunkBlock<ExpressionBlockChunk>(block);
+            builder.AddRemoveTagHelperChunk("some text", removeTagHelperDirective);
+            builder.EndChunkBlock();
+
+            // Assert
+            Assert.Equal(2, builder.CodeTree.Chunks.Count);
+
+            var chunkBlock = Assert.IsType<ExpressionBlockChunk>(builder.CodeTree.Chunks.First());
+            Assert.Empty(chunkBlock.Children);
+
+            var removeTagHelperChunk = Assert.IsType<RemoveTagHelperChunk>(builder.CodeTree.Chunks.Last());
+            Assert.Equal(removeTagHelperChunk.LookupText, "some text");
+        }
+
+        [Fact]
         public void AddLiteralChunk_AddsChunkToCodeTree()
         {
             // Arrange

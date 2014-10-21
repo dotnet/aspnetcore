@@ -302,7 +302,14 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public SpanConstructor AsAddTagHelper(string lookupText)
         {
-            return _self.With(new AddTagHelperCodeGenerator(lookupText));
+            return _self.With(
+                new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: false, lookupText: lookupText));
+        }
+
+        public SpanConstructor AsRemoveTagHelper(string lookupText)
+        {
+            return _self.With(
+                new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: true, lookupText: lookupText));
         }
 
         public SpanConstructor As(ISpanCodeGenerator codeGenerator)
