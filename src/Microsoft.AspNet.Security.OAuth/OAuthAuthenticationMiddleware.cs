@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Security.OAuth
 
             if (Options.StateDataFormat == null)
             {
-                IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
+                IDataProtector dataProtector = dataProtectionProvider.CreateDataProtector(
                     this.GetType().FullName, Options.AuthenticationType, "v1");
                 Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }

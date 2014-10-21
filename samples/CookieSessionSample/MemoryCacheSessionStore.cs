@@ -13,7 +13,7 @@ namespace CookieSessionSample
 
         public MemoryCacheSessionStore()
         {
-            _cache = new MemoryCache();
+            _cache = new MemoryCache(new MemoryCacheOptions());
         }
 
         public async Task<string> StoreAsync(AuthenticationTicket ticket)

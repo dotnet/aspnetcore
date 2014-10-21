@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Security.Twitter
             }
             if (Options.StateDataFormat == null)
             {
-                IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
+                IDataProtector dataProtector = dataProtectionProvider.CreateDataProtector(
                     typeof(TwitterAuthenticationMiddleware).FullName, Options.AuthenticationType, "v1");
                 Options.StateDataFormat = new SecureDataFormat<RequestToken>(
                     Serializers.RequestToken,

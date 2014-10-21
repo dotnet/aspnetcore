@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Security.Cookies
             }
             if (Options.TicketDataFormat == null)
             {
-                IDataProtector dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
+                IDataProtector dataProtector = dataProtectionProvider.CreateDataProtector(
                     typeof(CookieAuthenticationMiddleware).FullName, Options.AuthenticationType, "v1");
                 Options.TicketDataFormat = new TicketDataFormat(dataProtector);
             }

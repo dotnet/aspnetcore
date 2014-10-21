@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Security.OAuth
 
             if (Options.AccessTokenFormat == null)
             {
-                var dataProtector = DataProtectionHelpers.CreateDataProtector(dataProtectionProvider,
+                IDataProtector dataProtector = dataProtectionProvider.CreateDataProtector(
                     this.GetType().FullName, Options.AuthenticationType, "v1");
                 Options.AccessTokenFormat = new TicketDataFormat(dataProtector);
             }
