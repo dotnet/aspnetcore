@@ -46,9 +46,14 @@ functions
             "Entropy",
         };
         
+        // Doesn't build on Mono since their contracts don't match
+        string[] excludeReposOnMono = new[] { "DataCommon", "DataCommon.SQLite", "Helios" };
+
         static bool useHttps = UseHttps(BASE_DIR);
         static string gitHubUriPrefix = useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/";
     }
+
+var buildTarget = "compile"
 
 @{
     var kBuildVersion = Environment.GetEnvironmentVariable("K_BUILD_VERSION");
@@ -81,6 +86,26 @@ functions
         {
             CloneOrUpdate(repo);
         }
+    }
+
+#smoke-test-mono .pull .fix-project-json .change-default-build-target .only-compile
+
+#fix-project-json
+    @{
+        repos = repos.Except(excludeReposOnMono).ToArray();
+    }
+    -// Fix project.json to remove .Net portable references
+    for each='var repo in repos'
+        for each='var file in Files.Include(repo + "/**"  +  "/project.json")'
+            update-file updateFile='${file}'
+              @{
+                  updateText = updateText.Replace(".NETPortable,Version=4.6,Profile=Profile151", "foo");
+                  updateText = updateText.Replace(".NETPortable,Version=v4.6,Profile=Profile151", "foo");
+              }
+
+#change-default-build-target
+    @{
+        buildTarget = "verify";
     }
 
 #init
@@ -153,11 +178,11 @@ functions
                 Log.Info(string.Format("Building {0}", repo));
                 if (IsMono)
                 {
-                    Exec("build.sh", "compile", repo);
+                    Exec("build.sh", buildTarget, repo);
                 }
                 else
                 {
-                    Exec("build.cmd", "compile", repo);
+                    Exec("build.cmd", buildTarget, repo);
                 }
                 Log.Info(string.Format("Build {0} succeeded", repo));
             }
