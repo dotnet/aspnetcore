@@ -6,7 +6,7 @@
         <a class="btn btn-default" href="#/albums/new">Create new</a>
     </p>
 
-    <alert ng-show="viewModel.alert" type="viewModel.alert.type" close="viewModel.clearAlert()">
+    <alert ng-show="viewModel.alert" type="{{ viewModel.alert.type.toString() }}" close="viewModel.clearAlert()">
         {{ viewModel.alert.message }}
         <ul ng-show="viewModel.alert.modelErrors">
             <li ng-repeat="modelError in viewModel.alert.modelErrors">{{ modelError.ErrorMessage }}</li>
@@ -18,7 +18,7 @@
             <tr>
                 <th>
                     <a title="Sort by this column" href="#/albums" ng-click="viewModel.sortBy('@Html.NameFor(m => m.Genre.Name)')">@Html.DisplayNameFor(m => m.Genre)</a>
-                    
+
                     <span class="glyphicon glyphicon-sort-by-alphabet" title="Sorted ascending" ng-show="viewModel.sortColumn == '@Html.NameFor(m => m.Genre.Name)' && !viewModel.sortDescending"></span>
                     <span class="glyphicon glyphicon-sort-by-alphabet-alt" title="Sorted descending" ng-show="viewModel.sortColumn == '@Html.NameFor(m => m.Genre.Name)' && viewModel.sortDescending"></span>
                 </th>
@@ -67,8 +67,8 @@
             </tr>
         </tbody>
     </table>
-    <pagination class="pagination-sm" on-select-page="viewModel.loadPage(page)"
-                page="viewModel.currentPage" items-per-page="viewModel.pageSize"
+    <pagination class="pagination-sm" ng-model="viewModel.currentPage" ng-change="viewModel.loadPage()"
+                items-per-page="viewModel.pageSize"
                 total-items="viewModel.totalCount" max-size="6"
                 rotate="false" boundary-links="true"></pagination>
     <p>
