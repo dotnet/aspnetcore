@@ -126,14 +126,9 @@ namespace Microsoft.AspNet.Identity
             return null;
         }
 
-        public virtual async Task<SignInStatus> PasswordSignInAsync(string userName, string password, 
+        public virtual async Task<SignInStatus> PasswordSignInAsync(TUser user, string password,
             bool isPersistent, bool shouldLockout, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var user = await UserManager.FindByNameAsync(userName, cancellationToken);
-            if (user == null)
-            {
-                return SignInStatus.Failure;
-            }
             if (await IsLockedOut(user, cancellationToken))
             {
                 return SignInStatus.LockedOut;
@@ -153,6 +148,17 @@ namespace Microsoft.AspNet.Identity
                 }
             }
             return SignInStatus.Failure;
+        }
+
+        public virtual async Task<SignInStatus> PasswordSignInAsync(string userName, string password, 
+            bool isPersistent, bool shouldLockout, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var user = await UserManager.FindByNameAsync(userName, cancellationToken);
+            if (user == null)
+            {
+                return SignInStatus.Failure;
+            }
+            return await PasswordSignInAsync(user, password, isPersistent, shouldLockout, cancellationToken);
         }
 
         private static ClaimsIdentity CreateIdentity(TwoFactorAuthenticationInfo info)
