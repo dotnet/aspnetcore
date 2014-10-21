@@ -13,9 +13,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         public Libuv()
         {
             IsWindows = PlatformApis.IsWindows();
+            if (!IsWindows)
+            {
+                IsDarwin = PlatformApis.IsDarwin();
+            }
         }
 
         public bool IsWindows;
+        public bool IsDarwin;
+
         public Func<string, IntPtr> LoadLibrary;
         public Func<IntPtr, bool> FreeLibrary;
         public Func<IntPtr, string, IntPtr> GetProcAddress;

@@ -44,14 +44,18 @@ namespace Microsoft.AspNet.Server.Kestrel
                         architecture, 
                         "libuv.dll");
                 }
-                else
+                else if (Libuv.IsDarwin)
                 {
                     libraryPath = Path.Combine(
                         libraryPath,
-                        "native", 
+                        "native",
                         "darwin",
-                        "universal", 
+                        "universal",
                         "libuv.dylib");
+                }
+                else
+                {
+                    libraryPath = "libuv.so.1";
                 }
             }
             Libuv.Load(libraryPath);
