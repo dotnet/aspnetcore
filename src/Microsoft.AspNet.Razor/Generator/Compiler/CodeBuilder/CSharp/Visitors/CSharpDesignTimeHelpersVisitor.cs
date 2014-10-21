@@ -60,6 +60,16 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(AddTagHelperChunk chunk)
         {
+            VisitAddOrRemoveTagHelperChunk(chunk.LookupText, chunk);
+        }
+
+        protected override void Visit(RemoveTagHelperChunk chunk)
+        {
+            VisitAddOrRemoveTagHelperChunk(chunk.LookupText, chunk);
+        }
+
+        private void VisitAddOrRemoveTagHelperChunk(string lookupText, Chunk chunk)
+        {
             // We should always be in design time mode because of the calling AcceptTree method verification.
             Debug.Assert(Context.Host.DesignTimeMode);
 
@@ -71,12 +81,12 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             Writer.WriteStartAssignment(TagHelperDirectiveSyntaxHelper);
 
-            // The parsing mechanism for the AddTagHelperChunk (CSharpCodeParser.TagHelperDirective()) removes quotes
-            // that surround the chunk.LookupText.
+            // The parsing mechanism for the add/remove TagHelper chunk (CSharpCodeParser.TagHelperDirective()) 
+            // removes quotes that surround the lookupText.
             _csharpCodeVisitor.CreateExpressionCodeMapping(
                 string.Format(
                     CultureInfo.InvariantCulture,
-                    "\"{0}\"", chunk.LookupText),
+                    "\"{0}\"", lookupText),
                 chunk);
 
             Writer.WriteLine(";");

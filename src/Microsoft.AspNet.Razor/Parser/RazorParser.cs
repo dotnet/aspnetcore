@@ -210,8 +210,8 @@ namespace Microsoft.AspNet.Razor.Parser
         /// <returns></returns>
         protected virtual IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors([NotNull] Block documentRoot)
         {
-            var tagHelperRegistrationVisitor = new TagHelperRegistrationVisitor(TagHelperDescriptorResolver);
-            return tagHelperRegistrationVisitor.GetDescriptors(documentRoot);
+            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(TagHelperDescriptorResolver);
+            return addOrRemoveTagHelperSpanVisitor.GetDescriptors(documentRoot);
         }
 
         private static IEnumerable<ISyntaxTreeRewriter> GetDefaultRewriters(ParserBase markupParser)

@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             public static readonly int UsingKeywordLength = 5;
             public static readonly string AddTagHelperKeyword = "addtaghelper";
+            public static readonly string RemoveTagHelperKeyword = "removetaghelper";
             public static readonly string InheritsKeyword = "inherits";
             public static readonly string FunctionsKeyword = "functions";
             public static readonly string SectionKeyword = "section";

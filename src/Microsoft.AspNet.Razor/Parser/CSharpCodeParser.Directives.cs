@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void SetupDirectives()
         {
             MapDirectives(AddTagHelperDirective, SyntaxConstants.CSharp.AddTagHelperKeyword);
+            MapDirectives(RemoveTagHelperDirective, SyntaxConstants.CSharp.RemoveTagHelperKeyword);
             MapDirectives(InheritsDirective, SyntaxConstants.CSharp.InheritsKeyword);
             MapDirectives(FunctionsDirective, SyntaxConstants.CSharp.FunctionsKeyword);
             MapDirectives(SectionDirective, SyntaxConstants.CSharp.SectionKeyword);
@@ -30,10 +31,12 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected virtual void AddTagHelperDirective()
         {
-            TagHelperDirective(SyntaxConstants.CSharp.AddTagHelperKeyword, (lookupText) =>
-            {
-                return new AddTagHelperCodeGenerator(lookupText);
-            });
+            TagHelperDirective(SyntaxConstants.CSharp.AddTagHelperKeyword, removeTagHelperDescriptors: false);
+        }
+
+        protected virtual void RemoveTagHelperDirective()
+        {
+            TagHelperDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword, removeTagHelperDescriptors: true);
         }
 
         protected virtual void LayoutDirective()
@@ -508,7 +511,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Output(SpanKind.Code);
         }
 
-        private void TagHelperDirective(string keyword, Func<string, SpanCodeGenerator> codeGeneratorBuilder)
+        private void TagHelperDirective(string keyword, bool removeTagHelperDescriptors)
         {
             AssertDirective(keyword);
 
@@ -550,7 +553,8 @@ namespace Microsoft.AspNet.Razor.Parser
                     // renders the C# to colorize the user provided value. We trim the quotes around the user's value
                     // so when we render the code we can project the users value into double quotes to not invoke C# 
                     // IntelliSense. 
-                    Span.CodeGenerator = codeGeneratorBuilder(rawValue.Trim('"'));
+                    Span.CodeGenerator = 
+                        new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors, rawValue.Trim('"'));
                 }
 
                 // We expect the directive to be surrounded in quotes.
