@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                yield return typeof(StaticActionDiscoveryConventions).GetTypeInfo().Assembly;
+                yield return typeof(StaticAssemblyProvider).GetTypeInfo().Assembly;
             }
         }
     }

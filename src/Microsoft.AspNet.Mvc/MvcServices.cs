@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.ApplicationModel;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Internal;
@@ -44,9 +45,17 @@ namespace Microsoft.AspNet.Mvc
             //
             // Core action discovery, filters and action execution.
             //
-            yield return describe.Transient<IActionDiscoveryConventions, DefaultActionDiscoveryConventions>();
+            // These are consumed only when creating action descriptors, then they can be de-allocated
+            yield return describe.Transient<IControllerModelBuilder, DefaultControllerModelBuilder>();
+            yield return describe.Transient<IActionModelBuilder, DefaultActionModelBuilder>();
+
+            // This accesses per-request services to activate the controller
             yield return describe.Transient<IControllerFactory, DefaultControllerFactory>();
+
+            // This has a cache, so it needs to be a singleton
             yield return describe.Singleton<IControllerActivator, DefaultControllerActivator>();
+
+            // This accesses per-reqest services
             yield return describe.Transient<IActionInvokerFactory, ActionInvokerFactory>();
 
             // This provider needs access to the per-request services, but might be used many times for a given

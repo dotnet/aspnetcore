@@ -767,8 +767,6 @@ namespace Microsoft.AspNet.Mvc.Test
                 "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' - Template: 'AttributeRouted'" + Environment.NewLine +
                 "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' - Template: '(none)'" + Environment.NewLine +
-                "Action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
-                "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' - Template: '(none)'" + Environment.NewLine +
                 "A method 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "AttributeAndNonAttributeRoutedActionsOnSameMethodController.Method' that defines attribute routed actions must not" +
                 " have attributes that implement 'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' and do not implement" +
@@ -1153,7 +1151,7 @@ namespace Microsoft.AspNet.Mvc.Test
             parameter.Attributes.Add(parameterConvention.Object);
 
             // Act
-            provider.ApplyConventions(model);
+            ApplicationModelConventions.ApplyConventions(model, options.Options.ApplicationModelConventions);
 
             // Assert
             Assert.Equal(4, sequence);
@@ -1306,7 +1304,7 @@ namespace Microsoft.AspNet.Mvc.Test
             TypeInfo controllerTypeInfo,
             IEnumerable<IFilter> filters = null)
         {
-            var conventions = new StaticActionDiscoveryConventions(controllerTypeInfo);
+            var modelBuilder = new StaticControllerModelBuilder(controllerTypeInfo);
 
             var assemblyProvider = new Mock<IAssemblyProvider>();
             assemblyProvider
@@ -1315,7 +1313,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             var provider = new ControllerActionDescriptorProvider(
                 assemblyProvider.Object,
-                conventions,
+                modelBuilder,
                 new TestGlobalFilterProvider(filters),
                 new MockMvcOptionsAccessor());
 
@@ -1325,7 +1323,7 @@ namespace Microsoft.AspNet.Mvc.Test
         private ControllerActionDescriptorProvider GetProvider(
             params TypeInfo[] controllerTypeInfo)
         {
-            var conventions = new StaticActionDiscoveryConventions(controllerTypeInfo);
+            var modelBuilder = new StaticControllerModelBuilder(controllerTypeInfo);
 
             var assemblyProvider = new Mock<IAssemblyProvider>();
             assemblyProvider
@@ -1334,7 +1332,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             var provider = new ControllerActionDescriptorProvider(
                 assemblyProvider.Object,
-                conventions,
+                modelBuilder,
                 new TestGlobalFilterProvider(),
                 new MockMvcOptionsAccessor());
 
@@ -1345,7 +1343,7 @@ namespace Microsoft.AspNet.Mvc.Test
             TypeInfo type, 
             IOptions<MvcOptions> options)
         {
-            var conventions = new StaticActionDiscoveryConventions(type);
+            var modelBuilder = new StaticControllerModelBuilder(type);
 
             var assemblyProvider = new Mock<IAssemblyProvider>();
             assemblyProvider
@@ -1354,14 +1352,14 @@ namespace Microsoft.AspNet.Mvc.Test
 
             return new ControllerActionDescriptorProvider(
                 assemblyProvider.Object,
-                conventions,
+                modelBuilder,
                 new TestGlobalFilterProvider(),
                 options);
         }
 
         private IEnumerable<ActionDescriptor> GetDescriptors(params TypeInfo[] controllerTypeInfos)
         {
-            var conventions = new StaticActionDiscoveryConventions(controllerTypeInfos);
+            var modelBuilder = new StaticControllerModelBuilder(controllerTypeInfos);
 
             var assemblyProvider = new Mock<IAssemblyProvider>();
             assemblyProvider
@@ -1370,7 +1368,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             var provider = new ControllerActionDescriptorProvider(
                 assemblyProvider.Object,
-                conventions,
+                modelBuilder,
                 new TestGlobalFilterProvider(),
                 new MockMvcOptionsAccessor());
 

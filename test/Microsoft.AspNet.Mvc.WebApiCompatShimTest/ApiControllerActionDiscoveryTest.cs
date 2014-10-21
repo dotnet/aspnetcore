@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ApplicationModel;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.DependencyInjection;
@@ -345,8 +346,6 @@ namespace System.Web.Http
                 .SetupGet(fp => fp.Filters)
                 .Returns(new List<IFilter>());
 
-            var conventions = new NamespaceLimitedActionDiscoveryConventions();
-
             var options = new MvcOptions();
 
             var setup = new WebApiCompatShimOptionsSetup();
@@ -359,7 +358,7 @@ namespace System.Web.Http
 
             var provider = new ControllerActionDescriptorProvider(
                 assemblyProvider.Object,
-                conventions,
+                new NamespaceLimitedActionDiscoveryConventions(),
                 filterProvider.Object,
                 optionsAccessor.Object);
 
@@ -370,9 +369,14 @@ namespace System.Web.Http
                 });
         }
 
-        private class NamespaceLimitedActionDiscoveryConventions : DefaultActionDiscoveryConventions
+        private class NamespaceLimitedActionDiscoveryConventions : DefaultControllerModelBuilder
         {
-            public override bool IsController(TypeInfo typeInfo)
+            public NamespaceLimitedActionDiscoveryConventions()
+                : base(new DefaultActionModelBuilder())
+            {
+            }
+
+            protected override bool IsController(TypeInfo typeInfo)
             {
                 return
                     typeInfo.Namespace == "System.Web.Http.TestControllers" &&
