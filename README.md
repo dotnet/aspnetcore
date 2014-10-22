@@ -41,9 +41,9 @@ The first thing we need to do is setup the tools required to build and run an ap
 
 #### Windows
 To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges):
-```powershell
-@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
-```
+
+*@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"*
+
 After the script has run open a new command prompt to start using KVM.
 
 #### OS X:
