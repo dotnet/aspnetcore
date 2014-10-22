@@ -40,6 +40,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol
         private long _frameBytesRemaining;
         private int? _firstDataOpCode;
         private int _dataUnmaskOffset;
+        private Utilities.Utf8MessageState _incomingUtf8MessageState = new Utilities.Utf8MessageState();
 
         public CommonWebSocket(Stream stream, string subProtocol, TimeSpan keepAliveInterval, int receiveBufferSize, bool maskOutput, bool useZeroMask, bool unmaskInput)
         {
@@ -251,6 +252,14 @@ namespace Microsoft.AspNet.WebSockets.Protocol
 
             WebSocketReceiveResult result;
             WebSocketMessageType messageType = Utilities.GetMessageType(opCode);
+
+            if (messageType == WebSocketMessageType.Text
+                && !Utilities.TryValidateUtf8(new ArraySegment<byte>(buffer.Array, buffer.Offset, bytesToCopy), _frameInProgress.Fin, _incomingUtf8MessageState))
+            {
+                await CloseOutputAsync(WebSocketCloseStatus.InvalidPayloadData, string.Empty, cancellationToken);
+                throw new InvalidOperationException("An invalid UTF-8 payload was received.");
+            }
+
             if (bytesToCopy == _frameBytesRemaining)
             {
                 result = new WebSocketReceiveResult(bytesToCopy, messageType, _frameInProgress.Fin);

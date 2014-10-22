@@ -69,5 +69,77 @@ namespace Microsoft.AspNet.WebSockets.Protocol
                 default: throw new NotImplementedException(opCode.ToString());
             }
         }
+
+        // For now this is stateless and does not handle sequences spliced across messages.
+        // http://etutorials.org/Programming/secure+programming/Chapter+3.+Input+Validation/3.12+Detecting+Illegal+UTF-8+Characters/
+        public static bool TryValidateUtf8(ArraySegment<byte> arraySegment, bool endOfMessage, Utf8MessageState state)
+        {
+            for (int i = arraySegment.Offset; i < arraySegment.Offset + arraySegment.Count; )
+            {
+                if (!state.SequenceInProgress)
+                {
+                    state.SequenceInProgress = true;
+                    byte b = arraySegment.Array[i];
+                    if ((b & 0x80) == 0) // 0bbbbbbb, single byte
+                    {
+                        state.AdditionalBytesExpected = 0;
+                    }
+                    else if ((b & 0xC0) == 0x80)
+                    {
+                        return false; // Misplaced 10bbbbbb byte. This cannot be the first byte.
+                    }
+                    else if ((b & 0xE0) == 0xC0) // 110bbbbb 10bbbbbb
+                    {
+                        state.AdditionalBytesExpected = 1;
+                    }
+                    else if ((b & 0xF0) == 0xE0) // 1110bbbb 10bbbbbb 10bbbbbb
+                    {
+                        state.AdditionalBytesExpected = 2;
+                    }
+                    else if ((b & 0xF8) == 0xF0) // 11110bbb 10bbbbbb 10bbbbbb 10bbbbbb
+                    {
+                        state.AdditionalBytesExpected = 3;
+                    }
+                    else if ((b & 0xFC) == 0xF8) // 111110bb 10bbbbbb 10bbbbbb 10bbbbbb 10bbbbbb
+                    {
+                        state.AdditionalBytesExpected = 4;
+                    }
+                    else if ((b & 0xFE) == 0xFC) // 1111110b 10bbbbbb 10bbbbbb 10bbbbbb 10bbbbbb 10bbbbbb
+                    {
+                        state.AdditionalBytesExpected = 5;
+                    }
+                    else // 11111110 && 11111111 are not valid
+                    {
+                        return false;
+                    }
+                    i++;
+                }
+                while (state.AdditionalBytesExpected > 0 && i < arraySegment.Offset + arraySegment.Count)
+                {
+                    byte b = arraySegment.Array[i];
+                    if ((b & 0xC0) != 0x80)
+                    {
+                        return false;
+                    }
+                    state.AdditionalBytesExpected--;
+                    i++;
+                }
+                if (state.AdditionalBytesExpected == 0)
+                {
+                    state.SequenceInProgress = false;
+                }
+            }
+            if (endOfMessage && state.SequenceInProgress)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public class Utf8MessageState
+        {
+            public bool SequenceInProgress { get; set; }
+            public int AdditionalBytesExpected { get; set; }
+        }
     }
 }
