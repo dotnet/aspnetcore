@@ -209,6 +209,12 @@ namespace Microsoft.AspNet.WebSockets.Protocol
             }
         }
 
+        // bits 1-3.
+        internal bool AreReservedSet()
+        {
+            return (_header[0] & 0x70) != 0;
+        }
+
         // Given the second bytes of a frame, calculate how long the whole frame header should be.
         // Range 2-12 bytes
         public static int CalculateFrameHeaderSize(byte b2)
