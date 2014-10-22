@@ -5,14 +5,18 @@ using Microsoft.AspNet.Mvc;
 
 namespace FiltersWebSite
 {
-    public class PassThroughResultFilter : ResultFilterAttribute
+    public class ControllerResultFilter : ResultFilterAttribute
     {
         public override void OnResultExecuting(ResultExecutingContext context)
         {
             if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ProductsController.GetPrice")
             {
                 context.HttpContext.Response.Headers.Append("filters",
-                    "On Action Result Filter - OnResultExecuting");
+                    "On Controller Result Filter - OnResultExecuting");
+            }
+            else
+            {
+                context.Result = Helpers.GetContentResult(context.Result, "Controller Result filter");
             }
         }
 
@@ -21,7 +25,7 @@ namespace FiltersWebSite
             if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ProductsController.GetPrice")
             {
                 context.HttpContext.Response.Headers.Append("filters",
-                    "On Action Result Filter - OnResultExecuted");
+                    "On Controller Result Filter - OnResultExecuted");
             }
         }
     }

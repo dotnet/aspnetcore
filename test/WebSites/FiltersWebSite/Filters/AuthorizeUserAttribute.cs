@@ -10,6 +10,12 @@ namespace FiltersWebSite
     {
         public override void OnAuthorization(AuthorizationContext context)
         {
+            if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ProductsController.GetPrice")
+            {
+                context.HttpContext.Response.Headers.Append("filters",
+                    "Authorize Filter On Action - OnAuthorization");
+            }
+
             context.HttpContext.User = new ClaimsPrincipal(
                 new ClaimsIdentity(
                     new Claim[] { 

@@ -7,5 +7,14 @@ namespace FiltersWebSite
 {
     public class PassThroughActionFilter : ActionFilterAttribute
     {
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            context.HttpContext.Response.Headers.Append("filters", "On Action Action Filter - OnActionExecuting");
+        }
+
+        public override void OnActionExecuted(ActionExecutedContext context)
+        {
+            context.HttpContext.Response.Headers.Append("filters", "On Action Action Filter - OnActionExecuted");
+        }
     }
 }

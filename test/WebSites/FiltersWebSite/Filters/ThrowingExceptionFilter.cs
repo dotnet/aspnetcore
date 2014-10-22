@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Mvc;
 
 namespace FiltersWebSite
 {
-    public class GlobalExceptionFilter : IExceptionFilter
+    public class ThrowingExceptionFilter : ExceptionFilterAttribute
     {
-        public void OnException(ExceptionContext context)
+        public override void OnException(ExceptionContext context)
         {
-            context.Result = Helpers.GetContentResult(context.Result, "GlobalExceptionFilter.OnException");
+            throw new InvalidProgramException("Exception Filter threw");
         }
     }
 }

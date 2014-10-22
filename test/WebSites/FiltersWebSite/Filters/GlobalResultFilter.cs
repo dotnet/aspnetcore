@@ -5,23 +5,28 @@ using Microsoft.AspNet.Mvc;
 
 namespace FiltersWebSite
 {
-    public class PassThroughResultFilter : ResultFilterAttribute
+    public class GlobalResultFilter : IResultFilter
     {
-        public override void OnResultExecuting(ResultExecutingContext context)
+        public void OnResultExecuted(ResultExecutedContext context)
         {
             if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ProductsController.GetPrice")
             {
                 context.HttpContext.Response.Headers.Append("filters",
-                    "On Action Result Filter - OnResultExecuting");
+                    "Global Result Filter - OnResultExecuted");
             }
         }
 
-        public override void OnResultExecuted(ResultExecutedContext context)
+        public void OnResultExecuting(ResultExecutingContext context)
         {
+            if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ResultFilterController.GetHelloWorld")
+            {
+                context.Result = Helpers.GetContentResult(context.Result, "GlobalResultFilter.OnResultExecuting");
+            }
+
             if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ProductsController.GetPrice")
             {
                 context.HttpContext.Response.Headers.Append("filters",
-                    "On Action Result Filter - OnResultExecuted");
+                    "Global Result Filter - OnResultExecuted");
             }
         }
     }

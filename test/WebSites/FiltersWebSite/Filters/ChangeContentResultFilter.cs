@@ -5,11 +5,11 @@ using Microsoft.AspNet.Mvc;
 
 namespace FiltersWebSite
 {
-    public class GlobalExceptionFilter : IExceptionFilter
+    public class ChangeContentResultFilter : ResultFilterAttribute
     {
-        public void OnException(ExceptionContext context)
+        public override void OnResultExecuting(ResultExecutingContext context)
         {
-            context.Result = Helpers.GetContentResult(context.Result, "GlobalExceptionFilter.OnException");
+            context.Result = Helpers.GetContentResult(context.Result, "Result filter");
         }
     }
 }

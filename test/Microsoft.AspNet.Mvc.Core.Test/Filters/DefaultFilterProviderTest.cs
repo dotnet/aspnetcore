@@ -135,10 +135,10 @@ namespace Microsoft.AspNet.Mvc.Filters
         {
             // Arrange
             var filter1 = new Mock<IOrderedFilter>();
-            filter1.SetupGet(f => f.Order).Returns(int.MaxValue);
+            filter1.SetupGet(f => f.Order).Returns(int.MinValue);
 
             var filter2 = new Mock<IOrderedFilter>();
-            filter2.SetupGet(f => f.Order).Returns(int.MaxValue);
+            filter2.SetupGet(f => f.Order).Returns(int.MinValue);
 
             var context = CreateFilterContext(new List<FilterItem>()
             {
@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.Filters
             Assert.Same(controller, controllerItem.Filter);
             Assert.Same(controller, controllerItem.Descriptor.Filter);
             Assert.Equal(FilterScope.Controller, controllerItem.Descriptor.Scope);
-            Assert.Equal(Int32.MaxValue, controllerItem.Descriptor.Order);
+            Assert.Equal(int.MinValue, controllerItem.Descriptor.Order);
         }
 
         [Fact]

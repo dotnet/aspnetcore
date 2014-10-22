@@ -5,11 +5,11 @@ using Microsoft.AspNet.Mvc;
 
 namespace FiltersWebSite
 {
-    public class GlobalExceptionFilter : IExceptionFilter
+    public class ControllerAuthorizationFilter : AuthorizeUserAttribute
     {
-        public void OnException(ExceptionContext context)
+        public override void OnAuthorization(AuthorizationContext context)
         {
-            context.Result = Helpers.GetContentResult(context.Result, "GlobalExceptionFilter.OnException");
+            context.HttpContext.Response.Headers.Append("filters", "On Controller Authorization Filter - OnAuthorization");
         }
     }
 }

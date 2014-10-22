@@ -125,8 +125,8 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                // Controller-filter methods run closest the action by default.
-                return int.MaxValue;
+                // Controller-filter methods run farthest the action by default.
+                return int.MinValue;
             }
         }
 

@@ -5,11 +5,11 @@ using Microsoft.AspNet.Mvc;
 
 namespace FiltersWebSite
 {
-    public class GlobalExceptionFilter : IExceptionFilter
+    public class ShortCircuitExceptionFilter : ExceptionFilterAttribute
     {
-        public void OnException(ExceptionContext context)
+        public override void OnException(ExceptionContext context)
         {
-            context.Result = Helpers.GetContentResult(context.Result, "GlobalExceptionFilter.OnException");
+            context.Exception = null;
         }
     }
 }

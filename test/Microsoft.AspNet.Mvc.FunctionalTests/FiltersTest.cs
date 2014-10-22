@@ -6,7 +6,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -30,30 +29,31 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<decimal>(body);
-
-            Assert.Equal(19.95m, result);
 
             var filters = response.Headers.GetValues("filters");
             Assert.Equal(
-                new string[]
-                {
-                    // This one uses order to set itself 'first' even though it appears on the controller
-                    "FiltersWebSite.PassThroughActionFilter",
-
-                    // Configured as global with default order
-                    "FiltersWebSite.GlobalExceptionFilter",
-
-                    // Configured on the controller with default order
-                    "FiltersWebSite.PassThroughResultFilter",
-
-                    // Configured on the action with default order
-                    "FiltersWebSite.PassThroughActionFilter",
-
-                    // The controller itself
-                    "FiltersWebSite.ProductsController",
-                },
-                filters);
+                "Controller Override - OnAuthorization," +
+                "Global Authorization Filter - OnAuthorization," +
+                "On Controller Authorization Filter - OnAuthorization," +
+                "Authorize Filter On Action - OnAuthorization," +
+                "Controller Override - OnActionExecuting," +
+                "Global Action Filter - OnActionExecuting," +
+                "On Controller Action Filter - OnActionExecuting," +
+                "On Action Action Filter - OnActionExecuting," +
+                "Executing Action," +
+                "On Action Action Filter - OnActionExecuted," +
+                "On Controller Action Filter - OnActionExecuted," +
+                "Global Action Filter - OnActionExecuted," +
+                "Controller Override - OnActionExecuted," +
+                "Controller Override - OnResultExecuting," +
+                "Global Result Filter - OnResultExecuted," +
+                "On Controller Result Filter - OnResultExecuting," +
+                "On Action Result Filter - OnResultExecuting," +
+                "On Action Result Filter - OnResultExecuted," +
+                "On Controller Result Filter - OnResultExecuted," +
+                "Global Result Filter - OnResultExecuted," +
+                "Controller Override - OnResultExecuted",
+                (filters as string[])[0]);
         }
 
         [Fact]
@@ -71,6 +71,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task AllowsAnonymousUsersToAccessController()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/RandomNumber/GetRandomNumber");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("4", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
         public async Task CanAuthorizeParticularUsers()
         {
             // Arrange
@@ -78,26 +93,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/AuthorizeUser/ReturnHelloWorldOnlyForAuthorizedUser");
+            var response = await client.GetAsync(
+                "http://localhost/AuthorizeUser/ReturnHelloWorldOnlyForAuthorizedUser");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Hello World!", await response.Content.ReadAsStringAsync());
-        }
-
-        [Fact]
-        public async Task ExceptionFilterHandlesAnException()
-        {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Exception/GetError?error=RandomError");
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("GlobalExceptionFilter.OnException", await response.Content.ReadAsStringAsync());
         }
 
         [Fact]
@@ -203,6 +204,306 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var result = response.Headers.GetValues("OnResultExecuted");
             Assert.Equal(new string[] { "ResultExecutedSuccessfully" }, result);
+        }
+
+        // Verifies result filter is executed after action filter.
+        [Fact]
+        public async Task OrderOfExecutionOfFilters_WhenOrderAttribute_IsNotMentioned()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/GetSampleString");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Result filter, Action Filter - OnActionExecuted, From Controller",
+                await response.Content.ReadAsStringAsync());
+        }
+
+        // Action filter handles the exception thrown in the action.
+        // Verifies if Result filter is executed after that.
+        [Fact]
+        public async Task ExceptionsHandledInActionFilters_WillNotShortCircuitResultFilters()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/ThrowExceptionAndHandleInActionFilter");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Result filter, Hi from Action Filter", await response.Content.ReadAsStringAsync());
+        }
+
+        // Exception filter present on the Action handles the exception, followed by Global Exception filter.
+        // Verifies that Result filter is skipped.
+        [Fact]
+        public async Task ExceptionFilter_OnAction_ShortCircuitsResultFilters()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/ThrowExcpetion");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(
+                "GlobalExceptionFilter.OnException, Action Exception Filter",
+                await response.Content.ReadAsStringAsync());
+        }
+
+        // No Exception filter is present on Action, Controller.
+        // Verifies if Global exception filter handles the exception.
+        [Fact]
+        public async Task GlobalExceptionFilter_HandlesAnException()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Exception/GetError?error=RandomError");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("GlobalExceptionFilter.OnException", await response.Content.ReadAsStringAsync());
+        }
+
+        // Controller Override, Action, Controller, and a Global Exception filters are present.
+        // Verifies they are executed in the above mentioned order.
+        [Fact]
+        public async Task ExceptionFilter_Scope()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ExceptionOrder/GetError");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(
+                "OnException implemented in Controller, " +
+                "GlobalExceptionFilter.OnException, " +
+                "ControllerExceptionFilter.OnException, " +
+                "Action Exception Filter",
+                await response.Content.ReadAsStringAsync());
+        }
+
+        // Action, Controller have an action filter.
+        // Verifies they are executed in the mentioned order.
+        [Fact]
+        public async Task ActionFilter_Scope()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ActionFilter/GetHelloWorld");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(
+                "Controller override - OnActionExecuted, " +
+                "GlobalActionFilter.OnActionExecuted, " +
+                "Controller Action filter - OnActionExecuted, " +
+                "Action Filter - OnActionExecuted, " +
+                "Hello World, " + // Return value from Action
+                "Action Filter - OnActionExecuting, " +
+                "Controller Action filter - OnActionExecuting, " +
+                "GlobalActionFilter.OnActionExecuting, " +
+                "Controller override - OnActionExecuting",
+                await response.Content.ReadAsStringAsync());
+        }
+
+        // Action, Controller have an result filter.
+        // Verifies that Controller Result filter is executed before Action filter.
+        [Fact]
+        public async Task ResultFilter_Scope()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ResultFilter/GetHelloWorld");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(
+                "Result filter, " +
+                "Controller Result filter, " +
+                "GlobalResultFilter.OnResultExecuting, " +
+                "Controller Override, " +
+                "Hello World", // Return value from Action
+                await response.Content.ReadAsStringAsync());
+        }
+
+        // Action has multiple TypeFilters with Order.
+        // Verifies if the filters are executed in the mentioned order.
+        [Fact]
+        public async Task FiltersWithOrder()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/RandomNumber/GetOrderedRandomNumber");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("88", await response.Content.ReadAsStringAsync());
+        }
+
+        // Action has multiple action filters with Order.
+        // Verifies they are executed in the mentioned order.
+        [Fact]
+        public async Task ActionFiltersWithOrder()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/ActionFilterOrder");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(
+                "Action Filter - OnActionExecuted, " +
+                "Controller Action filter - OnActionExecuted, " +
+                "Hello World", // Return value from Action
+                await response.Content.ReadAsStringAsync());
+        }
+
+        // Action has multiple result filters with Order.
+        // Verifies they are executed in the mentioned order.
+        [Fact]
+        public async Task ResultFiltersWithOrder()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/ResultFilterOrder");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(
+                "Result filter, Controller Result filter, Hello World",
+                await response.Content.ReadAsStringAsync());
+        }
+
+        // Action has an action filter which sets the Result.
+        // Verifies the Action was not executed
+        [Fact]
+        public async Task ActionFilterShortCircuitsAction()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/DummyClass/ActionNeverGetsExecuted");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("The Action was never executed", await response.Content.ReadAsStringAsync());
+        }
+
+        // Action has an Result filter which sets the Result.
+        // Verifies ObjectResult was not executed.
+        [Fact]
+        public async Task ResultFilterShortCircuitsResult()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/DummyClass/ResultNeverGetsExecuted");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("The Result was never executed", await response.Content.ReadAsStringAsync());
+        }
+
+        // Action has two Exception filters.
+        // Verifies that the second Exception Filter was not executed.
+        [Fact]
+        public async Task ExceptionFilterShortCircuitsAnotherExceptionFilter()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/ThrowRandomExcpetion");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+        }
+
+        // Result Filter throws.
+        // Verifies the Global Exception Filter does not handle it.
+        [Fact]
+        public async Task ThrowingResultFilter_NotHandledByGlobalExceptionFilter()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidProgramException>(
+                () => client.GetAsync("http://localhost/Home/ThrowingResultFilter"));
+        }
+
+        // Action Filter throws.
+        // Verifies the Global Exception Filter handles it.
+        [Theory]
+        [InlineData("http://localhost/Home/ThrowingActionFilter")]
+        [InlineData("http://localhost/Home/ThrowingAuthorizationFilter")]
+        public async Task ThrowingFilters_HandledByGlobalExceptionFilter(string url)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("GlobalExceptionFilter.OnException", await response.Content.ReadAsStringAsync());
+        }
+
+        // Exception Filter throws.
+        // Verifies the thrown exception is ignored.
+        [Fact]
+        public async Task ThrowingExceptionFilter_NotHandledByGlobalExceptionFilter()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/ThrowingExceptionFilter");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Throwing Exception Filter", await response.Content.ReadAsStringAsync());
         }
     }
 }
