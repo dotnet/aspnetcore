@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
             CryptoUtil.Assert(KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES,
                 "KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES");
 
-            _genRandom = _genRandom ?? ManagedGenRandomImpl.Instance;
+            _genRandom = genRandom ?? ManagedGenRandomImpl.Instance;
             _keyDerivationKey = keyDerivationKey;
 
             // Validate that the symmetric algorithm has the properties we require
@@ -302,7 +302,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
                 // Step 1: Generate a random key modifier and IV for this operation.
                 // Both will be equal to the block size of the block cipher algorithm.
 
-                byte[] keyModifier = _genRandom.GenRandom(_symmetricAlgorithmSubkeyLengthInBytes);
+                byte[] keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
                 byte[] iv = _genRandom.GenRandom(_symmetricAlgorithmBlockSizeInBytes);
 
                 // Step 2: Copy the key modifier and the IV to the output stream since they'll act as a header.
