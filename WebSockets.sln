@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22013.1
+VisualStudioVersion = 14.0.22216.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestServer", "test\TestServer\TestServer.csproj", "{4E5F5FCC-172C-44D9-BEA0-39098A79CD0B}"
 EndProject
@@ -27,6 +27,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AutobahnTestServer", "test\AutobahnTestServer\AutobahnTestServer.kproj", "{C03C43FE-9201-48A6-B434-AD67EF627D67}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AutobahnTestClient", "test\AutobahnTestClient\AutobahnTestClient.kproj", "{BC4D2BB1-05A8-4816-8BC1-3A664F09EE32}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +66,14 @@ Global
 		{78A097D0-C0A4-4AED-93E2-84A65392FB52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78A097D0-C0A4-4AED-93E2-84A65392FB52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78A097D0-C0A4-4AED-93E2-84A65392FB52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C03C43FE-9201-48A6-B434-AD67EF627D67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C03C43FE-9201-48A6-B434-AD67EF627D67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C03C43FE-9201-48A6-B434-AD67EF627D67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C03C43FE-9201-48A6-B434-AD67EF627D67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC4D2BB1-05A8-4816-8BC1-3A664F09EE32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC4D2BB1-05A8-4816-8BC1-3A664F09EE32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC4D2BB1-05A8-4816-8BC1-3A664F09EE32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC4D2BB1-05A8-4816-8BC1-3A664F09EE32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,5 +86,7 @@ Global
 		{4A1C4875-AE21-4A78-979A-F0E4DF5EB518} = {2C7947A5-9FBD-4267-97C1-2D726D7B3BAF}
 		{6604D154-817F-4BC5-BE95-FF7E851179D9} = {C45106D0-76C8-4776-A140-F7DD83CA2958}
 		{78A097D0-C0A4-4AED-93E2-84A65392FB52} = {2C7947A5-9FBD-4267-97C1-2D726D7B3BAF}
+		{C03C43FE-9201-48A6-B434-AD67EF627D67} = {C45106D0-76C8-4776-A140-F7DD83CA2958}
+		{BC4D2BB1-05A8-4816-8BC1-3A664F09EE32} = {C45106D0-76C8-4776-A140-F7DD83CA2958}
 	EndGlobalSection
 EndGlobal

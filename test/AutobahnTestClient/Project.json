@@ -1,0 +1,11 @@
+﻿{
+    "dependencies": {
+        "Microsoft.AspNet.WebSockets.Client": "1.0.0-*"
+    },
+    "commands": { 
+        "run" : "run"
+    },
+    "frameworks" : {
+        "aspnet50" : { }
+    }
+}
