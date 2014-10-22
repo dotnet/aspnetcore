@@ -16,12 +16,6 @@ namespace Microsoft.AspNet.Identity
             Services = services;
         }
 
-        public IdentityBuilder<TUser, TRole> AddInstance<T>(T obj)
-        {
-            Services.AddInstance(obj);
-            return this;
-        }
-
         public IdentityBuilder<TUser, TRole> AddUserStore(IUserStore<TUser> store)
         {
             return AddInstance(store);
@@ -62,6 +56,13 @@ namespace Microsoft.AspNet.Identity
         public IdentityBuilder<TUser, TRole> AddRoleManager<TManager>() where TManager : RoleManager<TRole>
         {
             Services.AddScoped<TManager>();
+            return this;
+        }
+
+        private IdentityBuilder<TUser, TRole> AddInstance<TService>(TService instance)
+            where TService : class
+        {
+            Services.AddInstance(instance);
             return this;
         }
     }
