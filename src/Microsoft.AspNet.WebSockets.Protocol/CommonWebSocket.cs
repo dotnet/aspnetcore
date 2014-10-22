@@ -299,6 +299,15 @@ namespace Microsoft.AspNet.WebSockets.Protocol
 
             if (_frameInProgress.OpCode == Constants.OpCodes.PingFrame || _frameInProgress.OpCode == Constants.OpCodes.PongFrame)
             {
+                if (_frameBytesRemaining > 125)
+                {
+                    if (State == WebSocketState.Open)
+                    {
+                        await CloseOutputAsync(WebSocketCloseStatus.ProtocolError, "Invalid control frame size", cancellationToken);
+                        Abort();
+                    }
+                    throw new InvalidOperationException("Control frame too large."); // TODO: WebSocketException
+                }
                 // Drain it, should be less than 125 bytes
                 await EnsureDataAvailableOrReadAsync((int)_frameBytesRemaining, cancellationToken);
 
