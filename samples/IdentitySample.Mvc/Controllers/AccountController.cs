@@ -14,7 +14,7 @@ namespace IdentitySample.Models
     {
         public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
-            UserManager = UserManager;
+            UserManager = userManager;
             SignInManager = signInManager;
         }
 
