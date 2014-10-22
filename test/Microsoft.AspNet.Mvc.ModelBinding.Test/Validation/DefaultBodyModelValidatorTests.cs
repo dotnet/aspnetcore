@@ -5,7 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
@@ -259,11 +262,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     typeof(Uri),
                     new List<Type>() { typeof(Uri) }
                 };
-                yield return new object[] {
-                    new DerivedUri("/api/values", UriKind.Relative),
-                    typeof(Uri),
-                    new List<Type>() { typeof(Uri) }
-                };
                 yield return new object[] { new Dictionary<string, Uri> {
                     { "values",  new Uri("/api/values", UriKind.Relative) },
                     { "hello",  new Uri("/api/hello", UriKind.Relative) }
@@ -355,17 +353,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                        new DataMemberModelValidatorProvider()
                     });
             var modelMetadataProvider = new EmptyModelMetadataProvider();
-            List<ExcludeFromValidationDelegate> excludedValidationTypesPredicate =
-                new List<ExcludeFromValidationDelegate>();
+            var excludedValidationTypesPredicate =
+                new List<IExcludeTypeValidationFilter>();
             if (excludedTypes != null)
             {
-                excludedValidationTypesPredicate = new List<ExcludeFromValidationDelegate>()
-                {
-                    (excludedType) =>
-                    {
-                        return excludedTypes.Any(t => t.IsAssignableFrom(excludedType));
-                    }
-                };
+                var mockExcludeTypeFilter = new Mock<IExcludeTypeValidationFilter>();
+                mockExcludeTypeFilter.Setup(o => o.IsTypeExcluded(It.IsAny<Type>()))
+                                     .Returns<Type>(excludedType => 
+                                                        excludedTypes.Any(t => t.IsAssignableFrom(excludedType)));
+
+                excludedValidationTypesPredicate.Add(mockExcludeTypeFilter.Object);
             }
 
             return new ModelValidationContext(
@@ -379,7 +376,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     modelType: type,
                     propertyName: null),
                 containerMetadata: null,
-                excludeFromValidationDelegate: excludedValidationTypesPredicate);
+                excludeFromValidationFilters: excludedValidationTypesPredicate);
         }
 
         public class Person
@@ -481,16 +478,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public Team Dev { get; set; }
 
             public Team Test { get; set; }
-        }
-
-        public class DerivedUri : Uri
-        {
-            public DerivedUri(string uri, UriKind kind) :base(uri, kind)
-            {
-            }
-
-            [Required]
-            public string UriPurpose { get; set; }
         }
     }
 }

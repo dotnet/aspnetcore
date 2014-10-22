@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Xml;
+using System.Xml.Linq;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
@@ -12,33 +13,22 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         public static string RetrieveAntiForgeryToken(string htmlContent, string actionUrl)
         {
-            int startSearchIndex = 0;
-
-            while (startSearchIndex < htmlContent.Length)
+            htmlContent = "<Root>" + htmlContent + "</Root>";
+            var reader = new StringReader(htmlContent);
+            var htmlDocument = XDocument.Load(reader);
+            foreach (var form in htmlDocument.Descendants("form"))
             {
-                var formStartIndex = htmlContent.IndexOf("<form", startSearchIndex, StringComparison.OrdinalIgnoreCase);
-                var formEndIndex = htmlContent.IndexOf("</form>", startSearchIndex, StringComparison.OrdinalIgnoreCase);
-
-                if (formStartIndex == -1 || formEndIndex == -1)
+                foreach (var attribute in form.Attributes())
                 {
-                    //Unable to find the form start or end - finish the search
-                    return null;
-                }
-
-                formEndIndex = formEndIndex + "</form>".Length;
-                startSearchIndex = formEndIndex + 1;
-
-                var htmlDocument = new XmlDocument();
-                htmlDocument.LoadXml(htmlContent.Substring(formStartIndex, formEndIndex - formStartIndex));
-                foreach (XmlAttribute attribute in htmlDocument.DocumentElement.Attributes)
-                {
-                    if (string.Equals(attribute.Name, "action", StringComparison.OrdinalIgnoreCase) && attribute.Value.EndsWith(actionUrl, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(attribute.Name.LocalName, "action", StringComparison.OrdinalIgnoreCase) &&
+                        attribute.Value.EndsWith(actionUrl, StringComparison.OrdinalIgnoreCase))
                     {
-                        foreach (XmlNode input in htmlDocument.GetElementsByTagName("input"))
+                        foreach (var input in form.Descendants("input"))
                         {
-                            if (input.Attributes["name"].Value == "__RequestVerificationToken" && input.Attributes["type"].Value == "hidden")
+                            if (input.Attributes("name").First().Value == "__RequestVerificationToken" && 
+                                input.Attributes("type").First().Value == "hidden")
                             {
-                                return input.Attributes["value"].Value;
+                                return input.Attributes("value").First().Value;
                             }
                         }
                     }

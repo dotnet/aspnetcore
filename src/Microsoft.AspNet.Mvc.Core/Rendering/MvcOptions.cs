@@ -71,11 +71,11 @@ namespace Microsoft.AspNet.Mvc
         public List<InputFormatterDescriptor> InputFormatters { get; private set; }
 
         /// <summary>
-        /// Gets a list of <see cref="ExcludeFromValidationDelegate"/> which return whether the given type
-        /// should be excluded from Validation in <see cref="IBodyModelValidator"/>
+        /// Gets a list of <see cref="ExcludeValidationDescriptor"/> which are used to construct a list
+        /// of exclude filters by <see cref="IValidationExcludeFiltersProvider"/>,
         /// </summary>
-        public List<ExcludeFromValidationDelegate> ExcludeFromValidationDelegates { get; }
-            = new List<ExcludeFromValidationDelegate>();
+        public List<ExcludeValidationDescriptor> ValidationExcludeFilters { get; }
+            = new List<ExcludeValidationDescriptor>();
 
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further

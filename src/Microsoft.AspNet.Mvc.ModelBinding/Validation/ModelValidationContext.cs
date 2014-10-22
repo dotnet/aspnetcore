@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                   modelState,
                   metadata,
                   containerMetadata,
-                  excludeFromValidationDelegate: null)
+                  excludeFromValidationFilters: null)
         {
         }
 
@@ -36,14 +36,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                       [NotNull] ModelStateDictionary modelState,
                                       [NotNull] ModelMetadata metadata,
                                       ModelMetadata containerMetadata,
-                                      IReadOnlyList<ExcludeFromValidationDelegate> excludeFromValidationDelegate)
+                                      IReadOnlyList<IExcludeTypeValidationFilter> excludeFromValidationFilters)
         {
             ModelMetadata = metadata;
             ModelState = modelState;
             MetadataProvider = metadataProvider;
             ValidatorProvider = validatorProvider;
             ContainerMetadata = containerMetadata;
-            ExcludeFromValidationDelegate = excludeFromValidationDelegate;
+            ExcludeFromValidationFilters = excludeFromValidationFilters;
         }
 
         public ModelValidationContext([NotNull] ModelValidationContext parentContext,
@@ -54,19 +54,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             ModelState = parentContext.ModelState;
             MetadataProvider = parentContext.MetadataProvider;
             ValidatorProvider = parentContext.ValidatorProvider;
-            ExcludeFromValidationDelegate = parentContext.ExcludeFromValidationDelegate;
+            ExcludeFromValidationFilters = parentContext.ExcludeFromValidationFilters;
         }
 
-        public ModelMetadata ModelMetadata { get; private set; }
+        public ModelMetadata ModelMetadata { get; }
 
-        public ModelMetadata ContainerMetadata { get; private set; }
+        public ModelMetadata ContainerMetadata { get; }
 
-        public ModelStateDictionary ModelState { get; private set; }
+        public ModelStateDictionary ModelState { get; }
 
-        public IModelMetadataProvider MetadataProvider { get; private set; }
+        public IModelMetadataProvider MetadataProvider { get; }
 
-        public IModelValidatorProvider ValidatorProvider { get; private set; }
+        public IModelValidatorProvider ValidatorProvider { get; }
 
-        public IReadOnlyList<ExcludeFromValidationDelegate> ExcludeFromValidationDelegate { get; private set; }
+        public IReadOnlyList<IExcludeTypeValidationFilter> ExcludeFromValidationFilters { get; }
     }
 }

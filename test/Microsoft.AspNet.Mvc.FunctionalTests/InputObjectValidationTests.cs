@@ -77,16 +77,31 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
-            var sampleString = "RandomString";
-            var input = "{ NameThatThrowsOnGet:'" + sampleString + "'}";
-            var content = new StringContent(input, Encoding.UTF8, "application/json");
+            var content = new StringContent("{\"Alias\":\"xyz\"}", Encoding.UTF8, "application/json");
 
             // Act
             var response = await client.PostAsync("http://localhost/Validation/GetDeveloperName", content);
 
             //Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("Developer's get was not accessed after set.", await response.Content.ReadAsStringAsync());
+            Assert.Equal("No model validation for developer, even though developer.Name is empty.", await response.Content.ReadAsStringAsync());
+        }
+
+
+        [Fact]
+        public async Task CheckIfExcludedField_IsValidatedForNonBodyBoundModels()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var content = new StringContent("{\"Alias\":\"xyz\"}", Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await client.PostAsync("http://localhost/Validation/GetDeveloperAlias", content);
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("The Name field is required.", await response.Content.ReadAsStringAsync());
         }
     }
 }

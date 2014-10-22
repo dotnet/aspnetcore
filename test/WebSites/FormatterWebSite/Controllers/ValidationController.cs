@@ -23,15 +23,35 @@ namespace FormatterWebSite
         }
 
         [HttpPost]
-        public string GetDeveloperName([FromBody]Developer developer)
+        public string GetDeveloperName([FromBody] Developer developer)
         {
+            // Developer is excluded in startup, hence the value should never be passed.
             if (ModelState.IsValid)
             {
-                return "Developer's get was not accessed after set.";
+                if (string.IsNullOrEmpty(developer.Name))
+                {
+                    return "No model validation for developer, even though developer.Name is empty.";
+                }
+
+                return developer.Name;
             }
             else
             {
                 throw new InvalidOperationException();
+            }
+        }
+
+        [HttpPost]
+        public string GetDeveloperAlias(Developer developer)
+        {
+            // Since validation exclusion is currently only effective in case of body bound models.
+            if (ModelState.IsValid)
+            {
+                return developer.Alias;
+            }
+            else
+            {
+               return ModelState["Name"].Errors[0].ErrorMessage;
             }
         }
     }

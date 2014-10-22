@@ -10,10 +10,6 @@
     },
     "frameworks": {
         "aspnet50": {},
-        "aspnetcore50": {
-            "dependencies": {
-                "System.Xml.XmlDocument": "4.0.0-beta-*"
-            }
-        }
+        "aspnetcore50": {}
     }
 }

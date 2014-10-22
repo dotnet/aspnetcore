@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelType = metadata.Model.GetType();
             if (TypeHelper.IsSimpleType(modelType) ||
                     IsTypeExcludedFromValidation(
-                        validationContext.ModelValidationContext.ExcludeFromValidationDelegate, modelType))
+                        validationContext.ModelValidationContext.ExcludeFromValidationFilters, modelType))
             {
                 return ShallowValidate(metadata, validationContext, validators);
             }
@@ -197,15 +197,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         private bool IsTypeExcludedFromValidation(
-            IReadOnlyList<ExcludeFromValidationDelegate> predicates, Type type)
+            IReadOnlyList<IExcludeTypeValidationFilter> filters, Type type)
         {
             // This can be set to null in ModelBinding scenarios which does not flow through this path.
-            if (predicates == null)
+            if (filters == null)
             {
                 return false;
             }
 
-            return predicates.Any(t => t(type));
+            return filters.Any(filter => filter.IsTypeExcluded(type));
         }
 
         private static Type GetElementType(Type type)

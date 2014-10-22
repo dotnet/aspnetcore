@@ -25,7 +25,7 @@
         "UrlHelperWebSite": "1.0.0",
         "ValueProvidersSite": "1.0.0",
         "VersioningWebSite": "1.0.0",
-        "ViewComponentWebSite":  "1.0.0",
+        "ViewComponentWebSite": "1.0.0",
         "XmlSerializerWebSite": "1.0.0",
         "WebApiCompatShimWebSite": "1.0.0",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
