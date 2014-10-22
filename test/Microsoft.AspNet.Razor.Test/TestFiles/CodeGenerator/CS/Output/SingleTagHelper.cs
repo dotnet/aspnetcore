@@ -1,4 +1,4 @@
-#pragma checksum "SingleTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "61bf4cc89584cdbbac4478b202fe04797ddeb68a"
+#pragma checksum "SingleTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "a4d3eab407a97d5beebc7d3a319223ece03f3733"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -27,8 +27,8 @@ namespace TestOutput
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p");
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
-            __PTagHelper.Foo = 1337;
-            __tagHelperExecutionContext.AddTagHelperAttribute("foo", __PTagHelper.Foo);
+            __PTagHelper.Age = 1337;
+            __tagHelperExecutionContext.AddTagHelperAttribute("age", __PTagHelper.Age);
             __tagHelperExecutionContext.AddHtmlAttribute("class", "Hello World");
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());

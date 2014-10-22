@@ -11,6 +11,168 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 {
     public class CSharpTagHelperRenderingTest : TagHelperTestBase
     {
+        private static IEnumerable<TagHelperDescriptor> PAndInputTagHelperDescriptors
+        {
+            get
+            {
+                var pAgePropertyInfo = typeof(TestType).GetProperty("Age");
+                var inputTypePropertyInfo = typeof(TestType).GetProperty("Type");
+                var checkedPropertyInfo = typeof(TestType).GetProperty("Checked");
+                return new[]
+                {
+                    new TagHelperDescriptor("p",
+                                            "PTagHelper",
+                                            ContentBehavior.None,
+                                            new [] {
+                                                new TagHelperAttributeDescriptor("age", pAgePropertyInfo)
+                                            }),
+                    new TagHelperDescriptor("input",
+                                            "InputTagHelper",
+                                            ContentBehavior.None,
+                                            new TagHelperAttributeDescriptor[] {
+                                                new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
+                                            }),
+                    new TagHelperDescriptor("input",
+                                            "InputTagHelper2",
+                                            ContentBehavior.None,
+                                            new TagHelperAttributeDescriptor[] {
+                                                new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
+                                                new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
+                                            })
+                };
+            }
+        }
+
+        private static IEnumerable<TagHelperDescriptor> ContentBehaviorTagHelperDescriptors
+        {
+            get
+            {
+                return new[]
+                {
+                    new TagHelperDescriptor("modify", "ModifyTagHelper", ContentBehavior.Modify),
+                    new TagHelperDescriptor("none", "NoneTagHelper", ContentBehavior.None),
+                    new TagHelperDescriptor("append", "AppendTagHelper", ContentBehavior.Append),
+                    new TagHelperDescriptor("prepend", "PrependTagHelper", ContentBehavior.Prepend),
+                    new TagHelperDescriptor("replace", "ReplaceTagHelper", ContentBehavior.Replace)
+                };
+            }
+        }
+
+        public static TheoryData DesignTimeTagHelperTestData
+        {
+            get
+            {
+                // Test resource name, baseline resource name, expected TagHelperDescriptors, expected LineMappings
+                return new TheoryData<string, string, IEnumerable<TagHelperDescriptor>, List<LineMapping>>
+                {
+                    {
+                        "SingleTagHelper",
+                        "SingleTagHelper.DesignTime",
+                        PAndInputTagHelperDescriptors,
+                        new List<LineMapping>
+                        {
+                            BuildLineMapping(documentAbsoluteIndex: 14,
+                                             documentLineIndex: 0,
+                                             generatedAbsoluteIndex: 475,
+                                             generatedLineIndex: 15,
+                                             characterOffsetIndex: 14,
+                                             contentLength: 11)
+                        }
+                    },
+                    {
+                        "BasicTagHelpers",
+                        "BasicTagHelpers.DesignTime",
+                        PAndInputTagHelperDescriptors,
+                        new List<LineMapping>
+                        {
+                            BuildLineMapping(documentAbsoluteIndex: 14,
+                                             documentLineIndex: 0,
+                                             generatedAbsoluteIndex: 475,
+                                             generatedLineIndex: 15,
+                                             characterOffsetIndex: 14,
+                                             contentLength: 11)
+                        }
+                    },
+                    {
+                        "ContentBehaviorTagHelpers",
+                        "ContentBehaviorTagHelpers.DesignTime",
+                        ContentBehaviorTagHelperDescriptors,
+                        new List<LineMapping>
+                        {
+                            BuildLineMapping(documentAbsoluteIndex: 14,
+                                             documentLineIndex: 0,
+                                             generatedAbsoluteIndex: 495,
+                                             generatedLineIndex: 15,
+                                             characterOffsetIndex: 14,
+                                             contentLength: 11)
+                        }
+                    },
+                    {
+                        "ComplexTagHelpers",
+                        "ComplexTagHelpers.DesignTime",
+                        PAndInputTagHelperDescriptors,
+                        new List<LineMapping>
+                        {
+                            BuildLineMapping(14, 0, 479, 15, 14, 11),
+                            BuildLineMapping(30, 2, 1, 995, 35, 0, 48),
+                            BuildLineMapping(157, 7, 32, 1177, 45, 6, 12),
+                            BuildLineMapping(205, 9, 1260, 50, 0, 12),
+                            BuildLineMapping(218, 9, 13, 1356, 56, 12, 27),
+                            BuildLineMapping(346, 12, 1754, 68, 0, 48),
+                            BuildLineMapping(440, 15, 46, 2004, 78, 6, 8),
+                            BuildLineMapping(501, 16, 31, 2384, 88, 6, 30),
+                            BuildLineMapping(568, 17, 30, 2733, 97, 0, 10),
+                            BuildLineMapping(601, 17, 63, 2815, 103, 0, 8),
+                            BuildLineMapping(632, 17, 94, 2895, 109, 0, 1),
+                            BuildLineMapping(639, 18, 3149, 118, 0, 15),
+                            BuildLineMapping(680, 21, 3234, 124, 0, 1)
+                        }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DesignTimeTagHelperTestData))]
+        public void TagHelpers_GenerateExpectedDesignTimeOutput(string testName,
+                                                                string baseLineName,
+                                                                IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
+                                                                List<LineMapping> expectedDesignTimePragmas)
+        {
+            // Act & Assert
+            RunTagHelperTest(testName,
+                             baseLineName,
+                             designTimeMode: true,
+                             tagHelperDescriptors: tagHelperDescriptors,
+                             expectedDesignTimePragmas: expectedDesignTimePragmas);
+        }
+
+        public static TheoryData RuntimeTimeTagHelperTestData
+        {
+            get
+            {
+                // Test resource name, expected TagHelperDescriptors
+                // Note: The baseline resource name is equivalent to the test resource name.
+                return new TheoryData<string, IEnumerable<TagHelperDescriptor>>
+                {
+                    { "SingleTagHelper", PAndInputTagHelperDescriptors },
+                    { "BasicTagHelpers", PAndInputTagHelperDescriptors },
+                    { "BasicTagHelpers.RemoveTagHelper", PAndInputTagHelperDescriptors },
+                    { "ContentBehaviorTagHelpers", ContentBehaviorTagHelperDescriptors },
+                    { "ComplexTagHelpers", PAndInputTagHelperDescriptors },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RuntimeTimeTagHelperTestData))]
+        public void TagHelpers_GenerateExpectedRuntimeOutput(string testName,
+                                                             IEnumerable<TagHelperDescriptor> tagHelperDescriptors)
+        {
+            // Act & Assert
+            RunTagHelperTest(testName, tagHelperDescriptors: tagHelperDescriptors);
+        }
+
         [Fact]
         public void CSharpCodeGenerator_CorrectlyGeneratesMappings_ForRemoveTagHelperDirective()
         {
@@ -79,64 +241,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             RunTagHelperTest(testType, tagHelperDescriptors: tagHelperDescriptors);
         }
 
-        [Theory]
-        [InlineData("SingleTagHelper")]
-        [InlineData("BasicTagHelpers")]
-        [InlineData("BasicTagHelpers.RemoveTagHelper")]
-        [InlineData("ComplexTagHelpers")]
-        public void TagHelpers_GenerateExpectedOutput(string testType)
-        {
-            // Arrange
-            var pFooPropertyInfo = typeof(TestType).GetProperty("Foo");
-            var inputTypePropertyInfo = typeof(TestType).GetProperty("Type");
-            var checkedPropertyInfo = typeof(TestType).GetProperty("Checked");
-            var tagHelperDescriptors = new TagHelperDescriptor[]
-            {
-                new TagHelperDescriptor("p",
-                                        "PTagHelper",
-                                        ContentBehavior.None,
-                                        new [] {
-                                            new TagHelperAttributeDescriptor("foo", pFooPropertyInfo)
-                                        }),
-                new TagHelperDescriptor("input",
-                                        "InputTagHelper",
-                                        ContentBehavior.None,
-                                        new TagHelperAttributeDescriptor[] {
-                                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
-                                        }),
-                new TagHelperDescriptor("input",
-                                        "InputTagHelper2",
-                                        ContentBehavior.None,
-                                        new TagHelperAttributeDescriptor[] {
-                                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
-                                            new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
-                                        })
-            };
-
-            // Act & Assert
-            RunTagHelperTest(testType, tagHelperDescriptors: tagHelperDescriptors);
-        }
-
-        [Fact]
-        public void TagHelpers_WithContentBehaviors_GenerateExpectedOutput()
-        {
-            // Arrange
-            var tagHelperDescriptors = new TagHelperDescriptor[]
-            {
-                    new TagHelperDescriptor("modify", "ModifyTagHelper", ContentBehavior.Modify),
-                    new TagHelperDescriptor("none", "NoneTagHelper", ContentBehavior.None),
-                    new TagHelperDescriptor("append", "AppendTagHelper", ContentBehavior.Append),
-                    new TagHelperDescriptor("prepend", "PrependTagHelper", ContentBehavior.Prepend),
-                    new TagHelperDescriptor("replace", "ReplaceTagHelper", ContentBehavior.Replace),
-            };
-
-            // Act & Assert
-            RunTagHelperTest("ContentBehaviorTagHelpers", tagHelperDescriptors: tagHelperDescriptors);
-        }
-
         private class TestType
         {
-            public int Foo { get; set; }
+            public int Age { get; set; }
 
             public string Type { get; set; }
 

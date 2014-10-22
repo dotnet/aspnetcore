@@ -28,23 +28,28 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             {
                 _foundTagHelpers = true;
 
+                // We want to hide declared TagHelper fields so they cannot be stepped over via a debugger.
                 Writer.WriteLineHiddenDirective();
 
-                WritePrivateField(typeof(TextWriter).FullName,
-                                  CSharpTagHelperCodeRenderer.StringValueBufferVariableName,
-                                  value: null);
+                // Runtime fields aren't useful during design time.
+                if (!Context.Host.DesignTimeMode)
+                {
+                    WritePrivateField(typeof(TextWriter).FullName,
+                                      CSharpTagHelperCodeRenderer.StringValueBufferVariableName,
+                                      value: null);
 
-                WritePrivateField(_tagHelperContext.ExecutionContextTypeName,
-                                  CSharpTagHelperCodeRenderer.ExecutionContextVariableName,
-                                  value: null);
+                    WritePrivateField(_tagHelperContext.ExecutionContextTypeName,
+                                      CSharpTagHelperCodeRenderer.ExecutionContextVariableName,
+                                      value: null);
 
-                WritePrivateField(_tagHelperContext.RunnerTypeName,
-                                  CSharpTagHelperCodeRenderer.RunnerVariableName,
-                                  "new " + _tagHelperContext.RunnerTypeName + "()");
+                    WritePrivateField(_tagHelperContext.RunnerTypeName,
+                                      CSharpTagHelperCodeRenderer.RunnerVariableName,
+                                      "new " + _tagHelperContext.RunnerTypeName + "()");
 
-                WritePrivateField(_tagHelperContext.ScopeManagerTypeName,
-                                  CSharpTagHelperCodeRenderer.ScopeManagerVariableName,
-                                  "new " + _tagHelperContext.ScopeManagerTypeName + "()");
+                    WritePrivateField(_tagHelperContext.ScopeManagerTypeName,
+                                      CSharpTagHelperCodeRenderer.ScopeManagerVariableName,
+                                      "new " + _tagHelperContext.ScopeManagerTypeName + "()");
+                }
             }
 
             foreach (var descriptor in chunk.Descriptors)
