@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Razor.Text
 
         public static SourceLocation Advance(SourceLocation left, string text)
         {
-            SourceLocationTracker tracker = new SourceLocationTracker(left);
+            var tracker = new SourceLocationTracker(left);
             tracker.UpdateLocation(text);
             return tracker.CurrentLocation;
         }
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Razor.Text
 
         private static SourceLocation CreateUndefined()
         {
-            SourceLocation sl = new SourceLocation();
+            var sl = new SourceLocation();
             sl._absoluteIndex = -1;
             sl._lineIndex = -1;
             sl._characterIndex = -1;

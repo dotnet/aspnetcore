@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            SetLayoutCodeGenerator other = obj as SetLayoutCodeGenerator;
+            var other = obj as SetLayoutCodeGenerator;
             return other != null && String.Equals(other.LayoutPath, LayoutPath, StringComparison.Ordinal);
         }
 

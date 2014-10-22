@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         protected virtual void SingleSpanBlockTest(string document, string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedErrors)
         {
-            BlockBuilder builder = new BlockBuilder();
+            var builder = new BlockBuilder();
             builder.Type = blockType;
             ParseBlockTest(
                 document,
@@ -167,13 +167,13 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
             // Create the source
             ParserResults results = null;
-            using (SeekableTextReader reader = new SeekableTextReader(document))
+            using (var reader = new SeekableTextReader(document))
             {
                 try
                 {
-                    ParserBase codeParser = CreateCodeParser();
-                    ParserBase markupParser = CreateMarkupParser();
-                    ParserContext context = CreateParserContext(reader, codeParser, markupParser);
+                    var codeParser = CreateCodeParser();
+                    var markupParser = CreateMarkupParser();
+                    var context = CreateParserContext(reader, codeParser, markupParser);
                     context.DesignTimeMode = designTimeParser;
 
                     codeParser.Context = context;
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         protected virtual void RunParseTest(string document, Func<ParserBase, Action> parserActionSelector, Block expectedRoot, IList<RazorError> expectedErrors, bool designTimeParser, Func<ParserContext, ParserBase> parserSelector = null)
         {
             // Create the source
-            ParserResults results = RunParse(document, parserActionSelector, designTimeParser, parserSelector);
+            var results = RunParse(document, parserActionSelector, designTimeParser, parserSelector);
 
             // Evaluate the results
             if (!ReferenceEquals(expectedRoot, IgnoreOutput))
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         [Conditional("PARSER_TRACE")]
         private void WriteNode(int indent, SyntaxTreeNode node)
         {
-            string content = node.ToString().Replace("\r", "\\r")
+            var content = node.ToString().Replace("\r", "\\r")
                 .Replace("\n", "\\n")
                 .Replace("{", "{{")
                 .Replace("}", "}}");
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                 content = new String('.', indent * 2) + content;
             }
             WriteTraceLine(content);
-            Block block = node as Block;
+            var block = node as Block;
             if (block != null)
             {
                 foreach (SyntaxTreeNode child in block.Children)
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         public static void EvaluateParseTree(Block actualRoot, Block expectedRoot)
         {
             // Evaluate the result
-            ErrorCollector collector = new ErrorCollector();
+            var collector = new ErrorCollector();
 
             // Link all the nodes
             expectedRoot.LinkNodes();
@@ -429,7 +429,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                 return "\t<< No Errors >>";
             }
 
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             foreach (RazorError err in errors)
             {
                 builder.AppendFormat("\t{0}", err);
@@ -446,8 +446,8 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         protected virtual Block CreateSimpleBlockAndSpan(string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
         {
-            SpanConstructor span = Factory.Span(spanType, spanContent, spanType == SpanKind.Markup).Accepts(acceptedCharacters);
-            BlockBuilder b = new BlockBuilder()
+            var span = Factory.Span(spanType, spanContent, spanType == SpanKind.Markup).Accepts(acceptedCharacters);
+            var b = new BlockBuilder()
             {
                 Type = blockType
             };

@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public static bool IsLetter(char value)
         {
-            UnicodeCategory cat = CharUnicodeInfo.GetUnicodeCategory(value);
+            var cat = CharUnicodeInfo.GetUnicodeCategory(value);
 
             return cat == UnicodeCategory.UppercaseLetter
                    || cat == UnicodeCategory.LowercaseLetter

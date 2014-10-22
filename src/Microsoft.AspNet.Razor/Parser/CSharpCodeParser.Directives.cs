@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Context.CurrentBlock.Type = BlockType.Directive;
 
             // Accept spaces, but not newlines
-            bool foundSomeWhitespace = At(CSharpSymbolType.WhiteSpace);
+            var foundSomeWhitespace = At(CSharpSymbolType.WhiteSpace);
             AcceptWhile(CSharpSymbolType.WhiteSpace);
             Output(SpanKind.MetaCode, foundSomeWhitespace ? AcceptedCharacters.None : AcceptedCharacters.Any);
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Razor.Parser
             AcceptUntil(CSharpSymbolType.NewLine);
             Span.CodeGenerator = new SetLayoutCodeGenerator(Span.GetContent());
             Span.EditHandler.EditorHints = EditorHints.LayoutPage | EditorHints.VirtualPath;
-            bool foundNewline = Optional(CSharpSymbolType.NewLine);
+            var foundNewline = Optional(CSharpSymbolType.NewLine);
             AddMarkerSymbolIfNecessary();
             Output(SpanKind.MetaCode, foundNewline ? AcceptedCharacters.None : AcceptedCharacters.Any);
         }
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Context.CurrentBlock.Type = BlockType.Directive;
 
             // Accept whitespace
-            CSharpSymbol remainingWs = AcceptSingleWhiteSpaceCharacter();
+            var remainingWs = AcceptSingleWhiteSpaceCharacter();
 
             if (Span.Symbols.Count > 1)
             {
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             // Pull out the type name
-            string sessionStateValue = String.Concat(
+            var sessionStateValue = String.Concat(
                 Span.Symbols
                     .Cast<CSharpSymbol>()
                     .Select(sym => sym.Content)).Trim();
@@ -119,14 +119,14 @@ namespace Microsoft.AspNet.Razor.Parser
         [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "C# Keywords are always lower-case")]
         protected virtual void HelperDirective()
         {
-            bool nested = Context.IsWithin(BlockType.Helper);
+            var nested = Context.IsWithin(BlockType.Helper);
 
             // Set the block and span type
             Context.CurrentBlock.Type = BlockType.Helper;
 
             // Verify we're on "helper" and accept
             AssertDirective(SyntaxConstants.CSharp.HelperKeyword);
-            Block block = new Block(CurrentSymbol.Content.ToString().ToLowerInvariant(), CurrentLocation);
+            var block = new Block(CurrentSymbol.Content.ToString().ToLowerInvariant(), CurrentLocation);
             AcceptAndMoveNext();
 
             if (nested)
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 return;
             }
 
-            CSharpSymbol remainingWs = AcceptSingleWhiteSpaceCharacter();
+            var remainingWs = AcceptSingleWhiteSpaceCharacter();
 
             // Output metacode and continue
             Output(SpanKind.MetaCode);
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Razor.Parser
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true)); // Don't accept newlines.
 
             // Expecting an identifier (helper name)
-            bool errorReported = !Required(CSharpSymbolType.Identifier, errorIfNotFound: true, errorBase: RazorResources.FormatParseError_Unexpected_Character_At_Helper_Name_Start);
+            var errorReported = !Required(CSharpSymbolType.Identifier, errorIfNotFound: true, errorBase: RazorResources.FormatParseError_Unexpected_Character_At_Helper_Name_Start);
             if (!errorReported)
             {
                 Assert(CSharpSymbolType.Identifier);
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Razor.Parser
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
             // Expecting parameter list start: "("
-            SourceLocation bracketErrorPos = CurrentLocation;
+            var bracketErrorPos = CurrentLocation;
             if (!Optional(CSharpSymbolType.LeftParenthesis))
             {
                 if (!errorReported)
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
             else
             {
-                SourceLocation bracketStart = CurrentLocation;
+                var bracketStart = CurrentLocation;
                 if (!Balance(BalancingModes.NoErrorOnFailure,
                              CSharpSymbolType.LeftParenthesis,
                              CSharpSymbolType.RightParenthesis,
@@ -207,12 +207,12 @@ namespace Microsoft.AspNet.Razor.Parser
                 Optional(CSharpSymbolType.RightParenthesis);
             }
 
-            int bookmark = CurrentLocation.AbsoluteIndex;
+            var bookmark = CurrentLocation.AbsoluteIndex;
             IEnumerable<CSharpSymbol> ws = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
 
             // Expecting a "{"
-            SourceLocation errorLocation = CurrentLocation;
-            bool headerComplete = At(CSharpSymbolType.LeftBrace);
+            var errorLocation = CurrentLocation;
+            var headerComplete = At(CSharpSymbolType.LeftBrace);
             if (headerComplete)
             {
                 Accept(ws);
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.Razor.Parser
             // Grab the signature and build the code generator
             AddMarkerSymbolIfNecessary();
             LocationTagged<string> signature = Span.GetContent();
-            HelperCodeGenerator blockGen = new HelperCodeGenerator(signature, headerComplete);
+            var blockGen = new HelperCodeGenerator(signature, headerComplete);
             Context.CurrentBlock.CodeGenerator = blockGen;
 
             // The block will generate appropriate code, 
@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             // We're valid, so parse the nested block
-            AutoCompleteEditHandler bodyEditHandler = new AutoCompleteEditHandler(Language.TokenizeString);
+            var bodyEditHandler = new AutoCompleteEditHandler(Language.TokenizeString);
             using (PushSpanConfig(DefaultSpanConfig))
             {
                 using (Context.StartBlock(BlockType.Statement))
@@ -289,8 +289,8 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected virtual void SectionDirective()
         {
-            bool nested = Context.IsWithin(BlockType.Section);
-            bool errorReported = false;
+            var nested = Context.IsWithin(BlockType.Section);
+            var errorReported = false;
 
             // Set the block and span type
             Context.CurrentBlock.Type = BlockType.Section;
@@ -308,7 +308,7 @@ namespace Microsoft.AspNet.Razor.Parser
             IEnumerable<CSharpSymbol> ws = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
 
             // Get the section name
-            string sectionName = String.Empty;
+            var sectionName = String.Empty;
             if (!Required(CSharpSymbolType.Identifier,
                           errorIfNotFound: true,
                           errorBase: RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start))
@@ -330,11 +330,11 @@ namespace Microsoft.AspNet.Razor.Parser
             }
             Context.CurrentBlock.CodeGenerator = new SectionCodeGenerator(sectionName);
 
-            SourceLocation errorLocation = CurrentLocation;
+            var errorLocation = CurrentLocation;
             ws = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
 
             // Get the starting brace
-            bool sawStartingBrace = At(CSharpSymbolType.LeftBrace);
+            var sawStartingBrace = At(CSharpSymbolType.LeftBrace);
             if (!sawStartingBrace)
             {
                 if (!errorReported)
@@ -357,7 +357,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             // Set up edit handler
-            AutoCompleteEditHandler editHandler = new AutoCompleteEditHandler(Language.TokenizeString) { AutoCompleteAtEndOfSpan = true };
+            var editHandler = new AutoCompleteEditHandler(Language.TokenizeString) { AutoCompleteAtEndOfSpan = true };
 
             Span.EditHandler = editHandler;
             Span.Accept(CurrentSymbol);
@@ -391,7 +391,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // Verify we're on "functions" and accept
             AssertDirective(SyntaxConstants.CSharp.FunctionsKeyword);
-            Block block = new Block(CurrentSymbol);
+            var block = new Block(CurrentSymbol);
             AcceptAndMoveNext();
 
             AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
@@ -410,13 +410,13 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             // Capture start point and continue
-            SourceLocation blockStart = CurrentLocation;
+            var blockStart = CurrentLocation;
             AcceptAndMoveNext();
 
             // Output what we've seen and continue
             Output(SpanKind.MetaCode);
 
-            AutoCompleteEditHandler editHandler = new AutoCompleteEditHandler(Language.TokenizeString);
+            var editHandler = new AutoCompleteEditHandler(Language.TokenizeString);
             Span.EditHandler = editHandler;
 
             Balance(BalancingModes.NoErrorOnFailure, CSharpSymbolType.LeftBrace, CSharpSymbolType.RightBrace, blockStart);
@@ -469,7 +469,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Context.CurrentBlock.Type = BlockType.Directive;
 
             // Accept whitespace
-            CSharpSymbol remainingWs = AcceptSingleWhiteSpaceCharacter();
+            var remainingWs = AcceptSingleWhiteSpaceCharacter();
 
             if (Span.Symbols.Count > 1)
             {

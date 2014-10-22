@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             if (CanRewrite(block))
             {
-                SyntaxTreeNode newNode = RewriteBlock(_blocks.Peek(), block);
+                var newNode = RewriteBlock(_blocks.Peek(), block);
                 if (newNode != null)
                 {
                     _blocks.Peek().Children.Add(newNode);
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Razor.Parser
             else
             {
                 // Not rewritable.
-                BlockBuilder builder = new BlockBuilder(block);
+                var builder = new BlockBuilder(block);
                 builder.Children.Clear();
                 _blocks.Push(builder);
                 base.VisitBlock(block);
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             if (CanRewrite(span))
             {
-                SyntaxTreeNode newNode = RewriteSpan(_blocks.Peek(), span);
+                var newNode = RewriteSpan(_blocks.Peek(), span);
                 if (newNode != null)
                 {
                     _blocks.Peek().Children.Add(newNode);

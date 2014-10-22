@@ -17,9 +17,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void AwaitPeriodInsertionAcceptedProvisionally()
         {
             // Arrange
-            SpanFactory factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("foo @await Html. baz");
-            StringTextBuffer old = new StringTextBuffer("foo @await Html baz");
+            var factory = SpanFactory.CreateCsHtml();
+            var changed = new StringTextBuffer("foo @await Html. baz");
+            var old = new StringTextBuffer("foo @await Html baz");
 
             // Act and Assert
             RunPartialParseTest(new TextChange(15, 0, old, 1, changed),
@@ -35,13 +35,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionAcceptsInnerInsertionsInStatementBlock()
         {
             // Arrange
-            SpanFactory factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("@{" + Environment.NewLine
-                                                          + "    @DateTime..Now" + Environment.NewLine
-                                                          + "}");
-            StringTextBuffer old = new StringTextBuffer("@{" + Environment.NewLine
-                                                      + "    @DateTime.Now" + Environment.NewLine
-                                                      + "}");
+            var factory = SpanFactory.CreateCsHtml();
+            var changed = new StringTextBuffer("@{" + Environment.NewLine
+                                                    + "    @DateTime..Now" + Environment.NewLine
+                                                    + "}");
+            var old = new StringTextBuffer("@{" + Environment.NewLine
+                                                + "    @DateTime.Now" + Environment.NewLine
+                                                + "}");
 
             // Act and Assert
             RunPartialParseTest(new TextChange(17, 0, old, 1, changed),
@@ -65,9 +65,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionAcceptsInnerInsertions()
         {
             // Arrange
-            SpanFactory factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("foo @DateTime..Now baz");
-            StringTextBuffer old = new StringTextBuffer("foo @DateTime.Now baz");
+            var factory = SpanFactory.CreateCsHtml();
+            var changed = new StringTextBuffer("foo @DateTime..Now baz");
+            var old = new StringTextBuffer("foo @DateTime.Now baz");
 
             // Act and Assert
             RunPartialParseTest(new TextChange(13, 0, old, 1, changed),
@@ -83,19 +83,19 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         [Fact]
         public void ImplicitExpressionAcceptsDotlessCommitInsertionsInStatementBlockAfterIdentifiers()
         {
-            SpanFactory factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("@{" + Environment.NewLine
-                                                          + "    @DateTime." + Environment.NewLine
-                                                          + "}");
-            StringTextBuffer old = new StringTextBuffer("@{" + Environment.NewLine
-                                                      + "    @DateTime" + Environment.NewLine
-                                                      + "}");
+            var factory = SpanFactory.CreateCsHtml();
+            var changed = new StringTextBuffer("@{" + Environment.NewLine
+                                                    + "    @DateTime." + Environment.NewLine
+                                                    + "}");
+            var old = new StringTextBuffer("@{" + Environment.NewLine
+                                                + "    @DateTime" + Environment.NewLine
+                                                + "}");
 
             var textChange = new TextChange(17, 0, old, 1, changed);
-            TestParserManager manager = CreateParserManager();
+            var manager = CreateParserManager();
             Action<TextChange, PartialParseResult, string> applyAndVerifyPartialChange = (changeToApply, expectedResult, expectedCode) =>
             {
-                PartialParseResult result = manager.CheckForStructureChangesAndWait(textChange);
+                var result = manager.CheckForStructureChangesAndWait(textChange);
 
                 // Assert
                 Assert.Equal(expectedResult, result);
@@ -123,16 +123,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
 
             old = changed;
             changed = new StringTextBuffer("@{" + Environment.NewLine
-                                        + "    @DateTime.." + Environment.NewLine
-                                        + "}");
+                                                + "    @DateTime.." + Environment.NewLine
+                                                + "}");
             textChange = new TextChange(18, 0, old, 1, changed);
 
             applyAndVerifyPartialChange(textChange, PartialParseResult.Accepted, "DateTime..");
 
             old = changed;
             changed = new StringTextBuffer("@{" + Environment.NewLine
-                                        + "    @DateTime.Now." + Environment.NewLine
-                                        + "}");
+                                                + "    @DateTime.Now." + Environment.NewLine
+                                                + "}");
             textChange = new TextChange(18, 0, old, 3, changed);
 
             applyAndVerifyPartialChange(textChange, PartialParseResult.Accepted, "DateTime.Now.");
@@ -141,19 +141,19 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         [Fact]
         public void ImplicitExpressionAcceptsDotlessCommitInsertionsInStatementBlock()
         {
-            SpanFactory factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("@{" + Environment.NewLine
-                                                          + "    @DateT." + Environment.NewLine
-                                                          + "}");
-            StringTextBuffer old = new StringTextBuffer("@{" + Environment.NewLine
-                                                      + "    @DateT" + Environment.NewLine
-                                                      + "}");
+            var factory = SpanFactory.CreateCsHtml();
+            var changed = new StringTextBuffer("@{" + Environment.NewLine
+                                                    + "    @DateT." + Environment.NewLine
+                                                    + "}");
+            var old = new StringTextBuffer("@{" + Environment.NewLine
+                                                + "    @DateT" + Environment.NewLine
+                                                + "}");
 
             var textChange = new TextChange(14, 0, old, 1, changed);
-            TestParserManager manager = CreateParserManager();
+            var manager = CreateParserManager();
             Action<TextChange, PartialParseResult, string> applyAndVerifyPartialChange = (changeToApply, expectedResult, expectedCode) =>
             {
-                PartialParseResult result = manager.CheckForStructureChangesAndWait(textChange);
+                var result = manager.CheckForStructureChangesAndWait(textChange);
 
                 // Assert
                 Assert.Equal(expectedResult, result);
@@ -181,8 +181,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
 
             old = changed;
             changed = new StringTextBuffer("@{" + Environment.NewLine
-                                        + "    @DateTime." + Environment.NewLine
-                                        + "}");
+                                                + "    @DateTime." + Environment.NewLine
+                                                + "}");
             textChange = new TextChange(14, 0, old, 3, changed);
 
             applyAndVerifyPartialChange(textChange, PartialParseResult.Accepted, "DateTime.");
@@ -191,14 +191,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         [Fact]
         public void ImplicitExpressionProvisionallyAcceptsDotlessCommitInsertions()
         {
-            SpanFactory factory = SpanFactory.CreateCsHtml();
+            var factory = SpanFactory.CreateCsHtml();
             var changed = new StringTextBuffer("foo @DateT. baz");
             var old = new StringTextBuffer("foo @DateT baz");
             var textChange = new TextChange(10, 0, old, 1, changed);
-            TestParserManager manager = CreateParserManager();
+            var manager = CreateParserManager();
             Action<TextChange, PartialParseResult, string> applyAndVerifyPartialChange = (changeToApply, expectedResult, expectedCode) =>
             {
-                PartialParseResult result = manager.CheckForStructureChangesAndWait(textChange);
+                var result = manager.CheckForStructureChangesAndWait(textChange);
 
                 // Assert
                 Assert.Equal(expectedResult, result);
@@ -227,14 +227,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         [Fact]
         public void ImplicitExpressionProvisionallyAcceptsDotlessCommitInsertionsAfterIdentifiers()
         {
-            SpanFactory factory = SpanFactory.CreateCsHtml();
+            var factory = SpanFactory.CreateCsHtml();
             var changed = new StringTextBuffer("foo @DateTime. baz");
             var old = new StringTextBuffer("foo @DateTime baz");
             var textChange = new TextChange(13, 0, old, 1, changed);
-            TestParserManager manager = CreateParserManager();
+            var manager = CreateParserManager();
             Action<TextChange, PartialParseResult, string> applyAndVerifyPartialChange = (changeToApply, expectedResult, expectedCode) =>
             {
-                PartialParseResult result = manager.CheckForStructureChangesAndWait(textChange);
+                var result = manager.CheckForStructureChangesAndWait(textChange);
 
                 // Assert
                 Assert.Equal(expectedResult, result);
@@ -269,9 +269,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         [Fact]
         public void ImplicitExpressionProvisionallyAcceptsDeleteOfIdentifierPartsIfDotRemains()
         {
-            SpanFactory factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("foo @User. baz");
-            StringTextBuffer old = new StringTextBuffer("foo @User.Name baz");
+            var factory = SpanFactory.CreateCsHtml();
+            var changed = new StringTextBuffer("foo @User. baz");
+            var old = new StringTextBuffer("foo @User.Name baz");
             RunPartialParseTest(new TextChange(10, 4, old, 0, changed),
                 new MarkupBlock(
                     factory.Markup("foo "),
@@ -286,8 +286,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionAcceptsDeleteOfIdentifierPartsIfSomeOfIdentifierRemains()
         {
             var factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("foo @Us baz");
-            StringTextBuffer old = new StringTextBuffer("foo @User baz");
+            var changed = new StringTextBuffer("foo @Us baz");
+            var old = new StringTextBuffer("foo @User baz");
             RunPartialParseTest(new TextChange(7, 2, old, 0, changed),
                 new MarkupBlock(
                     factory.Markup("foo "),
@@ -301,8 +301,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionProvisionallyAcceptsMultipleInsertionIfItCausesIdentifierExpansionAndTrailingDot()
         {
             var factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("foo @User. baz");
-            StringTextBuffer old = new StringTextBuffer("foo @U baz");
+            var changed = new StringTextBuffer("foo @User. baz");
+            var old = new StringTextBuffer("foo @U baz");
             RunPartialParseTest(new TextChange(6, 0, old, 4, changed),
                 new MarkupBlock(
                     factory.Markup("foo "),
@@ -317,8 +317,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionAcceptsMultipleInsertionIfItOnlyCausesIdentifierExpansion()
         {
             var factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("foo @barbiz baz");
-            StringTextBuffer old = new StringTextBuffer("foo @bar baz");
+            var changed = new StringTextBuffer("foo @barbiz baz");
+            var old = new StringTextBuffer("foo @bar baz");
             RunPartialParseTest(new TextChange(8, 0, old, 3, changed),
                 new MarkupBlock(
                     factory.Markup("foo "),
@@ -332,12 +332,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionAcceptsIdentifierExpansionAtEndOfNonWhitespaceCharacters()
         {
             var factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("@{" + Environment.NewLine
-                                                          + "    @food" + Environment.NewLine
-                                                          + "}");
-            StringTextBuffer old = new StringTextBuffer("@{" + Environment.NewLine
-                                                      + "    @foo" + Environment.NewLine
-                                                      + "}");
+            var changed = new StringTextBuffer("@{" + Environment.NewLine
+                                                    + "    @food" + Environment.NewLine
+                                                    + "}");
+            var old = new StringTextBuffer("@{" + Environment.NewLine
+                                                + "    @foo" + Environment.NewLine
+                                                + "}");
             RunPartialParseTest(new TextChange(12, 0, old, 1, changed),
                 new MarkupBlock(
                     factory.EmptyHtml(),
@@ -359,12 +359,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionAcceptsIdentifierAfterDotAtEndOfNonWhitespaceCharacters()
         {
             var factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("@{" + Environment.NewLine
-                                                          + "    @foo.d" + Environment.NewLine
-                                                          + "}");
-            StringTextBuffer old = new StringTextBuffer("@{" + Environment.NewLine
-                                                      + "    @foo." + Environment.NewLine
-                                                      + "}");
+            var changed = new StringTextBuffer("@{" + Environment.NewLine
+                                                    + "    @foo.d" + Environment.NewLine
+                                                    + "}");
+            var old = new StringTextBuffer("@{" + Environment.NewLine
+                                                + "    @foo." + Environment.NewLine
+                                                + "}");
             RunPartialParseTest(new TextChange(13, 0, old, 1, changed),
                 new MarkupBlock(
                     factory.EmptyHtml(),
@@ -386,12 +386,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionAcceptsDotAtEndOfNonWhitespaceCharacters()
         {
             var factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("@{" + Environment.NewLine
-                                                          + "    @foo." + Environment.NewLine
-                                                          + "}");
-            StringTextBuffer old = new StringTextBuffer("@{" + Environment.NewLine
-                                                      + "    @foo" + Environment.NewLine
-                                                      + "}");
+            var changed = new StringTextBuffer("@{" + Environment.NewLine
+                                                    + "    @foo." + Environment.NewLine
+                                                    + "}");
+            var old = new StringTextBuffer("@{" + Environment.NewLine
+                                                + "    @foo" + Environment.NewLine
+                                                + "}");
             RunPartialParseTest(new TextChange(12, 0, old, 1, changed),
                 new MarkupBlock(
                     factory.EmptyHtml(),
@@ -415,16 +415,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
             var factory = SpanFactory.CreateCsHtml();
 
             // Arrange
-            TextChange dotTyped = new TextChange(8, 0, new StringTextBuffer("foo @foo @bar"), 1, new StringTextBuffer("foo @foo. @bar"));
-            TextChange charTyped = new TextChange(14, 0, new StringTextBuffer("foo @foo. @bar"), 1, new StringTextBuffer("foo @foo. @barb"));
-            TestParserManager manager = CreateParserManager();
+            var dotTyped = new TextChange(8, 0, new StringTextBuffer("foo @foo @bar"), 1, new StringTextBuffer("foo @foo. @bar"));
+            var charTyped = new TextChange(14, 0, new StringTextBuffer("foo @foo. @bar"), 1, new StringTextBuffer("foo @foo. @barb"));
+            var manager = CreateParserManager();
             manager.InitializeWithDocument(dotTyped.OldBuffer);
 
             // Apply the dot change
             Assert.Equal(PartialParseResult.Provisional | PartialParseResult.Accepted, manager.CheckForStructureChangesAndWait(dotTyped));
 
             // Act (apply the identifier start char change)
-            PartialParseResult result = manager.CheckForStructureChangesAndWait(charTyped);
+            var result = manager.CheckForStructureChangesAndWait(charTyped);
 
             // Assert
             Assert.Equal(PartialParseResult.Rejected, result);
@@ -452,16 +452,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
             var factory = SpanFactory.CreateCsHtml();
 
             // Arrange
-            TextChange dotTyped = new TextChange(8, 0, new StringTextBuffer("foo @foo bar"), 1, new StringTextBuffer("foo @foo. bar"));
-            TextChange charTyped = new TextChange(9, 0, new StringTextBuffer("foo @foo. bar"), 1, new StringTextBuffer("foo @foo.b bar"));
-            TestParserManager manager = CreateParserManager();
+            var dotTyped = new TextChange(8, 0, new StringTextBuffer("foo @foo bar"), 1, new StringTextBuffer("foo @foo. bar"));
+            var charTyped = new TextChange(9, 0, new StringTextBuffer("foo @foo. bar"), 1, new StringTextBuffer("foo @foo.b bar"));
+            var manager = CreateParserManager();
             manager.InitializeWithDocument(dotTyped.OldBuffer);
 
             // Apply the dot change
             Assert.Equal(PartialParseResult.Provisional | PartialParseResult.Accepted, manager.CheckForStructureChangesAndWait(dotTyped));
 
             // Act (apply the identifier start char change)
-            PartialParseResult result = manager.CheckForStructureChangesAndWait(charTyped);
+            var result = manager.CheckForStructureChangesAndWait(charTyped);
 
             // Assert
             Assert.Equal(PartialParseResult.Accepted, result);
@@ -481,8 +481,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionProvisionallyAcceptsDotAfterIdentifierInMarkup()
         {
             var factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("foo @foo. bar");
-            StringTextBuffer old = new StringTextBuffer("foo @foo bar");
+            var changed = new StringTextBuffer("foo @foo. bar");
+            var old = new StringTextBuffer("foo @foo bar");
             RunPartialParseTest(new TextChange(8, 0, old, 1, changed),
                 new MarkupBlock(
                     factory.Markup("foo "),
@@ -499,8 +499,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionAcceptsAdditionalIdentifierCharactersIfEndOfSpanIsIdentifier()
         {
             var factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("foo @foob bar");
-            StringTextBuffer old = new StringTextBuffer("foo @foo bar");
+            var changed = new StringTextBuffer("foo @foob bar");
+            var old = new StringTextBuffer("foo @foo bar");
             RunPartialParseTest(new TextChange(8, 0, old, 1, changed),
                 new MarkupBlock(
                     factory.Markup("foo "),
@@ -516,8 +516,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionAcceptsAdditionalIdentifierStartCharactersIfEndOfSpanIsDot()
         {
             var factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("@{@foo.b}");
-            StringTextBuffer old = new StringTextBuffer("@{@foo.}");
+            var changed = new StringTextBuffer("@{@foo.b}");
+            var old = new StringTextBuffer("@{@foo.}");
             RunPartialParseTest(new TextChange(7, 0, old, 1, changed),
                 new MarkupBlock(
                     factory.EmptyHtml(),
@@ -539,8 +539,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         public void ImplicitExpressionAcceptsDotIfTrailingDotsAreAllowed()
         {
             var factory = SpanFactory.CreateCsHtml();
-            StringTextBuffer changed = new StringTextBuffer("@{@foo.}");
-            StringTextBuffer old = new StringTextBuffer("@{@foo}");
+            var changed = new StringTextBuffer("@{@foo.}");
+            var old = new StringTextBuffer("@{@foo}");
             RunPartialParseTest(new TextChange(6, 0, old, 1, changed),
                 new MarkupBlock(
                     factory.EmptyHtml(),

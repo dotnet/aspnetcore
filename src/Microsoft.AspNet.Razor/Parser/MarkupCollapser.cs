@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Razor.Parser
         protected override SyntaxTreeNode RewriteSpan(BlockBuilder parent, Span span)
         {
             // Only rewrite if we have a previous that is also markup (CanRewrite does this check for us!)
-            Span previous = parent.Children.LastOrDefault() as Span;
+            var previous = parent.Children.LastOrDefault() as Span;
             if (previous == null || !CanRewrite(previous))
             {
                 return span;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // Merge spans
             parent.Children.Remove(previous);
-            SpanBuilder merged = new SpanBuilder();
+            var merged = new SpanBuilder();
             FillSpan(merged, previous.Start, previous.Content + span.Content);
             return merged.Build();
         }

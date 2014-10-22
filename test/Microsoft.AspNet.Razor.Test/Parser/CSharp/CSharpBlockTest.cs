@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         public void ParseBlockMethodThrowsArgNullExceptionOnNullContext()
         {
             // Arrange
-            CSharpCodeParser parser = new CSharpCodeParser();
+            var parser = new CSharpCodeParser();
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => parser.ParseBlock());
@@ -567,14 +567,14 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         [Fact]
         public void ParseBlockStopsParsingCatchClausesAfterFinallyBlock()
         {
-            string expectedContent = "try { var foo = new { } } finally { var foo = new { } }";
+            var expectedContent = "try { var foo = new { } } finally { var foo = new { } }";
             SingleSpanBlockTest(expectedContent + " catch(Foo Bar Baz) { }", expectedContent, BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
         public void ParseBlockDoesNotAllowMultipleFinallyBlocks()
         {
-            string expectedContent = "try { var foo = new { } } finally { var foo = new { } }";
+            var expectedContent = "try { var foo = new { } } finally { var foo = new { } }";
             SingleSpanBlockTest(expectedContent + " finally { }", expectedContent, BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 

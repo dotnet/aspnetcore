@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
                     AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
 
-                    CSharpSymbol current = CurrentSymbol;
+                    var current = CurrentSymbol;
                     if (At(CSharpSymbolType.StringLiteral) && CurrentSymbol.Content.Length > 0 && CurrentSymbol.Content[0] == SyntaxConstants.TransitionCharacter)
                     {
                         Tuple<CSharpSymbol, CSharpSymbol> split = Language.SplitSymbol(CurrentSymbol, 1, CSharpSymbolType.Transition);
@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void VerbatimBlock()
         {
             Assert(CSharpSymbolType.LeftBrace);
-            Block block = new Block(RazorResources.BlockName_Code, CurrentLocation);
+            var block = new Block(RazorResources.BlockName_Code, CurrentLocation);
             AcceptAndMoveNext();
 
             // Set up the "{" span and output
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Output(SpanKind.MetaCode);
 
             // Set up auto-complete and parse the code block
-            AutoCompleteEditHandler editHandler = new AutoCompleteEditHandler(Language.TokenizeString);
+            var editHandler = new AutoCompleteEditHandler(Language.TokenizeString);
             Span.EditHandler = editHandler;
             CodeBlock(false, block);
 
@@ -391,7 +391,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 }
                 if (CurrentSymbol.Type == CSharpSymbolType.Dot)
                 {
-                    CSharpSymbol dot = CurrentSymbol;
+                    var dot = CurrentSymbol;
                     if (NextToken())
                     {
                         if (At(CSharpSymbolType.Identifier) || At(CSharpSymbolType.Keyword))
@@ -485,7 +485,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private void ExplicitExpression()
         {
-            Block block = new Block(RazorResources.BlockName_ExplicitExpression, CurrentLocation);
+            var block = new Block(RazorResources.BlockName_ExplicitExpression, CurrentLocation);
             Assert(CSharpSymbolType.LeftParenthesis);
             AcceptAndMoveNext();
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
@@ -493,7 +493,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Output(SpanKind.MetaCode);
             using (PushSpanConfig(ConfigureExplicitExpressionSpan))
             {
-                bool success = Balance(
+                var success = Balance(
                     BalancingModes.BacktrackOnFailure | BalancingModes.NoErrorOnFailure | BalancingModes.AllowCommentsAndTemplates,
                     CSharpSymbolType.LeftParenthesis,
                     CSharpSymbolType.RightParenthesis,
@@ -553,7 +553,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void NestedBlock()
         {
             Output(SpanKind.Code);
-            bool wasNested = IsNested;
+            var wasNested = IsNested;
             IsNested = true;
             using (PushSpanConfig())
             {

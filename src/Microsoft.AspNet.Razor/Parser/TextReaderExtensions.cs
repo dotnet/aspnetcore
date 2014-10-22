@@ -62,8 +62,8 @@ namespace Microsoft.AspNet.Razor.Parser
                 throw new ArgumentNullException("condition");
             }
 
-            StringBuilder builder = new StringBuilder();
-            int ch = -1;
+            var builder = new StringBuilder();
+            var ch = -1;
             while ((ch = reader.Peek()) != -1 && !condition((char)ch))
             {
                 reader.Read(); // Advance the reader

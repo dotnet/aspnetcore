@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         {
             using (SeekableTextReader reader = new SeekableTextReader(content))
             {
-                HtmlTokenizer tok = new HtmlTokenizer(reader);
+                var tok = new HtmlTokenizer(reader);
                 HtmlSymbol sym;
                 while ((sym = tok.NextSymbol()) != null)
                 {
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         private StateResult Text()
         {
-            char prev = '\0';
+            var prev = '\0';
             while (!EndOfFile && !ParserHelpers.IsWhitespaceOrNewLine(CurrentCharacter) && !AtSymbol())
             {
                 prev = CurrentCharacter;
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
             if (CurrentCharacter == '@')
             {
-                char next = Peek();
+                var next = Peek();
                 if (ParserHelpers.IsLetterOrDecimalDigit(prev) && ParserHelpers.IsLetterOrDecimalDigit(next))
                 {
                     TakeCurrent(); // Take the "@"
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         private HtmlSymbol Symbol()
         {
             Debug.Assert(AtSymbol());
-            char sym = CurrentCharacter;
+            var sym = CurrentCharacter;
             TakeCurrent();
             switch (sym)
             {
@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         {
             Debug.Assert(ParserHelpers.IsNewLine(CurrentCharacter));
             // CSharp Spec §2.3.1
-            bool checkTwoCharNewline = CurrentCharacter == '\r';
+            var checkTwoCharNewline = CurrentCharacter == '\r';
             TakeCurrent();
             if (checkTwoCharNewline && CurrentCharacter == '\n')
             {

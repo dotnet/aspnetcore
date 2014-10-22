@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         public void ParseDocumentMethodThrowsArgNullExceptionOnNullContext()
         {
             // Arrange
-            HtmlMarkupParser parser = new HtmlMarkupParser();
+            var parser = new HtmlMarkupParser();
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => parser.ParseDocument());
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         public void ParseSectionMethodThrowsArgNullExceptionOnNullContext()
         {
             // Arrange
-            HtmlMarkupParser parser = new HtmlMarkupParser();
+            var parser = new HtmlMarkupParser();
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => parser.ParseSection(null, true));
@@ -277,7 +277,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         [Fact]
         public void ParseBlockCanParse1000NestedElements()
         {
-            string content = Nested1000.ReadAllText();
+            var content = Nested1000.ReadAllText();
             ParseDocument(content);
         }
     }

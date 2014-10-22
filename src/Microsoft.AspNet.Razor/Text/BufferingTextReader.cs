@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Razor.Text
 
         public override int Read()
         {
-            int ch = CurrentCharacter;
+            var ch = CurrentCharacter;
             NextCharacter();
             return ch;
         }
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Razor.Text
 
             // Mark the position to return to when we backtrack
             // Use the closures and the "using" statement rather than an explicit stack
-            BacktrackContext context = new BacktrackContext()
+            var context = new BacktrackContext()
             {
                 BufferIndex = _currentBufferPosition,
                 Location = CurrentLocation
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Razor.Text
 
         protected virtual void NextCharacter()
         {
-            int prevChar = CurrentCharacter;
+            var prevChar = CurrentCharacter;
             if (prevChar == -1)
             {
                 return; // We're at the end of the source
@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.Razor.Text
         protected bool ExpandBuffer()
         {
             // Pull another character into the buffer and update the position
-            int ch = InnerReader.Read();
+            var ch = InnerReader.Read();
 
             // Only append the character to the buffer if there actually is one
             if (ch != -1)

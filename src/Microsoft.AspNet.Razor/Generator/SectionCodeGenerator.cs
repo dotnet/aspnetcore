@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            SectionCodeGenerator other = obj as SectionCodeGenerator;
+            var other = obj as SectionCodeGenerator;
             return other != null &&
                    base.Equals(other) &&
                    String.Equals(SectionName, other.SectionName, StringComparison.Ordinal);

@@ -65,12 +65,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void ConstructorInitializesProperties()
         {
             // Arrange
-            SeekableTextReader expectedBuffer = new SeekableTextReader(TextReader.Null);
-            CSharpCodeParser expectedCodeParser = new CSharpCodeParser();
-            HtmlMarkupParser expectedMarkupParser = new HtmlMarkupParser();
+            var expectedBuffer = new SeekableTextReader(TextReader.Null);
+            var expectedCodeParser = new CSharpCodeParser();
+            var expectedMarkupParser = new HtmlMarkupParser();
 
             // Act
-            ParserContext context = new ParserContext(expectedBuffer, expectedCodeParser, expectedMarkupParser, expectedCodeParser);
+            var context = new ParserContext(expectedBuffer, expectedCodeParser, expectedMarkupParser, expectedCodeParser);
 
             // Assert
             Assert.NotNull(context.Source);
@@ -83,10 +83,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void CurrentCharacterReturnsCurrentCharacterInTextBuffer()
         {
             // Arrange
-            ParserContext context = SetupTestContext("bar", b => b.Read());
+            var context = SetupTestContext("bar", b => b.Read());
 
             // Act
-            char actual = context.CurrentCharacter;
+            var actual = context.CurrentCharacter;
 
             // Assert
             Assert.Equal('a', actual);
@@ -96,10 +96,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void CurrentCharacterReturnsNulCharacterIfTextBufferAtEOF()
         {
             // Arrange
-            ParserContext context = SetupTestContext("bar", b => b.ReadToEnd());
+            var context = SetupTestContext("bar", b => b.ReadToEnd());
 
             // Act
-            char actual = context.CurrentCharacter;
+            var actual = context.CurrentCharacter;
 
             // Assert
             Assert.Equal('\0', actual);
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void EndOfFileReturnsFalseIfTextBufferNotAtEOF()
         {
             // Arrange
-            ParserContext context = SetupTestContext("bar");
+            var context = SetupTestContext("bar");
 
             // Act/Assert
             Assert.False(context.EndOfFile);
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void EndOfFileReturnsTrueIfTextBufferAtEOF()
         {
             // Arrange
-            ParserContext context = SetupTestContext("bar", b => b.ReadToEnd());
+            var context = SetupTestContext("bar", b => b.ReadToEnd());
 
             // Act/Assert
             Assert.True(context.EndOfFile);
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void StartBlockCreatesNewBlock()
         {
             // Arrange
-            ParserContext context = SetupTestContext("phoo");
+            var context = SetupTestContext("phoo");
 
             // Act
             context.StartBlock(BlockType.Expression);
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         {
             // Arrange
             Mock<ParserVisitor> mockListener = new Mock<ParserVisitor>();
-            ParserContext context = SetupTestContext("phoo");
+            var context = SetupTestContext("phoo");
 
             // Act
             context.StartBlock(BlockType.Expression);
@@ -165,21 +165,21 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Arrange
             var factory = SpanFactory.CreateCsHtml();
             Mock<ParserVisitor> mockListener = new Mock<ParserVisitor>();
-            ParserContext context = SetupTestContext("phoo");
+            var context = SetupTestContext("phoo");
 
-            SpanBuilder builder = new SpanBuilder()
+            var builder = new SpanBuilder()
             {
                 Kind = SpanKind.Code
             };
             builder.Accept(new CSharpSymbol(1, 0, 1, "foo", CSharpSymbolType.Identifier));
-            Span added = builder.Build();
+            var added = builder.Build();
 
             using (context.StartBlock(BlockType.Functions))
             {
                 context.AddSpan(added);
             }
 
-            BlockBuilder expected = new BlockBuilder()
+            var expected = new BlockBuilder()
             {
                 Type = BlockType.Functions,
             };
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Arrange
             var codeParser = new CSharpCodeParser();
             var markupParser = new HtmlMarkupParser();
-            ParserContext context = SetupTestContext("barbazbiz", b => b.Read(), codeParser, markupParser, codeParser);
+            var context = SetupTestContext("barbazbiz", b => b.Read(), codeParser, markupParser, codeParser);
             Assert.Same(codeParser, context.ActiveParser);
 
             // Act
@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Arrange
             var codeParser = new CSharpCodeParser();
             var markupParser = new HtmlMarkupParser();
-            ParserContext context = SetupTestContext("barbazbiz", b => b.Read(), codeParser, markupParser, markupParser);
+            var context = SetupTestContext("barbazbiz", b => b.Read(), codeParser, markupParser, markupParser);
             Assert.Same(markupParser, context.ActiveParser);
 
             // Act
@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
 
         private ParserContext SetupTestContext(string document, Action<TextReader> positioningAction, ParserBase codeParser, ParserBase markupParser, ParserBase activeParser)
         {
-            ParserContext context = new ParserContext(new SeekableTextReader(new StringReader(document)), codeParser, markupParser, activeParser);
+            var context = new ParserContext(new SeekableTextReader(new StringReader(document)), codeParser, markupParser, activeParser);
             positioningAction(context.Source);
             return context;
         }

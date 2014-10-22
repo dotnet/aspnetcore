@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public void Change(Action<SpanBuilder> changes)
         {
-            SpanBuilder builder = new SpanBuilder(this);
+            var builder = new SpanBuilder(this);
             changes(builder);
             ReplaceWith(builder);
         }
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             builder.Append(Kind);
             builder.AppendFormat(" Span at {0}::{1} - [{2}]", Start, Length, Content);
             builder.Append(" Edit: <");
@@ -104,8 +104,8 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         public void ChangeStart(SourceLocation newStart)
         {
             _start = newStart;
-            Span current = this;
-            SourceLocationTracker tracker = new SourceLocationTracker(newStart);
+            var current = this;
+            var tracker = new SourceLocationTracker(newStart);
             tracker.UpdateLocation(Content);
             while ((current = current.Next) != null)
             {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         /// </summary>
         public override bool EquivalentTo(SyntaxTreeNode node)
         {
-            Span other = node as Span;
+            var other = node as Span;
             return other != null &&
                    Kind.Equals(other.Kind) &&
                    Start.Equals(other.Start) &&
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public override bool Equals(object obj)
         {
-            Span other = obj as Span;
+            var other = obj as Span;
             return other != null &&
                    Kind.Equals(other.Kind) &&
                    EditHandler.Equals(other.EditHandler) &&

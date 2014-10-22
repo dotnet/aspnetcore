@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         public void ConditionalAttributeCollapserDoesNotRemoveUrlAttributeValues()
         {
             // Act
-            ParserResults results = ParseDocument("<a href='~/Foo/Bar' />");
+            var results = ParseDocument("<a href='~/Foo/Bar' />");
             var rewritingContext = new RewritingContext(results.Document);
             new ConditionalAttributeCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
             new MarkupCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
 </div>";
 
             // Act
-            ParserResults results = ParseDocument(code);
+            var results = ParseDocument(code);
             var rewritingContext = new RewritingContext(results.Document);
             new ConditionalAttributeCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
             new MarkupCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);

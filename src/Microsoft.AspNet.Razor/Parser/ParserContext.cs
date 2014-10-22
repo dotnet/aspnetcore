@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     return '\0';
                 }
 #endif
-                int ch = Source.Peek();
+                var ch = Source.Peek();
                 if (ch == -1)
                 {
                     return '\0';
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
             if (_blockStack.Count > 1)
             {
-                BlockBuilder block = _blockStack.Pop();
+                var block = _blockStack.Pop();
                 _blockStack.Peek().Children.Add(block.Build());
             }
             else
@@ -269,7 +269,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             get
             {
-                string remaining = Source.ReadToEnd();
+                var remaining = Source.ReadToEnd();
                 Source.Position -= remaining.Length;
                 return remaining;
             }

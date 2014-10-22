@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         private static bool IsIdentifierPartByUnicodeCategory(char character)
         {
-            UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(character);
+            var category = CharUnicodeInfo.GetUnicodeCategory(character);
 
             return category == UnicodeCategory.NonSpacingMark || // Mn
                    category == UnicodeCategory.SpacingCombiningMark || // Mc

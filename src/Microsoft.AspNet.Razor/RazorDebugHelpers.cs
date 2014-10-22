@@ -48,8 +48,8 @@ namespace Microsoft.AspNet.Razor
 
             RunTask(() =>
             {
-                string outputFileName = Normalize(sourceFile) + "_tree";
-                string outputPath = Path.Combine(Path.GetDirectoryName(sourceFile), outputFileName);
+                var outputFileName = Normalize(sourceFile) + "_tree";
+                var outputPath = Path.Combine(Path.GetDirectoryName(sourceFile), outputFileName);
 
                 var treeBuilder = new StringBuilder();
                 WriteTree(document, treeBuilder);
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Razor
 
         private static string ConvertEscapseSequences(string value)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             foreach (var ch in value)
             {
                 sb.Append(GetCharValue(ch));

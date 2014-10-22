@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 throw new ArgumentNullException("target");
             }
 
-            int padding = CalculatePadding(target, generatedStart: 0);
+            var padding = CalculatePadding(target, generatedStart: 0);
 
             // We treat statement padding specially so for brace positioning, so that in the following example:
             //   @if (foo > 0)
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 padding--;
             }
 
-            string generatedCode = BuildPaddingInternal(padding);
+            var generatedCode = BuildPaddingInternal(padding);
 
             return generatedCode;
         }
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         public string BuildExpressionPadding(Span target, int generatedStart)
         {
-            int padding = CalculatePadding(target, generatedStart);
+            var padding = CalculatePadding(target, generatedStart);
 
             return BuildPaddingInternal(padding);
         }
@@ -91,8 +91,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             if (_host.DesignTimeMode && _host.IsIndentingWithTabs)
             {
-                int spaces = padding % _host.TabSize;
-                int tabs = padding / _host.TabSize;
+                var spaces = padding % _host.TabSize;
+                var tabs = padding / _host.TabSize;
 
                 return new string('\t', tabs) + new string(' ', spaces);
             }
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         private static int CollectSpacesAndTabs(Span target, int tabSize)
         {
-            Span firstSpanInLine = target;
+            var firstSpanInLine = target;
 
             string currentContent = null;
 
@@ -113,9 +113,9 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 // When scanning previous spans we need to be break down the spans with spaces. The parser combines 
                 // whitespace into existing spans so you'll see tabs, newlines etc. within spans.  We only care about
                 // the \t in existing spans.
-                String previousContent = firstSpanInLine.Previous.Content ?? String.Empty;
+                var previousContent = firstSpanInLine.Previous.Content ?? String.Empty;
 
-                int lastNewLineIndex = previousContent.LastIndexOfAny(_newLineChars);
+                var lastNewLineIndex = previousContent.LastIndexOfAny(_newLineChars);
 
                 if (lastNewLineIndex < 0)
                 {
@@ -134,14 +134,14 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             }
 
             // We need to walk from the beginning of the line, because space + tab(tabSize) = tabSize columns, but tab(tabSize) + space = tabSize+1 columns.
-            Span currentSpanInLine = firstSpanInLine;
+            var currentSpanInLine = firstSpanInLine;
 
             if (currentContent == null)
             {
                 currentContent = currentSpanInLine.Content;
             }
 
-            int padding = 0;
+            var padding = 0;
             while (currentSpanInLine != target)
             {
                 if (currentContent != null)

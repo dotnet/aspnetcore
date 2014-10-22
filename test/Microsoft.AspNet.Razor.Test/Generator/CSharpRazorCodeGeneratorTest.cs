@@ -456,7 +456,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
         private void OpenedIf(bool withTabs)
         {
-            int tabOffsetForMapping = 7;
+            var tabOffsetForMapping = 7;
 
             // where the test is running with tabs, the offset into the CS buffer changes for the whitespace mapping
             // with spaces we get 7xspace -> offset of 8 (column = offset+1)

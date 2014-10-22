@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             var paddingBuilder = new CSharpPaddingBuilder(host);
 
             // Act
-            int padding = paddingBuilder.CalculatePadding(span, 1);
+            var padding = paddingBuilder.CalculatePadding(span, 1);
 
             // Assert
             Assert.Equal(5, padding);
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
             using (var reader = new StringReader(text))
             {
-                ParserResults results = parser.Parse(reader);
+                var results = parser.Parse(reader);
                 spans = results.Document.Flatten().ToArray();
             }
 

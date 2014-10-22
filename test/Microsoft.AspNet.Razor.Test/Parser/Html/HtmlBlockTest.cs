@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         public void ParseBlockMethodThrowsArgNullExceptionOnNullContext()
         {
             // Arrange
-            HtmlMarkupParser parser = new HtmlMarkupParser();
+            var parser = new HtmlMarkupParser();
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => parser.ParseBlock());

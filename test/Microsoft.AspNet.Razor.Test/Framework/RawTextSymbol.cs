@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public override bool Equals(object obj)
         {
-            RawTextSymbol other = obj as RawTextSymbol;
+            var other = obj as RawTextSymbol;
             return Equals(Start, other.Start) && Equals(Content, other.Content);
         }
 

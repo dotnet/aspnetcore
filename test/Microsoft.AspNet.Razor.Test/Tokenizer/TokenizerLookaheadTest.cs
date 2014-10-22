@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         [Fact]
         public void After_Cancelling_Lookahead_Tokenizer_Returns_Same_Tokens_As_It_Did_Before_Lookahead()
         {
-            HtmlTokenizer tokenizer = new HtmlTokenizer(new SeekableTextReader(new StringReader("<foo>")));
+            var tokenizer = new HtmlTokenizer(new SeekableTextReader(new StringReader("<foo>")));
             using (tokenizer.Source.BeginLookahead())
             {
                 Assert.Equal(new HtmlSymbol(0, 0, 0, "<", HtmlSymbolType.OpenAngle), tokenizer.NextSymbol());
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         [Fact]
         public void After_Accepting_Lookahead_Tokenizer_Returns_Next_Token()
         {
-            HtmlTokenizer tokenizer = new HtmlTokenizer(new SeekableTextReader(new StringReader("<foo>")));
+            var tokenizer = new HtmlTokenizer(new SeekableTextReader(new StringReader("<foo>")));
             using (LookaheadToken lookahead = tokenizer.Source.BeginLookahead())
             {
                 Assert.Equal(new HtmlSymbol(0, 0, 0, "<", HtmlSymbolType.OpenAngle), tokenizer.NextSymbol());

@@ -23,8 +23,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(UsingChunk chunk)
         {
-            string documentContent = ((Span)chunk.Association).Content.Trim();
-            bool mapSemicolon = false;
+            var documentContent = ((Span)chunk.Association).Content.Trim();
+            var mapSemicolon = false;
 
             if (documentContent.LastOrDefault() == ';')
             {

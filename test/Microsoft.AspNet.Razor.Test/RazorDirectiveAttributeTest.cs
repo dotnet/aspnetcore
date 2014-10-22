@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Razor.Test
             var attribute2 = new RazorDirectiveAttribute("foo", "BAr");
 
             // Act
-            bool result = attribute1.Equals(attribute2);
+            var result = attribute1.Equals(attribute2);
             var hashCode = attribute1.GetHashCode();
 
             // Assert
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Razor.Test
             var attribute2 = new RazorDirectiveAttribute("foo", "");
 
             // Act
-            bool result = attribute1.Equals(attribute2);
+            var result = attribute1.Equals(attribute2);
             var hashCode1 = attribute1.GetHashCode();
             var hashCode2 = attribute2.GetHashCode();
 

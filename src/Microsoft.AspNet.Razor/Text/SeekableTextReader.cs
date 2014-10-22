@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Razor.Text
             {
                 return -1;
             }
-            char chr = _current.Value;
+            var chr = _current.Value;
             _position++;
             UpdateState();
             return chr;

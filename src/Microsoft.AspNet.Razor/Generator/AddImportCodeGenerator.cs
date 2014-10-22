@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
-            string ns = Namespace;
+            var ns = Namespace;
 
             if (!String.IsNullOrEmpty(ns) && Char.IsWhiteSpace(ns[0]))
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            AddImportCodeGenerator other = obj as AddImportCodeGenerator;
+            var other = obj as AddImportCodeGenerator;
             return other != null &&
                    String.Equals(Namespace, other.Namespace, StringComparison.Ordinal) &&
                    NamespaceKeywordLength == other.NamespaceKeywordLength;

@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public static SourceLocation GetLocationAndAdvance(this SourceLocationTracker self, string content)
         {
-            SourceLocation ret = self.CurrentLocation;
+            var ret = self.CurrentLocation;
             self.UpdateLocation(content);
             return ret;
         }
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         private SpanConstructor CreateSymbolSpan(SpanKind kind, string content, Func<SourceLocation, ISymbol> ctor)
         {
-            SourceLocation start = LocationTracker.CurrentLocation;
+            var start = LocationTracker.CurrentLocation;
             LocationTracker.UpdateLocation(content);
             return new SpanConstructor(kind, new[] { ctor(start) });
         }
@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         private IEnumerable<ISymbol> Tokenize(string content, bool markup)
         {
-            ITokenizer tok = MakeTokenizer(markup, new SeekableTextReader(content));
+            var tok = MakeTokenizer(markup, new SeekableTextReader(content));
             ISymbol sym;
             ISymbol last = null;
             while ((sym = tok.NextSymbol()) != null)

@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Razor.Text
             {
                 return false;
             }
-            TextChange change = (TextChange)obj;
+            var change = (TextChange)obj;
             return (change.OldPosition == OldPosition) &&
                    (change.NewPosition == NewPosition) &&
                    (change.OldLength == OldLength) &&
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Razor.Text
 
         public string ApplyChange(string content, int changeOffset)
         {
-            int changeRelativePosition = OldPosition - changeOffset;
+            var changeRelativePosition = OldPosition - changeOffset;
 
             Debug.Assert(changeRelativePosition >= 0);
             return content.Remove(changeRelativePosition, OldLength)
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Razor.Text
                 return String.Empty;
             }
 
-            int oldPosition = buffer.Position;
+            var oldPosition = buffer.Position;
             try
             {
                 buffer.Position = position;
@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Razor.Text
                     var builder = new StringBuilder();
                     for (int i = 0; i < length; i++)
                     {
-                        char c = (char)buffer.Read();
+                        var c = (char)buffer.Read();
                         builder.Append(c);
 
                         // This check is probably not necessary, will revisit when fixing https://aspnetwebstack.codeplex.com/workitem/1317

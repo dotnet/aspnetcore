@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         protected virtual void SingleSpanDocumentTest(string document, BlockType blockType, SpanKind spanType)
         {
-            Block b = CreateSimpleBlockAndSpan(document, blockType, spanType);
+            var b = CreateSimpleBlockAndSpan(document, blockType, spanType);
             ParseDocumentTest(document, b);
         }
     }

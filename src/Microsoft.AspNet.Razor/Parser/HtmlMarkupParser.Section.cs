@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private void NestingSection(Tuple<string, string> nestingSequences)
         {
-            int nesting = 1;
+            var nesting = 1;
             while (nesting > 0 && !EndOfFile)
             {
                 SkipToAndParseCode(sym =>
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Razor.Parser
             EnsureCurrent();
             if (String.Equals(CurrentSymbol.Content, nestingSequenceComponents[0], Comparison))
             {
-                int bookmark = CurrentSymbol.Start.AbsoluteIndex;
+                var bookmark = CurrentSymbol.Start.AbsoluteIndex;
                 try
                 {
                     foreach (string component in nestingSequenceComponents)
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             for (int i = 0; i < CurrentSymbol.Content.Length; i++)
             {
-                int nestingDelta = HandleNestingSequence(nestingSequences.Item1, i, currentNesting, 1);
+                var nestingDelta = HandleNestingSequence(nestingSequences.Item1, i, currentNesting, 1);
                 if (nestingDelta == 0)
                 {
                     nestingDelta = HandleNestingSequence(nestingSequences.Item2, i, currentNesting, -1);
@@ -142,21 +142,21 @@ namespace Microsoft.AspNet.Razor.Parser
                 CurrentSymbol.Content[position] == sequence[0] &&
                 position + sequence.Length <= CurrentSymbol.Content.Length)
             {
-                string possibleStart = CurrentSymbol.Content.Substring(position, sequence.Length);
+                var possibleStart = CurrentSymbol.Content.Substring(position, sequence.Length);
                 if (String.Equals(possibleStart, sequence, Comparison))
                 {
                     // Capture the current symbol and "put it back" (really we just want to clear CurrentSymbol)
-                    int bookmark = Context.Source.Position;
-                    HtmlSymbol sym = CurrentSymbol;
+                    var bookmark = Context.Source.Position;
+                    var sym = CurrentSymbol;
                     PutCurrentBack();
 
                     // Carve up the symbol
                     Tuple<HtmlSymbol, HtmlSymbol> pair = Language.SplitSymbol(sym, position, HtmlSymbolType.Text);
-                    HtmlSymbol preSequence = pair.Item1;
+                    var preSequence = pair.Item1;
                     Debug.Assert(pair.Item2 != null);
                     pair = Language.SplitSymbol(pair.Item2, sequence.Length, HtmlSymbolType.Text);
-                    HtmlSymbol sequenceToken = pair.Item1;
-                    HtmlSymbol postSequence = pair.Item2;
+                    var sequenceToken = pair.Item1;
+                    var postSequence = pair.Item2;
 
                     // Accept the first chunk (up to the nesting sequence we just saw)
                     if (!String.IsNullOrEmpty(preSequence.Content))

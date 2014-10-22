@@ -17,12 +17,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void ConstructorWithBlockBuilderSetsParent()
         {
             // Arrange
-            BlockBuilder builder = new BlockBuilder() { Type = BlockType.Comment };
-            Span span = new SpanBuilder() { Kind = SpanKind.Code }.Build();
+            var builder = new BlockBuilder() { Type = BlockType.Comment };
+            var span = new SpanBuilder() { Kind = SpanKind.Code }.Build();
             builder.Children.Add(span);
 
             // Act
-            Block block = builder.Build();
+            var block = builder.Build();
 
             // Assert
             Assert.Same(block, span.Parent);
@@ -32,15 +32,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void ConstructorTransfersInstanceOfCodeGeneratorFromBlockBuilder()
         {
             // Arrange
-            IBlockCodeGenerator expected = new ExpressionCodeGenerator();
-            BlockBuilder builder = new BlockBuilder()
+            var expected = new ExpressionCodeGenerator();
+            var builder = new BlockBuilder()
             {
                 Type = BlockType.Helper,
                 CodeGenerator = expected
             };
 
             // Act
-            Block actual = builder.Build();
+            var actual = builder.Build();
 
             // Assert
             Assert.Same(expected, actual.CodeGenerator);
@@ -50,15 +50,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void ConstructorTransfersChildrenFromBlockBuilder()
         {
             // Arrange
-            Span expected = new SpanBuilder() { Kind = SpanKind.Code }.Build();
-            BlockBuilder builder = new BlockBuilder()
+            var expected = new SpanBuilder() { Kind = SpanKind.Code }.Build();
+            var builder = new BlockBuilder()
             {
                 Type = BlockType.Functions
             };
             builder.Children.Add(expected);
 
             // Act
-            Block block = builder.Build();
+            var block = builder.Build();
 
             // Assert
             Assert.Same(expected, block.Children.Single());
@@ -69,16 +69,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         {
             // Arrange
             var factory = SpanFactory.CreateCsHtml();
-            Block block = new MarkupBlock(
+            var block = new MarkupBlock(
                 factory.Markup("Foo "),
                 new StatementBlock(
                     factory.CodeTransition(),
                     factory.Code("bar").AsStatement()),
                 factory.Markup(" Baz"));
-            TextChange change = new TextChange(128, 1, new StringTextBuffer("Foo @bar Baz"), 1, new StringTextBuffer("Foo @bor Baz"));
+            var change = new TextChange(128, 1, new StringTextBuffer("Foo @bar Baz"), 1, new StringTextBuffer("Foo @bor Baz"));
 
             // Act
-            Span actual = block.LocateOwner(change);
+            var actual = block.LocateOwner(change);
 
             // Assert
             Assert.Null(actual);
@@ -89,16 +89,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         {
             // Arrange
             var factory = SpanFactory.CreateCsHtml();
-            Block block = new MarkupBlock(
+            var block = new MarkupBlock(
                 factory.Markup("Foo "),
                 new StatementBlock(
                     factory.CodeTransition(),
                     factory.Code("bar").AsStatement()),
                 factory.Markup(" Baz"));
-            TextChange change = new TextChange(4, 10, new StringTextBuffer("Foo @bar Baz"), 10, new StringTextBuffer("Foo @bor Baz"));
+            var change = new TextChange(4, 10, new StringTextBuffer("Foo @bar Baz"), 10, new StringTextBuffer("Foo @bor Baz"));
 
             // Act
-            Span actual = block.LocateOwner(change);
+            var actual = block.LocateOwner(change);
 
             // Assert
             Assert.Null(actual);

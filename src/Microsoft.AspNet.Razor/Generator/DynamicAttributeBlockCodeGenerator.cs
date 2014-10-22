@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            DynamicAttributeBlockCodeGenerator other = obj as DynamicAttributeBlockCodeGenerator;
+            var other = obj as DynamicAttributeBlockCodeGenerator;
             return other != null &&
                    Equals(other.Prefix, Prefix);
         }

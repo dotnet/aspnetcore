@@ -21,11 +21,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         protected static void RunFullReparseTest(TextChange change, PartialParseResult additionalFlags = (PartialParseResult)0)
         {
             // Arrange
-            TestParserManager manager = CreateParserManager();
+            var manager = CreateParserManager();
             manager.InitializeWithDocument(change.OldBuffer);
 
             // Act
-            PartialParseResult result = manager.CheckForStructureChangesAndWait(change);
+            var result = manager.CheckForStructureChangesAndWait(change);
 
             // Assert
             Assert.Equal(PartialParseResult.Rejected | additionalFlags, result);
@@ -35,11 +35,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         protected static void RunPartialParseTest(TextChange change, Block newTreeRoot, PartialParseResult additionalFlags = (PartialParseResult)0)
         {
             // Arrange
-            TestParserManager manager = CreateParserManager();
+            var manager = CreateParserManager();
             manager.InitializeWithDocument(change.OldBuffer);
 
             // Act
-            PartialParseResult result = manager.CheckForStructureChangesAndWait(change);
+            var result = manager.CheckForStructureChangesAndWait(change);
 
             // Assert
             Assert.Equal(PartialParseResult.Accepted | additionalFlags, result);
@@ -49,8 +49,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
 
         protected static TestParserManager CreateParserManager()
         {
-            RazorEngineHost host = CreateHost();
-            RazorEditorParser parser = new RazorEditorParser(host, TestLinePragmaFileName);
+            var host = CreateHost();
+            var parser = new RazorEditorParser(host, TestLinePragmaFileName);
             return new TestParserManager(parser);
         }
 
@@ -72,10 +72,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
 
         protected static void RunTypeKeywordTest(string keyword)
         {
-            string before = "@" + keyword.Substring(0, keyword.Length - 1);
-            string after = "@" + keyword;
-            StringTextBuffer changed = new StringTextBuffer(after);
-            StringTextBuffer old = new StringTextBuffer(before);
+            var before = "@" + keyword.Substring(0, keyword.Length - 1);
+            var after = "@" + keyword;
+            var changed = new StringTextBuffer(after);
+            var old = new StringTextBuffer(before);
             RunFullReparseTest(new TextChange(keyword.Length, 0, old, 1, changed), additionalFlags: PartialParseResult.SpanContextChanged);
         }
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
 
             public PartialParseResult CheckForStructureChangesAndWait(TextChange change)
             {
-                PartialParseResult result = Parser.CheckForStructureChanges(change);
+                var result = Parser.CheckForStructureChanges(change);
                 if (result.HasFlag(PartialParseResult.Rejected))
                 {
                     WaitForParse();

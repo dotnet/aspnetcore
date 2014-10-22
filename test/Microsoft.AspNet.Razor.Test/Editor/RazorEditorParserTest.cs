@@ -43,20 +43,20 @@ namespace Microsoft.AspNet.Razor.Test.Editor
         public void TreesAreDifferentReturnsTrueIfTreeStructureIsDifferent()
         {
             var factory = SpanFactory.CreateCsHtml();
-            Block original = new MarkupBlock(
+            var original = new MarkupBlock(
                 factory.Markup("<p>"),
                 new ExpressionBlock(
                     factory.CodeTransition()),
                 factory.Markup("</p>"));
-            Block modified = new MarkupBlock(
+            var modified = new MarkupBlock(
                 factory.Markup("<p>"),
                 new ExpressionBlock(
                     factory.CodeTransition("@"),
                     factory.Code("f")
                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)),
                 factory.Markup("</p>"));
-            ITextBuffer oldBuffer = new StringTextBuffer("<p>@</p>");
-            ITextBuffer newBuffer = new StringTextBuffer("<p>@f</p>");
+            var oldBuffer = new StringTextBuffer("<p>@</p>");
+            var newBuffer = new StringTextBuffer("<p>@f</p>");
             Assert.True(BackgroundParser.TreesAreDifferent(
                 original, modified, new[] {
                     new TextChange(position: 4, oldLength: 0, oldBuffer: oldBuffer, newLength: 1, newBuffer: newBuffer)
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Razor.Test.Editor
         public void TreesAreDifferentReturnsFalseIfTreeStructureIsSame()
         {
             var factory = SpanFactory.CreateCsHtml();
-            Block original = new MarkupBlock(
+            var original = new MarkupBlock(
                 factory.Markup("<p>"),
                 new ExpressionBlock(
                     factory.CodeTransition(),
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Razor.Test.Editor
                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)),
                 factory.Markup("</p>"));
             factory.Reset();
-            Block modified = new MarkupBlock(
+            var modified = new MarkupBlock(
                 factory.Markup("<p>"),
                 new ExpressionBlock(
                     factory.CodeTransition(),
@@ -84,8 +84,8 @@ namespace Microsoft.AspNet.Razor.Test.Editor
                 factory.Markup("</p>"));
             original.LinkNodes();
             modified.LinkNodes();
-            ITextBuffer oldBuffer = new StringTextBuffer("<p>@f</p>");
-            ITextBuffer newBuffer = new StringTextBuffer("<p>@foo</p>");
+            var oldBuffer = new StringTextBuffer("<p>@f</p>");
+            var newBuffer = new StringTextBuffer("<p>@foo</p>");
             Assert.False(BackgroundParser.TreesAreDifferent(
                 original, modified, new[] {
                     new TextChange(position: 5, oldLength: 0, oldBuffer: oldBuffer, newLength: 2, newBuffer: newBuffer)
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Razor.Test.Editor
         [Fact]
         public void CheckForStructureChangesRequiresNonNullBufferInChange()
         {
-            TextChange change = new TextChange();
+            var change = new TextChange();
             var parameterName = "change";
             var exception = Assert.Throws<ArgumentException>(
                 parameterName,
@@ -117,10 +117,10 @@ namespace Microsoft.AspNet.Razor.Test.Editor
             // Arrange
             using (RazorEditorParser parser = CreateClientParser())
             {
-                StringTextBuffer input = new StringTextBuffer(SimpleCSHTMLDocument.ReadAllText());
+                var input = new StringTextBuffer(SimpleCSHTMLDocument.ReadAllText());
 
                 DocumentParseCompleteEventArgs capturedArgs = null;
-                ManualResetEventSlim parseComplete = new ManualResetEventSlim(false);
+                var parseComplete = new ManualResetEventSlim(false);
 
                 parser.DocumentParseComplete += (sender, args) =>
                 {
@@ -144,13 +144,13 @@ namespace Microsoft.AspNet.Razor.Test.Editor
         public void CheckForStructureChangesStartsFullReparseIfChangeOverlapsMultipleSpans()
         {
             // Arrange
-            RazorEditorParser parser = new RazorEditorParser(CreateHost(), TestLinePragmaFileName);
-            ITextBuffer original = new StringTextBuffer("Foo @bar Baz");
-            ITextBuffer changed = new StringTextBuffer("Foo @bap Daz");
-            TextChange change = new TextChange(7, 3, original, 3, changed);
+            var parser = new RazorEditorParser(CreateHost(), TestLinePragmaFileName);
+            var original = new StringTextBuffer("Foo @bar Baz");
+            var changed = new StringTextBuffer("Foo @bap Daz");
+            var change = new TextChange(7, 3, original, 3, changed);
 
-            ManualResetEventSlim parseComplete = new ManualResetEventSlim();
-            int parseCount = 0;
+            var parseComplete = new ManualResetEventSlim();
+            var parseCount = 0;
             parser.DocumentParseComplete += (sender, args) =>
             {
                 Interlocked.Increment(ref parseCount);
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Razor.Test.Editor
             parseComplete.Reset();
 
             // Act
-            PartialParseResult result = parser.CheckForStructureChanges(change);
+            var result = parser.CheckForStructureChanges(change);
 
             // Assert
             Assert.Equal(PartialParseResult.Rejected, result);

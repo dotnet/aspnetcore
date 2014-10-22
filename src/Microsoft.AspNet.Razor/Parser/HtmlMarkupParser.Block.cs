@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             // Parse until a newline, it's that simple!
             // First, signal to code parser that whitespace is significant to us.
-            bool old = Context.WhiteSpaceIsSignificantToAncestorBlock;
+            var old = Context.WhiteSpaceIsSignificantToAncestorBlock;
             Context.WhiteSpaceIsSignificantToAncestorBlock = true;
             Span.EditHandler = new SingleLineMarkupEditHandler(Language.TokenizeString);
             SkipToAndParseCode(HtmlSymbolType.NewLine);
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void TagBlock(Stack<Tuple<HtmlSymbol, SourceLocation>> tags)
         {
             // Skip Whitespace and Text
-            bool complete = false;
+            var complete = false;
             do
             {
                 SkipToAndParseCode(HtmlSymbolType.OpenAngle);
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Razor.Parser
                         _lastTagStart = CurrentLocation;
                         Assert(HtmlSymbolType.OpenAngle);
                         _bufferedOpenAngle = CurrentSymbol;
-                        SourceLocation tagStart = CurrentLocation;
+                        var tagStart = CurrentLocation;
                         if (!NextToken())
                         {
                             Accept(_bufferedOpenAngle);
@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             // Accept "/" and move next
             Assert(HtmlSymbolType.ForwardSlash);
-            HtmlSymbol solidus = CurrentSymbol;
+            var solidus = CurrentSymbol;
             if (!NextToken())
             {
                 Accept(_bufferedOpenAngle);
@@ -284,12 +284,12 @@ namespace Microsoft.AspNet.Razor.Parser
             }
             else
             {
-                string tagName = String.Empty;
+                var tagName = String.Empty;
                 if (At(HtmlSymbolType.Text))
                 {
                     tagName = CurrentSymbol.Content;
                 }
-                bool matched = RemoveTag(tags, tagName, tagStart);
+                var matched = RemoveTag(tags, tagName, tagStart);
 
                 if (tags.Count == 0 &&
                     String.Equals(tagName, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase) &&
@@ -318,7 +318,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private bool EndTextTag(HtmlSymbol solidus, IDisposable tagBlockWrapper)
         {
-            SourceLocation start = _bufferedOpenAngle.Start;
+            var start = _bufferedOpenAngle.Start;
 
             Accept(_bufferedOpenAngle);
             Accept(solidus);
@@ -326,7 +326,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Assert(HtmlSymbolType.Text);
             AcceptAndMoveNext();
 
-            bool seenCloseAngle = Optional(HtmlSymbolType.CloseAngle);
+            var seenCloseAngle = Optional(HtmlSymbolType.CloseAngle);
 
             if (!seenCloseAngle)
             {
@@ -456,14 +456,14 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
             LocationTagged<string> name = nameSymbols.GetContent(Span.Start);
-            bool attributeCanBeConditional = !name.Value.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
+            var attributeCanBeConditional = !name.Value.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
 
             // Accept the whitespace and name
             Accept(whitespace);
             Accept(nameSymbols);
             Assert(HtmlSymbolType.Equals); // We should be at "="
             AcceptAndMoveNext();
-            HtmlSymbolType quote = HtmlSymbolType.Unknown;
+            var quote = HtmlSymbolType.Unknown;
             if (At(HtmlSymbolType.SingleQuote) || At(HtmlSymbolType.DoubleQuote))
             {
                 quote = CurrentSymbol.Type;
@@ -516,13 +516,13 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private void AttributeValue(HtmlSymbolType quote)
         {
-            SourceLocation prefixStart = CurrentLocation;
+            var prefixStart = CurrentLocation;
             var prefix = ReadWhile(sym => sym.Type == HtmlSymbolType.WhiteSpace || sym.Type == HtmlSymbolType.NewLine);
             Accept(prefix);
 
             if (At(HtmlSymbolType.Transition))
             {
-                SourceLocation valueStart = CurrentLocation;
+                var valueStart = CurrentLocation;
                 PutCurrentBack();
 
                 // Output the prefix but as a null-span. DynamicAttributeBlockCodeGenerator will render it
@@ -543,7 +543,7 @@ namespace Microsoft.AspNet.Razor.Parser
                      NextIs(HtmlSymbolType.ForwardSlash))
             {
                 // Virtual Path value
-                SourceLocation valueStart = CurrentLocation;
+                var valueStart = CurrentLocation;
                 VirtualPath();
                 Span.CodeGenerator = new LiteralAttributeCodeGenerator(
                     prefix.GetContent(prefixStart),
@@ -634,7 +634,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private void ParseQuoted()
         {
-            HtmlSymbolType type = CurrentSymbol.Type;
+            var type = CurrentSymbol.Type;
             AcceptAndMoveNext();
             ParseQuoted(type);
         }
@@ -674,9 +674,9 @@ namespace Microsoft.AspNet.Razor.Parser
 
                 AcceptAndMoveNext();
 
-                int bookmark = CurrentLocation.AbsoluteIndex;
+                var bookmark = CurrentLocation.AbsoluteIndex;
                 IEnumerable<HtmlSymbol> tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
-                bool empty = At(HtmlSymbolType.ForwardSlash);
+                var empty = At(HtmlSymbolType.ForwardSlash);
                 if (empty)
                 {
                     Accept(tokens);
@@ -727,7 +727,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 return false;
             }
 
-            bool isEmpty = At(HtmlSymbolType.ForwardSlash);
+            var isEmpty = At(HtmlSymbolType.ForwardSlash);
             // Found a solidus, so don't accept it but DON'T push the tag to the stack
             if (isEmpty)
             {
@@ -735,7 +735,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             // Check for the '>' to determine if the tag is finished
-            bool seenClose = Optional(HtmlSymbolType.CloseAngle);
+            var seenClose = Optional(HtmlSymbolType.CloseAngle);
             if (!seenClose)
             {
                 Context.OnError(tag.Item2, RazorResources.FormatParseError_UnfinishedTag(tag.Item1.Content));
@@ -745,7 +745,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 if (!isEmpty)
                 {
                     // Is this a void element?
-                    string tagName = tag.Item1.Content.Trim();
+                    var tagName = tag.Item1.Content.Trim();
                     if (VoidElements.Contains(tagName))
                     {
                         CompleteTagBlockWithSpan(tagBlockWrapper, AcceptedCharacters.None, SpanKind.Markup);
@@ -753,7 +753,7 @@ namespace Microsoft.AspNet.Razor.Parser
                         // Technically, void elements like "meta" are not allowed to have end tags. Just in case they do,
                         // we need to look ahead at the next set of tokens. If we see "<", "/", tag name, accept it and the ">" following it
                         // Place a bookmark
-                        int bookmark = CurrentLocation.AbsoluteIndex;
+                        var bookmark = CurrentLocation.AbsoluteIndex;
 
                         // Skip whitespace
                         IEnumerable<HtmlSymbol> whiteSpace = ReadWhile(IsSpacingToken(includeNewLines: true));
@@ -761,10 +761,10 @@ namespace Microsoft.AspNet.Razor.Parser
                         // Open Angle
                         if (At(HtmlSymbolType.OpenAngle) && NextIs(HtmlSymbolType.ForwardSlash))
                         {
-                            HtmlSymbol openAngle = CurrentSymbol;
+                            var openAngle = CurrentSymbol;
                             NextToken();
                             Assert(HtmlSymbolType.ForwardSlash);
-                            HtmlSymbol solidus = CurrentSymbol;
+                            var solidus = CurrentSymbol;
                             NextToken();
                             if (At(HtmlSymbolType.Text) && string.Equals(CurrentSymbol.Content, tagName, StringComparison.OrdinalIgnoreCase))
                             {
@@ -819,12 +819,12 @@ namespace Microsoft.AspNet.Razor.Parser
         private void SkipToEndScriptAndParseCode(AcceptedCharacters endTagAcceptedCharacters = AcceptedCharacters.Any)
         {
             // Special case for <script>: Skip to end of script tag and parse code
-            bool seenEndScript = false;
+            var seenEndScript = false;
 
             while (!seenEndScript && !EndOfFile)
             {
                 SkipToAndParseCode(HtmlSymbolType.OpenAngle);
-                SourceLocation tagStart = CurrentLocation;
+                var tagStart = CurrentLocation;
 
                 if (NextIs(HtmlSymbolType.ForwardSlash))
                 {

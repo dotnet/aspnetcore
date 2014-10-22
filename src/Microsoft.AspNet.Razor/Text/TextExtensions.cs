@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Razor.Text
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The consumer is expected to dispose this object")]
         public static ITextDocument ToDocument(this ITextBuffer self)
         {
-            ITextDocument ret = self as ITextDocument;
+            var ret = self as ITextDocument;
             if (ret == null)
             {
                 ret = new SeekableTextReader(self);
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Razor.Text
 
         public static LookaheadToken BeginLookahead(this ITextBuffer self)
         {
-            int start = self.Position;
+            var start = self.Position;
             return new LookaheadToken(() =>
             {
                 self.Position = start;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Razor.Text
 
         public static string ReadToEnd(this ITextBuffer self)
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             int read;
             while ((read = self.Read()) != -1)
             {

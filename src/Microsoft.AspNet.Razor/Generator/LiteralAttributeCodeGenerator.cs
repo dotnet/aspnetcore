@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            LiteralAttributeCodeGenerator other = obj as LiteralAttributeCodeGenerator;
+            var other = obj as LiteralAttributeCodeGenerator;
             return other != null &&
                    Equals(other.Prefix, Prefix) &&
                    Equals(other.Value, Value) &&

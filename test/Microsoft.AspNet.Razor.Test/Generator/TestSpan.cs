@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
         public override bool Equals(object obj)
         {
-            TestSpan other = obj as TestSpan;
+            var other = obj as TestSpan;
 
             if (other != null)
             {

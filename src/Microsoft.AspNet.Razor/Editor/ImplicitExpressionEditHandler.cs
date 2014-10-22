@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Razor.Editor
 
         public override bool Equals(object obj)
         {
-            ImplicitExpressionEditHandler other = obj as ImplicitExpressionEditHandler;
+            var other = obj as ImplicitExpressionEditHandler;
             return other != null &&
                    base.Equals(other) &&
                    Keywords.SetEquals(other.Keywords) &&
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Razor.Editor
             {
                 return HandleReplacement(target, normalizedChange);
             }
-            int changeRelativePosition = normalizedChange.OldPosition - target.Start.AbsoluteIndex;
+            var changeRelativePosition = normalizedChange.OldPosition - target.Start.AbsoluteIndex;
 
             // Get the edit context
             char? lastChar = null;
@@ -186,13 +186,13 @@ namespace Microsoft.AspNet.Razor.Editor
 
         private static bool RemainingIsWhitespace(Span target, TextChange change)
         {
-            int offset = (change.OldPosition - target.Start.AbsoluteIndex) + change.OldLength;
+            var offset = (change.OldPosition - target.Start.AbsoluteIndex) + change.OldLength;
             return String.IsNullOrWhiteSpace(target.Content.Substring(offset));
         }
 
         private PartialParseResult HandleDotlessCommitInsertion(Span target)
         {
-            PartialParseResult result = PartialParseResult.Accepted;
+            var result = PartialParseResult.Accepted;
             if (!AcceptTrailingDot && target.Content.LastOrDefault() == '.')
             {
                 result |= PartialParseResult.Provisional;
@@ -207,9 +207,9 @@ namespace Microsoft.AspNet.Razor.Editor
             //  1. Insert "." at the end of this span
             //  2. Replace the "Date." at the end of the span with "DateTime."
             //  We need partial parsing to accept case #2.
-            string oldText = GetOldText(target, change);
+            var oldText = GetOldText(target, change);
 
-            PartialParseResult result = PartialParseResult.Rejected;
+            var result = PartialParseResult.Rejected;
             if (EndsWithDot(oldText) && EndsWithDot(change.NewText))
             {
                 result = PartialParseResult.Accepted;
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Razor.Editor
             else if (EndsWithDot(change.NewText))
             {
                 // Accept it, possibly provisionally
-                PartialParseResult result = PartialParseResult.Accepted;
+                var result = PartialParseResult.Accepted;
                 if (!AcceptTrailingDot)
                 {
                     result |= PartialParseResult.Provisional;
@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.Razor.Editor
 
         private PartialParseResult TryAcceptChange(Span target, TextChange change, PartialParseResult acceptResult = PartialParseResult.Accepted)
         {
-            string content = change.ApplyChange(target);
+            var content = change.ApplyChange(target);
             if (StartsWithKeyword(content))
             {
                 return PartialParseResult.Rejected | PartialParseResult.SpanContextChanged;
@@ -308,7 +308,7 @@ namespace Microsoft.AspNet.Razor.Editor
 
         private bool StartsWithKeyword(string newContent)
         {
-            using (StringReader reader = new StringReader(newContent))
+            using (var reader = new StringReader(newContent))
             {
                 return Keywords.Contains(reader.ReadWhile(ParserHelpers.IsIdentifierPart));
             }

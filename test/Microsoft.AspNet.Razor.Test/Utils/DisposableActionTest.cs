@@ -20,8 +20,8 @@ namespace Microsoft.AspNet.Razor.Test.Utils
         public void ActionIsExecutedOnDispose()
         {
             // Arrange
-            bool called = false;
-            DisposableAction action = new DisposableAction(() => { called = true; });
+            var called = false;
+            var action = new DisposableAction(() => { called = true; });
 
             // Act
             action.Dispose();

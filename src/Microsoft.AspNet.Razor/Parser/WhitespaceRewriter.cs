@@ -52,14 +52,14 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected override SyntaxTreeNode RewriteBlock(BlockBuilder parent, Block block)
         {
-            BlockBuilder newBlock = new BlockBuilder(block);
+            var newBlock = new BlockBuilder(block);
             newBlock.Children.Clear();
-            Span ws = block.Children.FirstOrDefault() as Span;
+            var ws = block.Children.FirstOrDefault() as Span;
             IEnumerable<SyntaxTreeNode> newNodes = block.Children;
             if (ws.Content.All(Char.IsWhiteSpace))
             {
                 // Add this node to the parent
-                SpanBuilder builder = new SpanBuilder(ws);
+                var builder = new SpanBuilder(ws);
                 builder.ClearSymbols();
                 FillSpan(builder, ws.Start, ws.Content);
                 parent.Children.Add(builder.Build());

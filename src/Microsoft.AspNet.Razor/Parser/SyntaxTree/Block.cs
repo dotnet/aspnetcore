@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public override bool Equals(object obj)
         {
-            Block other = obj as Block;
+            var other = obj as Block;
             return other != null &&
                    Type == other.Type &&
                    Equals(CodeGenerator, other.CodeGenerator) &&
@@ -126,14 +126,14 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             // Create an enumerable that flattens the tree for use by syntax highlighters, etc.
             foreach (SyntaxTreeNode element in Children)
             {
-                Span span = element as Span;
+                var span = element as Span;
                 if (span != null)
                 {
                     yield return span;
                 }
                 else
                 {
-                    Block block = element as Block;
+                    var block = element as Block;
                     foreach (Span childSpan in block.Flatten())
                     {
                         yield return childSpan;
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             Span owner = null;
             foreach (SyntaxTreeNode element in Children)
             {
-                Span span = element as Span;
+                var span = element as Span;
                 if (span == null)
                 {
                     owner = ((Block)element).LocateOwner(change);
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public override bool EquivalentTo(SyntaxTreeNode node)
         {
-            Block other = node as Block;
+            var other = node as Block;
             if (other == null || other.Type != Type)
             {
                 return false;

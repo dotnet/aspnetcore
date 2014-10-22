@@ -23,10 +23,10 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             IDisposable lambdaScope = null;
 
-            string accessibility = "public " + (Context.Host.StaticHelpers ? "static" : String.Empty);
+            var accessibility = "public " + (Context.Host.StaticHelpers ? "static" : String.Empty);
 
             // We want to write the method signature at 0 indentation so if helper's are formatted they format correctly.
-            int currentIndentation = Writer.CurrentIndent;
+            var currentIndentation = Writer.CurrentIndent;
             Writer.ResetIndent();
             Writer.Write(accessibility).Write(" ").Write(Context.Host.GeneratedClassContext.TemplateTypeName).Write(" ");
             Writer.SetIndent(currentIndentation);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 lambdaScope = Writer.BuildLambda(endLine: false, parameterNames: HelperWriterName);
             }
 
-            string currentTargetWriterName = Context.TargetWriterName;
+            var currentTargetWriterName = Context.TargetWriterName;
             Context.TargetWriterName = HelperWriterName;
 
             // Generate children code

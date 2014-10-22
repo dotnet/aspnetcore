@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 
         public override bool Equals(object obj)
         {
-            MappingLocation other = obj as MappingLocation;
+            var other = obj as MappingLocation;
 
             return AbsoluteIndex == other.AbsoluteIndex &&
                    ContentLength == other.ContentLength &&

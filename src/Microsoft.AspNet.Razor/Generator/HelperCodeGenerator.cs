@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            HelperCodeGenerator other = obj as HelperCodeGenerator;
+            var other = obj as HelperCodeGenerator;
             return other != null &&
                    base.Equals(other) &&
                    HeaderComplete == other.HeaderComplete &&

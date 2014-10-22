@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            RazorDirectiveAttributeCodeGenerator other = obj as RazorDirectiveAttributeCodeGenerator;
+            var other = obj as RazorDirectiveAttributeCodeGenerator;
             return other != null &&
                    Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase) &&
                    Value.Equals(other.Value, StringComparison.OrdinalIgnoreCase);

@@ -36,11 +36,11 @@ namespace Microsoft.AspNet.Razor.Text
 
         public override int Read()
         {
-            int read = InnerBuffer.Read();
+            var read = InnerBuffer.Read();
             if (read != -1)
             {
-                char nextChar = '\0';
-                int next = Peek();
+                var nextChar = '\0';
+                var next = Peek();
                 if (next != -1)
                 {
                     nextChar = (char)next;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Razor.Text
         {
             if (disposing)
             {
-                IDisposable disposable = InnerBuffer as IDisposable;
+                var disposable = InnerBuffer as IDisposable;
                 if (disposable != null)
                 {
                     disposable.Dispose();
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Razor.Text
 
         public override IDisposable BeginLookahead()
         {
-            BacktrackContext context = new BacktrackContext() { Location = CurrentLocation };
+            var context = new BacktrackContext() { Location = CurrentLocation };
             _bookmarks.Push(context);
             return new DisposableAction(() =>
             {

@@ -384,7 +384,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void ParseBlockRequiresControlFlowStatementsToHaveBraces()
         {
-            string expectedMessage = RazorResources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed("{", "<");
+            var expectedMessage = RazorResources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed("{", "<");
             ParseBlockTest("if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else <p>Boz</p>",
                            new StatementBlock(
                                Factory.Code("if(foo) ").AsStatement(),

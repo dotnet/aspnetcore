@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor
 
         public override bool Equals(object obj)
         {
-            RazorDirectiveAttribute attribute = obj as RazorDirectiveAttribute;
+            var attribute = obj as RazorDirectiveAttribute;
             return attribute != null &&
                    Name.Equals(attribute.Name, StringComparison.OrdinalIgnoreCase) &&
                    StringComparer.OrdinalIgnoreCase.Equals(Value, attribute.Value);

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void ConstructorWithSourceLocationSetsCurrentLocationToSpecifiedValue()
         {
-            SourceLocation loc = new SourceLocation(10, 42, 4);
+            var loc = new SourceLocation(10, 42, 4);
             Assert.Equal(loc, new SourceLocationTracker(loc).CurrentLocation);
         }
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationAdvancesCorrectlyForMultiLineString()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation("foo\nbar\rbaz\r\nbox");
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationAdvancesAbsoluteIndexOnNonNewlineCharacter()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('f', 'o');
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationAdvancesCharacterIndexOnNonNewlineCharacter()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('f', 'o');
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationDoesNotAdvanceLineIndexOnNonNewlineCharacter()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('f', 'o');
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationAdvancesLineIndexOnSlashN()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('\n', 'o');
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationAdvancesAbsoluteIndexOnSlashN()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('\n', 'o');
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationResetsCharacterIndexOnSlashN()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('\n', 'o');
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationAdvancesLineIndexOnSlashRFollowedByNonNewlineCharacter()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('\r', 'o');
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationAdvancesAbsoluteIndexOnSlashRFollowedByNonNewlineCharacter()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('\r', 'o');
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationResetsCharacterIndexOnSlashRFollowedByNonNewlineCharacter()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('\r', 'o');
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationDoesNotAdvanceLineIndexOnSlashRFollowedBySlashN()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('\r', '\n');
@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationAdvancesAbsoluteIndexOnSlashRFollowedBySlashN()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('\r', '\n');
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void UpdateLocationAdvancesCharacterIndexOnSlashRFollowedBySlashN()
         {
             // Arrange
-            SourceLocationTracker tracker = new SourceLocationTracker(TestStartLocation);
+            var tracker = new SourceLocationTracker(TestStartLocation);
 
             // Act
             tracker.UpdateLocation('\r', '\n');

@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             Writer.Write(ItemParameterName).Write(" => ")
                    .WriteStartNewObject(Context.Host.GeneratedClassContext.TemplateTypeName);
 
-            string currentTargetWriterName = Context.TargetWriterName;
+            var currentTargetWriterName = Context.TargetWriterName;
             Context.TargetWriterName = TemplateWriterName;
 
             using (Writer.BuildLambda(endLine: false, parameterNames: TemplateWriterName))
@@ -184,8 +184,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 return;
             }
 
-            ExpressionRenderingMode currentRenderingMode = Context.ExpressionRenderingMode;
-            string currentTargetWriterName = Context.TargetWriterName;
+            var currentRenderingMode = Context.ExpressionRenderingMode;
+            var currentTargetWriterName = Context.TargetWriterName;
 
             Context.TargetWriterName = ValueWriterName;
 
@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             {
                 Writer.WriteStartMethodInvocation("Tuple.Create", new string[] { "System.Object", "System.Int32" });
 
-                ExpressionRenderingMode currentRenderingMode = Context.ExpressionRenderingMode;
+                var currentRenderingMode = Context.ExpressionRenderingMode;
                 Context.ExpressionRenderingMode = ExpressionRenderingMode.InjectCode;
 
                 Accept(chunk.Children);
@@ -339,8 +339,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             if (firstChild != null)
             {
-                int currentIndent = Writer.CurrentIndent;
-                string designTimeAssignment = "__o = ";
+                var currentIndent = Writer.CurrentIndent;
+                var designTimeAssignment = "__o = ";
                 Writer.ResetIndent();
 
                 var documentLocation = firstChild.Association.Start;

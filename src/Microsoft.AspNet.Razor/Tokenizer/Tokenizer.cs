@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         {
             get
             {
-                int peek = Source.Peek();
+                var peek = Source.Peek();
                 return peek == -1 ? '\0' : (char)peek;
             }
         }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             {
                 return null;
             }
-            TSymbol sym = Turn();
+            var sym = Turn();
 
             // Post-Condition: Buffer should be empty at the end of Next()
             Debug.Assert(Buffer.Length == 0);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         protected bool TakeString(string input, bool caseSensitive)
         {
-            int position = 0;
+            var position = 0;
             Func<char, char> charFilter = c => c;
             if (caseSensitive)
             {
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             CurrentStart = previous.Start;
 
             // Capture the current buffer content
-            string newContent = Buffer.ToString();
+            var newContent = Buffer.ToString();
 
             // Clear the buffer, then put the old content back and add the new content to the end
             Buffer.Clear();
@@ -227,8 +227,8 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             TakeUntil(c => c == '*');
             if (CurrentCharacter == '*')
             {
-                char star = CurrentCharacter;
-                SourceLocation start = CurrentLocation;
+                var star = CurrentCharacter;
+                var start = CurrentLocation;
                 MoveNext();
                 if (!EndOfFile && CurrentCharacter == '@')
                 {
@@ -351,7 +351,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         {
             get
             {
-                string remaining = Source.ReadToEnd();
+                var remaining = Source.ReadToEnd();
                 Source.Seek(-remaining.Length);
                 return remaining;
             }

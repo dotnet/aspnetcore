@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Razor.Parser
         protected void SkipToAndParseCode(Func<HtmlSymbol, bool> condition)
         {
             HtmlSymbol last = null;
-            bool startOfLine = false;
+            var startOfLine = false;
             while (!EndOfFile && !condition(CurrentSymbol))
             {
                 if (At(HtmlSymbolType.NewLine))
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 }
                 else if (At(HtmlSymbolType.Transition))
                 {
-                    HtmlSymbol transition = CurrentSymbol;
+                    var transition = CurrentSymbol;
                     NextToken();
                     if (At(HtmlSymbolType.Transition))
                     {

@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         protected override void SingleSpanBlockTest(string document, string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedErrors)
         {
-            Block b = CreateSimpleBlockAndSpan(spanContent, blockType, spanType, acceptedCharacters);
+            var b = CreateSimpleBlockAndSpan(spanContent, blockType, spanType, acceptedCharacters);
             ParseBlockTest(document, b, expectedErrors ?? new RazorError[0]);
         }
 

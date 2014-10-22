@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            SetBaseTypeCodeGenerator other = obj as SetBaseTypeCodeGenerator;
+            var other = obj as SetBaseTypeCodeGenerator;
             return other != null &&
                    String.Equals(BaseType, other.BaseType, StringComparison.Ordinal);
         }

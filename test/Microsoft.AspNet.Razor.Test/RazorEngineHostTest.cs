@@ -27,10 +27,10 @@ namespace Microsoft.AspNet.Razor.Test
         public void ConstructorWithCodeLanguageSetsPropertiesAppropriately()
         {
             // Arrange
-            RazorCodeLanguage language = new CSharpRazorCodeLanguage();
+            var language = new CSharpRazorCodeLanguage();
 
             // Act
-            RazorEngineHost host = new RazorEngineHost(language);
+            var host = new RazorEngineHost(language);
 
             // Assert
             VerifyCommonDefaults(host);
@@ -42,11 +42,11 @@ namespace Microsoft.AspNet.Razor.Test
         public void ConstructorWithCodeLanguageAndMarkupParserSetsPropertiesAppropriately()
         {
             // Arrange
-            RazorCodeLanguage language = new CSharpRazorCodeLanguage();
-            ParserBase expected = new HtmlMarkupParser();
+            var language = new CSharpRazorCodeLanguage();
+            var expected = new HtmlMarkupParser();
 
             // Act
-            RazorEngineHost host = new RazorEngineHost(language, () => expected);
+            var host = new RazorEngineHost(language, () => expected);
 
             // Assert
             VerifyCommonDefaults(host);
@@ -76,10 +76,10 @@ namespace Microsoft.AspNet.Razor.Test
         public void DecorateCodeParserDoesNotModifyIncomingParser()
         {
             // Arrange
-            ParserBase expected = new CSharpCodeParser();
+            var expected = new CSharpCodeParser();
 
             // Act
-            ParserBase actual = CreateHost().DecorateCodeParser(expected);
+            var actual = CreateHost().DecorateCodeParser(expected);
 
             // Assert
             Assert.Same(expected, actual);
@@ -89,10 +89,10 @@ namespace Microsoft.AspNet.Razor.Test
         public void DecorateMarkupParserReturnsIncomingParser()
         {
             // Arrange
-            ParserBase expected = new HtmlMarkupParser();
+            var expected = new HtmlMarkupParser();
 
             // Act
-            ParserBase actual = CreateHost().DecorateMarkupParser(expected);
+            var actual = CreateHost().DecorateMarkupParser(expected);
 
             // Assert
             Assert.Same(expected, actual);
@@ -102,10 +102,10 @@ namespace Microsoft.AspNet.Razor.Test
         public void DecorateCodeGeneratorReturnsIncomingCodeGenerator()
         {
             // Arrange
-            RazorCodeGenerator expected = new CSharpRazorCodeGenerator("Foo", "Bar", "Baz", CreateHost());
+            var expected = new CSharpRazorCodeGenerator("Foo", "Bar", "Baz", CreateHost());
 
             // Act
-            RazorCodeGenerator actual = CreateHost().DecorateCodeGenerator(expected);
+            var actual = CreateHost().DecorateCodeGenerator(expected);
 
             // Assert
             Assert.Same(expected, actual);

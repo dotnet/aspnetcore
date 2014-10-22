@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public override bool Equals(object obj)
         {
-            AutoCompleteEditHandler other = obj as AutoCompleteEditHandler;
+            var other = obj as AutoCompleteEditHandler;
             return base.Equals(obj) &&
                    other != null &&
                    String.Equals(other.AutoCompleteString, AutoCompleteString, StringComparison.Ordinal) &&

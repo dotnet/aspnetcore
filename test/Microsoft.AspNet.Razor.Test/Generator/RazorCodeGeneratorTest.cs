@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                Func<RazorTemplateEngine, RazorTemplateEngine> templateEngineConfig = null,
                                Action<GeneratorResults> onResults = null)
         {
-            bool testRun = false;
+            var testRun = false;
 
             if ((tabTest & TabTest.Tabs) == TabTest.Tabs)
             {
@@ -103,11 +103,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 baselineName = name;
             }
 
-            string sourceLocation = string.Format("TestFiles/CodeGenerator/{1}/Source/{0}.{2}", name, LanguageName, FileExtension);
-            string expectedOutput = TestFile.Create(string.Format("TestFiles/CodeGenerator/CS/Output/{0}.{1}", baselineName, BaselineExtension)).ReadAllText();
+            var sourceLocation = string.Format("TestFiles/CodeGenerator/{1}/Source/{0}.{2}", name, LanguageName, FileExtension);
+            var expectedOutput = TestFile.Create(string.Format("TestFiles/CodeGenerator/CS/Output/{0}.{1}", baselineName, BaselineExtension)).ReadAllText();
 
             // Set up the host and engine
-            RazorEngineHost host = CreateHost();
+            var host = CreateHost();
             host.NamespaceImports.Add("System");
             host.DesignTimeMode = designTimeMode;
             host.StaticHelpers = true;
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             host.IsIndentingWithTabs = withTabs;
             host.EnableInstrumentation = true;
 
-            RazorTemplateEngine engine = new RazorTemplateEngine(host);
+            var engine = new RazorTemplateEngine(host);
 
             if(templateEngineConfig != null)
             {
@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             BaselineWriter.WriteBaseline(String.Format(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\{0}\Output\{1}.{2}", LanguageName, baselineName, BaselineExtension), results.GeneratedCode);
 
 #if !GENERATE_BASELINES
-            string textOutput = results.GeneratedCode;
+            var textOutput = results.GeneratedCode;
 
             if (onResults != null)
             {

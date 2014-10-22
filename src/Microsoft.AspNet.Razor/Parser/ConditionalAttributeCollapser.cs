@@ -20,17 +20,17 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected override bool CanRewrite(Block block)
         {
-            AttributeBlockCodeGenerator gen = block.CodeGenerator as AttributeBlockCodeGenerator;
+            var gen = block.CodeGenerator as AttributeBlockCodeGenerator;
             return gen != null && block.Children.Any() && block.Children.All(IsLiteralAttributeValue);
         }
 
         protected override SyntaxTreeNode RewriteBlock(BlockBuilder parent, Block block)
         {
             // Collect the content of this node
-            string content = String.Concat(block.Children.Cast<Span>().Select(s => s.Content));
+            var content = String.Concat(block.Children.Cast<Span>().Select(s => s.Content));
 
             // Create a new span containing this content
-            SpanBuilder span = new SpanBuilder();
+            var span = new SpanBuilder();
             span.EditHandler = new SpanEditHandler(HtmlTokenizer.Tokenize);
             FillSpan(span, block.Children.Cast<Span>().First().Start, content);
             return span.Build();
@@ -42,10 +42,10 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 return false;
             }
-            Span span = node as Span;
+            var span = node as Span;
             Debug.Assert(span != null);
 
-            LiteralAttributeCodeGenerator litGen = span.CodeGenerator as LiteralAttributeCodeGenerator;
+            var litGen = span.CodeGenerator as LiteralAttributeCodeGenerator;
 
             return span != null &&
                    ((litGen != null && litGen.ValueGenerator == null) ||

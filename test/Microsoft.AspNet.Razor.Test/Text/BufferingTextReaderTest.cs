@@ -235,8 +235,8 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void BacktrackBufferIsClearedWhenEndReachedAndNoCurrentLookaheads()
         {
             // Arrange
-            StringReader source = new StringReader(TestString);
-            BufferingTextReader reader = new BufferingTextReader(source);
+            var source = new StringReader(TestString);
+            var reader = new BufferingTextReader(source);
 
             reader.Read(); // Reader: "bcdefg"
             using (reader.BeginLookahead())
@@ -257,8 +257,8 @@ namespace Microsoft.AspNet.Razor.Test.Text
         private static void RunDisposeTest(Action<LookaheadTextReader> triggerAction)
         {
             // Arrange
-            DisposeTestMockTextReader source = new DisposeTestMockTextReader();
-            LookaheadTextReader reader = new BufferingTextReader(source);
+            var source = new DisposeTestMockTextReader();
+            var reader = new BufferingTextReader(source);
 
             // Act
             triggerAction(reader);

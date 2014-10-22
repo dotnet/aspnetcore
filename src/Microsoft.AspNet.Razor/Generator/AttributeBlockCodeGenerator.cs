@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            AttributeBlockCodeGenerator other = obj as AttributeBlockCodeGenerator;
+            var other = obj as AttributeBlockCodeGenerator;
             return other != null &&
                    String.Equals(other.Name, Name, StringComparison.Ordinal) &&
                    Equals(other.Prefix, Prefix) &&

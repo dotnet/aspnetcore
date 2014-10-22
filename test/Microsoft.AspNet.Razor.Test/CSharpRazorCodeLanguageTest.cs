@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.Razor.Test
         public void CreateCodeParserReturnsNewCSharpCodeParser()
         {
             // Arrange
-            RazorCodeLanguage service = new CSharpRazorCodeLanguage();
+            var service = new CSharpRazorCodeLanguage();
 
             // Act
-            ParserBase parser = service.CreateCodeParser();
+            var parser = service.CreateCodeParser();
 
             // Assert
             Assert.NotNull(parser);
@@ -28,11 +28,11 @@ namespace Microsoft.AspNet.Razor.Test
         public void CreateCodeGeneratorParserListenerReturnsNewCSharpCodeGeneratorParserListener()
         {
             // Arrange
-            RazorCodeLanguage service = new CSharpRazorCodeLanguage();
+            var service = new CSharpRazorCodeLanguage();
 
             // Act
-            RazorEngineHost host = new RazorEngineHost(service);
-            RazorCodeGenerator generator = service.CreateCodeGenerator("Foo", "Bar", "Baz", host);
+            var host = new RazorEngineHost(service);
+            var generator = service.CreateCodeGenerator("Foo", "Bar", "Baz", host);
 
             // Assert
             Assert.NotNull(generator);

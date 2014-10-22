@@ -221,8 +221,8 @@ namespace Microsoft.AspNet.Razor.Test.Text
         private static void RunDisposeTest(Action<LookaheadTextReader> triggerAction)
         {
             // Arrange
-            StringTextBuffer source = new StringTextBuffer("abcdefg");
-            LookaheadTextReader reader = new TextBufferReader(source);
+            var source = new StringTextBuffer("abcdefg");
+            var reader = new TextBufferReader(source);
 
             // Act
             triggerAction(reader);

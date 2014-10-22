@@ -166,10 +166,10 @@ namespace Microsoft.AspNet.Razor.Test.Text
         private static void RunReaderTest(string testString, string expectedOutput, int expectedPeek, Func<TextReader, string> action)
         {
             // Arrange
-            StringReader reader = new StringReader(testString);
+            var reader = new StringReader(testString);
 
             // Act
-            string read = action(reader);
+            var read = action(reader);
 
             // Assert
             Assert.Equal(expectedOutput, read);

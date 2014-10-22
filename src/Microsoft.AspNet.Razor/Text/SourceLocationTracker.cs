@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Razor.Text
         {
             for (int i = 0; i < content.Length; i++)
             {
-                char nextCharacter = '\0';
+                var nextCharacter = '\0';
                 if (i < content.Length - 1)
                 {
                     nextCharacter = content[i + 1];

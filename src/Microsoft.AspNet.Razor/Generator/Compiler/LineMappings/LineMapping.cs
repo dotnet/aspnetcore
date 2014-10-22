@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 
         public override bool Equals(object obj)
         {
-            LineMapping other = obj as LineMapping;
+            var other = obj as LineMapping;
             return DocumentLocation.Equals(other.DocumentLocation) &&
                    GeneratedLocation.Equals(other.GeneratedLocation);
         }

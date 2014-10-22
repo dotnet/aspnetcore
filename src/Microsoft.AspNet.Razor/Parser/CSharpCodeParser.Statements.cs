@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void UsingKeyword(bool topLevel)
         {
             Assert(CSharpKeyword.Using);
-            Block block = new Block(CurrentSymbol);
+            var block = new Block(CurrentSymbol);
             AcceptAndMoveNext();
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 return;
             }
-            Block block = new Block(CurrentSymbol);
+            var block = new Block(CurrentSymbol);
 
             AcceptAndMoveNext();
             AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
@@ -332,7 +332,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void UnconditionalBlock()
         {
             Assert(CSharpSymbolType.Keyword);
-            Block block = new Block(CurrentSymbol);
+            var block = new Block(CurrentSymbol);
             AcceptAndMoveNext();
             AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
             ExpectCodeBlock(block);
@@ -341,7 +341,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void ConditionalBlock(bool topLevel)
         {
             Assert(CSharpSymbolType.Keyword);
-            Block block = new Block(CurrentSymbol);
+            var block = new Block(CurrentSymbol);
             ConditionalBlock(block);
             if (topLevel)
             {
@@ -366,7 +366,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             if (At(CSharpSymbolType.LeftParenthesis))
             {
-                bool complete = Balance(BalancingModes.BacktrackOnFailure | BalancingModes.AllowCommentsAndTemplates);
+                var complete = Balance(BalancingModes.BacktrackOnFailure | BalancingModes.AllowCommentsAndTemplates);
                 if (!complete)
                 {
                     AcceptUntil(CSharpSymbolType.NewLine);
@@ -390,7 +390,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
 
             // Accept whitespace but always keep the last whitespace node so we can put it back if necessary
-            CSharpSymbol lastWs = AcceptWhiteSpaceInLines();
+            var lastWs = AcceptWhiteSpaceInLines();
             Debug.Assert(lastWs == null || (lastWs.Start.AbsoluteIndex + lastWs.Content.Length == CurrentLocation.AbsoluteIndex));
 
             if (EndOfFile)
@@ -402,13 +402,13 @@ namespace Microsoft.AspNet.Razor.Parser
                 return;
             }
 
-            CSharpSymbolType type = CurrentSymbol.Type;
-            SourceLocation loc = CurrentLocation;
+            var type = CurrentSymbol.Type;
+            var loc = CurrentLocation;
 
-            bool isSingleLineMarkup = type == CSharpSymbolType.Transition && NextIs(CSharpSymbolType.Colon);
-            bool isMarkup = isSingleLineMarkup ||
-                            type == CSharpSymbolType.LessThan ||
-                            (type == CSharpSymbolType.Transition && NextIs(CSharpSymbolType.LessThan));
+            var isSingleLineMarkup = type == CSharpSymbolType.Transition && NextIs(CSharpSymbolType.Colon);
+            var isMarkup = isSingleLineMarkup ||
+                           type == CSharpSymbolType.LessThan ||
+                           (type == CSharpSymbolType.Transition && NextIs(CSharpSymbolType.LessThan));
 
             if (Context.DesignTimeMode || !isMarkup)
             {
@@ -487,7 +487,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             // First, verify the type of the block
             Assert(CSharpSymbolType.Transition);
-            CSharpSymbol transition = CurrentSymbol;
+            var transition = CurrentSymbol;
             NextToken();
 
             if (At(CSharpSymbolType.Transition))
@@ -527,7 +527,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             while (!EndOfFile)
             {
-                int bookmark = CurrentLocation.AbsoluteIndex;
+                var bookmark = CurrentLocation.AbsoluteIndex;
                 IEnumerable<CSharpSymbol> read = ReadWhile(sym => sym.Type != CSharpSymbolType.Semicolon &&
                                                                   sym.Type != CSharpSymbolType.RazorCommentTransition &&
                                                                   sym.Type != CSharpSymbolType.Transition &&

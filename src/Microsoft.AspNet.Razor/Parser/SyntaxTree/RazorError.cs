@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public override bool Equals(object obj)
         {
-            RazorError err = obj as RazorError;
+            var err = obj as RazorError;
             return (err != null) && (Equals(err));
         }
 

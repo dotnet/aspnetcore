@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             using (SeekableTextReader reader = new SeekableTextReader(input))
             {
-                TTokenizer tok = CreateTokenizer(reader);
+                var tok = CreateTokenizer(reader);
                 TSymbol sym;
                 while ((sym = tok.NextSymbol()) != null)
                 {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public virtual Tuple<TSymbol, TSymbol> SplitSymbol(TSymbol symbol, int splitAt, TSymbolType leftType)
         {
-            TSymbol left = CreateSymbol(symbol.Start, symbol.Content.Substring(0, splitAt), leftType, Enumerable.Empty<RazorError>());
+            var left = CreateSymbol(symbol.Start, symbol.Content.Substring(0, splitAt), leftType, Enumerable.Empty<RazorError>());
             TSymbol right = null;
             if (splitAt < symbol.Content.Length)
             {

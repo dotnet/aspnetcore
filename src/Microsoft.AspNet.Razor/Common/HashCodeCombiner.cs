@@ -23,7 +23,7 @@ namespace Microsoft.Internal.Web.Utils
             }
             else
             {
-                int count = 0;
+                var count = 0;
                 foreach (object o in e)
                 {
                     Add(o);
@@ -42,7 +42,7 @@ namespace Microsoft.Internal.Web.Utils
 
         public HashCodeCombiner Add(object o)
         {
-            int hashCode = (o != null) ? o.GetHashCode() : 0;
+            var hashCode = (o != null) ? o.GetHashCode() : 0;
             Add(hashCode);
             return this;
         }

@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Razor
         {
             if (_lastAutoCompleteSpan != null)
             {
-                AutoCompleteEditHandler editHandler = _lastAutoCompleteSpan.EditHandler as AutoCompleteEditHandler;
+                var editHandler = _lastAutoCompleteSpan.EditHandler as AutoCompleteEditHandler;
                 if (editHandler != null)
                 {
                     return editHandler.AutoCompleteString;
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Razor
             // Validate the change
             long? elapsedMs = null;
 #if EDITOR_TRACING
-            Stopwatch sw = new Stopwatch();
+            var sw = new Stopwatch();
             sw.Start();
 #endif
             RazorEditorTrace.TraceLine(RazorResources.FormatTrace_EditorReceivedChange(Path.GetFileName(FileName), change));
@@ -139,10 +139,10 @@ namespace Microsoft.AspNet.Razor
                                                           "TextChange"), "change");
             }
 
-            PartialParseResult result = PartialParseResult.Rejected;
+            var result = PartialParseResult.Rejected;
 
             // If there isn't already a parse underway, try partial-parsing
-            string changeString = String.Empty;
+            var changeString = String.Empty;
             using (_parser.SynchronizeMainThreadState())
             {
                 // Capture the string value of the change while we're synchronized
@@ -199,12 +199,12 @@ namespace Microsoft.AspNet.Razor
 
         private PartialParseResult TryPartialParse(TextChange change)
         {
-            PartialParseResult result = PartialParseResult.Rejected;
+            var result = PartialParseResult.Rejected;
 
             // Try the last change owner
             if (_lastChangeOwner != null && _lastChangeOwner.EditHandler.OwnsChange(_lastChangeOwner, change))
             {
-                EditResult editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, change);
+                var editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, change);
                 result = editResult.Result;
                 if ((editResult.Result & PartialParseResult.Rejected) != PartialParseResult.Rejected)
                 {
@@ -224,7 +224,7 @@ namespace Microsoft.AspNet.Razor
             }
             else if (_lastChangeOwner != null)
             {
-                EditResult editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, change);
+                var editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, change);
                 result = editResult.Result;
                 if ((editResult.Result & PartialParseResult.Rejected) != PartialParseResult.Rejected)
                 {

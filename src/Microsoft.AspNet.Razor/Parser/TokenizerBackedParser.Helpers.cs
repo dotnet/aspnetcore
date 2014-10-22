@@ -66,9 +66,9 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected internal bool Balance(BalancingModes mode)
         {
-            TSymbolType left = CurrentSymbol.Type;
-            TSymbolType right = Language.FlipBracket(left);
-            SourceLocation start = CurrentLocation;
+            var left = CurrentSymbol.Type;
+            var right = Language.FlipBracket(left);
+            var start = CurrentLocation;
             AcceptAndMoveNext();
             if (EndOfFile && ((mode & BalancingModes.NoErrorOnFailure) != BalancingModes.NoErrorOnFailure))
             {
@@ -83,8 +83,8 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected internal bool Balance(BalancingModes mode, TSymbolType left, TSymbolType right, SourceLocation start)
         {
-            int startPosition = CurrentLocation.AbsoluteIndex;
-            int nesting = 1;
+            var startPosition = CurrentLocation.AbsoluteIndex;
+            var nesting = 1;
             if (!EndOfFile)
             {
                 IList<TSymbol> syms = new List<TSymbol>();
@@ -156,9 +156,9 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected internal bool NextIs(Func<TSymbol, bool> condition)
         {
-            TSymbol cur = CurrentSymbol;
+            var cur = CurrentSymbol;
             NextToken();
-            bool result = condition(CurrentSymbol);
+            var result = condition(CurrentSymbol);
             PutCurrentBack();
             PutBack(cur);
             EnsureCurrent();
@@ -335,7 +335,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected internal bool Required(TSymbolType expected, bool errorIfNotFound, Func<string, string> errorBase)
         {
-            bool found = At(expected);
+            var found = At(expected);
             if (!found && errorIfNotFound)
             {
                 string error;
@@ -506,7 +506,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 using (Context.StartBlock(BlockType.Comment))
                 {
                     Context.CurrentBlock.CodeGenerator = new RazorCommentCodeGenerator();
-                    SourceLocation start = CurrentLocation;
+                    var start = CurrentLocation;
 
                     Expected(KnownSymbolType.CommentStart);
                     Output(SpanKind.Transition, AcceptedCharacters.None);
@@ -518,7 +518,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     AddMarkerSymbolIfNecessary();
                     Output(SpanKind.Comment);
 
-                    bool errorReported = false;
+                    var errorReported = false;
                     if (!Optional(KnownSymbolType.CommentStar))
                     {
                         errorReported = true;

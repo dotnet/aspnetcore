@@ -21,14 +21,14 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         protected void TestTokenizer(string input, params TSymbol[] expectedSymbols)
         {
             // Arrange
-            bool success = true;
-            StringBuilder output = new StringBuilder();
+            var success = true;
+            var output = new StringBuilder();
             using (StringReader reader = new StringReader(input))
             {
                 using (SeekableTextReader source = new SeekableTextReader(reader))
                 {
                     Tokenizer<TSymbol, TSymbolType> tokenizer = CreateTokenizer(source);
-                    int counter = 0;
+                    var counter = 0;
                     TSymbol current = null;
                     while ((current = tokenizer.NextSymbol()) != null)
                     {

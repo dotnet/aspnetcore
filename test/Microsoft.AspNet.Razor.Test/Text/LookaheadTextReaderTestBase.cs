@@ -30,11 +30,11 @@ namespace Microsoft.AspNet.Razor.Test.Text
         protected void RunSourceLocationTest(string input, SourceLocation expected, Action<LookaheadTextReader> readerAction)
         {
             // Arrange
-            LookaheadTextReader reader = CreateReader(input);
+            var reader = CreateReader(input);
             readerAction(reader);
 
             // Act
-            SourceLocation actual = reader.CurrentLocation;
+            var actual = reader.CurrentLocation;
 
             // Assert
             Assert.Equal(expected, actual);
@@ -59,10 +59,10 @@ namespace Microsoft.AspNet.Razor.Test.Text
         protected void RunReadToEndTest()
         {
             // Arrange
-            LookaheadTextReader reader = CreateReader("abcdefg");
+            var reader = CreateReader("abcdefg");
 
             // Act
-            string str = reader.ReadToEnd();
+            var str = reader.ReadToEnd();
 
             // Assert
             Assert.Equal("abcdefg", str);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         protected void RunCancelBacktrackOutsideLookaheadTest()
         {
             // Arrange
-            LookaheadTextReader reader = CreateReader("abcdefg");
+            var reader = CreateReader("abcdefg");
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => reader.CancelBacktrack());
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         protected void RunLookaheadTest(string input, string expected, params Action<StringBuilder, LookaheadTextReader>[] readerCommands)
         {
             // Arrange
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             using (LookaheadTextReader reader = CreateReader(input))
             {
                 RunAll(readerCommands, builder, reader);
@@ -138,14 +138,14 @@ namespace Microsoft.AspNet.Razor.Test.Text
         protected void RunReadUntilTest(Func<LookaheadTextReader, string> readMethod, int expectedRaw, int expectedChar, int expectedLine)
         {
             // Arrange
-            LookaheadTextReader reader = CreateReader("a\r\nbcd\r\nefg");
+            var reader = CreateReader("a\r\nbcd\r\nefg");
 
             reader.Read(); // Reader: "\r\nbcd\r\nefg"
             reader.Read(); // Reader: "\nbcd\r\nefg"
             reader.Read(); // Reader: "bcd\r\nefg"
 
             // Act
-            string read = null;
+            string read;
             SourceLocation actualLocation;
             using (reader.BeginLookahead())
             {
@@ -167,13 +167,13 @@ namespace Microsoft.AspNet.Razor.Test.Text
         protected void RunBufferReadTest(Func<LookaheadTextReader, char[], int, int, int> readMethod)
         {
             // Arrange
-            LookaheadTextReader reader = CreateReader("abcdefg");
+            var reader = CreateReader("abcdefg");
 
             reader.Read(); // Reader: "bcdefg"
 
             // Act
             char[] buffer = new char[4];
-            int read = -1;
+            var read = -1;
             SourceLocation actualLocation;
             using (reader.BeginLookahead())
             {

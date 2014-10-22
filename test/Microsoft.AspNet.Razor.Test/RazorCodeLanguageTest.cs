@@ -37,10 +37,10 @@ namespace Microsoft.AspNet.Razor.Test
         public void MultipleCallsToGetServiceWithSameExtensionReturnSameObject()
         {
             // Arrange
-            RazorCodeLanguage expected = RazorCodeLanguage.GetLanguageByExtension("cshtml");
+            var expected = RazorCodeLanguage.GetLanguageByExtension("cshtml");
 
             // Act
-            RazorCodeLanguage actual = RazorCodeLanguage.GetLanguageByExtension("cshtml");
+            var actual = RazorCodeLanguage.GetLanguageByExtension("cshtml");
 
             // Assert
             Assert.Same(expected, actual);

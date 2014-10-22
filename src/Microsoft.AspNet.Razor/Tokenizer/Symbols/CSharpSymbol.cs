@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
 
         public override bool Equals(object obj)
         {
-            CSharpSymbol other = obj as CSharpSymbol;
+            var other = obj as CSharpSymbol;
             return base.Equals(obj) && other.Keyword == Keyword;
         }
 

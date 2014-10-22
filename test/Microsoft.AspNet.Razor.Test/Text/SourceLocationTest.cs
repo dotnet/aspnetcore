@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         public void ConstructorWithLineAndCharacterIndexSetsAssociatedProperties()
         {
             // Act
-            SourceLocation loc = new SourceLocation(0, 42, 24);
+            var loc = new SourceLocation(0, 42, 24);
 
             // Assert
             Assert.Equal(0, loc.AbsoluteIndex);

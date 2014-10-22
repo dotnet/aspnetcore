@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             if (ParserHelpers.IsNewLine(CurrentCharacter))
             {
                 // CSharp Spec §2.3.1
-                bool checkTwoCharNewline = CurrentCharacter == '\r';
+                var checkTwoCharNewline = CurrentCharacter == '\r';
                 TakeCurrent();
                 if (checkTwoCharNewline && CurrentCharacter == '\n')
                 {
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         private CSharpSymbolType Operator()
         {
-            char first = CurrentCharacter;
+            var first = CurrentCharacter;
             TakeCurrent();
             Func<CSharpSymbolType> handler;
             if (_operatorHandlers.TryGetValue(first, out handler))
@@ -418,8 +418,8 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             CSharpSymbol sym = null;
             if (HaveContent)
             {
-                CSharpKeyword? kwd = CSharpKeywordDetector.SymbolTypeForIdentifier(Buffer.ToString());
-                CSharpSymbolType type = CSharpSymbolType.Identifier;
+                var kwd = CSharpKeywordDetector.SymbolTypeForIdentifier(Buffer.ToString());
+                var type = CSharpSymbolType.Identifier;
                 if (kwd != null)
                 {
                     type = CSharpSymbolType.Keyword;

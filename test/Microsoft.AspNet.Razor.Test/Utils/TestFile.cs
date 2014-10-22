@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Razor.Test
 
         public Stream OpenRead()
         {
-            Stream strm = Assembly.GetManifestResourceStream(ResourceName);
+            var strm = Assembly.GetManifestResourceStream(ResourceName);
             if (strm == null)
             {
                 Assert.True(false, string.Format("Manifest resource: {0} not found", ResourceName));

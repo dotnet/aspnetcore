@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Razor.Parser
         [Obsolete("Lookahead-based readers have been deprecated, use overrides which accept a TextReader or ITextDocument instead")]
         public virtual void Parse(LookaheadTextReader input, ParserVisitor visitor)
         {
-            ParserResults results = ParseCore(new SeekableTextReader(input));
+            var results = ParseCore(new SeekableTextReader(input));
 
             // Replay the results on the visitor
             visitor.Visit(results);
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private ParserResults ParseCore(ITextDocument input)
         {
             // Setup the parser context
-            ParserContext context = new ParserContext(input, CodeParser, MarkupParser, MarkupParser)
+            var context = new ParserContext(input, CodeParser, MarkupParser, MarkupParser)
             {
                 DesignTimeMode = DesignTimeMode
             };
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Razor.Parser
             MarkupParser.ParseDocument();
 
             // Get the result
-            ParserResults results = context.CompleteParse();
+            var results = context.CompleteParse();
 
             // Rewrite whitespace if supported
             var rewritingContext = new RewritingContext(results.Document);

@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         {
             // Arrange
             var factory = SpanFactory.CreateCsHtml();
-            Block start = new MarkupBlock(
+            var start = new MarkupBlock(
                 factory.Markup("test"),
                 new ExpressionBlock(
                     factory.Code("    ").AsExpression(),
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                     ),
                 factory.Markup("test")
                 );
-            WhiteSpaceRewriter rewriter = new WhiteSpaceRewriter(new HtmlMarkupParser().BuildSpan);
+            var rewriter = new WhiteSpaceRewriter(new HtmlMarkupParser().BuildSpan);
             var rewritingContext = new RewritingContext(start);
 
             // Act

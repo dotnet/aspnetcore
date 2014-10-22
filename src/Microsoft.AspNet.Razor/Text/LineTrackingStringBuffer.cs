@@ -48,12 +48,12 @@ namespace Microsoft.AspNet.Razor.Text
 
         public CharacterReference CharAt(int absoluteIndex)
         {
-            TextLine line = FindLine(absoluteIndex);
+            var line = FindLine(absoluteIndex);
             if (line == null)
             {
                 throw new ArgumentOutOfRangeException("absoluteIndex");
             }
-            int idx = absoluteIndex - line.Start;
+            var idx = absoluteIndex - line.Start;
             return new CharacterReference(line.Content[idx], new SourceLocation(absoluteIndex, line.Index, idx));
         }
 
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Razor.Text
         {
             for (int i = 0; i < _lines.Count; i++)
             {
-                int idx = (i + startPos) % _lines.Count;
+                var idx = (i + startPos) % _lines.Count;
                 Debug.Assert(idx >= 0 && idx < _lines.Count);
 
                 if (_lines[idx].Contains(absoluteIndex))

@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 writer.WriteUsing(import);
             }
 
-            string taskNamespace = typeof(Task).Namespace;
+            var taskNamespace = typeof(Task).Namespace;
 
             // We need to add the task namespace but ONLY if it hasn't been added by the default imports or using imports yet.
             if (!defaultImports.Contains(taskNamespace) && !usingVisitor.ImportedUsings.Contains(taskNamespace))

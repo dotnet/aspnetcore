@@ -56,8 +56,8 @@ namespace Microsoft.AspNet.Razor.Editor
 
         public virtual EditResult ApplyChange(Span target, TextChange change, bool force)
         {
-            PartialParseResult result = PartialParseResult.Accepted;
-            TextChange normalized = change.Normalize();
+            var result = PartialParseResult.Accepted;
+            var normalized = change.Normalize();
             if (!force)
             {
                 result = CanAcceptChange(target, normalized);
@@ -73,8 +73,8 @@ namespace Microsoft.AspNet.Razor.Editor
 
         public virtual bool OwnsChange(Span target, TextChange change)
         {
-            int end = target.Start.AbsoluteIndex + target.Length;
-            int changeOldEnd = change.OldPosition + change.OldLength;
+            var end = target.Start.AbsoluteIndex + target.Length;
+            var changeOldEnd = change.OldPosition + change.OldLength;
             return change.OldPosition >= target.Start.AbsoluteIndex &&
                    (changeOldEnd < end || (changeOldEnd == end && AcceptedCharacters != AcceptedCharacters.None));
         }
@@ -86,8 +86,8 @@ namespace Microsoft.AspNet.Razor.Editor
 
         protected virtual SpanBuilder UpdateSpan(Span target, TextChange normalizedChange)
         {
-            string newContent = normalizedChange.ApplyChange(target);
-            SpanBuilder newSpan = new SpanBuilder(target);
+            var newContent = normalizedChange.ApplyChange(target);
+            var newSpan = new SpanBuilder(target);
             newSpan.ClearSymbols();
             foreach (ISymbol sym in Tokenizer(newContent))
             {
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Razor.Editor
             }
             if (target.Next != null)
             {
-                SourceLocation newEnd = SourceLocationTracker.CalculateNewLocation(target.Start, newContent);
+                var newEnd = SourceLocationTracker.CalculateNewLocation(target.Start, newContent);
                 target.Next.ChangeStart(newEnd);
             }
             return newSpan;
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Razor.Editor
 
         protected internal static bool IsAtEndOfFirstLine(Span target, TextChange change)
         {
-            int endOfFirstLine = target.Content.IndexOfAny(new char[] { (char)0x000d, (char)0x000a, (char)0x2028, (char)0x2029 });
+            var endOfFirstLine = target.Content.IndexOfAny(new char[] { (char)0x000d, (char)0x000a, (char)0x2028, (char)0x2029 });
             return (endOfFirstLine == -1 || (change.OldPosition - target.Start.AbsoluteIndex) <= endOfFirstLine);
         }
 
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Razor.Editor
 
         public override bool Equals(object obj)
         {
-            SpanEditHandler other = obj as SpanEditHandler;
+            var other = obj as SpanEditHandler;
             return other != null &&
                    AcceptedCharacters == other.AcceptedCharacters &&
                    EditorHints == other.EditorHints;
