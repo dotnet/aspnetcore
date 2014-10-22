@@ -52,6 +52,7 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         private static void CanOverride<TService>(TService instance)
+            where TService : class
         {
             var services = new ServiceCollection();
             services.AddIdentity<IdentityUser>().AddInstance(instance);

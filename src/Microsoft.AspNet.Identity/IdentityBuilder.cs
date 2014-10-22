@@ -16,9 +16,10 @@ namespace Microsoft.AspNet.Identity
             Services = services;
         }
 
-        public IdentityBuilder<TUser, TRole> AddInstance<T>(T obj)
+        public IdentityBuilder<TUser, TRole> AddInstance<TService>(TService instance)
+            where TService : class
         {
-            Services.AddInstance(obj);
+            Services.AddInstance(instance);
             return this;
         }
 
