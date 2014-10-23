@@ -11,10 +11,8 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
-    public class HtmlHelperInputTest
+    public class HtmlHelperCheckboxTest
     {
-        // CheckBox
-
         [Fact]
         public void CheckBoxOverridesCalculatedValuesWithValuesFromHtmlAttributes()
         {
@@ -214,8 +212,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Assert
             Assert.Equal(expected, html.ToString());
         }
-
-        //// CheckBoxFor
 
         [Fact]
         public void CheckBoxForWithInvalidBooleanThrows()
