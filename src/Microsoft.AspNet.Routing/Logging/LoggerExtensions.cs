@@ -3,9 +3,9 @@
 
 using Microsoft.Framework.Logging;
 
-namespace Microsoft.AspNet.Routing.Logging
+namespace Microsoft.AspNet.Routing.Logging.Internal
 {
-    internal static class LoggerExtensions
+    public static class LoggerExtensions
     {
         public static void WriteValues([NotNull] this ILogger logger, object values)
         {

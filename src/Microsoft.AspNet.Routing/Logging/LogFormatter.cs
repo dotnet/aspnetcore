@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Routing.Logging
+namespace Microsoft.AspNet.Routing.Logging.Internal
 {
     public static class LogFormatter
     {

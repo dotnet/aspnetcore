@@ -6,6 +6,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Logging;
+using Microsoft.AspNet.Routing.Logging.Internal;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using System;
