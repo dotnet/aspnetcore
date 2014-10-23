@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 
 namespace ApplicationModelWebSite
 {

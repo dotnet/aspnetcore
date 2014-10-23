@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModel
+namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class ControllerModelTest
     {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
             controller.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
             controller.ApiExplorerGroupName = "group";
             controller.ApiExplorerIsVisible = true;
-            controller.Application = new GlobalModel();
+            controller.Application = new ApplicationModel();
             controller.Attributes.Add(new HttpGetAttribute());
             controller.ControllerName = "cool";
             controller.Filters.Add(new AuthorizeAttribute());

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModel
+namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class ControllerModel
     {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
 
         public List<ActionModel> Actions { get; private set; }
 
-        public GlobalModel Application { get; set; }
+        public ApplicationModel Application { get; set; }
 
         public List<object> Attributes { get; private set; }
 

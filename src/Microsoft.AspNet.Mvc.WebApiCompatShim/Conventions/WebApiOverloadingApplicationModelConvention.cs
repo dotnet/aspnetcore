@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
-    public class WebApiOverloadingGlobalModelConvention : IGlobalModelConvention
+    public class WebApiOverloadingApplicationModelConvention : IApplicationModelConvention
     {
-        public void Apply(GlobalModel model)
+        public void Apply(ApplicationModel application)
         {
-            foreach (var controller in model.Controllers)
+            foreach (var controller in application.Controllers)
             {
                 if (IsConventionApplicable(controller))
                 {
@@ -24,9 +24,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             return controller.Attributes.OfType<IUseWebApiOverloading>().Any();
         }
 
-        private void Apply(ControllerModel model)
+        private void Apply(ControllerModel controller)
         {
-            foreach (var action in model.Actions)
+            foreach (var action in controller.Actions)
             {
                 action.ActionConstraints.Add(new OverloadActionConstraint());
             }

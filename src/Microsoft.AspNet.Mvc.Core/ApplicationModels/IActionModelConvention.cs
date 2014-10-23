@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNet.Mvc.ApplicationModel
+namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     /// <summary>
     /// Allows customization of the of the <see cref="ActionModel"/>.
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
         /// <summary>
         /// Called to apply the convention to the <see cref="ActionModel"/>.
         /// </summary>
-        /// <param name="model">The <see cref="ActionModel"/>.</param>
-        void Apply([NotNull] ActionModel model);
+        /// <param name="action">The <see cref="ActionModel"/>.</param>
+        void Apply([NotNull] ActionModel action);
     }
 }

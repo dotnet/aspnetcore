@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Reflection;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.PipelineCore;

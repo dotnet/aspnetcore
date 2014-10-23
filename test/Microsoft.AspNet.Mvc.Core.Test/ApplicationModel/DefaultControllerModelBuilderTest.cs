@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Reflection;
-using Microsoft.AspNet.Mvc.ApplicationModel.DefaultControllerModelBuilderTestControllers;
+using Microsoft.AspNet.Mvc.ApplicationModels.DefaultControllerModelBuilderTestControllers;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModel
+namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class DefaultControllerModelBuilderTest
     {
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModel
 // implementation of this class to test it, they are just top level classes. Don't reuse
 // these outside this test - find a better way or use nested classes to keep the tests
 // independent.
-namespace Microsoft.AspNet.Mvc.ApplicationModel.DefaultControllerModelBuilderTestControllers
+namespace Microsoft.AspNet.Mvc.ApplicationModels.DefaultControllerModelBuilderTestControllers
 {
     public abstract class AbstractController : Mvc.Controller
     {

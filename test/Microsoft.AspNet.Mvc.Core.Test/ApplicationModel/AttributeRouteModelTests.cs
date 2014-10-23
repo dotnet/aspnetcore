@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModel
+namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class AttributeRouteModelTests
     {

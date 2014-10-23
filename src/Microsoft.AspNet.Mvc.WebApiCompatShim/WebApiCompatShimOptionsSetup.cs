@@ -21,10 +21,10 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         public void Configure(MvcOptions options, string name = "")
         {
             // Add webapi behaviors to controllers with the appropriate attributes
-            options.ApplicationModelConventions.Add(new WebApiActionConventionsGlobalModelConvention());
-            options.ApplicationModelConventions.Add(new WebApiParameterConventionsGlobalModelConvention());
-            options.ApplicationModelConventions.Add(new WebApiOverloadingGlobalModelConvention());
-            options.ApplicationModelConventions.Add(new WebApiRoutesGlobalModelConvention(area: DefaultAreaName));
+            options.ApplicationModelConventions.Add(new WebApiActionConventionsApplicationModelConvention());
+            options.ApplicationModelConventions.Add(new WebApiParameterConventionsApplicationModelConvention());
+            options.ApplicationModelConventions.Add(new WebApiOverloadingApplicationModelConvention());
+            options.ApplicationModelConventions.Add(new WebApiRoutesApplicationModelConvention(area: DefaultAreaName));
 
             // Add an action filter for handling the HttpResponseException.
             options.Filters.Add(new HttpResponseExceptionActionFilter());

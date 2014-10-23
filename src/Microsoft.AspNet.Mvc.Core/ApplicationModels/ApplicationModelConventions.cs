@@ -4,21 +4,21 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModel
+namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     /// <summary>
-    /// Applies conventions to a <see cref="GlobalModel"/>.
+    /// Applies conventions to a <see cref="ApplicationModel"/>.
     /// </summary>
     public static class ApplicationModelConventions
     {
         /// <summary>
-        /// Applies conventions to a <see cref="GlobalModel"/>.
+        /// Applies conventions to a <see cref="ApplicationModel"/>.
         /// </summary>
-        /// <param name="applicationModel">The <see cref="GlobalModel"/>.</param>
+        /// <param name="applicationModel">The <see cref="ApplicationModel"/>.</param>
         /// <param name="conventions">The set of conventions.</param>
         public static void ApplyConventions(
-            [NotNull] GlobalModel applicationModel, 
-            [NotNull] IEnumerable<IGlobalModelConvention> conventions)
+            [NotNull] ApplicationModel applicationModel, 
+            [NotNull] IEnumerable<IApplicationModelConvention> conventions)
         {
             // Conventions are applied from the outside-in to allow for scenarios where an action overrides
             // a controller, etc.

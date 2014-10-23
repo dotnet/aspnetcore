@@ -2,22 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
-    public class WebApiRoutesGlobalModelConvention : IGlobalModelConvention
+    public class WebApiRoutesApplicationModelConvention : IApplicationModelConvention
     {
         private readonly string _area;
 
-        public WebApiRoutesGlobalModelConvention(string area)
+        public WebApiRoutesApplicationModelConvention(string area)
         {
             _area = area;
         }
 
-        public void Apply(GlobalModel model)
+        public void Apply(ApplicationModel application)
         {
-            foreach (var controller in model.Controllers)
+            foreach (var controller in application.Controllers)
             {
                 if (IsConventionApplicable(controller))
                 {
@@ -31,9 +31,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             return controller.Attributes.OfType<IUseWebApiRoutes>().Any();
         }
 
-        private void Apply(ControllerModel model)
+        private void Apply(ControllerModel controller)
         {
-            model.RouteConstraints.Add(new AreaAttribute(_area));
+            controller.RouteConstraints.Add(new AreaAttribute(_area));
         }
     }
 }

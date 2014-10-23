@@ -7,7 +7,7 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Routing;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModel
+namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     /// <summary>
     /// A default implementation of <see cref="IControllerModelBuilder"/>.

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -1114,9 +1114,9 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var sequence = 0;
 
-            var applicationConvention = new Mock<IGlobalModelConvention>();
+            var applicationConvention = new Mock<IApplicationModelConvention>();
             applicationConvention
-                .Setup(c => c.Apply(It.IsAny<GlobalModel>()))
+                .Setup(c => c.Apply(It.IsAny<ApplicationModel>()))
                 .Callback(() => { Assert.Equal(0, sequence++); });
 
             var controllerConvention = new Mock<IControllerModelConvention>();

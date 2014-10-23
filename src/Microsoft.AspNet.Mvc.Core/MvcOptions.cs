@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc
 
         public MvcOptions()
         {
-            ApplicationModelConventions = new List<IGlobalModelConvention>();
+            ApplicationModelConventions = new List<IApplicationModelConvention>();
             ModelBinders = new List<ModelBinderDescriptor>();
             ViewEngines = new List<ViewEngineDescriptor>();
             ValueProviderFactories = new List<ValueProviderFactoryDescriptor>();
@@ -121,6 +121,10 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public List<ValueProviderFactoryDescriptor> ValueProviderFactories { get; private set; }
 
-        public List<IGlobalModelConvention> ApplicationModelConventions { get; private set; }
+        /// <summary>
+        /// Gets a list of <see cref="IApplicationModelConvention"/> instances that will be applied to
+        /// the <see cref="ApplicationModel"/> when discovering actions.
+        /// </summary>
+        public List<IApplicationModelConvention> ApplicationModelConventions { get; private set; }
     }
 }

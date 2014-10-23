@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc
         private readonly IControllerModelBuilder _applicationModelBuilder;
         private readonly IAssemblyProvider _assemblyProvider;
         private readonly IReadOnlyList<IFilter> _globalFilters;
-        private readonly IEnumerable<IGlobalModelConvention> _modelConventions;
+        private readonly IEnumerable<IApplicationModelConvention> _modelConventions;
 
         public ControllerActionDescriptorProvider(IAssemblyProvider assemblyProvider,
                                                  IControllerModelBuilder applicationModelBuilder,
@@ -47,9 +47,9 @@ namespace Microsoft.AspNet.Mvc
             return ControllerActionDescriptorBuilder.Build(applicationModel);
         }
 
-        public GlobalModel BuildModel()
+        public ApplicationModel BuildModel()
         {
-            var applicationModel = new GlobalModel();
+            var applicationModel = new ApplicationModel();
             applicationModel.Filters.AddRange(_globalFilters);
 
             var assemblies = _assemblyProvider.CandidateAssemblies;

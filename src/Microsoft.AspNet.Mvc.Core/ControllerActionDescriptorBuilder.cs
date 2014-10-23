@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Routing;
@@ -14,7 +14,7 @@ using Microsoft.AspNet.Mvc.Routing;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Creates instances of <see cref="ControllerActionDescriptor"/> from <see cref="GlobalModel"/>.
+    /// Creates instances of <see cref="ControllerActionDescriptor"/> from <see cref="ApplicationModel"/>.
     /// </summary>
     public static class ControllerActionDescriptorBuilder
     {
@@ -23,11 +23,11 @@ namespace Microsoft.AspNet.Mvc
         private const int DefaultAttributeRouteOrder = 0;
 
         /// <summary>
-        /// Creates instances of <see cref="ControllerActionDescriptor"/> from <see cref="GlobalModel"/>.
+        /// Creates instances of <see cref="ControllerActionDescriptor"/> from <see cref="ApplicationModel"/>.
         /// </summary>
-        /// <param name="application">The <see cref="GlobalModel"/>.</param>
+        /// <param name="application">The <see cref="ApplicationModel"/>.</param>
         /// <returns>The list of <see cref="ControllerActionDescriptor"/>.</returns>
-        public static IList<ControllerActionDescriptor> Build(GlobalModel application)
+        public static IList<ControllerActionDescriptor> Build(ApplicationModel application)
         {
             var actions = new List<ControllerActionDescriptor>();
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static IList<ControllerActionDescriptor> CreateActionDescriptors(
-            GlobalModel application,
+            ApplicationModel application,
             ControllerModel controller,
             ActionModel action)
         {

@@ -3,16 +3,16 @@
 
 using System.Linq;
 using System.Web.Http;
-using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
-    public class WebApiParameterConventionsGlobalModelConvention : IGlobalModelConvention
+    public class WebApiParameterConventionsApplicationModelConvention : IApplicationModelConvention
     {
-        public void Apply(GlobalModel model)
+        public void Apply(ApplicationModel application)
         {
-            foreach (var controller in model.Controllers)
+            foreach (var controller in application.Controllers)
             {
                 if (IsConventionApplicable(controller))
                 {
@@ -26,9 +26,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             return controller.Attributes.OfType<IUseWebApiParameterConventions>().Any();
         }
 
-        private void Apply(ControllerModel model)
+        private void Apply(ControllerModel controller)
         {
-            foreach (var action in model.Actions)
+            foreach (var action in controller.Actions)
             {
                 foreach (var parameter in action.Parameters)
                 {

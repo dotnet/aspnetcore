@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ApplicationModel;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
-    public class WebApiActionConventionsGlobalModelConvention : IGlobalModelConvention
+    public class WebApiActionConventionsApplicationModelConvention : IApplicationModelConvention
     {
         private static readonly string[] SupportedHttpMethodConventions = new string[]
         {
@@ -21,9 +21,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             "OPTIONS",
         };
 
-        public void Apply(GlobalModel model)
+        public void Apply(ApplicationModel application)
         {
-            foreach (var controller in model.Controllers)
+            foreach (var controller in application.Controllers)
             {
                 if (IsConventionApplicable(controller))
                 {
@@ -37,11 +37,11 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             return controller.Attributes.OfType<IUseWebApiActionConventions>().Any();
         }
 
-        private void Apply(ControllerModel model)
+        private void Apply(ControllerModel controller)
         {
             var newActions = new List<ActionModel>();
 
-            foreach (var action in model.Actions)
+            foreach (var action in controller.Actions)
             {
                 SetHttpMethodFromConvention(action);
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 }
             }
 
-            model.Actions.AddRange(newActions);
+            controller.Actions.AddRange(newActions);
         }
 
         private bool IsActionAttributeRouted(ActionModel action)

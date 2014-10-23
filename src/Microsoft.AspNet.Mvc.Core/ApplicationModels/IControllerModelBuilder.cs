@@ -3,7 +3,7 @@
 
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModel
+namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     /// <summary>
     /// Creates a set of <see cref="ControllerModel"/> for a type. 

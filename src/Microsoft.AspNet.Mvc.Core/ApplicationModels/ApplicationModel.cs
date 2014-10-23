@@ -3,11 +3,11 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModel
+namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
-    public class GlobalModel
+    public class ApplicationModel
     {
-        public GlobalModel()
+        public ApplicationModel()
         {
             Controllers = new List<ControllerModel>();
             Filters = new List<IFilter>();

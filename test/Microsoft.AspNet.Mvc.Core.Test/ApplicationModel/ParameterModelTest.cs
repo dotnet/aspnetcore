@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModel
+namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class ParameterModelTest
     {
