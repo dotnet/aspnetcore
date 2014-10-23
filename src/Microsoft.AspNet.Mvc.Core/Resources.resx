@@ -163,7 +163,8 @@
     <value>The class ReflectedActionFilterEndPoint only supports ReflectedActionDescriptors.</value>
   </data>
   <data name="ViewComponent_AmbiguousTypeMatch" xml:space="preserve">
-    <value>The view component name '{0}' matched multiple types: {1}</value>
+    <value>The view component name '{0}' matched multiple types:{1}{2}</value>
+    <comment>{1} is the newline character</comment>
   </data>
   <data name="ViewComponent_AsyncMethod_ShouldReturnTask" xml:space="preserve">
     <value>The async view component method '{0}' should be declared to return Task&lt;T&gt;.</value>
@@ -412,5 +413,8 @@
   <data name="FileResult_InvalidPath" xml:space="preserve">
     <value>Could not find file: {0}</value>
     <comment>{0} is the value for the provided path</comment>
+  </data>
+  <data name="ViewComponent_AmbiguousTypeMatch_Item" xml:space="preserve">
+    <value>Type: '{0}' - Name: '{1}'</value>
   </data>
 </root>

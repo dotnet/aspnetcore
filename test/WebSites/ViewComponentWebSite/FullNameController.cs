@@ -5,16 +5,12 @@ using Microsoft.AspNet.Mvc;
 
 namespace ViewComponentWebSite
 {
-    public class IntegerViewComponent : ViewComponent
+    public class FullNameController : Controller
     {
-        public IViewComponentResult Invoke()
+        public IActionResult Invoke(string name)
         {
-            return Invoke(17);
-        }
-
-        public IViewComponentResult Invoke(int valueFromView)
-        {
-            return View(valueFromView);
+            ViewBag.Name = name;
+            return View();
         }
     }
 }

@@ -64,5 +64,35 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal("10", body.Trim());
         }
+
+        [Theory]
+        [InlineData("ViewComponentWebSite.Namespace1.SameName")]
+        [InlineData("ViewComponentWebSite.Namespace2.SameName")]
+        public async Task ViewComponents_FullName(string name)
+        {
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/FullName/Invoke?name=" + name);
+
+            // Assert
+            Assert.Equal(name, body.Trim());
+        }
+
+        [Fact]
+        public async Task ViewComponents_ShortNameUsedForViewLookup()
+        {
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var name = "ViewComponentWebSite.Integer";
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/FullName/Invoke?name=" + name);
+
+            // Assert
+            Assert.Equal("17", body.Trim());
+        }
     }
 }

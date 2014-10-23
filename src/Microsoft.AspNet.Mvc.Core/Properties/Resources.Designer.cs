@@ -251,7 +251,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The view component name '{0}' matched multiple types: {1}
+        /// The view component name '{0}' matched multiple types:{1}{2}
         /// </summary>
         internal static string ViewComponent_AmbiguousTypeMatch
         {
@@ -259,11 +259,11 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The view component name '{0}' matched multiple types: {1}
+        /// The view component name '{0}' matched multiple types:{1}{2}
         /// </summary>
-        internal static string FormatViewComponent_AmbiguousTypeMatch(object p0, object p1)
+        internal static string FormatViewComponent_AmbiguousTypeMatch(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AmbiguousTypeMatch"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AmbiguousTypeMatch"), p0, p1, p2);
         }
 
         /// <summary>
@@ -1528,6 +1528,22 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatFileResult_InvalidPath(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("FileResult_InvalidPath"), p0);
+        }
+
+        /// <summary>
+        /// Type: '{0}' - Name: '{1}'
+        /// </summary>
+        internal static string ViewComponent_AmbiguousTypeMatch_Item
+        {
+            get { return GetString("ViewComponent_AmbiguousTypeMatch_Item"); }
+        }
+
+        /// <summary>
+        /// Type: '{0}' - Name: '{1}'
+        /// </summary>
+        internal static string FormatViewComponent_AmbiguousTypeMatch_Item(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AmbiguousTypeMatch_Item"), p0, p1);
         }
 
         private static string GetString(string name, params string[] formatterNames)
