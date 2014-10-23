@@ -414,6 +414,10 @@ namespace Microsoft.AspNet.WebSockets.Protocol
                     Utilities.MaskInPlace(_frameInProgress.MaskKey, new ArraySegment<byte>(_receiveBuffer, _receiveBufferOffset, (int)_frameBytesRemaining));
                 }
                 _closeStatus = (WebSocketCloseStatus)((_receiveBuffer[_receiveBufferOffset] << 8) | _receiveBuffer[_receiveBufferOffset + 1]);
+                if (!ValidateCloseStatus(_closeStatus.Value))
+                {
+                    await SendErrorAbortAndThrow(WebSocketCloseStatus.ProtocolError, "Invalid close status code.", cancellationToken);
+                }
                 try
                 {
                     var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
@@ -449,6 +453,29 @@ namespace Microsoft.AspNet.WebSockets.Protocol
             }
 
             return result;
+        }
+
+        private static bool ValidateCloseStatus(WebSocketCloseStatus closeStatus)
+        {
+            if (closeStatus < (WebSocketCloseStatus)1000 || closeStatus >= (WebSocketCloseStatus)5000)
+            {
+                return false;
+            }
+            else if (closeStatus >= (WebSocketCloseStatus)3000)
+            {
+                // 3000-3999 - Reserved for frameworks
+                // 4000-4999 - Reserved for private usage
+                return true;
+            }
+            int[] validCodes = new[] { 1000, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1011 };
+            foreach (var validCode in validCodes)
+            {
+                if (closeStatus == (WebSocketCloseStatus)validCode)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public async override Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
@@ -592,7 +619,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol
 
         private async Task SendErrorAbortAndThrow(WebSocketCloseStatus error, string message, CancellationToken cancellationToken)
         {
-            if (State == WebSocketState.Open)
+            if (State == WebSocketState.Open || State == WebSocketState.CloseReceived)
             {
                 await CloseOutputAsync(error, message, cancellationToken);
             }
