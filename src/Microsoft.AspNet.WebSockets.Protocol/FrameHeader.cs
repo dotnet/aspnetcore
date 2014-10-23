@@ -209,6 +209,14 @@ namespace Microsoft.AspNet.WebSockets.Protocol
             }
         }
 
+        public bool IsControlFrame
+        {
+            get
+            {
+                return OpCode >= Constants.OpCodes.CloseFrame;
+            }
+        }
+
         // bits 1-3.
         internal bool AreReservedSet()
         {
