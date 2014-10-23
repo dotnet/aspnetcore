@@ -215,8 +215,14 @@ namespace Microsoft.AspNet.WebSockets.Protocol
                 await ReadNextFrameAsync(cancellationToken);
             }
 
-            // Handle fragmentation, remember the first frame type
             int opCode = _frameInProgress.OpCode;
+
+            if (opCode == Constants.OpCodes.CloseFrame)
+            {
+                return await ProcessCloseFrameAsync(cancellationToken);
+            }
+
+            // Handle fragmentation, remember the first frame type
             if (opCode == Constants.OpCodes.ContinuationFrame)
             {
                 if (!_firstDataOpCode.HasValue)
@@ -228,11 +234,6 @@ namespace Microsoft.AspNet.WebSockets.Protocol
             else
             {
                 _firstDataOpCode = opCode;
-            }
-
-            if (opCode == Constants.OpCodes.CloseFrame)
-            {
-                return await ProcessCloseFrameAsync(cancellationToken);
             }
 
             // Make sure there's at least some data in the buffer
@@ -328,6 +329,11 @@ namespace Microsoft.AspNet.WebSockets.Protocol
                     _frameBytesRemaining = 0;
                     _frameInProgress = null;
                 }
+            }
+            else if (_firstDataOpCode.HasValue && _frameInProgress.OpCode != Constants.OpCodes.ContinuationFrame)
+            {
+                // A data frame is already in progress, but this new frame is not a continuation frame.
+                await SendErrorAbortAndThrow(WebSocketCloseStatus.ProtocolError, "Expected a continuation frame: " + _frameInProgress.OpCode, cancellationToken);
             }
         }
 
