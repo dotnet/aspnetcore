@@ -25,7 +25,17 @@ namespace Microsoft.AspNet.WebSockets.Protocol
             public const int BinaryFrame = 0x2;
             public const int CloseFrame = 0x8;
             public const int PingFrame = 0x9;
-            public const int PongFrame = 0xA;            
+            public const int PongFrame = 0xA;
+
+            internal static readonly int[] ValidOpCodes = new int[]
+            {
+                ContinuationFrame,
+                TextFrame,
+                BinaryFrame,
+                CloseFrame,
+                PingFrame,
+                PongFrame,
+            };
         }
     }
 }
