@@ -17,6 +17,11 @@ namespace MvcSample.Web
             return View("MyView", CreateUser());
         }
 
+        public IActionResult NullUser()
+        {
+            return View();
+        }
+
         public ActionResult ValidationSummary()
         {
             ModelState.AddModelError("something", "Something happened, show up in validation summary.");
