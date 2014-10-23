@@ -708,7 +708,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> UpdateSecurityStampAsync(TUser user, 
+        public virtual async Task<IdentityResult> UpdateSecurityStampAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
@@ -727,7 +727,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GeneratePasswordResetTokenAsync(TUser user, 
+        public virtual async Task<string> GeneratePasswordResetTokenAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
@@ -943,6 +943,35 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("user");
             }
             await claimStore.AddClaimsAsync(user, claims, cancellationToken);
+            return await UpdateAsync(user, cancellationToken);
+        }
+
+        /// <summary>
+        ///     Updates the give claim information with the given new claim information
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="claim"></param>
+        /// <param name="newClaim"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<IdentityResult> ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim,
+             CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            var claimStore = GetClaimStore();
+            if (claim == null)
+            {
+                throw new ArgumentNullException("claim");
+            }
+            if (newClaim == null)
+            {
+                throw new ArgumentNullException("newClaim");
+            }
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            await claimStore.ReplaceClaimAsync(user, claim, newClaim, cancellationToken);
             return await UpdateAsync(user, cancellationToken);
         }
 
@@ -1598,7 +1627,7 @@ namespace Microsoft.AspNet.Identity
             }
             if (!_tokenProviders.ContainsKey(tokenProvider))
             {
-                throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture, 
+                throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture,
                     Resources.NoTokenProvider, tokenProvider));
             }
             await _tokenProviders[tokenProvider].NotifyAsync(token, this, user, cancellationToken);
@@ -1827,7 +1856,7 @@ namespace Microsoft.AspNet.Identity
 
         /// <summary>
         /// Increments the access failed count for the user and if the failed access account is greater than or equal
-        /// to the MaxFailedAccessAttempsBeforeLockout, the user will be locked out for the next 
+        /// to the MaxFailedAccessAttempsBeforeLockout, the user will be locked out for the next
         /// DefaultAccountLockoutTimeSpan and the AccessFailedCount will be reset to 0.
         /// </summary>
         /// <param name="user"></param>

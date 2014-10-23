@@ -316,6 +316,27 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
+        public async Task UpdateClaimCallsStore()
+        {
+            // Setup
+            var store = new Mock<IUserClaimStore<TestUser>>();
+            var user = new TestUser { UserName = "Foo" };
+            var claim = new Claim("1", "1");
+            var newClaim = new Claim("1", "2");
+            store.Setup(s => s.ReplaceClaimAsync(user, It.IsAny<Claim>(), It.IsAny<Claim>(), CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+
+            // Act
+            var result = await userManager.ReplaceClaimAsync(user, claim, newClaim);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
         public async Task RemoveClaimsCallsStore()
         {
             // Setup
@@ -455,6 +476,7 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
             Assert.False(manager.SupportsUserClaim);
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddClaimAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.ReplaceClaimAsync(null, null, null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveClaimAsync(null, null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetClaimsAsync(null));
         }
@@ -541,11 +563,12 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.UpdateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.DeleteAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("claim", async () => await manager.AddClaimAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("claim", async () => await manager.ReplaceClaimAsync(null, null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("claims", async () => await manager.AddClaimsAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByNameAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByUserNamePasswordAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.AddLoginAsync(null, null));
-            await Assert.ThrowsAsync<ArgumentNullException>("loginProvider", 
+            await Assert.ThrowsAsync<ArgumentNullException>("loginProvider",
                 async () => await manager.RemoveLoginAsync(null, null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("providerKey",
                 async () => await manager.RemoveLoginAsync(null, "", null));
@@ -594,6 +617,8 @@ namespace Microsoft.AspNet.Identity.Test
                 async () => await manager.RemoveFromRoleAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.RemoveFromRolesAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user",
+                async () => await manager.ReplaceClaimAsync(null, new Claim("a", "b"), new Claim("a", "c")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.UpdateSecurityStampAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -690,6 +715,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.CreateAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.DeleteAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ReplaceClaimAsync(null, null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.UpdateSecurityStampAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetSecurityStampAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GeneratePasswordResetTokenAsync(null));
@@ -726,6 +752,11 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public Task AddClaimsAsync(TestUser user, IEnumerable<Claim> claim, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task ReplaceClaimAsync(TestUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
@@ -987,6 +1018,11 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public Task AddClaimsAsync(TestUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ReplaceClaimAsync(TestUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

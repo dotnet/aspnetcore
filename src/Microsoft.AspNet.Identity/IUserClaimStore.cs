@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IList<Claim>> GetClaimsAsync(TUser user, 
+        Task<IList<Claim>> GetClaimsAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -33,13 +33,23 @@ namespace Microsoft.AspNet.Identity
         Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
+        ///     Updates the give claim information with the given new claim information
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="claim"></param>
+        /// <param name="newClaim"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
         ///     Remove a user claim
         /// </summary>
         /// <param name="user"></param>
         /// <param name="claims"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, 
+        Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims,
             CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -172,6 +172,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(
                 async () => await store.RemoveFromRoleAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.RemoveClaimsAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.ReplaceClaimAsync(null, null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByLoginAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByIdAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByNameAsync(null));
@@ -199,6 +200,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.UpdateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.DeleteAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.AddClaimsAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.ReplaceClaimAsync(null, null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.RemoveClaimsAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetClaimsAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetLoginsAsync(null));

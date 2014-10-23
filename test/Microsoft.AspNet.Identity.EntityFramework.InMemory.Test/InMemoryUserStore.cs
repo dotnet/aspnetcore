@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         public InMemoryUserStore(InMemoryContext context) : base(context) { }
     }
 
-    public class InMemoryUserStore<TUser, TContext> : InMemoryUserStore<TUser, IdentityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim, TContext> 
+    public class InMemoryUserStore<TUser, TContext> : InMemoryUserStore<TUser, IdentityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim, TContext>
         where TUser:IdentityUser
         where TContext : DbContext
     {
@@ -366,6 +366,39 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             foreach (var claim in claims)
             {
                 user.Claims.Add(new TUserClaim { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            }
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        ///     Updates the give claim with the new one.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="claim"></param>
+        /// <param name="newClaim"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (claim == null)
+            {
+                throw new ArgumentNullException("claim");
+            }
+            if (newClaim == null)
+            {
+                throw new ArgumentNullException("newClaim");
+            }
+
+            var matchedClaim = user.Claims.FirstOrDefault(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type);
+            if(matchedClaim != null)
+            {
+                matchedClaim.ClaimValue = newClaim.Value;
+                matchedClaim.ClaimType = newClaim.Type;
             }
             return Task.FromResult(0);
         }
