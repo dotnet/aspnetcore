@@ -202,12 +202,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 // Check for the pdb writer component that roslyn uses to generate pdbs
                 const string SymWriterGuid = "0AE2DEB0-F901-478b-BB9F-881EE8066788";
 
-                return Marshal.GetTypeFromCLSID(new Guid(SymWriterGuid)) != null;
+                var type = Marshal.GetTypeFromCLSID(new Guid(SymWriterGuid));
+
+                if (type != null)
+                {
+                    // This line will throw if pdb generation is not supported.
+                    Activator.CreateInstance(type);
+                    return true;
+                }
             }
             catch
             {
-                return false;
             }
+
+            return false;
         }
     }
 }
