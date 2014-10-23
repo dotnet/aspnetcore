@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
         private readonly ILibraryManager _libraryManager;
         private readonly IApplicationEnvironment _environment;
-        private readonly IAssemblyLoaderEngine _loader;
+        private readonly IAssemblyLoadContext _loader;
 
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
 
@@ -41,12 +41,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <param name="libraryManager">The library manager that provides export and reference information.</param>
         /// <param name="host">The <see cref="IMvcRazorHost"/> that was used to generate the code.</param>
         public RoslynCompilationService(IApplicationEnvironment environment,
-                                        IAssemblyLoaderEngine loaderEngine,
+                                        IAssemblyLoadContextAccessor loaderAccessor,
                                         ILibraryManager libraryManager,
                                         IMvcRazorHost host)
         {
             _environment = environment;
-            _loader = loaderEngine;
+            _loader = loaderAccessor.GetLoadContext(typeof(RoslynCompilationService).GetTypeInfo().Assembly);
             _libraryManager = libraryManager;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
             _classPrefix = host.MainClassNamePrefix;
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     }
                     else
                     {
-                        assembly = _loader.LoadStream(ms, pdbStream: null);
+                        assembly = _loader.LoadStream(ms, assemblySymbols: null);
                     }
 
                     var type = assembly.GetExportedTypes()
