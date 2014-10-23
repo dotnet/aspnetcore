@@ -14,6 +14,7 @@
                 "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",
                 "System.Threading": "4.0.0-beta-*",
                 "System.Threading.Tasks": "4.0.10-beta-*",
+                "System.Text.Encoding.Extensions": "4.0.10-beta-*",
                 "System.Threading.Timer": "4.0.0-beta-*"
             }
         }

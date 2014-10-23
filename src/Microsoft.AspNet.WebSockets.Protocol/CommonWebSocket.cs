@@ -414,7 +414,19 @@ namespace Microsoft.AspNet.WebSockets.Protocol
                     Utilities.MaskInPlace(_frameInProgress.MaskKey, new ArraySegment<byte>(_receiveBuffer, _receiveBufferOffset, (int)_frameBytesRemaining));
                 }
                 _closeStatus = (WebSocketCloseStatus)((_receiveBuffer[_receiveBufferOffset] << 8) | _receiveBuffer[_receiveBufferOffset + 1]);
-                _closeStatusDescription = Encoding.UTF8.GetString(_receiveBuffer, _receiveBufferOffset + 2, (int)_frameBytesRemaining - 2) ?? string.Empty;
+                try
+                {
+                    var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+                    _closeStatusDescription = encoding.GetString(_receiveBuffer, _receiveBufferOffset + 2, (int)_frameBytesRemaining - 2) ?? string.Empty;
+                }
+                catch (DecoderFallbackException)
+                {
+                    await SendErrorAbortAndThrow(WebSocketCloseStatus.ProtocolError, "Invalid UTF-8 close message.", cancellationToken);
+                }
+            }
+            else if (_frameBytesRemaining == 1)
+            {
+                await SendErrorAbortAndThrow(WebSocketCloseStatus.ProtocolError, "Invalid close body.", cancellationToken);
             }
             else
             {
