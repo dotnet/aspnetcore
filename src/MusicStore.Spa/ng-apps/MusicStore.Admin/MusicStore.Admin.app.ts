@@ -37,7 +37,7 @@ module MusicStore.Admin {
     }
 
     // Use this method to register work which should be performed when the injector is done loading all modules.
-    //function BUG:run() {
-
-    //}
+    function run($log: ng.ILogService, userDetails: UserDetails.IUserDetailsService) {
+        $log.log(userDetails.getUserDetails());
+    }
 }

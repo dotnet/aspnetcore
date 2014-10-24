@@ -70,7 +70,7 @@ namespace MusicStore.Apis
         }
 
         [HttpPost]
-        [Authorize("ManageStore", "Allowed")]
+        [Authorize("app-ManageStore", "Allowed")]
         public async Task<ActionResult> CreateAlbum()
         {
             var album = new Album();
@@ -96,7 +96,7 @@ namespace MusicStore.Apis
         }
 
         [HttpPut("{albumId:int}/update")]
-        [Authorize("ManageStore", "Allowed")]
+        [Authorize("app-ManageStore", "Allowed")]
         public async Task<ActionResult> UpdateAlbum(int albumId)
         {
             var album = _storeContext.Albums.SingleOrDefault(a => a.AlbumId == albumId);
@@ -129,7 +129,7 @@ namespace MusicStore.Apis
         }
 
         [HttpDelete("{albumId:int}")]
-        [Authorize("ManageStore", "Allowed")]
+        [Authorize("app-ManageStore", "Allowed")]
         public async Task<ActionResult> DeleteAlbum(int albumId)
         {
             //var album = await _storeContext.Albums.SingleOrDefaultAsync(a => a.AlbumId == albumId);

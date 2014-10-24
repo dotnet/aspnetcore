@@ -4,7 +4,7 @@
     <h2>Album <small>{{ viewModel.mode | titlecase }}</small></h2>
     <hr />
 
-    <alert ng-show="viewModel.alert" type="{{ viewModel.alert.type.toString() }}" close="viewModel.clearAlert()">
+    <alert ng-show="viewModel.alert" type="{{ viewModel.alert.type.value }}" close="viewModel.clearAlert()">
         {{ viewModel.alert.message }}
         <ul ng-show="viewModel.alert.modelErrors">
             <li ng-repeat="modelError in viewModel.alert.modelErrors">{{ modelError.ErrorMessage }}</li>

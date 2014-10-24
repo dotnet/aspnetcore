@@ -56,7 +56,7 @@ namespace MusicStore.Models
                 user = new ApplicationUser { UserName = settings.DefaultAdminUsername };
                 await userManager.CreateAsync(user, settings.DefaultAdminPassword);
                 await userManager.AddToRoleAsync(user, adminRole);
-                await userManager.AddClaimAsync(user, new Claim("ManageStore", "Allowed"));
+                await userManager.AddClaimAsync(user, new Claim("app-ManageStore", "Allowed"));
             }
         }
 

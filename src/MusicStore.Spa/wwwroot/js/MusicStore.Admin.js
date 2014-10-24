@@ -1028,6 +1028,10 @@ var MusicStore;
             "$routeProvider",
             "$logProvider",
             configuration
+        ]).run([
+            "$log",
+            "MusicStore.UserDetails.IUserDetailsService",
+            run
         ]);
 
         var dependencies = [
@@ -1052,6 +1056,10 @@ var MusicStore;
             $logProvider.debugEnabled(true);
 
             $routeProvider.when("/albums/:albumId/details", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumDetails.cshtml" }).when("/albums/:albumId/:mode", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumEdit.cshtml" }).when("/albums/:mode", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumEdit.cshtml" }).when("/albums", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumList.cshtml" }).otherwise({ redirectTo: "/albums" });
+        }
+
+        function run($log, userDetails) {
+            $log.log(userDetails.getUserDetails());
         }
     })(MusicStore.Admin || (MusicStore.Admin = {}));
     var Admin = MusicStore.Admin;
