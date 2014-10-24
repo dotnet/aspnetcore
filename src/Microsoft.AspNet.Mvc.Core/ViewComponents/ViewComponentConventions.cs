@@ -31,6 +31,7 @@ namespace Microsoft.AspNet.Mvc
         public static bool IsComponent([NotNull] TypeInfo typeInfo)
         {
             if (!typeInfo.IsClass ||
+                !typeInfo.IsPublic ||
                 typeInfo.IsAbstract ||
                 typeInfo.ContainsGenericParameters)
             {

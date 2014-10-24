@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var isController = builder.IsController(typeInfo);
 
             // Assert
-            Assert.False(isController);
+            Assert.True(isController);
         }
 
         [Fact]
@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels.DefaultControllerModelBuilderTe
     {
     }
 
-    public class OpenGenericController<T>
+    public class OpenGenericController<T> : Mvc.Controller
     {
     }
 
