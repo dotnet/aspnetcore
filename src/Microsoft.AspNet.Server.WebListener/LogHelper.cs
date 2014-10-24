@@ -64,6 +64,11 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
+        internal static void LogVerbose(ILogger logger, string location, Exception exception)
+        {
+            LogVerbose(logger, location + "; " + exception.ToString());
+        }
+
         internal static void LogException(ILogger logger, string location, Exception exception)
         {
             if (logger == null)

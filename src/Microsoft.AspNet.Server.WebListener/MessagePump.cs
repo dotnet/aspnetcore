@@ -123,8 +123,15 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
                 catch (Exception exception)
                 {
-                    LogHelper.LogException(_logger, "ListenForNextRequestAsync", exception);
-                    Contract.Assert(!_listener.IsListening);
+                    Contract.Assert(_stopping);
+                    if (_stopping)
+                    {
+                        LogHelper.LogVerbose(_logger, "ListenForNextRequestAsync-Stopping", exception);
+                    }
+                    else
+                    {
+                        LogHelper.LogException(_logger, "ListenForNextRequestAsync", exception);
+                    }
                     return;
                 }
                 try
@@ -197,6 +204,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         public void Dispose()
         {
+            LogHelper.LogInfo(_logger, "Stop");
             _stopping = true;
             // Wait for active requests to drain
             if (_outstandingRequests > 0)
