@@ -11,17 +11,7 @@
         },
         "aspnetcore50": {
             "dependencies": {
-                "System.Collections": "4.0.10-beta-*",
-                "System.ComponentModel": "4.0.0-beta-*",
-                "System.Globalization": "4.0.10-beta-*",
-                "System.Linq": "4.0.0-beta-*",
-                "System.Reflection": "4.0.10-beta-*",
-                "System.Runtime": "4.0.20-beta-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*",
-                "System.Runtime.Serialization.Primitives": "4.0.0-beta-*",
-                "System.Threading": "4.0.0-beta-*",
-                "System.Threading.Tasks": "4.0.10-beta-*",
-                "System.Threading.Thread": "4.0.0-beta-*",
+                "System.Diagnostics.Contracts": "4.0.0-beta",
                 "System.Net.Http": "4.0.0-beta-*"
             }
         }

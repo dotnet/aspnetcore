@@ -1,8 +1,6 @@
 {
     "dependencies": {
-        "Microsoft.AspNet.Hosting": "1.0.0-*",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
-        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {
