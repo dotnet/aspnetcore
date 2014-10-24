@@ -6,6 +6,7 @@
             "dependencies": {
                 "Microsoft.Net.WebSocketAbstractions": "1.0.0-*",
                 "System.Diagnostics.Contracts": "4.0.0-beta-*",
+                "System.IO": "4.0.10-beta-*",
                 "System.Linq": "4.0.0-beta-*",
                 "System.Runtime": "4.0.20-beta-*",
                 "System.Runtime.InteropServices": "4.0.20-beta-*",
