@@ -110,13 +110,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
             if (apiVisibility != null)
             {
-                controllerModel.ApiExplorerIsVisible = !apiVisibility.IgnoreApi;
+                controllerModel.ApiExplorer.IsVisible = !apiVisibility.IgnoreApi;
             }
 
             var apiGroupName = attributes.OfType<IApiDescriptionGroupNameProvider>().FirstOrDefault();
             if (apiGroupName != null)
             {
-                controllerModel.ApiExplorerGroupName = apiGroupName.GroupName;
+                controllerModel.ApiExplorer.GroupName = apiGroupName.GroupName;
             }
 
             return controllerModel;

@@ -23,11 +23,16 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var route = new AttributeRouteModel(new HttpGetAttribute("api/Products"));
             action.AttributeRouteModel = route;
 
+            var apiExplorer = action.ApiExplorer;
+            apiExplorer.IsVisible = false;
+            apiExplorer.GroupName = "group1";
+
             // Act
             var action2 = new ActionModel(action);
 
             // Assert
             Assert.NotSame(action, action2.Parameters[0]);
+            Assert.NotSame(apiExplorer, action2.ApiExplorer);
             Assert.NotSame(route, action2.AttributeRouteModel);
         }
 
@@ -39,8 +44,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             action.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
             action.ActionName = "Edit";
-            action.ApiExplorerGroupName = "group";
-            action.ApiExplorerIsVisible = true;
+
             action.Attributes.Add(new HttpGetAttribute());
             action.Controller = new ControllerModel(typeof(TestController).GetTypeInfo());
             action.Filters.Add(new AuthorizeAttribute());
@@ -53,7 +57,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Assert
             foreach (var property in typeof(ActionModel).GetProperties())
             {
-                if (property.Name.Equals("Parameters") || property.Name.Equals("AttributeRouteModel"))
+                if (property.Name.Equals("ApiExplorer") ||
+                    property.Name.Equals("AttributeRouteModel") || 
+                    property.Name.Equals("Parameters"))
                 {
                     // This test excludes other ApplicationModel objects on purpose because we deep copy them.
                     continue;

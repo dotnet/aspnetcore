@@ -25,7 +25,7 @@ namespace ApiExplorer
             {
                 if (controller.ControllerType == _type)
                 {
-                    controller.ApiExplorerIsVisible = false;
+                    controller.ApiExplorer.IsVisible = false;
                 }
             }
         }

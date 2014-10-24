@@ -194,13 +194,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
             if (apiVisibility != null)
             {
-                actionModel.ApiExplorerIsVisible = !apiVisibility.IgnoreApi;
+                actionModel.ApiExplorer.IsVisible = !apiVisibility.IgnoreApi;
             }
 
             var apiGroupName = attributes.OfType<IApiDescriptionGroupNameProvider>().FirstOrDefault();
             if (apiGroupName != null)
             {
-                actionModel.ApiExplorerGroupName = apiGroupName.GroupName;
+                actionModel.ApiExplorer.GroupName = apiGroupName.GroupName;
             }
 
             var httpMethods = attributes.OfType<IActionHttpMethodProvider>();

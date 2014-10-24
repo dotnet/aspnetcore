@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             ControllerType = controllerType;
 
             Actions = new List<ActionModel>();
+            ApiExplorer = new ApiExplorerModel();
             Attributes = new List<object>();
             AttributeRoutes = new List<AttributeRouteModel>();
             ActionConstraints = new List<IActionConstraintMetadata>();
@@ -23,8 +24,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public ControllerModel([NotNull] ControllerModel other)
         {
-            ApiExplorerGroupName = other.ApiExplorerGroupName;
-            ApiExplorerIsVisible = other.ApiExplorerIsVisible;
             ControllerName = other.ControllerName;
             ControllerType = other.ControllerType;
 
@@ -39,6 +38,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             // Make a deep copy of other 'model' types.
             Actions = new List<ActionModel>(other.Actions.Select(a => new ActionModel(a)));
+            ApiExplorer = new ApiExplorerModel(other.ApiExplorer);
             AttributeRoutes = new List<AttributeRouteModel>(
                 other.AttributeRoutes.Select(a => new AttributeRouteModel(a)));
         }
@@ -47,7 +47,14 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public List<ActionModel> Actions { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ApiExplorerModel"/> for this controller.
+        /// </summary>
+        public ApiExplorerModel ApiExplorer { get; set; }
+
         public ApplicationModel Application { get; set; }
+
+        public List<AttributeRouteModel> AttributeRoutes { get; private set; }
 
         public List<object> Attributes { get; private set; }
 
@@ -58,19 +65,5 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public List<IFilter> Filters { get; private set; }
 
         public List<RouteConstraintAttribute> RouteConstraints { get; private set; }
-
-        public List<AttributeRouteModel> AttributeRoutes { get; private set; }
-
-        /// <summary>
-        /// If <c>true</c>, <see cref="Description.ApiDescription"/> objects will be created for actions defined by
-        /// this controller. 
-        /// </summary>
-        public bool? ApiExplorerIsVisible { get; set; }
-
-        /// <summary>
-        /// The value for <see cref="Description.ApiDescription.GroupName"/> of 
-        /// <see cref="Description.ApiDescription"/> objects created for actions defined by this controller.
-        /// </summary>
-        public string ApiExplorerGroupName { get; set; }
     }
 }

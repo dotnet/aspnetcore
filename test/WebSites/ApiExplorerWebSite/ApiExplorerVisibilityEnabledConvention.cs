@@ -14,10 +14,10 @@ namespace ApiExplorer
         {
             foreach (var controller in application.Controllers)
             {
-                if (controller.ApiExplorerIsVisible == null)
+                if (controller.ApiExplorer.IsVisible == null)
                 {
-                    controller.ApiExplorerIsVisible = true;
-                    controller.ApiExplorerGroupName = controller.ControllerName;
+                    controller.ApiExplorer.IsVisible = true;
+                    controller.ApiExplorer.GroupName = controller.ControllerName;
                 }
             }
         }

@@ -23,12 +23,17 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var route = new AttributeRouteModel(new HttpGetAttribute("api/Products"));
             controller.AttributeRoutes.Add(route);
 
+            var apiExplorer = controller.ApiExplorer;
+            controller.ApiExplorer.GroupName = "group";
+            controller.ApiExplorer.IsVisible = true;
+
             // Act
             var controller2 = new ControllerModel(controller);
 
             // Assert
             Assert.NotSame(action, controller2.Actions[0]);
             Assert.NotSame(route, controller2.AttributeRoutes[0]);
+            Assert.NotSame(apiExplorer, controller2.ApiExplorer);
 
             Assert.NotSame(controller.ActionConstraints, controller2.ActionConstraints);
             Assert.NotSame(controller.Actions, controller2.Actions);
@@ -44,8 +49,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var controller = new ControllerModel(typeof(TestController).GetTypeInfo());
 
             controller.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
-            controller.ApiExplorerGroupName = "group";
-            controller.ApiExplorerIsVisible = true;
             controller.Application = new ApplicationModel();
             controller.Attributes.Add(new HttpGetAttribute());
             controller.ControllerName = "cool";
@@ -58,7 +61,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Assert
             foreach (var property in typeof(ControllerModel).GetProperties())
             {
-                if (property.Name.Equals("Actions") || property.Name.Equals("AttributeRoutes"))
+                if (property.Name.Equals("Actions") || 
+                    property.Name.Equals("AttributeRoutes") ||
+                    property.Name.Equals("ApiExplorer"))
                 {
                     // This test excludes other ApplicationModel objects on purpose because we deep copy them.
                     continue;

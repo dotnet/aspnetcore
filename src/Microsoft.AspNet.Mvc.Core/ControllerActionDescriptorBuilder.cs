@@ -297,12 +297,12 @@ namespace Microsoft.AspNet.Mvc
             ActionModel action,
             ControllerModel controller)
         {
-            var apiExplorerIsVisible = action.ApiExplorerIsVisible ?? controller.ApiExplorerIsVisible ?? false;
+            var apiExplorerIsVisible = action.ApiExplorer?.IsVisible ?? controller.ApiExplorer?.IsVisible ?? false;
             if (apiExplorerIsVisible)
             {
                 var apiExplorerActionData = new ApiDescriptionActionData()
                 {
-                    GroupName = action.ApiExplorerGroupName ?? controller.ApiExplorerGroupName,
+                    GroupName = action.ApiExplorer?.GroupName ?? controller.ApiExplorer?.GroupName,
                 };
 
                 actionDescriptor.SetProperty(apiExplorerActionData);

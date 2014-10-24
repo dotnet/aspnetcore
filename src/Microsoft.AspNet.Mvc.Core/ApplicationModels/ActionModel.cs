@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         {
             ActionMethod = actionMethod;
 
+            ApiExplorer = new ApiExplorerModel();
             Attributes = new List<object>();
             ActionConstraints = new List<IActionConstraintMetadata>();
             Filters = new List<IFilter>();
@@ -24,8 +25,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         {
             ActionMethod = other.ActionMethod;
             ActionName = other.ActionName;
-            ApiExplorerGroupName = other.ApiExplorerGroupName;
-            ApiExplorerIsVisible = other.ApiExplorerIsVisible;
             IsActionNameMatchRequired = other.IsActionNameMatchRequired;
 
             // Not making a deep copy of the controller, this action still belongs to the same controller.
@@ -38,6 +37,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             HttpMethods = new List<string>(other.HttpMethods);
 
             // Make a deep copy of other 'model' types.
+            ApiExplorer = new ApiExplorerModel(other.ApiExplorer);
             Parameters = new List<ParameterModel>(other.Parameters.Select(p => new ParameterModel(p)));
 
             if (other.AttributeRouteModel != null)
@@ -50,6 +50,15 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public MethodInfo ActionMethod { get; private set; }
 
         public string ActionName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ApiExplorerModel"/> for this action.
+        /// </summary>
+        /// <remarks>
+        /// Setting the value of any properties on <see cref="ActionModel.ApiExplorer"/> will override any
+        /// values set on the associated <see cref="ControllerModel.ApiExplorer"/>.
+        /// </remarks>
+        public ApiExplorerModel ApiExplorer { get; set; }
 
         public List<object> Attributes { get; private set; }
 
@@ -64,18 +73,5 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public List<ParameterModel> Parameters { get; private set; }
 
         public AttributeRouteModel AttributeRouteModel { get; set; }
-
-        /// <summary>
-        /// If <c>true</c>, <see cref="Description.ApiDescription"/> objects will be created for this action. 
-        /// If <c>null</c> then the value of <see cref="ControllerModel.ApiExplorerIsVisible"/> will be used.
-        /// </summary>
-        public bool? ApiExplorerIsVisible { get; set; }
-
-        /// <summary>
-        /// The value for <see cref="Description.ApiDescription.GroupName"/> of 
-        /// <see cref="Description.ApiDescription"/> objects created for actions defined by this controller.
-        /// If <c>null</c> then the value of <see cref="ControllerModel.ApiExplorerGroupName"/> will be used.
-        /// </summary>
-        public string ApiExplorerGroupName { get; set; }
     }
 }
