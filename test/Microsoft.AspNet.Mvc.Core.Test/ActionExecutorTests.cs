@@ -34,64 +34,85 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         [Fact]
         public async Task AsyncAction_WithVoidReturnType()
         {
+            // Arrange
             var methodWithVoidReturnType = new MethodWithVoidReturnType(TestController.VoidAction);
+
+            // Act
             var result = await ControllerActionExecutor.ExecuteAsync(
                                                         methodWithVoidReturnType.GetMethodInfo(),
                                                         null,
                                                         (IDictionary<string, object>)null);
+
+            // Assert
             Assert.Same(null, result);
         }
 
         [Fact]
         public async Task AsyncAction_TaskReturnType()
         {
-            int inputParam1 = 1;
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam1 = 1;
+            var inputParam2 = "Second Parameter";
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskReturnType = new MethodWithTaskReturnType(_controller.TaskAction);
+
+            // Act
             var result = await ControllerActionExecutor.ExecuteAsync(
                                                             methodWithTaskReturnType.GetMethodInfo(),
                                                             _controller,
                                                             actionParameters);
+
+            // Assert
             Assert.Same(null, result);
         }
 
         [Fact]
         public async Task AsyncAction_TaskOfValueReturnType()
         {
-            int inputParam1 = 1;
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam1 = 1;
+            var inputParam2 = "Second Parameter";
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskValueTypeAction);
+
+            // Act
             var result = await ControllerActionExecutor.ExecuteAsync(
                                                         methodWithTaskOfIntReturnType.GetMethodInfo(),
                                                         _controller,
                                                         actionParameters);
+
+            // Assert
             Assert.Equal(inputParam1, result);
         }
 
         [Fact]
         public async Task AsyncAction_TaskOfTaskOfValueReturnType()
         {
-            int inputParam1 = 1;
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam1 = 1;
+            var inputParam2 = "Second Parameter";
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskOfTaskOfIntReturnType = new MethodWithTaskOfTaskOfIntReturnType(_controller.TaskOfTaskAction);
+
+            // Act
             var result = await (Task<int>)(await ControllerActionExecutor.ExecuteAsync(
                                                                         methodWithTaskOfTaskOfIntReturnType.GetMethodInfo(),
                                                                         _controller,
                                                                         actionParameters));
+
+            // Assert
             Assert.Equal(inputParam1, result);
         }
 
         [Fact]
         public async Task AsyncAction_WithAsyncKeywordThrows()
         {
-            int inputParam1 = 1;
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam1 = 1;
+            var inputParam2 = "Second Parameter";
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskActionWithException);
@@ -106,11 +127,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         [Fact]
         public async Task AsyncAction_WithoutAsyncThrows()
         {
-            int inputParam1 = 1;
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam1 = 1;
+            var inputParam2 = "Second Parameter";
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskActionWithExceptionWithoutAsync);
+
+            // Act & Assert
             await Assert.ThrowsAsync<NotImplementedException>(
                         () => ControllerActionExecutor.ExecuteAsync(methodWithTaskOfIntReturnType.GetMethodInfo(),
                                                                    _controller,
@@ -120,37 +144,48 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         [Fact]
         public async Task AsyncAction_WithExceptionsAfterAwait()
         {
-            int inputParam1 = 1;
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam1 = 1;
+            var inputParam2 = "Second Parameter";
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskActionThrowAfterAwait);
-            await AssertThrowsAsync<ArgumentException>(
-                                                async () =>
-                                                    await ControllerActionExecutor.ExecuteAsync(
-                                                                        methodWithTaskOfIntReturnType.GetMethodInfo(),
-                                                                        _controller,
-                                                                        actionParameters),
-                                                    "Argument Exception");
+            var expectedException = "Argument Exception";
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<ArgumentException>(
+                () => ControllerActionExecutor.ExecuteAsync(
+                    methodWithTaskOfIntReturnType.GetMethodInfo(),
+                    _controller,
+                    actionParameters));
+            Assert.Equal(expectedException, ex.Message);
         }
 
         [Fact]
         public async Task SyncAction()
         {
-            string inputString = "hello";
+            // Arrange
+            var inputString = "hello";
             var syncMethod = new SyncMethod(_controller.Echo);
+
+            // Act
             var result = await ControllerActionExecutor.ExecuteAsync(
                                                 syncMethod.GetMethodInfo(),
                                                 _controller,
                                                 new Dictionary<string, object>() { { "input", inputString } });
+
+            // Assert
             Assert.Equal(inputString, result);
         }
 
         [Fact]
         public async Task SyncAction_WithException()
         {
-            string inputString = "hello";
+            // Arrange
+            var inputString = "hello";
             var syncMethod = new SyncMethod(_controller.EchoWithException);
+
+            // Act & Assert
             await Assert.ThrowsAsync<NotImplementedException>(
                         () => ControllerActionExecutor.ExecuteAsync(
                                                 syncMethod.GetMethodInfo(),
@@ -161,151 +196,146 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         [Fact]
         public async Task AsyncAction_WithCustomTaskReturnTypeThrows()
         {
-            int inputParam1 = 1;
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam1 = 1;
+            var inputParam2 = "Second Parameter";
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
-            
+
             // If it is an unrecognized derived type we throw an InvalidOperationException.
             var methodWithCutomTaskReturnType = new MethodWithCustomTaskReturnType(_controller.TaskActionWithCustomTaskReturnType);
 
-            string expectedException = string.Format(
-                                                 CultureInfo.CurrentCulture,
-                                                 "The method 'TaskActionWithCustomTaskReturnType' on type '{0}' returned a Task instance even though it is not an asynchronous method.",
-                                                 typeof(TestController));
-            await AssertThrowsAsync<InvalidOperationException>(
-                                                async () => 
-                                                    await ControllerActionExecutor.ExecuteAsync(
-                                                                    methodWithCutomTaskReturnType.GetMethodInfo(), 
-                                                                    _controller,
-                                                                    actionParameters),
-                                                 expectedException);
+            var expectedException = string.Format(
+                CultureInfo.CurrentCulture,
+                "The method 'TaskActionWithCustomTaskReturnType' on type '{0}' returned a Task instance even though it is not an asynchronous method.",
+                typeof(TestController));
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => ControllerActionExecutor.ExecuteAsync(
+                    methodWithCutomTaskReturnType.GetMethodInfo(),
+                    _controller,
+                    actionParameters));
+            Assert.Equal(expectedException, ex.Message);
         }
 
         [Fact]
         public async Task AsyncAction_WithCustomTaskOfTReturnTypeThrows()
         {
-            int inputParam1 = 1;
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam1 = 1;
+            var inputParam2 = "Second Parameter";
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithCutomTaskOfTReturnType = new MethodWithCustomTaskOfTReturnType(_controller.TaskActionWithCustomTaskOfTReturnType);
-            string expectedException = string.Format(
-                                                   CultureInfo.CurrentCulture,
-                                                   "The method 'TaskActionWithCustomTaskOfTReturnType' on type '{0}' returned a Task instance even though it is not an asynchronous method.",
-                                                   typeof(TestController));
+            var expectedException = string.Format(
+                CultureInfo.CurrentCulture,
+                "The method 'TaskActionWithCustomTaskOfTReturnType' on type '{0}' returned a Task instance even though it is not an asynchronous method.",
+                typeof(TestController));
 
-            await AssertThrowsAsync<InvalidOperationException>(
-                                                async () =>
-                                                    await ControllerActionExecutor.ExecuteAsync(
-                                                                methodWithCutomTaskOfTReturnType.GetMethodInfo(),
-                                                                _controller,
-                                                                actionParameters),
-                                               expectedException);
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => ControllerActionExecutor.ExecuteAsync(
+                    methodWithCutomTaskOfTReturnType.GetMethodInfo(),
+                    _controller,
+                    actionParameters));
+            Assert.Equal(expectedException, ex.Message);
         }
 
         [Fact]
         public async Task AsyncAction_ReturningUnwrappedTaskThrows()
         {
-            int inputParam1 = 1;
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam1 = 1;
+            var inputParam2 = "Second Parameter";
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithUnwrappedTask = new MethodWithTaskReturnType(_controller.UnwrappedTask);
-            await AssertThrowsAsync<InvalidOperationException>(
-                                                async () => 
-                                                    await ControllerActionExecutor.ExecuteAsync(
-                                                                methodWithUnwrappedTask.GetMethodInfo(),
-                                                                _controller,
-                                                                actionParameters),
-                                                                string.Format(CultureInfo.CurrentCulture,
-                                                                             "The method 'UnwrappedTask' on type '{0}' returned an instance of '{1}'. Make sure to call Unwrap on the returned value to avoid unobserved faulted Task.",
-                                                                             typeof(TestController),
-                                                                             typeof(Task<Task>).FullName
-                                                                             ));
+
+            var expectedException = string.Format(
+                CultureInfo.CurrentCulture,
+                "The method 'UnwrappedTask' on type '{0}' returned an instance of '{1}'. " + 
+                "Make sure to call Unwrap on the returned value to avoid unobserved faulted Task.",
+                typeof(TestController),
+                typeof(Task<Task>).FullName);
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => ControllerActionExecutor.ExecuteAsync(
+                    methodWithUnwrappedTask.GetMethodInfo(),
+                    _controller,
+                    actionParameters));
+            Assert.Equal(expectedException, ex.Message);
         }
 
         [Fact]
         public async Task AsyncAction_WithDynamicReturnTypeThrows()
         {
-            int inputParam1 = 1;
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam1 = 1;
+            var inputParam2 = "Second Parameter";
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var dynamicTaskMethod = new ReturnTaskAsDynamicValue(_controller.ReturnTaskAsDynamicValue);
-            string expectedException = string.Format(
-                                                  CultureInfo.CurrentCulture,
-                                                  "The method 'ReturnTaskAsDynamicValue' on type '{0}' returned a Task instance even though it is not an asynchronous method.",
-                                                  typeof(TestController));
-            await AssertThrowsAsync<InvalidOperationException>(
-                                                async () => 
-                                                    await ControllerActionExecutor.ExecuteAsync(
-                                                                dynamicTaskMethod.GetMethodInfo(),
-                                                                _controller,
-                                                                actionParameters),
-                                                expectedException);
+            var expectedException = string.Format(
+                CultureInfo.CurrentCulture,
+                "The method 'ReturnTaskAsDynamicValue' on type '{0}' returned a Task instance even though it is not an asynchronous method.",
+                typeof(TestController));
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+               () => ControllerActionExecutor.ExecuteAsync(
+                    dynamicTaskMethod.GetMethodInfo(),
+                    _controller,
+                    actionParameters));
+            Assert.Equal(expectedException, ex.Message);
         }
 
         [Fact]
         public async Task ParametersInRandomOrder()
         {
-            int inputParam1 = 1;
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam1 = 1;
+            var inputParam2 = "Second Parameter";
 
             // Note that the order of parameters is reversed
             var actionParameters = new Dictionary<string, object> { { "s", inputParam2 }, { "i", inputParam1 } };
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskValueTypeAction);
 
+            // Act
             var result = await ControllerActionExecutor.ExecuteAsync(
                                                         methodWithTaskOfIntReturnType.GetMethodInfo(),
                                                         _controller,
                                                         actionParameters);
+
+            // Assert
             Assert.Equal(inputParam1, result);
         }
 
         [Fact]
         public async Task InvalidParameterValueThrows()
         {
-            string inputParam2 = "Second Parameter";
+            // Arrange
+            var inputParam2 = "Second Parameter";
 
             var actionParameters = new Dictionary<string, object> { { "i", "Some Invalid Value" }, { "s", inputParam2 } };
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskValueTypeAction);
             var message = TestPlatformHelper.IsMono ? "Object type {0} cannot be converted to target type: {1}" :
                                                       "Object of type '{0}' cannot be converted to type '{1}'.";
             var expectedException = string.Format(
-                                            CultureInfo.CurrentCulture,
-                                            message,
-                                            typeof (string),
-                                            typeof (int));
+                CultureInfo.CurrentCulture,
+                message,
+                typeof(string),
+                typeof(int));
 
+            // Act & Assert
             // If it is an unrecognized derived type we throw an InvalidOperationException.
-            await AssertThrowsAsync<ArgumentException>(
-                                                async () => 
-                                                    await ControllerActionExecutor.ExecuteAsync(
-                                                                                    methodWithTaskOfIntReturnType.GetMethodInfo(),
-                                                                                    _controller, 
-                                                                                    actionParameters),
-                                                expectedException);
-        }
+            var ex = await Assert.ThrowsAsync<ArgumentException>(
+                () => ControllerActionExecutor.ExecuteAsync(
+                        methodWithTaskOfIntReturnType.GetMethodInfo(),
+                        _controller,
+                        actionParameters));
 
-        // TODO: XUnit Assert.Throw is not async-aware. Check if the latest version supports it.
-        private static async Task AssertThrowsAsync<TException>(Func<Task<object>> func, string expectedExceptionMessage = "")
-        {
-            var expected = typeof(TException);
-            Type actual = null;
-            string actualExceptionMessage = string.Empty;
-            try
-            {
-                var result = await func();
-            }
-            catch (Exception e)
-            {
-                actual = e.GetType();
-                actualExceptionMessage = e.Message;
-            }
-
-            Assert.Equal(expected, actual);
-
-            Assert.Equal(expectedExceptionMessage, actualExceptionMessage);
+            Assert.Equal(expectedException, ex.Message);
         }
     }
 }
