@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol
                     state.AdditionalBytesExpected--;
 
                     // Each continuation byte carries 6 bits of data 0x10bbbbbb.
-                    state.CurrentDecodeBits = (state.CurrentDecodeBits << 6) | b & 0x3F;
+                    state.CurrentDecodeBits = (state.CurrentDecodeBits << 6) | (b & 0x3F);
 
                     if (state.AdditionalBytesExpected == 1 && state.CurrentDecodeBits >= 0x360 && state.CurrentDecodeBits <= 0x37F)
                     {
