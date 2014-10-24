@@ -4,9 +4,13 @@
     "dependencies": {
         "Microsoft.AspNet.Server.IIS": "1.0.0-beta1-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-beta1-*",
-        "Microsoft.AspNet.WebSockets.Server": "1.0.0-beta1-*"
+        "Microsoft.AspNet.WebSockets.Server": "1.0.0-beta1-*",
+        "Kestrel": "1.0.0-beta1-*"
     },
-    "commands": { "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:12345" },
+    "commands": {
+        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:12345",
+        "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:12344"
+    },
     "frameworks" : {
         "aspnet50" : { },
         "aspnetcore50" : { }

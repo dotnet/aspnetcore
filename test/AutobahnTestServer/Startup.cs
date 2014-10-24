@@ -15,22 +15,40 @@ namespace AutobahnTestServer
     {
         public void Configure(IApplicationBuilder app)
         {
-            // Comment this out to test native server implementations
-            app.UseWebSockets(new WebSocketOptions()
+            app.Map("/Managed", managedWebSocketsApp =>
             {
-                ReplaceFeature = true,
+                // Comment this out to test native server implementations
+                managedWebSocketsApp.UseWebSockets(new WebSocketOptions()
+                {
+                    ReplaceFeature = true,
+                });
+
+                managedWebSocketsApp.Use(async (context, next) =>
+                {
+                    if (context.IsWebSocketRequest)
+                    {
+                        Console.WriteLine("Echo: " + context.Request.Path);
+                        var webSocket = await context.AcceptWebSocketAsync();
+                        await Echo(webSocket);
+                        return;
+                    }
+                    await next();
+                });
             });
 
-            app.Use(async (context, next) =>
+            app.Map("/Native", nativeWebSocketsApp =>
             {
-                if (context.IsWebSocketRequest)
+                nativeWebSocketsApp.Use(async (context, next) =>
                 {
-                    Console.WriteLine("Echo: " + context.Request.Path);
-                    var webSocket = await context.AcceptWebSocketAsync();
-                    await Echo(webSocket);
-                    return;
-                }
-                await next();
+                    if (context.IsWebSocketRequest)
+                    {
+                        Console.WriteLine("Echo: " + context.Request.Path);
+                        var webSocket = await context.AcceptWebSocketAsync();
+                        await Echo(webSocket);
+                        return;
+                    }
+                    await next();
+                });
             });
 
             app.Run(context =>
