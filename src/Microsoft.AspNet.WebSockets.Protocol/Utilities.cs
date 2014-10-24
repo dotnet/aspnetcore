@@ -70,49 +70,52 @@ namespace Microsoft.AspNet.WebSockets.Protocol
             }
         }
 
-        // For now this is stateless and does not handle sequences spliced across messages.
-        // http://etutorials.org/Programming/secure+programming/Chapter+3.+Input+Validation/3.12+Detecting+Illegal+UTF-8+Characters/
+        // Performs a stateful validation of UTF-8 bytes.
+        // It checks for valid formatting, overlong encodings, surrogates, and value ranges.
         public static bool TryValidateUtf8(ArraySegment<byte> arraySegment, bool endOfMessage, Utf8MessageState state)
         {
             for (int i = arraySegment.Offset; i < arraySegment.Offset + arraySegment.Count; )
             {
+                // Have we started a character sequence yet?
                 if (!state.SequenceInProgress)
                 {
+                    // The first byte tells us how many bytes are in the sequence.
                     state.SequenceInProgress = true;
                     byte b = arraySegment.Array[i];
+                    i++;
                     if ((b & 0x80) == 0) // 0bbbbbbb, single byte
                     {
                         state.AdditionalBytesExpected = 0;
+                        state.CurrentDecodeBits = b & 0x7F;
+                        state.ExpectedValueMin = 0;
                     }
                     else if ((b & 0xC0) == 0x80)
                     {
-                        return false; // Misplaced 10bbbbbb byte. This cannot be the first byte.
+                        // Misplaced 10bbbbbb continuation byte. This cannot be the first byte.
+                        return false;
                     }
                     else if ((b & 0xE0) == 0xC0) // 110bbbbb 10bbbbbb
                     {
                         state.AdditionalBytesExpected = 1;
+                        state.CurrentDecodeBits = b & 0x1F;
+                        state.ExpectedValueMin = 0x80;
                     }
                     else if ((b & 0xF0) == 0xE0) // 1110bbbb 10bbbbbb 10bbbbbb
                     {
                         state.AdditionalBytesExpected = 2;
+                        state.CurrentDecodeBits = b & 0xF;
+                        state.ExpectedValueMin = 0x800;
                     }
                     else if ((b & 0xF8) == 0xF0) // 11110bbb 10bbbbbb 10bbbbbb 10bbbbbb
                     {
                         state.AdditionalBytesExpected = 3;
+                        state.CurrentDecodeBits = b & 0x7;
+                        state.ExpectedValueMin = 0x10000;
                     }
-                    else if ((b & 0xFC) == 0xF8) // 111110bb 10bbbbbb 10bbbbbb 10bbbbbb 10bbbbbb
-                    {
-                        state.AdditionalBytesExpected = 4;
-                    }
-                    else if ((b & 0xFE) == 0xFC) // 1111110b 10bbbbbb 10bbbbbb 10bbbbbb 10bbbbbb 10bbbbbb
-                    {
-                        state.AdditionalBytesExpected = 5;
-                    }
-                    else // 11111110 && 11111111 are not valid
+                    else // 111110bb & 1111110b & 11111110 && 11111111 are not valid
                     {
                         return false;
                     }
-                    i++;
                 }
                 while (state.AdditionalBytesExpected > 0 && i < arraySegment.Offset + arraySegment.Count)
                 {
@@ -121,12 +124,32 @@ namespace Microsoft.AspNet.WebSockets.Protocol
                     {
                         return false;
                     }
-                    state.AdditionalBytesExpected--;
+
                     i++;
+                    state.AdditionalBytesExpected--;
+
+                    // Each continuation byte carries 6 bits of data 0x10bbbbbb.
+                    state.CurrentDecodeBits = (state.CurrentDecodeBits << 6) | b & 0x3F;
+
+                    if (state.AdditionalBytesExpected == 1 && state.CurrentDecodeBits >= 0x360 && state.CurrentDecodeBits <= 0x37F)
+                    {
+                        // This is going to end up in the range of 0xD800-0xDFFF UTF-16 surrogates that are not allowed in UTF-8;
+                        return false;
+                    }
+                    if (state.AdditionalBytesExpected == 2 && state.CurrentDecodeBits >= 0x110)
+                    {
+                        // This is going to be out of the upper Unicode bound 0x10FFFF.
+                        return false;
+                    }
                 }
                 if (state.AdditionalBytesExpected == 0)
                 {
                     state.SequenceInProgress = false;
+                    if (state.CurrentDecodeBits < state.ExpectedValueMin)
+                    {
+                        // Overlong encoding (e.g. using 2 bytes to encode something that only needed 1).
+                        return false;
+                    }
                 }
             }
             if (endOfMessage && state.SequenceInProgress)
@@ -140,6 +163,8 @@ namespace Microsoft.AspNet.WebSockets.Protocol
         {
             public bool SequenceInProgress { get; set; }
             public int AdditionalBytesExpected { get; set; }
+            public int ExpectedValueMin { get; set; }
+            public int CurrentDecodeBits { get; set; }
         }
     }
 }
