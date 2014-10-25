@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             var metadata = ExpressionMetadataProvider.FromLambdaExpression<TModelItem, TValue>(
                 expression,
-                new ViewDataDictionary<TModelItem>(MetadataProvider),
+                new ViewDataDictionary<TModelItem>(ViewData, model: null),
                 MetadataProvider);
 
             var expressionText = ExpressionHelper.GetExpressionText(expression);

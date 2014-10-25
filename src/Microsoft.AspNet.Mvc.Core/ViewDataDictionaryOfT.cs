@@ -7,12 +7,6 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ViewDataDictionary<TModel> : ViewDataDictionary
     {
-        /// <inheritdoc />
-        public ViewDataDictionary([NotNull] IModelMetadataProvider metadataProvider)
-            : base(metadataProvider, declaredModelType: typeof(TModel))
-        {
-        }
-
         // References may not show up due to ITypeActivator use in RazorPageActivator.
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewDataDictionary{TModel}"/> class.
@@ -72,6 +66,16 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public ViewDataDictionary([NotNull] ViewDataDictionary source, object model)
             : base(source, model, declaredModelType: typeof(TModel))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ViewDataDictionary{TModel}"/> class.
+        /// </summary>
+        /// <remarks>Internal for testing.</remarks>
+        /// <inheritdoc />
+        internal ViewDataDictionary([NotNull] IModelMetadataProvider metadataProvider)
+            : base(metadataProvider, declaredModelType: typeof(TModel))
         {
         }
 

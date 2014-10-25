@@ -65,12 +65,7 @@ namespace Microsoft.AspNet.Mvc
 
         public ViewViewComponentResult View<TModel>(string viewName, TModel model)
         {
-            var viewData = new ViewDataDictionary<TModel>(ViewData);
-            if (model != null)
-            {
-                viewData.Model = model;
-            }
-
+            var viewData = new ViewDataDictionary<TModel>(ViewData, model);
             return new ViewViewComponentResult(ViewEngine, viewName, viewData);
         }
     }

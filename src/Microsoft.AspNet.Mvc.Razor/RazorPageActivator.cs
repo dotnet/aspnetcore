@@ -47,13 +47,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             // ViewContext.ViewData is an incompatibile type.
             if (context.ViewData == null)
             {
-                // Create ViewDataDictionary<TModel>(metadataProvider);
+                // Create ViewDataDictionary<TModel>(IModelMetadataProvider, ModelStateDictionary).
                 return (ViewDataDictionary)_typeActivator.CreateInstance(context.HttpContext.RequestServices,
-                                                                         activationInfo.ViewDataDictionaryType);
+                                                                         activationInfo.ViewDataDictionaryType,
+                                                                         context.ModelState);
             }
             else if (context.ViewData.GetType() != activationInfo.ViewDataDictionaryType)
             {
-                // Create ViewDataDictionary<TModel>(ViewDataDictionary);
+                // Create ViewDataDictionary<TModel>(ViewDataDictionary).
                 return (ViewDataDictionary)_typeActivator.CreateInstance(context.HttpContext.RequestServices,
                                                                          activationInfo.ViewDataDictionaryType,
                                                                          context.ViewData);

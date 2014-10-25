@@ -57,10 +57,7 @@ namespace Microsoft.AspNet.Mvc
                     typeof(ViewDataDictionary),
                     (context) =>
                     {
-                        return new ViewDataDictionary(context.ViewData)
-                        {
-                            Model = null
-                        };
+                        return new ViewDataDictionary(context.ViewData);
                     }
                 }
             };
