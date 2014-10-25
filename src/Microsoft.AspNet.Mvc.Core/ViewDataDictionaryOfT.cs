@@ -1,88 +1,89 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class ViewDataDictionary<TModel> : ViewDataDictionary
     {
-        // Fallback ModelMetadata based on TModel. Used when Model is null and base ViewDataDictionary class is unable
-        // to determine the correct metadata.
-        private readonly ModelMetadata _defaultModelMetadata;
-
+        /// <inheritdoc />
         public ViewDataDictionary([NotNull] IModelMetadataProvider metadataProvider)
-            : base(metadataProvider)
+            : base(metadataProvider, declaredModelType: typeof(TModel))
         {
-            _defaultModelMetadata = MetadataProvider.GetMetadataForType(null, typeof(TModel));
         }
 
-        public ViewDataDictionary([NotNull] IModelMetadataProvider metadataProvider,
+        // References may not show up due to ITypeActivator use in RazorPageActivator.
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ViewDataDictionary{TModel}"/> class.
+        /// </summary>
+        /// <remarks>
+        /// For use when creating a <see cref="ViewDataDictionary{TModel}"/> for a new top-level scope.
+        /// </remarks>
+        /// <inheritdoc />
+        public ViewDataDictionary(
+            [NotNull] IModelMetadataProvider metadataProvider,
             [NotNull] ModelStateDictionary modelState)
-            : base(metadataProvider, modelState)
+            : base(metadataProvider, modelState, declaredModelType: typeof(TModel))
         {
         }
 
+        // References may not show up due to ITypeActivator use in RazorPageActivator.
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ViewDataDictionary{TModel}"/> class based in part on an
+        /// existing <see cref="ViewDataDictionary"/> instance.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// For use when copying a <see cref="ViewDataDictionary"/> instance and <typeparamref name="TModel"/> is known
+        /// but <see cref="Model"/> should be copied from the existing instance e.g. when copying from a base
+        /// <see cref="ViewDataDictionary"/> instance to a <see cref="ViewDataDictionary{TModel}"/> instance.
+        /// </para>
+        /// <para>
+        /// This constructor may <c>throw</c> if <c>source.Model</c> is non-<c>null</c> and incompatible with
+        /// <typeparamref name="TModel"/>. Pass <c>model: null</c> to
+        /// <see cref="ViewDataDictionary{TModel}(ViewDataDictionary, object)"/> to ignore <c>source.Model</c>.
+        /// </para>
+        /// </remarks>
         /// <inheritdoc />
         public ViewDataDictionary([NotNull] ViewDataDictionary source)
-            : this(source, source.Model)
+            : base(source, declaredModelType: typeof(TModel))
         {
         }
 
+        // Model parameter type is object to allow "model: null" calls even when TModel is a value type. A TModel
+        // parameter would likely require IEquatable<TModel> type restrictions to pass expected null value to the base
+        // constructor.
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ViewDataDictionary{TModel}"/> class based in part on an
+        /// existing <see cref="ViewDataDictionary"/> instance. This constructor is careful to avoid exceptions
+        /// <see cref="ViewDataDictionary.SetModel"/> may throw when <paramref name="model"/> is <c>null</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// For use when copying a <see cref="ViewDataDictionary"/> instance and <typeparamref name="TModel"/> and
+        /// <see cref="Model"/> are known.
+        /// </para>
+        /// <para>
+        /// This constructor may <c>throw</c> if <paramref name="model"/> is non-<c>null</c> and incompatible with
+        /// <typeparamref name="TModel"/>.
+        /// </para>
+        /// </remarks>
         /// <inheritdoc />
         public ViewDataDictionary([NotNull] ViewDataDictionary source, object model)
-            : base(source, model)
+            : base(source, model, declaredModelType: typeof(TModel))
         {
-            var original = source as ViewDataDictionary<TModel>;
-            if (original != null)
-            {
-                _defaultModelMetadata = original._defaultModelMetadata;
-            }
-            else
-            {
-                _defaultModelMetadata = MetadataProvider.GetMetadataForType(null, typeof(TModel));
-            }
         }
 
         public new TModel Model
         {
-            get { return (TModel)base.Model; }
-            set { SetModel(value); }
-        }
-
-        public override ModelMetadata ModelMetadata
-        {
             get
             {
-                return base.ModelMetadata ?? _defaultModelMetadata;
+                return (base.Model == null) ? default(TModel) : (TModel)base.Model;
             }
-        }
-
-        protected override void SetModel(object value)
-        {
-            // IsCompatibleObject verifies if the value is either an instance of TModel or (if value is null) that
-            // TModel is a nullable type.
-            var castWillSucceed = typeof(TModel).IsCompatibleWith(value);
-
-            if (castWillSucceed)
+            set
             {
-                base.SetModel(value);
-            }
-            else
-            {
-                string message;
-                if (value == null)
-                {
-                    message = Resources.FormatViewData_ModelCannotBeNull(typeof(TModel));
-                }
-                else
-                {
-                    message = Resources.FormatViewData_WrongTModelType(value.GetType(), typeof(TModel));
-                }
-
-                throw new InvalidOperationException(message);
+                base.Model = value;
             }
         }
     }

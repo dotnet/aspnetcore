@@ -4,4 +4,6 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Microsoft.AspNet.Mvc.Core.Test")]
+[assembly: InternalsVisibleTo("Microsoft.AspNet.Mvc.Razor.Test")]
+[assembly: InternalsVisibleTo("Microsoft.AspNet.Mvc.TagHelpers.Test")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
