@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                        .Returns(serviceProvider.Object);
             var routeContext = new RouteContext(httpContext.Object);
             var actionContext = new ActionContext(routeContext, new ActionDescriptor());
-            var viewData = new ViewDataDictionary(Mock.Of<IModelMetadataProvider>());
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
             var viewContext = new ViewContext(actionContext,
                                               Mock.Of<IView>(),
                                               viewData,

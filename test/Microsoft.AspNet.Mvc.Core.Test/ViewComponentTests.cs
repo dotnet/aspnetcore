@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var viewComponent = new TestViewComponent()
             {
-                ViewData = new ViewDataDictionary(metadataProvider: null),
+                ViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider()),
             };
 
             // Act
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var viewComponent = new TestViewComponent()
             {
-                ViewData = new ViewDataDictionary(metadataProvider: null),
+                ViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider()),
             };
 
             // Act

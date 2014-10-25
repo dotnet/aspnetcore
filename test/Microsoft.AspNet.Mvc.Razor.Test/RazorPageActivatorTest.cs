@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var actionContext = new ActionContext(routeContext, new ActionDescriptor());
             var viewContext = new ViewContext(actionContext,
                                               Mock.Of<IView>(),
-                                              new ViewDataDictionary(Mock.Of<IModelMetadataProvider>()),
+                                              new ViewDataDictionary(new EmptyModelMetadataProvider()),
                                               TextWriter.Null);
 
             // Act
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var actionContext = new ActionContext(routeContext, new ActionDescriptor());
             var viewContext = new ViewContext(actionContext,
                                               Mock.Of<IView>(),
-                                              new ViewDataDictionary(Mock.Of<IModelMetadataProvider>()),
+                                              new ViewDataDictionary(new EmptyModelMetadataProvider()),
                                               TextWriter.Null);
 
             // Act and Assert
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                        .Returns(serviceProvider.Object);
             var routeContext = new RouteContext(httpContext.Object);
             var actionContext = new ActionContext(routeContext, new ActionDescriptor());
-            var viewData = new ViewDataDictionary(Mock.Of<IModelMetadataProvider>())
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider())
             {
                 Model = new MyModel()
             };
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                        .Returns(serviceProvider.Object);
             var routeContext = new RouteContext(httpContext.Object);
             var actionContext = new ActionContext(routeContext, new ActionDescriptor());
-            var viewData = new ViewDataDictionary<MyModel>(Mock.Of<IModelMetadataProvider>())
+            var viewData = new ViewDataDictionary<MyModel>(new EmptyModelMetadataProvider())
             {
                 Model = new MyModel()
             };
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                        .Returns(serviceProvider.Object);
             var routeContext = new RouteContext(httpContext.Object);
             var actionContext = new ActionContext(routeContext, new ActionDescriptor());
-            var viewData = new ViewDataDictionary(Mock.Of<IModelMetadataProvider>());
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
             var viewContext = new ViewContext(actionContext,
                                               Mock.Of<IView>(),
                                               viewData,

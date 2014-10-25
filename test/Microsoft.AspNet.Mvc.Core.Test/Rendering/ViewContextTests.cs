@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -12,8 +13,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange (eventually passing null to these consturctors will throw)
             var context = new ViewContext(new ActionContext(null, null, null), view: null, viewData: null, writer: null);
-            var originalViewData = context.ViewData = new ViewDataDictionary(metadataProvider: null);
-            var replacementViewData = new ViewDataDictionary(metadataProvider: null);
+            var originalViewData = context.ViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider());
+            var replacementViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider());
 
             // Act
             context.ViewBag.Hello = "goodbye";

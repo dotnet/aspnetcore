@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 new DataAnnotationsModelMetadataProvider(),
                 containerType: null,
                 modelAccessor: null,
-                modelType: typeof(object),
+                modelType: typeof(string), // Ensure FromStringExpression() doesn't ignore the ModelMetadata.
                 propertyName: propertyName);
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();

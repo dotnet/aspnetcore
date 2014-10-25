@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc
             var actionContext = new ActionContext(routeContext, new ActionDescriptor());
             return new ViewContext(actionContext,
                                               Mock.Of<IView>(),
-                                              new ViewDataDictionary(Mock.Of<IModelMetadataProvider>()),
+                                              new ViewDataDictionary(new EmptyModelMetadataProvider()),
                                               TextWriter.Null);
         }
 

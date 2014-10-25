@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.Core
             // Only the ViewDataDictionary should do anything with metadata.
             provider.Verify(
                 m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(DefaultTemplatesUtilities.ObjectTemplateModel)),
-                Times.Once);
+                Times.Exactly(2));
         }
 
         [Fact]
@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.Mvc.Core
             // Only the ViewDataDictionary should do anything with metadata.
             provider.Verify(
                 m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(DefaultTemplatesUtilities.ObjectTemplateModel)),
-                Times.Once);
+                Times.Exactly(2));
         }
 
         [Theory]
