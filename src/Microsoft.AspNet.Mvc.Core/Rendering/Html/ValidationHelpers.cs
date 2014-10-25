@@ -48,16 +48,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             else
             {
                 var metadata = viewData.ModelMetadata;
-                if (metadata != null)
-                {
-                    var orderer = new ErrorsOrderer(metadata);
+                var orderer = new ErrorsOrderer(metadata);
 
-                    return viewData.ModelState
-                                   .OrderBy(data => orderer.GetOrder(data.Key))
-                                   .Select(ms => ms.Value);
-                }
-
-                return viewData.ModelState.Values;
+                return viewData.ModelState
+                    .OrderBy(data => orderer.GetOrder(data.Key))
+                    .Select(ms => ms.Value);
             }
         }
 

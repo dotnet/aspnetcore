@@ -83,12 +83,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
         {
             if (string.IsNullOrEmpty(expression))
             {
-                return viewData.ModelMetadata;
-            }
-
-            if (expression.Length == 0)
-            {
-                // Empty string really means "model metadata for the current model"
+                // Empty string really means "ModelMetadata for the current model".
                 return FromModel(viewData, metadataProvider);
             }
 
@@ -118,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                     modelType = viewDataInfo.Value.GetType();
                 }
             }
-            else if (viewData.ModelMetadata != null)
+            else
             {
                 //  Try getting a property from ModelMetadata if we couldn't find an answer in ViewData
                 var propertyMetadata =
@@ -136,8 +131,20 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
         private static ModelMetadata FromModel([NotNull] ViewDataDictionary viewData,
                                                IModelMetadataProvider metadataProvider)
         {
-            return viewData.ModelMetadata ?? GetMetadataFromProvider(null, typeof(string), propertyName: null,
-                containerType: null, metadataProvider: metadataProvider);
+            if (viewData.ModelMetadata.ModelType == typeof(object))
+            {
+                // Use common simple type rather than object so e.g. Editor() at least generates a TextBox.
+                return GetMetadataFromProvider(
+                    modelAccessor: null,
+                    modelType: typeof(string),
+                    propertyName: null,
+                    containerType: null,
+                    metadataProvider: metadataProvider);
+            }
+            else
+            {
+                return viewData.ModelMetadata;
+            }
         }
 
         // An IModelMetadataProvider is not required unless this method is called. Therefore other methods in this
