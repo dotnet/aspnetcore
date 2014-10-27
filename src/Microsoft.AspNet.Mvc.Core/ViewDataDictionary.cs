@@ -33,7 +33,8 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// <see cref="ViewDataDictionary"/> copy constructor for use when model type does not change.
+        /// <see cref="ViewDataDictionary"/> copy constructor for use when model type does not change or caller will
+        /// immediately set the <see cref="Model"/> property.
         /// </summary>
         public ViewDataDictionary([NotNull] ViewDataDictionary source)
             : this(source, source.Model)
@@ -50,9 +51,15 @@ namespace Microsoft.AspNet.Mvc
                    new CopyOnWriteDictionary<string, object>(source, StringComparer.OrdinalIgnoreCase),
                    new TemplateInfo(source.TemplateInfo))
         {
-            _modelMetadata = source.ModelMetadata;
-            // If we're constructing a derived ViewDataDictionary (or any other value type),
-            // SetModel will throw if we try to set it to null. We should not throw in that case.
+            // Avoid copying information about the object type. To do so when model==null would confuse the
+            // ViewDataDictionary<TModel>.ModelMetadata getter.
+            if (source.ModelMetadata?.ModelType != typeof(object))
+            {
+                _modelMetadata = source.ModelMetadata;
+            }
+
+            // If we're constructing a derived ViewDataDictionary<TModel> where TModel is a non-Nullable value type,
+            // SetModel will throw if we try to call it with null. We should not throw in that case.
             if (model != null)
             {
                 SetModel(model);

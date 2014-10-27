@@ -1,0 +1,42 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    // ViewBag.Title = "Home Page";
+}
+
+@using MvcSample.Web.Models
+@model User
+
+<div class="row">
+    <div style="float: left; border: 5px solid lightblue; margin: 5px; padding: 7px;">
+        EditorForModel:
+        @Html.EditorForModel()
+    </div>
+    <div style="float: left; border: 5px solid blue; margin: 5px; padding: 7px;">
+        Editor of empty string:
+        @Html.Editor("")
+    </div>
+    <div style="float: left; border: 5px solid darkblue; margin: 5px; padding: 7px;">
+        EditorFor of identity expression:
+        @Html.EditorFor(m => m)
+    </div>
+
+    <div style="float: left; border: 5px solid red; margin: 5px; padding: 7px;">
+        DisplayForModel:
+        '@Html.DisplayForModel()'
+    </div>
+
+    <div style="float: left; border: 5px solid green; margin: 5px; padding: 7px;">
+        Display:
+        for name '@Html.Display("Name")'
+        and alive '@Html.Display("Alive")'
+    </div>
+
+    <div style="float: left; border: 5px solid cyan; margin: 5px; padding: 7px;">
+        Editor:
+        for name @Html.Editor("Name")
+        alive @Html.Editor("Alive")
+        and alive expression @Html.EditorFor(m => m.Alive)
+    </div>
+</div>

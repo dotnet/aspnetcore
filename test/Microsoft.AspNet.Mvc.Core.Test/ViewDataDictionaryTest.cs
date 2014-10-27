@@ -159,6 +159,87 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.IsType<CopyOnWriteDictionary<string, object>>(viewData.Data);
         }
 
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(string))]
+        [InlineData(typeof(IEnumerable<string>))]
+        [InlineData(typeof(List<string>))]
+        [InlineData(typeof(string[]))]
+        [InlineData(typeof(Dictionary<string, object>))]
+        public void CopyConstructors_CopyModelMetadata(Type type)
+        {
+            // Arrange
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var metadata = metadataProvider.GetMetadataForType(() => null, type);
+            var source = new ViewDataDictionary(metadataProvider)
+            {
+                ModelMetadata = metadata,
+            };
+
+            // Act
+            var viewData1 = new ViewDataDictionary(source);
+            var viewData2 = new ViewDataDictionary(source, model: null);
+
+            // Assert
+            Assert.Same(metadata, viewData1.ModelMetadata);
+            Assert.Same(metadata, viewData2.ModelMetadata);
+        }
+
+        [Fact]
+        public void CopyConstructors_IgnoreModelMetadata_IfForTypeObject()
+        {
+            // Arrange
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var metadata = metadataProvider.GetMetadataForType(() => null, typeof(object));
+            var source = new ViewDataDictionary(metadataProvider)
+            {
+                ModelMetadata = metadata,
+            };
+
+            // Act
+            var viewData1 = new ViewDataDictionary(source);
+            var viewData2 = new ViewDataDictionary(source, model: null);
+
+            // Assert
+            Assert.Null(viewData1.ModelMetadata);
+            Assert.Null(viewData2.ModelMetadata);
+        }
+
+        [Theory]
+        [InlineData(typeof(int), "test string", typeof(string))]
+        [InlineData(typeof(string), 23, typeof(int))]
+        [InlineData(typeof(IEnumerable<string>), new[] { "1", "2", "3", }, typeof(object[]))]
+        [InlineData(typeof(List<string>), new[] { 1, 2, 3, }, typeof(object[]))]
+        public void CopyConstructors_OverrideSourceMetadata_IfModelNonNull(
+            Type sourceType,
+            object instance,
+            Type expectedType)
+        {
+            // Arrange
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var metadata = metadataProvider.GetMetadataForType(() => null, sourceType);
+            var source = new ViewDataDictionary(metadataProvider)
+            {
+                ModelMetadata = metadata,
+            };
+
+            // Act
+            var viewData1 = new ViewDataDictionary(source)
+            {
+                Model = instance,
+            };
+            var viewData2 = new ViewDataDictionary(source, model: instance);
+
+            // Assert
+            Assert.NotNull(viewData1.ModelMetadata);
+            Assert.Equal(expectedType, viewData1.ModelMetadata.ModelType);
+            Assert.Equal(expectedType, viewData1.ModelMetadata.RealModelType);
+
+            Assert.NotNull(viewData2.ModelMetadata);
+            Assert.Equal(expectedType, viewData2.ModelMetadata.ModelType);
+            Assert.Equal(expectedType, viewData2.ModelMetadata.RealModelType);
+        }
+
         public static TheoryData<object, string, object> Eval_EvaluatesExpressionsData
         {
             get

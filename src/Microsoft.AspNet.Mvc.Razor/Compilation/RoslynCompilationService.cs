@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.CodeAnalysis;
@@ -174,7 +175,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             var metadata = _metadataFileCache.GetOrAdd(path, _ =>
             {
-                return AssemblyMetadata.CreateFromStream(File.OpenRead(path));
+                using (var stream = File.OpenRead(path))
+                {
+                    var moduleMetadata = ModuleMetadata.CreateFromStream(stream, PEStreamOptions.PrefetchMetadata);
+                    return AssemblyMetadata.Create(moduleMetadata);
+                }
             });
 
             return metadata.GetReference();
