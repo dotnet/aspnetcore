@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Security.DataProtection
 #if !ASPNETCORE50
             // Environment.GetFolderPath returns null if the user profile isn't loaded.
             string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            if (folderPath != null)
+            if (!String.IsNullOrEmpty(folderPath))
             {
                 // TODO: Remove BETA moniker from below.
                 return new DirectoryInfo(Path.Combine(folderPath, "ASP.NET", "keys-BETA"));
