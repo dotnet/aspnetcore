@@ -11,7 +11,6 @@
         }
     },
     "compilationOptions": {
-        "warningsAsErrors": true,
-        "languageVersion": "experimental"
+        "warningsAsErrors": true
     }
 }

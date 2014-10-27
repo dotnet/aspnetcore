@@ -34,7 +34,6 @@
     },
     "compilationOptions": {
         "allowUnsafe": true,
-        "warningsAsErrors": true,
-        "languageVersion": "experimental"
+        "warningsAsErrors": true
     }
 }
