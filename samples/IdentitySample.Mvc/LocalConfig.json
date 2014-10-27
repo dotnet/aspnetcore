@@ -8,5 +8,13 @@
         "IdentityConnection": {
             "Connectionstring": "Server=(localdb)\\v11.0;Database=IdentityMvc-8-12-14;Trusted_Connection=True;MultipleActiveResultSets=true"
         }
+    },
+    "Identity": {
+        "Password": {
+            "RequireDigit" : "false",
+            "RequireLowercase" : "false",
+            "RequireUppercase" : "false",
+            "RequireNonLetterOrDigit" : "false"
+        }
     }
 }

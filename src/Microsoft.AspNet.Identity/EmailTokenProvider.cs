@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -24,13 +25,14 @@ namespace Microsoft.AspNet.Identity
     public class EmailTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<TUser>
         where TUser : class
     {
-        public EmailTokenProvider(EmailTokenProviderOptions options)
+        public EmailTokenProvider(IOptions<EmailTokenProviderOptions> options, string name = "")
         {
-            Options = options;
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+            Options = options.GetNamedOptions(name);
         }
-
-
-        public EmailTokenProvider() : this(new EmailTokenProviderOptions()) { }
 
         public EmailTokenProviderOptions Options { get; private set; }
 

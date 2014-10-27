@@ -3,8 +3,6 @@
 
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 {
@@ -15,38 +13,15 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             return new InMemoryContext();
         }
 
-        protected override UserManager<IdentityUser> CreateManager(object context)
+        protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            if (context == null)
-            {
-                context = CreateTestContext();
-            }
-            var services = new ServiceCollection();
-            services.Add(OptionsServices.GetDefaultServices());
-            services.AddEntityFramework().AddInMemoryStore();
-            services.AddIdentityInMemory((InMemoryContext)context);
-            services.ConfigureIdentity(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireNonLetterOrDigit = false;
-                options.Password.RequireUppercase = false;
-                options.User.UserNameValidationRegex = null;
-            });
-            return services.BuildServiceProvider().GetRequiredService<UserManager<IdentityUser>>();
+            services.AddInstance<IUserStore<IdentityUser>>(new InMemoryUserStore<IdentityUser, InMemoryContext>((InMemoryContext)context));
         }
 
-        protected override RoleManager<IdentityRole> CreateRoleManager(object context)
+        protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            if (context == null)
-            {
-                context = CreateTestContext();
-            }
-            var services = new ServiceCollection();
-            services.Add(OptionsServices.GetDefaultServices());
-            services.AddEntityFramework().AddInMemoryStore();
-            services.AddIdentityInMemory((InMemoryContext)context);
-            return services.BuildServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            var store = new RoleStore<IdentityRole, InMemoryContext>((InMemoryContext)context);
+            services.AddInstance<IRoleStore<IdentityRole>>(store);
         }
     }
 }

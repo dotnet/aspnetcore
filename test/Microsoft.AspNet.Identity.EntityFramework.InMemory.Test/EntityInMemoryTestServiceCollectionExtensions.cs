@@ -20,14 +20,10 @@ namespace Microsoft.AspNet.Identity
             where TRole : IdentityRole
             where TDbContext : DbContext
         {
-            var builder = services.AddIdentity<TUser, TRole>();
+            var builder = services.AddDefaultIdentity<TUser, TRole>();
             services.AddInstance<IUserStore<TUser>>(new InMemoryUserStore<TUser, TDbContext>(context));
             var store = new RoleStore<TRole, TDbContext>(context);
             services.AddInstance<IRoleStore<TRole>>(store);
-            //services.AddInstance(context);
-            //services.AddScoped<TDbContext>();
-            //services.AddScoped<IUserStore<TUser>, InMemoryUserStore<TUser, TDbContext>>();
-            //services.AddScoped<IRoleStore<TRole>, RoleStore<TRole, TDbContext>>();
             return builder;
         }
     }

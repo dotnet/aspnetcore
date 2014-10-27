@@ -16,11 +16,11 @@ using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser> { }
-
     [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
     public class UserStoreTest : UserManagerTestBase<IdentityUser, IdentityRole>
     {
+        public class ApplicationDbContext : IdentityDbContext<ApplicationUser> { }
+
         private readonly string ConnectionString = @"Server=(localdb)\v11.0;Database=SqlUserStoreTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
 
         [TestPriority(-1000)]
@@ -145,34 +145,14 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             return db;
         }
 
-        public static UserManager<IdentityUser> CreateManager(DbContext context)
+        protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            return MockHelpers.CreateManager(new UserStore<IdentityUser>(context));
+            services.AddInstance<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, IdentityDbContext>((IdentityDbContext)context));
         }
 
-        protected override UserManager<IdentityUser> CreateManager(object context = null)
+        protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            if (context == null)
-            {
-                context = CreateTestContext();
-            }
-            return CreateManager((DbContext)context);
-        }
-
-        public RoleManager<IdentityRole> CreateRoleManager(IdentityDbContext context)
-        {
-            var services = DbUtil.ConfigureDbServices(ConnectionString);
-            services.AddIdentity().AddRoleStore(new RoleStore<IdentityRole>(context));
-            return services.BuildServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
-        }
-
-        protected override RoleManager<IdentityRole> CreateRoleManager(object context)
-        {
-            if (context == null)
-            {
-                context = CreateTestContext();
-            }
-            return CreateRoleManager((IdentityDbContext)context);
+            services.AddInstance<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole, IdentityDbContext>((IdentityDbContext)context));
         }
 
         [Fact]

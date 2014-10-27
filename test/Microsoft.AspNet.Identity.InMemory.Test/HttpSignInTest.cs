@@ -36,7 +36,9 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             app.UseServices(services =>
             {
                 services.AddInstance(contextAccessor.Object);
-                services.AddIdentity<ApplicationUser, IdentityRole>().AddInMemory();
+                services.AddIdentity<ApplicationUser, IdentityRole>();
+                services.AddSingleton<IUserStore<ApplicationUser>, InMemoryUserStore<ApplicationUser>>();
+                services.AddSingleton<IRoleStore<IdentityRole>, InMemoryRoleStore<IdentityRole>>();
             });
 
             // Act

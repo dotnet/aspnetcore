@@ -96,16 +96,14 @@ namespace Microsoft.Framework.DependencyInjection
             where TUser : class
             where TRole : class
         {
-            return services.AddIdentity<TUser, TRole>(config, configureOptions)
-                .AddTokenProvider(new DataProtectorTokenProvider<TUser>(
-                    new DataProtectionTokenProviderOptions
-                    {
-                        Name = Resources.DefaultTokenProvider,
-                    },
-                    // TODO: This needs to get IDataProtectionProvider from the environment 
-                    new EphemeralDataProtectionProvider().CreateProtector("ASP.NET Identity")))
-                .AddTokenProvider(new PhoneNumberTokenProvider<TUser>())
-                .AddTokenProvider(new EmailTokenProvider<TUser>());
+            services.Configure<DataProtectionTokenProviderOptions>(options =>
+            {
+                options.Name = Resources.DefaultTokenProvider;
+            });
+            return services.AddIdentity<TUser, TRole>(config)
+                .AddTokenProvider<DataProtectorTokenProvider<TUser>>()
+                .AddTokenProvider<PhoneNumberTokenProvider<TUser>>()
+                .AddTokenProvider<EmailTokenProvider<TUser>>();
         }
 
         public static IdentityBuilder<TUser, IdentityRole> AddIdentity<TUser>(this IServiceCollection services)

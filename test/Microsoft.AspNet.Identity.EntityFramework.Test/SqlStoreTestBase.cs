@@ -7,13 +7,14 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity.Test;
+using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
-
     public abstract class SqlStoreTestBase<TUser, TRole, TKey> : UserManagerTestBase<TUser, TRole, TKey>
         where TUser : IdentityUser<TKey>, new()
         where TRole : IdentityRole<TKey>, new()
@@ -59,24 +60,14 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             return CreateContext();
         }
 
-        protected override UserManager<TUser> CreateManager(object context = null)
+        protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            if (context == null)
-            {
-                context = CreateTestContext();
-            }
-            return MockHelpers.CreateManager(new UserStore<TUser, TRole, TestDbContext, TKey>((TestDbContext)context));
+            services.AddInstance<IUserStore<TUser>>(new UserStore<TUser, TRole, TestDbContext, TKey>((TestDbContext)context));
         }
 
-        protected override RoleManager<TRole> CreateRoleManager(object context = null)
+        protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            var services = DbUtil.ConfigureDbServices<TestDbContext>(ConnectionString);
-            if (context == null)
-            {
-                context = CreateTestContext();
-            }
-            services.AddIdentity<TUser, TRole>().AddRoleStore(new RoleStore<TRole, TestDbContext, TKey>((TestDbContext)context));
-            return services.BuildServiceProvider().GetRequiredService<RoleManager<TRole>>();
+            services.AddInstance<IRoleStore<TRole>>(new RoleStore<TRole, TestDbContext, TKey>((TestDbContext)context));
         }
 
         public void EnsureDatabase()

@@ -1,4 +1,5 @@
 using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.Framework.OptionsModel;
 using System;
 using System.IO;
 using System.Text;
@@ -11,7 +12,6 @@ namespace Microsoft.AspNet.Identity
     {
         public string Name { get; set; } = "DataProtection";
         public TimeSpan TokenLifespan { get; set; } = TimeSpan.FromDays(1);
-
     }
 
     /// <summary>
@@ -19,18 +19,19 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     public class DataProtectorTokenProvider<TUser> : IUserTokenProvider<TUser> where TUser : class
     {
-        public DataProtectorTokenProvider(DataProtectionTokenProviderOptions options, IDataProtector protector)
+        public DataProtectorTokenProvider(IDataProtectionProvider dataProtectionProvider, IOptions<DataProtectionTokenProviderOptions> options)
         {
-            if (options == null)
+            if (options == null || options.Options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            if (protector == null)
+            if (dataProtectionProvider == null)
             {
-                throw new ArgumentNullException(nameof(protector));
+                throw new ArgumentNullException(nameof(dataProtectionProvider));
             }
-            Options = options;
-            Protector = protector;
+            Options = options.Options;
+            // Use the Name as the purpose which should usually be distinct from others
+            Protector = dataProtectionProvider.CreateProtector(Name ?? "DataProtectorTokenProvider"); 
         }
 
         public DataProtectionTokenProviderOptions Options { get; private set; }

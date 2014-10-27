@@ -1,34 +1,35 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
 using Moq;
-using System;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Identity.Test
 {
     public static class MockHelpers
     {
-        public static UserManager<TUser> CreateManager<TUser>(IUserStore<TUser> store) where TUser : class
-        {
-            var services = new ServiceCollection();
-            services.Add(OptionsServices.GetDefaultServices());
-            services.AddIdentity<TUser>().AddUserStore(store);
-            services.ConfigureIdentity(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireNonLetterOrDigit = false;
-                options.Password.RequireUppercase = false;
-                options.User.UserNameValidationRegex = null;
-            });
-            return services.BuildServiceProvider().GetService<UserManager<TUser>>();
-        }
+        //public static UserManager<TUser> CreateManager<TUser>(IUserStore<TUser> store) where TUser : class
+        //{
+        //    var services = new ServiceCollection();
+        //    services.Add(OptionsServices.GetDefaultServices());
+        //    services.Add(HostingServices.GetDefaultServices());
+        //    services.AddDefaultIdentity<TUser, IdentityRole>().AddUserStore(store);
+        //    services.ConfigureIdentity(options =>
+        //    {
+        //        options.Password.RequireDigit = false;
+        //        options.Password.RequireLowercase = false;
+        //        options.Password.RequireNonLetterOrDigit = false;
+        //        options.Password.RequireUppercase = false;
+        //        options.User.UserNameValidationRegex = null;
+        //    });
+        //    return services.BuildServiceProvider().GetService<UserManager<TUser>>();
+        //}
 
         public static Mock<UserManager<TUser>> MockUserManager<TUser>() where TUser : class
         {

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "Microsoft.AspNet.Hosting": "1.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Identity": "3.0.0-*",
     "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",

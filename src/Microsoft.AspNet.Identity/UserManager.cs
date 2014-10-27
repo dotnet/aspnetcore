@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.AspNet.Security.DataProtection;
 
 namespace Microsoft.AspNet.Identity
 {

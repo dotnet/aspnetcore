@@ -43,9 +43,10 @@ namespace Microsoft.AspNet.Identity
             return AddInstance(validator);
         }
 
-        public IdentityBuilder<TUser, TRole> AddTokenProvider(IUserTokenProvider<TUser> tokenProvider)
+        public IdentityBuilder<TUser, TRole> AddTokenProvider<TTokenProvider>() where TTokenProvider : class, IUserTokenProvider<TUser>
         {
-            return AddInstance(tokenProvider);
+            Services.AddScoped<IUserTokenProvider<TUser>, TTokenProvider>();
+            return this;
         }
 
         public IdentityBuilder<TUser, TRole> ConfigureIdentity(Action<IdentityOptions> action, int order = 0)

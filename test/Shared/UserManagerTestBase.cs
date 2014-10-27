@@ -10,10 +10,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
 using Xunit;
 using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
+using Microsoft.AspNet.Hosting;
+using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Identity.Test
 {
-
     // Common functionality tests that all verifies user manager functionality regardless of store implementation
     public abstract class UserManagerTestBase<TUser, TRole> : UserManagerTestBase<TUser, TRole, string>
         where TUser : IdentityUser, new()
@@ -25,9 +28,56 @@ namespace Microsoft.AspNet.Identity.Test
         where TRole: IdentityRole<TKey>, new()
         where TKey : IEquatable<TKey>
     {
-        protected abstract UserManager<TUser> CreateManager(object context = null);
-        protected abstract RoleManager<TRole> CreateRoleManager(object context = null);
+        protected virtual void SetupIdentityServices(IServiceCollection services, object context = null)
+        {
+            services.Add(OptionsServices.GetDefaultServices());
+            services.Add(HostingServices.GetDefaultServices());
+            services.AddDefaultIdentity<TUser, TRole>();
+            AddUserStore(services, context);
+            AddRoleStore(services, context);
+            services.ConfigureIdentity(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireNonLetterOrDigit = false;
+                options.Password.RequireUppercase = false;
+                options.User.UserNameValidationRegex = null;
+            });
+
+        }
+
+        protected virtual UserManager<TUser> CreateManager(object context = null, IServiceCollection services = null)
+        {
+            if (services == null)
+            {
+                services = new ServiceCollection();
+            }
+            if (context == null)
+            {
+                context = CreateTestContext();
+            }
+            SetupIdentityServices(services, context);
+            return services.BuildServiceProvider().GetService<UserManager<TUser>>();
+        }
+
+        protected RoleManager<TRole> CreateRoleManager(object context = null, IServiceCollection services = null)
+        {
+            if (services == null)
+            {
+                services = new ServiceCollection();
+            }
+            if (context == null)
+            {
+                context = CreateTestContext();
+            }
+            SetupIdentityServices(services, context);
+            return services.BuildServiceProvider().GetService<RoleManager<TRole>>();
+        }
+
         protected abstract object CreateTestContext();
+
+        protected abstract void AddUserStore(IServiceCollection services, object context = null);
+        protected abstract void AddRoleStore(IServiceCollection services, object context = null);
 
         protected TUser CreateTestUser(string namePrefix = "") {
             return new TUser() { UserName = namePrefix + Guid.NewGuid().ToString() };
@@ -551,9 +601,6 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ConfirmTokenFailsAfterPasswordChange()
         {
             var manager = CreateManager();
-            manager.RegisterTokenProvider(new DataProtectorTokenProvider<TUser>(new DataProtectionTokenProviderOptions(),
-                   new EphemeralDataProtectionProvider().CreateProtector("ASP.NET Identity")));
-            manager.Options.EmailConfirmationTokenProvider = "DataProtection";
             var user = new TUser() { UserName = "test" };
             Assert.False(user.EmailConfirmed);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
@@ -1144,8 +1191,7 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = CreateManager();
             var messageService = new TestMessageService();
             manager.EmailService = messageService;
-            const string factorId = "Email";
-            manager.RegisterTokenProvider(new EmailTokenProvider<TUser>());
+            const string factorId = "Email"; // default
             var user = new TUser() { UserName = "EmailCodeTest", Email = "foo@foo.com" };
             user.EmailConfirmed = true;
             const string password = "password";
@@ -1176,18 +1222,20 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task EmailTokenFactorWithFormatTest()
         {
-            var manager = CreateManager();
-            var messageService = new TestMessageService();
-            manager.EmailService = messageService;
-            const string factorId = "EmailTestCode";
+            // CONSIDER: do we want to support multiple email token options?
+            const string factorId = "Email"; // default
             const string subject = "Custom subject";
             const string body = "Your code is {0}!";
-            manager.RegisterTokenProvider(new EmailTokenProvider<TUser>(new EmailTokenProviderOptions
+            var services = new ServiceCollection();
+            services.Configure<EmailTokenProviderOptions>(o =>
             {
-                Name = factorId,
-                Subject = subject,
-                BodyFormat = body
-            }));
+                o.Name = factorId;
+                o.Subject = subject;
+                o.BodyFormat = body;
+            });
+            var manager = CreateManager(null, services);
+            var messageService = new TestMessageService();
+            manager.EmailService = messageService;
             var user = CreateTestUser();
             user.Email = user.UserName + "@foo.com";
             const string password = "password";
@@ -1209,7 +1257,6 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = CreateManager();
             string factorId = "Email"; //default
-            manager.RegisterTokenProvider(new EmailTokenProvider<TUser>());
             var user = CreateTestUser();
             user.Email = user.UserName + "@foo.com";
             user.EmailConfirmed = true;
@@ -1221,7 +1268,6 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.UpdateSecurityStampAsync(user));
             Assert.False(await manager.VerifyTwoFactorTokenAsync(user, factorId, token));
         }
-
 
         [Fact]
         public async Task EnableTwoFactorChangesSecurityStamp()
@@ -1272,7 +1318,6 @@ namespace Microsoft.AspNet.Identity.Test
             var messageService = new TestMessageService();
             manager.SmsService = messageService;
             const string factorId = "Phone"; // default
-            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>());
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1290,15 +1335,16 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task PhoneTokenFactorFormatTest()
         {
-            var manager = CreateManager();
+            const string factorId = "Phone"; // default
+            var services = new ServiceCollection();
+            services.Configure<PhoneNumberTokenProviderOptions>(o =>
+            {
+                o.Name = factorId;
+                o.MessageFormat = "Your code is: {0}";
+            });
+            var manager = CreateManager(null, services);
             var messageService = new TestMessageService();
             manager.SmsService = messageService;
-            const string factorId = "PhoneTestFactors";
-            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>(new PhoneNumberTokenProviderOptions
-            {
-                Name = factorId,
-                MessageFormat = "Your code is: {0}"
-            }));
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1342,8 +1388,6 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CanGetValidTwoFactor()
         {
             var manager = CreateManager();
-            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>());
-            manager.RegisterTokenProvider(new EmailTokenProvider<TUser>());
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var factors = await manager.GetValidTwoFactorProvidersAsync(user);
@@ -1374,7 +1418,6 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = CreateManager();
             var factorId = "Phone"; // default
-            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>());
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1390,8 +1433,6 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task VerifyTokenFromWrongTokenProviderFails()
         {
             var manager = CreateManager();
-            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>());
-            manager.RegisterTokenProvider(new EmailTokenProvider<TUser>());
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1404,7 +1445,6 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task VerifyWithWrongSmsTokenFails()
         {
             var manager = CreateManager();
-            manager.RegisterTokenProvider(new PhoneNumberTokenProvider<TUser>());
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));

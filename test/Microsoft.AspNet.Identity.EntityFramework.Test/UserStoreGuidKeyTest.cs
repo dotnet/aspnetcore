@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
@@ -60,24 +59,14 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        protected override UserManager<GuidUser> CreateManager(object context)
+        protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            if (context == null)
-            {
-                context = CreateTestContext();
-            }
-            return MockHelpers.CreateManager(new ApplicationUserStore((TestDbContext)context));
+            services.AddInstance<IUserStore<GuidUser>>(new ApplicationUserStore((TestDbContext)context));
         }
 
-        protected override RoleManager<GuidRole> CreateRoleManager(object context)
+        protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            if (context == null)
-            {
-                context = CreateTestContext();
-            }
-            var services = DbUtil.ConfigureDbServices(ConnectionString);
-            services.AddIdentity<GuidUser, GuidRole>().AddRoleStore(new ApplicationRoleStore((TestDbContext)context));
-            return services.BuildServiceProvider().GetRequiredService<RoleManager<GuidRole>>();
+            services.AddInstance<IRoleStore<GuidRole>>(new ApplicationRoleStore((TestDbContext)context));
         }
     }
 }
