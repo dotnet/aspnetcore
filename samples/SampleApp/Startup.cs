@@ -11,8 +11,6 @@ namespace SampleApp
     {
         public void Configure(IApplicationBuilder app)
         {
-            app.UseWebSockets();
-
             app.Run(async context =>
             {
                 Console.WriteLine("{0} {1}{2}{3}",
