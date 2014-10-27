@@ -58,19 +58,19 @@ namespace Microsoft.AspNet.Identity
             return await ClaimsFactory.CreateAsync(user);
         }
 
-        //public virtual async Task<bool> CanSignInAsync(TUser user,
-        //    CancellationToken cancellationToken = default(CancellationToken))
-        //{
-        //    if (Options.SignIn.RequireConfirmedEmail && !(await UserManager.IsEmailConfirmedAsync(user, cancellationToken)))
-        //    {
-        //        return false;
-        //    }
-        //    if (Options.SignIn.RequireConfirmedPhoneNumber && !(await UserManager.IsPhoneNumberConfirmedAsync(user, cancellationToken)))
-        //    {
-        //        return false;
-        //    }
-        //    return true;
-        //}
+        public virtual async Task<bool> CanSignInAsync(TUser user,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (Options.SignIn.RequireConfirmedEmail && !(await UserManager.IsEmailConfirmedAsync(user, cancellationToken)))
+            {
+                return false;
+            }
+            if (Options.SignIn.RequireConfirmedPhoneNumber && !(await UserManager.IsPhoneNumberConfirmedAsync(user, cancellationToken)))
+            {
+                return false;
+            }
+            return true;
+        }
 
         public virtual async Task SignInAsync(TUser user, bool isPersistent, string authenticationMethod = null,
             CancellationToken cancellationToken = default(CancellationToken))
@@ -92,6 +92,19 @@ namespace Microsoft.AspNet.Identity
         private async Task<bool> IsLockedOut(TUser user, CancellationToken token)
         {
             return UserManager.SupportsUserLockout && await UserManager.IsLockedOutAsync(user, token);
+        }
+
+        private async Task<SignInStatus?> PreSignInCheck(TUser user, CancellationToken token)
+        {
+            if (!await CanSignInAsync(user, token))
+            {
+                return SignInStatus.NotAllowed;
+            }
+            if (await IsLockedOut(user, token))
+            {
+                return SignInStatus.LockedOut;
+            }
+            return null;
         }
 
         private Task ResetLockout(TUser user, CancellationToken token)
@@ -129,9 +142,10 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<SignInStatus> PasswordSignInAsync(TUser user, string password,
             bool isPersistent, bool shouldLockout, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (await IsLockedOut(user, cancellationToken))
+            var error = await PreSignInCheck(user, cancellationToken);
+            if (error != null)
             {
-                return SignInStatus.LockedOut;
+                return error.Value;
             }
             if (await UserManager.CheckPasswordAsync(user, password, cancellationToken))
             {
@@ -233,9 +247,10 @@ namespace Microsoft.AspNet.Identity
             {
                 return SignInStatus.Failure;
             }
-            if (await IsLockedOut(user, cancellationToken))
+            var error = await PreSignInCheck(user, cancellationToken);
+            if (error != null)
             {
-                return SignInStatus.LockedOut;
+                return error.Value;
             }
             if (await UserManager.VerifyTwoFactorTokenAsync(user, provider, code, cancellationToken))
             {
@@ -283,9 +298,10 @@ namespace Microsoft.AspNet.Identity
             {
                 return SignInStatus.Failure;
             }
-            if (await IsLockedOut(user, cancellationToken))
+            var error = await PreSignInCheck(user, cancellationToken);
+            if (error != null)
             {
-                return SignInStatus.LockedOut;
+                return error.Value;
             }
             return await SignInOrTwoFactorAsync(user, isPersistent, cancellationToken, loginProvider);
         }

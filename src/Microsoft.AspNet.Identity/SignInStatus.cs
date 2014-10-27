@@ -8,6 +8,7 @@ namespace Microsoft.AspNet.Identity
         Success,
         LockedOut,
         RequiresVerification,
+        NotAllowed,
         Failure
     }
 }

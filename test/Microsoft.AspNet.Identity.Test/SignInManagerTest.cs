@@ -501,6 +501,8 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             context.VerifyAll();
             response.VerifyAll();
+            contextAccessor.VerifyAll();
+            claimsFactory.VerifyAll();
         }
 
         [Fact]
@@ -528,6 +530,8 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.Equal(SignInStatus.Failure, result);
             manager.VerifyAll();
+            context.VerifyAll();
+            contextAccessor.VerifyAll();
         }
 
         [Fact]
@@ -552,6 +556,8 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.Equal(SignInStatus.Failure, result);
             manager.VerifyAll();
+            context.VerifyAll();
+            contextAccessor.VerifyAll();
         }
 
         [Fact]
@@ -586,6 +592,87 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.Equal(SignInStatus.LockedOut, result);
             manager.VerifyAll();
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CanRequireConfirmedEmailForPasswordSignIn(bool confirmed)
+        {
+            // Setup
+            var user = new TestUser { UserName = "Foo" };
+            var manager = MockHelpers.MockUserManager<TestUser>();
+            manager.Setup(m => m.IsEmailConfirmedAsync(user, CancellationToken.None)).ReturnsAsync(confirmed).Verifiable();
+            if (confirmed)
+            {
+                manager.Setup(m => m.CheckPasswordAsync(user, "password", CancellationToken.None)).ReturnsAsync(true).Verifiable();
+            }
+            var context = new Mock<HttpContext>();
+            var response = new Mock<HttpResponse>();
+            if (confirmed)
+            {
+                manager.Setup(m => m.CheckPasswordAsync(user, "password", CancellationToken.None)).ReturnsAsync(true).Verifiable();
+                context.Setup(c => c.Response).Returns(response.Object).Verifiable();
+                response.Setup(r => r.SignIn(It.Is<AuthenticationProperties>(v => v.IsPersistent == false), It.IsAny<ClaimsIdentity>())).Verifiable();
+            }
+            var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
+            contextAccessor.Setup(a => a.Value).Returns(context.Object);
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var identityOptions = new IdentityOptions();
+            identityOptions.SignIn.RequireConfirmedEmail = true;
+            var options = new Mock<IOptions<IdentityOptions>>();
+            options.Setup(a => a.Options).Returns(identityOptions);
+            var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object, options.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object);
+
+            // Act
+            var result = await helper.PasswordSignInAsync(user, "password", false, false);
+
+            // Assert
+            Assert.Equal(confirmed ? SignInStatus.Success : SignInStatus.NotAllowed, result);
+            manager.VerifyAll();
+            context.VerifyAll();
+            response.VerifyAll();
+            contextAccessor.VerifyAll();
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CanRequireConfirmedPhoneNumberForPasswordSignIn(bool confirmed)
+        {
+            // Setup
+            var user = new TestUser { UserName = "Foo" };
+            var manager = MockHelpers.MockUserManager<TestUser>();
+            manager.Setup(m => m.IsEmailConfirmedAsync(user, CancellationToken.None)).ReturnsAsync(confirmed).Verifiable();
+            var context = new Mock<HttpContext>();
+            var response = new Mock<HttpResponse>();
+            if (confirmed)
+            {
+                manager.Setup(m => m.CheckPasswordAsync(user, "password", CancellationToken.None)).ReturnsAsync(true).Verifiable();
+                context.Setup(c => c.Response).Returns(response.Object).Verifiable();
+                response.Setup(r => r.SignIn(It.Is<AuthenticationProperties>(v => v.IsPersistent == false), It.IsAny<ClaimsIdentity>())).Verifiable();
+            }
+
+            var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
+            contextAccessor.Setup(a => a.Value).Returns(context.Object);
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var identityOptions = new IdentityOptions();
+            identityOptions.SignIn.RequireConfirmedEmail = true;
+            var options = new Mock<IOptions<IdentityOptions>>();
+            options.Setup(a => a.Options).Returns(identityOptions);
+            var claimsFactory = new Mock<ClaimsIdentityFactory<TestUser, TestRole>>(manager.Object, roleManager.Object, options.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object);
+
+            // Act
+            var result = await helper.PasswordSignInAsync(user, "password", false, false);
+
+            // Assert
+            Assert.Equal(confirmed ? SignInStatus.Success : SignInStatus.NotAllowed, result);
+            manager.VerifyAll();
+            context.VerifyAll();
+            response.VerifyAll();
+            contextAccessor.VerifyAll();
         }
 
     }
