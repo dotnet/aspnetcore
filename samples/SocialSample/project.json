@@ -18,5 +18,6 @@
         },
         "aspnetcore50": {
         }
-    }
+    },
+    "webroot": "wwwroot"
 }

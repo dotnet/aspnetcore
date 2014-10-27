@@ -31,6 +31,10 @@ namespace Microsoft.AspNet.Builder
                     {
                         configureOptions(options);
                     }
+                    if (options.Notifications == null)
+                    {
+                        options.Notifications = new OAuthAuthenticationNotifications();
+                    }
                 }) 
                 {
                     Name = authenticationType,
