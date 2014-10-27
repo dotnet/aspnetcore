@@ -78,7 +78,7 @@ default Configuration='${E("Configuration")}'
 #xunit-test target='test' if='Directory.Exists("test")'
   k-test each='var projectFile in Files.Include("test/**/project.json")'
 
-#build-samples target='test'
+#build-samples target='test' if='Directory.Exists("samples")'
   k-build each='var projectFile in Files.Include("samples/**/project.json")' configuration='${Configuration}'
 
 #make-roslyn-fast
