@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
-    <value>The value cannot be null or empty.</value>
+    <value>Value cannot be null or empty.</value>
   </data>
   <data name="CompilationFailed" xml:space="preserve">
     <value>Compilation for '{0}' failed:</value>

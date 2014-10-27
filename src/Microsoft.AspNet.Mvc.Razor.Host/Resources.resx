@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ArgumentCannotBeNullOrEmpy" xml:space="preserve">
-    <value>Argument cannot be null or empty.</value>
+    <value>Value cannot be null or empty.</value>
   </data>
   <data name="ArgumentMustBeOfType" xml:space="preserve">
     <value>Argument must be an instance of '{0}'.</value>

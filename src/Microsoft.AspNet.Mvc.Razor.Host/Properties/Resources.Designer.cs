@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
             = new ResourceManager("Microsoft.AspNet.Mvc.Razor.Host.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Argument cannot be null or empty.
+        /// Value cannot be null or empty.
         /// </summary>
         internal static string ArgumentCannotBeNullOrEmpy
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
         }
 
         /// <summary>
-        /// Argument cannot be null or empty.
+        /// Value cannot be null or empty.
         /// </summary>
         internal static string FormatArgumentCannotBeNullOrEmpy()
         {

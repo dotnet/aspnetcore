@@ -102,14 +102,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new TestableAssociatedMetadataProvider();
 
             // Act & Assert
-            ExceptionAssert.ThrowsArgument(
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(
                 () => provider.GetMetadataForProperty(modelAccessor: null, containerType: typeof(object), propertyName: null),
-                "propertyName",
-                "The value cannot be null or empty.");
-            ExceptionAssert.ThrowsArgument(
+                "propertyName");
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(
                 () => provider.GetMetadataForProperty(modelAccessor: null, containerType: typeof(object), propertyName: String.Empty),
-                "propertyName",
-                "The value cannot be null or empty.");
+                "propertyName");
         }
 
         [Fact]
