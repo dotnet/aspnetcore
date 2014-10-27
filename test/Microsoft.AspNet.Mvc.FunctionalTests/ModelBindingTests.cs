@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
@@ -49,6 +50,32 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task TryUpdateModel_WithAPropertyFromBody()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // the name would be of customer.Department.Name
+            // and not for the top level customer object.
+            var input = "{\"Name\":\"RandomDepartment\"}";
+            var content = new StringContent(input, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await client.PostAsync("http://localhost/Home/GetCustomer?Id=1234", content);
+           
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var customer = JsonConvert.DeserializeObject<Customer>(
+                        await response.Content.ReadAsStringAsync());
+            Assert.NotNull(customer.Department);
+            Assert.Equal("RandomDepartment", customer.Department.Name);
+            Assert.Equal(1234, customer.Id);
+            Assert.Equal(25, customer.Age);
+            Assert.Equal("dummy", customer.Name);
+        }
+
+        [Fact]
         public async Task MultipleParametersMarkedWithFromBody_Throws()
         {
             // Arrange
@@ -57,10 +84,278 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-               client.GetAsync("http://localhost/MultipleParametersFromBody/MultipleParametersFromBodyThrows"));
+               client.GetAsync("http://localhost/FromAttributes/FromBodyParametersThrows"));
 
-            Assert.Equal("More than one parameter is bound to the HTTP request's content.",
+            Assert.Equal("More than one parameter and/or property is bound to the HTTP request's content.",
                          ex.Message);
+        }
+
+        [Fact]
+        public async Task MultipleParameterAndPropertiesMarkedWithFromBody_Throws()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+               client.GetAsync("http://localhost/FromAttributes/FromBodyParameterAndPropertyThrows"));
+
+            Assert.Equal("More than one parameter and/or property is bound to the HTTP request's content.",
+                         ex.Message);
+        }
+
+        [Fact]
+        public async Task MultipleParametersMarkedWith_FromFormAndFromBody_Throws()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+               client.GetAsync("http://localhost/FromAttributes/FormAndBody_AsParameters_Throws"));
+
+            Assert.Equal("More than one parameter and/or property is bound to the HTTP request's content.",
+                         ex.Message);
+        }
+
+        [Fact]
+        public async Task MultipleParameterAndPropertiesMarkedWith_FromFormAndFromBody_Throws()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+               client.GetAsync("http://localhost/FromAttributes/FormAndBody_Throws"));
+
+            Assert.Equal("More than one parameter and/or property is bound to the HTTP request's content.",
+                         ex.Message);
+        }
+
+        [Fact]
+        public async Task CanBind_MultipleParameters_UsingFromForm()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                "http://localhost/FromAttributes/MultipleFromFormParameters");
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("homeAddress.Street", "1"),
+                new KeyValuePair<string,string>("homeAddress.State", "WA_Form_Home"),
+                new KeyValuePair<string,string>("homeAddress.Zip", "2"),
+                new KeyValuePair<string,string>("officeAddress.Street", "3"),
+                new KeyValuePair<string,string>("officeAddress.State", "WA_Form_Office"),
+                new KeyValuePair<string,string>("officeAddress.Zip", "4"),
+            };
+
+            request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var user = JsonConvert.DeserializeObject<User_FromForm>(
+                      await response.Content.ReadAsStringAsync());
+
+            Assert.Equal("WA_Form_Home", user.HomeAddress.State);
+            Assert.Equal(1, user.HomeAddress.Street);
+            Assert.Equal(2, user.HomeAddress.Zip);
+
+            Assert.Equal("WA_Form_Office", user.OfficeAddress.State);
+            Assert.Equal(3, user.OfficeAddress.Street);
+            Assert.Equal(4, user.OfficeAddress.Zip);
+        }
+
+        [Fact]
+        public async Task CanBind_MultipleProperties_UsingFromForm()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                "http://localhost/FromAttributes/MultipleFromFormParameterAndProperty");
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("Street", "1"),
+                new KeyValuePair<string,string>("State", "WA_Form_Home"),
+                new KeyValuePair<string,string>("Zip", "2"),
+                new KeyValuePair<string,string>("officeAddress.Street", "3"),
+                new KeyValuePair<string,string>("officeAddress.State", "WA_Form_Office"),
+                new KeyValuePair<string,string>("officeAddress.Zip", "4"),
+            };
+
+            request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var user = JsonConvert.DeserializeObject<User_FromForm>(
+                      await response.Content.ReadAsStringAsync());
+
+            Assert.Equal("WA_Form_Home", user.HomeAddress.State);
+            Assert.Equal(1, user.HomeAddress.Street);
+            Assert.Equal(2, user.HomeAddress.Zip);
+
+            Assert.Equal("WA_Form_Office", user.OfficeAddress.State);
+            Assert.Equal(3, user.OfficeAddress.Street);
+            Assert.Equal(4, user.OfficeAddress.Zip);
+        }
+
+        [Fact]
+        public async Task CanBind_ComplexData_OnParameters_UsingFromAttributes()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Provide all three values, it should bind based on the attribute on the action method.
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                "http://localhost/FromAttributes/GetUser/5/WA_Route/6" +
+                "?Street=3&State=WA_Query&Zip=4");
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("Street", "1"),
+                new KeyValuePair<string,string>("State", "WA_Form"),
+                new KeyValuePair<string,string>("Zip", "2"),
+            };
+
+            request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var user = JsonConvert.DeserializeObject<User_FromForm>(
+                       await response.Content.ReadAsStringAsync());
+
+            // Assert FromRoute
+            Assert.Equal("WA_Route", user.HomeAddress.State);
+            Assert.Equal(5, user.HomeAddress.Street);
+            Assert.Equal(6, user.HomeAddress.Zip);
+
+            // Assert FromForm
+            Assert.Equal("WA_Form", user.OfficeAddress.State);
+            Assert.Equal(1, user.OfficeAddress.Street);
+            Assert.Equal(2, user.OfficeAddress.Zip);
+
+            // Assert FromQuery
+            Assert.Equal("WA_Query", user.ShippingAddress.State);
+            Assert.Equal(3, user.ShippingAddress.Street);
+            Assert.Equal(4, user.ShippingAddress.Zip);
+        }
+
+        [Fact]
+        public async Task CanBind_ComplexData_OnProperties_UsingFromAttributes()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Provide all three values, it should bind based on the attribute on the action method.
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                "http://localhost/FromAttributes/GetUser_FromForm/5/WA_Route/6" +
+                "?ShippingAddress.Street=3&ShippingAddress.State=WA_Query&ShippingAddress.Zip=4");
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("OfficeAddress.Street", "1"),
+                new KeyValuePair<string,string>("OfficeAddress.State", "WA_Form"),
+                new KeyValuePair<string,string>("OfficeAddress.Zip", "2"),
+            };
+
+            request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var user = JsonConvert.DeserializeObject<User_FromForm>(
+                       await response.Content.ReadAsStringAsync());
+
+            // Assert FromRoute
+            Assert.Equal("WA_Route", user.HomeAddress.State);
+            Assert.Equal(5, user.HomeAddress.Street);
+            Assert.Equal(6, user.HomeAddress.Zip);
+
+            // Assert FromForm
+            Assert.Equal("WA_Form", user.OfficeAddress.State);
+            Assert.Equal(1, user.OfficeAddress.Street);
+            Assert.Equal(2, user.OfficeAddress.Zip);
+
+            // Assert FromQuery
+            Assert.Equal("WA_Query", user.ShippingAddress.State);
+            Assert.Equal(3, user.ShippingAddress.Street);
+            Assert.Equal(4, user.ShippingAddress.Zip);
+
+        }
+
+        [Fact]
+        public async Task CanBind_ComplexData_OnProperties_UsingFromAttributes_WithBody()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Provide all three values, it should bind based on the attribute on the action method.
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                "http://localhost/FromAttributes/GetUser_FromBody/5/WA_Route/6" +
+                "?ShippingAddress.Street=3&ShippingAddress.State=WA_Query&ShippingAddress.Zip=4");
+            var input = "{\"State\":\"WA_Body\",\"Street\":1,\"Zip\":2}";
+
+            request.Content = new StringContent(input, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var user = JsonConvert.DeserializeObject<User_FromBody>(
+                       await response.Content.ReadAsStringAsync());
+
+            // Assert FromRoute
+            Assert.Equal("WA_Route", user.HomeAddress.State);
+            Assert.Equal(5, user.HomeAddress.Street);
+            Assert.Equal(6, user.HomeAddress.Zip);
+
+            // Assert FromBody
+            Assert.Equal("WA_Body", user.OfficeAddress.State);
+            Assert.Equal(1, user.OfficeAddress.Street);
+            Assert.Equal(2, user.OfficeAddress.Zip);
+
+            // Assert FromQuery
+            Assert.Equal("WA_Query", user.ShippingAddress.State);
+            Assert.Equal(3, user.ShippingAddress.Street);
+            Assert.Equal(4, user.ShippingAddress.Zip);
+        }
+
+
+        [Fact]
+        public async Task NonExistingModelBinder_ForABinderMetadata_DoesNotRecurseInfinitely()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act & Assert
+            var response = await client.GetStringAsync("http://localhost/WithMetadata/EchoDocument");
+
+            var document = JsonConvert.DeserializeObject<Document>
+                          (response);
+
+            Assert.NotNull(document);
+            Assert.Null(document.Version);
+            Assert.Null(document.SubDocument);
         }
 
         [Fact]
@@ -86,7 +381,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ParametersAreAlwaysCreated()
+        public async Task ParametersAreAlwaysCreated_IfValuesAreProvidedWithoutModelName()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
@@ -105,6 +400,136 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.NotNull(person);
             Assert.Equal("somename", person.Name);
             Assert.Equal(12, person.Age);
+        }
+
+        [Fact]
+        public async Task ParametersAreAlwaysCreated_IfValueIsProvidedForModelName()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await
+                     client.GetAsync("http://localhost/WithoutMetadata" +
+                     "/GetPersonParameter?p="); // here p is the model name.
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var person = JsonConvert.DeserializeObject<Person>(
+                            await response.Content.ReadAsStringAsync());
+            Assert.NotNull(person);
+            Assert.Null(person.Name);
+            Assert.Equal(0, person.Age);
+        }
+
+        [Fact]
+        public async Task ParametersAreAlwaysCreated_IfNoValuesAreProvided()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await
+                     client.GetAsync("http://localhost/WithoutMetadata" +
+                     "/GetPersonParameter");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var person = JsonConvert.DeserializeObject<Person>(
+                            await response.Content.ReadAsStringAsync());
+            Assert.NotNull(person);
+            Assert.Null(person.Name);
+            Assert.Equal(0, person.Age);
+        }
+
+        [Fact]
+        public async Task PropertiesAreBound_IfTheyAreProvidedByValueProviders()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await
+                     client.GetAsync("http://localhost/Properties" +
+                     "/GetCompany?Employees[0].Name=somename&Age=12");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var company = JsonConvert.DeserializeObject<Company>(
+                            await response.Content.ReadAsStringAsync());
+            Assert.NotNull(company);
+            Assert.NotNull(company.Employees);
+            Assert.Equal(1, company.Employees.Count);
+            Assert.NotNull(company.Employees[0].Name);
+        }
+
+        [Fact]
+        public async Task PropertiesAreBound_IfTheyAreMarkedExplicitly()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await
+                     client.GetAsync("http://localhost/Properties" +
+                     "/GetCompany");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var company = JsonConvert.DeserializeObject<Company>(
+                            await response.Content.ReadAsStringAsync());
+            Assert.NotNull(company);
+            Assert.NotNull(company.CEO);
+            Assert.Null(company.CEO.Name);
+        }
+
+        [Fact]
+        public async Task PropertiesAreBound_IfTheyArePocoMetadataMarkedTypes()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await
+                     client.GetAsync("http://localhost/Properties" +
+                     "/GetCompany");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var company = JsonConvert.DeserializeObject<Company>(
+                            await response.Content.ReadAsStringAsync());
+            Assert.NotNull(company);
+
+            // Department property is not null because it was a marker poco.
+            Assert.NotNull(company.Department);
+
+            // beacause no value is provided.
+            Assert.Null(company.Department.Name);
+        }
+
+        [Fact]
+        public async Task PropertiesAreNotBound_ByDefault()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await
+                     client.GetAsync("http://localhost/Properties" +
+                     "/GetCompany");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var company = JsonConvert.DeserializeObject<Company>(
+                            await response.Content.ReadAsStringAsync());
+            Assert.NotNull(company);
+            Assert.Null(company.Employees);
         }
 
         [Theory]

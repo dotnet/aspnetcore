@@ -83,7 +83,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                     parameterName,
                                     binderMetadata);
 
-            return CreateMetadataFromPrototype(parameterInfo.Prototype, modelAccessor);
+            var metadata = CreateMetadataFromPrototype(parameterInfo.Prototype, modelAccessor);
+
+           
+            // If there is no metadata associated with the parameter itself get it from the type. 
+            if (metadata != null && metadata.BinderMetadata == null)
+            {
+                var typeInfo = GetTypeInformation(parameter.ParameterType);
+                metadata.BinderMetadata = typeInfo.Prototype.BinderMetadata;
+            }
+
+            return metadata;
         }
 
         private IEnumerable<ModelMetadata> GetMetadataForPropertiesCore(object container, Type containerType)
@@ -113,6 +123,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (propertyInfo.IsReadOnly)
             {
                 metadata.IsReadOnly = true;
+            }
+
+            // We need to update the property after the prototype creation because otherwise
+            // if the property type is same as the containing type, it would cause infinite recursion.
+            // If there is no metadata associated with the property itself get it from the type. 
+            if (metadata != null && metadata.BinderMetadata == null)
+            {
+                if (propertyInfo.Prototype != null)
+                {
+                    var typeInfo = GetTypeInformation(propertyInfo.Prototype.ModelType);
+                    metadata.BinderMetadata = typeInfo.Prototype.BinderMetadata;
+                }
             }
 
             return metadata;

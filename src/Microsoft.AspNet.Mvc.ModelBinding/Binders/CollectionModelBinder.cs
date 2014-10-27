@@ -47,10 +47,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var rawValueArray = RawValueToObjectArray(rawValue);
             foreach (var rawValueElement in rawValueArray)
             {
-                var innerBindingContext = new ModelBindingContext(bindingContext)
+                var innerModelMetadata = 
+                    bindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(null, typeof(TElement));
+                var innerBindingContext = new ModelBindingContext(bindingContext,
+                                                                  bindingContext.ModelName,
+                                                                  innerModelMetadata)
                 {
-                    ModelMetadata = bindingContext.MetadataProvider.GetMetadataForType(null, typeof(TElement)),
-                    ModelName = bindingContext.ModelName,
                     ValueProvider = new CompositeValueProvider
                     {
                         // our temporary provider goes at the front of the list
@@ -60,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 };
 
                 object boundValue = null;
-                if (await bindingContext.ModelBinder.BindModelAsync(innerBindingContext))
+                if (await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(innerBindingContext))
                 {
                     boundValue = innerBindingContext.Model;
                     bindingContext.ValidationNode.ChildNodes.Add(innerBindingContext.ValidationNode);
@@ -99,18 +101,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             foreach (var indexName in indexNames)
             {
                 var fullChildName = ModelBindingHelper.CreateIndexModelName(bindingContext.ModelName, indexName);
-                var childBindingContext = new ModelBindingContext(bindingContext)
-                {
-                    ModelMetadata = bindingContext.MetadataProvider.GetMetadataForType(null, typeof(TElement)),
-                    ModelName = fullChildName
-                };
+                var childModelMetadata = 
+                    bindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(null, typeof(TElement));
+                var childBindingContext = new ModelBindingContext(bindingContext, fullChildName, childModelMetadata);
 
                 var didBind = false;
                 object boundValue = null;
 
                 var modelType = bindingContext.ModelType;
 
-                if (await bindingContext.ModelBinder.BindModelAsync(childBindingContext))
+                if (await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(childBindingContext))
                 {
                     didBind = true;
                     boundValue = childBindingContext.Model;

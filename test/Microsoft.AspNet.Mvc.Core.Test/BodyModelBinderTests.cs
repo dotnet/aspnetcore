@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
             bindingContext.ModelMetadata.BinderMetadata = Mock.Of<IFormatterBinderMetadata>();
-            var binder = bindingContext.ModelBinder;
+            var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
             var binderResult = await binder.BindModelAsync(bindingContext);
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc
             var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
             bindingContext.ModelMetadata.BinderMetadata = useBody ? Mock.Of<IFormatterBinderMetadata>() :
                                                                   Mock.Of<IBinderMetadata>();
-            var binder = bindingContext.ModelBinder;
+            var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
             var binderResult = await binder.BindModelAsync(bindingContext);
@@ -82,15 +82,20 @@ namespace Microsoft.AspNet.Mvc
         private static ModelBindingContext GetBindingContext(Type modelType, IInputFormatter inputFormatter)
         {
             var metadataProvider = new EmptyModelMetadataProvider();
+            var operationBindingContext = new OperationBindingContext
+            {
+                ModelBinder = GetBodyBinder(inputFormatter, null),
+                MetadataProvider = metadataProvider,
+                HttpContext = new DefaultHttpContext(),
+            };
+
             ModelBindingContext bindingContext = new ModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(null, modelType),
                 ModelName = "someName",
                 ValueProvider = Mock.Of<IValueProvider>(),
-                ModelBinder = GetBodyBinder(inputFormatter, null),
-                MetadataProvider = metadataProvider,
-                HttpContext = new DefaultHttpContext(),
-                ModelState = new ModelStateDictionary()
+                ModelState = new ModelStateDictionary(),
+                OperationBindingContext = operationBindingContext,
             };
 
             return bindingContext;

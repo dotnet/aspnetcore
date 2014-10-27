@@ -11,22 +11,6 @@ namespace Microsoft.AspNet.Mvc.Core
             = new ResourceManager("Microsoft.AspNet.Mvc.Core.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// More than one parameter is bound to the HTTP request's content.
-        /// </summary>
-        internal static string MultipleBodyParametersAreNotAllowed
-        {
-            get { return GetString("MultipleBodyParametersAreNotAllowed"); }
-        }
-
-        /// <summary>
-        /// More than one parameter is bound to the HTTP request's content.
-        /// </summary>
-        internal static string FormatMultipleBodyParametersAreNotAllowed()
-        {
-            return GetString("MultipleBodyParametersAreNotAllowed");
-        }
-
-        /// <summary>
         /// The provided anti-forgery token failed a custom data check.
         /// </summary>
         internal static string AntiForgeryToken_AdditionalDataCheckFailed

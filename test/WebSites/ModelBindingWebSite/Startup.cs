@@ -22,6 +22,7 @@ namespace ModelBindingWebSite
                         .Configure<MvcOptions>(m =>
                         {
                             m.MaxModelValidationErrors = 8;
+                            m.ModelBinders.Insert(0, typeof(TestMetadataAwareBinder));
                         });
             });
 

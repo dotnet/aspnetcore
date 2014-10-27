@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                                           Mock.Of<IModelValidatorProvider>());
             // Act
             var context = DefaultControllerActionArgumentBinder
-                            .GetModelBindingContext(modelMetadata, actionBindingContext);
+                            .GetModelBindingContext(modelMetadata, actionBindingContext, Mock.Of<OperationBindingContext>());
 
             // Assert
             Assert.Equal(expectedFallToEmptyPrefix, context.FallbackToEmptyPrefix);
@@ -106,61 +106,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                                           Mock.Of<IModelValidatorProvider>());
             // Act
             var context = DefaultControllerActionArgumentBinder
-                            .GetModelBindingContext(modelMetadata, actionBindingContext);
+                            .GetModelBindingContext(modelMetadata, actionBindingContext, Mock.Of<OperationBindingContext>());
 
             // Assert
             Assert.Equal(expectedFallToEmptyPrefix, context.FallbackToEmptyPrefix);
             Assert.Equal(expectedModelName, context.ModelName);
-        }
-
-        [Fact]
-        public async Task Parameters_WithMultipleFromBody_Throw()
-        {
-            // Arrange
-            var actionDescriptor = new ControllerActionDescriptor
-            {
-                MethodInfo = typeof(TestController).GetMethod("ActionWithTwoBodyParam"),
-                Parameters = new List<ParameterDescriptor>
-                            {
-                                new ParameterDescriptor
-                                {
-                                    Name = "bodyParam",
-                                    ParameterType = typeof(Person),
-                                },
-                                new ParameterDescriptor
-                                {
-                                    Name = "bodyParam1",
-                                    ParameterType = typeof(Person),
-                                }
-                            }
-            };
-
-            var binder = new Mock<IModelBinder>();
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
-                                                  actionDescriptor);
-            actionContext.Controller = Mock.Of<object>();
-            var bindingContext = new ActionBindingContext(actionContext,
-                                                          metadataProvider,
-                                                          Mock.Of<IModelBinder>(),
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
-
-            var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
-            actionBindingContextProvider.Setup(p => p.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-                                        .Returns(Task.FromResult(bindingContext));
-
-            var invoker = new DefaultControllerActionArgumentBinder(
-                actionBindingContextProvider.Object);
-
-            // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                    () => invoker.GetActionArgumentsAsync(actionContext));
-
-            // Assert
-            Assert.Equal("More than one parameter is bound to the HTTP request's content.",
-                         ex.Message);
         }
 
         [Fact]

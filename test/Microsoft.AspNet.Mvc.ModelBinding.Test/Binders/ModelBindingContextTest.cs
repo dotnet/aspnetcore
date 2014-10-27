@@ -21,11 +21,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ValueProvider = new SimpleHttpValueProvider()
             };
 
+            var newModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(object));
+
             // Act
-            var newBindingContext = new ModelBindingContext(originalBindingContext);
+            var newBindingContext = new ModelBindingContext(originalBindingContext, string.Empty, newModelMetadata);
 
             // Assert
-            Assert.Null(newBindingContext.ModelMetadata);
+            Assert.Same(newModelMetadata, newBindingContext.ModelMetadata);
             Assert.Equal("", newBindingContext.ModelName);
             Assert.Equal(originalBindingContext.ModelState, newBindingContext.ModelState);
             Assert.Equal(originalBindingContext.ValueProvider, newBindingContext.ValueProvider);

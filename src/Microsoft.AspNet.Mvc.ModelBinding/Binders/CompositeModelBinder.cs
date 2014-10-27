@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -79,8 +80,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                                                bindingContext.ModelName);
                 }
 
-                var validationContext = new ModelValidationContext(bindingContext.MetadataProvider,
-                                                                   bindingContext.ValidatorProvider,
+                var validationContext = new ModelValidationContext(bindingContext.OperationBindingContext.MetadataProvider,
+                                                                   bindingContext.OperationBindingContext.ValidatorProvider,
                                                                    bindingContext.ModelState,
                                                                    bindingContext.ModelMetadata,
                                                                    containerMetadata: null);
@@ -88,6 +89,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 newBindingContext.ValidationNode.Validate(validationContext, parentNode: null);
             }
 
+            bindingContext.OperationBindingContext.BodyBindingState = 
+                newBindingContext.OperationBindingContext.BodyBindingState;
             bindingContext.Model = newBindingContext.Model;
             return true;
         }
@@ -128,10 +131,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelName = modelName,
                 ModelState = oldBindingContext.ModelState,
                 ValueProvider = oldBindingContext.ValueProvider,
-                ValidatorProvider = oldBindingContext.ValidatorProvider,
-                MetadataProvider = oldBindingContext.MetadataProvider,
-                ModelBinder = oldBindingContext.ModelBinder,
-                HttpContext = oldBindingContext.HttpContext,
+                OperationBindingContext = oldBindingContext.OperationBindingContext,
                 PropertyFilter = oldBindingContext.PropertyFilter,
             };
 
@@ -141,11 +141,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 newBindingContext.ValidationNode = oldBindingContext.ValidationNode;
             }
 
+            newBindingContext.OperationBindingContext.BodyBindingState = GetBodyBindingState(oldBindingContext);
+
             // look at the value providers and see if they need to be restricted.
             var metadata = oldBindingContext.ModelMetadata.BinderMetadata as IValueProviderMetadata;
             if (metadata != null)
             {
-                var valueProvider = oldBindingContext.ValueProvider as IMetadataAwareValueProvider;
+                // ValueProvider property might contain a filtered list of value providers. 
+                // While deciding to bind a particular property which is annotated with a IValueProviderMetadata,
+                // instead of refiltering an already filtered list, we need to filter value providers from a global list 
+                // of all value providers. This is so that every artifact that is explicitly marked using an
+                // IValueProviderMetadata can restrict model binding to only use value providers which support this 
+                // IValueProviderMetadata.
+                var valueProvider = oldBindingContext.OperationBindingContext.ValueProvider as IMetadataAwareValueProvider;
                 if (valueProvider != null)
                 {
                     newBindingContext.ValueProvider = valueProvider.Filter(metadata);
@@ -153,6 +161,37 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             return newBindingContext;
+        }
+
+        private static BodyBindingState GetBodyBindingState(ModelBindingContext oldBindingContext)
+        {
+            var binderMetadata = oldBindingContext.ModelMetadata.BinderMetadata;
+            var newIsFormatterBasedMetadataFound = binderMetadata is IFormatterBinderMetadata;
+            var newIsFormBasedMetadataFound = binderMetadata is IFormDataValueProviderMetadata;
+            var currentModelNeedsToReadBody = newIsFormatterBasedMetadataFound || newIsFormBasedMetadataFound;
+            var oldState = oldBindingContext.OperationBindingContext.BodyBindingState;
+
+            // We need to throw if there are multiple models which can cause body to be read multiple times. 
+            // Reading form data multiple times is ok since we cache form data. For the models marked to read using
+            // formatters, multiple reads are not allowed.
+            if (oldState == BodyBindingState.FormatterBased && currentModelNeedsToReadBody ||
+                oldState == BodyBindingState.FormBased && newIsFormatterBasedMetadataFound)
+            {
+                throw new InvalidOperationException(Resources.MultipleBodyParametersOrPropertiesAreNotAllowed);
+            }
+            
+            var state = oldBindingContext.OperationBindingContext.BodyBindingState;
+            if (newIsFormatterBasedMetadataFound)
+            {
+                state = BodyBindingState.FormatterBased;
+            }
+            else if (newIsFormBasedMetadataFound && oldState != BodyBindingState.FormatterBased)
+            {
+                // Only update the model binding state if we have not discovered formatter based state already. 
+                state = BodyBindingState.FormBased;
+            }
+
+            return state;
         }
     }
 }

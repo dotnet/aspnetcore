@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (bindingContext.ModelType == typeof(CancellationToken))
             {
-                bindingContext.Model = bindingContext.HttpContext.RequestAborted;
+                bindingContext.Model = bindingContext.OperationBindingContext.HttpContext.RequestAborted;
                 return Task.FromResult(true);
             }
 

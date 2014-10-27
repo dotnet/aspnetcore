@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             = new ResourceManager("Microsoft.AspNet.Mvc.ModelBinding.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// More than one parameter and/or property is bound to the HTTP request's content.
+        /// </summary>
+        internal static string MultipleBodyParametersOrPropertiesAreNotAllowed
+        {
+            get { return GetString("MultipleBodyParametersOrPropertiesAreNotAllowed"); }
+        }
+
+        /// <summary>
+        /// More than one parameter and/or property is bound to the HTTP request's content.
+        /// </summary>
+        internal static string FormatMultipleBodyParametersOrPropertiesAreNotAllowed()
+        {
+            return GetString("MultipleBodyParametersOrPropertiesAreNotAllowed");
+        }
+
+        /// <summary>
         /// Value cannot be null or empty.
         /// </summary>
         internal static string ArgumentCannotBeNullOrEmpty

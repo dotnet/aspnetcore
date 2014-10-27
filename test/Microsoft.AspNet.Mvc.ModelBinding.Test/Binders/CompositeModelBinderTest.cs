@@ -31,7 +31,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     { "someName", "dummyValue" }
                 },
-                ValidatorProvider = GetValidatorProvider()
+                OperationBindingContext = new OperationBindingContext
+                {
+                    ValidatorProvider = GetValidatorProvider()
+                }
             };
 
             var mockIntBinder = new Mock<IModelBinder>();
@@ -78,7 +81,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     { "someOtherName", "dummyValue" }
                 },
-                ValidatorProvider = GetValidatorProvider()
+                OperationBindingContext = new OperationBindingContext
+                {
+                    ValidatorProvider = GetValidatorProvider()
+                }
             };
 
             var mockIntBinder = new Mock<IModelBinder>();
@@ -151,7 +157,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 FallbackToEmptyPrefix = true,
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(int)),
-                ModelState = new ModelStateDictionary()
+                ModelState = new ModelStateDictionary(),
+                OperationBindingContext = Mock.Of<OperationBindingContext>(),
             };
 
             // Act
@@ -306,13 +313,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var bindingContext = new ModelBindingContext
             {
-                ModelBinder = binder,
                 FallbackToEmptyPrefix = true,
-                MetadataProvider = metadataProvider,
                 ModelMetadata = metadataProvider.GetMetadataForType(null, type),
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,
-                ValidatorProvider = validatorProvider
+                OperationBindingContext = new OperationBindingContext
+                {
+                    MetadataProvider = metadataProvider,
+                    ModelBinder = binder,
+                    ValidatorProvider = validatorProvider
+                }
             };
             return bindingContext;
         }

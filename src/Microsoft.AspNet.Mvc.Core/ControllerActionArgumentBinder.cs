@@ -52,38 +52,39 @@ namespace Microsoft.AspNet.Mvc
                 }
             }
 
-            var bodyBoundParameterCount = parameterMetadata.Count(
-                                modelMetadata => modelMetadata.BinderMetadata is IFormatterBinderMetadata);
-            if (bodyBoundParameterCount > 1)
-            {
-                throw new InvalidOperationException(Resources.MultipleBodyParametersAreNotAllowed);
-            }
-
             var actionArguments = new Dictionary<string, object>(StringComparer.Ordinal);
-            foreach (var parameter in parameterMetadata)
-            {
-                await PopulateArgumentAsync(actionBindingContext, actionArguments, parameter);
-            }
-
+            await PopulateArgumentAsync(actionBindingContext, actionArguments, parameterMetadata);
             return actionArguments;
         }
 
         private async Task PopulateArgumentAsync(
             ActionBindingContext actionBindingContext,
             IDictionary<string, object> arguments,
-            ModelMetadata modelMetadata)
+            IEnumerable<ModelMetadata> parameterMetadata)
         {
-
-            var parameterType = modelMetadata.ModelType;
-            var modelBindingContext = GetModelBindingContext(modelMetadata, actionBindingContext);
-
-            if (await actionBindingContext.ModelBinder.BindModelAsync(modelBindingContext))
+            var operationBindingContext = new OperationBindingContext
             {
-                arguments[modelMetadata.PropertyName] = modelBindingContext.Model;
+                ModelBinder = actionBindingContext.ModelBinder,
+                ValidatorProvider = actionBindingContext.ValidatorProvider,
+                MetadataProvider = actionBindingContext.MetadataProvider,
+                HttpContext = actionBindingContext.ActionContext.HttpContext,
+                ValueProvider = actionBindingContext.ValueProvider,
+            };
+
+            foreach (var parameter in parameterMetadata)
+            {
+                var parameterType = parameter.ModelType;
+                var modelBindingContext = GetModelBindingContext(parameter, actionBindingContext, operationBindingContext);
+                if (await actionBindingContext.ModelBinder.BindModelAsync(modelBindingContext))
+                {
+                    arguments[parameter.PropertyName] = modelBindingContext.Model;
+                }
             }
         }
 
-        internal static ModelBindingContext GetModelBindingContext(ModelMetadata modelMetadata, ActionBindingContext actionBindingContext)
+        internal static ModelBindingContext GetModelBindingContext(ModelMetadata modelMetadata, 
+                                                                   ActionBindingContext actionBindingContext,
+                                                                   OperationBindingContext operationBindingContext)
         {
             Predicate<string> propertyFilter =
                 propertyName => BindAttribute.IsPropertyAllowed(propertyName,
@@ -95,14 +96,11 @@ namespace Microsoft.AspNet.Mvc
                 ModelName = modelMetadata.ModelName ?? modelMetadata.PropertyName,
                 ModelMetadata = modelMetadata,
                 ModelState = actionBindingContext.ActionContext.ModelState,
-                ModelBinder = actionBindingContext.ModelBinder,
-                ValidatorProvider = actionBindingContext.ValidatorProvider,
-                MetadataProvider = actionBindingContext.MetadataProvider,
-                HttpContext = actionBindingContext.ActionContext.HttpContext,
                 PropertyFilter = propertyFilter,
                 // Fallback only if there is no explicit model name set.
                 FallbackToEmptyPrefix = modelMetadata.ModelName == null,
                 ValueProvider = actionBindingContext.ValueProvider,
+                OperationBindingContext = operationBindingContext,
             };
 
             return modelBindingContext;

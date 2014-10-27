@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         {
             if (bindingContext.ModelType == typeof(HttpRequestMessage))
             {
-                bindingContext.Model = bindingContext.HttpContext.GetHttpRequestMessage();
+                bindingContext.Model = bindingContext.OperationBindingContext.HttpContext.GetHttpRequestMessage();
                 return Task.FromResult(true);
             }
 

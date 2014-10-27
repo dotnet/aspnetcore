@@ -91,8 +91,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = metadataProvider.GetMetadataForType(null, typeof(int[])),
                 ModelName = "someName",
                 ValueProvider = valueProvider,
-                ModelBinder = CreateIntBinder(),
-                MetadataProvider = metadataProvider
+                OperationBindingContext = new OperationBindingContext
+                {
+                    ModelBinder = CreateIntBinder(),
+                    MetadataProvider = metadataProvider
+                },
             };
             return bindingContext;
         }

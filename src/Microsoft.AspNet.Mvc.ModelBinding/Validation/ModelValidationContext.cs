@@ -9,8 +9,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         public ModelValidationContext([NotNull] ModelBindingContext bindingContext,
                                       [NotNull] ModelMetadata metadata)
-            : this(bindingContext.MetadataProvider,
-                   bindingContext.ValidatorProvider,
+            : this(bindingContext.OperationBindingContext.MetadataProvider,
+                   bindingContext.OperationBindingContext.ValidatorProvider,
                    bindingContext.ModelState,
                    metadata,
                    bindingContext.ModelMetadata)

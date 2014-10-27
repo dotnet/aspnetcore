@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.True(bound);
-            Assert.Equal(bindingContext.HttpContext.RequestAborted, bindingContext.Model);
+            Assert.Equal(bindingContext.OperationBindingContext.HttpContext.RequestAborted, bindingContext.Model);
         }
 
         [Theory]
@@ -52,9 +52,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = metadataProvider.GetMetadataForType(null, modelType),
                 ModelName = "someName",
                 ValueProvider = new SimpleHttpValueProvider(),
-                ModelBinder = new CancellationTokenModelBinder(),
-                MetadataProvider = metadataProvider,
-                HttpContext = new DefaultHttpContext(),
+                OperationBindingContext = new OperationBindingContext
+                {
+                    ModelBinder = new CancellationTokenModelBinder(),
+                    MetadataProvider = metadataProvider,
+                    HttpContext = new DefaultHttpContext(),
+                }
             };
 
             return bindingContext;

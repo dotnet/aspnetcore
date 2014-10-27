@@ -30,6 +30,10 @@ namespace FiltersWebSite
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
+            if (context.ActionArguments["fromGlobalActionFilter"] == null)
+            {
+                context.ActionArguments["fromGlobalActionFilter"] = new List<ContentResult>();
+            }
             (context.ActionArguments["fromGlobalActionFilter"] as List<ContentResult>)
                 .Add(Helpers.GetContentResult(context.Result, "Controller override - OnActionExecuting"));
         }

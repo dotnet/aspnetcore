@@ -28,14 +28,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         internal async Task<BindResult<TModel>> TryBindStrongModel<TModel>(ModelBindingContext parentBindingContext,
                                                                           string propertyName)
         {
-            var propertyBindingContext = new ModelBindingContext(parentBindingContext)
-            {
-                ModelMetadata = parentBindingContext.MetadataProvider.GetMetadataForType(modelAccessor: null,
-                                                                                        modelType: typeof(TModel)),
-                ModelName = ModelBindingHelper.CreatePropertyModelName(parentBindingContext.ModelName, propertyName)
-            };
+            var propertyModelMetadata = 
+                parentBindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(modelAccessor: null,
+                                                                                            modelType: typeof(TModel));
+            var propertyModelName = 
+                ModelBindingHelper.CreatePropertyModelName(parentBindingContext.ModelName, propertyName);
+            var propertyBindingContext = 
+                new ModelBindingContext(parentBindingContext, propertyModelName, propertyModelMetadata);
 
-            if (await propertyBindingContext.ModelBinder.BindModelAsync(propertyBindingContext))
+            if (await propertyBindingContext.OperationBindingContext.ModelBinder.BindModelAsync(propertyBindingContext))
             {
                 var untypedModel = propertyBindingContext.Model;
                 var model = ModelBindingHelper.CastOrDefault<TModel>(untypedModel);

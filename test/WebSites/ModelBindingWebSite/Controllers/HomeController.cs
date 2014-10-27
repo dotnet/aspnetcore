@@ -49,6 +49,26 @@ namespace ModelBindingWebSite.Controllers
             return person;
         }
 
+        public Customer GetCustomer(int id)
+        {
+            var customer = CreateCustomer(id);
+
+            // should update customer.Department from body.
+            TryUpdateModelAsync(customer);
+
+            return customer;
+        }
+
+        private Customer CreateCustomer(int id)
+        {
+            return new Customer()
+            {
+                Id = id,
+                Name = "dummy",
+                Age = 25,
+            };
+        }
+
         private Dictionary<string, string> CreateValidationDictionary()
         {
             var result = new Dictionary<string, string>();

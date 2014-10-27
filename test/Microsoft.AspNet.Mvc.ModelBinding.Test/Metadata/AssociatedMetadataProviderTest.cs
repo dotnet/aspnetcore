@@ -95,6 +95,52 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        [Fact]
+        public void GetMetadataForProperty_WithNoBinderMetadata_GetsItFromType()
+        {
+            // Arrange
+            var provider = new DataAnnotationsModelMetadataProvider();
+
+            // Act
+            var propertyMetadata = provider.GetMetadataForProperty(null, typeof(Person), nameof(Person.Parent));
+
+            // Assert
+            Assert.NotNull(propertyMetadata.BinderMetadata);
+            Assert.IsType<TestBinderMetadataAttribute>(propertyMetadata.BinderMetadata);
+        }
+
+#if ASPNET50
+        [Fact]
+        public void GetMetadataForParameter_WithNoBinderMetadata_GetsItFromType()
+        {
+            // Arrange
+            var provider = new DataAnnotationsModelMetadataProvider();
+
+            // Act
+            var parameterMetadata = provider.GetMetadataForParameter(null, 
+                                                                    typeof(Person).GetMethod("Update"),
+                                                                    "person",
+                                                                    null);
+
+            // Assert
+            Assert.NotNull(parameterMetadata.BinderMetadata);
+            Assert.IsType<TestBinderMetadataAttribute>(parameterMetadata.BinderMetadata);
+        }
+#endif
+        public class TestBinderMetadataAttribute : Attribute, IBinderMetadata
+        {
+        }
+
+        [TestBinderMetadata]
+        public class Person
+        {
+            public Person Parent { get; set; }
+
+            public void Update(Person person)
+            {
+            }
+        }
+
         // GetMetadataForProperty
 
         [Fact]

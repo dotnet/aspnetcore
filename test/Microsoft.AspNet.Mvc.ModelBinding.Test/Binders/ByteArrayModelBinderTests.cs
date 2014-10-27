@@ -123,7 +123,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = metadataProvider.GetMetadataForType(null, modelType),
                 ModelName = "foo",
                 ValueProvider = valueProvider,
-                MetadataProvider = metadataProvider
+                OperationBindingContext  = new OperationBindingContext
+                {
+                    MetadataProvider = metadataProvider
+                }
             };
             return bindingContext;
         }

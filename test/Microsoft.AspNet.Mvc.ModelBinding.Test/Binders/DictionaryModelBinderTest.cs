@@ -25,8 +25,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     { "someName[0]", new KeyValuePair<int, string>(42, "forty-two") },
                     { "someName[1]", new KeyValuePair<int, string>(84, "eighty-four") }
                 },
-                ModelBinder = CreateKvpBinder(),
-                MetadataProvider = metadataProvider
+                OperationBindingContext = new OperationBindingContext
+                {
+                    ModelBinder = CreateKvpBinder(),
+                    MetadataProvider = metadataProvider
+                }
             };
             var binder = new DictionaryModelBinder<int, string>();
 
