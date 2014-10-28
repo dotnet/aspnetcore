@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Routing
                     }
                 }
 
-                if (_logger.IsEnabled(TraceType.Information))
+                if (_logger.IsEnabled(TraceType.Verbose))
                 {
                     _logger.WriteValues(new RouteCollectionRouteAsyncValues()
                     {

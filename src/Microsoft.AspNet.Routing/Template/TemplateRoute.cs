@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Routing.Template
 
                 if (values == null)
                 {
-                    if (_logger.IsEnabled(TraceType.Information))
+                    if (_logger.IsEnabled(TraceType.Verbose))
                     {
                         _logger.WriteValues(CreateRouteAsyncValues(
                             requestPath,
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Routing.Template
                             context.RouteData.DataTokens = _dataTokens;
                             await _target.RouteAsync(context);
 
-                            if (_logger.IsEnabled(TraceType.Information))
+                            if (_logger.IsEnabled(TraceType.Verbose))
                             {
                                 _logger.WriteValues(CreateRouteAsyncValues(
                                     requestPath,
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Routing.Template
                         }
                         else
                         {
-                            if (_logger.IsEnabled(TraceType.Information))
+                            if (_logger.IsEnabled(TraceType.Verbose))
                             {
                                 _logger.WriteValues(CreateRouteAsyncValues(
                                     requestPath,

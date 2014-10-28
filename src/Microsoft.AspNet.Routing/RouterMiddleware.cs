@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Builder
 
                     await Router.RouteAsync(context);
 
-                    if (_logger.IsEnabled(TraceType.Information))
+                    if (_logger.IsEnabled(TraceType.Verbose))
                     {
                         _logger.WriteValues(new RouterMiddlewareInvokeValues() { Handled = context.IsHandled });
                     }
