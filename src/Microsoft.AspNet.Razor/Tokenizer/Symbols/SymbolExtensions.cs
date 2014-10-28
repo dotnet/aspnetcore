@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
         /// <returns>The first <see cref="HtmlSymbol"/> of type <paramref name="type"/>.</returns>
         public static HtmlSymbol FirstHtmlSymbolAs(this IEnumerable<ISymbol> symbols, HtmlSymbolType type)
         {
-            return symbols.OfType<HtmlSymbol>().FirstOrDefault(sym => sym.Type == type);
+            return symbols.OfType<HtmlSymbol>().FirstOrDefault(sym => (type & sym.Type) == sym.Type);
         }
     }
 }

@@ -56,8 +56,10 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                         // Get tag name of the current block (doesn't matter if it's an end or start tag)
                         var tagName = GetTagName(childBlock);
 
+                        // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
                         if (tagName == null)
                         {
+                            _currentBlock.Children.Add(child);
                             continue;
                         }
 
@@ -224,9 +226,14 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             }
 
             var childSpan = (Span)child;
-            var textSymbol = childSpan.Symbols.FirstHtmlSymbolAs(HtmlSymbolType.Text);
+            var textSymbol = childSpan.Symbols.FirstHtmlSymbolAs(HtmlSymbolType.WhiteSpace | HtmlSymbolType.Text);
 
-            return textSymbol != null ? textSymbol.Content : null;
+            if (textSymbol == null)
+            {
+                return null;
+            }
+
+            return textSymbol.Type == HtmlSymbolType.WhiteSpace ? null :  textSymbol.Content;
         }
 
         private static bool IsSelfClosing(Block beginTagBlock)

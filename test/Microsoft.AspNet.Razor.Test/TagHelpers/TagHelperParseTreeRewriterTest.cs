@@ -92,6 +92,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                 };
             }
         }
+
         [Theory]
         [MemberData(nameof(IncompleteHelperBlockData))]
         public void TagHelperParseTreeRewriter_CreatesErrorForIncompleteTagHelper(
@@ -100,6 +101,128 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             RazorError expectedError)
         {
             RunParseTreeRewriterTest(documentContent, expectedOutput, new[] { expectedError }, "strong", "p");
+        }
+
+        public static TheoryData<string, MarkupBlock> InvalidHtmlBlockData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+                var dateTimeNow = new ExpressionBlock(
+                    factory.CodeTransition(),
+                        factory.Code("DateTime.Now")
+                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                            .Accepts(AcceptedCharacters.NonWhiteSpace));
+
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        "<<<p>>></p>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<"),
+                            blockFactory.MarkupTagBlock("<"),
+                            new MarkupTagHelperBlock("p",
+                                factory.Markup(">>")))
+                    },
+                    {
+                        "<<p />",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<"),
+                            new MarkupTagHelperBlock("p"))
+                    },
+                    {
+                        "< p />",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("< p />"))
+                    },
+                    {
+                        "<input <p />",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<input "),
+                            new MarkupTagHelperBlock("p"))
+                    },
+                    {
+                        "< class=\"foo\" <p />",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<"),
+                                new MarkupBlock(
+                                    new AttributeBlockCodeGenerator(
+                                        name: "class",
+                                        prefix: new LocationTagged<string>(" class=\"", 1, 0, 1),
+                                        suffix: new LocationTagged<string>("\"", 12, 0, 12)),
+                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                    factory.Markup("foo").With(new LiteralAttributeCodeGenerator(
+                                        prefix: new LocationTagged<string>(string.Empty, 9, 0, 9),
+                                        value: new LocationTagged<string>("foo", 9, 0, 9))),
+                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                factory.Markup(" ")),
+                            new MarkupTagHelperBlock("p"))
+                    },
+                    {
+                        "</<<p>/></p>>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("</"),
+                            blockFactory.MarkupTagBlock("<"),
+                            new MarkupTagHelperBlock("p",
+                                factory.Markup("/>")),
+                            factory.Markup(">"))
+                    },
+                    {
+                        "</<<p>/><strong></p>>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("</"),
+                            blockFactory.MarkupTagBlock("<"),
+                            new MarkupTagHelperBlock("p",
+                                factory.Markup("/>"),
+                                blockFactory.MarkupTagBlock("<strong>")),
+                            factory.Markup(">"))
+                    },
+                    {
+                        "</<<p>@DateTime.Now/><strong></p>>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("</"),
+                            blockFactory.MarkupTagBlock("<"),
+                            new MarkupTagHelperBlock("p",
+                                dateTimeNow,
+                                factory.Markup("/>"),
+                                blockFactory.MarkupTagBlock("<strong>")),
+                            factory.Markup(">"))
+                    },
+                    {
+                        "</  /<  ><p>@DateTime.Now / ><strong></p></        >",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("</  "),
+                            factory.Markup("/"),
+                            blockFactory.MarkupTagBlock("<  >"),
+                            new MarkupTagHelperBlock("p",
+                                dateTimeNow,
+                                factory.Markup(" / >"),
+                                blockFactory.MarkupTagBlock("<strong>")),
+                            blockFactory.MarkupTagBlock("</        >"))
+                    },
+                    {
+                        "<p>< @DateTime.Now ></ @DateTime.Now ></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagBlock(
+                                    factory.Markup("< "),
+                                    dateTimeNow,
+                                    factory.Markup(" >")),
+                                blockFactory.MarkupTagBlock("</ "),
+                                dateTimeNow,
+                                factory.Markup(" >")))
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidHtmlBlockData))]
+        public void TagHelperParseTreeRewriter_AllowsInvalidHtml(string documentContent, MarkupBlock expectedOutput)
+        {
+            RunParseTreeRewriterTest(documentContent, expectedOutput, "p");
         }
 
         public static IEnumerable<object[]> TextTagsBlockData
