@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Logging
         public static void WriteValues([NotNull] this ILogger logger, object values)
         {
             logger.Write(
-                eventType: TraceType.Information,
+                eventType: TraceType.Verbose,
                 eventId: 0,
                 state: values,
                 exception: null,
