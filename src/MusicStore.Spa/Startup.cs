@@ -3,6 +3,8 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.Cookies;
@@ -11,6 +13,7 @@ using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
+using MusicStore.Spa.Infrastructure;
 
 namespace MusicStore.Spa
 {
@@ -36,6 +39,11 @@ namespace MusicStore.Spa
             // Add MVC services to the service container
             services.AddMvc();
 
+            services.Configure<MvcOptions>(options =>
+            {
+                options.ModelValidatorProviders.Add(typeof(BuddyValidatorProvider));
+            });
+
             // Add EF services to the service container
             services.AddEntityFramework()
                 .AddSqlServer()
@@ -48,7 +56,7 @@ namespace MusicStore.Spa
             services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(Configuration);
 
             // Add application services to the service container
-            services.AddTransient(typeof(IHtmlHelper<>), typeof(AngularHtmlHelper<>));
+            //services.AddTransient<IModelMetadataProvider, BuddyModelMetadataProvider>();
         }
 
         public void Configure(IApplicationBuilder app)

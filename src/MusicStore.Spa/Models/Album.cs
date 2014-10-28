@@ -20,6 +20,7 @@ namespace MusicStore.Models
 
         [Required]
         [StringLength(160, MinimumLength = 2)]
+        [ForcedModelError("fail")]
         public string Title { get; set; }
 
         [Required]

@@ -106,6 +106,8 @@ module MusicStore.Admin.Catalog {
 
                         // Reload the view with the new album ID
                         this._location.path("/albums/" + albumId + "/edit").replace();
+
+                        // TODO: Should we reload the data from the server?
                     } else {
                         this.alert = alert;
                         this.disabled = false;

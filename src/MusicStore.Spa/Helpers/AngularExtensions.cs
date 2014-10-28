@@ -39,14 +39,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlString ngTextBoxFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, IDictionary<string, object> htmlAttributes)
         {
-            var helper = html as AngularHtmlHelper<TModel>;
-            if (helper == null)
-            {
-                throw new InvalidOperationException("You need to configure the services container to return AngularHtmlHelper<T> for IHtmlHelper<T>.");
-            }
-
             var expressionText = ExpressionHelper.GetExpressionText(expression);
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, helper.ViewData, helper.ModelMetadataProvider);
+            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, html.ViewData, html.MetadataProvider);
             var ngAttributes = new Dictionary<string, object>();
 
             ngAttributes["type"] = "text";
@@ -92,9 +86,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             // Add attributes for Angular validation
-            //var clientValidators = metadata.GetValidators(html.ViewContext.Controller.ControllerContext)
-            //                               .SelectMany(v => v.GetClientValidationRules());
-            var clientValidators = helper.GetClientValidators(null, metadata);
+            var clientValidators = html.GetClientValidationRules(metadata, null);
 
             foreach (var validator in clientValidators)
             {
@@ -222,15 +214,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlString ngDropDownListFor<TModel, TProperty, TDisplayProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> propertyExpression, Expression<Func<TModel, TDisplayProperty>> displayExpression, string source, string nullOption, IDictionary<string, object> htmlAttributes)
         {
-            var helper = html as AngularHtmlHelper<TModel>;
-            if (helper == null)
-            {
-                throw new InvalidOperationException("You need to configure the services container to return AngularHtmlHelper<T> for IHtmlHelper<T>.");
-            }
-
             var propertyExpressionText = ExpressionHelper.GetExpressionText(propertyExpression);
             var displayExpressionText = ExpressionHelper.GetExpressionText(displayExpression);
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression(propertyExpression, helper.ViewData, helper.ModelMetadataProvider);
+            var metadata = ExpressionMetadataProvider.FromLambdaExpression(propertyExpression, html.ViewData, html.MetadataProvider);
             var tag = new TagBuilder("select");
 
             var valueFieldName = html.ViewData.TemplateInfo.GetFullHtmlFieldName(propertyExpressionText);
@@ -255,7 +241,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 tag.InnerHtml = nullOptionTag.ToString();
             }
 
-            var clientValidators = helper.GetClientValidators(null, metadata);
+            var clientValidators = html.GetClientValidationRules(metadata, null);
             var isRequired = clientValidators.SingleOrDefault(cv => string.Equals(cv.ValidationType, "required", StringComparison.OrdinalIgnoreCase)) != null;
             if (isRequired)
             {
@@ -279,19 +265,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlString ngValidationMessageFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, string formName, IDictionary<string, object> htmlAttributes)
         {
-            var helper = html as AngularHtmlHelper<TModel>;
-            if (helper == null)
-            {
-                throw new InvalidOperationException("You need to configure the services container to return AngularHtmlHelper<T> for IHtmlHelper<T>.");
-            }
-
             var expressionText = ExpressionHelper.GetExpressionText(expression);
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, html.ViewData, helper.ModelMetadataProvider);
+            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, html.ViewData, html.MetadataProvider);
             var modelName = html.ViewData.TemplateInfo.GetFullHtmlFieldName(expressionText);
 
             //var clientValidators = metadata.GetValidators(html.ViewContext.Controller.ControllerContext)
             //                               .SelectMany(v => v.GetClientValidationRules());
-            var clientValidators = helper.GetClientValidators(null, metadata);
+            var clientValidators = html.GetClientValidationRules(metadata, null);
             var tags = new List<TagBuilder>();
 
             // Get validation messages from data type
@@ -334,14 +314,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static string ngValidationClassFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, string formName, string className)
         {
-            var helper = html as AngularHtmlHelper<TModel>;
-            if (helper == null)
-            {
-                throw new InvalidOperationException("You need to configure the services container to return AngularHtmlHelper<T> for IHtmlHelper<T>.");
-            }
-
             var expressionText = ExpressionHelper.GetExpressionText(expression);
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, html.ViewData, helper.ModelMetadataProvider);
+            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, html.ViewData, html.MetadataProvider);
             var modelName = html.ViewData.TemplateInfo.GetFullHtmlFieldName(expressionText);
             var ngClassFormat = "{{ '{0}' : ({1}.submitAttempted || {1}.{2}.$dirty || {1}.{2}.visited) && {1}.{2}.$invalid }}";
 

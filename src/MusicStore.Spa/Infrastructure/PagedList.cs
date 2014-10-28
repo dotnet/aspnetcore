@@ -65,8 +65,15 @@ namespace MusicStore.Infrastructure
             return new PagedList<T>(data, pagingConfig.Page, pagingConfig.PageSize, query.Count());
         }
 
-        public static async Task<IPagedList<TModel>> ToPagedListAsync<TModel, TProperty>(this IQueryable<TModel> query, int page, int pageSize, string sortExpression, Expression<Func<TModel, TProperty>> defaultSortExpression, SortDirection defaultSortDirection = SortDirection.Ascending)
+        public static Task<IPagedList<TModel>> ToPagedListAsync<TModel, TProperty>(this IQueryable<TModel> query, int page, int pageSize, string sortExpression, Expression<Func<TModel, TProperty>> defaultSortExpression, SortDirection defaultSortDirection = SortDirection.Ascending)
             where TModel : class
+        {
+            return ToPagedListAsync<TModel, TProperty, TModel>(query, page, pageSize, sortExpression, defaultSortExpression, defaultSortDirection, null);
+        }
+
+        public static async Task<IPagedList<TResult>> ToPagedListAsync<TModel, TProperty, TResult>(this IQueryable<TModel> query, int page, int pageSize, string sortExpression, Expression<Func<TModel, TProperty>> defaultSortExpression, SortDirection defaultSortDirection, Func<TModel, TResult> selector)
+            where TModel : class
+            where TResult : class
         {
             if (query == null)
             {
@@ -99,7 +106,11 @@ namespace MusicStore.Infrastructure
 
             var count = await query.CountAsync();
 
-            return new PagedList<TModel>(data, pagingConfig.Page, pagingConfig.PageSize, count);
+            var resultData = selector != null
+                ? data.Select(selector)
+                : data.Cast<TResult>();
+
+            return new PagedList<TResult>(resultData, pagingConfig.Page, pagingConfig.PageSize, count);
         }
 
         private static int ValidatePagePropertiesAndGetSkipCount(PagingConfig pagingConfig)
