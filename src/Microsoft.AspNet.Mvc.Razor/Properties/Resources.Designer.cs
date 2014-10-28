@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// The layout view '{0}' could not be located.
+        /// The layout view '{0}' could not be located. The following locations were searched:{1}
         /// </summary>
         internal static string LayoutCannotBeLocated
         {
@@ -83,11 +83,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// The layout view '{0}' could not be located.
+        /// The layout view '{0}' could not be located. The following locations were searched:{1}
         /// </summary>
-        internal static string FormatLayoutCannotBeLocated(object p0)
+        internal static string FormatLayoutCannotBeLocated(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("LayoutCannotBeLocated"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("LayoutCannotBeLocated"), p0, p1);
         }
 
         /// <summary>

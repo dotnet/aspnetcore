@@ -4,11 +4,10 @@
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor.Test
+namespace Microsoft.AspNet.Mvc.Razor
 {
     public class RazorViewFactoryTest
     {
-
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -16,15 +15,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var factory = new RazorViewFactory(
-                Mock.Of<IRazorPageFactory>(),
                 Mock.Of<IRazorPageActivator>(),
                 Mock.Of<IViewStartProvider>());
+            var page = Mock.Of<IRazorPage>();
+            var viewEngine = Mock.Of<IRazorViewEngine>();
 
             // Act
-            var view = factory.GetView(Mock.Of<IRazorPage>(), isPartial);
+            var view = factory.GetView(viewEngine, page, isPartial);
 
             // Assert
             var razorView = Assert.IsType<RazorView>(view);
+            Assert.Same(page, razorView.RazorPage);
             Assert.Equal(razorView.IsPartial, isPartial);
         }
 
@@ -33,18 +34,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var factory = new RazorViewFactory(
-                Mock.Of<IRazorPageFactory>(),
                 Mock.Of<IRazorPageActivator>(),
                 Mock.Of<IViewStartProvider>());
 
             var page = Mock.Of<IRazorPage>();
+            var viewEngine = Mock.Of<IRazorViewEngine>();
 
             // Act
-            var view = factory.GetView(page, isPartial: false) as RazorView;
+            var view = factory.GetView(viewEngine, page, isPartial: false);
 
             // Assert
             Assert.NotNull(view);
-            Assert.Same(view.RazorPage, page);
+            var razorView = Assert.IsType<RazorView>(view);
+            Assert.Same(razorView.RazorPage, page);
         }
     }
 }

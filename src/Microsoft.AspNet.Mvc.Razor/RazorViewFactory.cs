@@ -12,29 +12,27 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class RazorViewFactory : IRazorViewFactory
     {
         private readonly IRazorPageActivator _pageActivator;
-        private readonly IRazorPageFactory _pageFactory;
         private readonly IViewStartProvider _viewStartProvider;
 
         /// <summary>
         /// Initializes a new instance of RazorViewFactory
         /// </summary>
-        /// <param name="pageFactory">The page factory used to instantiate layout and _ViewStart pages.</param>
         /// <param name="pageActivator">The <see cref="IRazorPageActivator"/> used to activate pages.</param>
         /// <param name="viewStartProvider">The <see cref="IViewStartProvider"/> used for discovery of _ViewStart
         /// pages</param>
-        public RazorViewFactory(IRazorPageFactory pageFactory,
-                                IRazorPageActivator pageActivator,
+        public RazorViewFactory(IRazorPageActivator pageActivator,
                                 IViewStartProvider viewStartProvider)
         {
-            _pageFactory = pageFactory;
             _pageActivator = pageActivator;
             _viewStartProvider = viewStartProvider;
         }
 
         /// <inheritdoc />
-        public IView GetView([NotNull] IRazorPage page, bool isPartial)
+        public IView GetView([NotNull] IRazorViewEngine viewEngine,
+                             [NotNull] IRazorPage page,
+                             bool isPartial)
         {
-            var razorView = new RazorView(_pageFactory, _pageActivator, _viewStartProvider, page, isPartial);
+            var razorView = new RazorView(viewEngine, _pageActivator, _viewStartProvider, page, isPartial);
             return razorView;
         }
     }

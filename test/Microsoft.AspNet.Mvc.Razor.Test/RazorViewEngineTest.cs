@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
@@ -35,6 +34,33 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 yield return new[] { "/foo/bar" };
                 yield return new[] { "~/foo/bar.txt" };
                 yield return new[] { "/foo/bar.txt" };
+            }
+        }
+
+        public static IEnumerable<object[]> ViewLocationExpanderTestData
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    _controllerTestContext,
+                    new[]
+                    {
+                        "/Views/{1}/{0}.cshtml",
+                        "/Views/Shared/{0}.cshtml"
+                    }
+                };
+
+                yield return new object[]
+                {
+                    _areaTestContext,
+                    new[]
+                    {
+                        "/Areas/{2}/Views/{1}/{0}.cshtml",
+                        "/Areas/{2}/Views/Shared/{0}.cshtml",
+                        "/Views/Shared/{0}.cshtml"
+                    }
+                };
             }
         }
 
@@ -90,11 +116,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var pageFactory = new Mock<IRazorPageFactory>();
             var viewFactory = new Mock<IRazorViewFactory>();
             var page = Mock.Of<IRazorPage>();
+            var view = Mock.Of<IView>();
 
             pageFactory.Setup(p => p.CreateInstance(It.IsAny<string>()))
                        .Returns(Mock.Of<IRazorPage>());
-            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorPage>(), It.IsAny<bool>()))
-                       .Returns(Mock.Of<IView>()).Verifiable();
+            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorViewEngine>(), It.IsAny<IRazorPage>(), true))
+                       .Returns(view)
+                       .Verifiable();
 
             var viewEngine = CreateViewEngine(pageFactory.Object, viewFactory.Object);
             var context = GetActionContext(_controllerTestContext);
@@ -104,8 +132,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Assert
             Assert.True(result.Success);
-            Assert.IsAssignableFrom<IView>(result.View);
-            Assert.Equal("/Views/bar/test-view.cshtml", result.ViewName);
+            Assert.Same(view, result.View);
+            Assert.Equal("test-view", result.ViewName);
             viewFactory.Verify();
         }
 
@@ -238,11 +266,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var pageFactory = new Mock<IRazorPageFactory>();
             var viewFactory = new Mock<IRazorViewFactory>();
             var page = Mock.Of<IRazorPage>();
+            var view = Mock.Of<IView>();
 
             pageFactory.Setup(p => p.CreateInstance(It.IsAny<string>()))
                        .Returns(Mock.Of<IRazorPage>());
-            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorPage>(), It.IsAny<bool>()))
-                       .Returns(Mock.Of<IView>()).Verifiable();
+            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorViewEngine>(), It.IsAny<IRazorPage>(), false))
+                       .Returns(view)
+                       .Verifiable();
 
             var viewEngine = CreateViewEngine(pageFactory.Object, viewFactory.Object);
             var context = GetActionContext(_controllerTestContext);
@@ -252,8 +282,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Assert
             Assert.True(result.Success);
-            Assert.IsAssignableFrom<IView>(result.View);
-            Assert.Equal("/Views/bar/test-view.cshtml", result.ViewName);
+            Assert.Same(view, result.View);
+            Assert.Equal("test-view", result.ViewName);
             viewFactory.Verify();
         }
 
@@ -303,35 +333,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             pageFactory.Verify();
         }
 
-        public static IEnumerable<object[]> FindView_UsesViewLocationExpandersToLocateViewsData
-        {
-            get
-            {
-                yield return new object[]
-                {
-                    _controllerTestContext,
-                    new[]
-                    {
-                        "/Views/{1}/{0}.cshtml",
-                        "/Views/Shared/{0}.cshtml"
-                    }
-                };
-
-                yield return new object[]
-                {
-                    _areaTestContext,
-                    new[]
-                    {
-                        "/Areas/{2}/Views/{1}/{0}.cshtml",
-                        "/Areas/{2}/Views/Shared/{0}.cshtml",
-                        "/Views/Shared/{0}.cshtml"
-                    }
-                };
-            }
-        }
-
         [Theory]
-        [MemberData(nameof(FindView_UsesViewLocationExpandersToLocateViewsData))]
+        [MemberData(nameof(ViewLocationExpanderTestData))]
         public void FindView_UsesViewLocationExpandersToLocateViews(IDictionary<string, object> routeValues,
                                                                     IEnumerable<string> expectedSeeds)
         {
@@ -342,7 +345,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                        .Verifiable();
 
             var viewFactory = new Mock<IRazorViewFactory>();
-            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorPage>(), It.IsAny<bool>()))
+            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorViewEngine>(), It.IsAny<IRazorPage>(), It.IsAny<bool>()))
                        .Returns(Mock.Of<IView>());
 
             var expander1Result = new[] { "some-seed" };
@@ -376,7 +379,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             var viewEngine = CreateViewEngine(pageFactory.Object, viewFactory.Object,
                                  new[] { expander1.Object, expander2.Object });
-            var context = GetActionContext(routeValues, viewFactory.Object);
+            var context = GetActionContext(routeValues);
 
             // Act
             var result = viewEngine.FindView(context, "test-view");
@@ -401,17 +404,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                        .Verifiable();
 
             var viewFactory = new Mock<IRazorViewFactory>();
-            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorPage>(), It.IsAny<bool>()))
+            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorViewEngine>(), It.IsAny<IRazorPage>(), false))
                        .Returns(Mock.Of<IView>());
 
             var cache = GetViewLocationCache();
-            var cacheMock = Mock.Get<IViewLocationCache>(cache);
+            var cacheMock = Mock.Get(cache);
 
             cacheMock.Setup(c => c.Set(It.IsAny<ViewLocationExpanderContext>(), "/Views/Shared/baz.cshtml"))
                      .Verifiable();
 
             var viewEngine = CreateViewEngine(pageFactory.Object, viewFactory.Object, cache: cache);
-            var context = GetActionContext(_controllerTestContext, viewFactory.Object);
+            var context = GetActionContext(_controllerTestContext);
 
             // Act
             var result = viewEngine.FindView(context, "baz");
@@ -432,7 +435,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                        .Verifiable();
 
             var viewFactory = new Mock<IRazorViewFactory>();
-            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorPage>(), It.IsAny<bool>()))
+            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorViewEngine>(), It.IsAny<IRazorPage>(), false))
                        .Returns(Mock.Of<IView>());
 
             var expander = new Mock<IViewLocationExpander>(MockBehavior.Strict);
@@ -472,7 +475,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                        .Verifiable();
 
             var viewFactory = new Mock<IRazorViewFactory>();
-            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorPage>(), It.IsAny<bool>())).Returns(Mock.Of<IView>());
+            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorViewEngine>(), It.IsAny<IRazorPage>(), false))
+                       .Returns(Mock.Of<IView>());
 
             var cacheMock = new Mock<IViewLocationCache>();
             cacheMock.Setup(c => c.Get(It.IsAny<ViewLocationExpanderContext>()))
@@ -491,7 +495,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                                               viewFactory.Object,
                                               expanders: new[] { expander.Object },
                                               cache: cacheMock.Object);
-            var context = GetActionContext(_controllerTestContext, viewFactory.Object);
+            var context = GetActionContext(_controllerTestContext);
 
             // Act
             var result = viewEngine.FindView(context, "baz");
@@ -503,10 +507,97 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             expander.Verify();
         }
 
-        private IViewEngine CreateViewEngine(IRazorPageFactory pageFactory = null,
-                                             IRazorViewFactory viewFactory = null,
-                                             IEnumerable<IViewLocationExpander> expanders = null,
-                                             IViewLocationCache cache = null)
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void FindPage_ThrowsIfNameIsNullOrEmpty(string pageName)
+        {
+            // Arrange
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(() => viewEngine.FindPage(context, pageName),
+                                                      "pageName");
+        }
+
+        [Theory]
+        [MemberData(nameof(ViewLocationExpanderTestData))]
+        public void FindPage_UsesViewLocationExpander_ToExpandPaths(IDictionary<string, object> routeValues,
+                                                                    IEnumerable<string> expectedSeeds)
+        {
+            // Arrange
+            var page = Mock.Of<IRazorPage>();
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance("expanded-path/bar-layout"))
+                       .Returns(page)
+                       .Verifiable();
+
+            var viewFactory = new Mock<IRazorViewFactory>(MockBehavior.Strict);
+
+            var expander = new Mock<IViewLocationExpander>();
+            expander.Setup(e => e.PopulateValues(It.IsAny<ViewLocationExpanderContext>()))
+                    .Callback((ViewLocationExpanderContext c) =>
+                    {
+                        Assert.NotNull(c.ActionContext);
+                        c.Values["expander-key"] = expander.ToString();
+                    })
+                    .Verifiable();
+            expander.Setup(e => e.ExpandViewLocations(It.IsAny<ViewLocationExpanderContext>(),
+                                                      It.IsAny<IEnumerable<string>>()))
+                    .Returns((ViewLocationExpanderContext c, IEnumerable<string> seeds) =>
+                    {
+                        Assert.NotNull(c.ActionContext);
+                        Assert.Equal(expectedSeeds, seeds);
+
+                        Assert.Equal(expander.ToString(), c.Values["expander-key"]);
+
+                        return new[] { "expanded-path/bar-{0}" };
+                    })
+                    .Verifiable();
+
+            var viewEngine = CreateViewEngine(pageFactory.Object, viewFactory.Object,
+                                 new[] { expander.Object });
+            var context = GetActionContext(routeValues);
+
+            // Act
+            var result = viewEngine.FindPage(context, "layout");
+
+            // Assert
+            Assert.Equal("layout", result.Name);
+            Assert.Same(page, result.Page);
+            Assert.Null(result.SearchedLocations);
+            pageFactory.Verify();
+            expander.Verify();
+        }
+
+        [Fact]
+        public void FindPage_ReturnsSearchedLocationsIfPageCannotBeFound()
+        {
+            // Arrange
+            var expected = new[]
+            {
+                "/Views/bar/layout.cshtml",
+                "/Views/Shared/layout.cshtml",
+            };
+            var page = Mock.Of<IRazorPage>();
+
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act
+            var result = viewEngine.FindPage(context, "layout");
+
+            // Assert
+            Assert.Equal("layout", result.Name);
+            Assert.Null(result.Page);
+            Assert.Equal(expected, result.SearchedLocations);
+        }
+
+        private RazorViewEngine CreateViewEngine(IRazorPageFactory pageFactory = null,
+                                                 IRazorViewFactory viewFactory = null,
+                                                 IEnumerable<IViewLocationExpander> expanders = null,
+                                                 IViewLocationCache cache = null)
         {
             pageFactory = pageFactory ?? Mock.Of<IRazorPageFactory>();
             viewFactory = viewFactory ?? Mock.Of<IRazorViewFactory>();
@@ -541,14 +632,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             return cacheMock.Object;
         }
 
-        private static ActionContext GetActionContext(IDictionary<string, object> routeValues,
-                                                      IRazorViewFactory razorViewFactory = null)
+        private static ActionContext GetActionContext(IDictionary<string, object> routeValues)
         {
             var httpContext = new DefaultHttpContext();
-            var serviceProvider = new Mock<IServiceProvider>();
-
-            httpContext.RequestServices = serviceProvider.Object;
-
             var routeData = new RouteData();
             foreach (var kvp in routeValues)
             {

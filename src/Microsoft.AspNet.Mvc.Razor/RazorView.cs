@@ -15,28 +15,28 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class RazorView : IView
     {
-        private readonly IRazorPageFactory _pageFactory;
+        private readonly IRazorViewEngine _viewEngine;
         private readonly IRazorPageActivator _pageActivator;
         private readonly IViewStartProvider _viewStartProvider;
         private IPageExecutionListenerFeature _pageExecutionFeature;
 
         /// <summary>
-        /// Initializes a new instance of RazorView
+        /// Initializes a new instance of <see cref="RazorView"/>
         /// </summary>
-        /// <param name="pageFactory">The page factory used to instantiate layout and _ViewStart pages.</param>
+        /// <param name="viewEngine">The <see cref="IRazorViewEngine"/> used to locate Layout pages.</param>
         /// <param name="pageActivator">The <see cref="IRazorPageActivator"/> used to activate pages.</param>
         /// <param name="viewStartProvider">The <see cref="IViewStartProvider"/> used for discovery of _ViewStart
         /// <param name="razorPage">The <see cref="IRazorPage"/> instance to execute.</param>
         /// <param name="isPartial">Determines if the view is to be executed as a partial.</param>
         /// pages</param>
-        public RazorView(IRazorPageFactory pageFactory,
+        public RazorView(IRazorViewEngine viewEngine,
                          IRazorPageActivator pageActivator,
                          IViewStartProvider viewStartProvider,
                          IRazorPage razorPage,
                          bool isPartial
             )
         {
-            _pageFactory = pageFactory;
+            _viewEngine = viewEngine;
             _pageActivator = pageActivator;
             _viewStartProvider = viewStartProvider;
             RazorPage = razorPage;
@@ -186,12 +186,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     throw new InvalidOperationException(message);
                 }
 
-                var layoutPage = _pageFactory.CreateInstance(previousPage.Layout);
-                if (layoutPage == null)
-                {
-                    var message = Resources.FormatLayoutCannotBeLocated(previousPage.Layout);
-                    throw new InvalidOperationException(message);
-                }
+                var layoutPage = GetLayoutPage(context, previousPage.Layout);
 
                 // Notify the previous page that any writes that are performed on it are part of sections being written
                 // in the layout.
@@ -211,6 +206,20 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // Only copy buffered content to the Output if we're currently buffering.
                 await bodyWriter.CopyToAsync(context.Writer);
             }
+        }
+
+        private IRazorPage GetLayoutPage(ViewContext context, string layoutPath)
+        {
+            var layoutPageResult = _viewEngine.FindPage(context, layoutPath);
+            if (layoutPageResult.Page == null)
+            {
+                var locations = Environment.NewLine +
+                                string.Join(Environment.NewLine, layoutPageResult.SearchedLocations);
+                throw new InvalidOperationException(Resources.FormatLayoutCannotBeLocated(layoutPath, locations));
+            }
+
+            var layoutPage = layoutPageResult.Page;
+            return layoutPage;
         }
     }
 }

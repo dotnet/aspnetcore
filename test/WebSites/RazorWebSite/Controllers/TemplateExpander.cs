@@ -11,5 +11,10 @@ namespace RazorWebSite.Controllers
         {
             return View();
         }
+
+        public ViewResult ViewWithLayout()
+        {
+            return View();
+        }
     }
 }

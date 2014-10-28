@@ -216,6 +216,43 @@ component-content";
             Assert.Equal(expected, body.Trim());
         }
 
+        public static IEnumerable<object[]> RazorViewEngine_UsesExpandersForLayoutsData
+        {
+            get
+            {
+                var expected1 =
+ @"<language-layout>
+View With Layout
+</language-layout>";
+
+                yield return new[] { "gb", expected1 };
+                yield return new[] { "na", expected1 };
+
+                var expected2 =
+ @"<fr-language-layout>
+View With Layout
+</fr-language-layout>";
+                yield return new[] { "fr", expected2 };
+
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RazorViewEngine_UsesExpandersForLayoutsData))]
+        public async Task RazorViewEngine_UsesExpandersForLayouts(string value, string expected)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/TemplateExpander/ViewWithLayout?language-expander-value=" +
+                                                   value);
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
+
         // Inheritance of chunks in _ViewStart is affected by paths being app-relative and not absolute.
         // This change ensures that _ViewStart files correctly inherits directives from parent _ViewStarts
         // which guarantees that paths flow correctly through MvcRazorHost.

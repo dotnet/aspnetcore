@@ -130,7 +130,7 @@
     <value>The {0} returned by '{1}' must be an instance of '{2}'.</value>
   </data>
   <data name="LayoutCannotBeLocated" xml:space="preserve">
-    <value>The layout view '{0}' could not be located.</value>
+    <value>The layout view '{0}' could not be located. The following locations were searched:{1}</value>
   </data>
   <data name="LayoutCannotBeRendered" xml:space="preserve">
     <value>A layout page cannot be rendered after '{0}' has been invoked.</value>
