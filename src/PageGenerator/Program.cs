@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.Generator;
 using Microsoft.Framework.Runtime;
 
 namespace PageGenerator
@@ -76,6 +77,15 @@ namespace PageGenerator
             var codeLang = new CSharpRazorCodeLanguage();
             var host = new RazorEngineHost(codeLang);
             host.DefaultBaseClass = "Microsoft.AspNet.Diagnostics.Views.BaseView";
+            host.GeneratedClassContext = new GeneratedClassContext(
+                executeMethodName: GeneratedClassContext.DefaultExecuteMethodName,
+                writeMethodName: GeneratedClassContext.DefaultWriteMethodName,
+                writeLiteralMethodName: GeneratedClassContext.DefaultWriteLiteralMethodName,
+                writeToMethodName: "WriteTo",
+                writeLiteralToMethodName: "WriteLiteralTo",
+                templateTypeName: "HelperResult",
+                defineSectionMethodName: "DefineSection",
+                generatedTagHelperContext: new GeneratedTagHelperContext());
             var engine = new RazorTemplateEngine(host);
 
             using (var fileStream = File.OpenText(cshtmlFilePath))

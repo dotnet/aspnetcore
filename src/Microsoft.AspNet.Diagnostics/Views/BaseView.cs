@@ -61,367 +61,100 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <param name="value"></param>
         protected void WriteLiteral(string value)
         {
-            Output.Write(value);
+            WriteLiteralTo(Output, value);
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T1"></typeparam>
-        /// <param name="name"></param>
-        /// <param name="leader"></param>
-        /// <param name="trailer"></param>
-        /// <param name="part1"></param>
-        protected void WriteAttribute<T1>(
-            string name,
-            Tuple<string, int> leader,
-            Tuple<string, int> trailer,
-            Tuple<Tuple<string, int>, Tuple<T1, int>, bool> part1)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-            if (leader == null)
-            {
-                throw new ArgumentNullException("leader");
-            }
-            if (trailer == null)
-            {
-                throw new ArgumentNullException("trailer");
-            }
-            if (part1 == null)
-            {
-                throw new ArgumentNullException("part1");
-            }
-            WriteLiteral(leader.Item1);
-            WriteLiteral(part1.Item1.Item1);
-            Write(part1.Item2.Item1);
-            WriteLiteral(trailer.Item1);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T1"></typeparam>
-        /// <typeparam name="T2"></typeparam>
-        /// <param name="name"></param>
-        /// <param name="leader"></param>
-        /// <param name="trailer"></param>
-        /// <param name="part1"></param>
-        /// <param name="part2"></param>
-        protected void WriteAttribute<T1, T2>(
-            string name,
-            Tuple<string, int> leader,
-            Tuple<string, int> trailer,
-            Tuple<Tuple<string, int>, Tuple<T1, int>, bool> part1,
-            Tuple<Tuple<string, int>, Tuple<T2, int>, bool> part2)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-            if (leader == null)
-            {
-                throw new ArgumentNullException("leader");
-            }
-            if (trailer == null)
-            {
-                throw new ArgumentNullException("trailer");
-            }
-            if (part1 == null)
-            {
-                throw new ArgumentNullException("part1");
-            }
-            if (part2 == null)
-            {
-                throw new ArgumentNullException("part2");
-            }
-            WriteLiteral(leader.Item1);
-            WriteLiteral(part1.Item1.Item1);
-            Write(part1.Item2.Item1);
-            WriteLiteral(part2.Item1.Item1);
-            Write(part2.Item2.Item1);
-            WriteLiteral(trailer.Item1);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T1"></typeparam>
-        /// <typeparam name="T2"></typeparam>
-        /// <typeparam name="T3"></typeparam>
-        /// <param name="name"></param>
-        /// <param name="leader"></param>
-        /// <param name="trailer"></param>
-        /// <param name="part1"></param>
-        /// <param name="part2"></param>
-        /// <param name="part3"></param>
-        protected void WriteAttribute<T1, T2, T3>(
-            string name,
-            Tuple<string, int> leader,
-            Tuple<string, int> trailer,
-            Tuple<Tuple<string, int>, Tuple<T1, int>, bool> part1,
-            Tuple<Tuple<string, int>, Tuple<T2, int>, bool> part2,
-            Tuple<Tuple<string, int>, Tuple<T3, int>, bool> part3)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-            if (leader == null)
-            {
-                throw new ArgumentNullException("leader");
-            }
-            if (trailer == null)
-            {
-                throw new ArgumentNullException("trailer");
-            }
-            if (part1 == null)
-            {
-                throw new ArgumentNullException("part1");
-            }
-            if (part2 == null)
-            {
-                throw new ArgumentNullException("part2");
-            }
-            if (part3 == null)
-            {
-                throw new ArgumentNullException("part3");
-            }
-            WriteLiteral(leader.Item1);
-            WriteLiteral(part1.Item1.Item1);
-            Write(part1.Item2.Item1);
-            WriteLiteral(part2.Item1.Item1);
-            Write(part2.Item2.Item1);
-            WriteLiteral(part3.Item1.Item1);
-            Write(part3.Item2.Item1);
-            WriteLiteral(trailer.Item1);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T1"></typeparam>
-        /// <typeparam name="T2"></typeparam>
-        /// <typeparam name="T3"></typeparam>
-        /// <typeparam name="T4"></typeparam>
-        /// <param name="name"></param>
-        /// <param name="leader"></param>
-        /// <param name="trailer"></param>
-        /// <param name="part1"></param>
-        /// <param name="part2"></param>
-        /// <param name="part3"></param>
-        /// <param name="part4"></param>
-        protected void WriteAttribute<T1, T2, T3, T4>(
-            string name,
-            Tuple<string, int> leader,
-            Tuple<string, int> trailer,
-            Tuple<Tuple<string, int>, Tuple<T1, int>, bool> part1,
-            Tuple<Tuple<string, int>, Tuple<T2, int>, bool> part2,
-            Tuple<Tuple<string, int>, Tuple<T3, int>, bool> part3,
-            Tuple<Tuple<string, int>, Tuple<T4, int>, bool> part4)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-            if (leader == null)
-            {
-                throw new ArgumentNullException("leader");
-            }
-            if (trailer == null)
-            {
-                throw new ArgumentNullException("trailer");
-            }
-            if (part1 == null)
-            {
-                throw new ArgumentNullException("part1");
-            }
-            if (part2 == null)
-            {
-                throw new ArgumentNullException("part2");
-            }
-            if (part3 == null)
-            {
-                throw new ArgumentNullException("part3");
-            }
-            if (part4 == null)
-            {
-                throw new ArgumentNullException("part4");
-            }
-            WriteLiteral(leader.Item1);
-            WriteLiteral(part1.Item1.Item1);
-            Write(part1.Item2.Item1);
-            WriteLiteral(part2.Item1.Item1);
-            Write(part2.Item2.Item1);
-            WriteLiteral(part3.Item1.Item1);
-            Write(part3.Item2.Item1);
-            WriteLiteral(part4.Item1.Item1);
-            Write(part4.Item2.Item1);
-            WriteLiteral(trailer.Item1);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T1"></typeparam>
-        /// <typeparam name="T2"></typeparam>
-        /// <typeparam name="T3"></typeparam>
-        /// <typeparam name="T4"></typeparam>
-        /// <typeparam name="T5"></typeparam>
-        /// <param name="name"></param>
-        /// <param name="leader"></param>
-        /// <param name="trailer"></param>
-        /// <param name="part1"></param>
-        /// <param name="part2"></param>
-        /// <param name="part3"></param>
-        /// <param name="part4"></param>
-        /// <param name="part5"></param>
-        protected void WriteAttribute<T1, T2, T3, T4, T5>(
-            string name,
-            Tuple<string, int> leader,
-            Tuple<string, int> trailer,
-            Tuple<Tuple<string, int>, Tuple<T1, int>, bool> part1,
-            Tuple<Tuple<string, int>, Tuple<T2, int>, bool> part2,
-            Tuple<Tuple<string, int>, Tuple<T3, int>, bool> part3,
-            Tuple<Tuple<string, int>, Tuple<T4, int>, bool> part4,
-            Tuple<Tuple<string, int>, Tuple<T5, int>, bool> part5)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-            if (leader == null)
-            {
-                throw new ArgumentNullException("leader");
-            }
-            if (trailer == null)
-            {
-                throw new ArgumentNullException("trailer");
-            }
-            if (part1 == null)
-            {
-                throw new ArgumentNullException("part1");
-            }
-            if (part2 == null)
-            {
-                throw new ArgumentNullException("part2");
-            }
-            if (part3 == null)
-            {
-                throw new ArgumentNullException("part3");
-            }
-            if (part4 == null)
-            {
-                throw new ArgumentNullException("part4");
-            }
-            if (part5 == null)
-            {
-                throw new ArgumentNullException("part5");
-            }            
-            WriteLiteral(leader.Item1);
-            WriteLiteral(part1.Item1.Item1);
-            Write(part1.Item2.Item1);
-            WriteLiteral(part2.Item1.Item1);
-            Write(part2.Item2.Item1);
-            WriteLiteral(part3.Item1.Item1);
-            Write(part3.Item2.Item1);
-            WriteLiteral(part4.Item1.Item1);
-            Write(part4.Item2.Item1);
-            WriteLiteral(part5.Item1.Item1);
-            Write(part5.Item2.Item1);
-            WriteLiteral(trailer.Item1);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T1"></typeparam>
-        /// <typeparam name="T2"></typeparam>
-        /// <typeparam name="T3"></typeparam>
-        /// <typeparam name="T4"></typeparam>
-        /// <typeparam name="T5"></typeparam>
-        /// <typeparam name="T6"></typeparam>
-        /// <param name="name"></param>
-        /// <param name="leader"></param>
-        /// <param name="trailer"></param>
-        /// <param name="part1"></param>
-        /// <param name="part2"></param>
-        /// <param name="part3"></param>
-        /// <param name="part4"></param>
-        /// <param name="part5"></param>
-        /// <param name="part6"></param>
-        protected void WriteAttribute<T1, T2, T3, T4, T5, T6>(
-            string name,
-            Tuple<string, int> leader,
-            Tuple<string, int> trailer,
-            Tuple<Tuple<string, int>, Tuple<T1, int>, bool> part1,
-            Tuple<Tuple<string, int>, Tuple<T2, int>, bool> part2,
-            Tuple<Tuple<string, int>, Tuple<T3, int>, bool> part3,
-            Tuple<Tuple<string, int>, Tuple<T4, int>, bool> part4,
-            Tuple<Tuple<string, int>, Tuple<T5, int>, bool> part5,
-            Tuple<Tuple<string, int>, Tuple<T6, int>, bool> part6)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-            if (leader == null)
-            {
-                throw new ArgumentNullException("leader");
-            }
-            if (trailer == null)
-            {
-                throw new ArgumentNullException("trailer");
-            }
-            if (part1 == null)
-            {
-                throw new ArgumentNullException("part1");
-            }
-            if (part2 == null)
-            {
-                throw new ArgumentNullException("part2");
-            }
-            if (part3 == null)
-            {
-                throw new ArgumentNullException("part3");
-            }
-            if (part4 == null)
-            {
-                throw new ArgumentNullException("part4");
-            }
-            if (part5 == null)
-            {
-                throw new ArgumentNullException("part5");
-            }
-            if (part6 == null)
-            {
-                throw new ArgumentNullException("part6");
-            }
-            WriteLiteral(leader.Item1);
-            WriteLiteral(part1.Item1.Item1);
-            Write(part1.Item2.Item1);
-            WriteLiteral(part2.Item1.Item1);
-            Write(part2.Item2.Item1);
-            WriteLiteral(part3.Item1.Item1);
-            Write(part3.Item2.Item1);
-            WriteLiteral(part4.Item1.Item1);
-            Write(part4.Item2.Item1);
-            WriteLiteral(part5.Item1.Item1);
-            Write(part5.Item2.Item1);
-            WriteLiteral(part6.Item1.Item1);
-            Write(part6.Item2.Item1);
-            WriteLiteral(trailer.Item1);
-        }
-
-        /// <summary>
-        /// Html encode and write
+        /// Write the given value directly to the output
         /// </summary>
         /// <param name="value"></param>
-        private void WriteEncoded(string value)
+        protected void WriteLiteral(object value)
         {
-            Output.Write(WebUtility.HtmlEncode(value));
+            WriteLiteralTo(Output, value);
+        }
+
+        /// <summary>
+        /// Writes the given attribute to the output
+        /// </summary>
+        /// <param name="name">The name of the attribute to write</param>
+        /// <param name="leader">The value and position of the prefix</param>
+        /// <param name="trailer">The value and position of the suffix</param>
+        /// <param name="values">The <see cref="AttributeValue"/>s to write.</param>
+        protected void WriteAttribute(
+            [NotNull] string name,
+            [NotNull] Tuple<string, int> leader,
+            [NotNull] Tuple<string, int> trailer,
+            params AttributeValue[] values)
+        {
+            WriteAttributeTo(
+                Output,
+                name,
+                leader,
+                trailer,
+                values);
+        }
+
+        /// <summary>
+        /// Writes the given attribute to the given writer
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="name">The name of the attribute to write</param>
+        /// <param name="leader">The value and position of the prefix</param>
+        /// <param name="trailer">The value and position of the suffix</param>
+        /// <param name="values">The <see cref="AttributeValue"/>s to write.</param>
+        protected void WriteAttributeTo(
+            [NotNull] TextWriter writer,
+            [NotNull] string name,
+            [NotNull] Tuple<string, int> leader,
+            [NotNull] Tuple<string, int> trailer,
+            params AttributeValue[] values)
+        {
+        	
+            WriteLiteralTo(writer, leader.Item1);
+            foreach (var value in values)
+            {
+                WriteLiteralTo(writer, value.Prefix.Item1);
+
+                // The special cases here are that the value we're writing might already be a string, or that the
+                // value might be a bool. If the value is the bool 'true' we want to write the attribute name
+                // instead of the string 'true'. If the value is the bool 'false' we don't want to write anything.
+                // Otherwise the value is another object (perhaps an HtmlString) and we'll ask it to format itself.
+                string stringValue;
+                if (value.Value.Item1 is bool)
+                {
+                    if ((bool)value.Value.Item1)
+                    {
+                        stringValue = name;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    stringValue = value.Value.Item1 as string;
+                }
+
+                // Call the WriteTo(string) overload when possible
+                if (value.Literal && stringValue != null)
+                {
+                    WriteLiteralTo(writer, stringValue);
+                }
+                else if (value.Literal)
+                {
+                    WriteLiteralTo(writer, value.Value.Item1);
+                }
+                else if (stringValue != null)
+                {
+                    WriteTo(writer, stringValue);
+                }
+                else
+                {
+                    WriteTo(writer, value.Value.Item1);
+                }
+            }
+            WriteLiteralTo(writer, trailer.Item1);
         }
 
         /// <summary>
@@ -430,7 +163,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <param name="value"></param>
         protected void Write(object value)
         {
-            WriteEncoded(Convert.ToString(value, CultureInfo.InvariantCulture));
+            WriteTo(Output, value);
         }
 
         /// <summary>
@@ -439,7 +172,74 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <param name="value"></param>
         protected void Write(string value)
         {
-            WriteEncoded(value);
+            WriteTo(Output, value);
+        }
+
+        /// <summary>
+        /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked
+        /// </summary>
+        /// <param name="result">The <see cref="HelperResult"/> to invoke</param>
+        protected void Write(HelperResult result)
+        {
+            WriteTo(Output, result);
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> to <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="value">The <see cref="object"/> to write.</param>
+        /// <remarks>
+        /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked for <see cref="HelperResult"/> types.
+        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the 
+        /// <paramref name="writer"/>.
+        /// </remarks>
+        protected void WriteTo(TextWriter writer, object value)
+        {
+            if (value != null)
+            {
+                var helperResult = value as HelperResult;
+                if (helperResult != null)
+                {
+                    helperResult.WriteTo(writer);
+                }
+                else
+                {
+                    WriteTo(writer, Convert.ToString(value, CultureInfo.InvariantCulture));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> with HTML encoding to <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="value">The <see cref="string"/> to write.</param>
+        protected void WriteTo(TextWriter writer, string value)
+        {
+            WriteLiteralTo(writer, WebUtility.HtmlEncode(value));
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> without HTML encoding to the <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="value">The <see cref="object"/> to write.</param>
+        protected void WriteLiteralTo(TextWriter writer, object value)
+        {
+            WriteLiteralTo(writer, Convert.ToString(value, CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="string"/> to write.</param>
+        protected void WriteLiteralTo(TextWriter writer, string value)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                writer.Write(value);
+            }
         }
     }
 }
