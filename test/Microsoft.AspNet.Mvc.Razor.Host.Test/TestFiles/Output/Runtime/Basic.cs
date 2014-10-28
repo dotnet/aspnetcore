@@ -27,16 +27,24 @@ namespace Asp
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            BeginContext(0, 4, true);
             WriteLiteral("<div");
+            EndContext();
             WriteAttribute("class", Tuple.Create(" class=\"", 4), Tuple.Create("\"", 17), 
             Tuple.Create(Tuple.Create("", 12), Tuple.Create<System.Object, System.Int32>(logo, 12), false));
+            BeginContext(18, 24, true);
             WriteLiteral(">\r\n    Hello world\r\n    ");
+            EndContext();
+            BeginContext(43, 21, false);
 #line 3 "TestFiles/Input/Basic.cshtml"
 Write(Html.Input("SomeKey"));
 
 #line default
 #line hidden
+            EndContext();
+            BeginContext(64, 8, true);
             WriteLiteral("\r\n</div>");
+            EndContext();
         }
         #pragma warning restore 1998
     }

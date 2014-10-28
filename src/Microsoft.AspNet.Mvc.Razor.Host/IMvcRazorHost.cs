@@ -12,11 +12,6 @@ namespace Microsoft.AspNet.Mvc.Razor
     public interface IMvcRazorHost
     {
         /// <summary>
-        /// Flag that indicates if page execution instrumentation code should be injected into the output.
-        /// </summary>
-        bool EnableInstrumentation { get; set; }
-
-        /// <summary>
         /// Parses and generates the contents of a Razor file represented by <paramref name="inputStream"/>.
         /// </summary>
         /// <param name="rootRelativePath">The path of the relative to the root of the application. 

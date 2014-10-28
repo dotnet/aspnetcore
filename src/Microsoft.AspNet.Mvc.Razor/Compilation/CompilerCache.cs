@@ -74,24 +74,19 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         public CompilationResult GetOrAdd([NotNull] RelativeFileInfo fileInfo,
-                                          bool enableInstrumentation,
                                           [NotNull] Func<CompilationResult> compile)
         {
-
             CompilerCacheEntry cacheEntry;
             if (!_cache.TryGetValue(NormalizePath(fileInfo.RelativePath), out cacheEntry))
             {
-                return OnCacheMiss(fileInfo, enableInstrumentation, compile);
+                return OnCacheMiss(fileInfo, compile);
             }
             else
             {
-                if ((cacheEntry.Length != fileInfo.FileInfo.Length) ||
-                    (enableInstrumentation && !cacheEntry.IsInstrumented))
+                if (cacheEntry.Length != fileInfo.FileInfo.Length)
                 {
-                    // Recompile if
-                    // (a) If the file lengths differ
-                    // (b) If the compiled type is not instrumented but we require it to be instrumented.
-                    return OnCacheMiss(fileInfo, enableInstrumentation, compile);
+                    // Recompile if the file lengths differ
+                    return OnCacheMiss(fileInfo, compile);
                 }
 
                 if (cacheEntry.LastModified == fileInfo.FileInfo.LastModified)
@@ -108,22 +103,20 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     // Cache hit, but we need to update the entry
                     return OnCacheMiss(fileInfo,
-                                       enableInstrumentation,
                                        () => CompilationResult.Successful(cacheEntry.CompiledType));
                 }
 
                 // it's not a match, recompile
-                return OnCacheMiss(fileInfo, enableInstrumentation, compile);
+                return OnCacheMiss(fileInfo, compile);
             }
         }
 
         private CompilationResult OnCacheMiss(RelativeFileInfo file,
-                                              bool isInstrumented,
                                               Func<CompilationResult> compile)
         {
             var result = compile();
 
-            var cacheEntry = new CompilerCacheEntry(file, result.CompiledType, isInstrumented);
+            var cacheEntry = new CompilerCacheEntry(file, result.CompiledType);
             _cache[NormalizePath(file.RelativePath)] = cacheEntry;
 
             return result;

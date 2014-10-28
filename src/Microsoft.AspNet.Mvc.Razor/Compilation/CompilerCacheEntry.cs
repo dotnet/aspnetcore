@@ -22,8 +22,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             Length = info.Length;
             LastModified = info.LastModified;
             Hash = info.Hash;
-            // Precompiled views are always instrumented.
-            IsInstrumented = true;
         }
 
         /// <summary>
@@ -31,15 +29,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="info">Metadata about the file that was compiled.</param>
         /// <param name="compiledType">The compiled <see cref="Type"/>.</param>
-        /// <param name="isInstrumented">Flag that indicates that the file was generated with instrumentation
-        /// enabled.</param>
-        public CompilerCacheEntry([NotNull] RelativeFileInfo info, [NotNull] Type compiledType, bool isInstrumented)
+        public CompilerCacheEntry([NotNull] RelativeFileInfo info, [NotNull] Type compiledType)
         {
             CompiledType = compiledType;
             RelativePath = info.RelativePath;
             Length = info.FileInfo.Length;
             LastModified = info.FileInfo.LastModified;
-            IsInstrumented = isInstrumented;
         }
 
         /// <summary>
@@ -71,10 +66,5 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Gets a flag that indicates if the file is precompiled.
         /// </summary>
         public bool IsPreCompiled {  get { return Hash != null; } }
-
-        /// <summary>
-        /// Gets a flag that indiciates if the page execution in <see cref="CompiledType"/> is instrumeted.
-        /// </summary>
-        public bool IsInstrumented { get; private set; }
     }
 }

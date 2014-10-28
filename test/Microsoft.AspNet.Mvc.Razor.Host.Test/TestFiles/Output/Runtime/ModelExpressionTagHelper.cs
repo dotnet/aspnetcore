@@ -40,7 +40,9 @@ namespace Asp
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            BeginContext(120, 2, true);
             WriteLiteral("\r\n");
+            EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("inputTest");
             __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<Microsoft.AspNet.Mvc.Razor.InputTestTagHelper>();
             __tagHelperExecutionContext.Add(__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper);

@@ -13,6 +13,19 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class MvcRazorHostTest
     {
         [Fact]
+        public void MvcRazorHost_EnablesInstrumentationByDefault()
+        {
+            // Arrange
+            var host = new MvcRazorHost(new TestFileSystem());
+
+            // Act
+            var instrumented = host.EnableInstrumentation;
+
+            // Assert
+            Assert.True(instrumented);
+        }
+
+        [Fact]
         public void MvcRazorHost_GeneratesTagHelperModelExpressionCode_DesignTime()
         {
             // Arrange
@@ -22,12 +35,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             };
             var expectedLineMappings = new List<LineMapping>
             {
-                BuildLineMapping(documentAbsoluteIndex: 7, 
+                BuildLineMapping(documentAbsoluteIndex: 7,
                                  documentLineIndex: 0,
-                                 documentCharacterIndex: 7, 
+                                 documentCharacterIndex: 7,
                                  generatedAbsoluteIndex: 444,
                                  generatedLineIndex: 12,
-                                 generatedCharacterIndex: 7, 
+                                 generatedCharacterIndex: 7,
                                  contentLength: 8),
                 BuildLineMapping(documentAbsoluteIndex: 33,
                                  documentLineIndex: 2,
@@ -39,8 +52,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             };
 
             // Act and Assert
-            RunDesignTimeTest(host, 
-                              testName: "ModelExpressionTagHelper", 
+            RunDesignTimeTest(host,
+                              testName: "ModelExpressionTagHelper",
                               expectedLineMappings: expectedLineMappings);
         }
 

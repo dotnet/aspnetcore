@@ -18,20 +18,17 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IServiceProvider _serviceProvider;
         private readonly IFileInfoCache _fileInfoCache;
         private readonly ICompilerCache _compilerCache;
-        private readonly bool _isInstrumentationEnabled;
         private IRazorCompilationService _razorcompilationService;
 
         public VirtualPathRazorPageFactory(ITypeActivator typeActivator,
                                            IServiceProvider serviceProvider,
                                            ICompilerCache compilerCache,
-                                           IFileInfoCache fileInfoCache,
-                                           IContextAccessor<HttpContext> contextAccessor)
+                                           IFileInfoCache fileInfoCache)
         {
             _activator = typeActivator;
             _serviceProvider = serviceProvider;
             _compilerCache = compilerCache;
             _fileInfoCache = fileInfoCache;
-            _isInstrumentationEnabled = IsInstrumentationEnabled(contextAccessor.Value);
         }
 
         private IRazorCompilationService RazorCompilationService
@@ -71,8 +68,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 var result = _compilerCache.GetOrAdd(
                     relativeFileInfo,
-                    _isInstrumentationEnabled,
-                    () => RazorCompilationService.Compile(relativeFileInfo, _isInstrumentationEnabled));
+                    () => RazorCompilationService.Compile(relativeFileInfo));
 
                 var page = (IRazorPage)_activator.CreateInstance(_serviceProvider, result.CompiledType);
                 page.Path = relativePath;

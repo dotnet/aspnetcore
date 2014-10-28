@@ -15,11 +15,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// not available in the cache.
         /// </summary>
         /// <param name="fileInfo">A <see cref="RelativeFileInfo"/> representing the file.</param>
-        /// <param name="enableInstrumentation"><see langword="true"/> to generate instrumentation.</param>
         /// <param name="compile">An delegate that will generate a compilation result.</param>
         /// <returns>A cached <see cref="CompilationResult"/>.</returns>
         CompilationResult GetOrAdd([NotNull] RelativeFileInfo fileInfo,
-                                   bool enableInstrumentation,
                                    [NotNull] Func<CompilationResult> compile);
     }
 }
