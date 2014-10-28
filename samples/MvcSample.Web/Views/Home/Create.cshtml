@@ -26,7 +26,7 @@
         if (metadata != null)
         {
             var typeName = metadata.ModelType.Name;
-            var description = metadata.Description;
+            var description = metadata.Description ?? "no description";
             <p>@typeName has description '@description' and contains</p>
             <ul>
                 @foreach (var property in metadata.Properties)
