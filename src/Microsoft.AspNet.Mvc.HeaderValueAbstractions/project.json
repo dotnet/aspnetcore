@@ -1,4 +1,5 @@
 {
+    "description": "Temporary abstractions for working with header values in ASP.NET MVC. These abstractions will be replaced by core HTTP abstractions in ASP.NET in a future release.",
     "version": "1.0.0-*",
     "dependencies": { },
     "frameworks": {
