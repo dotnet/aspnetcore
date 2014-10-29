@@ -1,0 +1,29 @@
+﻿{
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.AspNet.Diagnostics": "1.0.0-*",
+        "Microsoft.AspNet.Http": "1.0.0-*",
+        "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
+        "Microsoft.AspNet.RequestContainer": "1.0.0-*",
+        "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+    },
+
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Collections.Concurrent": "4.0.0-beta-*",
+                "System.Collections": "4.0.10-beta-*",
+                "System.Diagnostics.TraceSource": "4.0.0-beta-*",
+                "System.Globalization": "4.0.10-beta-*",
+                "System.Runtime": "4.0.20-beta-*",
+                "System.Runtime.Extensions": "4.0.10-beta-*",
+                "System.Runtime.InteropServices": "4.0.20-beta-*",
+                "System.Linq": "4.0.0-beta-*",
+                "System.Threading": "4.0.0-beta-*",
+                "System.Threading.ExecutionContext": "4.0.0-beta-*"
+            }
+        }
+    }
+}

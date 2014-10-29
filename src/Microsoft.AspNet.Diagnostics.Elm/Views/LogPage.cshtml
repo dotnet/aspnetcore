@@ -1,0 +1,183 @@
+﻿@using System
+@using System.Globalization
+@using System.Linq
+@using Microsoft.AspNet.Diagnostics.Elm.Views
+@using Microsoft.AspNet.Diagnostics.Elm
+@using Microsoft.AspNet.Diagnostics.Views
+@using Microsoft.Framework.Logging
+
+@functions
+{
+    public LogPage(LogPageModel model)
+    {
+        Model = model;
+    }
+
+    public LogPageModel Model { get; set; }
+}
+
+@* writes one log row indented by the given level *@
+@helper LogRow(LogInfo log, int level) {
+    if (log.Severity >= Model.Options.MinLevel && 
+        (string.IsNullOrEmpty(Model.Options.NamePrefix) || log.Name.StartsWith(Model.Options.NamePrefix, StringComparison.Ordinal)))
+    {
+        <tr class="logRow">
+            <td>@string.Format("{0:MM/dd/yy}", log.Time)</td>
+            <td>@string.Format("{0:H:mm:ss}", log.Time)</td>
+            <td title="@log.Name">@log.Name</td>
+            <td class="@log.Severity.ToString().ToLowerInvariant()">@log.Severity</td>
+            <td title="@log.Message">
+                @for (var i = 0; i < level; i++)
+                {
+                    <span class="tab"></span>
+                }
+                @log.Message
+            </td>
+            <td title="@log.Exception">@log.Exception</td>
+        </tr>
+    }
+}
+
+@helper Traverse(ScopeNode node, int level)
+{
+    // print start of scope
+    @LogRow(new LogInfo()
+    {
+        Name = node.Name,
+        Time = node.StartTime,
+        Severity = LogLevel.Verbose,
+        Message = "Beginning " + node.State,
+    }, level);
+    var messageIndex = 0;
+    var childIndex = 0;
+    while (messageIndex < node.Messages.Count && childIndex < node.Children.Count)
+    {
+        if (node.Messages[messageIndex].Time < node.Children[childIndex].StartTime)
+        {
+            @LogRow(node.Messages[messageIndex], level)
+            messageIndex++;
+        }
+        else
+        {
+            @Traverse(node.Children[childIndex], level + 1)
+            childIndex++;
+        }
+    }
+    if (messageIndex < node.Messages.Count)
+    {
+        for (var i = messageIndex; i < node.Messages.Count; i++)
+        {
+            @LogRow(node.Messages[i], level)
+        }
+    }
+    else
+    {
+        for (var i = childIndex; i < node.Children.Count; i++)
+        {
+            @Traverse(node.Children[i], level + 1)
+        }
+    }
+    // print end of scope
+    @LogRow(new LogInfo()
+    {
+        Name = node.Name,
+        Time = node.EndTime,
+        Severity = LogLevel.Verbose,
+        Message = string.Format("Completed {0} in {1}ms", node.State, node.EndTime - node.StartTime)
+    }, level);
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ASP.NET Logs</title>
+    <style>
+        <%$ include: LogPage.css %>
+        <%$ include: Shared.css %>
+    </style>
+</head>
+<body>
+    <h1>ASP.NET Logs</h1>
+    <form id="viewOptions" method="get">
+        <select name="level">
+            @foreach (var severity in Enum.GetValues(typeof(LogLevel)))
+            {
+                var severityInt = (int)severity;
+                if ((int)Model.Options.MinLevel == severityInt)
+                {
+                    <option value="@severityInt" selected="selected">@severity</option>
+                }
+                else
+                {
+                    <option value="@severityInt">@severity</option>
+                }
+            }
+        </select>
+        <input type="text" name="name" value="@Model.Options.NamePrefix" />
+        <input type="submit" value="filter" />
+    </form>
+
+    <table id="requestTable">
+        <thead id="requestHeader">
+            <tr>
+                <th class="path">Path</th>
+                <th class="host">Host</th>
+                <th class="statusCode">Status Code</th>
+                <th class="logs">Logs</th>
+            </tr>
+        </thead>
+        <colgroup>
+            <col />
+            <col />
+            <col />
+            <col />
+        </colgroup>
+        @foreach (var activity in Model.Activities.Reverse())
+        {
+            <tbody>
+                <tr class="requestRow">
+                    @{
+                        if (activity.HttpInfo != null)
+                        {
+                            var requestPath = Model.Path.Value + "/" + activity.HttpInfo.RequestID;
+                            <td><a href="@requestPath" title="@activity.HttpInfo.Path">@activity.HttpInfo.Path</a></td>
+                            <td>@activity.HttpInfo.Host</td>
+                            <td>@activity.HttpInfo.StatusCode</td>
+                        }
+                        else
+                        {
+                            <td colspan="3">@activity.Root.State</td>
+                        }
+                    }
+                    <td class="logTd">
+                        <table class="logTable">
+                            <thead class="logHeader">
+                                <tr>
+                                    <th class="date">Date</th>
+                                    <th class="time">Time</th>
+                                    <th class="name">Name</th>
+                                    <th class="severity">Severity</th>
+                                    <th class="state">State</th>
+                                    <th>Error</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (activity.Id.Equals(Guid.Empty))
+                                {
+                                    // message not within a scope
+                                    @LogRow(activity.Root.Messages.FirstOrDefault(), 0)
+                                }
+                                else
+                                {
+                                    @Traverse(activity.Root, 0)
+                                }
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        }
+    </table>
+</body>
+</html>

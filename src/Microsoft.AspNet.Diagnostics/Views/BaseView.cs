@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
             [NotNull] Tuple<string, int> trailer,
             params AttributeValue[] values)
         {
-        	
+
             WriteLiteralTo(writer, leader.Item1);
             foreach (var value in values)
             {

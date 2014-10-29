@@ -33,6 +33,7 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Diagnostics.Entity.Tests", "test\Microsoft.AspNet.Diagnostics.Entity.Tests\Microsoft.AspNet.Diagnostics.Entity.Tests.kproj", "{5486117B-A742-49E0-94FC-12B76F061803}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Diagnostics.Entity.FunctionalTests", "test\Microsoft.AspNet.Diagnostics.Entity.FunctionalTests\Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.kproj", "{2F9B479D-8247-4210-804B-78E6DD5C3E98}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Diagnostics.Elm", "src\Microsoft.AspNet.Diagnostics.Elm\Microsoft.AspNet.Diagnostics.Elm.kproj", "{624B0019-956A-4157-B008-270C5B229553}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -150,6 +151,18 @@ Global
 		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Release|x86.ActiveCfg = Release|Any CPU
 		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Release|x86.Build.0 = Release|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Debug|x86.Build.0 = Debug|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Release|Any CPU.Build.0 = Release|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Release|x86.ActiveCfg = Release|Any CPU
+		{624B0019-956A-4157-B008-270C5B229553}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -165,5 +178,6 @@ Global
 		{4F5A6A72-FFE4-49C4-B4C6-58132CFCB9FE} = {509A6F36-AD80-4A18-B5B1-717D38DFF29D}
 		{5486117B-A742-49E0-94FC-12B76F061803} = {2AF90579-B118-4583-AE88-672EFACB5BC4}
 		{2F9B479D-8247-4210-804B-78E6DD5C3E98} = {2AF90579-B118-4583-AE88-672EFACB5BC4}
+		{624B0019-956A-4157-B008-270C5B229553} = {509A6F36-AD80-4A18-B5B1-717D38DFF29D}
 	EndGlobalSection
 EndGlobal
