@@ -31,8 +31,8 @@ namespace MusicStore.Models
             builder.Entity<OrderDetail>().Key(o => o.OrderDetailId);
 
             // TODO: Remove this when we start using auto generated values
-            builder.Entity<Artist>().Property(a => a.ArtistId).GenerateValuesOnAdd(generateValues: false);
-            builder.Entity<Genre>().Property(g => g.GenreId).GenerateValuesOnAdd(generateValues: false);
+            builder.Entity<Artist>().Property(a => a.ArtistId).GenerateValueOnAdd(generateValue: false);
+            builder.Entity<Genre>().Property(g => g.GenreId).GenerateValueOnAdd(generateValue: false);
 
             base.OnModelCreating(builder);
         }
