@@ -1,10 +1,7 @@
 {
   "dependencies": {
-    "Microsoft.AspNet.RequestContainer": "1.0.0-*",
-    "Microsoft.AspNet.Security": "1.0.0-*",
     "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-    "Microsoft.Framework.DependencyInjection": "1.0.0-*"
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-*"
   },
   "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:12345" },
   "frameworks": {
