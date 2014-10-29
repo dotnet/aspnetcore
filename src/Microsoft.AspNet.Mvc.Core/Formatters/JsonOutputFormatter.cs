@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class JsonOutputFormatter : OutputFormatter
+    public class JsonOutputFormatter : OutputFormatter, IJsonOutputFormatter
     {
         private JsonSerializerSettings _serializerSettings;
         
