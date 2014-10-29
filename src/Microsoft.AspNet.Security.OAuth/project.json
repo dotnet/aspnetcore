@@ -6,7 +6,7 @@
         "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
         "Microsoft.AspNet.WebUtilities": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
-        "Newtonsoft.Json": "6.0.4"
+        "Newtonsoft.Json": "6.0.6"
     },
     "frameworks": {
         "aspnet50": {
