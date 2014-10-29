@@ -3,16 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.AspNet.FileSystems;
-using Microsoft.Framework.Expiration.Interfaces;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class ExpiringFileInfoCacheTest
+    public class DefaultRazorFileSystemCacheTest
     {
         private const string FileName = "myView.cshtml";
 
@@ -41,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public void CreateFile(string fileName)
         {
-            var fileInfo = new DummyFileInfo()
+            var fileInfo = new TestFileInfo()
             {
                 Name = fileName,
                 LastModified = DateTime.Now,
@@ -89,6 +87,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             var fileInfo2 = cache.GetFileInfo(FileName);
 
             // Assert
+            Assert.True(fileInfo1.Exists);
+            Assert.True(fileInfo1.Exists);
+
             Assert.Same(fileInfo1, fileInfo2);
 
             Assert.Equal(FileName, fileInfo1.Name);
@@ -306,7 +307,34 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(FileName, fileInfo1.Name);
         }
 
-        public class ControllableExpiringFileInfoCache : ExpiringFileInfoCache
+        [Fact]
+        public void GetDirectoryInfo_PassesThroughToUnderlyingFileSystem()
+        {
+            // Arrange
+            var fileSystem = new Mock<IFileSystem>();
+            var expected = Mock.Of<IDirectoryContents>();
+            fileSystem.Setup(f => f.GetDirectoryContents("/test-path"))
+                      .Returns(expected)
+                      .Verifiable();
+            var options = new RazorViewEngineOptions
+            {
+                FileSystem = fileSystem.Object
+            };
+            var accessor = new Mock<IOptions<RazorViewEngineOptions>>();
+            accessor.SetupGet(a => a.Options)
+                    .Returns(options);
+
+            var cachedFileSystem = new DefaultRazorFileSystemCache(accessor.Object);
+
+            // Act
+            var result = cachedFileSystem.GetDirectoryContents("/test-path");
+
+            // Assert
+            Assert.Same(expected, result);
+            fileSystem.Verify();
+        }
+
+        public class ControllableExpiringFileInfoCache : DefaultRazorFileSystemCache
         {
             public ControllableExpiringFileInfoCache(IOptions<RazorViewEngineOptions> optionsAccessor)
                 : base(optionsAccessor)
@@ -338,7 +366,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 _internalUtcNow = UtcNow.AddMilliseconds(milliSeconds);
             }
         }
-
         public class DummyFileSystem : IFileSystem
         {
             private Dictionary<string, IFileInfo> _fileInfos = new Dictionary<string, IFileInfo>(StringComparer.OrdinalIgnoreCase);
@@ -365,7 +392,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 IFileInfo knownInfo;
                 if (_fileInfos.TryGetValue(subpath, out knownInfo))
                 {
-                    return new DummyFileInfo()
+                    return new TestFileInfo
                     {
                         Name = knownInfo.Name,
                         LastModified = knownInfo.LastModified,
@@ -378,49 +405,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             public bool TryGetParentPath(string subpath, out string parentPath)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public class DummyFileInfo : IFileInfo
-        {
-            public DateTime LastModified { get; set; }
-            public string Name { get; set; }
-
-            public long Length { get { throw new NotImplementedException(); } }
-            public bool IsDirectory { get { throw new NotImplementedException(); } }
-            public string PhysicalPath { get { throw new NotImplementedException(); } }
-
-            public bool Exists
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public bool IsReadOnly
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public Stream CreateReadStream() { throw new NotImplementedException(); }
-
-            public void WriteContent(byte[] content)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Delete()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IExpirationTrigger CreateFileChangeTrigger()
             {
                 throw new NotImplementedException();
             }

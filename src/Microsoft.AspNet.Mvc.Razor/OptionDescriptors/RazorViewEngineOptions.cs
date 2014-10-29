@@ -17,7 +17,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         private IFileSystem _fileSystem;
 
         /// <summary>
-        /// Controls the <see cref="ExpiringFileInfoCache" /> caching behavior.
+        /// Gets or sets the <see cref="TimeSpan"/> that specifies the duration for which results of
+        /// <see cref="FileSystem"/> are cached by <see cref="DefaultRazorFileSystemCache"/>. 
+        /// <see cref="DefaultRazorFileSystemCache"/> is used to query for file changes during Razor compilation.
         /// </summary>
         /// <remarks>
         /// <see cref="TimeSpan"/> of <see cref="TimeSpan.Zero"/> or less, means no caching.

@@ -99,7 +99,7 @@ namespace __ASP_ASSEMBLY
                     "            info = new "
                     + nameof(RazorFileInfo) + @"
             {{
-                " + nameof(RazorFileInfo.LastModified) + @" = DateTime.FromFileTimeUtc({0:D}),
+                " + nameof(RazorFileInfo.LastModified) + @" = DateTime.FromFileTimeUtc({0:D}).ToLocalTime(),
                 " + nameof(RazorFileInfo.Length) + @" = {1:D},
                 " + nameof(RazorFileInfo.RelativePath) + @" = @""{2}"",
                 " + nameof(RazorFileInfo.FullTypeName) + @" = @""{3}"",

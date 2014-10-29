@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Microsoft.AspNet.FileSystems;
-using Moq;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -17,26 +15,30 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public void AddFile(string path, string contents)
         {
-            var fileInfo = new Mock<IFileInfo>();
-            fileInfo.Setup(f => f.CreateReadStream())
-                    .Returns(() => new MemoryStream(Encoding.UTF8.GetBytes(contents)));
-            fileInfo.SetupGet(f => f.PhysicalPath)
-                    .Returns(path);
-            fileInfo.SetupGet(f => f.Name)
-                    .Returns(Path.GetFileName(path));
-            fileInfo.SetupGet(f => f.Exists)
-                    .Returns(true);
-            AddFile(path, fileInfo.Object);
+            var fileInfo = new TestFileInfo
+            {
+                Content = contents,
+                PhysicalPath = path,
+                Name = Path.GetFileName(path),
+                LastModified = DateTime.UtcNow,
+            };
+
+            AddFile(path, fileInfo);
         }
 
-        public void AddFile(string path, IFileInfo contents)
+        public void AddFile(string path, TestFileInfo contents)
         {
-            _lookup.Add(path, contents);
+            _lookup[path] = contents;
+        }
+
+        public void DeleteFile(string path)
+        {
+            _lookup.Remove(path);
         }
 
         public IFileInfo GetFileInfo(string subpath)
@@ -50,5 +52,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return new NotFoundFileInfo(subpath);
             }
         }
+
     }
 }

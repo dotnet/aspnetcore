@@ -34,17 +34,80 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             var razorService = new RazorCompilationService(compiler.Object, host.Object);
 
-            var relativeFileInfo = new RelativeFileInfo()
-            {
-                FileInfo = fileInfo.Object,
-                RelativePath = @"Views\index\home.cshtml",
-            };
+            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
 
             // Act
             razorService.Compile(relativeFileInfo);
 
             // Assert
             host.Verify();
+        }
+
+        [Fact]
+        public void Compile_ReturnsFailedResultIfParseFails()
+        {
+            // Arrange
+            var generatorResult = new GeneratorResults(
+                    new Block(
+                        new BlockBuilder { Type = BlockType.Comment }),
+                        new RazorError[] { new RazorError("some message", 1, 1, 1, 1) },
+                        new CodeBuilderResult("", new LineMapping[0]),
+                        new CodeTree());
+            var host = new Mock<IMvcRazorHost>();
+            host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
+                .Returns(generatorResult)
+                .Verifiable();
+
+            var fileInfo = new Mock<IFileInfo>();
+            fileInfo.Setup(f => f.CreateReadStream())
+                    .Returns(Stream.Null);
+
+            var compiler = new Mock<ICompilationService>(MockBehavior.Strict);
+            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
+            var razorService = new RazorCompilationService(compiler.Object, host.Object);
+
+            // Act
+            var result = razorService.Compile(relativeFileInfo);
+
+            // Assert
+            var ex = Assert.Throws<CompilationFailedException>(() => result.CompiledType);
+            Assert.Equal("some message", Assert.Single(ex.Messages).Message);
+            host.Verify();
+        }
+
+        [Fact]
+        public void Compile_ReturnsResultFromCompilationServiceIfParseSucceeds()
+        {
+            // Arrange
+            var code = "compiled-content";
+            var generatorResult = new GeneratorResults(
+                    new Block(
+                        new BlockBuilder { Type = BlockType.Comment }),
+                        new RazorError[0],
+                        new CodeBuilderResult(code, new LineMapping[0]),
+                        new CodeTree());
+            var host = new Mock<IMvcRazorHost>();
+            host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
+                .Returns(generatorResult);
+
+            var fileInfo = new Mock<IFileInfo>();
+            fileInfo.Setup(f => f.CreateReadStream())
+                    .Returns(Stream.Null);
+
+            var compilationResult = CompilationResult.Successful(typeof(object));
+            var compiler = new Mock<ICompilationService>();
+            compiler.Setup(c => c.Compile(fileInfo.Object, code))
+                    .Returns(compilationResult)
+                    .Verifiable();
+            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
+            var razorService = new RazorCompilationService(compiler.Object, host.Object);
+
+            // Act
+            var result = razorService.Compile(relativeFileInfo);
+
+            // Assert
+            Assert.Same(compilationResult, result);
+            compiler.Verify();
         }
 
         private static GeneratorResults GetGeneratorResult()
