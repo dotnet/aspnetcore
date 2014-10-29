@@ -33,6 +33,11 @@ namespace Microsoft.AspNet.Http
             get { return _value; }
         }
 
+        public bool HasValue
+        {
+            get { return !string.IsNullOrEmpty(_value); }
+        }
+
         /// <summary>
         /// Returns the value as normalized by ToUriComponent().
         /// </summary>
