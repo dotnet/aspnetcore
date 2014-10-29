@@ -35,11 +35,22 @@ namespace Microsoft.AspNet.Owin
         IOwinEnvironmentFeature
     {
         public IDictionary<string, object> Environment { get; set; }
+        private bool _headersSent;
 
         public OwinFeatureCollection(IDictionary<string, object> environment)
         {
             Environment = environment;
             SupportsWebSockets = true;
+
+            var register = Prop<Action<Action<object>, object>>(OwinConstants.CommonKeys.OnSendingHeaders);
+            if (register != null)
+            {
+                register(state =>
+                {
+                    var collection = (OwinFeatureCollection)state;
+                    collection._headersSent = true;
+                }, this);
+            }
         }
 
         T Prop<T>(string key)
@@ -127,6 +138,11 @@ namespace Microsoft.AspNet.Owin
         {
             get { return Prop<Stream>(OwinConstants.ResponseBody); }
             set { Prop(OwinConstants.ResponseBody, value); }
+        }
+
+        bool IHttpResponseFeature.HeadersSent
+        {
+            get { return _headersSent; }
         }
 
         void IHttpResponseFeature.OnSendingHeaders(Action<object> callback, object state)

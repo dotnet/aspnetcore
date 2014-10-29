@@ -25,6 +25,11 @@ namespace Microsoft.AspNet.PipelineCore
 
         public Stream Body { get; set; }
 
+        public bool HeadersSent
+        {
+            get { return false; }
+        }
+
         public void OnSendingHeaders(Action<object> callback, object state)
         {
             throw new NotSupportedException();

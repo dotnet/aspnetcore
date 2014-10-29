@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.HttpFeature
         string ReasonPhrase { get; set; }
         IDictionary<string, string[]> Headers { get; set; }
         Stream Body { get; set; }
+        bool HeadersSent { get; }
         void OnSendingHeaders(Action<object> callback, object state);
     }
 }

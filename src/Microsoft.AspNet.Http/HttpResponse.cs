@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Security;
 
 namespace Microsoft.AspNet.Http
@@ -23,6 +22,8 @@ namespace Microsoft.AspNet.Http
         public abstract string ContentType { get; set; }
 
         public abstract IResponseCookies Cookies { get; }
+
+        public abstract bool HeadersSent { get; }
 
         public abstract void OnSendingHeaders(Action<object> callback, object state);
 

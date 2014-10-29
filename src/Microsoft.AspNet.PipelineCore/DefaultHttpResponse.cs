@@ -105,6 +105,11 @@ namespace Microsoft.AspNet.PipelineCore
             get { return ResponseCookiesFeature.Cookies; }
         }
 
+        public override bool HeadersSent
+        {
+            get { return HttpResponseFeature.HeadersSent; }
+        }
+
         public override void OnSendingHeaders(Action<object> callback, object state)
         {
             HttpResponseFeature.OnSendingHeaders(callback, state);
