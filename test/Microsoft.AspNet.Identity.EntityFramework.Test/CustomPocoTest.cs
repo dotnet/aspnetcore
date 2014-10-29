@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 base.OnModelCreating(modelBuilder);
 
                 modelBuilder.Entity<User<TKey>>().Property(p => p.Id)
-                            .GenerateValuesOnAdd(generateValues: false);
+                            .GenerateValueOnAdd(generateValue: false);
             }
         }
 
