@@ -12,6 +12,8 @@ namespace PageGenerator
 {
     public class Program
     {
+        private const int NumArgs = 1;
+
         private readonly ILibraryManager _libraryManager;
 
         public Program(ILibraryManager libraryManager)
@@ -21,7 +23,17 @@ namespace PageGenerator
 
         public void Main(string[] args)
         {
-            var diagnosticsLibInfo = _libraryManager.GetLibraryInformation("Microsoft.AspNet.Diagnostics");
+            if (args.Length != NumArgs)
+            {
+                throw new ArgumentException(string.Format("Requires {0} argument (Library Name), {1} given", NumArgs, args.Length));
+            }
+            var diagnosticsLibInfo = _libraryManager.GetLibraryInformation(args[0]);
+            if (diagnosticsLibInfo == null)
+            {
+                throw new ArgumentException(string.Format(
+                    "Unable to open library {0}. Is it spelled correctly and listed as a dependency in project.json?", 
+                    args[0]));
+            }
             var viewBasePath = Path.Combine(Path.GetDirectoryName(diagnosticsLibInfo.Path), "Views");
 
             Console.WriteLine("Generating code files for views in {0}", viewBasePath);
@@ -33,7 +45,7 @@ namespace PageGenerator
             foreach (var fileName in cshtmlFiles)
             {
                 Console.WriteLine("  Generating code file for view {0}...", Path.GetFileName(fileName));
-                GenerateCodeFile(fileName);
+                GenerateCodeFile(fileName, string.Format("{0}.Views", args[0]));
                 Console.WriteLine("      Done!");
                 fileCount++;
             }
@@ -56,7 +68,7 @@ namespace PageGenerator
             return Directory.EnumerateFiles(path, "*.cshtml");
         }
 
-        private static void GenerateCodeFile(string cshtmlFilePath)
+        private static void GenerateCodeFile(string cshtmlFilePath, string rootNamespace)
         {
             var basePath = Path.GetDirectoryName(cshtmlFilePath);
             var fileName = Path.GetFileName(cshtmlFilePath);
@@ -65,13 +77,13 @@ namespace PageGenerator
             var host = new RazorEngineHost(codeLang);
             host.DefaultBaseClass = "Microsoft.AspNet.Diagnostics.Views.BaseView";
             var engine = new RazorTemplateEngine(host);
-            
+
             using (var fileStream = File.OpenText(cshtmlFilePath))
             {
                 var code = engine.GenerateCode(
                     input: fileStream,
                     className: fileNameNoExtension,
-                    rootNamespace: "Microsoft.AspNet.Diagnostics.Views",
+                    rootNamespace: rootNamespace,
                     sourceFileName: fileName);
 
                 var source = code.GeneratedCode;
