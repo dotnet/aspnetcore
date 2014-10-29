@@ -1,22 +1,17 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing.Logging;
-using Microsoft.Framework.Logging;
-#if ASPNET50
-using Moq;
-#endif
 using Xunit;
-using System;
 
 namespace Microsoft.AspNet.Routing
 {
     public class RouterMiddlewareTest
     {
-#if ASPNET50
         [Fact]
         public async void Invoke_LogsCorrectValuesWhenNotHandled()
         {
@@ -28,11 +23,9 @@ namespace Microsoft.AspNet.Routing
                 TestSink.EnableWithTypeName<RouterMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
-            mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
-                .Returns(loggerFactory);
-
-            var mockServiceProvider = new Mock<IServiceProvider>();
+            var httpContext = new DefaultHttpContext();
+            httpContext.ApplicationServices = new ServiceProvider();
+            httpContext.RequestServices = httpContext.ApplicationServices;
 
             RequestDelegate next = (c) =>
             {
@@ -40,10 +33,10 @@ namespace Microsoft.AspNet.Routing
             };
 
             var router = new TestRouter(isHandled);
-            var middleware = new RouterMiddleware(next, mockServiceProvider.Object, router);
+            var middleware = new RouterMiddleware(next, httpContext.ApplicationServices, loggerFactory, router);
 
             // Act
-            await middleware.Invoke(mockContext.Object);
+            await middleware.Invoke(httpContext);
 
             // Assert
             Assert.Single(sink.Scopes);
@@ -72,9 +65,9 @@ namespace Microsoft.AspNet.Routing
                 TestSink.EnableWithTypeName<RouterMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: false);
 
-            var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
-            mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
-                .Returns(loggerFactory);
+            var httpContext = new DefaultHttpContext();
+            httpContext.ApplicationServices = new ServiceProvider();
+            httpContext.RequestServices = httpContext.ApplicationServices;
 
             RequestDelegate next = (c) =>
             {
@@ -82,11 +75,10 @@ namespace Microsoft.AspNet.Routing
             };
 
             var router = new TestRouter(isHandled);
-            var mockServiceProvider = new Mock<IServiceProvider>();
-            var middleware = new RouterMiddleware(next, mockServiceProvider.Object, router);
+            var middleware = new RouterMiddleware(next, httpContext.ApplicationServices, loggerFactory, router);
 
             // Act
-            await middleware.Invoke(mockContext.Object);
+            await middleware.Invoke(httpContext);
 
             // Assert
             Assert.Single(sink.Scopes);
@@ -108,9 +100,9 @@ namespace Microsoft.AspNet.Routing
                 TestSink.EnableWithTypeName<RouterMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
-            mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
-                .Returns(loggerFactory);
+            var httpContext = new DefaultHttpContext();
+            httpContext.ApplicationServices = new ServiceProvider();
+            httpContext.RequestServices = httpContext.ApplicationServices;
 
             RequestDelegate next = (c) =>
             {
@@ -118,11 +110,11 @@ namespace Microsoft.AspNet.Routing
             };
 
             var router = new TestRouter(isHandled);
-            var mockServiceProvider = new Mock<IServiceProvider>();
-            var middleware = new RouterMiddleware(next, mockServiceProvider.Object, router);
+
+            var middleware = new RouterMiddleware(next, httpContext.ApplicationServices, loggerFactory, router);
 
             // Act
-            await middleware.Invoke(mockContext.Object);
+            await middleware.Invoke(httpContext);
 
             // Assert
             // exists a BeginScope, verify contents
@@ -153,9 +145,9 @@ namespace Microsoft.AspNet.Routing
                 TestSink.EnableWithTypeName<RouterMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: false);
 
-            var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
-            mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
-                .Returns(loggerFactory);
+            var httpContext = new DefaultHttpContext();
+            httpContext.ApplicationServices = new ServiceProvider();
+            httpContext.RequestServices = httpContext.ApplicationServices;
 
             RequestDelegate next = (c) =>
             {
@@ -163,11 +155,10 @@ namespace Microsoft.AspNet.Routing
             };
 
             var router = new TestRouter(isHandled);
-            var mockServiceProvider = new Mock<IServiceProvider>();
-            var middleware = new RouterMiddleware(next, mockServiceProvider.Object, router);
+            var middleware = new RouterMiddleware(next, httpContext.ApplicationServices, loggerFactory, router);
 
             // Act
-            await middleware.Invoke(mockContext.Object);
+            await middleware.Invoke(httpContext);
 
             // Assert
             // exists a BeginScope, verify contents
@@ -178,12 +169,11 @@ namespace Microsoft.AspNet.Routing
 
             Assert.Empty(sink.Writes);
         }
-#endif
 
         private class TestRouter : IRouter
         {
             private bool _isHandled;
-            
+
             public TestRouter(bool isHandled)
             {
                 _isHandled = isHandled;
@@ -198,6 +188,14 @@ namespace Microsoft.AspNet.Routing
             {
                 context.IsHandled = _isHandled;
                 return Task.FromResult<object>(null);
+            }
+        }
+
+        private class ServiceProvider : IServiceProvider
+        {
+            public object GetService(Type serviceType)
+            {
+                throw new NotImplementedException();
             }
         }
     }

@@ -1,58 +1,47 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.AspNet.Routing.Logging.Internal;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using System;
 
 namespace Microsoft.AspNet.Builder
 {
     public class RouterMiddleware
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
+        private readonly RequestDelegate _next;
+        private readonly IRouter _router;
+        private readonly IServiceProvider _services;
 
-        public RouterMiddleware(RequestDelegate next, IServiceProvider services, IRouter router)
+        public RouterMiddleware(
+            RequestDelegate next,
+            IServiceProvider services,
+            ILoggerFactory loggerFactory, 
+            IRouter router)
         {
-            Next = next;
-            Router = router;
-            Services = services;
-        }
+            _next = next;
+            _services = services;
+            _router = router;
 
-        private IRouter Router
-        {
-            get;
-            set;
-        }
-
-        private RequestDelegate Next
-        {
-            get;
-            set;
-        }
-
-        private IServiceProvider Services
-        {
-            get;
-            set;
+            _logger = loggerFactory.Create<RouterMiddleware>();
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
-            using (RequestServicesContainer.EnsureRequestServices(httpContext, Services))
+            using (RequestServicesContainer.EnsureRequestServices(httpContext, _services))
             {
-                EnsureLogger(httpContext);
                 using (_logger.BeginScope("RouterMiddleware.Invoke"))
                 {
                     var context = new RouteContext(httpContext);
-                    context.RouteData.Routers.Add(Router);
+                    context.RouteData.Routers.Add(_router);
 
-                    await Router.RouteAsync(context);
+                    await _router.RouteAsync(context);
 
                     if (_logger.IsEnabled(TraceType.Verbose))
                     {
@@ -61,18 +50,9 @@ namespace Microsoft.AspNet.Builder
 
                     if (!context.IsHandled)
                     {
-                        await Next.Invoke(httpContext);
+                        await _next.Invoke(httpContext);
                     }
                 }
-            }
-        }
-
-        private void EnsureLogger(HttpContext context)
-        {
-            if (_logger == null)
-            {
-                var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                _logger = factory.Create<RouterMiddleware>();
             }
         }
     }
