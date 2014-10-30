@@ -348,6 +348,11 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _responseHeaders = value; }
         }
 
+        bool IHttpResponseFeature.HeadersSent
+        {
+            get { return Response.HeadersSent; }
+        }
+
         void IHttpResponseFeature.OnSendingHeaders(Action<object> callback, object state)
         {
             Response.OnSendingHeaders(callback, state);

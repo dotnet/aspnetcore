@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 catch (Exception ex)
                 {
                     LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
-                    if (requestContext.Response.SentHeaders)
+                    if (requestContext.Response.HeadersSent)
                     {
                         requestContext.Abort();
                     }

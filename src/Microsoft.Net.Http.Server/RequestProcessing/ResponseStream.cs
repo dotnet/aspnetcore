@@ -94,7 +94,7 @@ namespace Microsoft.Net.Http.Server
         // Send headers
         public override void Flush()
         {
-            if (_closed || _requestContext.Response.SentHeaders)
+            if (_closed || _requestContext.Response.HeadersSent)
             {
                 return;
             }
@@ -127,7 +127,7 @@ namespace Microsoft.Net.Http.Server
         // Send headers
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            if (_closed || _requestContext.Response.SentHeaders)
+            if (_closed || _requestContext.Response.HeadersSent)
             {
                 return Helpers.CompletedTask();
             }
@@ -275,7 +275,7 @@ namespace Microsoft.Net.Http.Server
             uint dataToWrite = (uint)size;
             SafeLocalFree bufferAsIntPtr = null;
             IntPtr pBufferAsIntPtr = IntPtr.Zero;
-            bool sentHeaders = _requestContext.Response.SentHeaders;
+            bool sentHeaders = _requestContext.Response.HeadersSent;
             try
             {
                 if (size == 0)
@@ -398,7 +398,7 @@ namespace Microsoft.Net.Http.Server
             uint statusCode;
             uint bytesSent = 0;
             flags |= _leftToWrite == size ? UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE : UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-            bool sentHeaders = _requestContext.Response.SentHeaders;
+            bool sentHeaders = _requestContext.Response.HeadersSent;
             ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, state, callback, buffer, offset, size, _requestContext.Response.BoundaryType == BoundaryType.Chunked, sentHeaders);
 
             // Update m_LeftToWrite now so we can queue up additional BeginWrite's without waiting for EndWrite.
@@ -543,7 +543,7 @@ namespace Microsoft.Net.Http.Server
             uint statusCode;
             uint bytesSent = 0;
             flags |= _leftToWrite == size ? UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE : UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-            bool sentHeaders = _requestContext.Response.SentHeaders;
+            bool sentHeaders = _requestContext.Response.HeadersSent;
             ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, null, null, buffer, offset, size, _requestContext.Response.BoundaryType == BoundaryType.Chunked, sentHeaders, cancellationRegistration);
 
             // Update m_LeftToWrite now so we can queue up additional BeginWrite's without waiting for EndWrite.
@@ -649,7 +649,7 @@ namespace Microsoft.Net.Http.Server
             uint statusCode;
             uint bytesSent = 0;
             flags |= _leftToWrite == size ? UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE : UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-            bool sentHeaders = _requestContext.Response.SentHeaders;
+            bool sentHeaders = _requestContext.Response.HeadersSent;
             ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, null, null, fileName, offset, size,
                 _requestContext.Response.BoundaryType == BoundaryType.Chunked, sentHeaders, cancellationRegistration);
 
@@ -768,7 +768,7 @@ namespace Microsoft.Net.Http.Server
                         LogHelper.LogError(_requestContext.Logger, "ResponseStream::Dispose", "Fewer bytes were written than were specified in the Content-Length.");
                         return;
                     }
-                    bool sentHeaders = _requestContext.Response.SentHeaders;
+                    bool sentHeaders = _requestContext.Response.HeadersSent;
                     if (sentHeaders && _leftToWrite == 0)
                     {
                         return;

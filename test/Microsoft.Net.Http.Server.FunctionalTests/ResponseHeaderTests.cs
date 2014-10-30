@@ -232,7 +232,9 @@ namespace Microsoft.Net.Http.Server
                 responseHeaders.SetValues("Custom1", "value1a", "value1b");
                 responseHeaders.SetValues("Custom2", "value2a, value2b");
                 var body = context.Response.Body;
+                Assert.False(context.Response.HeadersSent);
                 body.Flush();
+                Assert.True(context.Response.HeadersSent);
                 var ex = Assert.Throws<InvalidOperationException>(() => context.Response.StatusCode = 404);
                 Assert.Equal("Headers already sent.", ex.Message);
                 ex = Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
@@ -266,7 +268,9 @@ namespace Microsoft.Net.Http.Server
                 responseHeaders.SetValues("Custom1", "value1a", "value1b");
                 responseHeaders.SetValues("Custom2", "value2a, value2b");
                 var body = context.Response.Body;
+                Assert.False(context.Response.HeadersSent);
                 await body.FlushAsync();
+                Assert.True(context.Response.HeadersSent);
                 var ex = Assert.Throws<InvalidOperationException>(() => context.Response.StatusCode = 404);
                 Assert.Equal("Headers already sent.", ex.Message);
                 ex = Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));

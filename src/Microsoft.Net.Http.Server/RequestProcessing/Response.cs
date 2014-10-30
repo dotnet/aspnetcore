@@ -297,7 +297,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        public bool SentHeaders
+        public bool HeadersSent
         {
             get
             {
@@ -356,7 +356,7 @@ namespace Microsoft.Net.Http.Server
             UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags,
             bool isOpaqueUpgrade)
         {
-            Debug.Assert(!SentHeaders, "HttpListenerResponse::SendHeaders()|SentHeaders is true.");
+            Debug.Assert(!HeadersSent, "HttpListenerResponse::SendHeaders()|SentHeaders is true.");
 
             // TODO: Verbose log headers
             _responseState = ResponseState.SentHeaders;

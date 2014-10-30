@@ -145,7 +145,7 @@ namespace Microsoft.Net.Http.Server
 
         public Task<Stream> UpgradeAsync()
         {
-            if (!IsUpgradableRequest || _response.SentHeaders)
+            if (!IsUpgradableRequest || _response.HeadersSent)
             {
                 throw new InvalidOperationException();
             }
