@@ -45,34 +45,44 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     nameof(lookupText));
             }
 
-            var tagHelperTypes = ResolveTagHelperTypes(lookupStrings);
+            // Grab the assembly name from the lookup text strings. Due to our supported lookupText formats it will 
+            // always be the last element provided.
+            var assemblyName = lookupStrings.Last().Trim();
+
+            // Retrieve all TagHelperDescriptors that exist within the given assemblyName.
+            var descriptors = ResolveDescriptorsInAssembly(assemblyName);
+
+            // Check if the lookupText specifies a type to search for.
+            if (lookupStrings.Length == 2)
+            {
+                // The user provided a type name retrieve it so we can prune our descriptors.
+                var typeName = lookupStrings[0].Trim();
+
+                descriptors = descriptors.Where(descriptor =>
+                    string.Equals(descriptor.TagHelperName, typeName, StringComparison.Ordinal));
+            }
+
+            return descriptors;
+        }
+
+        /// <summary>
+        /// Resolves all <see cref="TagHelperDescriptor"/>s for <see cref="ITagHelper"/>s from the given 
+        /// <paramref name="assemblyName"/>.
+        /// </summary>
+        /// <param name="assemblyName">
+        /// The name of the assembly to resolve <see cref="TagHelperDescriptor"/>s from.
+        /// </param>
+        /// <returns><see cref="TagHelperDescriptor"/>s that represent <see cref="ITagHelper"/>s from the given
+        /// <paramref name="assemblyName"/>.</returns>
+        protected virtual IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(string assemblyName)
+        {
+            // Resolve valid tag helper types from the assembly.
+            var tagHelperTypes = _typeResolver.Resolve(assemblyName);
 
             // Convert types to TagHelperDescriptors
             var descriptors = tagHelperTypes.SelectMany(TagHelperDescriptorFactory.CreateDescriptors);
 
             return descriptors;
-        }
-
-        private IEnumerable<Type> ResolveTagHelperTypes(string[] lookupStrings)
-        {
-            // Grab the assembly name from the lookup text strings. Due to our supported lookupText formats it will 
-            // always be the last element provided.
-            var assemblyName = lookupStrings.Last().Trim();
-
-            // Resolve valid tag helper types from the assembly.
-            var types = _typeResolver.Resolve(assemblyName);
-
-            // Check if the lookupText specifies a type to search for.
-            if (lookupStrings.Length == 2)
-            {
-                // The user provided a type name retrieve the value and trim it.
-                var typeName = lookupStrings[0].Trim();
-
-                types = types.Where(type => 
-                    string.Equals(type.Namespace + "." + type.Name, typeName, StringComparison.Ordinal));
-            }
-
-            return types;
         }
     }
 }
