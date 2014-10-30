@@ -97,7 +97,7 @@ function Kvm-Global-Setup {
 
   If (Needs-Elevation)
   {
-    $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' setup -global -wait"
+    $arguments = "-NoProfile -ExecutionPolicy unrestricted & '$scriptPath' setup -global -wait"
     Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
     Write-Host "Adding $kvmBinPath to process PATH"
     Set-Path (Change-Path $env:Path $kvmBinPath ($kvmBinPath))
@@ -145,7 +145,7 @@ function Kvm-Global-Upgrade {
   $alias="default"
   $versionOrAlias = Kvm-Find-Latest $selectedRuntime $selectedArch
   If (Needs-Elevation) {
-    $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' install '$versionOrAlias' -global $(Requested-Switches) -wait"
+    $arguments = "-NoProfile -ExecutionPolicy unrestricted & '$scriptPath' install '$versionOrAlias' -global $(Requested-Switches) -wait"
     Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
     Kvm-Set-Global-Process-Path $versionOrAlias
     break
@@ -296,7 +296,7 @@ param(
 
   if ($isGlobal) {
     if (Needs-Elevation) {
-      $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' install '$versionOrAlias' -global $(Requested-Switches) -wait"
+      $arguments = "-NoProfile -ExecutionPolicy unrestricted & '$scriptPath' install '$versionOrAlias' -global $(Requested-Switches) -wait"
       Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
       Kvm-Set-Global-Process-Path $versionOrAlias
       break
@@ -416,7 +416,7 @@ param(
   [string] $versionOrAlias
 )
   If (Needs-Elevation) {
-    $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' use '$versionOrAlias' -global $(Requested-Switches) -wait"
+    $arguments = "-NoProfile -ExecutionPolicy unrestricted & '$scriptPath' use '$versionOrAlias' -global $(Requested-Switches) -wait"
     Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
     Kvm-Set-Global-Process-Path $versionOrAlias
     break
