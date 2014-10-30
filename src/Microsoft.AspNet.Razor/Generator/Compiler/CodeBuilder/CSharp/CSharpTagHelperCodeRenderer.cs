@@ -497,7 +497,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         private static bool IsStringAttribute(TagHelperAttributeDescriptor attributeDescriptor)
         {
-            return attributeDescriptor.PropertyInfo.PropertyType == typeof(string);
+            return attributeDescriptor.AttributeTypeName == typeof(string).FullName;
         }
 
         private static bool TryGetPlainTextValue(Chunk chunk, out string plainText)
