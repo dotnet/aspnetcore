@@ -54,6 +54,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         Mode _mode;
         private bool _resultStarted;
+        private bool _headersSent;
         private bool _keepAlive;
 
         /*
@@ -89,6 +90,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public Stream DuplexStream { get; set; }
 
+        public bool HeadersSent
+        {
+            get { return _headersSent; }
+        }
 
 
         /*
@@ -275,6 +280,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _resultStarted = true;
 
             FireOnSendingHeaders();
+
+            _headersSent = true;
 
             var status = ReasonPhrases.ToStatus(StatusCode, ReasonPhrase);
 

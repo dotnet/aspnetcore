@@ -175,6 +175,11 @@ namespace Kestrel
             }
         }
 
+        bool IHttpResponseFeature.HeadersSent
+        {
+            get { return _frame.HeadersSent; }
+        }
+
         void IHttpResponseFeature.OnSendingHeaders(Action<object> callback, object state)
         {
             _frame.OnSendingHeaders(callback, state);
