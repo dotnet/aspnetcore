@@ -3,7 +3,7 @@
     "System.Console": "4.0.0.0"
   },
   "frameworks": {
-    "net45": {},
-    "k10": {}
+    "aspnet50": {},
+    "aspnetcore50": {}
   }
 }
