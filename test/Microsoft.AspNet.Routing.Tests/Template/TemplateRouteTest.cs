@@ -175,11 +175,12 @@ namespace Microsoft.AspNet.Routing.Template
             var template = "{controller}/{action}/{id:int}";
 
             var context = CreateRouteContext("/Home/Index/5");
-            var originalRouteDataValues = new Dictionary<string, object>
-            {
-                { "country", "USA" },
-            };
-            context.RouteData.Values = originalRouteDataValues;
+
+            var originalRouteDataValues = context.RouteData.Values;
+            originalRouteDataValues.Add("country", "USA");
+
+            var originalDataTokens = context.RouteData.DataTokens;
+            originalDataTokens.Add("company", "Contoso");
 
             IDictionary<string, object> routeValues = null;
             var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
@@ -192,7 +193,13 @@ namespace Microsoft.AspNet.Routing.Template
                 })
                 .Returns(Task.FromResult(true));
 
-            var route = new TemplateRoute(mockTarget.Object, template, _inlineConstraintResolver);
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: null,
+                dataTokens: new RouteValueDictionary(new { today = "Friday" }),
+                inlineConstraintResolver: _inlineConstraintResolver);
 
             // Act
             await route.RouteAsync(context);
@@ -209,8 +216,12 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal("USA", context.RouteData.Values["country"]);
             Assert.True(context.RouteData.Values.ContainsKey("id"));
             Assert.Equal("5", context.RouteData.Values["id"]);
-
             Assert.NotSame(originalRouteDataValues, context.RouteData.Values);
+
+            Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
+            Assert.Equal("Friday", context.RouteData.DataTokens["today"]);
+            Assert.NotSame(originalDataTokens, context.RouteData.DataTokens);
+            Assert.NotSame(route.DataTokens, context.RouteData.DataTokens);
         }
 
         [Fact]
@@ -220,11 +231,11 @@ namespace Microsoft.AspNet.Routing.Template
             var template = "{controller}/{action}/{id:int}";
 
             var context = CreateRouteContext("/Home/Index/5");
-            var originalRouteDataValues = new Dictionary<string, object>
-            {
-                { "country", "USA" },
-            };
-            context.RouteData.Values = originalRouteDataValues;
+            var originalRouteDataValues = context.RouteData.Values;
+            originalRouteDataValues.Add("country", "USA");
+
+            var originalDataTokens = context.RouteData.DataTokens;
+            originalDataTokens.Add("company", "Contoso");
 
             IDictionary<string, object> routeValues = null;
             var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
@@ -237,7 +248,13 @@ namespace Microsoft.AspNet.Routing.Template
                 })
                 .Returns(Task.FromResult(true));
 
-            var route = new TemplateRoute(mockTarget.Object, template, _inlineConstraintResolver);
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: null,
+                dataTokens: new RouteValueDictionary(new { today = "Friday" }),
+                inlineConstraintResolver: _inlineConstraintResolver);
 
             // Act
             await route.RouteAsync(context);
@@ -252,8 +269,12 @@ namespace Microsoft.AspNet.Routing.Template
 
             Assert.True(context.RouteData.Values.ContainsKey("country"));
             Assert.Equal("USA", context.RouteData.Values["country"]);
-
+            Assert.False(context.RouteData.Values.ContainsKey("id"));
             Assert.Same(originalRouteDataValues, context.RouteData.Values);
+
+            Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
+            Assert.False(context.RouteData.DataTokens.ContainsKey("today"));
+            Assert.Same(originalDataTokens, context.RouteData.DataTokens);
         }
 
         [Fact]
@@ -263,11 +284,11 @@ namespace Microsoft.AspNet.Routing.Template
             var template = "{controller}/{action}/{id:int}";
 
             var context = CreateRouteContext("/Home/Index/5");
-            var originalRouteDataValues = new Dictionary<string, object>
-            {
-                { "country", "USA" },
-            };
-            context.RouteData.Values = originalRouteDataValues;
+            var originalRouteDataValues = context.RouteData.Values;
+            originalRouteDataValues.Add("country", "USA");
+
+            var originalDataTokens = context.RouteData.DataTokens;
+            originalDataTokens.Add("company", "Contoso");
 
             IDictionary<string, object> routeValues = null;
             var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
@@ -280,7 +301,13 @@ namespace Microsoft.AspNet.Routing.Template
                 })
                 .Throws(new Exception());
 
-            var route = new TemplateRoute(mockTarget.Object, template, _inlineConstraintResolver);
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: null,
+                dataTokens: new RouteValueDictionary(new { today = "Friday" }),
+                inlineConstraintResolver: _inlineConstraintResolver);
 
             // Act
             var ex = await Assert.ThrowsAsync<Exception>(() => route.RouteAsync(context));
@@ -295,8 +322,12 @@ namespace Microsoft.AspNet.Routing.Template
 
             Assert.True(context.RouteData.Values.ContainsKey("country"));
             Assert.Equal("USA", context.RouteData.Values["country"]);
-
+            Assert.False(context.RouteData.Values.ContainsKey("id"));
             Assert.Same(originalRouteDataValues, context.RouteData.Values);
+
+            Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
+            Assert.False(context.RouteData.DataTokens.ContainsKey("today"));
+            Assert.Same(originalDataTokens, context.RouteData.DataTokens);
         }
 
 
@@ -397,7 +428,39 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.False(context.IsHandled);
 
             // Issue #16 tracks this.
-            Assert.Null(context.RouteData.Values);
+            Assert.Empty(context.RouteData.Values);
+        }
+
+        [Fact]
+        public async Task Match_RejectedByHandler_ClearsRouters()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}", accept: false);
+            var context = CreateRouteContext("/Home");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.False(context.IsHandled);
+            Assert.Empty(context.RouteData.Routers);
+        }
+
+        [Fact]
+        public async Task Match_SetsRouters()
+        {
+            // Arrange
+            var target = CreateTarget(accept: true);
+            var route = CreateRoute(target, "{controller}");
+            var context = CreateRouteContext("/Home");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.True(context.IsHandled);
+            Assert.Equal(1, context.RouteData.Routers.Count);
+            Assert.Same(target, context.RouteData.Routers[0]);
         }
 
         [Fact]

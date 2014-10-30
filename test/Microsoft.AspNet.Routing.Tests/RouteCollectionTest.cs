@@ -114,6 +114,9 @@ namespace Microsoft.AspNet.Routing
             route1.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(1));
             route2.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(0));
             Assert.True(context.IsHandled);
+
+            Assert.Equal(1, context.RouteData.Routers.Count);
+            Assert.Same(route1.Object, context.RouteData.Routers[0]);
         }
 
         [Fact]
@@ -137,6 +140,9 @@ namespace Microsoft.AspNet.Routing
             route1.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(1));
             route2.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(1));
             Assert.True(context.IsHandled);
+
+            Assert.Equal(1, context.RouteData.Routers.Count);
+            Assert.Same(route2.Object, context.RouteData.Routers[0]);
         }
 
         [Fact]
@@ -160,6 +166,8 @@ namespace Microsoft.AspNet.Routing
             route1.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(1));
             route2.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(1));
             Assert.False(context.IsHandled);
+
+            Assert.Empty(context.RouteData.Routers);
         }
 
         [Fact]

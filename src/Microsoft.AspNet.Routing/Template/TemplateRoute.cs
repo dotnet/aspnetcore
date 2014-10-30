@@ -120,54 +120,57 @@ namespace Microsoft.AspNet.Routing.Template
                     // If we got back a null value set, that means the URI did not match
                     return;
                 }
-                else
+
+                if (!RouteConstraintMatcher.Match(
+                    Constraints,
+                    values,
+                    context.HttpContext,
+                    this,
+                    RouteDirection.IncomingRequest,
+                    _constraintLogger))
                 {
-                    var originalValues = context.RouteData.Values;
-                    context.RouteData.Values = MergeValues(originalValues, values);
-
-                    try
+                    if (_logger.IsEnabled(TraceType.Verbose))
                     {
-                        if (RouteConstraintMatcher.Match(Constraints,
-                                                         values,
-                                                         context.HttpContext,
-                                                         this,
-                                                         RouteDirection.IncomingRequest,
-                                                         _constraintLogger))
-                        {
-                            context.RouteData.DataTokens = _dataTokens;
-                            await _target.RouteAsync(context);
-
-                            if (_logger.IsEnabled(TraceType.Verbose))
-                            {
-                                _logger.WriteValues(CreateRouteAsyncValues(
-                                    requestPath,
-                                    values,
-                                    matchedValues: true,
-                                    matchedConstraints: true,
-                                    handled: context.IsHandled));
-                            }
-                        }
-                        else
-                        {
-                            if (_logger.IsEnabled(TraceType.Verbose))
-                            {
-                                _logger.WriteValues(CreateRouteAsyncValues(
-                                    requestPath,
-                                    values,
-                                    matchedValues: true,
-                                    matchedConstraints: false,
-                                    handled: context.IsHandled));
-                            }
-                        }
+                        _logger.WriteValues(CreateRouteAsyncValues(
+                            requestPath,
+                            values,
+                            matchedValues: true,
+                            matchedConstraints: false,
+                            handled: context.IsHandled));
                     }
-                    finally
+
+                    return;
+                }
+
+                var oldRouteData = context.RouteData;
+
+                var newRouteData = new RouteData(oldRouteData);
+                MergeValues(newRouteData.DataTokens, _dataTokens);
+                newRouteData.Routers.Add(_target);
+                MergeValues(newRouteData.Values, values);
+
+                try
+                {
+                    context.RouteData = newRouteData;
+
+                    await _target.RouteAsync(context);
+
+                    if (_logger.IsEnabled(TraceType.Verbose))
                     {
-                        if (!context.IsHandled)
-                        {
-                            // Restore the original route data if we didn't handle the route to prevent
-                            // poluting the original route data with the values from this route.
-                            context.RouteData.Values = originalValues;
-                        }
+                        _logger.WriteValues(CreateRouteAsyncValues(
+                            requestPath,
+                            values,
+                            matchedValues: true,
+                            matchedConstraints: true,
+                            handled: context.IsHandled));
+                    }
+                }
+                finally
+                {
+                    // Restore the original values to prevent polluting the route data.
+                    if (!context.IsHandled)
+                    {
+                        context.RouteData = oldRouteData;
                     }
                 }
             }
@@ -304,26 +307,17 @@ namespace Microsoft.AspNet.Routing.Template
             return values;
         }
 
-        private static IDictionary<string, object> MergeValues(
-            IDictionary<string, object> originalValues,
+        private static void MergeValues(
+            IDictionary<string, object> destination,
             IDictionary<string, object> values)
         {
-            if (originalValues == null)
-            {
-                // There is nothing to merge
-                return values;
-            }
-
-            var result = new RouteValueDictionary(originalValues);
             foreach (var kvp in values)
             {
                 // This will replace the original value for the specified key.
                 // Values from the matched route will take preference over previous
                 // data in the route context.
-                result[kvp.Key] = kvp.Value;
+                destination[kvp.Key] = kvp.Value;
             }
-
-            return result;
         }
 
         private void EnsureLoggers(HttpContext context)

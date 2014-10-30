@@ -57,10 +57,27 @@ namespace Microsoft.AspNet.Routing
                 {
                     var route = this[i];
 
-                    await route.RouteAsync(context);
-                    if (context.IsHandled)
+                    var oldRouteData = context.RouteData;
+
+                    var newRouteData = new RouteData(oldRouteData);
+                    newRouteData.Routers.Add(route);
+
+                    try
                     {
-                        break;
+                        context.RouteData = newRouteData;
+
+                        await route.RouteAsync(context);
+                        if (context.IsHandled)
+                        {
+                            break;
+                        }
+                    }
+                    finally
+                    {
+                        if (!context.IsHandled)
+                        {
+                            context.RouteData = oldRouteData;
+                        }
                     }
                 }
 
