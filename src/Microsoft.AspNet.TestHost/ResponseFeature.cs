@@ -30,6 +30,8 @@ namespace Microsoft.AspNet.TestHost
 
         public Stream Body { get; set; }
 
+        public bool HeadersSent { get; set; }
+
         public void OnSendingHeaders(Action<object> callback, object state)
         {
             var prior = _sendingHeaders;
@@ -43,6 +45,7 @@ namespace Microsoft.AspNet.TestHost
         public void FireOnSendingHeaders()
         {
             _sendingHeaders();
+            HeadersSent = true;
         }
     }
 }
