@@ -19,12 +19,18 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <param name="tagName">The tag name that the tag helper targets. '*' indicates a catch-all
         /// <see cref="TagHelperDescriptor"/> which applies to every HTML tag.</param>
         /// <param name="tagHelperName">The full name of the tag helper class.</param>
+        /// <param name="tagHelperAssemblyName">The name of the assembly the tag helper was resolved from.</param>
         /// <param name="contentBehavior">The <see cref="TagHelpers.ContentBehavior"/>
         /// of the tag helper.</param>
         public TagHelperDescriptor([NotNull] string tagName,
                                    [NotNull] string tagHelperName,
+                                   [NotNull] string tagHelperAssemblyName,
                                    ContentBehavior contentBehavior)
-            : this(tagName, tagHelperName, contentBehavior, Enumerable.Empty<TagHelperAttributeDescriptor>())
+            : this(tagName, 
+                   tagHelperName, 
+                   tagHelperAssemblyName, 
+                   contentBehavior, 
+                   Enumerable.Empty<TagHelperAttributeDescriptor>())
         {
         }
 
@@ -36,6 +42,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <see cref="TagHelperDescriptor"/> which applies to every HTML tag.</param>
         /// <param name="tagHelperName">The code class used to render the tag helper. Corresponds to
         /// the tag helper's <see cref="Type.FullName"/>.</param>
+        /// <param name="tagHelperAssemblyName">The name of the assembly the tag helper was resolved from.</param>
         /// <param name="contentBehavior">The <see cref="TagHelpers.ContentBehavior"/>
         /// of the tag helper.</param>
         /// <param name="attributes">
@@ -43,11 +50,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </param>
         public TagHelperDescriptor([NotNull] string tagName,
                                    [NotNull] string tagHelperName,
+                                   [NotNull] string tagHelperAssemblyName,
                                    ContentBehavior contentBehavior,
                                    [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes)
         {
             TagName = tagName;
             TagHelperName = tagHelperName;
+            AssemblyName = tagHelperAssemblyName;
             ContentBehavior = contentBehavior;
             Attributes = new List<TagHelperAttributeDescriptor>(attributes);
         }
@@ -61,6 +70,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// The full name of the tag helper class.
         /// </summary>
         public string TagHelperName { get; private set; }
+
+        /// <summary>
+        /// The name of the assembly the tag helper was resolved from.
+        /// </summary>
+        public string AssemblyName { get; private set; }
 
         /// <summary>
         /// The <see cref="TagHelpers.ContentBehavior"/> of the tag helper.

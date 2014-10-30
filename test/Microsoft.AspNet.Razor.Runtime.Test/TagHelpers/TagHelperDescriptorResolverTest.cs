@@ -12,6 +12,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     public class TagHelperDescriptorResolverTest : TagHelperTypeResolverTest
     {
+        private static readonly string AssemblyName =
+            typeof(TagHelperDescriptorFactoryTest).GetTypeInfo().Assembly.GetName().Name;
+
         [Fact]
         public void DescriptorResolver_DoesNotReturnInvalidTagHelpersWhenSpecified()
         {
@@ -63,6 +66,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperDescriptorResolver = new TagHelperDescriptorResolver(tagHelperTypeResolver);
             var expectedDescriptor = new TagHelperDescriptor("Valid_Plain",
                                                              typeof(Valid_PlainTagHelper).FullName,
+                                                             AssemblyName,
                                                              ContentBehavior.None);
 
             // Act
@@ -86,6 +90,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     }));
             var expectedDescriptor = new TagHelperDescriptor("Valid_Plain",
                                                              typeof(Valid_PlainTagHelper).FullName,
+                                                             AssemblyName,
                                                              ContentBehavior.None);
 
             // Act
@@ -110,9 +115,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 new TagHelperDescriptor("Valid_Plain",
                                         typeof(Valid_PlainTagHelper).FullName,
+                                        AssemblyName,
                                         ContentBehavior.None),
                 new TagHelperDescriptor("Valid_Inherited",
                                         typeof(Valid_InheritedTagHelper).FullName,
+                                        AssemblyName,
                                         ContentBehavior.None)
             };
 

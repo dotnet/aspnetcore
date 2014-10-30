@@ -30,10 +30,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var typeName = type.FullName;
             var attributeDescriptors = GetAttributeDescriptors(type);
             var contentBehavior = GetContentBehavior(type);
+            var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
 
             return tagNames.Select(tagName =>
                 new TagHelperDescriptor(tagName,
                                         typeName,
+                                        assemblyName,
                                         contentBehavior,
                                         attributeDescriptors));
         }

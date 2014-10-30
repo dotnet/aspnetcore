@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             get
             {
-                return new TagHelperDescriptor("p", "PTagHelper", ContentBehavior.None);
+                return new TagHelperDescriptor("p", "PTagHelper", "SomeAssembly", ContentBehavior.None);
             }
         }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             get
             {
-                return new TagHelperDescriptor("div", "DivTagHelper", ContentBehavior.None);
+                return new TagHelperDescriptor("div", "DivTagHelper", "SomeAssembly", ContentBehavior.None);
             }
         }
 
