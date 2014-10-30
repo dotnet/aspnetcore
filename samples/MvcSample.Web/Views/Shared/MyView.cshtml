@@ -35,9 +35,9 @@
 }
 
 @functions {
-    public async Task<string> AsyncValueRetrieval()
+    public Task<string> AsyncValueRetrieval()
     {
-        return "Hello World";
+        return Task.FromResult("Hello World");
     }
 
     public Task RenderHelloWorldPartial(User model)
