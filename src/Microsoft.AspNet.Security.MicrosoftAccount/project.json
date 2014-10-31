@@ -1,5 +1,6 @@
 {
     "version": "1.0.0-*",
+    "description": "ASP.NET 5 middleware that enables an application to support the Microsoft Account authentication workflow.",
     "dependencies": {
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
         "Microsoft.AspNet.Security": "1.0.0-*",
