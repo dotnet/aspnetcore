@@ -1,5 +1,6 @@
 {
     "version": "1.0.0-*",
+    "description": "Implementation of WebSocket abstract base class. Used by WebListener.",
     "dependencies": {
         "Microsoft.Net.WebSocketAbstractions": "1.0.0-*"
     },
