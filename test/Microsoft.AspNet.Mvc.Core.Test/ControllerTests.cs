@@ -28,7 +28,9 @@ namespace Microsoft.AspNet.Mvc.Test
             {
                 return typeof(Controller).GetTypeInfo()
                     .DeclaredMethods
-                    .Where(method => method.IsPublic && !method.IsSpecialName)
+                    .Where(method => method.IsPublic && 
+                    !method.IsSpecialName && 
+                    !method.Name.Equals("Dispose", StringComparison.OrdinalIgnoreCase))
                     .Select(method => new[] { method });
             }
         }

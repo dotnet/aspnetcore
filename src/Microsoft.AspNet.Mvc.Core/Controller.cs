@@ -720,7 +720,6 @@ namespace Microsoft.AspNet.Mvc
                                                                 bindingContext.ValidatorProvider);
         }
 
-        [NonAction]
         public void Dispose()
         {
             Dispose(disposing: true);

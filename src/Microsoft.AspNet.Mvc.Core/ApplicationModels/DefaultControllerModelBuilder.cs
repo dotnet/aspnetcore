@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             foreach (var methodInfo in typeInfo.AsType().GetMethods())
             {
-                var actionModels = _actionModelBuilder.BuildActionModels(methodInfo);
+                var actionModels = _actionModelBuilder.BuildActionModels(typeInfo, methodInfo);
                 if (actionModels != null)
                 {
                     foreach (var actionModel in actionModels)

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -16,9 +17,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
     public class DefaultActionModelBuilder : IActionModelBuilder
     {
         /// <inheritdoc />
-        public IEnumerable<ActionModel> BuildActionModels([NotNull] MethodInfo methodInfo)
+        public IEnumerable<ActionModel> BuildActionModels([NotNull] TypeInfo typeInfo, [NotNull] MethodInfo methodInfo)
         {
-            if (!IsAction(methodInfo))
+            if (!IsAction(typeInfo, methodInfo))
             {
                 return Enumerable.Empty<ActionModel>();
             }
@@ -131,29 +132,70 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// Returns <c>true</c> if the <paramref name="methodInfo"/> is an action. Otherwise <c>false</c>.
         /// </summary>
         /// <param name="methodInfo">The <see cref="MethodInfo"/>.</param>
+        /// <param name="typeInfo">The <see cref="TypeInfo"/>.</param>
         /// <returns><c>true</c> if the <paramref name="methodInfo"/> is an action. Otherwise <c>false</c>.</returns>
         /// <remarks>
         /// Override this method to provide custom logic to determine which methods are considered actions.
         /// </remarks>
-        protected virtual bool IsAction([NotNull] MethodInfo methodInfo)
+        protected virtual bool IsAction([NotNull] TypeInfo typeInfo, [NotNull] MethodInfo methodInfo)
         {
+            // The SpecialName bit is set to flag members that are treated in a special way by some compilers
+            // (such as property accessors and operator overloading methods).
+            if (methodInfo.IsSpecialName)
+            {
+                return false;
+            }
+
+            if (methodInfo.IsDefined(typeof(NonActionAttribute)))
+            {
+                return false;
+            }
+
+            // Overriden methods from Object class, e.g. Equals(Object), GetHashCode(), etc., are not valid.
+            if (methodInfo.GetBaseDefinition().DeclaringType == typeof(object))
+            {
+                return false;
+            }
+
+            // Dispose method implemented from IDisposable is not valid
+            if (IsIDisposableMethod(methodInfo, typeInfo))
+            {
+                return false;
+            }
+
+            if (methodInfo.IsStatic)
+            {
+                return false;
+            }
+
+            if (methodInfo.IsAbstract)
+            {
+                return false;
+            }
+
+            if (methodInfo.IsConstructor)
+            {
+                return false;
+            }
+
+            if (methodInfo.IsGenericMethod)
+            {
+                return false;
+            }
+
             return
-                methodInfo.IsPublic &&
-                !methodInfo.IsStatic &&
-                !methodInfo.IsAbstract &&
-                !methodInfo.IsConstructor &&
-                !methodInfo.IsGenericMethod &&
-
-                // The SpecialName bit is set to flag members that are treated in a special way by some compilers
-                // (such as property accessors and operator overloading methods).
-                !methodInfo.IsSpecialName &&
-                !methodInfo.IsDefined(typeof(NonActionAttribute)) &&
-
-                // Overriden methods from Object class, e.g. Equals(Object), GetHashCode(), etc., are not valid.
-                methodInfo.GetBaseDefinition().DeclaringType != typeof(object);
+                methodInfo.IsPublic;
         }
 
-        /// <summary>
+        private bool IsIDisposableMethod(MethodInfo methodInfo, TypeInfo typeInfo)
+        {
+            return
+                (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(typeInfo) &&
+                 typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0] == methodInfo);
+        }
+
+
+        /// <suethodandlemary>
         /// Creates an <see cref="ActionModel"/> for the given <see cref="MethodInfo"/>.
         /// </summary>
         /// <param name="methodInfo">The <see cref="MethodInfo"/>.</param>
