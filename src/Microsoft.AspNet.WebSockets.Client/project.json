@@ -1,5 +1,6 @@
 {
     "version": "1.0.0-*",
+    "description": "Client for communicating over web sockets.",
     "dependencies": {
         "Microsoft.AspNet.WebSockets.Protocol": "1.0.0-*"
     },
