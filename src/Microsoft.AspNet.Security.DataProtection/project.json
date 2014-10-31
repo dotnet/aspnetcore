@@ -1,5 +1,6 @@
 {
     "version": "1.0.0-*",
+    "description": "ASP.NET 5 logic to protect and unprotect data, similar to DPAPI.",
     "dependencies": {
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.OptionsModel": "1.0.0-*"
