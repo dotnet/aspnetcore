@@ -30,37 +30,30 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <inheritdoc />
-        public IEnumerable<TagHelperDescriptor> Resolve(string lookupText)
+        public IEnumerable<TagHelperDescriptor> Resolve([NotNull] TagHelperDescriptorResolutionContext context)
         {
-            var lookupStrings = lookupText?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var resolvedDescriptors = new HashSet<TagHelperDescriptor>(TagHelperDescriptorComparer.Default);
 
-            // Ensure that we have valid lookupStrings to work with. Valid formats are:
-            // "assemblyName"
-            // "typeName, assemblyName"
-            if (string.IsNullOrEmpty(lookupText) ||
-                (lookupStrings.Length != 1 && lookupStrings.Length != 2))
+            foreach (var directiveDescriptor in context.DirectiveDescriptors)
             {
-                throw new ArgumentException(
-                    Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperLookupText(lookupText),
-                    nameof(lookupText));
+                var lookupInfo = GetLookupInfo(directiveDescriptor);
+
+                if (directiveDescriptor.DirectiveType == TagHelperDirectiveType.RemoveTagHelper)
+                {
+                    resolvedDescriptors.RemoveWhere(descriptor => MatchesLookupInfo(descriptor, lookupInfo));
+                }
+                else if (directiveDescriptor.DirectiveType == TagHelperDirectiveType.AddTagHelper)
+                {
+                    var descriptors = ResolveDescriptorsInAssembly(lookupInfo.AssemblyName);
+
+                    // Only use descriptors that match our lookup info
+                    descriptors = descriptors.Where(descriptor => MatchesLookupInfo(descriptor, lookupInfo));
+
+                    resolvedDescriptors.UnionWith(descriptors);
+                }
             }
 
-            // Grab the assembly name from the lookup text strings. Due to our supported lookupText formats it will 
-            // always be the last element provided.
-            var assemblyName = lookupStrings.Last().Trim();
-            var descriptors = ResolveDescriptorsInAssembly(assemblyName);
-
-            // Check if the lookupText specifies a type to search for.
-            if (lookupStrings.Length == 2)
-            {
-                // The user provided a type name. Retrieve it so we can prune our descriptors.
-                var typeName = lookupStrings[0].Trim();
-
-                descriptors = descriptors.Where(descriptor =>
-                    string.Equals(descriptor.TypeName, typeName, StringComparison.Ordinal));
-            }
-
-            return descriptors;
+            return resolvedDescriptors;
         }
 
         /// <summary>
@@ -82,6 +75,60 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var descriptors = tagHelperTypes.SelectMany(TagHelperDescriptorFactory.CreateDescriptors);
 
             return descriptors;
+        }
+
+        private static bool MatchesLookupInfo(TagHelperDescriptor descriptor, LookupInfo lookupInfo)
+        {
+            if (!string.Equals(descriptor.AssemblyName, lookupInfo.AssemblyName, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return string.IsNullOrEmpty(lookupInfo.TypeName) ||
+              string.Equals(descriptor.TypeName, lookupInfo.TypeName, StringComparison.Ordinal);
+        }
+
+        private static LookupInfo GetLookupInfo(TagHelperDirectiveDescriptor directiveDescriptor)
+        {
+            var lookupText = directiveDescriptor.LookupText;
+            var lookupStrings = lookupText?.Split(new[] { ',' });
+
+            // Ensure that we have valid lookupStrings to work with. Valid formats are:
+            // "assemblyName"
+            // "typeName, assemblyName"
+            if (lookupStrings == null ||
+                lookupStrings.Any(string.IsNullOrWhiteSpace) ||
+                (lookupStrings.Length != 1 && lookupStrings.Length != 2))
+            {
+                throw new ArgumentException(
+                    Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperLookupText(lookupText),
+                    nameof(lookupText));
+            }
+
+            // Grab the assembly name from the lookup text strings. Due to our supported lookupText formats it will 
+            // always be the last element provided.
+            var assemblyName = lookupStrings.Last().Trim();
+            string typeName = null;
+
+            // Check if the lookupText specifies a type to search for.
+            if (lookupStrings.Length == 2)
+            {
+                // The user provided a type name. Retrieve it so we can prune our descriptors.
+                typeName = lookupStrings[0].Trim();
+            }
+
+            return new LookupInfo
+            {
+                AssemblyName = assemblyName,
+                TypeName = typeName
+            };
+        }
+
+        private class LookupInfo
+        {
+            public string AssemblyName { get; set; }
+
+            public string TypeName { get; set; }
         }
     }
 }

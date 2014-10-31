@@ -18,21 +18,24 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
     {
         private readonly ITagHelperDescriptorResolver _descriptorResolver;
 
-        private List<TagHelperDescriptor> _descriptors;
+        private List<TagHelperDirectiveDescriptor> _directiveDescriptors;
 
-        public AddOrRemoveTagHelperSpanVisitor(ITagHelperDescriptorResolver descriptorResolver)
+        public AddOrRemoveTagHelperSpanVisitor([NotNull] ITagHelperDescriptorResolver descriptorResolver)
         {
             _descriptorResolver = descriptorResolver;
         }
 
         public IEnumerable<TagHelperDescriptor> GetDescriptors([NotNull] Block root)
         {
-            _descriptors = new List<TagHelperDescriptor>();
+            _directiveDescriptors = new List<TagHelperDirectiveDescriptor>();
 
             // This will recurse through the syntax tree.
             VisitBlock(root);
 
-            return _descriptors;
+            var resolutionContext = new TagHelperDescriptorResolutionContext(_directiveDescriptors);
+            var descriptors = _descriptorResolver.Resolve(resolutionContext);
+
+            return descriptors;
         }
 
         public override void VisitSpan(Span span)
@@ -43,34 +46,13 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             {
                 var codeGenerator = (AddOrRemoveTagHelperCodeGenerator)span.CodeGenerator;
 
-                if (_descriptorResolver == null)
-                {
-                    var directive = codeGenerator.RemoveTagHelperDescriptors ?
-                                  SyntaxConstants.CSharp.RemoveTagHelperKeyword :
-                                  SyntaxConstants.CSharp.AddTagHelperKeyword;
+                var directive = codeGenerator.RemoveTagHelperDescriptors ?
+                                TagHelperDirectiveType.RemoveTagHelper :
+                                TagHelperDirectiveType.AddTagHelper;
 
-                    throw new InvalidOperationException(
-                        RazorResources.FormatTagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver(
-                            directive, typeof(ITagHelperDescriptorResolver).FullName, typeof(RazorParser).FullName));
-                }
+                var directiveDescriptor = new TagHelperDirectiveDescriptor(codeGenerator.LookupText, directive);
 
-                // Look up all the descriptors associated with the "LookupText".
-                var descriptors = _descriptorResolver.Resolve(codeGenerator.LookupText);
-
-                if (codeGenerator.RemoveTagHelperDescriptors)
-                {
-                    var evaluatedDescriptors = 
-                        new HashSet<TagHelperDescriptor>(descriptors, TagHelperDescriptorComparer.Default);
-
-                    // We remove all found descriptors from the descriptor list to ignore the associated TagHelpers on the 
-                    // Razor page.
-                    _descriptors.RemoveAll(descriptor => evaluatedDescriptors.Contains(descriptor));
-                }
-                else
-                {
-                    // Add all the found descriptors to our list.
-                    _descriptors.AddRange(descriptors);
-                }
+                _directiveDescriptors.Add(directiveDescriptor);
             }
         }
     }

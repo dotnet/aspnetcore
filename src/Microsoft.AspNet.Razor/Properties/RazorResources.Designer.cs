@@ -1527,22 +1527,6 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Cannot use directive '{0}' when a {1} has not been provided to the {2}.
-        /// </summary>
-        internal static string TagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver
-        {
-            get { return GetString("TagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver"); }
-        }
-
-        /// <summary>
-        /// Cannot use directive '{0}' when a {1} has not been provided to the {2}.
-        /// </summary>
-        internal static string FormatTagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_CannotUseDirectiveWithNoTagHelperDescriptorResolver"), p0, p1, p2);
-        }
-
-        /// <summary>
         /// Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self closing.
         /// </summary>
         internal static string TagHelpersParseTreeRewriter_FoundMalformedTagHelper

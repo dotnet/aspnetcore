@@ -11,13 +11,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     public interface ITagHelperDescriptorResolver
     {
         /// <summary>
-        /// Resolves <see cref="TagHelperDescriptor"/>s matching the given <paramref name="lookupText"/>.
+        /// Resolves <see cref="TagHelperDescriptor"/>s based on the given <paramref name="resolutionContext"/>.
         /// </summary>
-        /// <param name="lookupText">
-        /// A <see cref="string"/> used to find tag helper <see cref="Type"/>s.
+        /// <param name="resolutionContext">
+        /// <see cref="TagHelperDescriptorResolutionContext"/> used to resolve descriptors for the Razor page. 
         /// </param>
-        /// <returns>An <see cref="IEnumerable{TagHelperDescriptor}"/> of <see cref="TagHelperDescriptor"/>s matching 
-        /// the given <paramref name="lookupText"/>.</returns>
-        IEnumerable<TagHelperDescriptor> Resolve(string lookupText);
+        /// <returns>An <see cref="IEnumerable{TagHelperDescriptor}"/> of <see cref="TagHelperDescriptor"/>s based 
+        /// on the given <paramref name="resolutionContext"/>.</returns>
+        IEnumerable<TagHelperDescriptor> Resolve(TagHelperDescriptorResolutionContext resolutionContext);
     }
 }
