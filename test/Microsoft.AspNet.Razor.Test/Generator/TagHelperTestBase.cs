@@ -40,9 +40,26 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 _tagHelperDescriptors = tagHelperDescriptors ?? Enumerable.Empty<TagHelperDescriptor>();
             }
 
-            public IEnumerable<TagHelperDescriptor> Resolve(string lookupText)
+            public IEnumerable<TagHelperDescriptor> Resolve(TagHelperDescriptorResolutionContext resolutionContext)
             {
-                return _tagHelperDescriptors;
+                IEnumerable<TagHelperDescriptor> descriptors = null;
+
+                foreach (var directiveDescriptor in resolutionContext.DirectiveDescriptors)
+                {
+                    if (directiveDescriptor.DirectiveType == TagHelperDirectiveType.RemoveTagHelper)
+                    {
+                        // We don't yet support "typeName, assemblyName" for @removetaghelper in this test class. Will 
+                        // add that ability and add the corresponding end-to-end test verification in:
+                        // https://github.com/aspnet/Razor/issues/222
+                        descriptors = null;
+                    }
+                    else if (directiveDescriptor.DirectiveType == TagHelperDirectiveType.AddTagHelper)
+                    {
+                        descriptors = _tagHelperDescriptors;
+                    }
+                }
+
+                return descriptors ?? Enumerable.Empty<TagHelperDescriptor>();
             }
         }
 
