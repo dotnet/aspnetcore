@@ -1,5 +1,6 @@
 {
     "version": "1.0.0-*",
+    "description": "Managed web socket protocol parser.",
     "frameworks": {
         "net45": { },
         "aspnetcore50": {
