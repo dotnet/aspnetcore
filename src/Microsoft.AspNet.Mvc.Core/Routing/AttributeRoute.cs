@@ -96,22 +96,38 @@ namespace Microsoft.AspNet.Mvc.Routing
             {
                 foreach (var route in _matchingRoutes)
                 {
-                    await route.RouteAsync(context);
+                    var oldRouteData = context.RouteData;
+
+                    var newRouteData = new RouteData(oldRouteData);
+                    newRouteData.Routers.Add(route);
+
+                    try
+                    {
+                        context.RouteData = newRouteData;
+                        await route.RouteAsync(context);
+                    }
+                    finally
+                    {
+                        if (!context.IsHandled)
+                        {
+                            context.RouteData = oldRouteData;
+                        }
+                    }
 
                     if (context.IsHandled)
                     {
                         break;
                     }
                 }
+            }
 
                 if (_logger.IsEnabled(LogLevel.Verbose))
+            {
+                _logger.WriteValues(new AttributeRouteRouteAsyncValues()
                 {
-                    _logger.WriteValues(new AttributeRouteRouteAsyncValues()
-                    {
-                        MatchingRoutes = _matchingRoutes,
-                        Handled = context.IsHandled
-                    });
-                }
+                    MatchingRoutes = _matchingRoutes,
+                    Handled = context.IsHandled
+                });
             }
         }
 

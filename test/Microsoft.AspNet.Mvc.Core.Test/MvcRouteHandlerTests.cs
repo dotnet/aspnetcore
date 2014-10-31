@@ -163,6 +163,91 @@ namespace Microsoft.AspNet.Mvc
             Assert.True(invoked);
         }
 
+        [Fact]
+        public async Task RouteAsync_CreatesNewRouteData()
+        {
+            // Arrange
+            RouteData actionRouteData = null;
+            var invoker = new Mock<IActionInvoker>();
+            invoker
+                .Setup(i => i.InvokeAsync())
+                .Returns(Task.FromResult(true));
+
+            var invokerFactory = new Mock<IActionInvokerFactory>();
+            invokerFactory
+                .Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))
+                .Returns<ActionContext>((c) =>
+                {
+                    actionRouteData = c.RouteData;
+                    return invoker.Object;
+                });
+
+            var initialRouter = Mock.Of<IRouter>();
+
+            var context = CreateRouteContext(invokerFactory: invokerFactory.Object);
+            var handler = new MvcRouteHandler();
+
+            var originalRouteData = context.RouteData;
+            originalRouteData.Routers.Add(initialRouter);
+            originalRouteData.Values.Add("action", "Index");
+
+            // Act
+            await handler.RouteAsync(context);
+
+            // Assert
+            Assert.NotSame(originalRouteData, context.RouteData);
+            Assert.NotSame(originalRouteData, actionRouteData);
+            Assert.Same(actionRouteData, context.RouteData);
+
+            // The new routedata is a copy
+            Assert.Equal("Index", context.RouteData.Values["action"]);
+
+            Assert.Equal(initialRouter, Assert.Single(context.RouteData.Routers));
+        }
+
+        [Fact]
+        public async Task RouteAsync_ResetsRouteDataOnException()
+        {
+            // Arrange
+            RouteData actionRouteData = null;
+            var invoker = new Mock<IActionInvoker>();
+            invoker
+                .Setup(i => i.InvokeAsync())
+                .Throws(new Exception());
+
+            var invokerFactory = new Mock<IActionInvokerFactory>();
+            invokerFactory
+                .Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))
+                .Returns<ActionContext>((c) =>
+                {
+                    actionRouteData = c.RouteData;
+                    c.RouteData.Values.Add("action", "Index");
+                    return invoker.Object;
+                });
+
+            var context = CreateRouteContext(invokerFactory: invokerFactory.Object);
+            var handler = new MvcRouteHandler();
+
+            var initialRouter = Mock.Of<IRouter>();
+
+            var originalRouteData = context.RouteData;
+            originalRouteData.Routers.Add(initialRouter);
+
+            // Act
+            await Assert.ThrowsAsync<Exception>(() => handler.RouteAsync(context));
+
+            // Assert
+            Assert.Same(originalRouteData, context.RouteData);
+            Assert.NotSame(originalRouteData, actionRouteData);
+            Assert.NotSame(actionRouteData, context.RouteData);
+
+            // The new routedata is a copy
+            Assert.Null(context.RouteData.Values["action"]);
+            Assert.Equal("Index", actionRouteData.Values["action"]);
+
+            Assert.Equal(initialRouter, Assert.Single(actionRouteData.Routers));
+        }
+
         private RouteContext CreateRouteContext(
             IActionSelector actionSelector = null,
             IActionInvokerFactory invokerFactory = null,

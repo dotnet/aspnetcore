@@ -1099,6 +1099,131 @@ namespace Microsoft.AspNet.Mvc.Routing
             Assert.Equal("Store", path);
         }
 
+        [Fact]
+        public async Task AttributeRoute_CreatesNewRouteData()
+        {
+            // Arrange
+            RouteData nestedRouteData = null;
+            var next = new Mock<IRouter>();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>((c) =>
+                {
+                    nestedRouteData = c.RouteData;
+                    c.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var entry = CreateMatchingEntry(next.Object, "api/Store", order: 0);
+            var route = CreateAttributeRoute(next.Object, entry);
+
+            var context = CreateRouteContext("/api/Store");
+
+            var originalRouteData = context.RouteData;
+            originalRouteData.Values.Add("action", "Index");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.NotSame(originalRouteData, context.RouteData);
+            Assert.NotSame(originalRouteData, nestedRouteData);
+            Assert.Same(nestedRouteData, context.RouteData);
+
+            // The new routedata is a copy
+            Assert.Equal("Index", context.RouteData.Values["action"]);
+            Assert.Single(context.RouteData.Values, kvp => kvp.Key == "test_route_group");
+
+            Assert.IsType<TemplateRoute>(context.RouteData.Routers[0]);
+            Assert.Same(next.Object, context.RouteData.Routers[1]);
+        }
+
+        [Fact]
+        public async Task AttributeRoute_CreatesNewRouteData_ResetsWhenNotMatched()
+        {
+            // Arrange
+            RouteData nestedRouteData = null;
+            var next = new Mock<IRouter>();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>((c) =>
+                {
+                    nestedRouteData = c.RouteData;
+                    c.IsHandled = false;
+                })
+                .Returns(Task.FromResult(true));
+
+            var entry = CreateMatchingEntry(next.Object, "api/Store", order: 0);
+            var route = CreateAttributeRoute(next.Object, entry);
+
+            var context = CreateRouteContext("/api/Store");
+
+            var originalRouteData = context.RouteData;
+            originalRouteData.Values.Add("action", "Index");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Same(originalRouteData, context.RouteData);
+            Assert.NotSame(originalRouteData, nestedRouteData);
+            Assert.NotSame(nestedRouteData, context.RouteData);
+
+            // The new routedata is a copy
+            Assert.Equal("Index", context.RouteData.Values["action"]);
+            Assert.Equal("Index", nestedRouteData.Values["action"]);
+            Assert.None(context.RouteData.Values, kvp => kvp.Key == "test_route_group");
+            Assert.Single(nestedRouteData.Values, kvp => kvp.Key == "test_route_group");
+
+            Assert.Empty(context.RouteData.Routers);
+
+            Assert.IsType<TemplateRoute>(nestedRouteData.Routers[0]);
+            Assert.Same(next.Object, nestedRouteData.Routers[1]);
+        }
+
+        [Fact]
+        public async Task AttributeRoute_CreatesNewRouteData_ResetsWhenThrows()
+        {
+            // Arrange
+            RouteData nestedRouteData = null;
+            var next = new Mock<IRouter>();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>((c) =>
+                {
+                    nestedRouteData = c.RouteData;
+                    c.IsHandled = false;
+                })
+                .Throws(new Exception());
+
+            var entry = CreateMatchingEntry(next.Object, "api/Store", order: 0);
+            var route = CreateAttributeRoute(next.Object, entry);
+
+            var context = CreateRouteContext("/api/Store");
+
+            var originalRouteData = context.RouteData;
+            originalRouteData.Values.Add("action", "Index");
+
+            // Act
+            await Assert.ThrowsAsync<Exception>(() => route.RouteAsync(context));
+
+            // Assert
+            Assert.Same(originalRouteData, context.RouteData);
+            Assert.NotSame(originalRouteData, nestedRouteData);
+            Assert.NotSame(nestedRouteData, context.RouteData);
+
+            // The new routedata is a copy
+            Assert.Equal("Index", context.RouteData.Values["action"]);
+            Assert.Equal("Index", nestedRouteData.Values["action"]);
+            Assert.None(context.RouteData.Values, kvp => kvp.Key == "test_route_group");
+            Assert.Single(nestedRouteData.Values, kvp => kvp.Key == "test_route_group");
+
+            Assert.Empty(context.RouteData.Routers);
+
+            Assert.IsType<TemplateRoute>(nestedRouteData.Routers[0]);
+            Assert.Same(next.Object, nestedRouteData.Routers[1]);
+        }
+
         private static RouteContext CreateRouteContext(string requestPath)
         {
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
@@ -1238,6 +1363,15 @@ namespace Microsoft.AspNet.Mvc.Routing
                 next,
                 Enumerable.Empty<AttributeRouteMatchingEntry>(),
                 entries,
+                NullLoggerFactory.Instance);
+        }
+
+        private static AttributeRoute CreateAttributeRoute(IRouter next, params AttributeRouteMatchingEntry[] entries)
+        {
+            return new AttributeRoute(
+                next,
+                entries,
+                Enumerable.Empty<AttributeRouteLinkGenerationEntry>(),
                 NullLoggerFactory.Instance);
         }
 
