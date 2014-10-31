@@ -1,5 +1,6 @@
 {
     "version": "1.0.0-*",
+    "description": "ASP.NET 5 core hosting infrastructure and startup logic for web applications.",
     "dependencies": {
         "Microsoft.AspNet.FeatureModel": "1.0.0-*",
         "Microsoft.AspNet.Http": "1.0.0-*",
