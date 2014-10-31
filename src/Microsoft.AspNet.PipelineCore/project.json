@@ -1,6 +1,7 @@
 
 {
   "version": "1.0.0-*",
+  "description": "ASP.NET 5 HTTP feature implementations.",
   "dependencies": {
     "Microsoft.AspNet.FeatureModel": "1.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",

@@ -1,5 +1,6 @@
 {
   "version": "1.0.0-*",
+  "description": "ASP.NET 5 HTTP object model. HttpContext and family.",
   "dependencies": {},
   "frameworks": {
     "aspnet50": {},
