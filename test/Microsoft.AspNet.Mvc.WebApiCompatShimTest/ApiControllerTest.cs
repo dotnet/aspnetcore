@@ -243,8 +243,8 @@ namespace System.Web.Http
             var result = controller.Json(product);
 
             // Assert
-            var objectResult = Assert.IsType<ObjectResult>(result);
-            Assert.Same(product, objectResult.Value);
+            var jsonResult = Assert.IsType<JsonResult>(result);
+            Assert.Same(product, jsonResult.Value);
         }
 
         [Fact]
@@ -259,10 +259,10 @@ namespace System.Web.Http
             var result = controller.Json(product, settings);
 
             // Assert
-            var objectResult = Assert.IsType<ObjectResult>(result);
-            Assert.Same(product, objectResult.Value);
+            var jsonResult = Assert.IsType<JsonResult>(result);
+            Assert.Same(product, jsonResult.Value);
 
-            var formatter = Assert.IsType<JsonOutputFormatter>(Assert.Single(objectResult.Formatters));
+            var formatter = Assert.IsType<JsonOutputFormatter>(jsonResult.Formatter);
             Assert.Same(settings, formatter.SerializerSettings);
         }
 
@@ -278,10 +278,10 @@ namespace System.Web.Http
             var result = controller.Json(product, settings, Encoding.UTF8);
 
             // Assert
-            var objectResult = Assert.IsType<ObjectResult>(result);
-            Assert.Same(product, objectResult.Value);
+            var jsonResult = Assert.IsType<JsonResult>(result);
+            Assert.Same(product, jsonResult.Value);
 
-            var formatter = Assert.IsType<JsonOutputFormatter>(Assert.Single(objectResult.Formatters));
+            var formatter = Assert.IsType<JsonOutputFormatter>(jsonResult.Formatter);
             Assert.Same(settings, formatter.SerializerSettings);
             Assert.Same(Encoding.UTF8, Assert.Single(formatter.SupportedEncodings));
         }

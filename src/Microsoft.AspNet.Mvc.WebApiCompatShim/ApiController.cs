@@ -220,52 +220,45 @@ namespace System.Web.Http
         }
 
         /// <summary>
-        /// Creates an <see cref="ObjectResult"/> (200 OK) with the specified value.
+        /// Creates an <see cref="JsonResult"/> (200 OK) with the specified value.
         /// </summary>
         /// <typeparam name="T">The type of content in the entity body.</typeparam>
         /// <param name="content">The content value to serialize in the entity body.</param>
-        /// <returns>A <see cref="ObjectResult"/> with the specified value.</returns>
+        /// <returns>A <see cref="JsonResult"/> with the specified value.</returns>
         [NonAction]
-        public virtual ObjectResult Json<T>([NotNull] T content)
+        public virtual JsonResult Json<T>([NotNull] T content)
         {
-            var result = new ObjectResult(content);
-            result.ContentTypes.Add(MvcMediaTypeHeaderValue.Parse("application/json"));
-            result.ContentTypes.Add(MvcMediaTypeHeaderValue.Parse("text/json"));
-            return result;
+            return new JsonResult(content);
         }
 
         /// <summary>
-        /// Creates an <see cref="ObjectResult"/> (200 OK) with the specified values.
+        /// Creates an <see cref="JsonResult"/> (200 OK) with the specified values.
         /// </summary>
         /// <typeparam name="T">The type of content in the entity body.</typeparam>
         /// <param name="content">The content value to serialize in the entity body.</param>
         /// <param name="serializerSettings">The serializer settings.</param>
-        /// <returns>A <see cref="ObjectResult"/> with the specified values.</returns>
+        /// <returns>A <see cref="JsonResult"/> with the specified values.</returns>
         [NonAction]
-        public virtual ObjectResult Json<T>([NotNull] T content, [NotNull] JsonSerializerSettings serializerSettings)
+        public virtual JsonResult Json<T>([NotNull] T content, [NotNull] JsonSerializerSettings serializerSettings)
         {
             var formatter = new JsonOutputFormatter()
             {
                 SerializerSettings = serializerSettings,
             };
 
-            var result = new ObjectResult(content);
-            result.Formatters.Add(formatter);
-            result.ContentTypes.Add(MvcMediaTypeHeaderValue.Parse("application/json"));
-            result.ContentTypes.Add(MvcMediaTypeHeaderValue.Parse("text/json"));
-            return result;
+            return new JsonResult(content, formatter);
         }
 
         /// <summary>
-        /// Creates an <see cref="JsonResult{T}"/> (200 OK) with the specified values.
+        /// Creates an <see cref="JsonResult"/> (200 OK) with the specified values.
         /// </summary>
         /// <typeparam name="T">The type of content in the entity body.</typeparam>
         /// <param name="content">The content value to serialize in the entity body.</param>
         /// <param name="serializerSettings">The serializer settings.</param>
         /// <param name="encoding">The content encoding.</param>
-        /// <returns>A <see cref="JsonResult{T}"/> with the specified values.</returns>
+        /// <returns>A <see cref="JsonResult"/> with the specified values.</returns>
         [NonAction]
-        public virtual ObjectResult Json<T>(
+        public virtual JsonResult Json<T>(
             [NotNull] T content,
             [NotNull] JsonSerializerSettings serializerSettings,
             [NotNull] Encoding encoding)
@@ -278,11 +271,7 @@ namespace System.Web.Http
             formatter.SupportedEncodings.Clear();
             formatter.SupportedEncodings.Add(encoding);
 
-            var result = new ObjectResult(content);
-            result.Formatters.Add(formatter);
-            result.ContentTypes.Add(MvcMediaTypeHeaderValue.Parse("application/json"));
-            result.ContentTypes.Add(MvcMediaTypeHeaderValue.Parse("text/json"));
-            return result;
+            return new JsonResult(content, formatter);
         }
 
         /// <summary>

@@ -3,6 +3,6 @@
 
 namespace System.Web.Http
 {
-    [Obsolete("This class is obsolete. Use Microsoft.AspNet.Mvc.ObjectResult as a replacement.", error: true)]
+    [Obsolete("This class is obsolete. Use Microsoft.AspNet.Mvc.JsonResult as a replacement.", error: true)]
     public class JsonResult<T> { }
 }
