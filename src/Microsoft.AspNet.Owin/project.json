@@ -1,5 +1,6 @@
 {
     "version": "1.0.0-*",
+    "description": "ASP.NET 5 component for running OWIN middleware.",
     "dependencies": {
         "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.FeatureModel": "1.0.0-*",

@@ -1,5 +1,6 @@
 {
     "version": "1.0.0-*",
+    "description": "ASP.NET 5 common helper methods such as URL encoding.",
     "dependencies": {
         "Microsoft.AspNet.Http": "1.0.0-*"
     },
