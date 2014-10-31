@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Routing.Template
                     {
                         _logger.WriteValues(CreateRouteAsyncValues(
                             requestPath,
-                            values,
+                            context.RouteData.Values,
                             matchedValues: false,
                             matchedConstraints: false,
                             handled: context.IsHandled));
@@ -121,9 +121,16 @@ namespace Microsoft.AspNet.Routing.Template
                     return;
                 }
 
+                var oldRouteData = context.RouteData;
+
+                var newRouteData = new RouteData(oldRouteData);
+                MergeValues(newRouteData.DataTokens, _dataTokens);
+                newRouteData.Routers.Add(_target);
+                MergeValues(newRouteData.Values, values);
+
                 if (!RouteConstraintMatcher.Match(
                     Constraints,
-                    values,
+                    newRouteData.Values,
                     context.HttpContext,
                     this,
                     RouteDirection.IncomingRequest,
@@ -133,7 +140,7 @@ namespace Microsoft.AspNet.Routing.Template
                     {
                         _logger.WriteValues(CreateRouteAsyncValues(
                             requestPath,
-                            values,
+                            newRouteData.Values,
                             matchedValues: true,
                             matchedConstraints: false,
                             handled: context.IsHandled));
@@ -141,13 +148,6 @@ namespace Microsoft.AspNet.Routing.Template
 
                     return;
                 }
-
-                var oldRouteData = context.RouteData;
-
-                var newRouteData = new RouteData(oldRouteData);
-                MergeValues(newRouteData.DataTokens, _dataTokens);
-                newRouteData.Routers.Add(_target);
-                MergeValues(newRouteData.Values, values);
 
                 try
                 {
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Routing.Template
                     {
                         _logger.WriteValues(CreateRouteAsyncValues(
                             requestPath,
-                            values,
+                            newRouteData.Values,
                             matchedValues: true,
                             matchedConstraints: true,
                             handled: context.IsHandled));
