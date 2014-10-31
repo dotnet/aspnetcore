@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal("Home/Index/Failure", values.RequestPath);
             Assert.Equal(template, values.Template);
             Assert.NotNull(values.DefaultValues);
-            Assert.Null(values.ProducedValues);
+            Assert.Empty(values.ProducedValues);
             Assert.Equal(false, values.MatchedTemplate);
             Assert.Equal(false, values.MatchedConstraints);
             Assert.Equal(false, values.Matched);
@@ -211,6 +211,68 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal("USA", routeValues["country"]);
             Assert.True(routeValues.ContainsKey("id"));
             Assert.Equal("5",routeValues["id"]);
+
+            Assert.True(context.RouteData.Values.ContainsKey("country"));
+            Assert.Equal("USA", context.RouteData.Values["country"]);
+            Assert.True(context.RouteData.Values.ContainsKey("id"));
+            Assert.Equal("5", context.RouteData.Values["id"]);
+            Assert.NotSame(originalRouteDataValues, context.RouteData.Values);
+
+            Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
+            Assert.Equal("Friday", context.RouteData.DataTokens["today"]);
+            Assert.NotSame(originalDataTokens, context.RouteData.DataTokens);
+            Assert.NotSame(route.DataTokens, context.RouteData.DataTokens);
+        }
+
+        [Fact]
+        public async Task RouteAsync_MergesExistingRouteData_PassedToConstraint()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:int}";
+
+            var context = CreateRouteContext("/Home/Index/5");
+            var originalRouteDataValues = context.RouteData.Values;
+            originalRouteDataValues.Add("country", "USA");
+
+            var originalDataTokens = context.RouteData.DataTokens;
+            originalDataTokens.Add("company", "Contoso");
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var constraint = new CapturingConstraint();
+
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: new RouteValueDictionary(new { action = constraint }),
+                dataTokens: new RouteValueDictionary(new { today = "Friday" }),
+                inlineConstraintResolver: _inlineConstraintResolver);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(routeValues);
+
+            Assert.True(routeValues.ContainsKey("country"));
+            Assert.Equal("USA", routeValues["country"]);
+            Assert.True(routeValues.ContainsKey("id"));
+            Assert.Equal("5", routeValues["id"]);
+
+            Assert.True(constraint.Values.ContainsKey("country"));
+            Assert.Equal("USA", constraint.Values["country"]);
+            Assert.True(constraint.Values.ContainsKey("id"));
+            Assert.Equal("5", constraint.Values["id"]);
 
             Assert.True(context.RouteData.Values.ContainsKey("country"));
             Assert.Equal("USA", context.RouteData.Values["country"]);
@@ -330,6 +392,59 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Same(originalDataTokens, context.RouteData.DataTokens);
         }
 
+        [Fact]
+        public async Task RouteAsync_CleansUpMergedRouteData_IfConstraintThrows()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:int}";
+
+            var context = CreateRouteContext("/Home/Index/5");
+            var originalRouteDataValues = context.RouteData.Values;
+            originalRouteDataValues.Add("country", "USA");
+
+            var originalDataTokens = context.RouteData.DataTokens;
+            originalDataTokens.Add("company", "Contoso");
+
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    ctx.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var constraint = new Mock<IRouteConstraint>(MockBehavior.Strict);
+            constraint
+                .Setup(c => c.Match(
+                    It.IsAny<HttpContext>(),
+                    It.IsAny<IRouter>(),
+                    It.IsAny<string>(),
+                    It.IsAny<IDictionary<string, object>>(),
+                    It.IsAny<RouteDirection>()))
+                .Callback(() => { throw new Exception(); });
+
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: new RouteValueDictionary(new { action = constraint.Object }),
+                dataTokens: new RouteValueDictionary(new { today = "Friday" }),
+                inlineConstraintResolver: _inlineConstraintResolver);
+
+            // Act
+            var ex = await Assert.ThrowsAsync<Exception>(() => route.RouteAsync(context));
+
+            // Assert
+            Assert.True(context.RouteData.Values.ContainsKey("country"));
+            Assert.Equal("USA", context.RouteData.Values["country"]);
+            Assert.False(context.RouteData.Values.ContainsKey("id"));
+            Assert.Same(originalRouteDataValues, context.RouteData.Values);
+
+            Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
+            Assert.False(context.RouteData.DataTokens.ContainsKey("today"));
+            Assert.Same(originalDataTokens, context.RouteData.DataTokens);
+        }
 
         [Fact]
         public async Task RouteAsync_MatchFailOnConstraints_DoesNotLogWhenDisabled()
