@@ -1,0 +1,47 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <KRootPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), k.msbuild))\</KRootPath>
+        <KBinPath>$(KRootPath)bin\</KBinPath>
+        <KToolsPath>$(KRootPath)tools\</KToolsPath>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <IntermediateOutputPath>$(KRootPath)obj\</IntermediateOutputPath>
+        <SignedOutputPath>$(KBinPath)Signed\</SignedOutputPath>
+        <OutputPath Condition="'$(Sign)' == 'Sign'">$(SignedOutputPath)</OutputPath>
+        <OutputPath Condition="'$(Sign)' != 'Sign'">$(KBinPath)$(Configuration)\</OutputPath>
+        <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
+        <PackagesOutputPath>$(OutputPath)Packages\</PackagesOutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <UnsignedPackagesPath>$(IntermediateOutputPath)UnsignedPackages\</UnsignedPackagesPath>
+        <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
+        <UnsignedBinariesPath>$(KBinPath)FilesToSign\</UnsignedBinariesPath>
+        <BinScopePackagesPath>$(IntermediateOutputPath)\BinScopePackages\</BinScopePackagesPath>
+
+        <CodeSignScriptsPath>$(SignedOutputPath)Scripts\</CodeSignScriptsPath>
+        <CodeSignVerificationPath>$(SignedOutputPath)Verification\</CodeSignVerificationPath>
+        <SignedBinariesPath>$(SignedOutputPath)</SignedBinariesPath>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <CodeSignCertificates>400</CodeSignCertificates>
+        <CodeSignDisplayName>Microsoft ASP.NET</CodeSignDisplayName>
+        <CodeSignUrl>http://www.asp.net/</CodeSignUrl>
+        <VerifySignatures Condition="'$(VerifySignatures)' == ''">true</VerifySignatures>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <BinariesToSign>
+            <Certificates>$(CodeSignCertificates)</Certificates>
+            <Description>Signing ProjectK binaries</Description>
+            <DisplayName>$(CodeSignDisplayName)</DisplayName>
+            <Url>$(CodeSignUrl)</Url>
+        </BinariesToSign>
+    </ItemDefinitionGroup>
+</Project>

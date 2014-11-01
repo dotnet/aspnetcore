@@ -1,0 +1,635 @@
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.SubmitCodeSignJob" />
+    <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.WaitForCodeSignJobs" />
+    <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.PoliCheck" />
+    <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks.dll" TaskName="Microsoft.Web.MsBuildTasks.RegexReplace" />
+
+    <Import Project="tools\k.settings.targets" />
+    <Import Project="tools\QERM.targets" />
+
+    <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;VerifySignatures" />
+
+    <Target Name="Clean">
+        <RemoveDir Directories="$(KBinPath);$(IntermediateOutputPath);$(UnsignedBinariesPath)" />
+    </Target>
+
+    <Target Name="Rebuild" DependsOnTargets="Clean;Build">
+
+    </Target>
+
+    <Target Name="FindLatestDropShare">
+        <FindLatestDrop RootPath="$(RootDrop)" SubFolder="build">
+            <Output TaskParameter="LatestPath" PropertyName="DropSource"/>
+        </FindLatestDrop>
+
+        <PropertyGroup>
+            <SymbolPackagePath>$(DropSource)..\symbols\</SymbolPackagePath>
+        </PropertyGroup>
+
+        <Message Text="$(DropSource)" />
+    </Target>
+
+    <Target Name="CopyAndExtractUnsignedPackages" DependsOnTargets="FindLatestDropShare;$(Clean)">
+        <MakeDir Directories="$(OutputPath)" />
+        <Copy SourceFiles="$(DropSource)..\commit" DestinationFolder="$(OutputPath)" />
+
+        <ItemGroup>
+            <UnsignedPackages
+                Include="$(DropSource)**\EntityFramework*.nupkg;
+                         $(DropSource)**\Kestrel*.nupkg;
+                         $(DropSource)**\klr*.nupkg;
+                         $(DropSource)**\KoreBuild*.nupkg;
+                         $(DropSource)**\KRE*.nupkg;
+                         $(DropSource)**\Microsoft.AspNet*.nupkg;
+                         $(DropSource)**\Microsoft.Data*.nupkg;
+                         $(DropSource)**\Microsoft.Framework*.nupkg;
+                         $(DropSource)**\Microsoft.Net*.nupkg;
+                         $(DropSource)**\StyleCop.KRules*.nupkg;
+                         $(DropSource)**\System.Data.*.nupkg;
+                         $(DropSource)**\System.Security.Claims*.nupkg"
+            />
+            <SymbolPackages
+                Include="$(SymbolPackagePath)**\EntityFramework*.nupkg;
+                         $(SymbolPackagePath)**\Kestrel*.nupkg;
+                         $(SymbolPackagePath)**\klr*.nupkg;
+                         $(SymbolPackagePath)**\KoreBuild*.nupkg;
+                         $(SymbolPackagePath)**\KRE*.nupkg;
+                         $(SymbolPackagePath)**\Microsoft.AspNet*.nupkg;
+                         $(SymbolPackagePath)**\Microsoft.Data*.nupkg;
+                         $(SymbolPackagePath)**\Microsoft.Framework*.nupkg;
+                         $(SymbolPackagePath)**\Microsoft.Net*.nupkg;
+                         $(SymbolPackagePath)**\System.Data.*.nupkg;
+                         $(SymbolPackagePath)**\System.Security.Claims*.nupkg"
+            />
+        </ItemGroup>
+
+        <Message Text="%(UnsignedPackages.Identity)" Importance="low" />
+
+        <Exec Command="$(KToolsPath)7za.exe x -y -scsUTF-8 -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity)" />
+        <Exec Command="$(KToolsPath)7za.exe x -y -scsUTF-8 -o@(SymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(SymbolPackages.Identity)" />
+
+        <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
+
+        <!-- Delete metadata -->
+        <RemoveDir Directories="@(UnsignedPackages->'%(UnsignedPackagesPath)%(Filename)\_rels')" />
+        <Delete Files="@(UnsignedPackages->'%(UnsignedPackagesPath)%(Filename)\[Content_Types].xml')" />
+    </Target>
+
+    <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages">
+        <!-- Flatten the file names -->
+        <ItemGroup>
+            <_UnsignedPackageBinaries
+                Include="$(UnsignedPackagesPath)**\AspNet.Loader*.dll;
+                         $(UnsignedPackagesPath)**\EntityFramework*.dll;
+                         $(UnsignedPackagesPath)**\EntityFramework.psd1;
+                         $(UnsignedPackagesPath)**\EntityFramework.psm1;
+                         $(UnsignedPackagesPath)**\EntityFramework*\**\init.ps1;
+                         $(UnsignedPackagesPath)**\Kestrel*.dll;
+                         $(UnsignedPackagesPath)**\klr*.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.AspNet*.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.Data*.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.Framework*.dll;                         
+                         $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
+                         $(UnsignedPackagesPath)**\StyleCop.KRules*.dll;
+                         $(UnsignedPackagesPath)**\System.Data.*.dll;
+                         $(UnsignedPackagesPath)**\System.Security.Claims*.dll;
+                         $(UnsignedPackagesPath)**\klr*.exe"
+            />
+
+            <UnsignedPackageBinaries Include="@(_UnsignedPackageBinaries)">
+                <!-- Flattened file for signing -->
+                <UnsignedFlatFileName>$(UnsignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '__'))</UnsignedFlatFileName>
+                <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '__'))</SignedFlatFileName>
+            </UnsignedPackageBinaries>
+
+            <PackageBinariesToSign Include="%(UnsignedPackageBinaries.UnsignedFlatFileName)" />
+        </ItemGroup>
+
+        <Copy SourceFiles="@(UnsignedPackageBinaries)" DestinationFiles="@(UnsignedPackageBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
+    </Target>
+
+    <Target Name="SignFiles" DependsOnTargets="PrepareFilesForSigning">
+        <RemoveDir Directories="$(CodeSignScriptsPath)" />
+        <MakeDir Directories="$(CodeSignScriptsPath)" />
+
+        <ItemGroup>
+            <BinariesToSign Include="@(PackageBinariesToSign)">
+                <CopyScript>ProjectKBinariesAuthentiCode400.bat</CopyScript>
+                <CopyScriptTargetPath>$(SignedOutputPath)</CopyScriptTargetPath>
+            </BinariesToSign>
+        </ItemGroup>
+
+        <SubmitCodeSignJob
+            Approvers="$(CodeSignApprovers)"
+            Certificates="%(Certificates)"
+            CopyScript="$(CodeSignScriptsPath)\%(CopyScript)"
+            CopyScriptRemoveTargetFolder="false"
+            CopyScriptTargetPath="%(CopyScriptTargetPath)"
+            Description="%(Description)"
+            DisplayName="%(DisplayName)"
+            DisplayUrl="%(Url)"
+            Files="@(BinariesToSign)"
+            GenerateCopyScript="true"
+            Poll="false"
+            SSL="true"
+            Test="$(TestCodeSign)">
+            <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
+        </SubmitCodeSignJob>
+
+        <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
+
+        <Exec Command="$(CodeSignScriptsPath)\%(BinariesToSign.CopyScript)" />
+    </Target>
+
+    <Target Name="ReplaceUnsignedFiles" DependsOnTargets="SignFiles">
+        <Copy SourceFiles="@(UnsignedPackageBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedPackageBinaries->'%(FullPath)')" />
+    </Target>
+
+    <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
+        <ItemGroup>
+            <NuSpecEULA Include="$(UnsignedPackagesPath)**\EntityFramework*.nuspec;
+                                 $(UnsignedPackagesPath)**\K.*.nuspec;
+                                 $(UnsignedPackagesPath)**\Kestrel*.nuspec;
+                                 $(UnsignedPackagesPath)**\klr.*.nuspec;
+                                 $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
+                                 $(UnsignedPackagesPath)**\KRE*.nuspec;
+                                 $(UnsignedPackagesPath)**\Microsoft.AspNet*.nuspec;
+                                 $(UnsignedPackagesPath)**\Microsoft.Data*.nuspec;
+                                 $(UnsignedPackagesPath)**\Microsoft.Framework.*.nuspec;
+                                 $(UnsignedPackagesPath)**\Microsoft.Net.*.nuspec;
+                                 $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec;
+                                 $(UnsignedPackagesPath)**\System.Data.*.nuspec;
+                                 $(UnsignedPackagesPath)**\System.Security.Claims.nuspec"/>
+        </ItemGroup>
+
+        <MSBuild Projects="k.msbuild" Properties="NuSpecFileToUpdate=%(NuSpecEULA.Identity);Sign=$(Sign);TestCodeSign=$(TestCodeSign);Configuration=$(Configuration)"
+                 Targets="AddOrUpdateRequiredNuspecFields"/>
+    </Target>
+
+    <Target Name="AddOrUpdateRequiredNuspecFields">
+        <Message Text="Checking required NUSPEC fields in $(NuSpecFileToUpdate)..." />
+
+        <FixRequiredNuSpecInfo
+            NuSpec="$(NuSpecFileToUpdate)"
+        />
+
+    </Target>
+
+    <Target Name="RebuildPackages" DependsOnTargets="ReplaceUnsignedFiles;UpdateLicenseURLs">
+        <MakeDir Directories="$(PackagesOutputPath)" />
+
+        <ItemGroup>
+            <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
+        </ItemGroup>
+
+        <MSBuild Projects="K.msbuild"
+                 Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(NuSpec.Identity);"
+                 Targets="RebuildPackage"/>
+
+        <!-- Capture packages that contain content we signed since that will become the list of items we will submit to BinScope -->
+        <ItemGroup>
+            <SignedPackages Include="$(PackagesOutputPath)**\*.nupkg" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="RebuildPackage">
+        <PropertyGroup>
+            <WorkingDir>$([System.IO.Path]::GetDirectoryName($(NuSpecFile)))</WorkingDir>
+            <PackageName>$([System.IO.Path]::GetFileName($(WorkingDir)))</PackageName>
+        </PropertyGroup>
+
+        <Exec Command="$(KToolsPath)7za.exe a -tzip -mx9 -r -y $(PackagesOutputPath)$(PackageName).nupkg *" WorkingDirectory="$(WorkingDir)" />
+    </Target>
+
+    <Target Name="CopyUnsignedPackages" DependsOnTargets="RebuildPackages">
+        <ItemGroup>
+            <AllPackages Include="$(DropSource)**\*.nupkg" />
+        </ItemGroup>
+
+        <Copy SourceFiles="@(AllPackages)" DestinationFolder="$(PackagesOutputPath)" Condition="!Exists('$(PackagesOutputPath)%(FileName)%(Extension)')" />
+    </Target>
+
+    <Target Name="VerifySignatures" DependsOnTargets="RebuildPackages" Condition="'$(VerifySignatures)' == 'true'">
+        <RemoveDir Directories="$(CodeSignVerificationPath)" />
+        <MakeDir Directories="$(CodeSignVerificationPath)" />
+
+        <ItemGroup>
+            <PackagesToVerify Include="$(PackagesOutputPath)**\*.nupkg" />
+        </ItemGroup>
+
+        <Exec Command="$(KToolsPath)SignVer.exe /z:$(KToolsPath) /s /m:$(KToolsPath)signver.manifest /i:%(PackagesToVerify.FullPath) /vl /l:$(CodeSignVerificationPath)%(PackagesToVerify.Filename).log "/>
+    </Target>
+
+    <Target Name="PoliCheck" DependsOnTargets="FindLatestDropShare">
+        <ItemGroup>
+            <PoliCheckPackages Include="$(SymbolPackagePath)EntityFramework.*.symbols.nupkg;
+                                        $(SymbolPackagePath)Kestrel*.symbols.nupkg;
+                                        $(SymbolPackagePath)klr*.symbols.nupkg;
+                                        $(SymbolPackagePath)KRE*.symbols.nupkg;
+                                        $(SymbolPackagePath)Microsoft.AspNet*.symbols.nupkg;
+                                        $(SymbolPackagePath)Microsoft.Data*.symbols.nupkg;
+                                        $(SymbolPackagePath)Microsoft.Framework*.symbols.nupkg;
+                                        $(SymbolPackagePath)Microsoft.Net*.symbols.nupkg;
+                                        $(SymbolPackagePath)PageGenerator.*.symbols.nupkg;
+                                        $(SymbolPackagePath)StyleCop.KRules*.symbols.nupkg;
+                                        $(SymbolPackagePath)System.Data*.symbols.nupkg;
+                                        $(SymbolPackagePath)System.Security.Claims.*.symbols.nupkg;"/>
+        </ItemGroup>
+
+        <Exec Command="$(KToolsPath)7za.exe x -y -scsUTF-8 -o@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)') %(PoliCheckPackages.Identity)" />
+
+        <RemoveDir Directories="@(PoliCheckPackages->'%(PoliCheckPath)%(Filename)\_rels')" />
+        <Delete Files="@(PoliCheckPackages->'%(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
+
+        <!-- These are terms that originate in resource strings from some DLLs, as well as common terminology in the sources. -->
+        <PropertyGroup>
+            <Exclusions>
+                component;components;countries;country;dans;execute;execution;foo;hang;hanging;invalid;patch;race
+            </Exclusions>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <!-- List is sorted OridnalIgnoreCase -->
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.Http.Server\WebListener.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\HttpReasonPhrase.cs">
+                <term>420</term>
+                <Justification>HTTP response code</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
+                <term>butt</term>
+                <Justification>not our code, jquery scripts embedded in .cs file</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Identity\Rfc6238AuthenticationService.cs">
+                <term>DT</term>
+                <Justification>abbreviation for DateTime</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
+                <term>FE</term>
+                <Justification>not our code, jquery scripts embedded in .cs file</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
+                <term>FU</term>
+                <Justification>not our code, jquery scripts embedded in .cs file</Justification>
+            </SrcExclusions>     
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Security.Windows\Legacy\GlobalLog.cs">
+                <term>hung</term>
+                <Justification>refers to a stuck process/thread</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.StaticFiles\FileExtensionContentTypeProvider.cs">
+                <term>pot</term>
+                <Justification>file extension - powerpoint</Justification>
+            </SrcExclusions>           
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.WebSockets\WebSocketBuffer.cs">
+                <term>races</term>
+                <Justification>refers to race condition</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Building\BuildContext.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Colors.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\RestoreCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\PackageFeed.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Shims\ConsoleColor.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Building\BuildManager.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\AddCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\InstallCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Packing\PackManager.cs;
+                                    $(PoliCheckPath)**\**\Microsoft.Framework.PackageManager.dll">
+                <term>Red</term>
+                <Justification>Color constant name</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.Runtime\DependencyManagement\ProjectReferenceDependencyProvider.cs">
+                <term>sucks</term>
+                <Justification>expression of sadness</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
+                <term>UK</term>
+                <Justification>text appears in base64 encoded string of an image</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)\**\Microsoft.AspNet.Security.Cookies.xml;
+                                    $(PoliCheckPath)\**\src\Microsoft.AspNet.Security.Cookies\Infrastructure\ICookieManager.cs">
+              <term>chunking</term>
+              <Justification>Used to describe network chunks</Justification>
+            </SrcExclusions>
+        </ItemGroup>
+
+        <PoliCheck
+            FolderToScan="$(PoliCheckPath.TrimEnd('\'))"
+            Severity="4"
+            FailSeverity="4"
+            ExcludeTerms="$(Exclusions)"
+            ExcludeFiles=""
+            DetailedExclusions="@(SrcExclusions)" />
+    </Target>
+
+    <Target Name="CopyNativePackageSymbols">
+        <!-- Special cases for Native code that don't have symbol packages -->
+        <ItemGroup>
+            <NativePackages Include="$(PackagesOutputPath)**\Microsoft.AspNet.Loader.IIS.Interop.*.nupkg">
+                <BasePath>$(ProjectKDropRoot)Helios\$(BUILD_BRANCH)\</BasePath>
+                <RelativeBinPath>build\Microsoft.AspNet.Loader.IIS.Interop\bin</RelativeBinPath>
+            </NativePackages>
+        </ItemGroup>
+
+        <Message Text="%(NativePackages.Identity)" />
+
+        <MSBuild Projects="K.msbuild"
+                 Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NativePackageSymbolsBasePath=%(NativePackages.BasePath);
+                             NativePackageSymbolsRelativeBinPath=%(NativePackages.RelativeBinPath);NativePackage=%(NativePackages.Identity)"
+                 Targets="LocateAndCopyNativeSymbolsUsingBuildNumber" />
+    </Target>
+
+    <Target Name="LocateAndCopyNativeSymbolsUsingBuildNumber">
+        <GetBuildNumberFromPackageName PackagePath="$(NativePackage)">
+            <Output TaskParameter="BuildNumber" PropertyName="NativePackageBuildNumber" />
+        </GetBuildNumberFromPackageName>
+
+        <PropertyGroup>
+            <AdditionalNativeSymbolsPath>$(NativePackageSymbolsBasePath)$(NativePackageBuildNumber)\$(NativePackageSymbolsRelativeBinPath)\</AdditionalNativeSymbolsPath>
+        </PropertyGroup>
+
+        <Message Text="$(AdditionalNativeSymbolsPath)" />
+
+        <ItemGroup>
+            <NativeAssembliesAndSymbols Include="$(AdditionalNativeSymbolsPath)\**\*.pdb" />
+            <NativeAssembliesAndSymbols Include="$(AdditionalNativeSymbolsPath)\**\*.dll" />
+        </ItemGroup>
+
+        <Message Text="$(UnsignedSymbolPackagesPath)%(NativeSymbols.Directory)" />
+
+        <Copy SourceFiles="@(NativeAssembliesAndSymbols)" DestinationFiles="@(NativeAssembliesAndSymbols->'$(UnsignedSymbolPackagesPath)native\%(Directory)%(FileName)%(Extension)')" />
+    </Target>
+
+    <Target Name="BeforeBinScope" DependsOnTargets="RebuildPackages;CopyNativePackageSymbols" Condition="'$(Sign)' == 'Sign'">
+        <ItemGroup>
+            <SignedPackagesForBinScope Include="$(PackagesOutputPath)**\*.nupkg"
+                                       Exclude="$(PackagesOutputPath)**\CoreCLR*.nupkg;
+                                                $(PackagesOutputPath)**\KRE*.nupkg;
+                                                $(PackagesOutputPath)**\Microsoft.CSharp*.nupkg;
+                                                $(PackagesOutputPath)**\Microsoft.AspNet.Loader.IIS.Interop*.nupkg" />
+        </ItemGroup>
+
+        <Exec Command="$(KToolsPath)7za.exe x -y -scsUTF-8 -o@(SignedPackagesForBinScope->'$(BinScopePackagesPath)%(Filename)') %(SignedPackagesForBinScope.Identity)" />
+
+        <ItemGroup>
+            <BinScopeTargetFiles Include="$(BinScopePackagesPath)**\Microsoft*.dll" />
+            <BinScopeTargetFiles Include="$(BinScopePackagesPath)**\Microsoft*.pdb" />
+            <BinScopeTargetFiles Include="$(UnsignedSymbolPackagesPath)native\**\Microsoft*.dll" />
+            <BinScopeTargetFiles Include="$(UnsignedSymbolPackagesPath)native\**\Microsoft*.pdb" />
+        </ItemGroup>
+    </Target>
+
+    <UsingTask TaskName="RenameEncodedFolders" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+        <ParameterGroup>
+            <RootDirectory ParameterType="System.String" Required="true" />
+        </ParameterGroup>
+        <Task>
+            <Reference Include="System.Xml" />
+            <Reference Include="System.Core" />
+            <Using Namespace="System" />
+            <Using Namespace="System.Collections.Generic" />
+            <Using Namespace="System.Diagnostics" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Xml" />
+            <Using Namespace="Microsoft.Build.Framework" />
+            <Using Namespace="Microsoft.Build.Utilities" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+            try
+            {
+                Log.LogMessage(MessageImportance.Normal, RootDirectory);
+                
+                foreach (var directory in Directory.EnumerateDirectories(RootDirectory, "*", SearchOption.AllDirectories))
+                {
+                    string unescapedDirectory = Uri.UnescapeDataString(directory);
+                    Log.LogMessage(MessageImportance.Normal, unescapedDirectory);
+                    if (!String.Equals(directory, unescapedDirectory))
+                    {
+                        Directory.Move(directory, unescapedDirectory);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogErrorFromException(ex);
+            }
+            
+            return !Log.HasLoggedErrors;
+        ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
+    <UsingTask TaskName="FixRequiredNuSpecInfo" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+        <ParameterGroup>
+            <NuSpec ParameterType="System.String" Required="true" />
+        </ParameterGroup>
+        <Task>
+            <Reference Include="System.Xml" />
+            <Reference Include="System.Core" />
+            <Using Namespace="System" />
+            <Using Namespace="System.Collections.Generic" />
+            <Using Namespace="System.Diagnostics" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Xml" />
+            <Using Namespace="Microsoft.Build.Framework" />
+            <Using Namespace="Microsoft.Build.Utilities" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+            var LicenseUrl = "http://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm";
+            var IconUrl = "http://go.microsoft.com/fwlink/?LinkID=288859";
+            var CopyrightText = "Copyright © Microsoft Corporation";
+            var ProjectUrl = "http://www.asp.net/";
+
+            try
+            {
+                var d = new XmlDocument();
+                d.Load(NuSpec);
+
+                // Grab the NuSpec namespace URI that's used in this NuSpec. We don't care which
+                // schema it is, as long as we use whatever is there.
+                var nuSpecNamespace = d.ChildNodes[1].NamespaceURI;
+
+                // Find license URL tag
+                var licenseUrlNode = d.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='licenseUrl']/text()");
+                if (licenseUrlNode == null)
+                {
+                    // Add it if it's missing
+                    var e = d.CreateElement("licenseUrl", nuSpecNamespace);
+                    var t = d.CreateTextNode(LicenseUrl);
+                    var x = d["package"]["metadata"];
+                    x.AppendChild(e);
+                    x.LastChild.AppendChild(t);
+                    Log.LogMessage(MessageImportance.Normal, "Adding missing licenseUrl node");
+                }
+                else
+                {
+                    // Overwrite the text if it's there (don't care if it was right or wrong)
+                    licenseUrlNode.InnerText = LicenseUrl;
+                    Log.LogMessage(MessageImportance.Normal, "Updating existing licenseUrl node");
+                }
+
+                // Find requireLicenseAcceptance tag
+                var requireLicenseAcceptanceNode = d.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='requireLicenseAcceptance']/text()");
+                if (requireLicenseAcceptanceNode == null)
+                {
+                    // Add it if it's missing
+                    var e = d.CreateElement("requireLicenseAcceptance", nuSpecNamespace);
+                    var t = d.CreateTextNode("true");
+                    var x = d["package"]["metadata"];
+                    x.AppendChild(e);
+                    x.LastChild.AppendChild(t);
+                    Log.LogMessage(MessageImportance.Normal, "Adding missing requireLicenseAcceptance node");
+                }
+                else
+                {
+                    // Overwrite the text if it's there (don't care if it was right or wrong)
+                    requireLicenseAcceptanceNode.InnerText = "true";
+                    Log.LogMessage(MessageImportance.Normal, "Updating existing requireLicenseAcceptance node");
+                }
+
+                // Find iconUrl tag
+                var iconUrlNode = d.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='iconUrl']/text()");
+                if (iconUrlNode == null)
+                {
+                    // Add it if it's missing
+                    var e = d.CreateElement("iconUrl", nuSpecNamespace);
+                    var t = d.CreateTextNode(IconUrl);
+                    var x = d["package"]["metadata"];
+                    x.AppendChild(e);
+                    x.LastChild.AppendChild(t);
+                    Log.LogMessage(MessageImportance.Normal, "Adding missing iconUrl node");
+                }
+                else
+                {
+                    // Overwrite the text if it's there (don't care if it was right or wrong)
+                    iconUrlNode.InnerText = IconUrl;
+                    Log.LogMessage(MessageImportance.Normal, "Updating existing iconUrl node");
+                }
+
+                // Find copyright tag
+                var copyrightNode = d.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='copyright']/text()");
+                if (copyrightNode == null)
+                {
+                    // Add it if it's missing
+                    var e = d.CreateElement("copyright", nuSpecNamespace);
+                    var t = d.CreateTextNode(CopyrightText);
+                    var x = d["package"]["metadata"];
+                    x.AppendChild(e);
+                    x.LastChild.AppendChild(t);
+                    Log.LogMessage(MessageImportance.Normal, "Adding missing copyright node");
+                }
+                else
+                {
+                    // Overwrite the text if it's there (don't care if it was right or wrong)
+                    copyrightNode.InnerText = CopyrightText;
+                    Log.LogMessage(MessageImportance.Normal, "Updating existing copyright node");
+                }
+
+                // Find projectUrl tag
+                var projectUrlNode = d.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='projectUrl']/text()");
+                if (projectUrlNode == null)
+                {
+                    // Add it if it's missing
+                    var e = d.CreateElement("projectUrl", nuSpecNamespace);
+                    var t = d.CreateTextNode(ProjectUrl);
+                    var x = d["package"]["metadata"];
+                    x.AppendChild(e);
+                    x.LastChild.AppendChild(t);
+                    Log.LogMessage(MessageImportance.Normal, "Adding missing projectUrl node");
+                }
+                else
+                {
+                    // Overwrite the text if it's there (don't care if it was right or wrong)
+                    projectUrlNode.InnerText = ProjectUrl;
+                    Log.LogMessage(MessageImportance.Normal, "Updating existing projectUrl node");
+                }
+
+                d.Save(NuSpec);
+            }
+            catch (Exception ex)
+            {
+                Log.LogErrorFromException(ex);
+            }
+
+            return !Log.HasLoggedErrors;
+        ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
+    <UsingTask TaskName="FindLatestDrop" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+        <ParameterGroup>
+            <RootPath ParameterType="System.String" Required="true" />
+            <SubFolder ParameterType="System.String" Required="true" />
+            <LatestPath ParameterType="System.String" Output="true" />
+        </ParameterGroup>
+        <Task>
+            <Reference Include="System.Xml" />
+            <Reference Include="System.Core" />
+            <Using Namespace="System" />
+            <Using Namespace="System.Collections.Generic" />
+            <Using Namespace="System.Diagnostics" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Linq" />
+            <Using Namespace="System.Xml" />
+            <Using Namespace="Microsoft.Build.Framework" />
+            <Using Namespace="Microsoft.Build.Utilities" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+            try
+            {
+                var dirs = Directory.GetDirectories(RootPath);
+                int i;
+                var buildDirs = from d in dirs
+                                where Int32.TryParse(Path.GetFileName(d), out i)
+                                select Convert.ToInt32(Path.GetFileName(d));
+
+                var latestDirValue = buildDirs.OrderByDescending(o => o).First();
+                LatestPath = Path.Combine(RootPath, Convert.ToString(latestDirValue), SubFolder)+"\\";
+            }
+            catch (Exception ex)
+            {
+                Log.LogErrorFromException(ex);
+            }
+            
+            return !Log.HasLoggedErrors;
+        ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
+    <UsingTask TaskName="GetBuildNumberFromPackageName" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+        <ParameterGroup>
+            <PackagePath ParameterType="System.String" Required="true" />
+            <BuildNumber ParameterType="System.String" Output="true" />
+        </ParameterGroup>
+        <Task>
+            <Reference Include="System.Xml" />
+            <Reference Include="System.Core" />
+            <Using Namespace="System" />
+            <Using Namespace="System.Collections.Generic" />
+            <Using Namespace="System.Diagnostics" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Linq" />
+            <Using Namespace="System.Xml" />
+            <Using Namespace="Microsoft.Build.Framework" />
+            <Using Namespace="Microsoft.Build.Utilities" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+            try
+            {
+                string packageName = Path.GetFileNameWithoutExtension(PackagePath);
+                string[] packageNameParts = packageName.Split('-');
+                BuildNumber = (packageNameParts[packageNameParts.Length - 1]).TrimStart('0');
+            }
+            catch (Exception ex)
+            {
+                Log.LogErrorFromException(ex);
+            }
+            
+            return !Log.HasLoggedErrors;
+        ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+</Project>
