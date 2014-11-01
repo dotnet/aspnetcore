@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private string _editFormatString;
         private bool _hasNonDefaultEditFormat;
         private bool _hideSurroundingHtml;
+        private bool _htmlEncode;
         private bool _isReadOnly;
         private bool _isComplexType;
         private bool _isRequired;
@@ -39,6 +40,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _editFormatStringComputed;
         private bool _hasNonDefaultEditFormatComputed;
         private bool _hideSurroundingHtmlComputed;
+        private bool _htmlEncodeComputed;
         private bool _isReadOnlyComputed;
         private bool _isComplexTypeComputed;
         private bool _isRequiredComputed;
@@ -252,6 +254,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
+        public sealed override bool HtmlEncode
+        {
+            get
+            {
+                if (!_htmlEncodeComputed)
+                {
+                    _htmlEncode = ComputeHtmlEncode();
+                    _htmlEncodeComputed = true;
+                }
+
+                return _htmlEncode;
+            }
+
+            set
+            {
+                _htmlEncode = value;
+                _htmlEncodeComputed = true;
+            }
+        }
+
         public sealed override bool IsReadOnly
         {
             get
@@ -417,6 +440,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual bool ComputeHideSurroundingHtml()
         {
             return base.HideSurroundingHtml;
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="HtmlEncode"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="HtmlEncode"/> value.</returns>
+        protected virtual bool ComputeHtmlEncode()
+        {
+            return base.HtmlEncode;
         }
 
         protected virtual bool ComputeIsReadOnly()

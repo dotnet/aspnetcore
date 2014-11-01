@@ -115,8 +115,12 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.Equal(metadata.NullDisplayText, result);
         }
 
-        [Fact]
-        public void ObjectTemplateDisplaysSimpleDisplayTextWithNonNullModelTemplateDepthGreaterThanOne()
+        [Theory]
+        [MemberData(nameof(DefaultDisplayTemplateTests.HtmlEncodeData), MemberType = typeof(DefaultDisplayTemplateTests))]
+        public void ObjectTemplateDisplaysSimpleDisplayTextWithNonNullModelTemplateDepthGreaterThanOne(
+            string simpleDisplayText,
+            bool htmlEncode,
+            string expectedResult)
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel();
@@ -124,9 +128,10 @@ namespace Microsoft.AspNet.Mvc.Core
             var metadata =
                 new EmptyModelMetadataProvider()
                     .GetMetadataForType(() => model, typeof(DefaultTemplatesUtilities.ObjectTemplateModel));
-            html.ViewData.ModelMetadata = metadata;
+            metadata.HtmlEncode = htmlEncode;
             metadata.NullDisplayText = "Null Display Text";
-            metadata.SimpleDisplayText = "Simple Display Text";
+            metadata.SimpleDisplayText = simpleDisplayText;
+            html.ViewData.ModelMetadata = metadata;
             html.ViewData.TemplateInfo.AddVisited("foo");
             html.ViewData.TemplateInfo.AddVisited("bar");
 
@@ -134,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = DefaultEditorTemplates.ObjectTemplate(html);
 
             // Assert
-            Assert.Equal(metadata.SimpleDisplayText, result);
+            Assert.Equal(expectedResult, result);
         }
 
         [Fact]

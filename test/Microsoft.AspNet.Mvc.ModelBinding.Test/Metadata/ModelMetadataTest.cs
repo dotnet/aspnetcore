@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     { m => m.ConvertEmptyStringToNull = false, m => m.ConvertEmptyStringToNull, false },
                     { m => m.HasNonDefaultEditFormat = true, m => m.HasNonDefaultEditFormat, true },
                     { m => m.HideSurroundingHtml = true, m => m.HideSurroundingHtml, true },
+                    { m => m.HtmlEncode = false, m => m.HtmlEncode, false },
                     { m => m.IsReadOnly = true, m => m.IsReadOnly, true },
                     { m => m.IsRequired = true, m => m.IsRequired, true },
                     { m => m.ShowForDisplay = false, m => m.ShowForDisplay, false },
@@ -59,6 +60,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.True(metadata.ConvertEmptyStringToNull);
             Assert.False(metadata.HasNonDefaultEditFormat);
             Assert.False(metadata.HideSurroundingHtml);
+            Assert.True(metadata.HtmlEncode);
             Assert.False(metadata.IsComplexType);
             Assert.False(metadata.IsNullableValueType);
             Assert.False(metadata.IsReadOnly);

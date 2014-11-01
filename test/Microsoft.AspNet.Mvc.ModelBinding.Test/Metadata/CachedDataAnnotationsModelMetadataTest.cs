@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.True(metadata.ConvertEmptyStringToNull);
             Assert.False(metadata.HasNonDefaultEditFormat);
             Assert.False(metadata.HideSurroundingHtml);
+            Assert.True(metadata.HtmlEncode);
             Assert.True(metadata.IsComplexType);
             Assert.False(metadata.IsReadOnly);
             Assert.False(metadata.IsRequired);
@@ -155,6 +156,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     {
                         new DisplayFormatAttribute { ApplyFormatInEditMode = true, DataFormatString = "value" },
                         metadata => metadata.HasNonDefaultEditFormat,
+                        true
+                    },
+                    {
+                        new DisplayFormatAttribute { HtmlEncode = false },
+                        metadata => metadata.HtmlEncode,
+                        false
+                    },
+                    {
+                        new DisplayFormatAttribute { HtmlEncode = true },
+                        metadata => metadata.HtmlEncode,
                         true
                     },
                     {

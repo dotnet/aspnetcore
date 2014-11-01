@@ -19,17 +19,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private EfficientTypePropertyKey<Type, string> _cacheKey;
 
         // Backing fields for virtual properties with default values.
-        private bool _convertEmptyStringToNull;
-        private bool _isRequired;
+        private bool _convertEmptyStringToNull = true;
+        private bool _htmlEncode = true;
+        private bool _showForDisplay = true;
+        private bool _showForEdit = true;
 
         private object _model;
         private Func<object> _modelAccessor;
         private int _order = DefaultOrder;
+        private bool _isRequired;
         private IEnumerable<ModelMetadata> _properties;
         private Type _realModelType;
         private string _simpleDisplayText;
-        private bool _showForDisplay = true;
-        private bool _showForEdit = true;
 
         public ModelMetadata([NotNull] IModelMetadataProvider provider,
                              Type containerType,
@@ -43,7 +44,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _modelAccessor = modelAccessor;
             _modelType = modelType;
             _propertyName = propertyName;
-            _convertEmptyStringToNull = true;
             _isRequired = !modelType.AllowsNullValue();
         }
 
@@ -110,6 +110,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// value different from the default for the datatype.
         /// </summary>
         public virtual bool HasNonDefaultEditFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the value should be HTML-encoded.
+        /// </summary>
+        /// <value>If <c>true</c>, value should be HTML-encoded. Default is <c>true</c>.</value>
+        public virtual bool HtmlEncode
+        {
+            get { return _htmlEncode; }
+            set { _htmlEncode = value; }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether the "HiddenInput" display template should return

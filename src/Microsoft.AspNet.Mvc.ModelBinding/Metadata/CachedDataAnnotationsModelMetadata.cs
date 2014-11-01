@@ -205,6 +205,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return base.ComputeHideSurroundingHtml();
         }
 
+        /// <summary>
+        /// Calculate <see cref="ModelMetadata.HtmlEncode"/> based on presence of a
+        /// <see cref="DisplayFormatAttribute"/> and its <see cref="DisplayFormatAttribute.HtmlEncode"/> value.
+        /// </summary>
+        /// <returns>
+        /// Calculated <see cref="ModelMetadata.HtmlEncode"/> value. <c>false</c> if a
+        /// <see cref="DisplayFormatAttribute"/> exists and its <see cref="DisplayFormatAttribute.HtmlEncode"/> value
+        /// is <c>false</c>. <c>true</c> otherwise.
+        /// </returns>
+        protected override bool ComputeHtmlEncode()
+        {
+            if (PrototypeCache.DisplayFormat != null)
+            {
+                return PrototypeCache.DisplayFormat.HtmlEncode;
+            }
+
+            return base.ComputeHtmlEncode();
+        }
+
         protected override bool ComputeIsReadOnly()
         {
             if (PrototypeCache.Editable != null)

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -14,6 +13,33 @@ namespace Microsoft.AspNet.Mvc.Core
 {
     public class DefaultDisplayTemplateTests
     {
+        // Input value; HTML encode; expected value.
+        public static TheoryData<string, bool, string> HtmlEncodeData
+        {
+            get
+            {
+                return new TheoryData<string, bool, string>
+                {
+                    { "Simple Display Text", false, "Simple Display Text" },
+                    { "Simple Display Text", true, "Simple Display Text" },
+                    { "<blink>text</blink>", false, "<blink>text</blink>" },
+                    { "<blink>text</blink>", true, "&lt;blink&gt;text&lt;/blink&gt;" },
+                    { "&'\"", false, "&'\"" },
+                    { "&'\"", true, "&amp;&#39;&quot;" },
+                    { " ¡ÿĀ", false, " ¡ÿĀ" },                                           // high ASCII
+                    { " ¡ÿĀ", true, "&#160;&#161;&#255;Ā" },
+                    { "Chinese西雅图Chars", false, "Chinese西雅图Chars" },
+                    { "Chinese西雅图Chars", true, "Chinese西雅图Chars" },
+                    { "Unicode؃Format؃Char", false, "Unicode؃Format؃Char" },            // class Cf
+                    { "Unicode؃Format؃Char", true, "Unicode؃Format؃Char" },
+                    { "UnicodeῼTitlecaseῼChar", false, "UnicodeῼTitlecaseῼChar" },       // class Lt
+                    { "UnicodeῼTitlecaseῼChar", true, "UnicodeῼTitlecaseῼChar" },
+                    { "UnicodeःCombiningःChar", false, "UnicodeःCombiningःChar" },    // class Mc
+                    { "UnicodeःCombiningःChar", true, "UnicodeःCombiningःChar" },
+                };
+            }
+        }
+
         [Fact]
         public void ObjectTemplateDisplaysSimplePropertiesOnObjectByDefault()
         {
@@ -54,8 +80,12 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.Equal(metadata.NullDisplayText, result);
         }
 
-        [Fact]
-        public void ObjectTemplateDisplaysSimpleDisplayTextWhenTemplateDepthGreaterThanOne()
+        [Theory]
+        [MemberData(nameof(HtmlEncodeData))]
+        public void ObjectTemplateDisplaysSimpleDisplayTextWhenTemplateDepthGreaterThanOne(
+            string simpleDisplayText,
+            bool htmlEncode,
+            string expectedResult)
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel();
@@ -63,7 +93,8 @@ namespace Microsoft.AspNet.Mvc.Core
             var metadata =
                 new EmptyModelMetadataProvider()
                     .GetMetadataForType(() => model, typeof(DefaultTemplatesUtilities.ObjectTemplateModel));
-            metadata.SimpleDisplayText = "Simple Display Text";
+            metadata.HtmlEncode = htmlEncode;
+            metadata.SimpleDisplayText = simpleDisplayText;
             html.ViewData.ModelMetadata = metadata;
             html.ViewData.TemplateInfo.AddVisited("foo");
             html.ViewData.TemplateInfo.AddVisited("bar");
@@ -72,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = DefaultDisplayTemplates.ObjectTemplate(html);
 
             // Assert
-            Assert.Equal(metadata.SimpleDisplayText, result);
+            Assert.Equal(expectedResult, result);
         }
 
         [Fact]
