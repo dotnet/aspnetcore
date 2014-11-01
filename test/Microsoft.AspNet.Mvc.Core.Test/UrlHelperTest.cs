@@ -569,7 +569,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         private static IContextAccessor<ActionContext> CreateActionContext(HttpContext context, IRouter router)
         {
             var routeData = new RouteData();
-            routeData.Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             routeData.Routers.Add(router);
 
             var actionContext = new ActionContext(context,

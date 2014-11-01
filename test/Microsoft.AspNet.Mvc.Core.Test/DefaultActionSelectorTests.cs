@@ -608,11 +608,8 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var routeContext = new RouteContext(GetHttpContext(verb));
-            routeContext.RouteData.Values = new Dictionary<string, object>
-            {
-                { "controller", "HttpMethodAttributeTests_RestOnly" },
-                { "action", "Patch" }
-            };
+            routeContext.RouteData.Values.Add("controller", "HttpMethodAttributeTests_RestOnly");
+            routeContext.RouteData.Values.Add("action", "Patch");
 
             // Act
             var result = await InvokeActionSelector(routeContext);
@@ -631,11 +628,8 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var routeContext = new RouteContext(GetHttpContext(verb));
-            routeContext.RouteData.Values = new Dictionary<string, object>()
-            {
-                { "controller", "HttpMethodAttributeTests_RestOnly" },
-                { "action", "Put" }
-            };
+            routeContext.RouteData.Values.Add("controller", "HttpMethodAttributeTests_RestOnly");
+            routeContext.RouteData.Values.Add("action", "Put");
 
             // Act
             var result = await InvokeActionSelector(routeContext);
@@ -652,10 +646,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             // Note no action name is passed, hence should return a null action descriptor.
             var routeContext = new RouteContext(GetHttpContext(verb));
-            routeContext.RouteData.Values = new Dictionary<string, object>()
-            {
-                { "controller", "HttpMethodAttributeTests_RestOnly" },
-            };
+            routeContext.RouteData.Values.Add("controller", "HttpMethodAttributeTests_RestOnly");
 
             // Act
             var result = await InvokeActionSelector(routeContext);
@@ -694,11 +685,8 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var routeContext = new RouteContext(GetHttpContext(verb));
-            routeContext.RouteData.Values = new Dictionary<string, object>
-            {
-                { "controller", "ActionName" },
-                { "action", "RPCMethodWithHttpGet" }
-            };
+            routeContext.RouteData.Values.Add("controller", "ActionName");
+            routeContext.RouteData.Values.Add("action", "RPCMethodWithHttpGet");
 
             // Act
             var result = await InvokeActionSelector(routeContext);
@@ -727,11 +715,8 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var routeContext = new RouteContext(GetHttpContext(verb));
-            routeContext.RouteData.Values = new Dictionary<string, object>
-            {
-                { "controller", "ActionName" },
-                { "action", actionName }
-            };
+            routeContext.RouteData.Values.Add("controller", "ActionName");
+            routeContext.RouteData.Values.Add("action", actionName);
 
             // Act
             var result = await InvokeActionSelector(routeContext);
@@ -865,11 +850,7 @@ namespace Microsoft.AspNet.Mvc
 
         private static RouteContext CreateRouteContext(string httpMethod)
         {
-            var routeData = new RouteData()
-            {
-                Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
-            };
-
+            var routeData = new RouteData();
             routeData.Routers.Add(new Mock<IRouter>(MockBehavior.Strict).Object);
 
             var httpContext = new Mock<HttpContext>(MockBehavior.Strict);

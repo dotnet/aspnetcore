@@ -511,10 +511,12 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             }
 
             var routeContext = new RouteContext(httpContext);
-            routeContext.RouteData = new RouteData()
+            routeContext.RouteData = new RouteData();
+
+            foreach (var kvp in new RouteValueDictionary(routeValues))
             {
-                Values = new RouteValueDictionary(routeValues),
-            };
+                routeContext.RouteData.Values.Add(kvp.Key, kvp.Value);
+            }
 
             return routeContext;
         }

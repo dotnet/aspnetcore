@@ -115,10 +115,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public static ActionContext GetActionContext(string controller = "mycontroller",
                                                      string area = null)
         {
-            var routeData = new RouteData
-            {
-                Values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-            };
+            var routeData = new RouteData();
             routeData.Values["controller"] = controller;
             if (area != null)
             {

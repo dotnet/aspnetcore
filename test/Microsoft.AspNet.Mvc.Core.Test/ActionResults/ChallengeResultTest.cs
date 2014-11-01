@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             httpContext.Setup(o => o.Response).Returns(httpResponse.Object);
 
             var routeData = new RouteData();
-            routeData.Values = new Dictionary<string, object>();
             routeData.Routers.Add(Mock.Of<IRouter>());
 
             var actionContext = new ActionContext(httpContext.Object,

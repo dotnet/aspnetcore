@@ -461,7 +461,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                            .Returns(razorView ?? Mock.Of<IRazorView>());
 
             httpContext.RequestServices = serviceProvider.Object;
-            var routeData = new RouteData { Values = routeValues };
+
+            var routeData = new RouteData();
+            foreach (var kvp in routeValues)
+            {
+                routeData.Values.Add(kvp.Key, kvp.Value);
+            }
+
             return new ActionContext(httpContext, routeData, new ActionDescriptor());
         }
 
