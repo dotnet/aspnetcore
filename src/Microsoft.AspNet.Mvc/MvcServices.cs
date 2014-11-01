@@ -125,9 +125,9 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Singleton<ICompilationService, RoslynCompilationService>();
 
             // Both the compiler cache and roslyn compilation service hold on the compilation related
-            // caches. RazorCompilation service is just an adapter service, and it is scoped
-            // since it will typically be resolved multiple times per request.
-            yield return describe.Scoped<IRazorCompilationService, RazorCompilationService>();
+            // caches. RazorCompilation service is just an adapter service, and it is transient to ensure
+            // the IMvcRazorHost dependency does not maintain state.
+            yield return describe.Transient<IRazorCompilationService, RazorCompilationService>();
 
             // The ViewStartProvider needs to be able to consume scoped instances of IRazorPageFactory
             yield return describe.Scoped<IViewStartProvider, ViewStartProvider>();

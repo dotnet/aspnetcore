@@ -9,9 +9,6 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// <summary>
     /// Default implementation of <see cref="IRazorCompilationService"/>.
     /// </summary>
-    /// <remarks>
-    /// This class must be registered as a singleton service for the caching to work.
-    /// </remarks>
     public class RazorCompilationService : IRazorCompilationService
     {
         private readonly ICompilationService _compilationService;
