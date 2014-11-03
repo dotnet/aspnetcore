@@ -404,6 +404,11 @@
         </ItemGroup>
     </Target>
 
+    <Target Name="PushPackages">
+        <MSBuild Projects="PushCoherence\PushCoherence.csproj" Properties="Configuration=$(Configuration)" />
+        <Exec Command="PushCoherence\bin\$(Configuration)\PushCoherence.exe;NUGET_FEED=$(NUGET_FEED);APIKEY=$(APIKEY)" />
+    </Target>
+
     <UsingTask TaskName="RenameEncodedFolders" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
         <ParameterGroup>
             <RootDirectory ParameterType="System.String" Required="true" />
