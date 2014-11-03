@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -69,15 +69,25 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         public ViewEngineResult FindView([NotNull] ActionContext context,
-                                         [NotNull] string viewName)
+                                         string viewName)
         {
+            if (string.IsNullOrEmpty(viewName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewName));
+            }
+
             return CreateViewEngineResult(context, viewName, partial: false);
         }
 
         /// <inheritdoc />
         public ViewEngineResult FindPartialView([NotNull] ActionContext context,
-                                                [NotNull] string partialViewName)
+                                                string partialViewName)
         {
+            if (string.IsNullOrEmpty(partialViewName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(partialViewName));
+            }
+
             return CreateViewEngineResult(context, partialViewName, partial: true);
         }
 
@@ -191,6 +201,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private static bool IsSpecificPath(string name)
         {
+            Debug.Assert(!string.IsNullOrEmpty(name));
             return name[0] == '~' || name[0] == '/';
         }
     }

@@ -8,6 +8,7 @@ using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
@@ -35,6 +36,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 yield return new[] { "~/foo/bar.txt" };
                 yield return new[] { "/foo/bar.txt" };
             }
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void FindView_ThrowsIfViewNameIsNullOrEmpty(string viewName)
+        {
+            // Arrange
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(() => viewEngine.FindView(context, viewName), "viewName");
         }
 
         [Theory]
@@ -67,6 +81,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var result = viewEngine.FindPartialView(context, viewName);
 
             Assert.False(result.Success);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void FindPartialView_ThrowsIfViewNameIsNullOrEmpty(string partialViewName)
+        {
+            // Arrange
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(() => viewEngine.FindPartialView(context, partialViewName),
+                                                      "partialViewName");
         }
 
         [Theory]
