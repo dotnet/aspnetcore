@@ -151,17 +151,17 @@ namespace Microsoft.AspNet.Hosting.Startup
             {
                 if (servicesMethod != null)
                 {
+                    var services = new ServiceCollection();
+                    services.Add(OptionsServices.GetDefaultServices());
                     if (servicesMethod.ReturnType == typeof(IServiceProvider))
                     {
-                        // IServiceProvider ConfigureServices()
-                        builder.ApplicationServices = (Invoke(servicesMethod, instance, builder) as IServiceProvider)
+                        // IServiceProvider ConfigureServices(IServiceCollection)
+                        builder.ApplicationServices = (Invoke(servicesMethod, instance, builder, services) as IServiceProvider)
                             ?? builder.ApplicationServices; 
                     }
                     else
                     {
                         // void ConfigureServices(IServiceCollection)
-                        var services = new ServiceCollection();
-                        services.Add(OptionsServices.GetDefaultServices());
                         Invoke(servicesMethod, instance, builder, services);
                         if (builder != null)
                         {

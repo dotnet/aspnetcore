@@ -69,10 +69,8 @@ namespace Microsoft.AspNet.Hosting.Fakes
             return null;
         }
 
-        public IServiceProvider ConfigureProviderServices()
+        public IServiceProvider ConfigureProviderServices(IServiceCollection services)
         {
-            var services = new ServiceCollection();
-            services.Add(OptionsServices.GetDefaultServices());
             services.Configure<FakeOptions>(o =>
             {
                 o.Configured = true;
