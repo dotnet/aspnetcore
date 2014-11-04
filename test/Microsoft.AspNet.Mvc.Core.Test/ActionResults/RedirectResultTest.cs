@@ -72,8 +72,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         [InlineData("/", "~/", "/")]
         [InlineData("", "~/Home/About", "/Home/About")]
         [InlineData("/myapproot", "~/", "/myapproot/")]
-        [InlineData("", "~/Home/About", "/Home/About")]
-        [InlineData("/myapproot", "~/", "/myapproot/")]
         public void Execute_ReturnsAppRelativePath_WhenItStartsWithTilde(string appRoot,
                                                                          string contentPath,
                                                                          string expectedPath)

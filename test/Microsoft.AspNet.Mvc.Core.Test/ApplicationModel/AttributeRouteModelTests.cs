@@ -62,7 +62,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         [InlineData("/", "", "")]
         [InlineData("", "/", "")]
         [InlineData("/", "/", "")]
-        [InlineData("/", "/", "")]
         [InlineData("~/", null, "")]
         [InlineData("~/", "", "")]
         [InlineData("~/", "/", "")]

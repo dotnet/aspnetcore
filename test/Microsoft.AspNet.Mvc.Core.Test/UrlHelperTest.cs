@@ -203,7 +203,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         [InlineData("HtTpS://///www.example.com/foo.html")]
         [InlineData("http:///www.example.com/foo.html")]
         [InlineData("http:////www.example.com/foo.html")]
-        [InlineData("http://///www.example.com/foo.html")]
         public void IsLocalUrl_RejectsUrlsWithTooManySchemeSeparatorCharacters(string url)
         {
             // Arrange
