@@ -51,10 +51,10 @@ namespace Microsoft.AspNet.Identity
         ///     Set the normalized user name
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="userName"></param>
+        /// <param name="normalizedName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetNormalizedUserNameAsync(TUser user, string userName,
+        Task SetNormalizedUserNameAsync(TUser user, string normalizedName,
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>

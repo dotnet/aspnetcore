@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(user.NormalizedUserName);
         }
 
-        public Task SetNormalizedUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
-            user.NormalizedUserName = userName;
+            user.NormalizedUserName = normalizedName;
             return Task.FromResult(0);
         }
 
