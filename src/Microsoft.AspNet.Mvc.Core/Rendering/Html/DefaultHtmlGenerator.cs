@@ -357,7 +357,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public virtual TagBuilder GenerateSelect(
+        public TagBuilder GenerateSelect(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
             string optionLabel,
@@ -365,6 +365,29 @@ namespace Microsoft.AspNet.Mvc.Rendering
             IEnumerable<SelectListItem> selectList,
             bool allowMultiple,
             object htmlAttributes)
+        {
+            ICollection<string> ignored;
+            return GenerateSelect(
+                viewContext,
+                metadata,
+                optionLabel,
+                name,
+                selectList,
+                allowMultiple,
+                htmlAttributes,
+                selectedValues: out ignored);
+        }
+
+        /// <inheritdoc />
+        public virtual TagBuilder GenerateSelect(
+            [NotNull] ViewContext viewContext,
+            ModelMetadata metadata,
+            string optionLabel,
+            string name,
+            IEnumerable<SelectListItem> selectList,
+            bool allowMultiple,
+            object htmlAttributes,
+            out ICollection<string> selectedValues)
         {
             var fullName = GetFullHtmlFieldName(viewContext, name);
             if (string.IsNullOrEmpty(fullName))
@@ -407,7 +430,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             if (defaultValue != null)
             {
-                selectList = UpdateSelectListItemsWithDefaultValue(selectList, defaultValue, allowMultiple);
+                selectList = UpdateSelectListItemsWithDefaultValue(selectList, defaultValue, allowMultiple, out selectedValues);
+            }
+            else
+            {
+                selectedValues = new string[0];
             }
 
             // Convert each ListItem to an <option> tag and wrap them with <optgroup> if requested.
@@ -963,7 +990,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private static IEnumerable<SelectListItem> UpdateSelectListItemsWithDefaultValue(
             IEnumerable<SelectListItem> selectList,
             object defaultValue,
-            bool allowMultiple)
+            bool allowMultiple,
+            out ICollection<string> selectedValues)
         {
             IEnumerable defaultValues;
             if (allowMultiple)
@@ -980,15 +1008,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 defaultValues = new[] { defaultValue };
             }
 
-            var values = from object value in defaultValues
-                         select Convert.ToString(value, CultureInfo.CurrentCulture);
+            var values =
+                defaultValues.OfType<object>().Select(value => Convert.ToString(value, CultureInfo.CurrentCulture));
 
             // ToString() by default returns an enum value's name.  But selectList may use numeric values.
-            var enumValues = from Enum value in defaultValues.OfType<Enum>()
-                             select value.ToString("d");
+            var enumValues = defaultValues.OfType<Enum>().Select(value => value.ToString());
             values = values.Concat(enumValues);
 
-            var selectedValues = new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
+            selectedValues = new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
             var newSelectList = new List<SelectListItem>();
             foreach (SelectListItem item in selectList)
             {

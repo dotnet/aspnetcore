@@ -125,6 +125,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
             bool allowMultiple,
             object htmlAttributes);
 
+        TagBuilder GenerateSelect(
+            [NotNull] ViewContext viewContext,
+            ModelMetadata metadata,
+            string optionLabel,
+            string name,
+            IEnumerable<SelectListItem> selectList,
+            bool allowMultiple,
+            object htmlAttributes,
+            out ICollection<string> selectedValues);
+
         TagBuilder GenerateTextArea(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
