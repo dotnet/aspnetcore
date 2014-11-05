@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc
 
                 if (actionDescriptor == null)
                 {
-                    if (_logger.IsEnabled(TraceType.Verbose))
+                    if (_logger.IsEnabled(LogLevel.Verbose))
                     {
                         _logger.WriteValues(new MvcRouteHandlerRouteAsyncValues()
                         {
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Mvc
                         // tacking on extra data on the exception?)
                         ex.Data.Add("AD", actionDescriptor);
 
-                        if (_logger.IsEnabled(TraceType.Verbose))
+                        if (_logger.IsEnabled(LogLevel.Verbose))
                         {
                             _logger.WriteValues(new MvcRouteHandlerRouteAsyncValues()
                             {
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc
                     await invoker.InvokeAsync();
                     context.IsHandled = true;
 
-                    if (_logger.IsEnabled(TraceType.Verbose))
+                    if (_logger.IsEnabled(LogLevel.Verbose))
                     {
                         _logger.WriteValues(new MvcRouteHandlerRouteAsyncValues()
                         {

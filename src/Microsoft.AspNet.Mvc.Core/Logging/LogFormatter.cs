@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     {
         /// <summary>
         /// A formatter for use with <see cref="Microsoft.Framework.Logging.ILogger.Write(
-        /// Framework.Logging.TraceType, 
+        /// Framework.Logging.LogLevel, 
         /// int, 
         /// object, 
         /// Exception, Func{object, Exception, string})"/>.

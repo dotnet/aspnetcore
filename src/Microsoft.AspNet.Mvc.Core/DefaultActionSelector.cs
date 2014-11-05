@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc
 
                 if (finalMatches == null || finalMatches.Count == 0)
                 {
-                    if (_logger.IsEnabled(TraceType.Verbose))
+                    if (_logger.IsEnabled(LogLevel.Verbose))
                     {
                         _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
                         {
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     var selectedAction = finalMatches[0];
 
-                    if (_logger.IsEnabled(TraceType.Verbose))
+                    if (_logger.IsEnabled(LogLevel.Verbose))
                     {
                         _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
                         {
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc
                 }
                 else
                 {
-                    if (_logger.IsEnabled(TraceType.Verbose))
+                    if (_logger.IsEnabled(LogLevel.Verbose))
                     {
                         _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
                         {
