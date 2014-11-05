@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Routing.Logging.Internal
         public static void WriteValues([NotNull] this ILogger logger, object values)
         {
             logger.Write(
-                eventType: TraceType.Verbose,
+                logLevel: LogLevel.Verbose,
                 eventId: 0,
                 state: values,
                 exception: null,

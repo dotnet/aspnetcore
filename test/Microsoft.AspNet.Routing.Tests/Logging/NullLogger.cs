@@ -15,11 +15,11 @@ namespace Microsoft.AspNet.Routing
             return NullDisposable.Instance;
         }
 
-        public void Write(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
         }
 
-        public bool IsEnabled(TraceType eventType)
+        public bool IsEnabled(LogLevel logLevel)
         {
             return false;
         }

@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Routing
                 if (!constraint.Match(httpContext, route, kvp.Key, routeValues, routeDirection))
                 {
                     if (routeDirection.Equals(RouteDirection.IncomingRequest)
-                        && logger.IsEnabled(TraceType.Verbose))
+                        && logger.IsEnabled(LogLevel.Verbose))
                     {
                         logger.WriteValues(new RouteConstraintMatcherMatchValues()
                         {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Routing
                 }
 
                 if (routeDirection.Equals(RouteDirection.IncomingRequest)
-                    && logger.IsEnabled(TraceType.Verbose))
+                    && logger.IsEnabled(LogLevel.Verbose))
                 {
                     logger.WriteValues(new RouteConstraintMatcherMatchValues()
                     {
