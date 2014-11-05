@@ -18,6 +18,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [ContentBehavior(ContentBehavior.Append)]
     public class SelectTagHelper : TagHelper
     {
+        /// <summary>
+        /// Key used for selected values in <see cref="FormContext.FormData"/>.
+        /// </summary>
+        /// <remarks>
+        /// Value for this dictionary entry will either be <c>null</c> (indicating no <see cref="SelectTagHelper"/> has
+        /// executed within this &lt;form/&gt;) or an <see cref="ICollection{string}"/> instance. Elements of the
+        /// collection are based on current <see cref="ViewDataDictionary.Model"/>.
+        /// </remarks>
+        public static readonly string SelectedValuesFormDataKey = nameof(SelectTagHelper) + "-SelectedValues";
+
         // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
         protected internal IHtmlGenerator Generator { get; set; }
@@ -114,6 +124,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // Ensure GenerateSelect() _never_ looks anything up in ViewData.
                 var items = Items ?? Enumerable.Empty<SelectListItem>();
 
+                ICollection<string> selectedValues;
                 var tagBuilder = Generator.GenerateSelect(
                     ViewContext,
                     For.Metadata,
@@ -121,13 +132,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     name: For.Name,
                     selectList: items,
                     allowMultiple: allowMultiple,
-                    htmlAttributes: null);
+                    htmlAttributes: null,
+                    selectedValues: out selectedValues);
 
                 if (tagBuilder != null)
                 {
                     output.SelfClosing = false;
                     output.Merge(tagBuilder);
                 }
+
+                // Whether or not (not being highly unlikely) we generate anything, could update contained <option/>
+                // elements. Provide selected values for <option/> tag helpers. They'll run next.
+                ViewContext.FormContext.FormData[SelectedValuesFormDataKey] = selectedValues;
             }
         }
     }

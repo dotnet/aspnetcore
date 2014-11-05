@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                     // Skip last two test cases because DefaultHtmlGenerator evaluates expression name against
                     // ViewData, not using ModelMetadata.Model. ViewData.Eval() handles simple property paths and some
-                    // dictionary lookups, but not indexing into an array or list. Will file a follow-up bug on this...
+                    // dictionary lookups, but not indexing into an array or list. See #1468...
                     ////{ models, typeof(Model), () => models[1].Text,
                     ////    new NameAndId("[1].Text", "z1__Text"), outerSelected },
                     ////{ models, typeof(NestedModel), () => models[1].NestedModel.Text,
@@ -213,6 +213,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedContent, output.Content);
             Assert.False(output.SelfClosing);
             Assert.Equal(expectedTagName, output.TagName);
+
+            Assert.NotNull(viewContext.FormContext?.FormData);
+            var keyValuePair = Assert.Single(
+                viewContext.FormContext.FormData,
+                entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
+            Assert.NotNull(keyValuePair.Value);
+            var selectedValues = Assert.IsAssignableFrom<ICollection<string>>(keyValuePair.Value);
+            Assert.InRange(selectedValues.Count, 0, 1);
         }
 
         [Theory]
@@ -278,6 +286,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedContent, output.Content);
             Assert.False(output.SelfClosing);
             Assert.Equal(expectedTagName, output.TagName);
+
+            Assert.NotNull(viewContext.FormContext?.FormData);
+            var keyValuePair = Assert.Single(
+                viewContext.FormContext.FormData,
+                entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
+            Assert.NotNull(keyValuePair.Value);
+            var selectedValues = Assert.IsAssignableFrom<ICollection<string>>(keyValuePair.Value);
+            Assert.InRange(selectedValues.Count, 0, 1);
         }
 
         [Theory]
@@ -312,6 +328,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator.Object, metadataProvider);
+            ICollection<string> selectedValues = new string[0];
             htmlGenerator
                 .Setup(real => real.GenerateSelect(
                     viewContext,
@@ -320,7 +337,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     propertyName, // name
                     expectedItems,
                     expectedAllowMultiple,
-                    null))        // htmlAttributes
+                    null,         // htmlAttributes
+                    out selectedValues))
                 .Returns((TagBuilder)null)
                 .Verifiable();
 
@@ -338,6 +356,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             htmlGenerator.Verify();
+
+            Assert.NotNull(viewContext.FormContext?.FormData);
+            var keyValuePair = Assert.Single(
+                viewContext.FormContext.FormData,
+                entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
+            Assert.Same(selectedValues, keyValuePair.Value);
         }
 
         [Theory]
@@ -363,6 +387,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator.Object, metadataProvider);
+            ICollection<string> selectedValues = new string[0];
             htmlGenerator
                 .Setup(real => real.GenerateSelect(
                     viewContext,
@@ -371,7 +396,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     propertyName, // name
                     It.IsAny<IEnumerable<SelectListItem>>(),
                     allowMultiple,
-                    null))        // htmlAttributes
+                    null,         // htmlAttributes
+                    out selectedValues))
                 .Returns((TagBuilder)null)
                 .Verifiable();
 
@@ -387,6 +413,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             htmlGenerator.Verify();
+
+            Assert.NotNull(viewContext.FormContext?.FormData);
+            var keyValuePair = Assert.Single(
+                viewContext.FormContext.FormData,
+                entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
+            Assert.Same(selectedValues, keyValuePair.Value);
         }
 
         [Theory]
