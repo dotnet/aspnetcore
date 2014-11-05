@@ -24,12 +24,13 @@ namespace Microsoft.AspNet.TestHost
     public class ClientHandler : HttpMessageHandler
     {
         private readonly Func<object, Task> _next;
+        private readonly PathString _pathBase;
 
         /// <summary>
         /// Create a new handler.
         /// </summary>
         /// <param name="next">The pipeline entry point.</param>
-        public ClientHandler(Func<object, Task> next)
+        public ClientHandler(Func<object, Task> next, PathString pathBase)
         {
             if (next == null)
             {
@@ -37,6 +38,7 @@ namespace Microsoft.AspNet.TestHost
             }
 
             _next = next;
+            _pathBase = pathBase;
         }
 
         /// <summary>
@@ -55,7 +57,7 @@ namespace Microsoft.AspNet.TestHost
                 throw new ArgumentNullException("request");
             }
 
-            var state = new RequestState(request, cancellationToken);
+            var state = new RequestState(request, _pathBase, cancellationToken);
             var requestContent = request.Content ?? new StreamContent(Stream.Null);
             var body = await requestContent.ReadAsStreamAsync();
             if (body.CanSeek)
@@ -95,7 +97,7 @@ namespace Microsoft.AspNet.TestHost
             private ResponseStream _responseStream;
             private ResponseFeature _responseFeature;
 
-            internal RequestState(HttpRequestMessage request, CancellationToken cancellationToken)
+            internal RequestState(HttpRequestMessage request, PathString pathBase, CancellationToken cancellationToken)
             {
                 _request = request;
                 _responseTcs = new TaskCompletionSource<HttpResponseMessage>();
@@ -118,8 +120,20 @@ namespace Microsoft.AspNet.TestHost
                 serverRequest.Protocol = "HTTP/" + request.Version.ToString(2);
                 serverRequest.Scheme = request.RequestUri.Scheme;
                 serverRequest.Method = request.Method.ToString();
-                serverRequest.Path = PathString.FromUriComponent(request.RequestUri);
-                serverRequest.PathBase = PathString.Empty;
+
+                var fullPath = PathString.FromUriComponent(request.RequestUri);
+                PathString remainder;
+                if (fullPath.StartsWithSegments(pathBase, out remainder))
+                {
+                    serverRequest.PathBase = pathBase;
+                    serverRequest.Path = remainder;
+                }
+                else
+                {
+                    serverRequest.PathBase = PathString.Empty;
+                    serverRequest.Path = fullPath;
+                }
+
                 serverRequest.QueryString = QueryString.FromUriComponent(request.RequestUri);
                 // TODO: serverRequest.CallCancelled = cancellationToken;
 

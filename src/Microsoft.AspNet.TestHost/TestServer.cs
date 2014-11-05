@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
@@ -41,6 +42,8 @@ namespace Microsoft.AspNet.TestHost
             _appInstance = engine.Start(hostContext);
         }
 
+        public Uri BaseAddress { get; set; } = new Uri("http://localhost/");
+
         public static TestServer Create(Action<IApplicationBuilder> app)
         {
             return Create(provider: CallContextServiceLocator.Locator.ServiceProvider, app: app);
@@ -68,12 +71,13 @@ namespace Microsoft.AspNet.TestHost
 
         public HttpMessageHandler CreateHandler()
         {
-            return new ClientHandler(Invoke);
+            var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
+            return new ClientHandler(Invoke, pathBase);
         }
 
         public HttpClient CreateClient()
         {
-            return new HttpClient(CreateHandler()) { BaseAddress = new Uri("http://localhost/") };
+            return new HttpClient(CreateHandler()) { BaseAddress = BaseAddress };
         }
 
         /// <summary>

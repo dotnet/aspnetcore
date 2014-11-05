@@ -28,8 +28,8 @@ namespace Microsoft.AspNet.TestHost
                 Assert.Equal("HTTP/1.1", context.Request.Protocol);
                 Assert.Equal("GET", context.Request.Method);
                 Assert.Equal("https", context.Request.Scheme);
-                Assert.Equal(string.Empty, context.Request.PathBase.Value);
-                Assert.Equal("/A/Path/and/file.txt", context.Request.Path.Value);
+                Assert.Equal("/A/Path", context.Request.PathBase.Value);
+                Assert.Equal("/and/file.txt", context.Request.Path.Value);
                 Assert.Equal("?and=query", context.Request.QueryString.Value);
                 Assert.NotNull(context.Request.Body);
                 Assert.NotNull(context.Request.Headers);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.TestHost
                 Assert.Equal("example.com", context.Request.Host.Value);
 
                 return Task.FromResult(0);
-            });
+            }, new PathString("/A/Path"));
             var httpClient = new HttpClient(handler);
             return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
         }
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.TestHost
 
                 context.Response.Headers["TestHeader"] = "TestValue:" + requestCount++;
                 return Task.FromResult(0);
-            });
+            }, PathString.Empty);
 
             HttpMessageInvoker invoker = new HttpMessageInvoker(handler);
             HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.TestHost
 
                 context.Response.Headers["TestHeader"] = "TestValue";
                 return Task.FromResult(0);
-            });
+            }, PathString.Empty);
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/");
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.TestHost
             {
                 block.WaitOne();
                 return Task.FromResult(0);
-            });
+            }, PathString.Empty);
             var httpClient = new HttpClient(handler);
             Task<HttpResponseMessage> task = httpClient.GetAsync("https://example.com/");
             Assert.False(task.IsCompleted);
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.TestHost
                 await context.Response.WriteAsync("BodyStarted,");
                 block.WaitOne();
                 await context.Response.WriteAsync("BodyFinished");
-            });
+            }, PathString.Empty);
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.TestHost
                 context.Response.Body.Flush();
                 block.WaitOne();
                 await context.Response.WriteAsync("BodyFinished");
-            });
+            }, PathString.Empty);
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.TestHost
                 context.Response.Body.Flush();
                 block.WaitOne();
                 return Task.FromResult(0);
-            });
+            }, PathString.Empty);
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.TestHost
                 context.Response.Body.Flush();
                 block.WaitOne();
                 return Task.FromResult(0);
-            });
+            }, PathString.Empty);
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.TestHost
             var handler = new ClientHandler(env =>
             {
                 throw new InvalidOperationException("Test Exception");
-            });
+            }, PathString.Empty);
             var httpClient = new HttpClient(handler);
             return Assert.ThrowsAsync<InvalidOperationException>(() => httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead));
@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.TestHost
                 await context.Response.WriteAsync("BodyStarted");
                 block.WaitOne();
                 throw new InvalidOperationException("Test Exception");
-            });
+            }, PathString.Empty);
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
