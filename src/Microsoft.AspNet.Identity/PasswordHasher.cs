@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.Identity
          */
 
         private readonly PasswordHasherCompatibilityMode _compatibilityMode;
+        private readonly int _iterCount;
         private readonly RandomNumberGenerator _rng;
 
         /// <summary>
@@ -44,11 +45,24 @@ namespace Microsoft.AspNet.Identity
             }
 
             _compatibilityMode = options.Options.CompatibilityMode;
-            if (!IsValidCompatibilityMode(_compatibilityMode))
+            switch (_compatibilityMode)
             {
-                throw new InvalidOperationException(Resources.InvalidPasswordHasherCompatibilityMode);
-            }
+                case PasswordHasherCompatibilityMode.IdentityV2:
+                    // nothing else to do
+                    break;
 
+                case PasswordHasherCompatibilityMode.IdentityV3:
+                    _iterCount = options.Options.IterationCount;
+                    if (_iterCount < 1)
+                    {
+                        throw new InvalidOperationException(Resources.InvalidPasswordHasherIterationCount);
+                    }
+                    break;
+
+                default:
+                    throw new InvalidOperationException(Resources.InvalidPasswordHasherCompatibilityMode);
+            }
+          
             _rng = options.Options.Rng;
         }
 
@@ -114,11 +128,11 @@ namespace Microsoft.AspNet.Identity
             return outputBytes;
         }
 
-        private static byte[] HashPasswordV3(string password, RandomNumberGenerator rng)
+        private byte[] HashPasswordV3(string password, RandomNumberGenerator rng)
         {
             return HashPasswordV3(password, rng,
                 prf: KeyDerivationPrf.Sha256,
-                iterCount: 10000,
+                iterCount: _iterCount,
                 saltSize: 128 / 8,
                 numBytesRequested: 256 / 8);
         }
@@ -138,11 +152,6 @@ namespace Microsoft.AspNet.Identity
             Buffer.BlockCopy(salt, 0, outputBytes, 13, salt.Length);
             Buffer.BlockCopy(subkey, 0, outputBytes, 13 + saltSize, subkey.Length);
             return outputBytes;
-        }
-
-        private static bool IsValidCompatibilityMode(PasswordHasherCompatibilityMode compatibilityMode)
-        {
-            return (compatibilityMode == PasswordHasherCompatibilityMode.IdentityV2 || compatibilityMode == PasswordHasherCompatibilityMode.IdentityV3);
         }
 
         private static uint ReadNetworkByteOrder(byte[] buffer, int offset)
@@ -194,9 +203,18 @@ namespace Microsoft.AspNet.Identity
                     }
 
                 case 0x01:
-                    return VerifyHashedPasswordV3(decodedHashedPassword, providedPassword)
-                        ? PasswordVerificationResult.Success
-                        : PasswordVerificationResult.Failed;
+                    int embeddedIterCount;
+                    if (VerifyHashedPasswordV3(decodedHashedPassword, providedPassword, out embeddedIterCount))
+                    {
+                        // If this hasher was configured with a higher iteration count, change the entry now.
+                        return (embeddedIterCount < _iterCount)
+                            ? PasswordVerificationResult.SuccessRehashNeeded
+                            : PasswordVerificationResult.Success;
+                    }
+                    else
+                    {
+                        return PasswordVerificationResult.Failed;
+                    }
 
                 default:
                     return PasswordVerificationResult.Failed; // unknown format marker
@@ -227,13 +245,15 @@ namespace Microsoft.AspNet.Identity
             return ByteArraysEqual(actualSubkey, expectedSubkey);
         }
 
-        private static bool VerifyHashedPasswordV3(byte[] hashedPassword, string password)
+        private static bool VerifyHashedPasswordV3(byte[] hashedPassword, string password, out int iterCount)
         {
+            iterCount = default(int);
+
             try
             {
                 // Read header information
                 KeyDerivationPrf prf = (KeyDerivationPrf)ReadNetworkByteOrder(hashedPassword, 1);
-                int iterCount = (int)ReadNetworkByteOrder(hashedPassword, 5);
+                iterCount = (int)ReadNetworkByteOrder(hashedPassword, 5);
                 int saltLength = (int)ReadNetworkByteOrder(hashedPassword, 9);
 
                 // Read the salt: must be >= 128 bits

@@ -203,6 +203,22 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
+        /// The iteration count must be a positive integer.
+        /// </summary>
+        internal static string InvalidPasswordHasherIterationCount
+        {
+            get { return GetString("InvalidPasswordHasherIterationCount"); }
+        }
+
+        /// <summary>
+        /// The iteration count must be a positive integer.
+        /// </summary>
+        internal static string FormatInvalidPasswordHasherIterationCount()
+        {
+            return GetString("InvalidPasswordHasherIterationCount");
+        }
+
+        /// <summary>
         /// Invalid token.
         /// </summary>
         internal static string InvalidToken

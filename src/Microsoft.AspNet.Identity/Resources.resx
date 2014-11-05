@@ -165,6 +165,10 @@
     <value>The provided PasswordHasherCompatibilityMode is invalid.</value>
     <comment>Error when the password hasher doesn't understand the format it's being asked to produce.</comment>
   </data>
+  <data name="InvalidPasswordHasherIterationCount" xml:space="preserve">
+    <value>The iteration count must be a positive integer.</value>
+    <comment>Error when the iteration count is &lt; 1.</comment>
+  </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>Invalid token.</value>
     <comment>Error when a token is not recognized</comment>
