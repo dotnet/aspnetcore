@@ -8,7 +8,7 @@
     "frameworks" : {
         "aspnet50" : {
         },
-        "aspnetcore50" : { 
+        "aspnetcore50" : {
             "dependencies": {
                 "System.Reflection.TypeExtensions": "4.0.0-beta-*",
                 "System.Runtime": "4.0.20-beta-*"

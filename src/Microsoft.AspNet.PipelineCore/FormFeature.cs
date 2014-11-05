@@ -1,71 +1,192 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.PipelineCore.Infrastructure;
+using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.AspNet.WebUtilities.Collections;
 
 namespace Microsoft.AspNet.PipelineCore
 {
     public class FormFeature : IFormFeature
     {
-        private readonly IFeatureCollection _features;
-        private readonly FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
-        private Stream _bodyStream;
-        private IReadableStringCollection _form;
+        private readonly HttpRequest _request;
 
-        public FormFeature([NotNull] IDictionary<string, string[]> form)
-            : this (new ReadableStringCollection(form))
+        public FormFeature([NotNull] IFormCollection form)
         {
+            Form = form;
         }
 
-        public FormFeature([NotNull] IReadableStringCollection form)
+        public FormFeature([NotNull] HttpRequest request)
         {
-            _form = form;
+            _request = request;
         }
 
-        public FormFeature([NotNull] IFeatureCollection features)
+        public bool HasFormContentType
         {
-            _features = features;
-        }
-
-        public async Task<IReadableStringCollection> GetFormAsync(CancellationToken cancellationToken)
-        {
-            if (_features == null)
+            get
             {
-                return _form;
+                // Set directly
+                if (Form != null)
+                {
+                    return true;
+                }
+
+                return HasApplicationFormContentType() || HasMultipartFormContentType();
+            }
+        }
+
+        public IFormCollection Form { get; set; }
+
+        public IFormCollection ReadForm()
+        {
+            if (Form != null)
+            {
+                return Form;
             }
 
-            var body = _request.Fetch(_features).Body;
-
-            if (_bodyStream == null || _bodyStream != body)
+            if (!HasFormContentType)
             {
-                _bodyStream = body;
-                if (!_bodyStream.CanSeek)
+                throw new InvalidOperationException("Incorrect Content-Type: " + _request.ContentType);
+            }
+
+            // TODO: How do we prevent thread exhaustion?
+            return ReadFormAsync(CancellationToken.None).GetAwaiter().GetResult();
+        }
+
+        public async Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken)
+        {
+            if (Form != null)
+            {
+                return Form;
+            }
+
+            if (!HasFormContentType)
+            {
+                throw new InvalidOperationException("Incorrect Content-Type: " + _request.ContentType);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            _request.EnableRewind();
+
+            IDictionary<string, string[]> formFields = null;
+            var files = new FormFileCollection();
+
+            // Some of these code paths use StreamReader which does not support cancellation tokens.
+            using (cancellationToken.Register(_request.HttpContext.Abort))
+            {
+                // Check the content-type
+                if (HasApplicationFormContentType())
                 {
-                    var buffer = new MemoryStream();
-                    await _bodyStream.CopyToAsync(buffer, 4096, cancellationToken);
-                    _bodyStream = buffer;
-                    _request.Fetch(_features).Body = _bodyStream;
-                    _bodyStream.Seek(0, SeekOrigin.Begin);
+                    // TODO: Read the charset from the content-type header after we get strongly typed headers
+                    formFields = await FormReader.ReadFormAsync(_request.Body, cancellationToken);
                 }
-                using (var streamReader = new StreamReader(_bodyStream, Encoding.UTF8,
-                                                           detectEncodingFromByteOrderMarks: true,
-                                                           bufferSize: 1024, leaveOpen: true))
+                else if (HasMultipartFormContentType())
                 {
-                    string form = await streamReader.ReadToEndAsync();
-                    _form = FormHelpers.ParseForm(form);
+                    var formAccumulator = new KeyValueAccumulator<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                    var boundary = GetBoundary(_request.ContentType);
+                    var multipartReader = new MultipartReader(boundary, _request.Body);
+                    var section = await multipartReader.ReadNextSectionAsync(cancellationToken);
+                    while (section != null)
+                    {
+                        var headers = new HeaderDictionary(section.Headers);
+                        var contentDisposition = headers["Content-Disposition"];
+                        if (HasFileContentDisposition(contentDisposition))
+                        {
+                            // Find the end
+                            await section.Body.DrainAsync(cancellationToken);
+
+                            var file = new FormFile(_request.Body, section.BaseStreamOffset.Value, section.Body.Length)
+                            {
+                                Headers = headers,
+                            };
+                            files.Add(file);
+                        }
+                        else if (HasFormDataContentDisposition(contentDisposition))
+                        {
+                            // Content-Disposition: form-data; name="key"
+                            //
+                            // value
+
+                            // TODO: Strongly typed headers will take care of this
+                            var offset = contentDisposition.IndexOf("name=") + "name=".Length;
+                            var key = contentDisposition.Substring(offset + 1, contentDisposition.Length - offset - 2); // Remove quotes
+
+                            // TODO: Read the charset from the content-disposition header after we get strongly typed headers
+                            using (var reader = new StreamReader(section.Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true))
+                            {
+                                var value = await reader.ReadToEndAsync();
+                                formAccumulator.Append(key, value);
+                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + contentDisposition);
+                        }
+
+                        section = await multipartReader.ReadNextSectionAsync(cancellationToken);
+                    }
+
+                    formFields = formAccumulator.GetResults();
                 }
             }
-            return _form;
+
+            Form = new FormCollection(formFields, files);
+            return Form;
+        }
+
+        private bool HasApplicationFormContentType()
+        {
+            // TODO: Strongly typed headers will take care of this for us
+            // Content-Type: application/x-www-form-urlencoded; charset=utf-8
+            var contentType = _request.ContentType;
+            return !string.IsNullOrEmpty(contentType) && contentType.IndexOf("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private bool HasMultipartFormContentType()
+        {
+            // TODO: Strongly typed headers will take care of this for us
+            // Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq
+            var contentType = _request.ContentType;
+            return !string.IsNullOrEmpty(contentType) && contentType.IndexOf("multipart/form-data", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private bool HasFormDataContentDisposition(string contentDisposition)
+        {
+            // TODO: Strongly typed headers will take care of this for us
+            // Content-Disposition: form-data; name="key";
+            return !string.IsNullOrEmpty(contentDisposition) && contentDisposition.Contains("form-data") && !contentDisposition.Contains("filename=");
+        }
+
+        private bool HasFileContentDisposition(string contentDisposition)
+        {
+            // TODO: Strongly typed headers will take care of this for us
+            // Content-Disposition: form-data; name="myfile1"; filename="Misc 002.jpg"
+            return !string.IsNullOrEmpty(contentDisposition) && contentDisposition.Contains("form-data") && contentDisposition.Contains("filename=");
+        }
+
+        // Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq
+        private static string GetBoundary(string contentType)
+        {
+            // TODO: Strongly typed headers will take care of this for us
+            // TODO: Limit the length of boundary we accept. The spec says ~70 chars.
+            var elements = contentType.Split(' ');
+            var element = elements.Where(entry => entry.StartsWith("boundary=")).First();
+            var boundary = element.Substring("boundary=".Length);
+            // Remove quotes
+            if (boundary.Length >= 2 && boundary[0] == '"' && boundary[boundary.Length - 1] == '"')
+            {
+                boundary = boundary.Substring(1, boundary.Length - 2);
+            }
+            return boundary;
         }
     }
 }

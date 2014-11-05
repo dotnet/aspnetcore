@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Owin
             }
             else
             {
-                throw new ArgumentOutOfRangeException("buffer");
+                throw new ArgumentOutOfRangeException(nameof(buffer));
             }
         }
 
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Owin
                 case 0x8:
                     return WebSocketMessageType.Close;
                 default:
-                    throw new ArgumentOutOfRangeException("messageType", messageType, string.Empty);
+                    throw new ArgumentOutOfRangeException(nameof(messageType), messageType, string.Empty);
             }
         }
 
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Owin
                 case WebSocketMessageType.Close:
                     return 0x8;
                 default:
-                    throw new ArgumentOutOfRangeException("webSocketMessageType", webSocketMessageType, string.Empty);
+                    throw new ArgumentOutOfRangeException(nameof(webSocketMessageType), webSocketMessageType, string.Empty);
             }
         }
     }

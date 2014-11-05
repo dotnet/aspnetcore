@@ -14,12 +14,8 @@ namespace Microsoft.AspNet.PipelineCore.Security
     {
         private List<string> _accepted;
 
-        public ChallengeContext(IEnumerable<string> authenticationTypes, IDictionary<string, string> properties)
+        public ChallengeContext([NotNull] IEnumerable<string> authenticationTypes, IDictionary<string, string> properties)
         {
-            if (authenticationTypes == null)
-            {
-                throw new ArgumentNullException();
-            }
             AuthenticationTypes = authenticationTypes;
             Properties = properties ?? new Dictionary<string, string>(StringComparer.Ordinal);
             _accepted = new List<string>();
@@ -33,7 +29,7 @@ namespace Microsoft.AspNet.PipelineCore.Security
         {
             get { return _accepted; }
         }
-        
+
         public void Accept(string authenticationType, IDictionary<string, object> description)
         {
             _accepted.Add(authenticationType);

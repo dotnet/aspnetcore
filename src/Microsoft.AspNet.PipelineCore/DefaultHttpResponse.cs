@@ -129,12 +129,8 @@ namespace Microsoft.AspNet.PipelineCore
             Headers.Set(Constants.Headers.Location, location);
         }
 
-        public override void Challenge(AuthenticationProperties properties, IEnumerable<string> authenticationTypes)
+        public override void Challenge(AuthenticationProperties properties, [NotNull] IEnumerable<string> authenticationTypes)
         {
-            if (authenticationTypes == null)
-            {
-                throw new ArgumentNullException();
-            }
             HttpResponseFeature.StatusCode = 401;
             var handler = HttpAuthenticationFeature.Handler;
 
@@ -152,13 +148,8 @@ namespace Microsoft.AspNet.PipelineCore
             }
         }
 
-        public override void SignIn(AuthenticationProperties properties, IEnumerable<ClaimsIdentity> identities)
+        public override void SignIn(AuthenticationProperties properties, [NotNull] IEnumerable<ClaimsIdentity> identities)
         {
-            if (identities == null)
-            {
-                throw new ArgumentNullException();
-            }
-
             var handler = HttpAuthenticationFeature.Handler;
 
             var signInContext = new SignInContext(identities, properties == null ? null : properties.Dictionary);
@@ -175,12 +166,8 @@ namespace Microsoft.AspNet.PipelineCore
             }
         }
 
-        public override void SignOut(IEnumerable<string> authenticationTypes)
+        public override void SignOut([NotNull] IEnumerable<string> authenticationTypes)
         {
-            if (authenticationTypes == null)
-            {
-                throw new ArgumentNullException();
-            }
             var handler = HttpAuthenticationFeature.Handler;
 
             var signOutContext = new SignOutContext(authenticationTypes);

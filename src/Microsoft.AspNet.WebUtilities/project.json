@@ -9,6 +9,7 @@
         "aspnetcore50": {
             "dependencies": {
                 "System.Diagnostics.Debug": "4.0.10-beta-*",
+                "System.IO.FileSystem": "4.0.0-beta-*",
                 "System.Runtime": "4.0.20-beta-*"
             }
         }

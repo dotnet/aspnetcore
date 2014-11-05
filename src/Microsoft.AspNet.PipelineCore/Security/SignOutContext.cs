@@ -11,12 +11,8 @@ namespace Microsoft.AspNet.PipelineCore.Security
     {
         private List<string> _accepted;
 
-        public SignOutContext(IEnumerable<string> authenticationTypes)
+        public SignOutContext([NotNull] IEnumerable<string> authenticationTypes)
         {
-            if (authenticationTypes == null)
-            {
-                throw new ArgumentNullException("authenticationTypes");
-            }
             AuthenticationTypes = authenticationTypes;
             _accepted = new List<string>();
         }

@@ -9,7 +9,6 @@ using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
-using Microsoft.AspNet.WebUtilities.Collections;
 
 namespace Microsoft.AspNet.PipelineCore
 {

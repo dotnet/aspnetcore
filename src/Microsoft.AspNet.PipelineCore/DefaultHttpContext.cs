@@ -214,12 +214,8 @@ namespace Microsoft.AspNet.PipelineCore
             return authTypeContext.Results;
         }
 
-        public override IEnumerable<AuthenticationResult> Authenticate(IEnumerable<string> authenticationTypes)
+        public override IEnumerable<AuthenticationResult> Authenticate([NotNull] IEnumerable<string> authenticationTypes)
         {
-            if (authenticationTypes == null)
-            {
-                throw new ArgumentNullException();
-            }
             var handler = HttpAuthenticationFeature.Handler;
 
             var authenticateContext = new AuthenticateContext(authenticationTypes);
@@ -238,12 +234,8 @@ namespace Microsoft.AspNet.PipelineCore
             return authenticateContext.Results;
         }
 
-        public override async Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IEnumerable<string> authenticationTypes)
+        public override async Task<IEnumerable<AuthenticationResult>> AuthenticateAsync([NotNull] IEnumerable<string> authenticationTypes)
         {
-            if (authenticationTypes == null)
-            {
-                throw new ArgumentNullException();
-            }
             var handler = HttpAuthenticationFeature.Handler;
 
             var authenticateContext = new AuthenticateContext(authenticationTypes);

@@ -17,12 +17,8 @@ namespace Microsoft.AspNet.PipelineCore.Security
         private List<AuthenticationResult> _results;
         private List<string> _accepted;
 
-        public AuthenticateContext(IEnumerable<string> authenticationTypes)
+        public AuthenticateContext([NotNull] IEnumerable<string> authenticationTypes)
         {
-            if (authenticationTypes == null)
-            {
-                throw new ArgumentNullException("authenticationType");
-            }
             AuthenticationTypes = authenticationTypes;
             _results = new List<AuthenticationResult>();
             _accepted = new List<string>();

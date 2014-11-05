@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Infrastructure;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
@@ -55,7 +54,7 @@ namespace Microsoft.AspNet.PipelineCore
 
         private IFormFeature FormFeature
         {
-            get { return _form.Fetch(_features) ?? _form.Update(_features, new FormFeature(_features)); }
+            get { return _form.Fetch(_features) ?? _form.Update(_features, new FormFeature(this)); }
         }
 
         private IRequestCookiesFeature RequestCookiesFeature
@@ -83,7 +82,7 @@ namespace Microsoft.AspNet.PipelineCore
             set { HttpRequestFeature.QueryString = value.Value; }
         }
 
-        public override long? ContentLength 
+        public override long? ContentLength
         {
             get
             {
@@ -129,11 +128,6 @@ namespace Microsoft.AspNet.PipelineCore
             get { return QueryFeature.Query; }
         }
 
-        public override Task<IReadableStringCollection> GetFormAsync(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return FormFeature.GetFormAsync(cancellationToken);
-        }
-
         public override string Protocol
         {
             get { return HttpRequestFeature.Protocol; }
@@ -166,6 +160,22 @@ namespace Microsoft.AspNet.PipelineCore
         {
             get { return Headers[Constants.Headers.AcceptCharset]; }
             set { Headers[Constants.Headers.AcceptCharset] = value; }
+        }
+
+        public override bool HasFormContentType
+        {
+            get { return FormFeature.HasFormContentType; }
+        }
+
+        public override IFormCollection Form
+        {
+            get { return FormFeature.ReadForm(); }
+            set { FormFeature.Form = value; }
+        }
+
+        public override Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken)
+        {
+            return FormFeature.ReadFormAsync(cancellationToken);
         }
     }
 }

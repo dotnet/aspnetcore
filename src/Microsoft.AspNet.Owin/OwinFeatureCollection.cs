@@ -399,12 +399,8 @@ namespace Microsoft.AspNet.Owin
             return TryGetValue(item.Key, out result) && result.Equals(item.Value);
         }
 
-        public void CopyTo(KeyValuePair<Type, object>[] array, int arrayIndex)
+        public void CopyTo([NotNull] KeyValuePair<Type, object>[] array, int arrayIndex)
         {
-            if (array == null)
-            {
-                throw new ArgumentNullException("array");
-            }
             if (arrayIndex < 0 || arrayIndex > array.Length)
             {
                 throw new ArgumentOutOfRangeException("arrayIndex", arrayIndex, string.Empty);

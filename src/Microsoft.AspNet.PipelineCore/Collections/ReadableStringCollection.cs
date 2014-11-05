@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.WebUtilities.Collections
+namespace Microsoft.AspNet.PipelineCore.Collections
 {
     /// <summary>
     /// Accessors for query, forms, etc.
@@ -17,13 +17,8 @@ namespace Microsoft.AspNet.WebUtilities.Collections
         /// Create a new wrapper
         /// </summary>
         /// <param name="store"></param>
-        public ReadableStringCollection(IDictionary<string, string[]> store)
+        public ReadableStringCollection([NotNull] IDictionary<string, string[]> store)
         {
-            if (store == null)
-            {
-                throw new ArgumentNullException("store");
-            }
-
             Store = store;
         }
 
@@ -75,7 +70,7 @@ namespace Microsoft.AspNet.WebUtilities.Collections
         /// <returns></returns>
         public string Get(string key)
         {
-            return ParsingHelpers.GetJoinedValue(Store, key);
+            return GetJoinedValue(Store, key);
         }
 
         /// <summary>
@@ -107,6 +102,16 @@ namespace Microsoft.AspNet.WebUtilities.Collections
         IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        private static string GetJoinedValue(IDictionary<string, string[]> store, string key)
+        {
+            string[] values;
+            if (store.TryGetValue(key, out values))
+            {
+                return string.Join(",", values);
+            }
+            return null;
         }
     }
 }

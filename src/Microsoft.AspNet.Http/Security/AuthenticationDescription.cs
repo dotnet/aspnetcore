@@ -27,12 +27,8 @@ namespace Microsoft.AspNet.Http.Security
         /// Initializes a new instance of the <see cref="AuthenticationDescription"/> class
         /// </summary>
         /// <param name="properties"></param>
-        public AuthenticationDescription(IDictionary<string, object> properties)
+        public AuthenticationDescription([NotNull] IDictionary<string, object> properties)
         {
-            if (properties == null)
-            {
-                throw new ArgumentNullException("properties");
-            }
             Dictionary = properties;
         }
 

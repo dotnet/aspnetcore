@@ -12,12 +12,8 @@ namespace Microsoft.AspNet.PipelineCore.Security
     {
         private List<string> _accepted;
 
-        public SignInContext(IEnumerable<ClaimsIdentity> identities, IDictionary<string, string> dictionary)
+        public SignInContext([NotNull] IEnumerable<ClaimsIdentity> identities, IDictionary<string, string> dictionary)
         {
-            if (identities == null)
-            {
-                throw new ArgumentNullException("identities");
-            }
             Identities = identities;
             Properties = dictionary ?? new Dictionary<string, string>(StringComparer.Ordinal);
             _accepted = new List<string>();

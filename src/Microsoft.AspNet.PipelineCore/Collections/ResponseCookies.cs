@@ -19,13 +19,8 @@ namespace Microsoft.AspNet.PipelineCore.Collections
         /// Create a new wrapper
         /// </summary>
         /// <param name="headers"></param>
-        public ResponseCookies(IHeaderDictionary headers)
+        public ResponseCookies([NotNull] IHeaderDictionary headers)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException("headers");
-            }
-
             Headers = headers;
         }
 
@@ -47,13 +42,8 @@ namespace Microsoft.AspNet.PipelineCore.Collections
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="options"></param>
-        public void Append(string key, string value, CookieOptions options)
+        public void Append(string key, string value, [NotNull] CookieOptions options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
-
             bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
             bool expiresHasValue = options.Expires.HasValue;
@@ -98,13 +88,8 @@ namespace Microsoft.AspNet.PipelineCore.Collections
         /// </summary>
         /// <param name="key"></param>
         /// <param name="options"></param>
-        public void Delete(string key, CookieOptions options)
+        public void Delete(string key, [NotNull] CookieOptions options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
-
             bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
 

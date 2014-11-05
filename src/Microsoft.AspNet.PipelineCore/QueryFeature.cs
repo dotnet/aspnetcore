@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.PipelineCore.Infrastructure;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.AspNet.WebUtilities.Collections;
 
 namespace Microsoft.AspNet.PipelineCore
 {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.PipelineCore
                 if (_query == null || _queryString != queryString)
                 {
                     _queryString = queryString;
-                    _query = QueryHelpers.ParseQuery(queryString);
+                    _query = new ReadableStringCollection(QueryHelpers.ParseQuery(queryString));
                 }
                 return _query;
             }

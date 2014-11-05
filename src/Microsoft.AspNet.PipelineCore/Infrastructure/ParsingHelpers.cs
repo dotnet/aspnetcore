@@ -445,12 +445,8 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
 
         #endregion
 
-        public bool StartsWith(string text, StringComparison comparisonType)
+        public bool StartsWith([NotNull] string text, StringComparison comparisonType)
         {
-            if (text == null)
-            {
-                throw new ArgumentNullException("text");
-            }
             int textLength = text.Length;
             if (!HasValue || _count < textLength)
             {
@@ -460,12 +456,8 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             return string.Compare(_buffer, _offset, text, 0, textLength, comparisonType) == 0;
         }
 
-        public bool EndsWith(string text, StringComparison comparisonType)
+        public bool EndsWith([NotNull] string text, StringComparison comparisonType)
         {
-            if (text == null)
-            {
-                throw new ArgumentNullException("text");
-            }
             int textLength = text.Length;
             if (!HasValue || _count < textLength)
             {
@@ -475,12 +467,8 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             return string.Compare(_buffer, _offset + _count - textLength, text, 0, textLength, comparisonType) == 0;
         }
 
-        public bool Equals(string text, StringComparison comparisonType)
+        public bool Equals([NotNull] string text, StringComparison comparisonType)
         {
-            if (text == null)
-            {
-                throw new ArgumentNullException("text");
-            }
             int textLength = text.Length;
             if (!HasValue || _count != textLength)
             {
@@ -615,25 +603,17 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             }
         }
 
-        public static string[] GetHeaderUnmodified(IDictionary<string, string[]> headers, string key)
+        public static string[] GetHeaderUnmodified([NotNull] IDictionary<string, string[]> headers, string key)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException("headers");
-            }
             string[] values;
             return headers.TryGetValue(key, out values) ? values : null;
         }
 
-        public static void SetHeader(IDictionary<string, string[]> headers, string key, string value)
+        public static void SetHeader([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, string value)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException("headers");
-            }
             if (string.IsNullOrWhiteSpace(key))
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -645,15 +625,11 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             }
         }
 
-        public static void SetHeaderJoined(IDictionary<string, string[]> headers, string key, params string[] values)
+        public static void SetHeaderJoined([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, params string[] values)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException("headers");
-            }
             if (string.IsNullOrWhiteSpace(key))
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
             if (values == null || values.Length == 0)
             {
@@ -697,15 +673,11 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             return value;
         }
 
-        public static void SetHeaderUnmodified(IDictionary<string, string[]> headers, string key, params string[] values)
+        public static void SetHeaderUnmodified([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, params string[] values)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException("headers");
-            }
             if (string.IsNullOrWhiteSpace(key))
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
             if (values == null || values.Length == 0)
             {
@@ -717,16 +689,12 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             }
         }
 
-        public static void SetHeaderUnmodified(IDictionary<string, string[]> headers, string key, IEnumerable<string> values)
+        public static void SetHeaderUnmodified([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, [NotNull] IEnumerable<string> values)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException("headers");
-            }
             headers[key] = values.ToArray();
         }
 
-        public static void AppendHeader(IDictionary<string, string[]> headers, string key, string values)
+        public static void AppendHeader([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, string values)
         {
             if (string.IsNullOrWhiteSpace(values))
             {
@@ -744,7 +712,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             }
         }
 
-        public static void AppendHeaderJoined(IDictionary<string, string[]> headers, string key, params string[] values)
+        public static void AppendHeaderJoined([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, params string[] values)
         {
             if (values == null || values.Length == 0)
             {
@@ -762,7 +730,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             }
         }
 
-        public static void AppendHeaderUnmodified(IDictionary<string, string[]> headers, string key, params string[] values)
+        public static void AppendHeaderUnmodified([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, params string[] values)
         {
             if (values == null || values.Length == 0)
             {
@@ -801,12 +769,8 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             return values == null ? null : string.Join(",", values);
         }
 
-        internal static string[] GetUnmodifiedValues(IDictionary<string, string[]> store, string key)
+        internal static string[] GetUnmodifiedValues([NotNull] IDictionary<string, string[]> store, string key)
         {
-            if (store == null)
-            {
-                throw new ArgumentNullException("store");
-            }
             string[] values;
             return store.TryGetValue(key, out values) ? values : null;
         }
@@ -826,7 +790,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
         //    return string.IsNullOrWhiteSpace(localPort) ? localIpAddress : (localIpAddress + ":" + localPort);
         //}
 
-        public static long? GetContentLength(IHeaderDictionary headers)
+        public static long? GetContentLength([NotNull] IHeaderDictionary headers)
         {
             const NumberStyles styles = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite;
             long value;
@@ -840,7 +804,7 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             return null;
         }
 
-        public static void SetContentLength(IHeaderDictionary headers, long? value)
+        public static void SetContentLength([NotNull] IHeaderDictionary headers, long? value)
         {
             if (value.HasValue)
             {

@@ -134,12 +134,8 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="uri"></param>
         /// <returns></returns>
-        public static HostString FromUriComponent(Uri uri)
+        public static HostString FromUriComponent([NotNull] Uri uri)
         {
-            if (uri == null)
-            {
-                throw new ArgumentNullException("uri");
-            }
             return new HostString(uri.GetComponents(
                 UriComponents.NormalizedHost | // Always convert punycode to Unicode.
                 UriComponents.HostAndPort, UriFormat.Unescaped));

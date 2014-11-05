@@ -20,13 +20,8 @@ namespace Microsoft.AspNet.PipelineCore.Collections
         /// Initializes a new instance of the <see cref="T:Microsoft.Owin.HeaderDictionary" /> class.
         /// </summary>
         /// <param name="store">The underlying data store.</param>
-        public HeaderDictionary(IDictionary<string, string[]> store)
+        public HeaderDictionary([NotNull] IDictionary<string, string[]> store)
         {
-            if (store == null)
-            {
-                throw new ArgumentNullException("store");
-            }
-
             Store = store;
         }
 
