@@ -19,6 +19,430 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : CsHtmlMarkupParserTestBase
     {
+        public static TheoryData<string, MarkupBlock, RazorError[]> MalformedTagHelperAttributeBlockData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+                var errorFormatUnclosed = "Found a malformed '{0}' tag helper. Tag helpers must have a start and " +
+                                          "end tag or be self closing.";
+                var errorFormatNoCloseAngle = "Missing close angle for tag helper '{0}'.";
+                var errorFormatNoCSharp = "The tag helper '{0}' must not have C# in the element's attribute " +
+                                           "declaration area.";
+                Func<string, Block> createInvalidDoBlock = extraCode =>
+                {
+                    return new MarkupBlock(
+                        new MarkupBlock(
+                            new StatementBlock(
+                                factory.CodeTransition(),
+                                factory.Code("do {" + extraCode).AsStatement())));
+                };
+                var dateTimeNow = new MarkupBlock(
+                    new MarkupBlock(
+                        new ExpressionBlock(
+                            factory.CodeTransition(),
+                                factory.Code("DateTime.Now")
+                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                    .Accepts(AcceptedCharacters.NonWhiteSpace))));
+
+                return new TheoryData<string, MarkupBlock, RazorError[]>
+                {
+                    {
+                        "<p =\"false\"\" ></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new Dictionary<string, SyntaxTreeNode>())),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
+                        "<p bar=\"false\"\" <strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "bar", factory.Markup("false") }
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
+                        "<p bar='false  <strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "bar", new MarkupBlock(factory.Markup("false"), factory.Markup("  <strong>")) }
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
+                        "<p foo bar<strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("strong"))),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
+                                absoluteIndex: 10, lineIndex: 0, columnIndex: 10)
+                        }
+                    },
+                    {
+                        "<p class=btn\" bar<strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", factory.Markup("btn") }
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
+                        "<p class=btn\" bar=\"foo\"<strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", factory.Markup("btn") }
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
+                        "<p class=\"btn bar=\"foo\"<strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", new MarkupBlock(factory.Markup("btn"), factory.Markup(" bar=")) },
+                                    { "foo", factory.Markup(string.Empty) }
+                                },
+                                new MarkupTagHelperBlock("strong"))),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
+                                absoluteIndex: 23, lineIndex: 0, columnIndex: 23)
+                        }
+                    },
+                    {
+                        "<p class=\"btn bar=\"foo\"></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", new MarkupBlock(factory.Markup("btn"), factory.Markup(" bar=")) },
+                                })),
+                        new RazorError[0]
+                    },
+                    {
+                        "<p @DateTime.Now class=\"btn\"></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p")),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCSharp, "p"),
+                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3)
+                        }
+                    },
+                    {
+                        "<p @DateTime.Now=\"btn\"></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p")),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCSharp, "p"),
+                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3)
+                        }
+                    },
+                    {
+                        "<p class=@DateTime.Now\"></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", dateTimeNow }
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
+                        "<p class=\"@do {",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", createInvalidDoBlock(string.Empty) }
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
+                                absoluteIndex: 11, lineIndex: 0, columnIndex: 11)
+                        }
+                    },
+                    {
+                        "<p class=\"@do {\"></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", createInvalidDoBlock("\"></p>") }
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
+                                absoluteIndex: 11, lineIndex: 0, columnIndex: 11),
+                            new RazorError(
+                                RazorResources.ParseError_Unterminated_String_Literal,
+                                absoluteIndex: 15, lineIndex: 0, columnIndex: 15)
+                        }
+                    },
+                    {
+                        "<p @do { someattribute=\"btn\"></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p")),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCSharp, "p"),
+                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3),
+                            new RazorError(
+                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
+                                absoluteIndex: 4, lineIndex: 0, columnIndex: 4),
+                            new RazorError(
+                                RazorResources.FormatParseError_UnexpectedEndTag("p"),
+                                absoluteIndex: 29, lineIndex: 0, columnIndex: 29)
+                        }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MalformedTagHelperAttributeBlockData))]
+        public void Rewrite_CreatesErrorForMalformedTagHelpersWithAttributes(
+            string documentContent,
+            MarkupBlock expectedOutput,
+            RazorError[] expectedErrors)
+        {
+            RunParseTreeRewriterTest(documentContent, expectedOutput, expectedErrors, "strong", "p");
+        }
+
+        public static TheoryData<string, MarkupBlock, RazorError[]> MalformedTagHelperBlockData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+                var errorFormatUnclosed = "Found a malformed '{0}' tag helper. Tag helpers must have a start and " +
+                                          "end tag or be self closing.";
+                var errorFormatNoCloseAngle = "Missing close angle for tag helper '{0}'.";
+
+                return new TheoryData<string, MarkupBlock, RazorError[]>
+                {
+                    {
+                        "<p",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p")),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
+                        "<p></p",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p")),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3)
+                        }
+                    },
+                    {
+                        "<p><strong",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("strong"))),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
+                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
+                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3)
+                        }
+                    },
+                    {
+                        "<strong <p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("strong",
+                                new MarkupTagHelperBlock("p"))),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                absoluteIndex: 8, lineIndex: 0, columnIndex: 8)
+                        }
+                    },
+                    {
+                        "<strong </strong",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("strong")),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
+                                absoluteIndex: 8, lineIndex: 0, columnIndex: 8)
+                        }
+                    },
+                    {
+                        "<<</strong> <<p>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<"),
+                            blockFactory.MarkupTagBlock("<"),
+                            blockFactory.MarkupTagBlock("</strong>"),
+                            factory.Markup(" "),
+                            blockFactory.MarkupTagBlock("<"),
+                            new MarkupTagHelperBlock("p")),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
+                                absoluteIndex: 2, lineIndex: 0, columnIndex: 2),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                absoluteIndex: 13, lineIndex: 0, columnIndex: 13)
+                        }
+                    },
+                    {
+                        "<<<strong>> <<>>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<"),
+                            blockFactory.MarkupTagBlock("<"),
+                            new MarkupTagHelperBlock("strong",
+                                factory.Markup("> "),
+                                blockFactory.MarkupTagBlock("<"),
+                                blockFactory.MarkupTagBlock("<>"),
+                                factory.Markup(">"))),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
+                                absoluteIndex: 2, lineIndex: 0, columnIndex: 2)
+                        }
+                    },
+                    {
+                        "<str<strong></p></strong>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<str"),
+                            new MarkupTagHelperBlock("strong",
+                                blockFactory.MarkupTagBlock("</p>"))),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                absoluteIndex: 12, lineIndex: 0, columnIndex: 12)
+                        }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MalformedTagHelperBlockData))]
+        public void Rewrite_CreatesErrorForMalformedTagHelper(
+            string documentContent,
+            MarkupBlock expectedOutput,
+            RazorError[] expectedErrors)
+        {
+            RunParseTreeRewriterTest(documentContent, expectedOutput, expectedErrors, "strong", "p");
+        }
+
         public static TheoryData CodeTagHelperAttributesData
         {
             get
@@ -105,9 +529,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             var providerContext = new TagHelperDescriptorProvider(descriptors);
 
             // Act & Assert
-            EvaluateData(providerContext, 
-                         documentContent, 
-                         expectedOutput, 
+            EvaluateData(providerContext,
+                         documentContent,
+                         expectedOutput,
                          expectedErrors: Enumerable.Empty<RazorError>());
         }
 
@@ -117,8 +541,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             {
                 var factory = CreateDefaultSpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorFormat = "Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or " +
-                                  "be self closing.";
+                var malformedErrorFormat = "Found a malformed '{0}' tag helper. Tag helpers must have a start and " +
+                                           "end tag or be self closing.";
                 var dateTimeNow = new MarkupBlock(
                     new ExpressionBlock(
                         factory.CodeTransition(),
@@ -130,16 +554,23 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p class=foo dynamic=@DateTime.Now style=color:red;><strong></p></strong>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                        new Dictionary<string, SyntaxTreeNode>
-                        {
-                            { "class", factory.Markup("foo") },
-                            { "dynamic", new MarkupBlock(dateTimeNow) },
-                            { "style", factory.Markup("color:red;") }
-                        },
-                        new MarkupTagHelperBlock("strong",
-                            blockFactory.MarkupTagBlock("</p>")))),
-                    new RazorError(string.Format(CultureInfo.InvariantCulture, errorFormat, "p"),
-                                   SourceLocation.Zero)
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "class", factory.Markup("foo") },
+                                { "dynamic", new MarkupBlock(dateTimeNow) },
+                                { "style", factory.Markup("color:red;") }
+                            },
+                            new MarkupTagHelperBlock("strong")),
+                            blockFactory.MarkupTagBlock("</strong>")),
+                    new RazorError[]
+                    {
+                        new RazorError(
+                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "strong"),
+                            absoluteIndex: 52, lineIndex: 0, columnIndex: 52),
+                        new RazorError(
+                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "strong"),
+                            absoluteIndex: 64, lineIndex: 0, columnIndex: 64)
+                    }
                 };
                 yield return new object[] {
                     "<div><p>Hello <strong>World</strong></div>",
@@ -150,8 +581,12 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock("strong",
                                 factory.Markup("World")),
                             blockFactory.MarkupTagBlock("</div>"))),
-                    new RazorError(string.Format(CultureInfo.InvariantCulture, errorFormat, "p"),
-                                   absoluteIndex: 5, lineIndex: 0, columnIndex: 5)
+                    new RazorError[]
+                    {
+                        new RazorError(
+                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "p"),
+                            absoluteIndex: 5, lineIndex: 0, columnIndex: 5)
+                    }
                 };
                 yield return new object[] {
                     "<div><p>Hello <strong>World</div>",
@@ -162,8 +597,15 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock("strong",
                                 factory.Markup("World"),
                                 blockFactory.MarkupTagBlock("</div>")))),
-                    new RazorError(string.Format(CultureInfo.InvariantCulture, errorFormat, "strong"),
-                                   absoluteIndex: 14, lineIndex: 0, columnIndex: 14)
+                    new RazorError[]
+                    {
+                        new RazorError(
+                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "p"),
+                            absoluteIndex: 5, lineIndex: 0, columnIndex: 5),
+                        new RazorError(
+                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "strong"),
+                            absoluteIndex: 14, lineIndex: 0, columnIndex: 14)
+                    }
                 };
                 yield return new object[] {
                     "<p class=\"foo\">Hello <p style=\"color:red;\">World</p>",
@@ -180,8 +622,12 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     { "style", factory.Markup("color:red;") }
                                 },
                                 factory.Markup("World")))),
-                    new RazorError(string.Format(CultureInfo.InvariantCulture, errorFormat, "p"),
-                                   SourceLocation.Zero)
+                    new RazorError[]
+                    {
+                        new RazorError(
+                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "p"),
+                            SourceLocation.Zero)
+                    }
                 };
             }
         }
@@ -191,9 +637,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         public void TagHelperParseTreeRewriter_CreatesErrorForIncompleteTagHelper(
             string documentContent,
             MarkupBlock expectedOutput,
-            RazorError expectedError)
+            RazorError[] expectedErrors)
         {
-            RunParseTreeRewriterTest(documentContent, expectedOutput, new[] { expectedError }, "strong", "p");
+            RunParseTreeRewriterTest(documentContent, expectedOutput, expectedErrors, "strong", "p");
         }
 
         public static TheoryData<string, MarkupBlock> InvalidHtmlBlockData
@@ -1292,8 +1738,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             var rewritingContext = new RewritingContext(results.Document, errorSink);
             new TagHelperParseTreeRewriter(provider).Rewrite(rewritingContext);
             var rewritten = rewritingContext.SyntaxTree;
+            var actualErrors = errorSink.Errors.OrderBy(error => error.Location.AbsoluteIndex)
+                                               .ToList();
 
-            EvaluateRazorErrors(errorSink.Errors.ToList(), expectedErrors.ToList());
+            EvaluateRazorErrors(actualErrors, expectedErrors.ToList());
             EvaluateParseTree(rewritten, expectedOutput);
         }
 

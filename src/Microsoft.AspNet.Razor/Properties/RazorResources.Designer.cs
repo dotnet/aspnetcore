@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// The "@" character must be followed by a ":", "(", or a C# identifier.  If you intended to switch to markup, use an HTML start tag, for example:
-        ///
+        /// 
         /// @if(isLoggedIn) {
         ///     &lt;p&gt;Hello, @user!&lt;/p&gt;
         /// }
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// The "@" character must be followed by a ":", "(", or a C# identifier.  If you intended to switch to markup, use an HTML start tag, for example:
-        ///
+        /// 
         /// @if(isLoggedIn) {
         ///     &lt;p&gt;Hello, @user!&lt;/p&gt;
         /// }
@@ -228,7 +228,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Sections cannot be empty.  The "@section" keyword must be followed by a block of markup surrounded by "{}".  For example:
-        ///
+        /// 
         /// @section Sidebar {
         ///    &lt;!-- Markup and text goes here --&gt;
         /// }
@@ -240,7 +240,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Sections cannot be empty.  The "@section" keyword must be followed by a block of markup surrounded by "{}".  For example:
-        ///
+        /// 
         /// @section Sidebar {
         ///    &lt;!-- Markup and text goes here --&gt;
         /// }
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Namespace imports and type aliases cannot be placed within code blocks.  They must immediately follow an "@" character in markup.  It is recommended that you put them at the top of the page, as in the following example:
-        ///
+        /// 
         /// @using System.Drawing;
         /// @{
         ///     // OK here to use types from System.Drawing in the page.
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Namespace imports and type aliases cannot be placed within code blocks.  They must immediately follow an "@" character in markup.  It is recommended that you put them at the top of the page, as in the following example:
-        ///
+        /// 
         /// @using System.Drawing;
         /// @{
         ///     // OK here to use types from System.Drawing in the page.
@@ -278,12 +278,12 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Expected a "{0}" but found a "{1}".  Block statements must be enclosed in "{{" and "}}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
-        ///
+        /// 
         /// @if(isLoggedIn)
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
-        ///
+        /// 
         /// Instead, wrap the contents of the block in "{{}}":
-        ///
+        /// 
         /// @if(isLoggedIn) {{
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
         /// }}
@@ -295,12 +295,12 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Expected a "{0}" but found a "{1}".  Block statements must be enclosed in "{{" and "}}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
-        ///
+        /// 
         /// @if(isLoggedIn)
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
-        ///
+        /// 
         /// Instead, wrap the contents of the block in "{{}}":
-        ///
+        /// 
         /// @if(isLoggedIn) {{
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
         /// }}
@@ -1431,7 +1431,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Tag Helper attributes must have a name.
+        /// Tag Helper '{0}'s attributes must have names.
         /// </summary>
         internal static string TagHelpers_AttributesMustHaveAName
         {
@@ -1439,15 +1439,15 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Tag Helper attributes must have a name.
+        /// Tag Helper '{0}'s attributes must have names.
         /// </summary>
-        internal static string FormatTagHelpers_AttributesMustHaveAName()
+        internal static string FormatTagHelpers_AttributesMustHaveAName(object p0)
         {
-            return GetString("TagHelpers_AttributesMustHaveAName");
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_AttributesMustHaveAName"), p0);
         }
 
         /// <summary>
-        /// Tag Helpers cannot have C# in an HTML tag element's attribute declaration area.
+        /// The tag helper '{0}' must not have C# in the element's attribute declaration area.
         /// </summary>
         internal static string TagHelpers_CannotHaveCSharpInTagDeclaration
         {
@@ -1455,11 +1455,11 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Tag Helpers cannot have C# in an HTML tag element's attribute declaration area.
+        /// The tag helper '{0}' must not have C# in the element's attribute declaration area.
         /// </summary>
-        internal static string FormatTagHelpers_CannotHaveCSharpInTagDeclaration()
+        internal static string FormatTagHelpers_CannotHaveCSharpInTagDeclaration(object p0)
         {
-            return GetString("TagHelpers_CannotHaveCSharpInTagDeclaration");
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_CannotHaveCSharpInTagDeclaration"), p0);
         }
 
         /// <summary>
@@ -1540,6 +1540,54 @@ namespace Microsoft.AspNet.Razor
         internal static string FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_FoundMalformedTagHelper"), p0);
+        }
+
+        /// <summary>
+        /// Missing '{0}' from '{1}' tag helper.
+        /// </summary>
+        internal static string TagHelpersParseTreeRewriter_MissingValueFromTagHelper
+        {
+            get { return GetString("TagHelpersParseTreeRewriter_MissingValueFromTagHelper"); }
+        }
+
+        /// <summary>
+        /// Missing '{0}' from '{1}' tag helper.
+        /// </summary>
+        internal static string FormatTagHelpersParseTreeRewriter_MissingValueFromTagHelper(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_MissingValueFromTagHelper"), p0, p1);
+        }
+
+        /// <summary>
+        /// Missing close angle for tag helper '{0}'.
+        /// </summary>
+        internal static string TagHelpersParseTreeRewriter_MissingCloseAngle
+        {
+            get { return GetString("TagHelpersParseTreeRewriter_MissingCloseAngle"); }
+        }
+
+        /// <summary>
+        /// Missing close angle for tag helper '{0}'.
+        /// </summary>
+        internal static string FormatTagHelpersParseTreeRewriter_MissingCloseAngle(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_MissingCloseAngle"), p0);
+        }
+
+        /// <summary>
+        /// TagHelper attributes must be welformed.
+        /// </summary>
+        internal static string TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed
+        {
+            get { return GetString("TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed"); }
+        }
+
+        /// <summary>
+        /// TagHelper attributes must be welformed.
+        /// </summary>
+        internal static string FormatTagHelperBlockRewriter_TagHelperAttributesMustBeWelformed()
+        {
+            return GetString("TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed");
         }
 
         private static string GetString(string name, params string[] formatterNames)

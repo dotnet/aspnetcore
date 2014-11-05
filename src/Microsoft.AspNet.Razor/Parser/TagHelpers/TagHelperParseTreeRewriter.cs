@@ -27,14 +27,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
         public void Rewrite(RewritingContext context)
         {
-            RewriteTags(context.SyntaxTree);
-
-            ValidateRewrittenSyntaxTree(context);
+            RewriteTags(context.SyntaxTree, context);
 
             context.SyntaxTree = _currentBlock.Build();
         }
 
-        private void RewriteTags(Block input)
+        private void RewriteTags(Block input, RewritingContext context)
         {
             // We want to start a new block without the children from existing (we rebuild them).
             TrackBlock(new BlockBuilder
@@ -42,6 +40,8 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 Type = input.Type,
                 CodeGenerator = input.CodeGenerator
             });
+
+            var activeTagHelpers = _tagStack.Count;
 
             foreach (var child in input.Children)
             {
@@ -51,65 +51,18 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
                     if (childBlock.Type == BlockType.Tag)
                     {
-                        // TODO: Fully handle malformed tags: https://github.com/aspnet/Razor/issues/104
-
-                        // Get tag name of the current block (doesn't matter if it's an end or start tag)
-                        var tagName = GetTagName(childBlock);
-
-                        // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
-                        if (tagName == null)
+                        if (TryRewriteTagHelper(childBlock, context))
                         {
-                            _currentBlock.Children.Add(child);
                             continue;
                         }
 
-                        if (!IsEndTag(childBlock))
-                        {
-                            // We're in a begin tag block
-
-                            if (IsPotentialTagHelper(tagName, childBlock))
-                            {
-                                var descriptors = _provider.GetTagHelpers(tagName);
-
-                                // We could be a tag helper, but only if we have descriptors registered
-                                if (descriptors.Any())
-                                {
-                                    // Found a new tag helper block
-                                    TrackTagHelperBlock(new TagHelperBlockBuilder(tagName, descriptors, childBlock));
-
-                                    // If it's a self closing block then we don't have to worry about nested children
-                                    // within the tag... complete it.
-                                    if (IsSelfClosing(childBlock))
-                                    {
-                                        BuildCurrentlyTrackedTagHelperBlock();
-                                    }
-
-                                    continue;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            var currentTagHelper = _tagStack.Count > 0 ? _tagStack.Peek() : null;
-
-                            // Check if it's an "end" tag helper that matches our current tag helper
-                            if (currentTagHelper != null &&
-                                string.Equals(currentTagHelper.TagName, tagName, StringComparison.OrdinalIgnoreCase))
-                            {
-                                BuildCurrentlyTrackedTagHelperBlock();
-                                continue;
-                            }
-
-                            // We're in an end tag, there won't be anymore tag helpers nested.
-                        }
-
-                        // If we get to here it means that we're a normal html tag.  No need to iterate
-                        // any deeper into the children of it because they wont be tag helpers.
+                        // If we get to here it means that we're a normal html tag.  No need to iterate any deeper into
+                        // the children of it because they wont be tag helpers.
                     }
                     else
                     {
                         // We're not an Html tag so iterate through children recursively.
-                        RewriteTags(childBlock);
+                        RewriteTags(childBlock, context);
                         continue;
                     }
                 }
@@ -117,42 +70,141 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 // At this point the child is a Span or Block with Type BlockType.Tag that doesn't happen to be a
                 // tag helper.
 
-                // Add the child to current block.
+                // Add the child to current block. 
                 _currentBlock.Children.Add(child);
+            }
+
+            // We captured the number of active tag helpers at the start of our logic, it should be the same. If not
+            // it means that there are malformed tag helpers at the top of our stack.
+            if (activeTagHelpers != _tagStack.Count)
+            {
+                // Malformed tag helpers built here will be tag helpers that do not have end tags in the current block 
+                // scope. Block scopes are special cases in Razor such as @<p> would cause an error because there's no
+                // matching end </p> tag in the template block scope and therefore doesn't make sense as a tag helper.
+                BuildMalformedTagHelpers(_tagStack.Count - activeTagHelpers, context);
+
+                Debug.Assert(activeTagHelpers == _tagStack.Count);
             }
 
             BuildCurrentlyTrackedBlock();
         }
 
-        private void ValidateRewrittenSyntaxTree(RewritingContext context)
+        private bool TryRewriteTagHelper(Block tagBlock, RewritingContext context)
         {
-            // If the blockStack still has elements in it that means there's at least one malformed TagHelper block in
-            // the document, that's the only way we can have a non-zero _blockStack.Count.
-            if (_blockStack.Count != 0)
+            // TODO: Fully handle malformed tags: https://github.com/aspnet/Razor/issues/104
+
+            // Get tag name of the current block (doesn't matter if it's an end or start tag)
+            var tagName = GetTagName(tagBlock);
+
+            // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
+            if (tagName == null)
             {
-                // We reverse the children so we can search from the back to the front for the TagHelper that is
-                // malformed.
-                var candidateChildren = _currentBlock.Children.Reverse();
-                var malformedTagHelper = candidateChildren.OfType<TagHelperBlock>().FirstOrDefault();
+                return false;
+            }
 
-                // If the malformed tag helper is null that means something other than a TagHelper caused the
-                // unbalancing of the syntax tree (should never happen).
-                Debug.Assert(malformedTagHelper != null);
+            var descriptors = Enumerable.Empty<TagHelperDescriptor>();
 
-                // We only create a single error because we can't reasonably determine other invalid tag helpers in the
-                // document; having one malformed tag helper puts the document into an invalid state.
-                context.ErrorSink.OnError(
-                    malformedTagHelper.Start,
-                    RazorResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(
-                        malformedTagHelper.TagName));
+            if (IsPotentialTagHelper(tagName, tagBlock))
+            {
+                descriptors = _provider.GetTagHelpers(tagName);
+            }
 
-                // We need to build the remaining blocks in the stack to ensure we don't return an invalid syntax tree.
-                do
+            // If there aren't any TagHelperDescriptors registered then we aren't a TagHelper
+            if (!descriptors.Any())
+            {
+                return false;
+            }
+
+            if (!IsEndTag(tagBlock))
+            {
+                // We're in a begin tag helper block
+
+                var validTagStructure = ValidTagStructure(tagName, tagBlock, context);
+
+                var builder = TagHelperBlockRewriter.Rewrite(tagName,
+                                                             validTagStructure,
+                                                             tagBlock,
+                                                             descriptors,
+                                                             context.ErrorSink);
+
+                // Found a new tag helper block
+                TrackTagHelperBlock(builder);
+
+                // If it's a self closing block then we don't have to worry about nested children 
+                // within the tag... complete it.
+                if (IsSelfClosing(tagBlock))
                 {
                     BuildCurrentlyTrackedTagHelperBlock();
                 }
-                while (_blockStack.Count != 0);
             }
+            else
+            {
+                // We're in an end tag helper block.
+
+                var tagNameScope = _tagStack.Count > 0 ? _tagStack.Peek().TagName : string.Empty;
+
+                // Validate that our end tag helper matches the currently scoped tag helper, if not we
+                // need to error.
+                if (tagNameScope.Equals(tagName, StringComparison.OrdinalIgnoreCase))
+                {
+                    ValidTagStructure(tagName, tagBlock, context);
+
+                    BuildCurrentlyTrackedTagHelperBlock();
+                }
+                else
+                {
+                    // Current tag helper scope does not match the end tag. Attempt to recover the tag 
+                    // helper by looking up the previous tag helper scopes for a matching tag. If we 
+                    // can't recover it means there was no corresponding tag helper begin tag.
+                    if (TryRecoverTagHelper(tagName, context))
+                    {
+                        ValidTagStructure(tagName, tagBlock, context);
+
+                        // Successfully recovered, move onto the next element.
+                    }
+                    else
+                    {
+                        // Could not recover, the end tag helper has no corresponding begin tag, create
+                        // an error based on the current childBlock.
+                        context.ErrorSink.OnError(
+                            tagBlock.Start,
+                            RazorResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(tagName));
+
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private static bool ValidTagStructure(string tagName, Block tag, RewritingContext context)
+        {
+            // We assume an invalid structure until we verify that the tag meets all of our "valid structure" criteria.
+            var invalidStructure = true;
+
+            // No need to validate the tag end because in order to be a tag block it must start with '<'.
+            var tagEnd = tag.Children.Last() as Span;
+
+            // If our tag end is not a markup span it means it's some sort of code SyntaxTreeNode (not a valid format)
+            if (tagEnd != null && tagEnd.Kind == SpanKind.Markup)
+            {
+                var endSymbol = tagEnd.Symbols.LastOrDefault() as HtmlSymbol;
+
+                if (endSymbol != null && endSymbol.Type == HtmlSymbolType.CloseAngle)
+                {
+                    invalidStructure = false;
+                }
+            }
+
+            if (invalidStructure)
+            {
+                context.ErrorSink.OnError(
+                    tag.Start,
+                    RazorResources.FormatTagHelpersParseTreeRewriter_MissingCloseAngle(tagName));
+            }
+
+            return !invalidStructure;
         }
 
         private void BuildCurrentlyTrackedBlock()
@@ -216,6 +268,52 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             TrackBlock(builder);
         }
 
+        private bool TryRecoverTagHelper(string tagName, RewritingContext context)
+        {
+            var malformedTagHelperCount = 0;
+
+            foreach (var tag in _tagStack)
+            {
+                if (tag.TagName.Equals(tagName, StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+
+                malformedTagHelperCount++;
+            }
+
+            // If the malformedTagHelperCount == _tagStack.Count it means we couldn't find a begin tag for the tag 
+            // helper, can't recover.
+            if (malformedTagHelperCount != _tagStack.Count)
+            {
+                BuildMalformedTagHelpers(malformedTagHelperCount, context);
+
+                // One final build, this is the build that completes our target tag helper block which is not malformed.
+                BuildCurrentlyTrackedTagHelperBlock();
+
+                // We were able to recover
+                return true;
+            }
+
+            // Could not recover tag helper. Aka we found a tag helper end tag without a corresponding begin tag.
+            return false;
+        }
+
+        private void BuildMalformedTagHelpers(int count, RewritingContext context)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                var malformedTagHelper = _tagStack.Peek();
+
+                context.ErrorSink.OnError(
+                    malformedTagHelper.Start,
+                    RazorResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(
+                        malformedTagHelper.TagName));
+
+                BuildCurrentlyTrackedTagHelperBlock();
+            }
+        }
+
         private static string GetTagName(Block tagBlock)
         {
             var child = tagBlock.Children.First();
@@ -240,9 +338,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
         {
             EnsureTagBlock(beginTagBlock);
 
-            var childSpan = (Span)beginTagBlock.Children.Last();
+            var childSpan = beginTagBlock.Children.Last() as Span;
 
-            return childSpan.Content.EndsWith("/>");
+            return childSpan?.Content.EndsWith("/>") ?? false;
         }
 
         private static bool IsEndTag(Block tagBlock)
