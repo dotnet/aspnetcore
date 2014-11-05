@@ -67,8 +67,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Final content", GetTrimmedString(stream));
         }
 
-        [Fact]
-        public async Task FlushPointsAreExecutedForPagesWithComponentsAndPartials()
+        [Theory]
+        [InlineData("PageWithPartialsAndViewComponents", "FlushAsync invoked inside RenderSection")]
+        [InlineData("PageWithRenderSectionAsync", "FlushAsync invoked inside RenderSectionAsync")]
+        public async Task FlushPointsAreExecutedForPagesWithComponentsPartialsAndSections(string action, string title)
         {
             var waitService = new WaitService();
             var serviceProvider = GetServiceProvider(waitService);
@@ -77,23 +79,31 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var stream = await client.GetStreamAsync("http://localhost/FlushPoint/PageWithPartialsAndViewComponents");
+            var stream = await client.GetStreamAsync("http://localhost/FlushPoint/" + action);
 
             // Assert - 1
-            Assert.Equal(
-@"<title>Page With Components and Partials</title>
-
-RenderBody content", GetTrimmedString(stream));
+            Assert.Equal(string.Join(Environment.NewLine,
+                                     "<title>" + title + "</title>",
+                                     "",
+                                     "RenderBody content"), GetTrimmedString(stream));
             waitService.WaitForServer();
 
             // Assert - 2
-            Assert.Equal("partial-content", GetTrimmedString(stream));
+            Assert.Equal(string.Join(
+                Environment.NewLine,
+                "partial-content",
+                "",
+                "Value from TaskReturningString",
+                "<p>section-content</p>"), GetTrimmedString(stream));
             waitService.WaitForServer();
 
             // Assert - 3
-            Assert.Equal(
-@"component-content
-    <span>Content that takes time to produce</span>", GetTrimmedString(stream));
+            Assert.Equal(string.Join(
+                Environment.NewLine,
+                "component-content",
+                "    <span>Content that takes time to produce</span>",
+                "",
+                "More content from layout"), GetTrimmedString(stream));
         }
 
         private IServiceProvider GetServiceProvider(WaitService waitService)

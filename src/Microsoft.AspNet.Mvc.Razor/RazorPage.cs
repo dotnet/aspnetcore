@@ -451,7 +451,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// In layout pages, renders the content of the section named <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The name of the section to render.</param>
-        /// <returns>Returns a HtmlString that contains the rendered HTML.</returns>
+        /// <returns>Returns <see cref="HtmlString.Empty"/> to allow the <see cref="Write(object)"/> call to
+        /// succeed.</returns>
+        /// <remarks>The method writes to the <see cref="Output"/> and the value returned is a token
+        /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
+        /// value does not represent the rendered content.</remarks>
         public HtmlString RenderSection([NotNull] string name)
         {
             return RenderSection(name, required: true);
@@ -462,7 +466,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="name">The section to render.</param>
         /// <param name="required">Indicates if this section must be rendered.</param>
-        /// <returns>Returns a HtmlString that contains the rendered HTML.</returns>
+        /// <returns>Returns <see cref="HtmlString.Empty"/> to allow the <see cref="Write(object)"/> call to
+        /// succeed.</returns>
+        /// <remarks>The method writes to the <see cref="Output"/> and the value returned is a token
+        /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
+        /// value does not represent the rendered content.</remarks>
         public HtmlString RenderSection([NotNull] string name, bool required)
         {
             EnsureMethodCanBeInvoked(nameof(RenderSection));
@@ -475,8 +483,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// In layout pages, asynchronously renders the content of the section named <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The section to render.</param>
-        /// <returns>A <see cref="Task{TResult}"/> that on completion returns a <see cref="HtmlString"/> containing
-        /// the rendered HTML.</returns>
+        /// <returns>A <see cref="Task{HtmlString}"/> that on completion returns <see cref="HtmlString.Empty"/> that
+        /// allows the <see cref="Write(object)"/> call to succeed.</returns>
+        /// <remarks>The method writes to the <see cref="Output"/> and the value returned is a token
+        /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
+        /// value does not represent the rendered content.</remarks>
         public Task<HtmlString> RenderSectionAsync([NotNull] string name)
         {
             return RenderSectionAsync(name, required: true);
@@ -486,8 +497,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// In layout pages, asynchronously renders the content of the section named <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The section to render.</param>
-        /// <returns>A <see cref="Task{TResult}"/> that on completion returns a <see cref="HtmlString"/> containing
-        /// the rendered HTML.</returns>
+        /// <returns>A <see cref="Task{HtmlString}"/> that on completion returns <see cref="HtmlString.Empty"/> that
+        /// allows the <see cref="Write(object)"/> call to succeed.</returns>
+        /// <remarks>The method writes to the <see cref="Output"/> and the value returned is a token
+        /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
+        /// value does not represent the rendered content.</remarks>
         /// <exception cref="InvalidOperationException">if <paramref name="required"/> is <c>true</c> and the section
         /// was not registered using the <c>@section</c> in the Razor page.</exception>
         public async Task<HtmlString> RenderSectionAsync([NotNull] string name, bool required)
@@ -508,14 +522,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (PreviousSectionWriters.TryGetValue(sectionName, out renderDelegate))
             {
                 _renderedSections.Add(sectionName);
+                await renderDelegate(Output);
 
-                using (var writer = new StringCollectionTextWriter(Output.Encoding))
-                {
-                    await renderDelegate(writer);
-
-                    // Returning a disposed StringCollectionTextWriter is safe.
-                    return new HtmlString(writer);
-                }
+                // Return a token value that allows the Write call that wraps the RenderSection \ RenderSectionAsync
+                // to succeed.
+                return HtmlString.Empty;
             }
             else if (required)
             {

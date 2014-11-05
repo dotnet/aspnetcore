@@ -17,6 +17,7 @@ namespace RazorWebSite
                 // Add MVC services to the services container
                 services.AddMvc(configuration);
                 services.AddTransient<InjectedHelper>();
+                services.AddTransient<TaskReturningService>();
                 services.Configure<RazorViewEngineOptions>(options =>
                 {
                     var expander = new LanguageViewLocationExpander(
