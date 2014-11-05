@@ -43,17 +43,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             public bool Equals(TagHelperAttributeDescriptor descriptorX, TagHelperAttributeDescriptor descriptorY)
             {
-                return descriptorX.AttributeName == descriptorY.AttributeName &&
-                       descriptorX.AttributePropertyName == descriptorY.AttributePropertyName && 
-                       descriptorX.AttributeTypeName == descriptorY.AttributeTypeName;
+                return descriptorX.Name == descriptorY.Name &&
+                       descriptorX.PropertyName == descriptorY.PropertyName && 
+                       descriptorX.TypeName == descriptorY.TypeName;
             }
 
             public int GetHashCode(TagHelperAttributeDescriptor descriptor)
             {
                 return HashCodeCombiner.Start()
-                                       .Add(descriptor.AttributeName)
-                                       .Add(descriptor.AttributePropertyName)
-                                       .Add(descriptor.AttributeTypeName)
+                                       .Add(descriptor.Name)
+                                       .Add(descriptor.PropertyName)
+                                       .Add(descriptor.TypeName)
                                        .CombinedHash;
             }
         }

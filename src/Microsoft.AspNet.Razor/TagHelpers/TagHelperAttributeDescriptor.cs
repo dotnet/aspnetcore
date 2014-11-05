@@ -10,48 +10,45 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     /// </summary>
     public class TagHelperAttributeDescriptor
     {
-        /// <summary>
-        /// Instantiates a new <see cref="TagHelperAttributeDescriptor"/> class.
-        /// </summary>
-        /// <param name="attributeName">The HTML attribute name.</param>
-        /// <param name="propertyInfo">The <see cref="System.Reflection.PropertyInfo"/> for the tag
-        /// helper attribute</param>
-        public TagHelperAttributeDescriptor(string attributeName, PropertyInfo propertyInfo)
-            : this(attributeName, propertyInfo.Name, propertyInfo.PropertyType.FullName)
+        // Internal for testing
+        internal TagHelperAttributeDescriptor(string name, PropertyInfo propertyInfo)
+            : this(name, propertyInfo.Name, propertyInfo.PropertyType.FullName)
         {
         }
 
         /// <summary>
-        /// Instantiates a new <see cref="TagHelperAttributeDescriptor"/> class.
+        /// Instantiates a new instance of the <see cref="TagHelperAttributeDescriptor"/> class.
         /// </summary>
-        /// <param name="attributeName">The HTML attribute name.</param>
-        /// <param name="attributePropertyName">The name of the CLR property name that corresponds to the HTML 
-        /// attribute name.</param>
-        /// <param name="attributeTypeName">
-        /// The full name of the <see cref="System.Type"/> that corresponds to the HTML attribute.
+        /// <param name="name">The HTML attribute name.</param>
+        /// <param name="propertyName">The name of the CLR property name that corresponds to the HTML 
+        /// attribute.</param>
+        /// <param name="typeName">
+        /// The full name of the named (see <paramref name="propertyName"/>) property's 
+        /// <see cref="System.Type"/>.
         /// </param>
-        public TagHelperAttributeDescriptor(string attributeName,
-                                            string attributePropertyName,
-                                            string attributeTypeName)
+        public TagHelperAttributeDescriptor(string name,
+                                            string propertyName,
+                                            string typeName)
         {
-            AttributeName = attributeName;
-            AttributePropertyName = attributePropertyName;
-            AttributeTypeName = attributeTypeName;
+            Name = name;
+            PropertyName = propertyName;
+            TypeName = typeName;
         }
 
         /// <summary>
         /// The HTML attribute name.
         /// </summary>
-        public string AttributeName { get; private set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// The name of the CLR property name that corresponds to the HTML attribute name.
         /// </summary>
-        public string AttributePropertyName { get; private set; }
+        public string PropertyName { get; private set; }
 
         /// <summary>
-        /// The full name of the <see cref="System.Type"/> that corresponds to the HTML attribute.
+        /// The full name of the named (see <see name="PropertyName"/>) property's 
+        /// <see cref="System.Type"/>.
         /// </summary>
-        public string AttributeTypeName { get; private set; }
+        public string TypeName { get; private set; }
     }
 }

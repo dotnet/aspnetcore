@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 
         [Theory]
         [MemberData(nameof(TextTagsBlockData))]
-        public void TagHelperParseTreeRewriter_DoesntRewriteTextTagTransitionTagHelpers(
+        public void TagHelperParseTreeRewriter_DoesNotRewriteTextTagTransitionTagHelpers(
             string documentContent,
             MarkupBlock expectedOutput)
         {
@@ -407,7 +407,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 
         [Theory]
         [MemberData(nameof(SpecialTagsBlockData))]
-        public void TagHelperParseTreeRewriter_DoesntRewriteSpecialTagTagHelpers(
+        public void TagHelperParseTreeRewriter_DoesNotRewriteSpecialTagTagHelpers(
             string documentContent,
             MarkupBlock expectedOutput)
         {

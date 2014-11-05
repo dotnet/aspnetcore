@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             RenderTagHelpersCreation(chunk);
 
             var attributeDescriptors = tagHelperDescriptors.SelectMany(descriptor => descriptor.Attributes);
-            var boundHTMLAttributes = attributeDescriptors.Select(descriptor => descriptor.AttributeName);
+            var boundHTMLAttributes = attributeDescriptors.Select(descriptor => descriptor.Name);
             var htmlAttributes = chunk.Attributes;
             var unboundHTMLAttributes =
                 htmlAttributes.Where(htmlAttribute => !boundHTMLAttributes.Contains(htmlAttribute.Key,
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         internal static string GetVariableName(TagHelperDescriptor descriptor)
         {
-            return "__" + descriptor.TagHelperName.Replace('.', '_');
+            return "__" + descriptor.TypeName.Replace('.', '_');
         }
 
         private void RenderBeginTagHelperScope(string tagName)
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 // Create the tag helper
                 _writer.WriteStartAssignment(tagHelperVariableName)
                        .WriteStartMethodInvocation(_tagHelperContext.CreateTagHelperMethodName,
-                                                   tagHelperDescriptor.TagHelperName)
+                                                   tagHelperDescriptor.TypeName)
                        .WriteEndMethodInvocation();
 
                 // Execution contexts are a runtime feature.
@@ -184,12 +184,12 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             {
                 Chunk attributeValueChunk;
 
-                var providedAttribute = chunkAttributes.TryGetValue(attributeDescriptor.AttributeName,
+                var providedAttribute = chunkAttributes.TryGetValue(attributeDescriptor.Name,
                                                                     out attributeValueChunk);
 
                 if (providedAttribute)
                 {
-                    var attributeValueRecorded = htmlAttributeValues.ContainsKey(attributeDescriptor.AttributeName);
+                    var attributeValueRecorded = htmlAttributeValues.ContainsKey(attributeDescriptor.Name);
 
                     // Bufferable attributes are attributes that can have Razor code inside of them.
                     var bufferableAttribute = IsStringAttribute(attributeDescriptor);
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     var valueAccessor = string.Format(CultureInfo.InvariantCulture,
                                                       "{0}.{1}",
                                                       tagHelperVariableName,
-                                                      attributeDescriptor.AttributePropertyName);
+                                                      attributeDescriptor.PropertyName);
 
                     _writer.WriteStartAssignment(valueAccessor);
 
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                         // We only need to create attribute values once per HTML element (not once per tag helper).
                         // We're saving the value accessor so we can retrieve it later if there are more tag helpers that
                         // need the value.
-                        htmlAttributeValues.Add(attributeDescriptor.AttributeName, valueAccessor);
+                        htmlAttributeValues.Add(attributeDescriptor.Name, valueAccessor);
 
                         if (bufferableAttribute)
                         {
@@ -245,7 +245,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                             {
                                 throw new InvalidOperationException(
                                     RazorResources.FormatTagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols(
-                                        attributeDescriptor.AttributePropertyName));
+                                        attributeDescriptor.PropertyName));
                             }
 
                             // We aren't a bufferable attribute which means we have no Razor code in our value.
@@ -267,7 +267,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                             ExecutionContextVariableName,
                             _tagHelperContext.ExecutionContextAddTagHelperAttributeMethodName);
 
-                        _writer.WriteStringLiteral(attributeDescriptor.AttributeName)
+                        _writer.WriteStringLiteral(attributeDescriptor.Name)
                                .WriteParameterSeparator()
                                .Write(valueAccessor)
                                .WriteEndMethodInvocation();
@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     else
                     {
                         // The attribute value has already been recorded, lets retrieve it from the stored value accessors.
-                        _writer.Write(htmlAttributeValues[attributeDescriptor.AttributeName])
+                        _writer.Write(htmlAttributeValues[attributeDescriptor.Name])
                                .WriteLine(";");
                     }
                 }
@@ -497,7 +497,10 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         private static bool IsStringAttribute(TagHelperAttributeDescriptor attributeDescriptor)
         {
-            return attributeDescriptor.AttributeTypeName == typeof(string).FullName;
+            return string.Equals(
+                attributeDescriptor.TypeName,
+                typeof(string).FullName,
+                StringComparison.Ordinal);
         }
 
         private static bool TryGetPlainTextValue(Chunk chunk, out string plainText)
@@ -528,12 +531,12 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             public bool Equals(TagHelperAttributeDescriptor descriptorX, TagHelperAttributeDescriptor descriptorY)
             {
-                return descriptorX.AttributeName.Equals(descriptorY.AttributeName, StringComparison.OrdinalIgnoreCase);
+                return string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.OrdinalIgnoreCase);
             }
 
             public int GetHashCode(TagHelperAttributeDescriptor descriptor)
             {
-                return StringComparer.OrdinalIgnoreCase.GetHashCode(descriptor.AttributeName);
+                return StringComparer.OrdinalIgnoreCase.GetHashCode(descriptor.Name);
             }
         }
     }

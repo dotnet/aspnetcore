@@ -98,8 +98,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_BuildsDescriptorsFromSimpleTypes()
         {
             // Arrange
-            var assemblyName = typeof(object).GetTypeInfo().Assembly.GetName().Name;
-            var expectedDescriptor = new TagHelperDescriptor("Object", "System.Object", assemblyName, ContentBehavior.None);
+            var objectAssemblyName = typeof(object).GetTypeInfo().Assembly.GetName().Name;
+            var expectedDescriptor = 
+                new TagHelperDescriptor("Object", "System.Object", objectAssemblyName, ContentBehavior.None);
 
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(typeof(object));

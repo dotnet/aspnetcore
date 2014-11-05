@@ -48,18 +48,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Grab the assembly name from the lookup text strings. Due to our supported lookupText formats it will 
             // always be the last element provided.
             var assemblyName = lookupStrings.Last().Trim();
-
-            // Retrieve all TagHelperDescriptors that exist within the given assemblyName.
             var descriptors = ResolveDescriptorsInAssembly(assemblyName);
 
             // Check if the lookupText specifies a type to search for.
             if (lookupStrings.Length == 2)
             {
-                // The user provided a type name retrieve it so we can prune our descriptors.
+                // The user provided a type name. Retrieve it so we can prune our descriptors.
                 var typeName = lookupStrings[0].Trim();
 
                 descriptors = descriptors.Where(descriptor =>
-                    string.Equals(descriptor.TagHelperName, typeName, StringComparison.Ordinal));
+                    string.Equals(descriptor.TypeName, typeName, StringComparison.Ordinal));
             }
 
             return descriptors;
@@ -72,8 +70,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="assemblyName">
         /// The name of the assembly to resolve <see cref="TagHelperDescriptor"/>s from.
         /// </param>
-        /// <returns><see cref="TagHelperDescriptor"/>s that represent <see cref="ITagHelper"/>s from the given
+        /// <returns><see cref="TagHelperDescriptor"/>s for <see cref="ITagHelper"/>s from the given
         /// <paramref name="assemblyName"/>.</returns>
+        // This is meant to be overridden by tooling to enable assembly level caching.
         protected virtual IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(string assemblyName)
         {
             // Resolve valid tag helper types from the assembly.

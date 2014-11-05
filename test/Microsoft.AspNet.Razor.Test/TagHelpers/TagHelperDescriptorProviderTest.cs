@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         }
 
         [Fact]
-        public void TagHelperDescriptorProvider_GetTagHelpersDoesntReturnNonCatchAllTagsForCatchAll()
+        public void TagHelperDescriptorProvider_GetTagHelpersDoesNotReturnNonCatchAllTagsForCatchAll()
         {
             // Arrange
             var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly", ContentBehavior.None);

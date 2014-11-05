@@ -28,12 +28,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <returns><c>true</c> if <paramref name="descriptorX"/> and <paramref name="descriptorY"/> are equal,
         /// <c>false</c> otherwise.</returns>
         /// <remarks>
-        /// Determines equality based on <see cref="TagHelperDescriptor.TagHelperName"/>, 
-        /// <see cref="TagHelperDescriptor.TagName"/> and <see cref="TagHelperDescriptor.ContentBehavior"/>.
+        /// Determines equality based on <see cref="TagHelperDescriptor.TypeName"/>, 
+        /// <see cref="TagHelperDescriptor.AssemblyName"/>, <see cref="TagHelperDescriptor.TagName"/> and 
+        /// <see cref="TagHelperDescriptor.ContentBehavior"/>.
         /// </remarks>
         public bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
         {
-            return string.Equals(descriptorX.TagHelperName, descriptorY.TagHelperName, StringComparison.Ordinal) &&
+            return string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal) &&
                    string.Equals(descriptorX.TagName, descriptorY.TagName, StringComparison.OrdinalIgnoreCase) &&
                    string.Equals(descriptorX.AssemblyName, descriptorY.AssemblyName, StringComparison.Ordinal) &&
                    descriptorX.ContentBehavior == descriptorY.ContentBehavior;
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             return HashCodeCombiner.Start()
                                    .Add(descriptor.TagName, StringComparer.OrdinalIgnoreCase)
-                                   .Add(descriptor.TagHelperName, StringComparer.Ordinal)
+                                   .Add(descriptor.TypeName, StringComparer.Ordinal)
                                    .Add(descriptor.AssemblyName, StringComparer.Ordinal)
                                    .Add(descriptor.ContentBehavior)
                                    .CombinedHash;

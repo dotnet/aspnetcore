@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
@@ -18,17 +16,17 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </summary>
         /// <param name="tagName">The tag name that the tag helper targets. '*' indicates a catch-all
         /// <see cref="TagHelperDescriptor"/> which applies to every HTML tag.</param>
-        /// <param name="tagHelperName">The full name of the tag helper class.</param>
-        /// <param name="tagHelperAssemblyName">The name of the assembly the tag helper was resolved from.</param>
+        /// <param name="typeName">The full name of the tag helper class.</param>
+        /// <param name="tagHelperAssemblyName">The name of the assembly containing the tag helper class.</param>
         /// <param name="contentBehavior">The <see cref="TagHelpers.ContentBehavior"/>
         /// of the tag helper.</param>
         public TagHelperDescriptor([NotNull] string tagName,
-                                   [NotNull] string tagHelperName,
-                                   [NotNull] string tagHelperAssemblyName,
+                                   [NotNull] string typeName,
+                                   [NotNull] string assemblyName,
                                    ContentBehavior contentBehavior)
             : this(tagName, 
-                   tagHelperName, 
-                   tagHelperAssemblyName, 
+                   typeName, 
+                   assemblyName, 
                    contentBehavior, 
                    Enumerable.Empty<TagHelperAttributeDescriptor>())
         {
@@ -40,23 +38,22 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </summary>
         /// <param name="tagName">The tag name that the tag helper targets. '*' indicates a catch-all
         /// <see cref="TagHelperDescriptor"/> which applies to every HTML tag.</param>
-        /// <param name="tagHelperName">The code class used to render the tag helper. Corresponds to
-        /// the tag helper's <see cref="Type.FullName"/>.</param>
-        /// <param name="tagHelperAssemblyName">The name of the assembly the tag helper was resolved from.</param>
+        /// <param name="typeName">The full name of the tag helper class.</param>
+        /// <param name="assemblyName">The name of the assembly containing the tag helper class.</param>
         /// <param name="contentBehavior">The <see cref="TagHelpers.ContentBehavior"/>
         /// of the tag helper.</param>
         /// <param name="attributes">
         /// The <see cref="TagHelperAttributeDescriptor"/>s to request from the HTML tag.
         /// </param>
         public TagHelperDescriptor([NotNull] string tagName,
-                                   [NotNull] string tagHelperName,
-                                   [NotNull] string tagHelperAssemblyName,
+                                   [NotNull] string typeName,
+                                   [NotNull] string assemblyName,
                                    ContentBehavior contentBehavior,
                                    [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes)
         {
             TagName = tagName;
-            TagHelperName = tagHelperName;
-            AssemblyName = tagHelperAssemblyName;
+            TypeName = typeName;
+            AssemblyName = assemblyName;
             ContentBehavior = contentBehavior;
             Attributes = new List<TagHelperAttributeDescriptor>(attributes);
         }
@@ -69,10 +66,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// The full name of the tag helper class.
         /// </summary>
-        public string TagHelperName { get; private set; }
+        public string TypeName { get; private set; }
 
         /// <summary>
-        /// The name of the assembly the tag helper was resolved from.
+        /// The name of the assembly containing the tag helper class.
         /// </summary>
         public string AssemblyName { get; private set; }
 

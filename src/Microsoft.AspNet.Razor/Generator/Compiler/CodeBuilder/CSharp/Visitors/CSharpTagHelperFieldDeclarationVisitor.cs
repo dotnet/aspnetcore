@@ -54,11 +54,11 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             foreach (var descriptor in chunk.Descriptors)
             {
-                if (!_declaredTagHelpers.Contains(descriptor.TagHelperName))
+                if (!_declaredTagHelpers.Contains(descriptor.TypeName))
                 {
-                    _declaredTagHelpers.Add(descriptor.TagHelperName);
+                    _declaredTagHelpers.Add(descriptor.TypeName);
 
-                    WritePrivateField(descriptor.TagHelperName,
+                    WritePrivateField(descriptor.TypeName,
                                       CSharpTagHelperCodeRenderer.GetVariableName(descriptor),
                                       value: null);
                 }

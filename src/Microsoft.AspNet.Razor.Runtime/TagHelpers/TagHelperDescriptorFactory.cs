@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 attributeNameAttribute.Name : 
                                 property.Name;
 
-            return new TagHelperAttributeDescriptor(attributeName, property);
+            return new TagHelperAttributeDescriptor(attributeName, property.Name, property.PropertyType.FullName);
         }
 
         private static ContentBehavior GetContentBehavior(Type type)
