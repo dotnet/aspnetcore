@@ -103,7 +103,12 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
         [InlineData("text/plain;", "*/*;charset=utf-8;", true)]
         [InlineData("text/plain;", "text/*;charset=utf-8;", true)]
         [InlineData("text/plain;", "text/plain;charset=utf-8;", true)]
+        [InlineData("text/plain;version=v1", "text/plain;version=", false)]
+        [InlineData("text/plain;version=v1", "Text/plain;Version=v1", true)]
+        [InlineData("text/plain;version=v1", "tExT/plain;version=V1", true)]
+        [InlineData("text/plain;version=v1", "TEXT/PLAIN;VERSION=V1", true)]
         [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "text/plain;charset=utf-8;foo=bar;q=0.0", true)]
+        [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "text/plain;foo=bar;q=0.0;charset=utf-8", true)] // different order of parameters
         [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "text/*;charset=utf-8;foo=bar;q=0.0", true)]
         [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "*/*;charset=utf-8;foo=bar;q=0.0", true)]
         [InlineData("*/*;", "text/plain;charset=utf-8;foo=bar;q=0.0", false)]
@@ -111,8 +116,8 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
         [InlineData("text/plain;missingparam=4;", "text/plain;charset=utf-8;foo=bar;q=0.0", false)]
         [InlineData("text/plain;missingparam=4;", "text/*;charset=utf-8;foo=bar;q=0.0", false)]
         [InlineData("text/plain;missingparam=4;", "*/*;charset=utf-8;foo=bar;q=0.0", false)]
-        public void MediaTypeHeaderValue_IsSubTypeTests(string mediaType1,
-                                                        string mediaType2,
+        public void MediaTypeHeaderValue_IsSubTypeTests(string mediaType1, // Example: Formatter's supported media type
+                                                        string mediaType2, // Example: Accept header media type
                                                         bool isMediaType1Subset)
         {
             // Arrange
@@ -132,6 +137,8 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
         [InlineData("text/plain;charset=utf-16;foo=bar", "text/json;charset=utf-16;foo=bar")]
         [InlineData("text/plain;charset=utf-16;foo=bar", "application/plain;charset=utf-16;foo=bar")]
         [InlineData("text/plain;charset=utf-16;foo=bar", "application/json;charset=utf-8;foo=bar1")]
+        [InlineData("text/plain; charset=utf-16; foo=bar", "application/json;charset=utf-8;foo=bar1")]
+        [InlineData("text/plain;charset = utf-16;foo = bar", "application/json;charset=utf-8;foo=bar1")]
         public void MediaTypeHeaderValue_UpdateValue_RawValueGetsUpdated(string mediaTypeValue,
                                                         string expectedRawValue)
         {
