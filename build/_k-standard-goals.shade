@@ -106,7 +106,13 @@ default Configuration='${E("Configuration")}'
   -// Find all dirs that contain a gruntfile.js file
   var gruntDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "gruntfile.js")}'
   grunt each='var gruntDir in gruntDirs'
-  
+  -CallTarget("clean-npm-modules");
+ 
+#clean-npm-modules if='!IsMono'
+  -// Find all dirs that contain a package.json file
+  var npmDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json").Select(d => Path.Combine(d, "node_modules"))}'
+  robocopy-delete dir='${npmDir}' each='var npmDir in npmDirs'
+
 #stylecop
   stylecop-setup
   stylecop-run each='var projectFile in Files.Include("src/**/project.json")'

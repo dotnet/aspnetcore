@@ -1,0 +1,29 @@
+-// Deletes a directory using robocopy such that long paths aren't an issue
+default parentDir = '${Directory.GetParent(dir).FullName}'
+default tempDir = '${Path.Combine(parentDir, "__emp_dir")}'
+default logFile = '${Path.Combine(parentDir, "robocopy-log.txt")}'
+
+exec program='cmd' commandline='/C mkdir ${tempDir}'
+
+@{
+    var robocopyProcessStartInfo = new ProcessStartInfo {
+        UseShellExecute = false,
+        WorkingDirectory = dir,
+        FileName = "cmd",
+        Arguments = "/C robocopy " + tempDir + " " + dir + " /PURGE /NS /NC /NP /NFL /NDL /NJH /NJS /LOG:" + logFile,
+    };
+
+    var robocopyProcess = Process.Start(robocopyProcessStartInfo);
+    robocopyProcess.WaitForExit();
+
+    // Robocopy encodes results as a bitmap in the return code, see http://ss64.com/nt/robocopy-exit.html
+    if (robocopyProcess.ExitCode >= 16)
+    {
+        throw new Exception(string.Format("Error {0} attempting to delete {1}, see {2} for more details", robocopyProcess.ExitCode, dir, logFile));
+    }
+}
+-//exec program='cmd' commandline='/C robocopy ${tempDir} ${dir} /PURGE /NS /NC /NP /NFL /NDL /NJH /NJS /LOG:${logFile}'
+
+exec program='cmd' commandline='/C rmdir ${tempDir}'
+exec program='cmd' commandline='/C rmdir ${dir}'
+exec program='cmd' commandline='/C del ${logFile}'
