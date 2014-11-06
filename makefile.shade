@@ -142,18 +142,16 @@ var buildTarget = "compile"
         foreach (var repo in GetAllRepos())
         {
             CloneOrUpdate(repo);
-            try
-            {
-                GitCommand(repo, "checkout release");
-            }
-            catch
-            {
-                // If the release branch does not exist, create a new branch and reset origin/dev to it.
-                GitCommand(repo, "checkout origin/dev -b release");
-            }
-
-            GitCommand(repo, "merge origin/dev");
+            
+            GitCommand(repo, "checkout origin/dev -B release");
+            File.Copy(Path.Combine("build-template", "NuGet.release.config"),
+                      Path.Combine(repo, "NuGet.config"),
+                      overwrite: true);
+            GitCommand(repo, "commit -am \"Updating to release NuGet.config\"");
             GitCommand(repo, "push origin release");
+            GitCommand(repo, "checkout origin/dev -B dev");
+            GitCommand(repo, "merge release -s ours");
+            GitCommand(repo, "push origin dev");
         }
     }
 
