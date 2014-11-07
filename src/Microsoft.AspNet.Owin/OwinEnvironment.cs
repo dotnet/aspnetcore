@@ -35,24 +35,32 @@ namespace Microsoft.AspNet.Owin
 
         public OwinEnvironment(HttpContext context)
         {
+            if (context.GetFeature<IHttpRequestFeature>() == null)
+            {
+                throw new ArgumentException("Missing required IHttpRequestFeature", "context");
+            }
+            if (context.GetFeature<IHttpResponseFeature>() == null)
+            {
+                throw new ArgumentException("Missing required IHttpResponseFeature", "context");
+            }
+
             _context = context;
             _entries = new Dictionary<string, FeatureMap>()
             {
-                { OwinConstants.CallCancelled, new FeatureMap<IHttpRequestLifetimeFeature>(feature => feature.RequestAborted) },
-                { OwinConstants.RequestProtocol, new FeatureMap<IHttpRequestFeature>(feature => feature.Protocol, (feature, value) => feature.Protocol = Convert.ToString(value)) },
-                { OwinConstants.RequestScheme, new FeatureMap<IHttpRequestFeature>(feature => feature.Scheme, (feature, value) => feature.Scheme = Convert.ToString(value)) },
-                { OwinConstants.RequestMethod, new FeatureMap<IHttpRequestFeature>(feature => feature.Method, (feature, value) => feature.Method = Convert.ToString(value)) },
-                { OwinConstants.RequestPathBase, new FeatureMap<IHttpRequestFeature>(feature => feature.PathBase, (feature, value) => feature.PathBase = Convert.ToString(value)) },
-                { OwinConstants.RequestPath, new FeatureMap<IHttpRequestFeature>(feature => feature.Path, (feature, value) => feature.Path = Convert.ToString(value)) },
-                { OwinConstants.RequestQueryString, new FeatureMap<IHttpRequestFeature>(feature => Utilities.RemoveQuestionMark(feature.QueryString),
+                { OwinConstants.RequestProtocol, new FeatureMap<IHttpRequestFeature>(feature => feature.Protocol, () => string.Empty, (feature, value) => feature.Protocol = Convert.ToString(value)) },
+                { OwinConstants.RequestScheme, new FeatureMap<IHttpRequestFeature>(feature => feature.Scheme, () => string.Empty, (feature, value) => feature.Scheme = Convert.ToString(value)) },
+                { OwinConstants.RequestMethod, new FeatureMap<IHttpRequestFeature>(feature => feature.Method, () => string.Empty, (feature, value) => feature.Method = Convert.ToString(value)) },
+                { OwinConstants.RequestPathBase, new FeatureMap<IHttpRequestFeature>(feature => feature.PathBase, () => string.Empty, (feature, value) => feature.PathBase = Convert.ToString(value)) },
+                { OwinConstants.RequestPath, new FeatureMap<IHttpRequestFeature>(feature => feature.Path, () => string.Empty, (feature, value) => feature.Path = Convert.ToString(value)) },
+                { OwinConstants.RequestQueryString, new FeatureMap<IHttpRequestFeature>(feature => Utilities.RemoveQuestionMark(feature.QueryString), () => string.Empty,
                     (feature, value) => feature.QueryString = Utilities.AddQuestionMark(Convert.ToString(value))) },
                 { OwinConstants.RequestHeaders, new FeatureMap<IHttpRequestFeature>(feature => feature.Headers, (feature, value) => feature.Headers = (IDictionary<string, string[]>)value) },
-                { OwinConstants.RequestBody, new FeatureMap<IHttpRequestFeature>(feature => feature.Body, (feature, value) => feature.Body = (Stream)value) },
+                { OwinConstants.RequestBody, new FeatureMap<IHttpRequestFeature>(feature => feature.Body, () => Stream.Null, (feature, value) => feature.Body = (Stream)value) },
 
-                { OwinConstants.ResponseStatusCode, new FeatureMap<IHttpResponseFeature>(feature => feature.StatusCode, (feature, value) => feature.StatusCode = Convert.ToInt32(value)) },
+                { OwinConstants.ResponseStatusCode, new FeatureMap<IHttpResponseFeature>(feature => feature.StatusCode, () => 200, (feature, value) => feature.StatusCode = Convert.ToInt32(value)) },
                 { OwinConstants.ResponseReasonPhrase, new FeatureMap<IHttpResponseFeature>(feature => feature.ReasonPhrase, (feature, value) => feature.ReasonPhrase = Convert.ToString(value)) },
                 { OwinConstants.ResponseHeaders, new FeatureMap<IHttpResponseFeature>(feature => feature.Headers, (feature, value) => feature.Headers = (IDictionary<string, string[]>)value) },
-                { OwinConstants.ResponseBody, new FeatureMap<IHttpResponseFeature>(feature => feature.Body, (feature, value) => feature.Body = (Stream)value) },
+                { OwinConstants.ResponseBody, new FeatureMap<IHttpResponseFeature>(feature => feature.Body, () => Stream.Null, (feature, value) => feature.Body = (Stream)value) },
                 { OwinConstants.CommonKeys.OnSendingHeaders, new FeatureMap<IHttpResponseFeature>(feature => new Action<Action<object>, object>(feature.OnSendingHeaders)) },
 
                 { OwinConstants.CommonKeys.LocalPort, new FeatureMap<IHttpConnectionFeature>(feature => feature.LocalPort.ToString(CultureInfo.InvariantCulture),
@@ -70,10 +78,27 @@ namespace Microsoft.AspNet.Owin
                 { OwinConstants.SendFiles.SendAsync, new FeatureMap<IHttpSendFileFeature>(feature => new SendFileFunc(feature.SendFileAsync)) },
 
                 { OwinConstants.Security.User, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User,
-                    (feature, value) => feature.User = Utilities.MakeClaimsPrincipal((IPrincipal)value),
+                    ()=> null, (feature, value) => feature.User = Utilities.MakeClaimsPrincipal((IPrincipal)value),
                     () => new HttpAuthenticationFeature())
                 },
             };
+
+            // owin.CallCancelled is required but the feature may not be present.
+            object ignored;
+            if (context.GetFeature<IHttpRequestLifetimeFeature>() != null)
+            {
+                _entries[OwinConstants.CallCancelled] = new FeatureMap<IHttpRequestLifetimeFeature>(feature => feature.RequestAborted);
+            }
+            else if (!_context.Items.TryGetValue(OwinConstants.CallCancelled, out ignored))
+            {
+                _context.Items[OwinConstants.CallCancelled] = CancellationToken.None;
+            }
+
+            // owin.Version is required.
+            if (!context.Items.TryGetValue(OwinConstants.OwinVersion, out ignored))
+            {
+                _context.Items[OwinConstants.OwinVersion] = "1.0";
+            }
 
             if (context.Request.IsSecure)
             {
@@ -108,14 +133,17 @@ namespace Microsoft.AspNet.Owin
 
         bool IDictionary<string, object>.ContainsKey(string key)
         {
-            return _entries.ContainsKey(key) || _context.Items.ContainsKey(key);
+            object value;
+            return ((IDictionary<string, object>)this).TryGetValue(key, out value);
         }
 
         ICollection<string> IDictionary<string, object>.Keys
         {
             get
             {
-                return _entries.Keys.Concat(_context.Items.Keys.Select(key => Convert.ToString(key))).ToList();
+                object value;
+                return _entries.Where(pair => pair.Value.TryGet(_context, out value))
+                    .Select(pair => pair.Key).Concat(_context.Items.Keys.Select(key => Convert.ToString(key))).ToList();
             }
         }
 
@@ -131,9 +159,8 @@ namespace Microsoft.AspNet.Owin
         bool IDictionary<string, object>.TryGetValue(string key, out object value)
         {
             FeatureMap entry;
-            if (_entries.TryGetValue(key, out entry))
+            if (_entries.TryGetValue(key, out entry) && entry.TryGet(_context, out value))
             {
-                value = entry.Get(_context);
                 return true;
             }
             return _context.Items.TryGetValue(key, out value);
@@ -149,11 +176,11 @@ namespace Microsoft.AspNet.Owin
             get
             {
                 FeatureMap entry;
-                if (_entries.TryGetValue(key, out entry))
-                {
-                    return entry.Get(_context);
-                }
                 object value;
+                if (_entries.TryGetValue(key, out entry) && entry.TryGet(_context, out value))
+                {
+                    return value;
+                }
                 if (_context.Items.TryGetValue(key, out value))
                 {
                     return value;
@@ -232,7 +259,11 @@ namespace Microsoft.AspNet.Owin
         {
             foreach (var entryPair in _entries)
             {
-                yield return new KeyValuePair<string, object>(entryPair.Key, entryPair.Value.Get(_context));
+                object value;
+                if (entryPair.Value.TryGet(_context, out value))
+                {
+                    yield return new KeyValuePair<string, object>(entryPair.Key, value);
+                }
             }
             foreach (var entryPair in _context.Items)
             {
@@ -248,26 +279,37 @@ namespace Microsoft.AspNet.Owin
         public class FeatureMap
         {
             public FeatureMap(Type featureInterface, Func<object, object> getter)
-                : this(featureInterface, getter, setter: null)
+                : this(featureInterface, getter, defaultFactory: null)
+            {
+            }
+            public FeatureMap(Type featureInterface, Func<object, object> getter, Func<object> defaultFactory)
+                : this(featureInterface, getter, defaultFactory, setter: null)
             {
             }
 
             public FeatureMap(Type featureInterface, Func<object, object> getter, Action<object, object> setter)
-                : this(featureInterface, getter, setter, featureFactory: null)
+                : this(featureInterface, getter, defaultFactory: null, setter: setter)
             {
             }
 
-            public FeatureMap(Type featureInterface, Func<object, object> getter, Action<object, object> setter, Func<object> featureFactory)
+            public FeatureMap(Type featureInterface, Func<object, object> getter, Func<object> defaultFactory, Action<object, object> setter)
+                : this(featureInterface, getter, defaultFactory, setter, featureFactory: null)
+            {
+            }
+
+            public FeatureMap(Type featureInterface, Func<object, object> getter, Func<object> defaultFactory, Action<object, object> setter, Func<object> featureFactory)
             {
                 FeatureInterface = featureInterface;
                 Getter = getter;
                 Setter = setter;
+                DefaultFactory = defaultFactory;
                 FeatureFactory = featureFactory;
             }
 
             private Type FeatureInterface { get; set; }
             private Func<object, object> Getter { get; set; }
             private Action<object, object> Setter { get; set; }
+            private Func<object> DefaultFactory { get; set; }
             private Func<object> FeatureFactory { get; set; }
 
             public bool CanSet
@@ -275,14 +317,20 @@ namespace Microsoft.AspNet.Owin
                 get { return Setter != null; }
             }
 
-            internal object Get(HttpContext context)
+            internal bool TryGet(HttpContext context, out object value)
             {
                 object featureInstance = context.GetFeature(FeatureInterface);
                 if (featureInstance == null)
                 {
-                    return null;
+                    value = null;
+                    return false;
                 }
-                return Getter(featureInstance);
+                value = Getter(featureInstance);
+                if (value == null && DefaultFactory != null)
+                {
+                    value = DefaultFactory();
+                }
+                return true;
             }
 
             internal void Set(HttpContext context, object value)
@@ -311,13 +359,23 @@ namespace Microsoft.AspNet.Owin
             {
             }
 
+            public FeatureMap(Func<TFeature, object> getter, Func<object> defaultFactory)
+                : base(typeof(TFeature), feature => getter((TFeature)feature), defaultFactory)
+            {
+            }
+
             public FeatureMap(Func<TFeature, object> getter, Action<TFeature, object> setter)
                 : base(typeof(TFeature), feature => getter((TFeature)feature), (feature, value) => setter((TFeature)feature, value))
             {
             }
 
-            public FeatureMap(Func<TFeature, object> getter, Action<TFeature, object> setter, Func<TFeature> featureFactory)
-                : base(typeof(TFeature), feature => getter((TFeature)feature), (feature, value) => setter((TFeature)feature, value), () => featureFactory())
+            public FeatureMap(Func<TFeature, object> getter, Func<object> defaultFactory, Action<TFeature, object> setter)
+                : base(typeof(TFeature), feature => getter((TFeature)feature), defaultFactory,(feature, value) => setter((TFeature)feature, value))
+            {
+            }
+
+            public FeatureMap(Func<TFeature, object> getter, Func<object> defaultFactory, Action<TFeature, object> setter, Func<TFeature> featureFactory)
+                : base(typeof(TFeature), feature => getter((TFeature)feature), defaultFactory, (feature, value) => setter((TFeature)feature, value), () => featureFactory())
             {
             }
         }

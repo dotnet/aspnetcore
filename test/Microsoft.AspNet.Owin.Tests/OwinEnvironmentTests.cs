@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
 using Xunit;
 
@@ -92,6 +94,36 @@ namespace Microsoft.AspNet.Owin
             Assert.Same(Stream.Null, context.Response.Body);
             Assert.Equal("CustomResponseValue", context.Response.Headers["CustomResponseHeader"]);
             Assert.Equal(201, context.Response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("server.LocalPort")]
+        public void OwinEnvironmentDoesNotContainEntriesForMissingFeatures(string key)
+        {
+            HttpContext context = CreateContext();
+            IDictionary<string, object> env = new OwinEnvironment(context);
+
+            object value;
+            Assert.False(env.TryGetValue(key, out value));
+
+            Assert.Throws<KeyNotFoundException>(() => env[key]);
+
+            Assert.False(env.Keys.Contains(key));
+            Assert.False(env.ContainsKey(key));
+        }
+
+        [Fact]
+        public void OwinEnvironmentSuppliesDefaultsForMissingRequiredEntries()
+        {
+            HttpContext context = CreateContext();
+            IDictionary<string, object> env = new OwinEnvironment(context);
+
+            object value;
+            Assert.True(env.TryGetValue("owin.CallCancelled", out value), "owin.CallCancelled");
+            Assert.True(env.TryGetValue("owin.Version", out value), "owin.Version");
+
+            Assert.Equal(CancellationToken.None, env["owin.CallCancelled"]);
+            Assert.Equal("1.0", env["owin.Version"]);
         }
 
         private HttpContext CreateContext()
