@@ -31,10 +31,6 @@
             #pragma warning restore 219
         }
         #line hidden
-        private System.IO.TextWriter __tagHelperStringValueBuffer = null;
-        private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext = null;
-        private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperRunner();
-        private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperScopeManager __tagHelperScopeManager = new Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperScopeManager();
         private Microsoft.AspNet.Mvc.Razor.InputTestTagHelper __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = null;
         #line hidden
         public ASPV_TestFiles_Input_ModelExpressionTagHelper_cshtml()
@@ -53,6 +49,8 @@
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<Microsoft.AspNet.Mvc.Razor.InputTestTagHelper>();
+            __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
         }
         #pragma warning restore 1998
     }
