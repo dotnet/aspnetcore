@@ -10,7 +10,7 @@ default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
 default BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 default Configuration='${E("Configuration")}'
-    
+
 @{
   if (string.IsNullOrEmpty(E("K_BUILD_VERSION")))
   {
@@ -39,7 +39,7 @@ default Configuration='${E("Configuration")}'
 #build-compile target='compile'
   k-build each='var projectFile in Files.Include("src/**/project.json")' configuration='${Configuration}'
   @{
-    foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg"))) 
+    foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
     {
       File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
     }
@@ -112,11 +112,17 @@ default Configuration='${E("Configuration")}'
            CallTarget("clean-npm-modules");
       }
   }
- 
+
 #clean-npm-modules if='!IsMono'
   -// Find all dirs that contain a package.json file
   var npmDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json").Select(d => Path.Combine(d, "node_modules"))}'
   robocopy-delete dir='${npmDir}' each='var npmDir in npmDirs'
+
+#set-quiet
+  @{
+    E("K_build_options"," --quiet");
+    E("K_restore_options"," --quiet");
+  }
 
 #stylecop
   stylecop-setup

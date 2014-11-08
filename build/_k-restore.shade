@@ -4,5 +4,7 @@ k-restore
     Restores nuget packages required for k projects. Downloads and executes k sdk tools.
 */}
 
-exec program='cmd' commandline='/C kpm restore' if='!IsMono'
-exec program='kpm' commandline='restore' if='IsMono'
+default restore_options='${E("K_build_options")}'
+
+exec program='cmd' commandline='/C kpm restore${restore_options}' if='!IsMono'
+exec program='kpm' commandline='restore${restore_options}' if='IsMono'

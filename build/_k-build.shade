@@ -11,11 +11,12 @@ configuration=''
 */}
 
 default configuration = 'debug'
+default build_options='${E("K_build_options")}'
 var projectFolder='${Path.GetDirectoryName(projectFile)}'
 var projectName='${Path.GetFileName(projectFolder)}'
 var projectBin='${Path.Combine(projectFolder, "bin", configuration)}'
 
 directory delete="${projectBin}"
-exec program='cmd' commandline='/C kpm build ${projectFolder} --configuration ${configuration}' if='!IsMono'
-exec program='kpm' commandline='build ${projectFolder} --configuration ${configuration}' if='IsMono'
+exec program='cmd' commandline='/C kpm build${build_options} ${projectFolder} --configuration ${configuration}' if='!IsMono'
+exec program='kpm' commandline='build${build_options} ${projectFolder} --configuration ${configuration}' if='IsMono'
 copy sourceDir='${projectBin}' outputDir='${Path.Combine(BUILD_DIR, projectName)}'
