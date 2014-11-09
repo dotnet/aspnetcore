@@ -758,6 +758,15 @@ Environment.NewLine;
                 throw new NotImplementedException();
             }
 
+            public MvcForm BeginRouteForm(
+                string routeName,
+                object routeValues,
+                FormMethod method,
+                object htmlAttributes)
+            {
+                throw new NotImplementedException();
+            }
+
             public HtmlString CheckBox(string name, bool? isChecked, object htmlAttributes)
             {
                 return new HtmlString("__CheckBox__");

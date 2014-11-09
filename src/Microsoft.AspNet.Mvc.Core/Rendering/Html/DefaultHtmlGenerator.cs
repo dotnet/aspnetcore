@@ -6,11 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
@@ -157,21 +155,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string method,
             object htmlAttributes)
         {
-            var tagBuilder = new TagBuilder("form");
-            tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
-
             var defaultMethod = false;
             if (string.IsNullOrEmpty(method))
             {
                 defaultMethod = true;
-                method = FormMethod.Post.ToString();
             }
             else if (string.Equals(method, FormMethod.Post.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 defaultMethod = true;
             }
 
-            string formAction;
+            string action;
             if (actionName == null && controllerName == null && routeValues == null && defaultMethod &&
                 htmlAttributes == null)
             {
@@ -179,20 +173,28 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 // parameters. Also reachable in the even-more-unusual case that user called another BeginForm()
                 // overload with default argument values.
                 var request = viewContext.HttpContext.Request;
-                formAction = request.PathBase + request.Path + request.QueryString;
+                action = request.PathBase + request.Path + request.QueryString;
             }
             else
             {
-                formAction = _urlHelper.Action(action: actionName, controller: controllerName, values: routeValues);
+                action = _urlHelper.Action(action: actionName, controller: controllerName, values: routeValues);
             }
 
-            // action is implicitly generated, so htmlAttributes take precedence.
-            tagBuilder.MergeAttribute("action", formAction);
+            return GenerateFormCore(viewContext, action, method, htmlAttributes);
+        }
 
-            // method is an explicit parameter, so it takes precedence over the htmlAttributes.
-            tagBuilder.MergeAttribute("method", method, replaceExisting: true);
+        /// <inheritdoc />
+        public TagBuilder GenerateRouteForm(
+            [NotNull]ViewContext viewContext,
+            string routeName,
+            object routeValues,
+            string method,
+            object htmlAttributes)
+        {
+            var action =
+                _urlHelper.RouteUrl(routeName, values: routeValues, protocol: null, host: null, fragment: null);
 
-            return tagBuilder;
+            return GenerateFormCore(viewContext, action, method, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -778,6 +780,44 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Generate a &lt;form&gt; element.
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="action">The URL where the form-data should be submitted.</param>
+        /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>
+        /// A <see cref="TagBuilder"/> instance for the &lt;/form&gt; element.
+        /// </returns>
+        protected virtual TagBuilder GenerateFormCore(
+            [NotNull] ViewContext viewContext,
+            string action,
+            string method,
+            object htmlAttributes)
+        {
+            var tagBuilder = new TagBuilder("form");
+            tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
+
+            // action is implicitly generated from other parameters, so htmlAttributes take precedence.
+            tagBuilder.MergeAttribute("action", action);
+
+            if (string.IsNullOrEmpty(method))
+            {
+                // Occurs only when called from a tag helper.
+                method = FormMethod.Post.ToString();
+            }
+
+            // For tag helpers, htmlAttributes will be null; replaceExisting value does not matter.
+            // method is an explicit parameter to HTML helpers, so it takes precedence over the htmlAttributes.
+            tagBuilder.MergeAttribute("method", method, replaceExisting: true);
+
+            return tagBuilder;
         }
 
         protected virtual TagBuilder GenerateInput(

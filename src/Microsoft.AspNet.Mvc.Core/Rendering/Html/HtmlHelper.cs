@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -216,6 +215,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes)
         {
             return GenerateForm(actionName, controllerName, routeValues, method, htmlAttributes);
+        }
+
+        /// <inheritdoc />
+        public MvcForm BeginRouteForm(string routeName, object routeValues, FormMethod method, object htmlAttributes)
+        {
+            return GenerateRouteForm(routeName, routeValues, method, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -611,8 +616,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
-        /// the request will be processed by an action method.
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
+        /// <paramref name="actionName"/> method will process the request.
         /// </summary>
         /// <param name="actionName">The name of the action method.</param>
         /// <param name="controllerName">The name of the controller.</param>
@@ -623,10 +628,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
-        /// <param name="htmlAttributes">An <see cref="IDictionary{string, object}"/> instance containing HTML
-        /// attributes to set for the element.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
         /// <returns>
-        /// An <see cref="MvcForm"/> instance which emits the &lt;/form&gt; end tag when disposed.
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
         /// </returns>
         /// <remarks>
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
@@ -652,6 +659,49 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             return CreateForm();
         }
+
+        /// <summary>
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
+        /// <paramref name="routeName"/> route will forward the request to an action method.
+        /// </summary>
+        /// <param name="routeName">The name of the route.</param>
+        /// <param name="routeValues">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// </param>
+        /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>
+        /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
+        /// </returns>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
+        protected virtual MvcForm GenerateRouteForm(
+            string routeName,
+            object routeValues,
+            FormMethod method,
+            object htmlAttributes)
+        {
+            var tagBuilder = _htmlGenerator.GenerateRouteForm(
+                ViewContext,
+                routeName,
+                routeValues,
+                GetFormMethodString(method),
+                htmlAttributes);
+            if (tagBuilder != null)
+            {
+                ViewContext.Writer.Write(tagBuilder.ToString(TagRenderMode.StartTag));
+            }
+
+            return CreateForm();
+        }
+
 
         protected virtual HtmlString GenerateHidden(
             ModelMetadata metadata,
