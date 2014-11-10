@@ -84,18 +84,17 @@ namespace Microsoft.AspNet.Owin
             };
 
             // owin.CallCancelled is required but the feature may not be present.
-            object ignored;
             if (context.GetFeature<IHttpRequestLifetimeFeature>() != null)
             {
                 _entries[OwinConstants.CallCancelled] = new FeatureMap<IHttpRequestLifetimeFeature>(feature => feature.RequestAborted);
             }
-            else if (!_context.Items.TryGetValue(OwinConstants.CallCancelled, out ignored))
+            else if (!_context.Items.ContainsKey(OwinConstants.CallCancelled))
             {
                 _context.Items[OwinConstants.CallCancelled] = CancellationToken.None;
             }
 
             // owin.Version is required.
-            if (!context.Items.TryGetValue(OwinConstants.OwinVersion, out ignored))
+            if (!context.Items.ContainsKey(OwinConstants.OwinVersion))
             {
                 _context.Items[OwinConstants.OwinVersion] = "1.0";
             }
