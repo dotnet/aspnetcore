@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc
 
             // The ViewStartProvider needs to be able to consume scoped instances of IRazorPageFactory
             yield return describe.Scoped<IViewStartProvider, ViewStartProvider>();
-            yield return describe.Transient<IRazorView, RazorView>();
+            yield return describe.Transient<IRazorViewFactory, RazorViewFactory>();
             yield return describe.Singleton<IRazorPageActivator, RazorPageActivator>();
             // Virtual path view factory needs to stay scoped so views can get get scoped services.
             yield return describe.Scoped<IRazorPageFactory, VirtualPathRazorPageFactory>();

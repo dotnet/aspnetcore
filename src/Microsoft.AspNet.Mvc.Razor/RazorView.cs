@@ -4,15 +4,16 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// Default implementation for <see cref="IRazorView"/> that executes one or more <see cref="RazorPage"/> 
+    /// Default implementation for <see cref="IView"/> that executes one or more <see cref="IRazorPage"/> 
     /// instances as part of view rendering.
     /// </summary>
-    public class RazorView : IRazorView
+    public class RazorView : IView
     {
         private readonly IRazorPageFactory _pageFactory;
         private readonly IRazorPageActivator _pageActivator;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Initializes a new instance of RazorView
         /// </summary>
-        /// <param name="pageFactory">The view factory used to instantiate layout and _ViewStart pages.</param>
+        /// <param name="pageFactory">The page factory used to instantiate layout and _ViewStart pages.</param>
         /// <param name="pageActivator">The <see cref="IRazorPageActivator"/> used to activate pages.</param>
         /// <param name="viewStartProvider">The <see cref="IViewStartProvider"/> used for discovery of _ViewStart
         /// pages</param>
@@ -42,7 +43,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return _pageExecutionFeature != null; }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Contextualizes the current instance of the <see cref="RazorView"/> providing it with the 
+        /// <see cref="IRazorPage"/> to execute.
+        /// </summary>
+        /// <param name="razorPage">The <see cref="IRazorPage"/> instance to execute.</param>
+        /// <param name="isPartial">Determines if the view is to be executed as a partial.</param>
         public virtual void Contextualize([NotNull] IRazorPage razorPage,
                                           bool isPartial)
         {

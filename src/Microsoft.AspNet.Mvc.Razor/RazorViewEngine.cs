@@ -34,6 +34,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         };
 
         private readonly IRazorPageFactory _pageFactory;
+        private readonly IRazorViewFactory _pageViewFactory;
         private readonly IReadOnlyList<IViewLocationExpander> _viewLocationExpanders;
         private readonly IViewLocationCache _viewLocationCache;
 
@@ -42,10 +43,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="pageFactory">The page factory used for creating <see cref="IRazorPage"/> instances.</param>
         public RazorViewEngine(IRazorPageFactory pageFactory,
+                               IRazorViewFactory pageViewFactory,
                                IViewLocationExpanderProvider viewLocationExpanderProvider,
                                IViewLocationCache viewLocationCache)
         {
             _pageFactory = pageFactory;
+            _pageViewFactory = pageViewFactory;
             _viewLocationExpanders = viewLocationExpanderProvider.ViewLocationExpanders;
             _viewLocationCache = viewLocationCache;
         }
@@ -193,9 +196,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             // and might store state. We'll use the service container to create new instances as we require.
 
             var services = actionContext.HttpContext.RequestServices;
-            var view = services.GetRequiredService<IRazorView>();
 
-            view.Contextualize(page, partial);
+            var view = _pageViewFactory.GetView(page, partial);
+
             return ViewEngineResult.Found(viewName, view);
         }
 
