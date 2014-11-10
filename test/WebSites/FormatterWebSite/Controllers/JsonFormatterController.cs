@@ -25,5 +25,15 @@ namespace FormatterWebSite.Controllers
 
             return objectResult;
         }
+
+        [HttpPost]
+        public IActionResult ReturnInput([FromBody]DummyClass dummyObject)
+        {
+            if (!ModelState.IsValid)
+            {
+                return new HttpStatusCodeResult(400);
+            }
+            return Content(dummyObject.SampleInt.ToString());
+        }
     }
 }

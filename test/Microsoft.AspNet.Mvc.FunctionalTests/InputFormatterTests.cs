@@ -104,5 +104,64 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("dummy", result.ParameterName);
             Assert.Equal(expectedSource, result.Source);
         }
+
+        [Theory]
+        [InlineData("application/json", "{\"SampleInt\":10}", 10)]
+        [InlineData("application/json", "{}", 0)]
+        public async Task JsonInputFormatter_IsModelStateValid_ForValidContentType(string requestContentType, string jsonInput, int expectedSampleIntValue)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var content = new StringContent(jsonInput, Encoding.UTF8, requestContentType);
+            
+            // Act
+            var response = await client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedSampleIntValue.ToString(), responseBody);
+        }
+
+        [Theory]
+        [InlineData("{\"SampleInt\":10}")]
+        [InlineData("{}")]
+        [InlineData("")]
+        public async Task JsonInputFormatter_IsModelStateInvalid_ForEmptyContentType(string jsonInput)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var content = new StringContent(jsonInput, Encoding.UTF8, "application/json");
+            content.Headers.Clear();
+
+            // Act
+            var response = await client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            //Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("application/json", "{\"SampleInt\":10}", 10)]
+        [InlineData("application/json", "{}", 0)]
+        public async Task JsonInputFormatter_IsModelStateValid_ForTransferEncodingChunk(string requestContentType, string jsonInput, int expectedSampleIntValue)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var content = new StringContent(jsonInput, Encoding.UTF8, requestContentType);
+            client.DefaultRequestHeaders.TransferEncodingChunked = true;
+
+            // Act
+            var response = await client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedSampleIntValue.ToString(), responseBody);
+        }
     }
 }
