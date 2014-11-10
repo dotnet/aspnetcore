@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenWithArgumentValueAndAttributes_UsesArgumentValue(object attributes, string expected)
         {
             // Arrange
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = "should-not-be-used";
 
             // Act
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""explicit-value"" />";
             var attributes = new { value = "attribute-value" };
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithNullModelAndNonNullViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
             helper.ViewData.Clear();
 
             // Act
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input id=""Property1"" key=""value"" name=""Property1"" type=""hidden"" " +
                            @"value=""test"" />";
             var attributes = new { key = "value" };
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithNullModelAndNonNullViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
 
             // Act
             var result = helper.Hidden("Property1", "test", attributes);
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input data-key=""value"" id=""Property1"" name=""Property1"" type=""hidden"" " +
                            @"value=""test"" />";
             var attributes = new Dictionary<string, object> { { "data-key", "value" } };
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithNullModelAndNonNullViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
 
             // Act
             var result = helper.Hidden("Property1", "test", attributes);
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""ModelStateValue"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = "test-value";
 
             // Act
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""explicit-value"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.ModelState.Clear();
             helper.ViewData.Model.Property1 = "property-value";
 
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""view-data-val"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.ModelState.Clear();
             helper.ViewData.Model.Property1 = "property-value";
 
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""property-value"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.ModelState.Clear();
             helper.ViewData.Clear();
             helper.ViewData.Model.Property1 = "property-value";
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value="""" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.ModelState.Clear();
             helper.ViewData.Clear();
             helper.ViewData.Model.Property1 = null;
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input baz=""BazValue"" id=""keyNotFound"" name=""keyNotFound"" type=""hidden"" " +
                            @"value="""" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             var attributes = new Dictionary<string, object> { { "baz", "BazValue" } };
 
             // Act
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input id=""MyPrefix_Property1"" name=""MyPrefix.Property1"" type=""hidden"" " +
                            @"value=""PropValue"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
 
             // Act
@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""MyPrefix"" name=""MyPrefix"" type=""hidden"" value=""fooValue"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
 
             // Act
@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input id=""MyPrefix$Property1"" name=""MyPrefix.Property1"" type=""hidden"" " +
                            @"value=""modelstate-with-prefix"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
             helper.IdAttributeDotReplacement = "$";
             helper.ViewData.ModelState.Clear();
@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input id=""MyPrefix$Property1"" name=""MyPrefix.Property1"" type=""hidden"" " +
                            @"value=""vdd-with-prefix"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
             helper.IdAttributeDotReplacement = "$";
             helper.ViewData.ModelState.Clear();
@@ -282,7 +282,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenWithEmptyNameAndPrefixThrows()
         {
             // Arrange
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             var attributes = new Dictionary<string, object>
             {
                 { "class", "some-class"}
@@ -299,7 +299,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input baz=""BazValue"" class=""input-validation-error some-class"" id=""Property1""" +
                            @" name=""Property1"" type=""hidden"" value=""ModelStateValue"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithErrors());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithErrors());
             var attributes = new Dictionary<string, object>
             {
                 { "baz", "BazValue" },
@@ -319,7 +319,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input data-val=""true"" data-val-required=""The Property2 field is required."" " +
                            @"id=""Property2"" name=""Property2"" type=""hidden"" value="""" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
 
             // Act
             var result = helper.Hidden("Property2", value: null, htmlAttributes: null);
@@ -364,7 +364,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewData["Property3[height]"] = "Prop3Value";
             viewData["Property4.Property5"] = "Prop5Value";
             viewData["Property4.Property6[0]"] = "Prop6Value";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(viewData);
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
             var attributes = new Dictionary<string, object> { { "data-test", "val" } };
 
             // Act
@@ -403,7 +403,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewData["Property3[height]"] = "Prop3Value";
             viewData["Property4.Property5"] = "Prop5Value";
             viewData["Property4.Property6[0]"] = "Prop6Value";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(viewData);
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
             helper.IdAttributeDotReplacement = "$$";
             var attributes = new Dictionary<string, object> { { "data-test", "val" } };
 
@@ -419,7 +419,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""Bytes"" name=""Bytes"" type=""hidden"" value=""Fys1"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Bytes = new byte[] { 23, 43, 53 };
 
             // Act
@@ -434,7 +434,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenForWithAttributes_GeneratesExpectedValue(object htmlAttributes, string expected)
         {
             // Arrange
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = "test";
 
             // Act
@@ -449,7 +449,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""ModelStateValue"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = "DefaultValue";
 
             // Act
@@ -464,7 +464,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""PropertyValue"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.ModelState.Clear();
             helper.ViewData.Model.Property1 = "PropertyValue";
 
@@ -480,7 +480,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value="""" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = null;
             helper.ViewData.ModelState.Clear();
 
@@ -496,7 +496,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""Property1"" key=""value"" name=""Property1"" type=""hidden"" value="""" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithNullModelAndNonNullViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
             var attributes = new Dictionary<string, object> { { "key", "value" } };
 
             // Act
@@ -513,7 +513,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input id=""MyPrefix_Property1"" name=""MyPrefix.Property1"" type=""hidden"" " +
                            @"value=""propValue"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = "propValue";
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
 
@@ -530,7 +530,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input id=""MyPrefix$Property1"" name=""MyPrefix.Property1"" type=""hidden"" " +
                            @"value=""modelstate-with-prefix"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = "propValue";
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
             helper.IdAttributeDotReplacement = "$";
@@ -552,7 +552,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input baz=""BazValue"" class=""input-validation-error some-class"" id=""Property1"" " +
                            @"name=""Property1"" type=""hidden"" value=""ModelStateValue"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithErrors());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithErrors());
             var attributes = new Dictionary<string, object>
             {
                 { "baz", "BazValue" },
@@ -572,7 +572,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input data-val=""true"" data-val-required=""The Property2 field is required."" " +
                            @"id=""Property2"" name=""Property2"" type=""hidden"" value="""" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithErrors());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithErrors());
 
             // Act
             var result = helper.HiddenFor(m => m.Property2, htmlAttributes: null);
@@ -628,7 +628,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewData.Model.Property4.Property5 = "ModelProp5Val";
             viewData.Model.Property4.Property6.Add("ModelProp6Val");
 
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(viewData);
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
             var attributes = new Dictionary<string, object>
             {
                 { "data-val", "true" },
@@ -679,7 +679,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewData.ModelState.Add("pre.Property4.Property5", GetModelState("Prop5Val"));
             viewData.ModelState.Add("pre.Property4.Property6[0]", GetModelState("Prop6Val"));
 
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(viewData);
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
             viewData.TemplateInfo.HtmlFieldPrefix = "pre";
             var attributes = new { data_val = "true", value = "attr-val" };
 
@@ -695,7 +695,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value="""" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetViewDataWithNullModelAndNonNullViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
             var attributes = new Dictionary<string, object>
             {
                 { "value", "AttrValue" }

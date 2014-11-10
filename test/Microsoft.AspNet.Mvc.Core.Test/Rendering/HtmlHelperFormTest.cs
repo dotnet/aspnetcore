@@ -1,0 +1,281 @@
+﻿
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.AspNet.Http;
+using Moq;
+using Xunit;
+
+namespace Microsoft.AspNet.Mvc.Rendering
+{
+    /// <summary>
+    /// Tests the <see cref="IHtmlHelper"/>'s <see cref="IHtmlHelper.BeginForm"/> and
+    /// <see cref="IHtmlHelper.BeginRouteForm"/>methods.
+    /// </summary>
+    public class HtmlHelperFormTest
+    {
+        // actionName, controllerName, routeValues, method, htmlAttributes
+        public static TheoryData<string, string, object, FormMethod, object> BeginFormDataSet
+        {
+            get
+            {
+                return new TheoryData<string, string, object, FormMethod, object>
+                {
+                    {
+                        null, null, null, FormMethod.Get, null
+                    },
+                    {
+                        "Details", "Product", null, FormMethod.Get, null
+                    },
+                    {
+                        "Details", "Product", null, FormMethod.Post, null
+                    },
+                    {
+                        "Details", "Product", new { isprint = "false", showreviews = "false" }, FormMethod.Get, null
+                    },
+                    {
+                        "Details", "Product", new { isprint = "false", showreviews = "true" }, FormMethod.Post, null
+                    },
+                    {
+                        "Details", "Product", new { isprint = "true", showreviews = "false" }, FormMethod.Get,
+                        new { p1_name = "p1-value" }
+                    },
+                    {
+                        "Details", "Product", new { isprint = "true", showreviews = "true" }, FormMethod.Post,
+                        new { p1_name = "p1-value" }
+                    },
+                    {
+                        "Details", "Product",
+                        new Dictionary<string, object> { { "isprint", "false" }, { "showreviews", "false" }, },
+                        FormMethod.Get,
+                        new Dictionary<string, object> { { "p1-name", "p1-value" }, { "p2-name", "p2-value" } }
+                    },
+                    {
+                        "Details", "Product",
+                        new Dictionary<string, object> { { "isprint", "false" }, { "showreviews", "false" }, },
+                        FormMethod.Post,
+                        new Dictionary<string, object> { { "p1-name", "p1-value" }, { "p2-name", "p2-value" } }
+                    },
+                };
+            }
+        }
+
+        // routeName, routeValues, method, htmlAttributes
+        public static TheoryData<string, object, FormMethod, object> BeginRouteFormDataSet
+        {
+            get
+            {
+                return new TheoryData<string, object, FormMethod, object>
+                {
+                    {
+                        null, null, FormMethod.Get, null
+                    },
+                    {
+                        null, null, FormMethod.Post, null
+                    },
+                    {
+                        "default", null, FormMethod.Get, null
+                    },
+                    {
+                        "default", null, FormMethod.Post, null
+                    },
+                    {
+                        "default", new { isprint = "false", showreviews = "false" }, FormMethod.Get, null
+                    },
+                    {
+                        "default", new { isprint = "false", showreviews = "true" }, FormMethod.Post, null
+                    },
+                    {
+                        "default", new { isprint = "true", showreviews = "false" }, FormMethod.Get,
+                        new { p1 = "p1-value" }
+                    },
+                    {
+                        "default", new { isprint = "true", showreviews = "true" }, FormMethod.Post,
+                        new { p1 = "p1-value" }
+                    },
+                    {
+                        "default",
+                        new Dictionary<string, object> { { "isprint", "false" }, { "showreviews", "false" }, },
+                        FormMethod.Get,
+                        new Dictionary<string, object> { { "p1-name", "p1-value" }, { "p2-name", "p2-value" } }
+                    },
+                    {
+                        "default",
+                        new Dictionary<string, object> { { "isprint", "false" }, { "showreviews", "false" }, },
+                        FormMethod.Post,
+                        new Dictionary<string, object> { { "p1-name", "p1-value" }, { "p2-name", "p2-value" } }
+                    },
+                };
+            }
+
+        }
+
+        [Fact]
+        public void BeginForm_RendersExpectedValues_WithDefaultArguments()
+        {
+            // Arrange
+            var pathBase = "/Base";
+            var path = "/Path";
+            var queryString = "?query=string";
+            var expectedAction = pathBase + path + queryString;
+            var expectedStartTag = string.Format("<form action=\"{0}\" method=\"post\">", expectedAction);
+
+            // IUrlHelper should not be used in this scenario.
+            var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);
+            var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(urlHelper.Object);
+
+            // Guards
+            Assert.NotNull(htmlHelper.ViewContext);
+            var writer = htmlHelper.ViewContext.Writer as StringWriter;
+            Assert.NotNull(writer);
+            var builder = writer.GetStringBuilder();
+            Assert.NotNull(builder);
+            Assert.NotNull(htmlHelper.ViewContext.HttpContext);
+            var request = htmlHelper.ViewContext.HttpContext.Request;
+            Assert.NotNull(request);
+
+            // Set properties the IHtmlGenerator implementation should use in this scenario.
+            request.PathBase = new PathString(pathBase);
+            request.Path = new PathString(path);
+            request.QueryString = new QueryString(queryString);
+
+            // Act
+            var mvcForm = htmlHelper.BeginForm(
+                actionName: null,
+                controllerName: null,
+                routeValues: null,
+                method: FormMethod.Post,
+                htmlAttributes: null);
+
+            // Assert
+            Assert.NotNull(mvcForm);
+            Assert.Equal(expectedStartTag, builder.ToString());
+            urlHelper.Verify();
+
+            builder.Clear();
+            mvcForm.Dispose();
+            Assert.Equal("</form>", builder.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(BeginFormDataSet))]
+        public void BeginForm_RendersExpectedValues(
+            string actionName,
+            string controllerName,
+            object routeValues,
+            FormMethod method,
+            object htmlAttributes)
+        {
+            // Arrange
+            var expectedAction = "http://localhost/Hello/World";
+            var expectedStartTag = string.Format(
+                "<form action=\"{0}\" method=\"{1}\"{2}>",
+                expectedAction,
+                method.ToString().ToLowerInvariant(),
+                GetHtmlAttributesAsString(htmlAttributes));
+
+            var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);
+            urlHelper
+                .Setup(realHelper => realHelper.Action(
+                    actionName,
+                    controllerName,
+                    routeValues,
+                    null,   // protocol
+                    null,   // host
+                    null))  // fragment
+                .Returns(expectedAction)
+                .Verifiable();
+            var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(urlHelper.Object);
+
+            // Guards
+            Assert.NotNull(htmlHelper.ViewContext);
+            var writer = htmlHelper.ViewContext.Writer as StringWriter;
+            Assert.NotNull(writer);
+            var builder = writer.GetStringBuilder();
+            Assert.NotNull(builder);
+
+            // Act
+            var mvcForm = htmlHelper.BeginForm(actionName, controllerName, routeValues, method, htmlAttributes);
+
+            // Assert
+            Assert.NotNull(mvcForm);
+            Assert.Equal(expectedStartTag, builder.ToString());
+            urlHelper.Verify();
+        }
+
+        [Theory]
+        [MemberData(nameof(BeginRouteFormDataSet))]
+        public void BeginRouteForm_RendersExpectedValues(
+            string routeName,
+            object routeValues,
+            FormMethod method,
+            object htmlAttributes)
+        {
+            // Arrange
+            var expectedAction = "http://localhost/Hello/World";
+            var expectedStartTag = string.Format(
+                "<form action=\"{0}\" method=\"{1}\"{2}>",
+                expectedAction,
+                method.ToString().ToLowerInvariant(),
+                GetHtmlAttributesAsString(htmlAttributes));
+
+            var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);
+            urlHelper
+                .Setup(realHelper => realHelper.RouteUrl(
+                    routeName,
+                    routeValues,
+                    null,   // protocol
+                    null,   // host
+                    null))  // fragment
+                .Returns(expectedAction)
+                .Verifiable();
+            var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(urlHelper.Object);
+
+            // Guards
+            Assert.NotNull(htmlHelper.ViewContext);
+            var writer = htmlHelper.ViewContext.Writer as StringWriter;
+            Assert.NotNull(writer);
+            var builder = writer.GetStringBuilder();
+            Assert.NotNull(builder);
+
+            // Act
+            var mvcForm = htmlHelper.BeginRouteForm(routeName, routeValues, method, htmlAttributes);
+
+            // Assert
+            Assert.NotNull(mvcForm);
+            Assert.Equal(expectedStartTag, builder.ToString());
+            urlHelper.Verify();
+        }
+
+        [Fact]
+        public void EndForm_RendersExpectedValues()
+        {
+            // Arrange
+            // IUrlHelper should not be used in this scenario.
+            var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);
+            var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(urlHelper.Object);
+
+            // Guards
+            Assert.NotNull(htmlHelper.ViewContext);
+            var writer = htmlHelper.ViewContext.Writer as StringWriter;
+            Assert.NotNull(writer);
+            var builder = writer.GetStringBuilder();
+            Assert.NotNull(builder);
+
+            // Act
+            htmlHelper.EndForm();
+
+            // Assert
+            Assert.Equal("</form>", builder.ToString());
+            urlHelper.Verify();
+        }
+
+        private string GetHtmlAttributesAsString(object htmlAttributes)
+        {
+            var dictionary = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
+            return string.Join(
+                string.Empty,
+                dictionary.Select(keyValue => string.Format(" {0}=\"{1}\"", keyValue.Key, keyValue.Value)));
+        }
+    }
+}

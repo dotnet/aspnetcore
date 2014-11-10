@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.OptionsModel;
@@ -55,13 +54,27 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 provider: CreateModelMetadataProvider());
         }
 
-        public static HtmlHelper<TModel> GetHtmlHelperForViewData<TModel>(ViewDataDictionary<TModel> viewData)
+        public static HtmlHelper<ObjectTemplateModel> GetHtmlHelper(IHtmlGenerator htmlGenerator)
         {
-            return GetHtmlHelper(viewData,
-                                CreateUrlHelper(),
-                                CreateViewEngine(),
-                                CreateModelMetadataProvider(),
-                                innerHelperWrapper: null);
+            var metadataProvider = CreateModelMetadataProvider();
+            return GetHtmlHelper<ObjectTemplateModel>(
+                new ViewDataDictionary<ObjectTemplateModel>(metadataProvider),
+                CreateUrlHelper(),
+                CreateViewEngine(),
+                metadataProvider,
+                innerHelperWrapper: null,
+                htmlGenerator: htmlGenerator);
+        }
+
+        public static HtmlHelper<TModel> GetHtmlHelper<TModel>(ViewDataDictionary<TModel> viewData)
+        {
+            return GetHtmlHelper(
+                viewData,
+                CreateUrlHelper(),
+                CreateViewEngine(),
+                CreateModelMetadataProvider(),
+                innerHelperWrapper: null,
+                htmlGenerator: null);
         }
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(TModel model)
@@ -116,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var viewData = new ViewDataDictionary<TModel>(provider);
             viewData.Model = model;
 
-            return GetHtmlHelper(viewData, urlHelper, viewEngine, provider, innerHelperWrapper);
+            return GetHtmlHelper(viewData, urlHelper, viewEngine, provider, innerHelperWrapper, htmlGenerator: null);
         }
 
         private static HtmlHelper<TModel> GetHtmlHelper<TModel>(
@@ -124,30 +137,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             IUrlHelper urlHelper, 
             ICompositeViewEngine viewEngine, 
             IModelMetadataProvider provider, 
-            Func<IHtmlHelper, IHtmlHelper> innerHelperWrapper)
+            Func<IHtmlHelper, IHtmlHelper> innerHelperWrapper,
+            IHtmlGenerator htmlGenerator)
         {
-            var httpContext = new Mock<HttpContext>();
-            httpContext
-                .Setup(o => o.Response)
-                .Returns(Mock.Of<HttpResponse>());
-            httpContext
-                .Setup(o => o.Items)
-                .Returns(new Dictionary<object, object>());
-
-            var actionContext = new ActionContext(httpContext.Object,
-                                      new RouteData(),
-                                      new ActionDescriptor());
-
-            var actionBindingContext = new ActionBindingContext(actionContext,
-                                                                provider,
-                                                                Mock.Of<IModelBinder>(),
-                                                                Mock.Of<IValueProvider>(),
-                                                                Mock.Of<IInputFormatterSelector>(),
-                                                                new DataAnnotationsModelValidatorProvider());
-            var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
-            actionBindingContextProvider
-               .Setup(c => c.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-               .Returns(Task.FromResult(actionBindingContext));
+            var httpContext = new DefaultHttpContext();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider
@@ -160,15 +154,27 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 .Setup(s => s.GetService(typeof(IViewComponentHelper)))
                 .Returns(new Mock<IViewComponentHelper>().Object);
 
-            httpContext
-                .Setup(o => o.RequestServices)
-                .Returns(serviceProvider.Object);
+            httpContext.RequestServices = serviceProvider.Object;
+            if (htmlGenerator == null)
+            {
+                var actionBindingContext = new ActionBindingContext(
+                    actionContext,
+                    provider,
+                    Mock.Of<IModelBinder>(),
+                    Mock.Of<IValueProvider>(),
+                    Mock.Of<IInputFormatterSelector>(),
+                    new DataAnnotationsModelValidatorProvider());
+                var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
+                actionBindingContextProvider
+                   .Setup(c => c.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
+                   .Returns(Task.FromResult(actionBindingContext));
 
-            var htmlGenerator = new DefaultHtmlGenerator(
-                actionBindingContextProvider.Object,
-                GetAntiForgeryInstance(),
-                provider,
-                urlHelper);
+                htmlGenerator = new DefaultHtmlGenerator(
+                    actionBindingContextProvider.Object,
+                    GetAntiForgeryInstance(),
+                    provider,
+                    urlHelper);
+            }
 
             // TemplateRenderer will Contextualize this transient service.
             var innerHelper = (IHtmlHelper)new HtmlHelper(htmlGenerator, viewEngine, provider);

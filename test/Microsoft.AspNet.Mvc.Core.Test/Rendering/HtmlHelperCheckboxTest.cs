@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input checked=""checked"" id=""Property3"" name=""Property3"" type=""checkbox"" " +
                            @"value=""false"" /><input name=""Property3"" type=""hidden"" value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
 
             // Act
             var html = helper.CheckBox("Property3",
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input checked=""checked"" id=""Property3"" name=""Property3"" type=""checkbox"" " +
                            @"value=""false"" /><input name=""Property3"" type=""hidden"" value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
 
             // Act
             var html = helper.CheckBox("Property3",
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = "String was not recognized as a valid Boolean.";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
 
             // Act & Assert
             var ex = Assert.Throws<FormatException>(
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input checked=""checked"" id=""Property1"" name=""Property1"" type=""checkbox"" " +
                            @"value=""true"" /><input name=""Property1"" type=""hidden"" value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
 
             // Act
             var html = helper.CheckBox("Property1", isChecked: true, htmlAttributes: null);
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input id=""Property1"" name=""Property1"" type=""checkbox"" value=""true"" />" +
                            @"<input name=""Property1"" type=""hidden"" value=""false"" />";
             var valueProviderResult = new ValueProviderResult("false", "false", CultureInfo.InvariantCulture);
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
             helper.ViewData.ModelState.SetModelValue("Property1", valueProviderResult);
 
             // Act
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input data-val=""true"" data-val-required=""The Name field is required."" id=""Name""" +
                            @" name=""Name"" type=""checkbox"" value=""true"" />" +
                            @"<input name=""Name"" type=""hidden"" value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetModelWithValidationViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetModelWithValidationViewData());
 
             // Act
             var html = helper.CheckBox("Name", isChecked: null, htmlAttributes: null);
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input checked=""checked"" id=""Property1"" name=""Property1"" " +
                            @"Property1-Property3=""Property3ObjValue"" type=""checkbox"" value=""true"" /><input " +
                            @"name=""Property1"" type=""hidden"" value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper<ViewDataDictionary<TestModel>>(GetTestModelViewData());
             var htmlAttributes = new { Property1_Property3 = "Property3ObjValue" };
 
             // Act
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input checked=""checked"" id=""ComplexProperty_Property1"" name=""ComplexProperty."+
                            @"Property1"" type=""checkbox"" value=""true"" /><input name=""ComplexProperty.Property1""" +
                            @" type=""hidden"" value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetModelWithValidationViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetModelWithValidationViewData());
 
             // Act
             var html = helper.CheckBox("ComplexProperty.Property1", isChecked: null, htmlAttributes: null);
@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = "String was not recognized as a valid Boolean.";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
 
             // Act & Assert
             // "Property2" in ViewData isn't a valid boolean
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input checked=""checked"" id=""Property3"" name=""Property3"" type=""checkbox"" " +
                            @"value=""false"" /><input name=""Property3"" type=""hidden"" value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
 
             // Act
             var html = helper.CheckBoxFor(m => m.Property3, new { @checked = "checked", value = "false" });
@@ -253,7 +253,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 Model = new ModelWithValidation()
             };
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(viewDataDictionary);
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewDataDictionary);
 
             // Act
             var html = helper.CheckBoxFor(m => m.Name, htmlAttributes: null);
@@ -269,7 +269,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input id=""Property1"" name=""Property1"" type=""checkbox"" value=""true"" />" +
                            @"<input name=""Property1"" type=""hidden"" value=""false"" />";
             var viewData = GetTestModelViewData();
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(viewData);
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
             var valueProviderResult = new ValueProviderResult("false", "false", CultureInfo.InvariantCulture);
             viewData.ModelState.SetModelValue("Property1", valueProviderResult);
 
@@ -287,7 +287,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input checked=""checked"" id=""Property1"" name=""Property1"" " +
                            @"Property1-Property3=""Property3ObjValue"" type=""checkbox"" value=""true"" /><input " +
                            @"name=""Property1"" type=""hidden"" value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
             var htmlAttributes = new { Property1_Property3 = "Property3ObjValue" };
 
             // Act
@@ -304,7 +304,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input checked=""checked"" id=""Property1"" name=""Property1"" " +
                            @"Property3=""Property3Value"" type=""checkbox"" value=""true"" /><input " +
                            @"name=""Property1"" type=""hidden"" value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
             var attributes = new Dictionary<string, object> { { "Property3", "Property3Value" } };
 
             // Act
@@ -321,7 +321,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input id=""MyPrefix_Property1"" name=""MyPrefix.Property1"" Property3=""PropValue"" " +
                            @"type=""checkbox"" value=""true"" /><input name=""MyPrefix.Property1"" type=""hidden"" " +
                            @"value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
             var attributes = new Dictionary<string, object> { { "Property3", "PropValue" } };
 
@@ -339,7 +339,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input checked=""checked"" id=""ComplexProperty_Property1"" name=""ComplexProperty." +
                         @"Property1"" type=""checkbox"" value=""true"" /><input name=""ComplexProperty.Property1"" " +
                         @"type=""hidden"" value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelperForViewData(GetModelWithValidationViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetModelWithValidationViewData());
 
             // Act
             var html = helper.CheckBoxFor(m => m.ComplexProperty.Property1, htmlAttributes: null);
