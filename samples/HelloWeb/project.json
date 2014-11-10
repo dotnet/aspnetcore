@@ -1,15 +1,16 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
-        "Microsoft.AspNet.Hosting": "1.0.0-*",
+        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+	"Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.AspNet.StaticFiles": "1.0.0-*"
+	"Kestrel": "1.0.0-*",
+	"Microsoft.AspNet.Hosting": "1.0.0-*"
     },
     "commands": {
-        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5001",
-        "Kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5004"
+        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",
+        "Kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5003"
     },
     "frameworks": {
         "aspnet50": {},
