@@ -1,25 +1,26 @@
 param(
   [parameter(Position=0)]
-  [string] $command,
-  [string] $proxy,
-  [switch] $verbosity = $false,
-  [alias("g")][switch] $global = $false,
-  [alias("p")][switch] $persistent = $false,
-  [alias("f")][switch] $force = $false,
-  [alias("r")][string] $runtime,
-  [switch] $x86 = $false,
-  [switch] $amd64 = $false,
+  [string] $Command,
+  [string] $Proxy,
+  [switch] $Verbosity = $false,
+  [alias("g")][switch] $Global = $false,
+  [alias("p")][switch] $Persistent = $false,
+  [alias("f")][switch] $Force = $false,
+  [alias("r")][string] $Runtime,
+  [switch] $X86 = $false,
+  [switch] $Amd64 = $false,
   #deprecated
-  [switch] $x64 = $false,
+  [switch] $X64 = $false,
   #deprecated
-  [switch] $svr50 = $false,
+  [switch] $Svr50 = $false,
   #deprecated
-  [switch] $svrc50 = $false,
-  [alias("w")][switch] $wait = $false,
+  [switch] $Svrc50 = $false,
+  [alias("w")][switch] $Wait = $false,
   [alias("a")]
-  [string] $alias = $null,
+  [string] $Alias = $null,
+  [switch] $NoNative = $false,
   [parameter(Position=1, ValueFromRemainingArguments=$true)]
-  [string[]]$args=@()
+  [string[]]$Args=@()
 )
 
 $selectedArch=$null;
@@ -45,33 +46,35 @@ $scriptPath = $myInvocation.MyCommand.Definition
 
 function Kvm-Help {
 @"
-K Runtime Environment Version Manager - Build 10014
+K Runtime Environment Version Manager - Build 10026
 
 USAGE: kvm <command> [options]
 
-kvm upgrade [-x86][-amd64] [-r|-runtime CLR|CoreCLR] [-g|-global] [-f|-force] [-proxy <ADDRESS>]
+kvm upgrade [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR] [-g|-Global] [-f|-Force] [-Proxy <ADDRESS>] [-NoNative]
   install latest KRE from feed
   set 'default' alias to installed version
   add KRE bin to user PATH environment variable
-  -g|-global        install to machine-wide location
-  -f|-force         upgrade even if latest is already installed
-  -proxy <ADDRESS>  use given address as proxy when accessing remote server
+  -g|-Global        install to machine-wide location
+  -f|-Force         upgrade even if latest is already installed
+  -Proxy <ADDRESS>  use given address as proxy when accessing remote server
+  -NoNative         Do not generate native images (Effective only for CoreCLR flavors)
 
-kvm install <semver>|<alias>|<nupkg>|latest [-x86][-amd64] [-r|-runtime CLR|CoreCLR] [-a|-alias <alias>] [-g|-global] [-f|-force]
+kvm install <semver>|<alias>|<nupkg>|latest [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR] [-a|-Alias <alias>] [-g|-Global] [-f|-Force] [-NoNative]
   <semver>|<alias>  install requested KRE from feed
   <nupkg>           install requested KRE from package on local filesystem
   latest            install latest KRE from feed
   add KRE bin to path of current command line
-  -p|-persistent    add KRE bin to PATH environment variables persistently
-  -a|-alias <alias> set alias <alias> for requested KRE on install
-  -g|-global        install to machine-wide location
-  -f|-force         install even if specified version is already installed
+  -p|-Persistent    add KRE bin to PATH environment variables persistently
+  -a|-Alias <alias> set alias <alias> for requested KRE on install
+  -g|-Global        install to machine-wide location
+  -f|-Force         install even if specified version is already installed
+  -NoNative         Do not generate native images (Effective only for CoreCLR flavors)
 
-kvm use <semver>|<alias>|none [-x86][-amd64] [-r|-runtime CLR|CoreCLR] [-p|-persistent] [-g|-global]
+kvm use <semver>|<alias>|none [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR] [-p|-Persistent] [-g|-Global]
   <semver>|<alias>  add KRE bin to path of current command line
   none              remove KRE bin from path of current command line
-  -p|-persistent    add KRE bin to PATH environment variables persistently
-  -g|-global        combined with -p to change machine PATH instead of user PATH
+  -p|-Persistent    add KRE bin to PATH environment variables persistently
+  -g|-Global        combined with -p to change machine PATH instead of user PATH
 
 kvm list
   list KRE versions installed
@@ -82,7 +85,7 @@ kvm alias
 kvm alias <alias>
   display value of the specified alias
 
-kvm alias <alias> <semver>|<alias> [-x86][-amd64] [-r|-runtime CLR|CoreCLR]
+kvm alias <alias> <semver>|<alias> [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR]
   <alias>            The name of the alias to set
   <semver>|<alias>   The KRE version to set the alias to. Alternatively use the version of the specified alias
 
@@ -141,8 +144,8 @@ function Kvm-Global-Setup {
 }
 
 function Kvm-Global-Upgrade {
-  $persistent = $true
-  $alias="default"
+  $Persistent = $true
+  $Alias="default"
   $versionOrAlias = Kvm-Find-Latest $selectedRuntime $selectedArch
   If (Needs-Elevation) {
     $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' install '$versionOrAlias' -global $(Requested-Switches) -wait"
@@ -154,8 +157,8 @@ function Kvm-Global-Upgrade {
 }
 
 function Kvm-Upgrade {
-  $persistent = $true
-  $alias="default"
+  $Persistent = $true
+  $Alias="default"
   Kvm-Install "latest" $false
 }
 
@@ -163,12 +166,12 @@ function Add-Proxy-If-Specified {
 param(
   [System.Net.WebClient] $wc
 )
-  if (!$proxy) {
-    $proxy = $env:http_proxy
+  if (!$Proxy) {
+    $Proxy = $env:http_proxy
   }
-  if ($proxy) {
-    $wp = New-Object System.Net.WebProxy($proxy)
-    $pb = New-Object UriBuilder($proxy)
+  if ($Proxy) {
+    $wp = New-Object System.Net.WebProxy($Proxy)
+    $pb = New-Object UriBuilder($Proxy)
     if (!$pb.UserName) {
         $wp.Credentials = [System.Net.CredentialCache]::DefaultCredentials
     } else {
@@ -213,7 +216,7 @@ param(
   $kreFile = Join-Path $kreFolder "$kreFullName.nupkg"
 
   If (Test-Path $kreFolder) {
-    if($force)
+    if($Force)
     {
       rm $kreFolder -Recurse -Force
     } else {
@@ -253,19 +256,26 @@ param(
   [string] $kreFolder
 )
   Write-Host "Unpacking to" $kreFolder
-  try {
-    #Shell will not recognize nupkg as a zip and throw, so rename it to zip
-    $kreZip = [System.IO.Path]::ChangeExtension($kreFile, "zip")
-    Rename-Item $kreFile $kreZip
-    #Use the shell to uncompress the nupkg
-    $shell_app=new-object -com shell.application
-    $zip_file = $shell_app.namespace($kreZip)
-    $destination = $shell_app.namespace($kreFolder)
-    $destination.Copyhere($zip_file.items(), 0x14) #0x4 = don't show UI, 0x10 = overwrite files
-  }
-  finally {
-    #make it a nupkg again
-    Rename-Item $kreZip $kreFile
+
+  $compressionLib = [System.Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem')
+    
+  if($compressionLib -eq $null) {
+      try {
+          # Shell will not recognize nupkg as a zip and throw, so rename it to zip
+          $kreZip = [System.IO.Path]::ChangeExtension($kreFile, "zip")
+          Rename-Item $kreFile $kreZip
+          # Use the shell to uncompress the nupkg
+          $shell_app=new-object -com shell.application
+          $zip_file = $shell_app.namespace($kreZip)
+          $destination = $shell_app.namespace($kreFolder)
+          $destination.Copyhere($zip_file.items(), 0x14) #0x4 = don't show UI, 0x10 = overwrite files
+      }
+      finally {
+        # make it a nupkg again
+        Rename-Item $kreZip $kreFile
+      }
+  } else {
+      [System.IO.Compression.ZipFile]::ExtractToDirectory($kreFile, $kreFolder)
   }
 
   If (Test-Path ($kreFolder + "\[Content_Types].xml")) {
@@ -307,10 +317,13 @@ param(
   }
 
   if ($versionOrAlias.EndsWith(".nupkg")) {
+    Set-Variable -Name "selectedArch" -Value (Package-Arch $kreFullName) -Scope Script
+    Set-Variable -Name "selectedRuntime" -Value (Package-Platform $kreFullName) -Scope Script
+
     $kreFolder = "$packageFolder\$kreFullName"
     $folderExists = Test-Path $kreFolder
 
-    if ($folderExists -and $force) {
+    if ($folderExists -and $Force) {
       del $kreFolder -Recurse -Force
       $folderExists = $false;
     }
@@ -336,17 +349,29 @@ param(
     }
 
     $packageVersion = Package-Version $kreFullName
+
     Kvm-Use $packageVersion
-    if (!$(String-IsEmptyOrWhitespace($alias))) {
-        Kvm-Alias-Set $alias $packageVersion
+    if (!$(String-IsEmptyOrWhitespace($Alias))) {
+        Kvm-Alias-Set $Alias $packageVersion
     }
   }
   else
   {
     Do-Kvm-Download $kreFullName $packageFolder
     Kvm-Use $versionOrAlias
-    if (!$(String-IsEmptyOrWhitespace($alias))) {
-        Kvm-Alias-Set "$alias" $versionOrAlias
+    if (!$(String-IsEmptyOrWhitespace($Alias))) {
+        Kvm-Alias-Set "$Alias" $versionOrAlias
+    }
+  }
+
+  if ($kreFullName.Contains("CoreCLR")) {
+    if ($NoNative) {
+      Write-Host "Native image generation is skipped"
+    }
+    else {
+      Write-Host "Compiling native images for $kreFullName to improve startup performance..."
+      Start-Process "K" -ArgumentList "crossgen" -Wait
+      Write-Host "Finished native image compilation."
     }
   }
 }
@@ -389,7 +414,7 @@ filter List-Parts {
   $delim=""
 
   foreach($alias in $aliases){
-    if($_.Name.Split('\', 2).Contains($alias.Name)){
+    if($_.Name.Split('\', 2) -contains $alias.Name){
         $fullAlias += $delim + $alias.Alias
         $delim = ", "
     }
@@ -421,7 +446,7 @@ param(
   Kvm-Set-Global-Process-Path "$versionOrAlias"
 
   if ($versionOrAlias -eq "none") {
-    if ($persistent) {
+    if ($Persistent) {
       Write-Host "Removing KRE from machine PATH"
       $machinePath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
       $machinePath = Change-Path $machinePath "" ($globalKrePackages, $userKrePackages)
@@ -433,11 +458,10 @@ param(
   $kreFullName = Requested-VersionOrAlias "$versionOrAlias"
   $kreBin = Locate-KreBinFromFullName $kreFullName
   if ($kreBin -eq $null) {
-    Write-Host "Cannot find $kreFullName, do you need to run 'kvm install $versionOrAlias'?"
-    return
+    throw "Cannot find $kreFullName, do you need to run 'kvm install $versionOrAlias'?"
   }
 
-  if ($persistent) {
+  if ($Persistent) {
     Write-Host "Adding $kreBin to machine PATH"
     $machinePath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
     $machinePath = Change-Path $machinePath $kreBin ($globalKrePackages, $userKrePackages)
@@ -474,7 +498,7 @@ param(
     Write-Host "Removing KRE from process PATH"
     Set-Path (Change-Path $env:Path "" ($globalKrePackages, $userKrePackages))
 
-    if ($persistent) {
+    if ($Persistent) {
       Write-Host "Removing KRE from user PATH"
       $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
       $userPath = Change-Path $userPath "" ($globalKrePackages, $userKrePackages)
@@ -487,14 +511,13 @@ param(
 
   $kreBin = Locate-KreBinFromFullName $kreFullName
   if ($kreBin -eq $null) {
-    Write-Host "Cannot find $kreFullName, do you need to run 'kvm install $versionOrAlias'?"
-    return
+    throw "Cannot find $kreFullName, do you need to run 'kvm install $versionOrAlias'?"
   }
 
   Write-Host "Adding" $kreBin "to process PATH"
   Set-Path (Change-Path $env:Path $kreBin ($globalKrePackages, $userKrePackages))
 
-  if ($persistent) {
+  if ($Persistent) {
     Write-Host "Adding $kreBin to user PATH"
     $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
     $userPath = Change-Path $userPath $kreBin ($globalKrePackages, $userKrePackages)
@@ -572,6 +595,21 @@ param(
   return $kreFullName -replace '[^.]*.(.*)', '$1'
 }
 
+function Package-Platform() {
+param(
+  [string] $kreFullName
+)
+  return $kreFullName -replace 'KRE-([^-]*).*', '$1'
+}
+
+function Package-Arch() {
+param(
+  [string] $kreFullName
+)
+  return $kreFullName -replace 'KRE-[^-]*-([^.]*).*', '$1'
+}
+
+
 function Requested-VersionOrAlias() {
 param(
   [string] $versionOrAlias
@@ -647,69 +685,70 @@ function Needs-Elevation() {
 
 function Requested-Switches() {
   $arguments = ""
-  if ($x86) {$arguments = "$arguments -x86"}
-  if ($amd64) {$arguments = "$arguments -amd64"}
+  if ($X86) {$arguments = "$arguments -x86"}
+  if ($Amd64) {$arguments = "$arguments -amd64"}
   #deprecated
-  if ($x64) {$arguments = "$arguments -x64"}
+  if ($X64) {$arguments = "$arguments -x64"}
   if ($selectedRuntime) {$arguments = "$arguments -runtime $selectedRuntime"}
-  if ($persistent) {$arguments = "$arguments -persistent"}
-  if ($force) {$arguments = "$arguments -force"}
-  if (!$(String-IsEmptyOrWhitespace($alias))) {$arguments = "$arguments -alias '$alias'"}
+  if ($Persistent) {$arguments = "$arguments -persistent"}
+  if ($Force) {$arguments = "$arguments -force"}
+  if (!$(String-IsEmptyOrWhitespace($Alias))) {$arguments = "$arguments -alias '$Alias'"}
   return $arguments
 }
 
 function Validate-And-Santitise-Switches()
 {
-  if ($svr50 -and $runtime) {throw "You cannot select both the -runtime switch and the -svr50 runtimes"}
-  if ($svrc50 -and $runtime) {throw "You cannot select both the -runtime switch and the -svrc50 runtimes"}
-  if ($x86 -and $amd64) {throw "You cannot select both x86 and amd64 architectures"}
-  if ($x86 -and $x64) {throw "You cannot select both x86 and x64 architectures"}
-  if ($x64 -and $amd64) {throw "You cannot select both x64 and amd64 architectures"}
+  if ($Svr50 -and $Runtime) {throw "You cannot select both the -runtime switch and the -svr50 runtimes"}
+  if ($Svrc50 -and $Runtime) {throw "You cannot select both the -runtime switch and the -svrc50 runtimes"}
+  if ($X86 -and $Amd64) {throw "You cannot select both x86 and amd64 architectures"}
+  if ($X86 -and $X64) {throw "You cannot select both x86 and x64 architectures"}
+  if ($X64 -and $Amd64) {throw "You cannot select both x64 and amd64 architectures"}
 
-  if ($runtime) {
+  if ($Runtime) {
     $validRuntimes = "CoreCLR", "CLR", "svr50", "svrc50"
-    $match = $validRuntimes | ? { $_ -like $runtime } | Select -First 1
+    $match = $validRuntimes | ? { $_ -like $Runtime } | Select -First 1
     if (!$match) {throw "'$runtime' is not a valid runtime"}
     Set-Variable -Name "selectedRuntime" -Value $match -Scope Script
-  } elseif ($svr50) {
+  } elseif ($Svr50) {
     Write-Host "Warning: -svr50 is deprecated, use -runtime CLR for new packages."
     Set-Variable -Name "selectedRuntime" -Value "svr50" -Scope Script
-  } elseif ($svrc50) {
+  } elseif ($Svrc50) {
     Write-Host "Warning: -svrc50 is deprecated, use -runtime CoreCLR for new packages."
     Set-Variable -Name "selectedRuntime" -Value "svrc50" -Scope Script
   }
 
-  if ($x64) {
+  if ($X64) {
     Write-Host "Warning: -x64 is deprecated, use -amd64 for new packages."
     Set-Variable -Name "selectedArch" -Value "x64" -Scope Script
-  } elseif ($amd64) {
+  } elseif ($Amd64) {
     Set-Variable -Name "selectedArch" -Value "amd64" -Scope Script
-  } elseif ($x86) {
+  } elseif ($X86) {
     Set-Variable -Name "selectedArch" -Value "x86" -Scope Script
   }
 }
 
+$exitCode = 0
 try {
   Validate-And-Santitise-Switches
-  if ($global) {
-    switch -wildcard ($command + " " + $args.Count) {
+  if ($Global) {
+    switch -wildcard ($Command + " " + $Args.Count) {
       "setup 0"           {Kvm-Global-Setup}
       "upgrade 0"         {Kvm-Global-Upgrade}
-      "install 1"         {Kvm-Install $args[0] $true}
-      "use 1"             {Kvm-Global-Use $args[0]}
+      "install 1"         {Kvm-Install $Args[0] $true}
+      "use 1"             {Kvm-Global-Use $Args[0]}
       default             {throw "Unknown command, or global switch not supported"};
     }
   } else {
-    switch -wildcard ($command + " " + $args.Count) {
+    switch -wildcard ($Command + " " + $Args.Count) {
       "setup 0"           {Kvm-Global-Setup}
       "upgrade 0"         {Kvm-Upgrade}
-      "install 1"         {Kvm-Install $args[0] $false}
+      "install 1"         {Kvm-Install $Args[0] $false}
       "list 0"            {Kvm-List}
-      "use 1"             {Kvm-Use $args[0]}
+      "use 1"             {Kvm-Use $Args[0]}
       "alias 0"           {Kvm-Alias-List}
-      "alias 1"           {Kvm-Alias-Get $args[0]}
-      "alias 2"           {Kvm-Alias-Set $args[0] $args[1]}
-      "unalias 1"         {Kvm-Unalias $args[0]}
+      "alias 1"           {Kvm-Alias-Get $Args[0]}
+      "alias 2"           {Kvm-Alias-Set $Args[0] $Args[1]}
+      "unalias 1"         {Kvm-Unalias $Args[0]}
       "help 0"            {Kvm-Help}
       " 0"                {Kvm-Help}
       default             {throw "Unknown command"};
@@ -717,10 +756,13 @@ try {
   }
 }
 catch {
-  Write-Host $_ -ForegroundColor Red ;
+  Write-Error $_
   Write-Host "Type 'kvm help' for help on how to use kvm."
+  $exitCode = -1
 }
-if ($wait) {
+if ($Wait) {
   Write-Host "Press any key to continue ..."
   $x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,AllowCtrlC")
 }
+
+exit $exitCode
