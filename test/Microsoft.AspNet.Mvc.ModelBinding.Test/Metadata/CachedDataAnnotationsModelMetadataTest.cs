@@ -52,9 +52,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             Assert.Null(metadata.BinderModelName);
             Assert.Null(metadata.BinderMetadata);
+            Assert.Null(metadata.PropertyBindingPredicateProvider);
             Assert.Null(metadata.BinderType);
-            Assert.Empty(metadata.BinderIncludeProperties);
-            Assert.Null(metadata.BinderExcludeProperties);
         }
 
         public static TheoryData<object, Func<ModelMetadata, string>> ExpectedAttributeDataStrings

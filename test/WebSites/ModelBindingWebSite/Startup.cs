@@ -27,6 +27,7 @@ namespace ModelBindingWebSite
                         });
 
                 services.AddSingleton<ICalculator, DefaultCalculator>();
+                services.AddSingleton<ITestService, TestService>();
             });
 
             // Add MVC to the request pipeline

@@ -9,7 +9,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -22,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [InlineData(typeof(Person), false)]
         [InlineData(typeof(EmptyModel), true)]
         [InlineData(typeof(EmptyModel), false)]
-        public async Task 
+        public async Task
             CanCreateModel_CreatesModel_ForTopLevelObjectIfThereIsExplicitPrefix(Type modelType, bool isPrefixProvided)
         {
             var mockValueProvider = new Mock<IValueProvider>();
@@ -247,12 +249,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                      .Returns<IValueProviderMetadata>(
                                         valueProviderMetadata =>
                                                 {
-                                                     if(valueProviderMetadata is ValueBinderMetadataAttribute)
-                                                     {
-                                                         return mockOriginalValueProvider.Object;
-                                                     }
+                                                    if (valueProviderMetadata is ValueBinderMetadataAttribute)
+                                                    {
+                                                        return mockOriginalValueProvider.Object;
+                                                    }
 
-                                                     return null;
+                                                    return null;
                                                 });
 
             var bindingContext = new MutableObjectBinderContext
@@ -590,6 +592,60 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
                     MetadataProvider = new DataAnnotationsModelMetadataProvider()
+                },
+            };
+
+            var testableBinder = new TestableMutableObjectModelBinder();
+
+            // Act
+            var propertyMetadatas = testableBinder.GetMetadataForProperties(bindingContext);
+            var returnedPropertyNames = propertyMetadatas.Select(o => o.PropertyName).ToArray();
+
+            // Assert
+            Assert.Equal(expectedPropertyNames, returnedPropertyNames);
+        }
+
+        [Fact]
+        public void GetMetadataForProperties_DoesNotReturn_ExcludedProperties()
+        {
+            // Arrange
+            var expectedPropertyNames = new[] { "IncludedByDefault1", "IncludedByDefault2" };
+            var bindingContext = new ModelBindingContext
+            {
+                ModelMetadata = GetMetadataForType(typeof(TypeWithExcludedPropertiesUsingBindAttribute)),
+                OperationBindingContext = new OperationBindingContext
+                {
+                    HttpContext = new DefaultHttpContext
+                    {
+                        RequestServices = CreateServices()
+                    },
+                    ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
+                    MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                }
+            };
+
+            var testableBinder = new TestableMutableObjectModelBinder();
+
+            // Act
+            var propertyMetadatas = testableBinder.GetMetadataForProperties(bindingContext);
+            var returnedPropertyNames = propertyMetadatas.Select(o => o.PropertyName).ToArray();
+
+            // Assert
+            Assert.Equal(expectedPropertyNames, returnedPropertyNames);
+        }
+
+        [Fact]
+        public void GetMetadataForProperties_ReturnsOnlyIncludedProperties_UsingBindAttributeInclude()
+        {
+            // Arrange
+            var expectedPropertyNames = new[] { "IncludedExplicitly1", "IncludedExplicitly2" };
+            var bindingContext = new ModelBindingContext
+            {
+                ModelMetadata = GetMetadataForType(typeof(TypeWithIncludedPropertiesUsingBindAttribute)),
+                OperationBindingContext = new OperationBindingContext
+                {
+                    ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
+                    MetadataProvider = new DataAnnotationsModelMetadataProvider(),
                 }
             };
 
@@ -1337,6 +1393,29 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public string MarkedWithABinderMetadata { get; set; }
         }
 
+        [Bind(new[] { nameof(IncludedExplicitly1), nameof(IncludedExplicitly2) })]
+        private class TypeWithIncludedPropertiesUsingBindAttribute
+        {
+            public int ExcludedByDefault1 { get; set; }
+
+            public int ExcludedByDefault2 { get; set; }
+
+            public int IncludedExplicitly1 { get; set; }
+
+            public int IncludedExplicitly2 { get; set; }
+        }
+
+        [Bind(typeof(ExcludedProvider))]
+        private class TypeWithExcludedPropertiesUsingBindAttribute
+        {
+            public int Excluded1 { get; set; }
+
+            public int Excluded2 { get; set; }
+
+            public int IncludedByDefault1 { get; set; }
+            public int IncludedByDefault2 { get; set; }
+        }
+
         public class Document
         {
             [NonValueBinderMetadata]
@@ -1352,6 +1431,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private class ValueBinderMetadataAttribute : Attribute, IValueProviderMetadata
         {
+        }
+
+        public class ExcludedProvider : IPropertyBindingPredicateProvider
+        {
+            public Func<ModelBindingContext, string, bool> PropertyFilter
+            {
+                get
+                {
+                    return (context, propertyName) =>
+                       !string.Equals("Excluded1", propertyName, StringComparison.OrdinalIgnoreCase) &&
+                       !string.Equals("Excluded2", propertyName, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+        }
+
+        private IServiceProvider CreateServices()
+        {
+            var services = new Mock<IServiceProvider>(MockBehavior.Strict);
+
+            var typeActivator = new Mock<ITypeActivator>(MockBehavior.Strict);
+            typeActivator
+                .Setup(f => f.CreateInstance(It.IsAny<IServiceProvider>(), typeof(ExcludedProvider)))
+                .Returns(new ExcludedProvider());
+
+            services
+                .Setup(s => s.GetService(typeof(ITypeActivator)))
+                .Returns(typeActivator.Object);
+
+            return services.Object;
         }
 
         public class TestableMutableObjectModelBinder : MutableObjectModelBinder

@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Required = attributes.OfType<RequiredAttribute>().FirstOrDefault();
             ScaffoldColumn = attributes.OfType<ScaffoldColumnAttribute>().FirstOrDefault();
             BinderMetadata = attributes.OfType<IBinderMetadata>().FirstOrDefault();
-            PropertyBindingInfo = attributes.OfType<IPropertyBindingInfo>();
+            PropertyBindingPredicateProviders = attributes.OfType<IPropertyBindingPredicateProvider>();
             BinderModelNameProvider = attributes.OfType<IModelNameProvider>().FirstOrDefault();
             BinderTypeProviders = attributes.OfType<IBinderTypeProviderMetadata>();
 
@@ -82,11 +82,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public HiddenInputAttribute HiddenInput { get; protected set; }
 
         /// <summary>
-        /// Gets (or sets in subclasses) <see cref="IEnumerable{IPropertyBindingInfo}"/> found in collection
-        /// passed to the <see cref="CachedDataAnnotationsMetadataAttributes(IEnumerable{object})"/> constructor,
-        /// if any.
+        /// Gets (or sets in subclasses) <see cref="IEnumerable{IPropertyBindingPredicateProvider}"/> found in 
+        /// collection passed to the <see cref="CachedDataAnnotationsMetadataAttributes(IEnumerable{object})"/>
+        /// constructor, if any.
         /// </summary>
-        public IEnumerable<IPropertyBindingInfo> PropertyBindingInfo { get; protected set; }
+        public IEnumerable<IPropertyBindingPredicateProvider> PropertyBindingPredicateProviders { get; protected set; }
 
         public RequiredAttribute Required { get; protected set; }
 

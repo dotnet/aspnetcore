@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
@@ -11,57 +12,50 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class CachedDataAnnotationsModelMetadataProviderTest
     {
-        [Bind(Include = nameof(IncludedAndExcludedExplicitly1) + "," + nameof(IncludedExplicitly1),
-              Exclude = nameof(IncludedAndExcludedExplicitly1) + "," + nameof(ExcludedExplicitly1),
-            Prefix = "TypePrefix")]
-        private class TypeWithExludedAndIncludedPropertiesUsingBindAttribute
-        {
-            public int ExcludedExplicitly1 { get; set; }
-
-            public int IncludedAndExcludedExplicitly1 { get; set; }
-
-            public int IncludedExplicitly1 { get; set; }
-
-            public int NotIncludedOrExcluded { get; set; }
-
-            public void ActionWithBindAttribute(
-                          [Bind(Include = "Property1, Property2,IncludedAndExcludedExplicitly1",
-                                Exclude ="Property3, Property4, IncludedAndExcludedExplicitly1",
-                                Prefix = "ParameterPrefix")]
-                TypeWithExludedAndIncludedPropertiesUsingBindAttribute param)
-            {
-            }
-        }
-
         [Fact]
-        public void DataAnnotationsModelMetadataProvider_ReadsIncludedAndExcludedProperties_ForTypes()
+        public void DataAnnotationsModelMetadataProvider_UsesPredicateOnType()
         {
             // Arrange
-            var type = typeof(TypeWithExludedAndIncludedPropertiesUsingBindAttribute);
+            var type = typeof(User);
+
             var provider = new DataAnnotationsModelMetadataProvider();
-            var expectedIncludedPropertyNames = new[] { "IncludedAndExcludedExplicitly1", "IncludedExplicitly1" };
-            var expectedExcludedPropertyNames = new[] { "IncludedAndExcludedExplicitly1", "ExcludedExplicitly1" };
+            var context = new ModelBindingContext();
+
+            var expected = new[] { "IsAdmin", "UserName" };
 
             // Act
             var metadata = provider.GetMetadataForType(null, type);
 
             // Assert
-            Assert.Equal(expectedIncludedPropertyNames.ToList(), metadata.BinderIncludeProperties);
-            Assert.Equal(expectedExcludedPropertyNames.ToList(), metadata.BinderExcludeProperties);
+            var predicate = metadata.PropertyBindingPredicateProvider.PropertyFilter;
+
+            var matched = new HashSet<string>();
+            foreach (var property in metadata.Properties)
+            {
+                if (predicate(context, property.PropertyName))
+                {
+                    matched.Add(property.PropertyName);
+                }
+            }
+
+            Assert.Equal<string>(expected, matched);
         }
 
         [Fact]
-        public void ModelMetadataProvider_ReadsIncludedAndExcludedProperties_AtParameterAndType_ForParameters()
+        public void DataAnnotationsModelMetadataProvider_UsesPredicateOnParameter()
         {
             // Arrange
-            var type = typeof(TypeWithExludedAndIncludedPropertiesUsingBindAttribute);
-            var methodInfo = type.GetMethod("ActionWithBindAttribute");
-            var provider = new DataAnnotationsModelMetadataProvider();
+            var type = GetType();
+            var methodInfo = type.GetMethod(
+                "ActionWithoutBindAttribute",
+                BindingFlags.Instance | BindingFlags.NonPublic);
 
-            // Note it does an intersection for included and a union for excluded.
-            var expectedIncludedPropertyNames = new[] { "IncludedAndExcludedExplicitly1" };
-            var expectedExcludedPropertyNames = new[] {
-                "Property3", "Property4", "IncludedAndExcludedExplicitly1", "ExcludedExplicitly1" };
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var context = new ModelBindingContext();
+
+            // Note it does an intersection for included -- only properties that
+            // pass both predicates will be bound.
+            var expected = new[] { "IsAdmin", "UserName" };
 
             // Act
             var metadata = provider.GetMetadataForParameter(
@@ -70,16 +64,68 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 parameterName: "param");
 
             // Assert
-            Assert.Equal(expectedIncludedPropertyNames.ToList(), metadata.BinderIncludeProperties);
-            Assert.Equal(expectedExcludedPropertyNames.ToList(), metadata.BinderExcludeProperties);
+            var predicate = metadata.PropertyBindingPredicateProvider.PropertyFilter;
+            Assert.NotNull(predicate);
+
+            var matched = new HashSet<string>();
+            foreach (var property in metadata.Properties)
+            {
+                if (predicate(context, property.PropertyName))
+                {
+                    matched.Add(property.PropertyName);
+                }
+            }
+
+            Assert.Equal<string>(expected, matched);
         }
 
         [Fact]
-        public void ModelMetadataProvider_ReadsPrefixProperty_OnlyAtParameterLevel_ForParameters()
+        public void DataAnnotationsModelMetadataProvider_UsesPredicateOnParameter_Merge()
         {
             // Arrange
-            var type = typeof(TypeWithExludedAndIncludedPropertiesUsingBindAttribute);
-            var methodInfo = type.GetMethod("ActionWithBindAttribute");
+            var type = GetType();
+            var methodInfo = type.GetMethod(
+                "ActionWithBindAttribute",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var context = new ModelBindingContext();
+
+            // Note it does an intersection for included -- only properties that
+            // pass both predicates will be bound.
+            var expected = new[] { "IsAdmin" };
+
+            // Act
+            var metadata = provider.GetMetadataForParameter(
+                modelAccessor: null,
+                methodInfo: methodInfo,
+                parameterName: "param");
+
+            // Assert
+            var predicate = metadata.PropertyBindingPredicateProvider.PropertyFilter;
+            Assert.NotNull(predicate);
+
+            var matched = new HashSet<string>();
+            foreach (var property in metadata.Properties)
+            {
+                if (predicate(context, property.PropertyName))
+                {
+                    matched.Add(property.PropertyName);
+                }
+            }
+
+            Assert.Equal<string>(expected, matched);
+        }
+
+        [Fact]
+        public void DataAnnotationsModelMetadataProvider_ReadsModelNameProperty_ForParameters()
+        {
+            // Arrange
+            var type = GetType();
+            var methodInfo = type.GetMethod(
+                "ActionWithBindAttribute",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
             var provider = new DataAnnotationsModelMetadataProvider();
 
             // Act
@@ -96,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void DataAnnotationsModelMetadataProvider_ReadsModelNameProperty_ForTypes()
         {
             // Arrange
-            var type = typeof(TypeWithExludedAndIncludedPropertiesUsingBindAttribute);
+            var type = typeof(User);
             var provider = new DataAnnotationsModelMetadataProvider();
 
             // Act
@@ -106,23 +152,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("TypePrefix", metadata.BinderModelName);
         }
 
-        [Fact]
-        public void DataAnnotationsModelMetadataProvider_ReadsModelNameProperty_ForParameters()
-        {
-            // Arrange
-            var type = typeof(TypeWithExludedAndIncludedPropertiesUsingBindAttribute);
-            var methodInfo = type.GetMethod("ActionWithBindAttribute");
-            var provider = new DataAnnotationsModelMetadataProvider();
-
-            // Act
-            var metadata = provider.GetMetadataForParameter(
-                modelAccessor: null,
-                methodInfo: methodInfo,
-                parameterName: "param");
-
-            // Assert
-            Assert.Equal("ParameterPrefix", metadata.BinderModelName);
-        }
 
         [Fact]
         public void DataAnnotationsModelMetadataProvider_ReadsScaffoldColumnAttribute_ForShowForDisplay()
@@ -193,8 +222,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.NotNull(propertyMetadata.BinderMetadata);
             var attribute = Assert.IsType<TypeBasedBinderAttribute>(propertyMetadata.BinderMetadata);
             Assert.Equal("PersonType", propertyMetadata.BinderModelName);
-            Assert.Equal(new[] { "IncludeAtType" }, propertyMetadata.BinderIncludeProperties.ToArray());
-            Assert.Equal(new[] { "ExcludeAtType" }, propertyMetadata.BinderExcludeProperties.ToArray());
         }
 
         [Fact]
@@ -210,12 +237,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.NotNull(propertyMetadata.BinderMetadata);
             var attribute = Assert.IsType<NonTypeBasedBinderAttribute>(propertyMetadata.BinderMetadata);
             Assert.Equal("GrandParentProperty", propertyMetadata.BinderModelName);
-            Assert.Empty(propertyMetadata.BinderIncludeProperties);
-            Assert.Equal(new[] { "ExcludeAtProperty", "ExcludeAtType" },
-                         propertyMetadata.BinderExcludeProperties.ToArray());
         }
 
-#if ASPNET50
         [Fact]
         public void GetMetadataForParameter_WithNoBinderMetadata_GetsItFromType()
         {
@@ -223,16 +246,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new DataAnnotationsModelMetadataProvider();
 
             // Act
-            var parameterMetadata = provider.GetMetadataForParameter(null,
-                                                                    typeof(Person).GetMethod("Update"),
-                                                                    "person");
+            var parameterMetadata = provider.GetMetadataForParameter(
+                null,
+                typeof(Person).GetMethod("Update"),
+                "person");
 
             // Assert
             Assert.NotNull(parameterMetadata.BinderMetadata);
             var attribute = Assert.IsType<TypeBasedBinderAttribute>(parameterMetadata.BinderMetadata);
             Assert.Equal("PersonType", parameterMetadata.BinderModelName);
-            Assert.Equal(new[] { "IncludeAtType" }, parameterMetadata.BinderIncludeProperties.ToArray());
-            Assert.Equal(new[] { "ExcludeAtType" }, parameterMetadata.BinderExcludeProperties.ToArray());
         }
 
         [Fact]
@@ -242,53 +264,48 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new DataAnnotationsModelMetadataProvider();
 
             // Act
-            var parameterMetadata = provider.GetMetadataForParameter(null,
-                                                                    typeof(Person).GetMethod("Save"),
-                                                                    "person");
+            var parameterMetadata = provider.GetMetadataForParameter(
+                null,
+                typeof(Person).GetMethod("Save"),
+                "person");
 
             // Assert
             Assert.NotNull(parameterMetadata.BinderMetadata);
             var attribute = Assert.IsType<NonTypeBasedBinderAttribute>(parameterMetadata.BinderMetadata);
             Assert.Equal("PersonParameter", parameterMetadata.BinderModelName);
-            Assert.Empty(parameterMetadata.BinderIncludeProperties);
-            Assert.Equal(new[] { "ExcludeAtParameter", "ExcludeAtType" },
-                         parameterMetadata.BinderExcludeProperties.ToArray());
         }
-#endif
-        public class TypeBasedBinderAttribute : Attribute,
-            IBinderMetadata, IModelNameProvider, IPropertyBindingInfo
+
+        private void ActionWithoutBindAttribute(User param)
+        {
+        }
+
+        private void ActionWithBindAttribute([Bind(new string[] { "IsAdmin" }, Prefix = "ParameterPrefix")] User param)
+        {
+        }
+
+        public class TypeBasedBinderAttribute : Attribute, IBinderMetadata, IModelNameProvider
         {
             public string Name { get; set; }
-
-            public string Exclude { get; set; }
-
-            public string Include { get; set; }
         }
 
-        public class NonTypeBasedBinderAttribute : Attribute,
-            IBinderMetadata, IModelNameProvider, IPropertyBindingInfo
+        public class NonTypeBasedBinderAttribute : Attribute, IBinderMetadata, IModelNameProvider
         {
             public string Name { get; set; }
-
-            public string Exclude { get; set; }
-
-            public string Include { get; set; }
         }
 
-        [TypeBasedBinder(Name = "PersonType", Include = "IncludeAtType", Exclude = "ExcludeAtType")]
+        [TypeBasedBinder(Name = "PersonType")]
         public class Person
         {
             public Person Parent { get; set; }
 
-            [NonTypeBasedBinder(Name = "GrandParentProperty", Include = "IncludeAtProperty", Exclude = "ExcludeAtProperty")]
+            [NonTypeBasedBinder(Name = "GrandParentProperty")]
             public Person GrandParent { get; set; }
 
             public void Update(Person person)
             {
             }
 
-            public void Save([NonTypeBasedBinder(Name = "PersonParameter",
-                Include = "IncludeAtParameter", Exclude = "ExcludeAtParameter")] Person person)
+            public void Save([NonTypeBasedBinder(Name = "PersonParameter")] Person person)
             {
             }
         }
@@ -316,6 +333,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public string DirectlyHidden { get; set; }
 
             public HiddenClass OfHiddenType { get; set; }
+        }
+
+        [Bind(new[] { nameof(IsAdmin), nameof(UserName) }, Prefix = "TypePrefix")]
+        private class User
+        {
+            public int Id { get; set; }
+
+            public bool IsAdmin { get; set; }
+
+            public int UserName { get; set; }
+
+            public int NotIncludedOrExcluded { get; set; }
         }
     }
 }

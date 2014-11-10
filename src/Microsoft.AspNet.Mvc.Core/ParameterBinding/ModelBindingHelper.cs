@@ -167,6 +167,7 @@ namespace Microsoft.AspNet.Mvc
             return false;
         }
 
+        // Internal for tests
         internal static string GetPropertyName(Expression expression)
         {
             if (expression.NodeType == ExpressionType.Convert ||
@@ -203,8 +204,16 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private static Expression<Func<ModelBindingContext, string, bool>> GetIncludePredicateExpression<TModel>
-            (string prefix, Expression<Func<TModel, object>>[] expressions)
+        /// <summary>
+        /// Creates an expression for a predicate to limit the set of properties used in model binding.
+        /// </summary>
+        /// <typeparam name="TModel">The model type.</typeparam>
+        /// <param name="prefix">The model prefix.</param>
+        /// <param name="expressions">Expressions identifying the properties to allow for binding.</param>
+        /// <returns>An expression which can be used with <see cref="IPropertyBindingPredicateProvider"/>.</returns>
+        public static Expression<Func<ModelBindingContext, string, bool>> GetIncludePredicateExpression<TModel>(
+            string prefix, 
+            Expression<Func<TModel, object>>[] expressions)
         {
             if (expressions.Length == 0)
             {

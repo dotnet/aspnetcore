@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -11,22 +12,52 @@ namespace Microsoft.AspNet.Mvc
     /// This attribute can be used on action parameters and types, to indicate model level metadata.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-    public sealed class BindAttribute : Attribute, IModelNameProvider, IPropertyBindingInfo
+    public class BindAttribute : Attribute, IModelNameProvider, IPropertyBindingPredicateProvider
     {
-        /// <summary>
-        /// Comma separated set of properties which are to be excluded during model binding.
-        /// </summary>
-        public string Exclude { get; set; } = string.Empty;
+        private static readonly Func<ModelBindingContext, string, bool> _defaultFilter = (context, propertyName) => true;
+
+        private Func<ModelBindingContext, string, bool> _predicateFromInclude;
 
         /// <summary>
-        /// Comma separated set of properties which are to be included during model binding.
+        /// Creates a new instace of <see cref="BindAttribute"/>.
         /// </summary>
-        public string Include { get; set; } = string.Empty;
+        /// <param name="include">Names of parameters to include in binding.</param>
+        public BindAttribute(params string[] include)
+        {
+            Include = include;
+        }
 
-        // This property is exposed for back compat reasons.
+        /// <summary>
+        /// Creates a new instance of <see cref="BindAttribute"/>.
+        /// </summary>
+        /// <param name="predicateProviderType">The type which implements 
+        /// <see cref="IPropertyBindingPredicateProvider"/>.
+        /// </param>
+        public BindAttribute([NotNull] Type predicateProviderType)
+        {
+            if (!typeof(IPropertyBindingPredicateProvider).IsAssignableFrom(predicateProviderType))
+            {
+                var message = Resources.FormatPropertyBindingPredicateProvider_WrongType(
+                    predicateProviderType.FullName,
+                    typeof(IPropertyBindingPredicateProvider).FullName);
+                throw new ArgumentException(message, nameof(predicateProviderType));
+            }
+
+            PredicateProviderType = predicateProviderType;
+        }
+
+        /// <inheritdoc />
+        public Type PredicateProviderType { get; }
+
+        /// <summary>
+        /// Gets the names of properties to include in model binding.
+        /// </summary>
+        public string[] Include { get; }
+
         /// <summary>
         /// Allows a user to specify a particular prefix to match during model binding.
         /// </summary>
+        // This property is exposed for back compat reasons.
         public string Prefix { get; set; }
 
         /// <summary>
@@ -40,18 +71,56 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public static bool IsPropertyAllowed(string propertyName,
-                                             IReadOnlyList<string> includeProperties,
-                                             IReadOnlyList<string> excludeProperties)
+        /// <inheritdoc />
+        public Func<ModelBindingContext, string, bool> PropertyFilter
         {
-            // We allow a property to be bound if its both in the include list AND not in the exclude list.
-            // An empty exclude list implies no properties are disallowed.
-            var includeProperty = (includeProperties != null) &&
-                                   includeProperties.Contains(propertyName, StringComparer.OrdinalIgnoreCase);
-            var excludeProperty = (excludeProperties != null) &&
-                                  excludeProperties.Contains(propertyName, StringComparer.OrdinalIgnoreCase);
+            get
+            {
+                if (PredicateProviderType != null)
+                {
+                    return CreatePredicateFromProviderType(PredicateProviderType);
+                }
+                else if (Include != null && Include.Length > 0)
+                {
+                    if (_predicateFromInclude == null)
+                    {
+                        _predicateFromInclude = 
+                            (context, propertyName) => Include.Contains(propertyName, StringComparer.Ordinal);
+                    }
 
-            return includeProperty && !excludeProperty;
+                    return _predicateFromInclude;
+                }
+                else
+                {
+                    return _defaultFilter;
+                }
+            }
+        }
+
+        private static Func<ModelBindingContext, string, bool> CreatePredicateFromProviderType(
+            Type predicateProviderType)
+        {
+            // Holding state to avoid execessive creation of the provider.
+            var initialized = false;
+            Func<ModelBindingContext, string, bool> predicate = null;
+
+            return (ModelBindingContext context, string propertyName) =>
+            {
+                if (!initialized)
+                {
+                    var services = context.OperationBindingContext.HttpContext.RequestServices;
+                    var activator = services.GetService<ITypeActivator>();
+
+                    var provider = (IPropertyBindingPredicateProvider)activator.CreateInstance(
+                        services, 
+                        predicateProviderType);
+
+                    initialized = true;
+                    predicate = provider.PropertyFilter ?? _defaultFilter;
+                }
+
+                return predicate(context, propertyName);
+            };
         }
     }
 }

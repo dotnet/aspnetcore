@@ -70,56 +70,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                       : base.ComputeBinderModelNamePrefix();
         }
 
-        protected override IReadOnlyList<string> ComputeBinderIncludeProperties()
+        protected override IPropertyBindingPredicateProvider ComputePropertyBindingPredicateProvider()
         {
-            var propertyBindingInfo = PrototypeCache.PropertyBindingInfo?.ToList();
-            if (propertyBindingInfo != null && propertyBindingInfo.Count != 0)
-            {
-                if (string.IsNullOrEmpty(propertyBindingInfo[0].Include))
-                {
-                    return Properties.Select(property => property.PropertyName).ToList();
-                }
-
-                var includeFirst = SplitString(propertyBindingInfo[0].Include).ToList();
-                if (propertyBindingInfo.Count != 2)
-                {
-                    return includeFirst;
-                }
-
-                var includedAtType = SplitString(propertyBindingInfo[1].Include).ToList();
-
-                if (includeFirst.Count == 0 && includedAtType.Count == 0)
-                {
-                    // Need to include everything by default.
-                    return Properties.Select(property => property.PropertyName).ToList();
-                }
-                else
-                {
-                    return includeFirst.Intersect(includedAtType).ToList();
-                }
-            }
-
-            // Need to include everything by default.
-            return Properties.Select(property => property.PropertyName).ToList();
-        }
-
-        protected override IReadOnlyList<string> ComputeBinderExcludeProperties()
-        {
-            var propertyBindingInfo = PrototypeCache.PropertyBindingInfo?.ToList();
-            if (propertyBindingInfo != null && propertyBindingInfo.Count != 0)
-            {
-                var excludeFirst = SplitString(propertyBindingInfo[0].Exclude).ToList();
-
-                if (propertyBindingInfo.Count != 2)
-                {
-                    return excludeFirst;
-                }
-
-                var excludedAtType = SplitString(propertyBindingInfo[1].Exclude).ToList();
-                return excludeFirst.Union(excludedAtType).ToList();
-            }
-
-            return base.ComputeBinderExcludeProperties();
+            return PrototypeCache.PropertyBindingPredicateProviders.Any()
+                ? new CompositePredicateProvider(PrototypeCache.PropertyBindingPredicateProviders.ToArray())
+                : null;
         }
 
         protected override bool ComputeConvertEmptyStringToNull()
@@ -382,6 +337,45 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                 .Select(piece => piece.Trim())
                                 .Where(trimmed => !string.IsNullOrEmpty(trimmed));
             return split;
+        }
+
+        private class CompositePredicateProvider : IPropertyBindingPredicateProvider
+        {
+            private readonly IPropertyBindingPredicateProvider[] _providers;
+
+            public CompositePredicateProvider(IPropertyBindingPredicateProvider[] providers)
+            {
+                _providers = providers;
+            }
+
+            public Func<ModelBindingContext, string, bool> PropertyFilter
+            {
+                get
+                {
+                    return CreatePredicate();
+                }
+            }
+
+            private Func<ModelBindingContext, string, bool> CreatePredicate()
+            {
+                var predicates = _providers
+                    .Select(p => p.PropertyFilter)
+                    .Where(p => p != null)
+                    .ToArray();
+
+                return (context, propertyName) =>
+                {
+                    foreach (var predicate in predicates)
+                    {
+                        if (!predicate(context, propertyName))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                };
+            }
         }
     }
 }

@@ -49,33 +49,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public void GetModelBindingContext_DoesNotReturn_ExcludedProperties()
-        {
-            // Arrange
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
-                                                  Mock.Of<ActionDescriptor>());
-
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var modelMetadata = metadataProvider.GetMetadataForType(
-                modelAccessor: null, modelType: typeof(TypeWithExcludedPropertiesUsingBindAttribute));
-
-            var actionBindingContext = new ActionBindingContext(actionContext,
-                                                          Mock.Of<IModelMetadataProvider>(),
-                                                          Mock.Of<IModelBinder>(),
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
-            // Act
-            var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
-                modelMetadata, actionBindingContext, Mock.Of<OperationBindingContext>());
-
-            // Assert
-            Assert.False(context.PropertyFilter(context, "Excluded1"));
-            Assert.False(context.PropertyFilter(context, "Excluded2"));
-        }
-
-        [Fact]
-        public void GetModelBindingContext_ReturnsOnlyWhiteListedProperties_UsingBindAttributeInclude()
+        public void GetModelBindingContext_ReturnsOnlyIncludedProperties_UsingBindAttributeInclude()
         {
             // Arrange
             var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
@@ -325,19 +299,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
         }
 
-        [Bind(Exclude = nameof(Excluded1) + "," + nameof(Excluded2))]
-        private class TypeWithExcludedPropertiesUsingBindAttribute
-        {
-            public int Excluded1 { get; set; }
-
-            public int Excluded2 { get; set; }
-
-            public int IncludedByDefault1 { get; set; }
-
-            public int IncludedByDefault2 { get; set; }
-        }
-
-        [Bind(Include = nameof(IncludedExplicitly1) + "," + nameof(IncludedExplicitly2))]
+        [Bind(new string[] { nameof(IncludedExplicitly1), nameof(IncludedExplicitly2) })]
         private class TypeWithIncludedPropertiesUsingBindAttribute
         {
             public int ExcludedByDefault1 { get; set; }

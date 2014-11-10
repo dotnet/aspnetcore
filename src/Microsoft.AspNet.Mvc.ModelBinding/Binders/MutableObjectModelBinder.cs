@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -269,12 +270,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual IEnumerable<ModelMetadata> GetMetadataForProperties(ModelBindingContext bindingContext)
         {
             var validationInfo = GetPropertyValidationInfo(bindingContext);
+            var newPropertyFilter = GetPropertyFilter();
             return bindingContext.ModelMetadata.Properties
                                  .Where(propertyMetadata =>
-                                    bindingContext.PropertyFilter(bindingContext, propertyMetadata.PropertyName) &&
+                                    newPropertyFilter(bindingContext, propertyMetadata.PropertyName) &&
                                     (validationInfo.RequiredProperties.Contains(propertyMetadata.PropertyName) ||
                                     !validationInfo.SkipProperties.Contains(propertyMetadata.PropertyName)) &&
                                     CanUpdateProperty(propertyMetadata));
+        }
+
+        private static Func<ModelBindingContext, string, bool> GetPropertyFilter()
+        {
+            return (ModelBindingContext context, string propertyName) =>
+            {
+                var modelMetadataPredicate = context.ModelMetadata.PropertyBindingPredicateProvider?.PropertyFilter;
+
+                return
+                    context.PropertyFilter(context, propertyName) &&
+                    (modelMetadataPredicate == null || modelMetadataPredicate(context, propertyName));
+            };
         }
 
         private static object GetPropertyDefaultValue(PropertyInfo propertyInfo)

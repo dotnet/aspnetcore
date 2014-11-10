@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -96,21 +95,17 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        internal static ModelBindingContext GetModelBindingContext(ModelMetadata modelMetadata,
-                                                                   ActionBindingContext actionBindingContext,
-                                                                   OperationBindingContext operationBindingContext)
+        internal static ModelBindingContext GetModelBindingContext(
+            ModelMetadata modelMetadata,
+            ActionBindingContext actionBindingContext,
+            OperationBindingContext operationBindingContext)
         {
-            Func<ModelBindingContext, string, bool> propertyFilter =
-                (context, propertyName) => BindAttribute.IsPropertyAllowed(propertyName,
-                                                                modelMetadata.BinderIncludeProperties,
-                                                                modelMetadata.BinderExcludeProperties);
-
             var modelBindingContext = new ModelBindingContext
             {
                 ModelName = modelMetadata.BinderModelName ?? modelMetadata.PropertyName,
                 ModelMetadata = modelMetadata,
                 ModelState = actionBindingContext.ActionContext.ModelState,
-                PropertyFilter = propertyFilter,
+
                 // Fallback only if there is no explicit model name set.
                 FallbackToEmptyPrefix = modelMetadata.BinderModelName == null,
                 ValueProvider = actionBindingContext.ValueProvider,

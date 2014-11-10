@@ -708,6 +708,71 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task BindAttribute_Filters_UsingDefaultPropertyFilterProvider_WithExpressions()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
+                "EchoUser" +
+                "?user.UserName=someValue&user.RegisterationMonth=March&user.Id=123");
+
+            // Assert
+            var json = JsonConvert.DeserializeObject<User>(response);
+
+            // Does not touch what is not in the included expression.
+            Assert.Equal(0, json.Id);
+
+            // Updates the included properties.
+            Assert.Equal("someValue", json.UserName);
+            Assert.Equal("March", json.RegisterationMonth);
+        }
+
+        [Fact]
+        public async Task BindAttribute_Filters_UsingPropertyFilterProvider_UsingServices()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
+                "EchoUserUsingServices" +
+                "?user.UserName=someValue&user.RegisterationMonth=March&user.Id=123");
+
+            // Assert
+            var json = JsonConvert.DeserializeObject<User>(response);
+
+            // Does not touch what is not in the included expression.
+            Assert.Equal(0, json.Id);
+
+            // Updates the included properties.
+            Assert.Equal("someValue", json.UserName);
+            Assert.Equal("March", json.RegisterationMonth);
+        }
+
+        [Fact]
+        public async Task BindAttribute_Filters_UsingDefaultPropertyFilterProvider_WithPredicate()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
+                "UpdateUserId_BlackListingAtEitherLevelDoesNotBind" +
+                "?param1.LastName=someValue&param2.Id=123");
+
+            // Assert
+            var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(response);
+            Assert.Equal(2, json.Count);
+            Assert.Null(json["param1.LastName"]);
+            Assert.Equal("0", json["param2.Id"]);
+        }
+
+        [Fact]
         public async Task BindAttribute_AppliesAtBothParameterAndTypeLevelTogether_BlacklistedAtEitherLevelIsNotBound()
         {
             // Arrange
@@ -716,18 +781,18 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
-                "BindAtParamterLevelAndBindAtTypeLevelAreBothEvaluated_BlackListingAtEitherLevelDoesNotBind" +
-                "?param1.IncludedExplicitlyAtTypeLevel=someValue&param2.ExcludedExplicitlyAtTypeLevel=someValue");
+                "UpdateUserId_BlackListingAtEitherLevelDoesNotBind" +
+                "?param1.LastName=someValue&param2.Id=123");
 
             // Assert
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(response);
             Assert.Equal(2, json.Count);
-            Assert.Null(json["param1.IncludedExplicitlyAtTypeLevel"]);
-            Assert.Null(json["param2.ExcludedExplicitlyAtTypeLevel"]);
+            Assert.Null(json["param1.LastName"]);
+            Assert.Equal("0", json["param2.Id"]);
         }
 
         [Fact]
-        public async Task BindAttribute_AppliesAtBothParameterAndTypeLevelTogether_WhitelistedAtBothLevelsIsBound()
+        public async Task BindAttribute_AppliesAtBothParameterAndTypeLevelTogether_IncludedAtBothLevelsIsBound()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
@@ -735,17 +800,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
-                "BindAtParamterLevelAndBindAtTypeLevelAreBothEvaluated_WhiteListingAtBothLevelBinds" +
-                "?param1.IncludedExplicitlyAtTypeLevel=someValue&param2.ExcludedExplicitlyAtTypeLevel=someValue");
+                "UpdateFirstName_IncludingAtBothLevelBinds" +
+                "?param1.FirstName=someValue&param2.Id=123");
 
             // Assert
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(response);
             Assert.Equal(1, json.Count);
-            Assert.Equal("someValue", json["param1.IncludedExplicitlyAtTypeLevel"]);
+            Assert.Equal("someValue", json["param1.FirstName"]);
         }
 
         [Fact]
-        public async Task BindAttribute_AppliesAtBothParameterAndTypeLevelTogether_WhitelistingAtOneLevelIsNotBound()
+        public async Task BindAttribute_AppliesAtBothParameterAndTypeLevelTogether_IncludingAtOneLevelIsNotBound()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
@@ -753,14 +818,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetStringAsync("http://localhost/BindAttribute/" +
-                "BindAtParamterLevelAndBindAtTypeLevelAreBothEvaluated_WhiteListingAtOnlyOneLevelDoesNotBind" +
-                "?param1.IncludedExplicitlyAtTypeLevel=someValue&param1.IncludedExplicitlyAtParameterLevel=someValue");
+                "UpdateIsAdmin_IncludingAtOnlyOneLevelDoesNotBind" +
+                "?param1.FirstName=someValue&param1.IsAdmin=true");
 
             // Assert
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(response);
             Assert.Equal(2, json.Count);
-            Assert.Null(json["param1.IncludedExplicitlyAtParameterLevel"]);
-            Assert.Null(json["param1.IncludedExplicitlyAtTypeLevel"]);
+            Assert.Equal("False", json["param1.IsAdmin"]);
+            Assert.Null(json["param1.FirstName"]);
         }
 
         [Fact]

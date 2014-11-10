@@ -251,19 +251,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// The type '{0}' must derive from '{1}'.
+        /// The type '{0}' does not implement the interface '{1}'.
         /// </summary>
-        internal static string TypeMustDeriveFromType
+        internal static string PropertyBindingPredicateProvider_WrongType
         {
-            get { return GetString("TypeMustDeriveFromType"); }
+            get { return GetString("PropertyBindingPredicateProvider_WrongType"); }
         }
 
         /// <summary>
-        /// The type '{0}' must derive from '{1}'.
+        /// The type '{0}' does not implement the interface '{1}'.
         /// </summary>
-        internal static string FormatTypeMustDeriveFromType(object p0, object p1)
+        internal static string FormatPropertyBindingPredicateProvider_WrongType(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TypeMustDeriveFromType"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyBindingPredicateProvider_WrongType"), p0, p1);
         }
 
         /// <summary>

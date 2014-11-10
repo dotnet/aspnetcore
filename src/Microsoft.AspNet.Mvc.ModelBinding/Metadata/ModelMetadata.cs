@@ -48,23 +48,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// The name of the model if specified explicitly using <see cref="IModelNameProvider"/>.
+        /// Gets or sets the name of a model if specified explicitly using <see cref="IModelNameProvider"/>.
         /// </summary>
         public virtual string BinderModelName { get; set; }
 
         /// <summary>
-        /// Properties which are to be included while binding this model.
-        /// </summary>
-        public virtual IReadOnlyList<string> BinderIncludeProperties { get; set; }
-
-        /// <summary>
-        /// Properties which are to be excluded while binding this model.
-        /// </summary>
-        public virtual IReadOnlyList<string> BinderExcludeProperties { get; set; }
-
-        /// <summary>
-        /// The <see cref="Type"/> of an <see cref="IModelBinder"/> or an <see cref="IModelBinderProvider"/>
-        /// of a model if specified explicitly using <see cref="IBinderTypeProviderMetadata"/>.
+        /// Gets or sets the <see cref="Type"/> of an <see cref="IModelBinder"/> or an
+        /// <see cref="IModelBinderProvider"/> of a model if specified explicitly using 
+        /// <see cref="IBinderTypeProviderMetadata"/>.
         /// </summary>
         public virtual Type BinderType { get; set; }
 
@@ -210,6 +201,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return _properties;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the <see cref="IPropertyBindingPredicateProvider"/>, which can determine which properties
+        /// should be model bound.
+        /// </summary>
+        public virtual IPropertyBindingPredicateProvider PropertyBindingPredicateProvider { get; set; }
 
         public string PropertyName
         {

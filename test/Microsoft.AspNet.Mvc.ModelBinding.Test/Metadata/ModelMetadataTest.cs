@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var nonEmptycontainerModel = new DummyModelContainer { Model = contactModel };
 
                 var binderMetadata = new TestBinderMetadata();
+                var predicateProvider = new DummyPropertyBindingPredicateProvider();
                 var emptyPropertyList = new List<string>();
                 var nonEmptyPropertyList = new List<string>() { "SomeProperty" };
                 return new TheoryData<Action<ModelMetadata>, Func<ModelMetadata, object>, object>
@@ -56,28 +57,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     { m => m.BinderModelName = string.Empty, m => m.BinderModelName, string.Empty },
                     { m => m.BinderType = null, m => m.BinderType, null },
                     { m => m.BinderType = typeof(string), m => m.BinderType, typeof(string) },
-                    { m => m.BinderIncludeProperties = null, m => m.BinderIncludeProperties, null },
-                    {
-                      m => m.BinderIncludeProperties = emptyPropertyList,
-                      m => m.BinderIncludeProperties,
-                      emptyPropertyList
-                    },
-                    {
-                      m => m.BinderIncludeProperties = nonEmptyPropertyList,
-                      m => m.BinderIncludeProperties,
-                      nonEmptyPropertyList
-                    },
-                    { m => m.BinderExcludeProperties = null, m => m.BinderExcludeProperties, null },
-                    {
-                        m => m.BinderExcludeProperties = emptyPropertyList,
-                        m => m.BinderExcludeProperties,
-                        emptyPropertyList
-                    },
-                    {
-                        m => m.BinderExcludeProperties = nonEmptyPropertyList,
-                        m => m.BinderExcludeProperties,
-                        nonEmptyPropertyList
-                    },
+                    { m => m.PropertyBindingPredicateProvider = null, m => m.PropertyBindingPredicateProvider, null },
+                    { m => m.PropertyBindingPredicateProvider = predicateProvider, m => m.PropertyBindingPredicateProvider, predicateProvider },
                 };
             }
         }
@@ -128,8 +109,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Null(metadata.BinderModelName);
             Assert.Null(metadata.BinderType);
             Assert.Null(metadata.BinderMetadata);
-            Assert.Null(metadata.BinderIncludeProperties);
-            Assert.Null(metadata.BinderExcludeProperties);
+            Assert.Null(metadata.PropertyBindingPredicateProvider);
         }
 
         // IsComplexType
@@ -513,6 +493,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private class DummyModelContainer
         {
             public DummyContactModel Model { get; set; }
+        }
+
+        private class DummyPropertyBindingPredicateProvider : IPropertyBindingPredicateProvider
+        {
+            public Func<ModelBindingContext, string, bool> PropertyFilter { get; set; }
         }
     }
 }

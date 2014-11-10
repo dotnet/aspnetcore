@@ -162,8 +162,8 @@
   <data name="ModelBindingContext_ModelMetadataMustBeSet" xml:space="preserve">
     <value>The ModelMetadata property must be set before accessing this property.</value>
   </data>
-  <data name="TypeMustDeriveFromType" xml:space="preserve">
-    <value>The type '{0}' must derive from '{1}'.</value>
+  <data name="PropertyBindingPredicateProvider_WrongType" xml:space="preserve">
+    <value>The type '{0}' does not implement the interface '{1}'.</value>
   </data>
   <data name="ValidatableObjectAdapter_IncompatibleType" xml:space="preserve">
     <value>The model object inside the metadata claimed to be compatible with '{0}', but was actually '{1}'.</value>
