@@ -13,12 +13,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public class ModelBindingContext
     {
-        private static readonly Predicate<string> _defaultPropertyFilter = _ => true;
+        private static readonly Func<ModelBindingContext, string, bool> 
+            _defaultPropertyFilter = (context, propertyName) => true;
+
         private string _modelName;
         private ModelStateDictionary _modelState;
         private Dictionary<string, ModelMetadata> _propertyMetadata;
         private ModelValidationNode _validationNode;
-        private Predicate<string> _propertyFilter;
+        private Func<ModelBindingContext, string, bool> _propertyFilter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ModelBindingContext"/> class.
@@ -160,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        public Predicate<string> PropertyFilter
+        public Func<ModelBindingContext, string, bool> PropertyFilter
         {
             get
             {

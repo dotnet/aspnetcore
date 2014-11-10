@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -825,6 +826,180 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_IncludeTopLevelProperty_IncludesAllSubProperties()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/TryUpdateModel/" +
+                "GetUserAsync_IncludesAllSubProperties" +
+                "?id=123&Key=34&RegistrationMonth=March&Address.Street=123&Address.Country.Name=USA&" +
+                "Address.State=WA&Address.Country.Cities[0].CityName=Seattle&Address.Country.Cities[0].CityCode=SEA");
+
+            // Assert
+            var user = JsonConvert.DeserializeObject<User>(response);
+
+            // Should update everything under Address.
+            Assert.Equal(123, user.Address.Street); // Included by default as sub properties are included.
+            Assert.Equal("WA", user.Address.State); // Included by default as sub properties of address are included.
+            Assert.Equal("USA", user.Address.Country.Name); // Included by default.
+            Assert.Equal("Seattle", user.Address.Country.Cities[0].CityName); // Included by default.
+            Assert.Equal("SEA", user.Address.Country.Cities[0].CityCode); // Included by default.
+
+            // Should not update Any property at the same level as address.
+            // Key is id + 20.
+            Assert.Equal(143, user.Key);
+            Assert.Null(user.RegisterationMonth);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_ChainedPropertyExpression_Throws()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            Expression<Func<User, object>> expression = model => model.Address.Country;
+
+            // Act
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                          client.GetAsync("http://localhost/TryUpdateModel/GetUserAsync_WithChainedProperties?id=123"));
+            Assert.Equal(string.Format("The passed expression of expression node type '{0}' is invalid." +
+                                       " Only simple member access expressions for model properties are supported.",
+                                        expression.Body.NodeType),
+                         ex.Message);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_FailsToUpdateProperties()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/TryUpdateModel/" +
+                "TryUpdateModelFails" +
+                "?id=123&RegisterationMonth=March&Key=123&UserName=SomeName");
+
+            // Assert
+            var result = JsonConvert.DeserializeObject<bool>(response);
+
+            // Act
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_IncludeExpression_WorksOnlyAtTopLevel()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/TryUpdateModel/" +
+                "GetPerson" +
+                "?Parent.Name=fatherName&Parent.Parent.Name=grandFatherName");
+
+            // Assert
+            var person = JsonConvert.DeserializeObject<Person>(response);
+
+            // Act
+            Assert.Equal("fatherName", person.Parent.Name);
+
+            // Includes this as there is data from value providers, the include filter
+            // only works for top level objects.
+            Assert.Equal("grandFatherName", person.Parent.Parent.Name);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_Validates_ForTopLevelNotIncludedProperties()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/TryUpdateModel/" +
+                "CreateAndUpdateUser" +
+                "?RegisterationMonth=March");
+
+            // Assert
+            var result = JsonConvert.DeserializeObject<bool>(response);
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task TryUpdateModelExcludeSpecific_Properties()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/TryUpdateModel/" +
+                "GetUserAsync_ExcludeSpecificProperties" +
+                "?id=123&RegisterationMonth=March&Key=123&UserName=SomeName");
+
+            // Assert
+            var user = JsonConvert.DeserializeObject<User>(response);
+
+            // Should not update excluded properties.
+            Assert.NotEqual(123, user.Key);
+
+            // Should Update all explicitly included properties.
+            Assert.Equal("March", user.RegisterationMonth);
+            Assert.Equal("SomeName", user.UserName);
+        }
+
+        [Fact]
+        public async Task TryUpdateModelIncludeSpecific_Properties()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/TryUpdateModel/" +
+                "GetUserAsync_IncludeSpecificProperties" +
+                "?id=123&RegisterationMonth=March&Key=123&UserName=SomeName");
+
+            // Assert
+            var user = JsonConvert.DeserializeObject<User>(response);
+
+            // Should not update any not explicitly mentioned properties. 
+            Assert.NotEqual("SomeName", user.UserName);
+            Assert.NotEqual(123, user.Key);
+
+            // Should Update all included properties.
+            Assert.Equal("March", user.RegisterationMonth);
+        }
+
+        [Fact]
+        public async Task TryUpdateModelIncludesAllProperties_ByDefault()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/TryUpdateModel/" +
+                "GetUserAsync_IncludeAllByDefault" +
+                "?id=123&RegisterationMonth=March&Key=123&UserName=SomeName");
+
+            // Assert
+            var user = JsonConvert.DeserializeObject<User>(response);
+
+            // Should not update any not explicitly mentioned properties. 
+            Assert.Equal("SomeName", user.UserName);
+            Assert.Equal(123, user.Key);
+
+            // Should Update all included properties.
+            Assert.Equal("March", user.RegisterationMonth);
         }
     }
 }

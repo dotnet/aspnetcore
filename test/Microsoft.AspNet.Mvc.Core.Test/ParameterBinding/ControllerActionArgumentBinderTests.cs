@@ -70,8 +70,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 modelMetadata, actionBindingContext, Mock.Of<OperationBindingContext>());
 
             // Assert
-            Assert.False(context.PropertyFilter("Excluded1"));
-            Assert.False(context.PropertyFilter("Excluded2"));
+            Assert.False(context.PropertyFilter(context, "Excluded1"));
+            Assert.False(context.PropertyFilter(context, "Excluded2"));
         }
 
         [Fact]
@@ -96,8 +96,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 modelMetadata, actionBindingContext, Mock.Of<OperationBindingContext>());
 
             // Assert
-            Assert.True(context.PropertyFilter("IncludedExplicitly1"));
-            Assert.True(context.PropertyFilter("IncludedExplicitly2"));
+            Assert.True(context.PropertyFilter(context, "IncludedExplicitly1"));
+            Assert.True(context.PropertyFilter(context, "IncludedExplicitly2"));
         }
 
         [Fact]

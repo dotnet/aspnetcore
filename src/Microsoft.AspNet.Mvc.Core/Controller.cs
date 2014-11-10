@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq.Expressions;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
@@ -654,26 +655,28 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Updates the specified model instance using values from the controller's current value provider.
+        /// Updates the specified <paramref name="model"/> instance using values from the controller's current 
+        /// <see cref="IValueProvider"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
         /// <param name="model">The model instance to update.</param>
-        /// <returns>true if the update is successful; otherwise, false.</returns>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         [NonAction]
         public virtual Task<bool> TryUpdateModelAsync<TModel>([NotNull] TModel model)
             where TModel : class
         {
-            return TryUpdateModelAsync(model, prefix: typeof(TModel).Name);
+            return TryUpdateModelAsync(model, prefix: null);
         }
 
         /// <summary>
-        /// Updates the specified model instance using values from the controller's current value provider
-        /// and a prefix.
+        /// Updates the specified <paramref name="model"/> instance using values from the controller's current 
+        /// <see cref="IValueProvider"/> and a <paramref name="prefix"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
         /// <param name="model">The model instance to update.</param>
-        /// <param name="prefix">The prefix to use when looking up values in the value provider.</param>
-        /// <returns>true if the update is successful; otherwise, false.</returns>
+        /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>
+        /// </param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         [NonAction]
         public virtual async Task<bool> TryUpdateModelAsync<TModel>([NotNull] TModel model,
                                                                     [NotNull] string prefix)
@@ -681,7 +684,8 @@ namespace Microsoft.AspNet.Mvc
         {
             if (BindingContextProvider == null)
             {
-                var message = Resources.FormatPropertyOfTypeCannotBeNull("BindingContextProvider", GetType().FullName);
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider), 
+                                                                         GetType().FullName);
                 throw new InvalidOperationException(message);
             }
 
@@ -690,13 +694,15 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Updates the specified model instance using the value provider and a prefix.
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a 
+        /// <paramref name="prefix"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
         /// <param name="model">The model instance to update.</param>
-        /// <param name="prefix">The prefix to use when looking up values in the value provider.</param>
-        /// <param name="valueProvider">The value provider used for looking up values.</param>
-        /// <returns>true if the update is successful; otherwise, false.</returns>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         [NonAction]
         public virtual async Task<bool> TryUpdateModelAsync<TModel>([NotNull] TModel model,
                                                                     [NotNull] string prefix,
@@ -705,7 +711,8 @@ namespace Microsoft.AspNet.Mvc
         {
             if (BindingContextProvider == null)
             {
-                var message = Resources.FormatPropertyOfTypeCannotBeNull("BindingContextProvider", GetType().FullName);
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider), 
+                                                                         GetType().FullName);
                 throw new InvalidOperationException(message);
             }
 
@@ -720,6 +727,156 @@ namespace Microsoft.AspNet.Mvc
                                                                 bindingContext.ValidatorProvider);
         }
 
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the controller's current 
+        /// <see cref="IValueProvider"/> and a <paramref name="prefix"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>.
+        /// </param>
+        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties 
+        /// which need to be included for the current model.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        [NonAction]
+        public async Task<bool> TryUpdateModelAsync<TModel>(
+            [NotNull] TModel model,
+            string prefix,
+            [NotNull] params Expression<Func<TModel, object>>[] includeExpressions)
+           where TModel : class
+        {
+            if (BindingContextProvider == null)
+            {
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider),
+                                                                         GetType().FullName);
+                throw new InvalidOperationException(message);
+            }
+
+            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
+            return await ModelBindingHelper.TryUpdateModelAsync(model,
+                                                                prefix,
+                                                                ActionContext.HttpContext,
+                                                                ModelState,
+                                                                bindingContext.MetadataProvider,
+                                                                bindingContext.ModelBinder,
+                                                                bindingContext.ValueProvider,
+                                                                bindingContext.ValidatorProvider,
+                                                                includeExpressions);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the controller's current 
+        /// <see cref="IValueProvider"/> and a <paramref name="prefix"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>.
+        /// </param>
+        /// <param name="predicate">A predicate which can be used to filter properties at runtime.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        [NonAction]
+        public async Task<bool> TryUpdateModelAsync<TModel>(
+            [NotNull] TModel model,
+            string prefix,
+            [NotNull] Func<ModelBindingContext, string, bool> predicate)
+            where TModel : class
+        {
+            if (BindingContextProvider == null)
+            {
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider), 
+                                                                         GetType().FullName);
+                throw new InvalidOperationException(message);
+            }
+
+            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
+            return await ModelBindingHelper.TryUpdateModelAsync(model,
+                                                                prefix,
+                                                                ActionContext.HttpContext,
+                                                                ModelState,
+                                                                bindingContext.MetadataProvider,
+                                                                bindingContext.ModelBinder,
+                                                                bindingContext.ValueProvider,
+                                                                bindingContext.ValidatorProvider,
+                                                                predicate);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a 
+        /// <paramref name="prefix"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties 
+        /// which need to be included for the current model.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        [NonAction]
+        public async Task<bool> TryUpdateModelAsync<TModel>(
+            [NotNull] TModel model,
+            string prefix,
+            [NotNull] IValueProvider valueProvider,
+            [NotNull] params Expression<Func<TModel, object>>[] includeExpressions)
+           where TModel : class
+        {
+            if (BindingContextProvider == null)
+            {
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider), 
+                                                                         GetType().FullName);
+                throw new InvalidOperationException(message);
+            }
+
+            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
+            return await ModelBindingHelper.TryUpdateModelAsync(model,
+                                                                prefix,
+                                                                ActionContext.HttpContext,
+                                                                ModelState,
+                                                                bindingContext.MetadataProvider,
+                                                                bindingContext.ModelBinder,
+                                                                valueProvider,
+                                                                bindingContext.ValidatorProvider,
+                                                                includeExpressions);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a 
+        /// <paramref name="prefix"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="predicate">A predicate which can be used to filter properties at runtime.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        [NonAction]
+        public async Task<bool> TryUpdateModelAsync<TModel>(
+            [NotNull] TModel model,
+            string prefix,
+            [NotNull] IValueProvider valueProvider,
+            [NotNull] Func<ModelBindingContext, string, bool> predicate)
+            where TModel : class
+        {
+            if (BindingContextProvider == null)
+            {
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider), 
+                                                                         GetType().FullName);
+                throw new InvalidOperationException(message);
+            }
+
+            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
+            return await ModelBindingHelper.TryUpdateModelAsync(model,
+                                                                prefix,
+                                                                ActionContext.HttpContext,
+                                                                ModelState,
+                                                                bindingContext.MetadataProvider,
+                                                                bindingContext.ModelBinder,
+                                                                valueProvider,
+                                                                bindingContext.ValidatorProvider,
+                                                                predicate);
+        }
+
         public void Dispose()
         {
             Dispose(disposing: true);
@@ -729,6 +886,5 @@ namespace Microsoft.AspNet.Mvc
         protected virtual void Dispose(bool disposing)
         {
         }
-
     }
 }

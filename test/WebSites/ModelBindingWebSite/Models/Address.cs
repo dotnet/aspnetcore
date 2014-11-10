@@ -8,5 +8,7 @@ namespace ModelBindingWebSite
         public int Street { get; set; }
         public string State { get; set; }
         public int Zip { get; set; }
+
+        public Country Country { get; set; }
     }
 }

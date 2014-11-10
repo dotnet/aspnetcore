@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var validationInfo = GetPropertyValidationInfo(bindingContext);
             return bindingContext.ModelMetadata.Properties
                                  .Where(propertyMetadata =>
-                                    bindingContext.PropertyFilter(propertyMetadata.PropertyName) &&
+                                    bindingContext.PropertyFilter(bindingContext, propertyMetadata.PropertyName) &&
                                     (validationInfo.RequiredProperties.Contains(propertyMetadata.PropertyName) ||
                                     !validationInfo.SkipProperties.Contains(propertyMetadata.PropertyName)) &&
                                     CanUpdateProperty(propertyMetadata));
@@ -471,21 +471,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             return addedError;
-        }
-
-        private static bool IsPropertyAllowed(string propertyName,
-                                              IReadOnlyList<string> includeProperties,
-                                              IReadOnlyList<string> excludeProperties)
-        {
-            // We allow a property to be bound if its both in the include list AND not in the exclude list.
-            // An empty exclude list implies no properties are disallowed.
-            var includeProperty = (includeProperties != null) &&
-                                  includeProperties.Contains(propertyName, StringComparer.OrdinalIgnoreCase);
-
-            var excludeProperty = (excludeProperties != null) &&
-                                  excludeProperties.Contains(propertyName, StringComparer.OrdinalIgnoreCase);
-
-            return includeProperty && !excludeProperty;
         }
 
         internal sealed class PropertyValidationInfo

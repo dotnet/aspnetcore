@@ -100,8 +100,8 @@ namespace Microsoft.AspNet.Mvc
                                                                    ActionBindingContext actionBindingContext,
                                                                    OperationBindingContext operationBindingContext)
         {
-            Predicate<string> propertyFilter =
-                propertyName => BindAttribute.IsPropertyAllowed(propertyName,
+            Func<ModelBindingContext, string, bool> propertyFilter =
+                (context, propertyName) => BindAttribute.IsPropertyAllowed(propertyName,
                                                                 modelMetadata.BinderIncludeProperties,
                                                                 modelMetadata.BinderExcludeProperties);
 
