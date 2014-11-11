@@ -302,7 +302,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 };
             }
         }
-/*
+
         [Theory]
         [MemberData(nameof(FindView_UsesViewLocationExpandersToLocateViewsData))]
         public void FindView_UsesViewLocationExpandersToLocateViews(IDictionary<string, object> routeValues,
@@ -313,6 +313,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             pageFactory.Setup(p => p.CreateInstance("test-string/bar.cshtml"))
                        .Returns(Mock.Of<IRazorPage>())
                        .Verifiable();
+
+            var viewFactory = new Mock<IRazorViewFactory>();
+            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorPage>(), It.IsAny<bool>()))
+                       .Returns(Mock.Of<IView>());
 
             var expander1Result = new[] { "some-seed" };
             var expander1 = new Mock<IViewLocationExpander>();
@@ -343,21 +347,21 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                      .Returns(new[] { "test-string/{1}.cshtml" })
                      .Verifiable();
 
-            var viewEngine = CreateViewEngine(pageFactory.Object,
+            var viewEngine = CreateViewEngine(pageFactory.Object, viewFactory.Object,
                                  new[] { expander1.Object, expander2.Object });
-            var context = GetActionContext(routeValues);
+            var context = GetActionContext(routeValues, viewFactory.Object);
 
             // Act
             var result = viewEngine.FindView(context, "test-view");
 
             // Assert
             Assert.True(result.Success);
-            Assert.IsAssignableFrom<IRazorView>(result.View);
+            Assert.IsAssignableFrom<RazorView>(result.View);
             pageFactory.Verify();
             expander1.Verify();
             expander2.Verify();
         }
-*/
+
         [Fact]
         public void FindView_CachesValuesIfViewWasFound()
         {
