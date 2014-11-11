@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.Test;
-using Microsoft.Framework.DependencyInjection.Advanced;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Logging;
@@ -30,7 +29,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         public async Task CanCreateRoleWithSingletonManager()
         {
             var services = new ServiceCollection();
-            services.AddEntityFramework().AddInMemoryStore().UseLoggerFactory<LoggerFactory>();
+            services.AddEntityFramework().AddInMemoryStore();
             services.AddTransient<InMemoryContext>();
             services.AddTransient<IRoleStore<IdentityRole>, RoleStore<IdentityRole, InMemoryContext>>();
             services.AddTransient<IRoleValidator<IdentityRole>, RoleValidator<IdentityRole>>();
