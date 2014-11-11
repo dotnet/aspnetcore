@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
@@ -25,7 +24,9 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("111111", templatePart.DefaultValue);
-            Assert.IsType<IntRouteConstraint>(templatePart.InlineConstraint);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == "int");
         }
 
         [Fact]
@@ -37,8 +38,9 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("111111", templatePart.DefaultValue);
-            Assert.IsType<TestRouteConstraint>(templatePart.InlineConstraint);
-            Assert.Equal(@"\d+", ((TestRouteConstraint)templatePart.InlineConstraint).Pattern);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\d+)");
         }
 
         [Fact]
@@ -50,7 +52,9 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
             Assert.True(templatePart.IsOptional);
-            Assert.IsType<IntRouteConstraint>(templatePart.InlineConstraint);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"int");
         }
 
         [Fact]
@@ -62,7 +66,9 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
             Assert.True(templatePart.IsOptional);
-            Assert.Equal(@"\d+", ((TestRouteConstraint)templatePart.InlineConstraint).Pattern);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\d+)");
         }
 
         [Fact]
@@ -73,10 +79,11 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.IsType<CompositeRouteConstraint>(templatePart.InlineConstraint);
-            var constraint = (CompositeRouteConstraint)templatePart.InlineConstraint;
-            Assert.Equal(@"\d+", ((TestRouteConstraint)constraint.Constraints.ElementAt(0)).Pattern);
-            Assert.Equal(@"\w+", ((TestRouteConstraint)constraint.Constraints.ElementAt(1)).Pattern);
+
+            Assert.Equal(2, templatePart.InlineConstraints.Count());
+
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\d+)");
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\w+)");
         }
 
         [Fact]
@@ -92,10 +99,10 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("p1", param1.Name);
             Assert.Equal("hello", param1.DefaultValue);
             Assert.False(param1.IsOptional);
-            Assert.IsType<CompositeRouteConstraint>(param1.InlineConstraint);
-            var constraint = (CompositeRouteConstraint)param1.InlineConstraint;
-            Assert.IsType<IntRouteConstraint>(constraint.Constraints.ElementAt(0));
-            Assert.IsType<TestRouteConstraint>(constraint.Constraints.ElementAt(1));
+
+            Assert.Equal(2, param1.InlineConstraints.Count());
+            Assert.Single(param1.InlineConstraints, c => c.Constraint == "int");
+            Assert.Single(param1.InlineConstraints, c => c.Constraint == "test(3)");
 
             var param2 = parameters[1];
             Assert.Equal("p2", param2.Name);
@@ -136,8 +143,9 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.IsType<TestRouteConstraint>(templatePart.InlineConstraint);
-            Assert.Equal(@"\}", ((TestRouteConstraint)templatePart.InlineConstraint).Pattern);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\})");
         }
 
         [Fact]
@@ -148,8 +156,9 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.IsType<TestRouteConstraint>(templatePart.InlineConstraint);
-            Assert.Equal(@"\)", ((TestRouteConstraint)templatePart.InlineConstraint).Pattern);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\))");
         }
 
         [Fact]
@@ -160,8 +169,9 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.IsType<TestRouteConstraint>(templatePart.InlineConstraint);
-            Assert.Equal(@":", ((TestRouteConstraint)templatePart.InlineConstraint).Pattern);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(:)");
         }
 
         [Fact]
@@ -172,8 +182,9 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.IsType<TestRouteConstraint>(templatePart.InlineConstraint);
-            Assert.Equal(@"\w,\w", ((TestRouteConstraint)templatePart.InlineConstraint).Pattern);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\w,\w)");
         }
 
         [Fact]
@@ -184,27 +195,10 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            var constraint = Assert.IsType<IntRouteConstraint>(templatePart.InlineConstraint);
             Assert.Equal("", templatePart.DefaultValue);
-        }
 
-        [Theory]
-        [InlineData(",")]
-        [InlineData("(")]
-        [InlineData(")")]
-        [InlineData("}")]
-        [InlineData("{")]
-        public void ParseRouteParameter_MisplacedSpecialCharacterInParameter_Throws(string character)
-        {
-            // Arrange
-            var unresolvedConstraint = character + @"test(\w,\w)";
-            var parameter = "param:" + unresolvedConstraint;
-
-            // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => ParseParameter(parameter));
-            Assert.Equal(@"The inline constraint resolver of type 'DefaultInlineConstraintResolver'"+
-                          " was unable to resolve the following inline constraint: '"+ unresolvedConstraint + "'.",
-                        ex.Message);
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"int");
         }
 
         [Fact]
@@ -216,8 +210,9 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
             Assert.Null(templatePart.DefaultValue);
-            Assert.IsType<TestRouteConstraint>(templatePart.InlineConstraint);
-            Assert.Equal(@"=", ((TestRouteConstraint)templatePart.InlineConstraint).Pattern);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(=)");
         }
 
         [Fact]
@@ -228,8 +223,9 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.IsType<TestRouteConstraint>(templatePart.InlineConstraint);
-            Assert.Equal(@"\{", ((TestRouteConstraint)templatePart.InlineConstraint).Pattern);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\{)");
         }
 
         [Fact]
@@ -240,8 +236,9 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.IsType<TestRouteConstraint>(templatePart.InlineConstraint);
-            Assert.Equal(@"\(", ((TestRouteConstraint)templatePart.InlineConstraint).Pattern);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\()");
         }
 
         [Fact]
@@ -254,8 +251,9 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("param", templatePart.Name);
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
-            Assert.IsType<TestRouteConstraint>(templatePart.InlineConstraint);
-            Assert.Equal(@"\?", ((TestRouteConstraint)templatePart.InlineConstraint).Pattern);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\?)");
         }
 
         [Theory]
@@ -275,7 +273,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.Equal(expectedParameterName, templatePart.Name);
-            Assert.Null(templatePart.InlineConstraint);
+            Assert.Empty(templatePart.InlineConstraints);
             Assert.Null(templatePart.DefaultValue);
         }
 
@@ -283,14 +281,14 @@ namespace Microsoft.AspNet.Routing.Tests
         private TemplatePart ParseParameter(string routeParameter)
         {
             var _constraintResolver = GetConstraintResolver();
-            var templatePart = InlineRouteParameterParser.ParseRouteParameter(routeParameter, _constraintResolver);
+            var templatePart = InlineRouteParameterParser.ParseRouteParameter(routeParameter);
             return templatePart;
         }
 
         private static RouteTemplate ParseRouteTemplate(string template)
         {
             var _constraintResolver = GetConstraintResolver();
-            return TemplateParser.Parse(template, _constraintResolver);
+            return TemplateParser.Parse(template);
         }
 
         private static IInlineConstraintResolver GetConstraintResolver()

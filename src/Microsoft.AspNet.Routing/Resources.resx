@@ -141,9 +141,6 @@
   <data name="DefaultInlineConstraintResolver_TypeNotConstraint" xml:space="preserve">
     <value>The constraint type '{0}' which is mapped to constraint key '{1}' must implement the '{2}' interface.</value>
   </data>
-  <data name="GeneralConstraints_ValidationMustBeStringOrCustomConstraint" xml:space="preserve">
-    <value>The constraint entry '{0}' must have a string value or be of a type which implements '{1}'.</value>
-  </data>
   <data name="TemplateRoute_CannotHaveCatchAllInMultiSegment" xml:space="preserve">
     <value>A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.</value>
   </data>
@@ -183,10 +180,10 @@
   <data name="TemplateRoute_RepeatedParameter" xml:space="preserve">
     <value>The route parameter name '{0}' appears more than one time in the route template.</value>
   </data>
-  <data name="TemplateRoute_ValidationMustBeStringOrCustomConstraint" xml:space="preserve">
-    <value>The constraint entry '{0}' on the route with route template '{1}' must have a string value or be of a type which implements '{2}'.</value>
+  <data name="RouteConstraintBuilder_ValidationMustBeStringOrCustomConstraint" xml:space="preserve">
+    <value>The constraint entry '{0}' - '{1}' on the route '{2}' must have a string value or be of a type which implements '{3}'.</value>
   </data>
-  <data name="InlineRouteParser_CouldNotResolveConstraint" xml:space="preserve">
-    <value>The inline constraint resolver of type '{0}' was unable to resolve the following inline constraint: '{1}'.</value>
+  <data name="RouteConstraintBuilder_CouldNotResolveConstraint" xml:space="preserve">
+    <value>The constraint entry '{0}' - '{1}' on the route '{2}' could not be resolved by the constraint resolver of type '{3}'.</value>
   </data>
 </root>

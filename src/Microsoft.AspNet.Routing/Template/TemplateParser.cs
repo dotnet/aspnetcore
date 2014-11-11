@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Routing.Template
         private const char QuestionMark = '?';
         private const char Asterisk = '*';
 
-        public static RouteTemplate Parse(string routeTemplate, IInlineConstraintResolver constraintResolver)
+        public static RouteTemplate Parse(string routeTemplate)
         {
             if (routeTemplate == null)
             {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Routing.Template
                 throw new ArgumentException(Resources.TemplateRoute_InvalidRouteTemplate, "routeTemplate");
             }
 
-            var context = new TemplateParserContext(routeTemplate, constraintResolver);
+            var context = new TemplateParserContext(routeTemplate);
             var segments = new List<TemplateSegment>();
 
             while (context.Next())
@@ -178,8 +178,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // At this point, we need to parse the raw name for inline constraint, 
             // default values and optional parameters. 
-            var templatePart = InlineRouteParameterParser.ParseRouteParameter(rawParameter,
-                                                                              context.ConstraintResolver);
+            var templatePart = InlineRouteParameterParser.ParseRouteParameter(rawParameter);
 
             if (templatePart.IsCatchAll && templatePart.IsOptional)
             {
@@ -406,13 +405,12 @@ namespace Microsoft.AspNet.Routing.Template
 
             private HashSet<string> _parameterNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            public TemplateParserContext(string template, IInlineConstraintResolver constraintResolver)
+            public TemplateParserContext(string template)
             {
                 Contract.Assert(template != null);
                 _template = template;
 
                 _index = -1;
-                ConstraintResolver = constraintResolver;
             }
 
             public char Current
@@ -429,12 +427,6 @@ namespace Microsoft.AspNet.Routing.Template
             public HashSet<string> ParameterNames
             { 
                 get { return _parameterNames; } 
-            }
-
-            public IInlineConstraintResolver ConstraintResolver
-            {
-                get;
-                private set;
             }
 
             public bool Back()

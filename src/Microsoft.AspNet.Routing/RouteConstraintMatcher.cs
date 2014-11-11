@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Routing
 {
     public static class RouteConstraintMatcher
     {
-        public static bool Match(IDictionary<string, IRouteConstraint> constraints,
+        public static bool Match(IReadOnlyDictionary<string, IRouteConstraint> constraints,
                                  [NotNull] IDictionary<string, object> routeValues,
                                  [NotNull] HttpContext httpContext,
                                  [NotNull] IRouter route,

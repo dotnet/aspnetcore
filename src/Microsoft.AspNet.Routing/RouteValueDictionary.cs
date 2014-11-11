@@ -12,8 +12,13 @@ namespace Microsoft.AspNet.Routing
     /// <summary>
     /// An <see cref="IDictionary{string, object}"/> type for route values.
     /// </summary>
-    public class RouteValueDictionary : IDictionary<string, object>
+    public class RouteValueDictionary : IDictionary<string, object>, IReadOnlyDictionary<string, object>
     {
+        /// <summary>
+        /// An empty, cached instance of <see cref="RouteValueDictionary"/>.
+        /// </summary>
+        internal static readonly IReadOnlyDictionary<string, object> Empty = new RouteValueDictionary();
+
         private readonly Dictionary<string, object> _dictionary;
 
         /// <summary>
@@ -139,6 +144,14 @@ namespace Microsoft.AspNet.Routing
             }
         }
 
+        IEnumerable<string> IReadOnlyDictionary<string, object>.Keys
+        {
+            get
+            {
+                return _dictionary.Keys;
+            }
+        }
+
         /// <inheritdoc />
         public Dictionary<string, object>.ValueCollection Values
         {
@@ -150,6 +163,14 @@ namespace Microsoft.AspNet.Routing
 
         /// <inheritdoc />
         ICollection<object> IDictionary<string, object>.Values
+        {
+            get
+            {
+                return _dictionary.Values;
+            }
+        }
+
+        IEnumerable<object> IReadOnlyDictionary<string, object>.Values
         {
             get
             {

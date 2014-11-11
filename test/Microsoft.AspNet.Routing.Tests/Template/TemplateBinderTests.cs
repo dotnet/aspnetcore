@@ -129,13 +129,14 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [MemberData("EmptyAndNullDefaultValues")]
         public void Binding_WithEmptyAndNull_DefaultValues(
             string template,
-            IDictionary<string, object> defaults,
+            IReadOnlyDictionary<string, object> defaults,
             IDictionary<string, object> values,
             string expected)
         {
             // Arrange
-            var binder = new TemplateBinder(TemplateParser.Parse(template, _inlineConstraintResolver),
-                                            defaults);
+            var binder = new TemplateBinder(
+                TemplateParser.Parse(template),
+                defaults);
 
             // Act & Assert
             var result = binder.GetValues(ambientValues: null, values: values);
@@ -962,13 +963,13 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         private static void RunTest(
             string template,
-            IDictionary<string, object> defaults,
+            IReadOnlyDictionary<string, object> defaults,
             IDictionary<string, object> ambientValues,
             IDictionary<string, object> values,
             string expected)
         {
             // Arrange
-            var binder = new TemplateBinder(TemplateParser.Parse(template, _inlineConstraintResolver), defaults);
+            var binder = new TemplateBinder(TemplateParser.Parse(template), defaults);
 
             // Act & Assert
             var result = binder.GetValues(ambientValues, values);

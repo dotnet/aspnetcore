@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.Routing.Template
 {
     public class TemplateBinder
     {
-        private readonly IDictionary<string, object> _defaults;
+        private readonly IReadOnlyDictionary<string, object> _defaults;
         private readonly RouteTemplate _template;
 
-        public TemplateBinder(RouteTemplate template, IDictionary<string, object> defaults)
+        public TemplateBinder(RouteTemplate template, IReadOnlyDictionary<string, object> defaults)
         {
             if (template == null)
             {
@@ -336,12 +336,14 @@ namespace Microsoft.AspNet.Routing.Template
         [DebuggerDisplay("{DebuggerToString(),nq}")]
         private class TemplateBindingContext
         {
-            private readonly IDictionary<string, object> _defaults;
+            private readonly IReadOnlyDictionary<string, object> _defaults;
 
             private readonly RouteValueDictionary _acceptedValues;
             private readonly RouteValueDictionary _filters;
 
-            public TemplateBindingContext(IDictionary<string, object> defaults, IDictionary<string, object> values)
+            public TemplateBindingContext(
+                IReadOnlyDictionary<string, object> defaults, 
+                IDictionary<string, object> values)
             {
                 if (values == null)
                 {
@@ -355,6 +357,10 @@ namespace Microsoft.AspNet.Routing.Template
                 if (_defaults != null)
                 {
                     _filters = new RouteValueDictionary(defaults);
+                    foreach (var kvp in _defaults)
+                    {
+                        _filters.Add(kvp.Key, kvp.Value);
+                    }
                 }
             }
 

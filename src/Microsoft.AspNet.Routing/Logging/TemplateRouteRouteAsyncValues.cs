@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Routing.Logging
         /// <summary>
         /// The values produced by default.
         /// </summary>
-        public IDictionary<string, object> DefaultValues { get; set; }
+        public IReadOnlyDictionary<string, object> DefaultValues { get; set; }
 
         /// <summary>
         /// The values produced from the request.
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Routing.Logging
         /// <summary>
         /// The constraints matched on the produced values.
         /// </summary>
-        public IDictionary<string, IRouteConstraint> Constraints { get; set; }
+        public IReadOnlyDictionary<string, IRouteConstraint> Constraints { get; set; }
 
         /// <summary>
         /// True if the <see cref="ProducedValues"/> matched.

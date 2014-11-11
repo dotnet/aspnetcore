@@ -27,8 +27,8 @@ namespace Microsoft.AspNet.Routing
         private static readonly Regex _parameterRegex = new Regex(
            "^" + ParameterNamePattern + ConstraintPattern + DefaultValueParameter + "$",
             RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-        public static TemplatePart ParseRouteParameter([NotNull] string routeParameter,
-                                                       [NotNull] IInlineConstraintResolver constraintResolver)
+
+        public static TemplatePart ParseRouteParameter([NotNull] string routeParameter)
         {
             var isCatchAll = routeParameter.StartsWith("*", StringComparison.Ordinal);
             var isOptional = routeParameter.EndsWith("?", StringComparison.Ordinal);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Routing
                                                     isCatchAll: isCatchAll,
                                                     isOptional: isOptional,
                                                     defaultValue: null,
-                                                    inlineConstraint: null);
+                                                    inlineConstraints: null);
             }
 
             var parameterName = parameterMatch.Groups["parameterName"].Value;
@@ -54,13 +54,13 @@ namespace Microsoft.AspNet.Routing
 
             // Register inline constraints if present
             var constraintGroup = parameterMatch.Groups["constraint"];
-            var inlineConstraint = GetInlineConstraint(constraintGroup, constraintResolver);
+            var inlineConstraints = GetInlineConstraints(constraintGroup);
             
             return TemplatePart.CreateParameter(parameterName,
                                                 isCatchAll,
                                                 isOptional,
                                                 defaultValue,
-                                                inlineConstraint); 
+                                                inlineConstraints); 
         }
 
         private static string GetDefaultValue(Group defaultValueGroup)
@@ -77,33 +77,16 @@ namespace Microsoft.AspNet.Routing
             return null;
         }
 
-        private static IRouteConstraint GetInlineConstraint(Group constraintGroup,
-                                                            IInlineConstraintResolver _constraintResolver)
+        private static IEnumerable<InlineConstraint> GetInlineConstraints(Group constraintGroup)
         {
-            var parameterConstraints = new List<IRouteConstraint>();
-            foreach (Capture constraintCapture in constraintGroup.Captures)
-            {
-                var inlineConstraint = constraintCapture.Value;
-                var constraint = _constraintResolver.ResolveConstraint(inlineConstraint);
-                if (constraint == null)
-                {
-                    throw new InvalidOperationException(
-                        Resources.FormatInlineRouteParser_CouldNotResolveConstraint(
-                                        _constraintResolver.GetType().Name, inlineConstraint));
-                }
+            var constraints = new List<InlineConstraint>();
 
-                parameterConstraints.Add(constraint);
+            foreach (Capture capture in constraintGroup.Captures)
+            {
+                constraints.Add(new InlineConstraint(capture.Value));
             }
 
-            if (parameterConstraints.Count > 0)
-            {
-                var constraint = parameterConstraints.Count == 1 ?
-                                            parameterConstraints[0] :
-                                            new CompositeRouteConstraint(parameterConstraints);
-                return constraint;
-            }
-
-            return null;
+            return constraints;
         }
     }
 }

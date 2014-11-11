@@ -14,9 +14,9 @@ namespace Microsoft.AspNet.Routing.Template
 {
     public class TemplateRoute : INamedRouter
     {
-        private readonly IDictionary<string, object> _defaults;
-        private readonly IDictionary<string, IRouteConstraint> _constraints;
-        private readonly IDictionary<string, object> _dataTokens;
+        private readonly IReadOnlyDictionary<string, IRouteConstraint> _constraints;
+        private readonly IReadOnlyDictionary<string, object> _dataTokens;
+        private readonly IReadOnlyDictionary<string, object> _defaults;
         private readonly IRouter _target;
         private readonly RouteTemplate _parsedTemplate;
         private readonly string _routeTemplate;
@@ -25,7 +25,10 @@ namespace Microsoft.AspNet.Routing.Template
         private ILogger _logger;
         private ILogger _constraintLogger;
 
-        public TemplateRoute(IRouter target, string routeTemplate, IInlineConstraintResolver inlineConstraintResolver)
+        public TemplateRoute(
+            [NotNull] IRouter target,
+            string routeTemplate, 
+            IInlineConstraintResolver inlineConstraintResolver)
                         : this(target,
                                routeTemplate,
                                defaults: null,
@@ -56,27 +59,28 @@ namespace Microsoft.AspNet.Routing.Template
             _target = target;
             _routeTemplate = routeTemplate ?? string.Empty;
             Name = routeName;
-            _defaults = defaults ?? new RouteValueDictionary();
-            _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate) ??
-                                                            new Dictionary<string, IRouteConstraint>();
-            _dataTokens = dataTokens ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
-            // The parser will throw for invalid routes.
-            _parsedTemplate = TemplateParser.Parse(RouteTemplate, inlineConstraintResolver);
-            UpdateInlineDefaultValuesAndConstraints();
+            _dataTokens = dataTokens == null ? RouteValueDictionary.Empty : new RouteValueDictionary(dataTokens);
 
-            _matcher = new TemplateMatcher(_parsedTemplate);
-            _binder = new TemplateBinder(_parsedTemplate, _defaults);
+            // Data we parse from the template will be used to fill in the rest of the constraints or
+            // defaults. The parser will throw for invalid routes.
+            _parsedTemplate = TemplateParser.Parse(RouteTemplate);
+
+            _constraints = GetConstraints(inlineConstraintResolver, RouteTemplate, _parsedTemplate, constraints);
+            _defaults = GetDefaults(_parsedTemplate, defaults);
+
+            _matcher = new TemplateMatcher(_parsedTemplate, Defaults);
+            _binder = new TemplateBinder(_parsedTemplate, Defaults);
         }
 
         public string Name { get; private set; }
 
-        public IDictionary<string, object> Defaults
+        public IReadOnlyDictionary<string, object> Defaults
         {
             get { return _defaults; }
         }
 
-        public IDictionary<string, object> DataTokens
+        public IReadOnlyDictionary<string, object> DataTokens
         {
             get { return _dataTokens; }
         }
@@ -86,7 +90,7 @@ namespace Microsoft.AspNet.Routing.Template
             get { return _routeTemplate; }
         }
 
-        public IDictionary<string, IRouteConstraint> Constraints
+        public IReadOnlyDictionary<string, IRouteConstraint> Constraints
         {
             get { return _constraints; }
         }
@@ -103,7 +107,7 @@ namespace Microsoft.AspNet.Routing.Template
                     requestPath = requestPath.Substring(1);
                 }
 
-                var values = _matcher.Match(requestPath, Defaults);
+                var values = _matcher.Match(requestPath);
 
                 if (values == null)
                 {
@@ -252,38 +256,59 @@ namespace Microsoft.AspNet.Routing.Template
             };
         }
 
-        private void UpdateInlineDefaultValuesAndConstraints()
+        private static IReadOnlyDictionary<string, IRouteConstraint> GetConstraints(
+            IInlineConstraintResolver inlineConstraintResolver,
+            string template,
+            RouteTemplate parsedTemplate, 
+            IDictionary<string, object> constraints)
         {
-            foreach (var parameter in _parsedTemplate.Parameters)
-            {
-                if (parameter.InlineConstraint != null)
-                {
-                    IRouteConstraint constraint;
-                    if (_constraints.TryGetValue(parameter.Name, out constraint))
-                    {
-                        _constraints[parameter.Name] =
-                            new CompositeRouteConstraint(new[] { constraint, parameter.InlineConstraint });
-                    }
-                    else
-                    {
-                        _constraints[parameter.Name] = parameter.InlineConstraint;
-                    }
-                }
+            var constraintBuilder = new RouteConstraintBuilder(inlineConstraintResolver, template);
 
+            if (constraints != null)
+            {
+                foreach (var kvp in constraints)
+                {
+                    constraintBuilder.AddConstraint(kvp.Key, kvp.Value);
+                }
+            }
+
+            foreach (var parameter in parsedTemplate.Parameters)
+            {
+                foreach (var inlineConstraint in parameter.InlineConstraints)
+                {
+                    constraintBuilder.AddResolvedConstraint(parameter.Name, inlineConstraint.Constraint);
+                }
+            }
+
+            return constraintBuilder.Build();
+        }
+
+        private static RouteValueDictionary GetDefaults(
+            RouteTemplate parsedTemplate,
+            IDictionary<string, object> defaults)
+        {
+            // Do not use RouteValueDictionary.Empty for defaults, it might be modified inside
+            // UpdateInlineDefaultValuesAndConstraints()
+            var result = defaults == null ? new RouteValueDictionary() : new RouteValueDictionary(defaults);
+
+            foreach (var parameter in parsedTemplate.Parameters)
+            {
                 if (parameter.DefaultValue != null)
                 {
-                    if (_defaults.ContainsKey(parameter.Name))
+                    if (result.ContainsKey(parameter.Name))
                     {
                         throw new InvalidOperationException(
-                          Resources
-                            .FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(parameter.Name));
+                          Resources.FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(
+                              parameter.Name));
                     }
                     else
                     {
-                        _defaults[parameter.Name] = parameter.DefaultValue;
+                        result.Add(parameter.Name, parameter.DefaultValue);
                     }
                 }
             }
+
+            return result;
         }
 
         private TemplateRouteRouteAsyncValues CreateRouteAsyncValues(
@@ -310,6 +335,20 @@ namespace Microsoft.AspNet.Routing.Template
         private static void MergeValues(
             IDictionary<string, object> destination,
             IDictionary<string, object> values)
+        {
+            foreach (var kvp in values)
+            {
+                // This will replace the original value for the specified key.
+                // Values from the matched route will take preference over previous
+                // data in the route context.
+                destination[kvp.Key] = kvp.Value;
+            }
+        }
+
+        // Needed because IDictionary<> is not an IReadOnlyDictionary<>
+        private static void MergeValues(
+            IDictionary<string, object> destination,
+            IReadOnlyDictionary<string, object> values)
         {
             foreach (var kvp in values)
             {

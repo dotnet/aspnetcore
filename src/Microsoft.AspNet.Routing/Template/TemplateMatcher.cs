@@ -14,26 +14,21 @@ namespace Microsoft.AspNet.Routing.Template
 
         private static readonly char[] Delimiters = new char[] { SeparatorChar };
 
-        public TemplateMatcher(RouteTemplate template)
+        public TemplateMatcher(
+            [NotNull] RouteTemplate template,
+            [NotNull] IReadOnlyDictionary<string, object> defaults)
         {
-            if (template == null)
-            {
-                throw new ArgumentNullException("template");
-            }
-
             Template = template;
+            Defaults = defaults ?? RouteValueDictionary.Empty;
         }
+
+        public IReadOnlyDictionary<string, object> Defaults { get; private set; }
 
         public RouteTemplate Template { get; private set; }
 
-        public IDictionary<string, object> Match(string requestPath, IDictionary<string, object> defaults)
+        public IDictionary<string, object> Match([NotNull] string requestPath)
         {
             var requestSegments = requestPath.Split(Delimiters);
-
-            if (defaults == null)
-            {
-                defaults = new RouteValueDictionary();
-            }
 
             var values = new RouteValueDictionary();
 
@@ -77,7 +72,7 @@ namespace Microsoft.AspNet.Routing.Template
                             {
                                 // It's ok for a catch-all to produce a null value
                                 object defaultValue;
-                                defaults.TryGetValue(part.Name, out defaultValue);
+                                Defaults.TryGetValue(part.Name, out defaultValue);
 
                                 values.Add(part.Name, defaultValue);
                             }
@@ -94,7 +89,7 @@ namespace Microsoft.AspNet.Routing.Template
                             else
                             {
                                 object defaultValue;
-                                if (defaults.TryGetValue(part.Name, out defaultValue))
+                                if (Defaults.TryGetValue(part.Name, out defaultValue))
                                 {
                                     values.Add(part.Name, defaultValue);
                                 }
@@ -114,7 +109,7 @@ namespace Microsoft.AspNet.Routing.Template
                 }
                 else
                 {
-                    if (!MatchComplexSegment(routeSegment, requestSegment, defaults, values))
+                    if (!MatchComplexSegment(routeSegment, requestSegment, Defaults, values))
                     {
                         return null;
                     }
@@ -142,7 +137,7 @@ namespace Microsoft.AspNet.Routing.Template
 
                 // It's ok for a catch-all to produce a null value
                 object defaultValue;
-                if (defaults.TryGetValue(part.Name, out defaultValue) || part.IsCatchAll)
+                if (Defaults.TryGetValue(part.Name, out defaultValue) || part.IsCatchAll)
                 {
                     values.Add(part.Name, defaultValue);
                 }
@@ -158,14 +153,11 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             // Copy all remaining default values to the route data
-            if (defaults != null)
+            foreach (var kvp in Defaults)
             {
-                foreach (var kvp in defaults)
+                if (!values.ContainsKey(kvp.Key))
                 {
-                    if (!values.ContainsKey(kvp.Key))
-                    {
-                        values.Add(kvp.Key, kvp.Value);
-                    }
+                    values.Add(kvp.Key, kvp.Value);
                 }
             }
 
@@ -174,7 +166,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         private bool MatchComplexSegment(TemplateSegment routeSegment,
                                          string requestSegment,
-                                         IDictionary<string, object> defaults,
+                                         IReadOnlyDictionary<string, object> defaults,
                                          RouteValueDictionary values)
         {
             Contract.Assert(routeSegment != null);
@@ -214,7 +206,7 @@ namespace Microsoft.AspNet.Routing.Template
                         return false;
                     }
 
-                    var indexOfLiteral = requestSegment.LastIndexOf(part.Text, 
+                    var indexOfLiteral = requestSegment.LastIndexOf(part.Text,
                                                                     startIndex,
                                                                     StringComparison.OrdinalIgnoreCase);
                     if (indexOfLiteral == -1)
@@ -237,7 +229,7 @@ namespace Microsoft.AspNet.Routing.Template
                     newLastIndex = indexOfLiteral;
                 }
 
-                if ((parameterNeedsValue != null) && 
+                if ((parameterNeedsValue != null) &&
                     (((lastLiteral != null) && (part.IsLiteral)) || (indexOfLastSegmentUsed == 0)))
                 {
                     // If we have a pending parameter that needs a value, grab that value

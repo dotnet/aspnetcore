@@ -139,22 +139,6 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The constraint entry '{0}' must have a string value or be of a type which implements '{1}'.
-        /// </summary>
-        internal static string GeneralConstraints_ValidationMustBeStringOrCustomConstraint
-        {
-            get { return GetString("GeneralConstraints_ValidationMustBeStringOrCustomConstraint"); }
-        }
-
-        /// <summary>
-        /// The constraint entry '{0}' must have a string value or be of a type which implements '{1}'.
-        /// </summary>
-        internal static string FormatGeneralConstraints_ValidationMustBeStringOrCustomConstraint(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("GeneralConstraints_ValidationMustBeStringOrCustomConstraint"), p0, p1);
-        }
-
-        /// <summary>
         /// A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.
         /// </summary>
         internal static string TemplateRoute_CannotHaveCatchAllInMultiSegment
@@ -363,35 +347,35 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The constraint entry '{0}' on the route with route template '{1}' must have a string value or be of a type which implements '{2}'.
+        /// The constraint entry '{0}' - '{1}' on route '{2}' must have a string value or be of a type which implements '{3}'.
         /// </summary>
-        internal static string TemplateRoute_ValidationMustBeStringOrCustomConstraint
+        internal static string RouteConstraintBuilder_ValidationMustBeStringOrCustomConstraint
         {
-            get { return GetString("TemplateRoute_ValidationMustBeStringOrCustomConstraint"); }
+            get { return GetString("RouteConstraintBuilder_ValidationMustBeStringOrCustomConstraint"); }
         }
 
         /// <summary>
-        /// The constraint entry '{0}' on the route with route template '{1}' must have a string value or be of a type which implements '{2}'.
+        /// The constraint entry '{0}' - '{1}' on route '{2}' must have a string value or be of a type which implements '{3}'.
         /// </summary>
-        internal static string FormatTemplateRoute_ValidationMustBeStringOrCustomConstraint(object p0, object p1, object p2)
+        internal static string FormatRouteConstraintBuilder_ValidationMustBeStringOrCustomConstraint(object p0, object p1, object p2, object p3)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_ValidationMustBeStringOrCustomConstraint"), p0, p1, p2);
+            return string.Format(CultureInfo.CurrentCulture, GetString("RouteConstraintBuilder_ValidationMustBeStringOrCustomConstraint"), p0, p1, p2, p3);
         }
 
         /// <summary>
-        /// The inline constraint resolver of type '{0}' was unable to resolve the following inline constraint: '{1}'.
+        /// The constraint entry '{0}' - '{1}' on route '{2}' could not be resolved by the constraint resolver of type '{3}'.
         /// </summary>
-        internal static string InlineRouteParser_CouldNotResolveConstraint
+        internal static string RouteConstraintBuilder_CouldNotResolveConstraint
         {
-            get { return GetString("InlineRouteParser_CouldNotResolveConstraint"); }
+            get { return GetString("RouteConstraintBuilder_CouldNotResolveConstraint"); }
         }
 
         /// <summary>
-        /// The inline constraint resolver of type '{0}' was unable to resolve the following inline constraint: '{1}'.
+        /// The constraint entry '{0}' - '{1}' on route '{2}' could not be resolved by the constraint resolver of type '{3}'.
         /// </summary>
-        internal static string FormatInlineRouteParser_CouldNotResolveConstraint(object p0, object p1)
+        internal static string FormatRouteConstraintBuilder_CouldNotResolveConstraint(object p0, object p1, object p2, object p3)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("InlineRouteParser_CouldNotResolveConstraint"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("RouteConstraintBuilder_CouldNotResolveConstraint"), p0, p1, p2, p3);
         }
 
         private static string GetString(string name, params string[] formatterNames)
