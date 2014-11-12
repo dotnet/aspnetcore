@@ -87,6 +87,8 @@ namespace Microsoft.AspNet.Identity
         public virtual void SignOut()
         {
             Context.Response.SignOut(IdentityOptions.ApplicationCookieAuthenticationType);
+            Context.Response.SignOut(IdentityOptions.ExternalCookieAuthenticationType);
+            Context.Response.SignOut(IdentityOptions.TwoFactorUserIdCookieAuthenticationType);
         }
 
         private async Task<bool> IsLockedOut(TUser user, CancellationToken token)

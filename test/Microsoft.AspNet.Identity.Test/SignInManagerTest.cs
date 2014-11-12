@@ -485,6 +485,8 @@ namespace Microsoft.AspNet.Identity.Test
             var response = new Mock<HttpResponse>();
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
             response.Setup(r => r.SignOut(authenticationType)).Verifiable();
+            response.Setup(r => r.SignOut(IdentityOptions.TwoFactorUserIdCookieAuthenticationType)).Verifiable();
+            response.Setup(r => r.SignOut(IdentityOptions.ExternalCookieAuthenticationType)).Verifiable();
             var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
             var roleManager = MockHelpers.MockRoleManager<TestRole>();
