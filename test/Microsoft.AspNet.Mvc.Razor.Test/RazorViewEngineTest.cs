@@ -83,6 +83,32 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             Assert.False(result.Success);
         }
 
+        [Fact]
+        public void FindPartialView_ReturnsRazorView_IfLookupWasSuccessful()
+        {
+            // Arrange
+            var pageFactory = new Mock<IRazorPageFactory>();
+            var viewFactory = new Mock<IRazorViewFactory>();
+            var page = Mock.Of<IRazorPage>();
+
+            pageFactory.Setup(p => p.CreateInstance(It.IsAny<string>()))
+                       .Returns(Mock.Of<IRazorPage>());
+            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorPage>(), It.IsAny<bool>()))
+                       .Returns(Mock.Of<IView>()).Verifiable();
+
+            var viewEngine = CreateViewEngine(pageFactory.Object, viewFactory.Object);
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act
+            var result = viewEngine.FindPartialView(context, "test-view");
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.IsAssignableFrom<IView>(result.View);
+            Assert.Equal("/Views/bar/test-view.cshtml", result.ViewName);
+            viewFactory.Verify();
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -216,7 +242,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             pageFactory.Setup(p => p.CreateInstance(It.IsAny<string>()))
                        .Returns(Mock.Of<IRazorPage>());
             viewFactory.Setup(p => p.GetView(It.IsAny<IRazorPage>(), It.IsAny<bool>()))
-                       .Returns(Mock.Of<IView>());
+                       .Returns(Mock.Of<IView>()).Verifiable();
 
             var viewEngine = CreateViewEngine(pageFactory.Object, viewFactory.Object);
             var context = GetActionContext(_controllerTestContext);
@@ -228,6 +254,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             Assert.True(result.Success);
             Assert.IsAssignableFrom<IView>(result.View);
             Assert.Equal("/Views/bar/test-view.cshtml", result.ViewName);
+            viewFactory.Verify();
         }
 
         [Fact]
@@ -356,7 +383,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Assert
             Assert.True(result.Success);
-            Assert.IsAssignableFrom<RazorView>(result.View);
+            Assert.IsAssignableFrom<IView>(result.View);
             pageFactory.Verify();
             expander1.Verify();
             expander2.Verify();
@@ -445,8 +472,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                        .Verifiable();
 
             var viewFactory = new Mock<IRazorViewFactory>();
-            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorPage>(), It.IsAny<bool>()))
-                       .Returns(Mock.Of<IView>());
+            viewFactory.Setup(p => p.GetView(It.IsAny<IRazorPage>(), It.IsAny<bool>())).Returns(Mock.Of<IView>());
 
             var cacheMock = new Mock<IViewLocationCache>();
             cacheMock.Setup(c => c.Get(It.IsAny<ViewLocationExpanderContext>()))
@@ -463,9 +489,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             var viewEngine = CreateViewEngine(pageFactory.Object,
                                               viewFactory.Object,
-                                              new[] { expander.Object },
-                                              cacheMock.Object);
-            var context = GetActionContext(_controllerTestContext);
+                                              expanders: new[] { expander.Object },
+                                              cache: cacheMock.Object);
+            var context = GetActionContext(_controllerTestContext, viewFactory.Object);
 
             // Act
             var result = viewEngine.FindView(context, "baz");
@@ -520,8 +546,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             var httpContext = new DefaultHttpContext();
             var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(p => p.GetService(typeof(IRazorViewFactory)))
-                           .Returns(razorViewFactory ?? Mock.Of<IRazorViewFactory>());
 
             httpContext.RequestServices = serviceProvider.Object;
 

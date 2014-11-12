@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         };
 
         private readonly IRazorPageFactory _pageFactory;
-        private readonly IRazorViewFactory _pageViewFactory;
+        private readonly IRazorViewFactory _viewFactory;
         private readonly IReadOnlyList<IViewLocationExpander> _viewLocationExpanders;
         private readonly IViewLocationCache _viewLocationCache;
 
@@ -43,12 +43,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="pageFactory">The page factory used for creating <see cref="IRazorPage"/> instances.</param>
         public RazorViewEngine(IRazorPageFactory pageFactory,
-                               IRazorViewFactory pageViewFactory,
+                               IRazorViewFactory viewFactory,
                                IViewLocationExpanderProvider viewLocationExpanderProvider,
                                IViewLocationCache viewLocationCache)
         {
             _pageFactory = pageFactory;
-            _pageViewFactory = pageViewFactory;
+            _viewFactory = viewFactory;
             _viewLocationExpanders = viewLocationExpanderProvider.ViewLocationExpanders;
             _viewLocationCache = viewLocationCache;
         }
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var services = actionContext.HttpContext.RequestServices;
 
-            var view = _pageViewFactory.GetView(page, partial);
+            var view = _viewFactory.GetView(page, partial);
 
             return ViewEngineResult.Found(viewName, view);
         }

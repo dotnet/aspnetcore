@@ -5,6 +5,10 @@ using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
+    /// <summary>
+    /// Represents the default <see cref="IRazorViewFactory"/> implementation that creates 
+    /// <see cref="RazorView"/> instances with a given <see cref="IRazorPage"/>.
+    /// </summary>
     public class RazorViewFactory : IRazorViewFactory
     {
         private readonly IRazorPageActivator _pageActivator;
@@ -19,8 +23,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="viewStartProvider">The <see cref="IViewStartProvider"/> used for discovery of _ViewStart
         /// pages</param>
         public RazorViewFactory(IRazorPageFactory pageFactory,
-                         IRazorPageActivator pageActivator,
-                         IViewStartProvider viewStartProvider)
+                                IRazorPageActivator pageActivator,
+                                IViewStartProvider viewStartProvider)
         {
             _pageFactory = pageFactory;
             _pageActivator = pageActivator;
@@ -30,10 +34,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public IView GetView([NotNull] IRazorPage page, bool isPartial)
         {
-            var razorView = new RazorView(_pageFactory, _pageActivator, _viewStartProvider);
-
-            razorView.Contextualize(page, isPartial);
-
+            var razorView = new RazorView(_pageFactory, _pageActivator, _viewStartProvider, page, isPartial);
             return razorView;
         }
     }

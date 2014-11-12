@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
     /// Default implementation for <see cref="IView"/> that executes one or more <see cref="IRazorPage"/> 
-    /// instances as part of view rendering.
+    /// as parts of its exeuction.
     /// </summary>
     public class RazorView : IView
     {
@@ -19,8 +19,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IRazorPageActivator _pageActivator;
         private readonly IViewStartProvider _viewStartProvider;
         private IPageExecutionListenerFeature _pageExecutionFeature;
-        private IRazorPage _razorPage;
-        private bool _isPartial;
 
         /// <summary>
         /// Initializes a new instance of RazorView
@@ -28,52 +26,52 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="pageFactory">The page factory used to instantiate layout and _ViewStart pages.</param>
         /// <param name="pageActivator">The <see cref="IRazorPageActivator"/> used to activate pages.</param>
         /// <param name="viewStartProvider">The <see cref="IViewStartProvider"/> used for discovery of _ViewStart
+        /// <param name="razorPage">The <see cref="IRazorPage"/> instance to execute.</param>
+        /// <param name="isPartial">Determines if the view is to be executed as a partial.</param>
         /// pages</param>
         public RazorView(IRazorPageFactory pageFactory,
                          IRazorPageActivator pageActivator,
-                         IViewStartProvider viewStartProvider)
+                         IViewStartProvider viewStartProvider,
+                         IRazorPage razorPage,
+                         bool isPartial 
+            )
         {
             _pageFactory = pageFactory;
             _pageActivator = pageActivator;
             _viewStartProvider = viewStartProvider;
+            RazorPage = razorPage;
+            IsPartial = isPartial;
         }
+
+        /// <summary>
+        /// Gets <see cref="IRazorPage"/> instance that the views executes on. 
+        /// </summary>
+        public IRazorPage RazorPage { get; }
+
+        /// <summary>
+        /// Gets a value that determines if the view is executed as a partial.
+        /// </summary>
+        /// <inheritdoc />
+        public bool IsPartial { get; }
+
 
         private bool EnableInstrumentation
         {
             get { return _pageExecutionFeature != null; }
         }
 
-        /// <summary>
-        /// Contextualizes the current instance of the <see cref="RazorView"/> providing it with the 
-        /// <see cref="IRazorPage"/> to execute.
-        /// </summary>
-        /// <param name="razorPage">The <see cref="IRazorPage"/> instance to execute.</param>
-        /// <param name="isPartial">Determines if the view is to be executed as a partial.</param>
-        public virtual void Contextualize([NotNull] IRazorPage razorPage,
-                                          bool isPartial)
-        {
-            _razorPage = razorPage;
-            _isPartial = isPartial;
-        }
-
         /// <inheritdoc />
         public virtual async Task RenderAsync([NotNull] ViewContext context)
         {
-            if (_razorPage == null)
-            {
-                var message = Resources.FormatViewMustBeContextualized(nameof(Contextualize), nameof(RenderAsync));
-                throw new InvalidOperationException(message);
-            }
-
             _pageExecutionFeature = context.HttpContext.GetFeature<IPageExecutionListenerFeature>();
 
-            if (_isPartial)
+            if (IsPartial)
             {
                 await RenderPartialAsync(context);
             }
             else
             {
-                var bodyWriter = await RenderPageAsync(_razorPage, context, executeViewStart: true);
+                var bodyWriter = await RenderPageAsync(RazorPage, context, executeViewStart: true);
                 await RenderLayoutAsync(context, bodyWriter);
             }
         }
@@ -84,14 +82,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 // When instrmenting, we need to Decorate the output in an instrumented writer which
                 // RenderPageAsync does.
-                var bodyWriter = await RenderPageAsync(_razorPage, context, executeViewStart: false);
+                var bodyWriter = await RenderPageAsync(RazorPage, context, executeViewStart: false);
                 await bodyWriter.CopyToAsync(context.Writer);
             }
             else
             {
                 // For the non-instrumented case, we don't need to buffer contents. For Html.Partial, the writer is 
                 // an in memory writer and for Partial views, we directly write to the Response.
-                await RenderPageCoreAsync(_razorPage, context);
+                await RenderPageCoreAsync(RazorPage, context);
             }
         }
 
@@ -142,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private async Task RenderPageCoreAsync(IRazorPage page, ViewContext context)
         {
-            page.IsPartial = _isPartial;
+            page.IsPartial = IsPartial;
             page.ViewContext = context;
             if (EnableInstrumentation)
             {
@@ -155,7 +153,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private async Task RenderViewStartAsync(ViewContext context)
         {
-            var viewStarts = _viewStartProvider.GetViewStartPages(_razorPage.Path);
+            var viewStarts = _viewStartProvider.GetViewStartPages(RazorPage.Path);
 
             string layout = null;
             foreach (var viewStart in viewStarts)
@@ -167,7 +165,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             // Copy over interesting properties from the ViewStart page to the entry page.
-            _razorPage.Layout = layout;
+            RazorPage.Layout = layout;
         }
 
         private async Task RenderLayoutAsync(ViewContext context,
@@ -175,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // A layout page can specify another layout page. We'll need to continue
             // looking for layout pages until they're no longer specified.
-            var previousPage = _razorPage;
+            var previousPage = RazorPage;
             while (!string.IsNullOrEmpty(previousPage.Layout))
             {
                 if (!bodyWriter.IsBuffering)
