@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -70,9 +71,42 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 result.Routers);
         }
 
+        // Verifies that components in the MVC pipeline can modify datatokens
+        // without impacting any static data.
+        //
+        // This does two request, to verify that the data in the route is not modified
+        [Fact]
+        public async Task RouteData_DataTokens_FilterCanSetDataTokens()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var response = await client.GetAsync("http://localhost/Routing/DataTokens");
+
+            // Guard
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<ResultData>(body);
+            Assert.Single(result.DataTokens);
+            Assert.Single(result.DataTokens, kvp => kvp.Key == "actionName" && ((string)kvp.Value) == "DataTokens");
+
+            // Act
+            response = await client.GetAsync("http://localhost/Routing/Conventional");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            body = await response.Content.ReadAsStringAsync();
+            result = JsonConvert.DeserializeObject<ResultData>(body);
+
+            Assert.Single(result.DataTokens);
+            Assert.Single(result.DataTokens, kvp => kvp.Key == "actionName" && ((string)kvp.Value) == "Conventional");
+        }
 
         private class ResultData
         {
+            public Dictionary<string, object> DataTokens { get; set; }
+
             public string[] Routers { get; set; }
         }
     }

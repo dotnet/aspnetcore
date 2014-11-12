@@ -19,10 +19,29 @@ namespace BasicWebSite
             return GetData();
         }
 
+        public object DataTokens()
+        {
+            return GetData();
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            if (!context.RouteData.DataTokens.ContainsKey("actionName"))
+            {
+                context.RouteData.DataTokens.Add("actionName", context.ActionDescriptor.Name);
+            }
+        }
+
         private object GetData()
         {
             var routers = ActionContext.RouteData.Routers.Select(r => r.GetType().FullName).ToArray();
-            return new { Routers = routers };
+            var dataTokens = ActionContext.RouteData.DataTokens;
+
+            return new
+            {
+                DataTokens = dataTokens,
+                Routers = routers
+            };
         }
     }
 }
