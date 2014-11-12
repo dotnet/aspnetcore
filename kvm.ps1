@@ -38,7 +38,7 @@ function String-IsEmptyOrWhitespace([string]$str) {
 
 if (!$feed)
 {
-    $feed = "https://www.myget.org/F/aspnetrelease/api/v2";
+    $feed = "https://www.myget.org/F/aspnetmaster/api/v2";
 }
 
 $scriptPath = $myInvocation.MyCommand.Definition
