@@ -49,8 +49,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string name);
 
         /// <summary>
-        /// Generate a &lt;form&gt; element. When the user submits the form, the <paramref name="actionName"/> method
-        /// will process the request.
+        /// Generate a &lt;form&gt; element. When the user submits the form, the action with name
+        /// <paramref name="actionName"/> will process the request.
         /// </summary>
         /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
         /// <param name="actionName">The name of the action method.</param>
@@ -78,8 +78,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes);
 
         /// <summary>
-        /// Generate a &lt;form&gt; element. When the user submits the form, the <paramref name="routeName"/> route
-        /// will forward the request to an action method.
+        /// Generate a &lt;form&gt; element. The route with name <paramref name="routeName"/> generates the
+        /// &lt;form&gt;'s <c>action</c> attribute value.
         /// </summary>
         /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
         /// <param name="routeName">The name of the route.</param>

@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         /// <inheritdoc />
         public TagBuilder GenerateRouteForm(
-            [NotNull]ViewContext viewContext,
+            [NotNull] ViewContext viewContext,
             string routeName,
             object routeValues,
             string method,
@@ -810,7 +810,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             if (string.IsNullOrEmpty(method))
             {
                 // Occurs only when called from a tag helper.
-                method = FormMethod.Post.ToString();
+                method = FormMethod.Post.ToString().ToLowerInvariant();
             }
 
             // For tag helpers, htmlAttributes will be null; replaceExisting value does not matter.

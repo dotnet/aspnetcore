@@ -9,9 +9,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
     public static class HtmlHelperFormExtensions
     {
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form,
-        /// the request will be processed by same action. That is the rendered URL will match the current
-        /// request.
+        /// Renders a &lt;form&gt; start tag to the response. The &lt;form&gt;'s <c>action</c> attribute value will
+        /// match the current request.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <returns>
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         /// <summary>
         /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// current action method will process the request.
+        /// current action will process the request.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
@@ -47,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         /// <summary>
         /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// current action method will process the request.
+        /// current action will process the request.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
@@ -73,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         /// <summary>
         /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// current action method will process the request.
+        /// current action will process the request.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="routeValues">
@@ -96,8 +95,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="actionName"/> method will process the request.
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the action with name
+        /// <paramref name="actionName"/> will process the request.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="actionName">The name of the action method.</param>
@@ -118,8 +117,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="actionName"/> method will process the request.
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the action with name
+        /// <paramref name="actionName"/> will process the request.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="actionName">The name of the action method.</param>
@@ -148,8 +147,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="actionName"/> method will process the request.
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the action with name
+        /// <paramref name="actionName"/> will process the request.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="actionName">The name of the action method.</param>
@@ -172,8 +171,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="actionName"/> method will process the request.
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the action with name
+        /// <paramref name="actionName"/> will process the request.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="actionName">The name of the action method.</param>
@@ -204,8 +203,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="actionName"/> method will process the request.
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the action with name
+        /// <paramref name="actionName"/> will process the request.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="actionName">The name of the action method.</param>
@@ -234,8 +233,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// default route will forward the request to an action method.
+        /// Renders a &lt;form&gt; start tag to the response. The first route that can provide a URL with the
+        /// specified <paramref name="routeValues"/> generates the &lt;form&gt;'s <c>action</c> attribute value.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="routeValues">
@@ -261,8 +260,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="routeName"/> route will forward the request to an action method.
+        /// Renders a &lt;form&gt; start tag to the response. The route with name <paramref name="routeName"/>
+        /// generates the &lt;form&gt;'s <c>action</c> attribute value.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="routeName">The name of the route.</param>
@@ -282,8 +281,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="routeName"/> route will forward the request to an action method.
+        /// Renders a &lt;form&gt; start tag to the response. The route with name <paramref name="routeName"/>
+        /// generates the &lt;form&gt;'s <c>action</c> attribute value.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="routeName">The name of the route.</param>
@@ -309,8 +308,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="routeName"/> route will forward the request to an action method.
+        /// Renders a &lt;form&gt; start tag to the response. The route with name <paramref name="routeName"/>
+        /// generates the &lt;form&gt;'s <c>action</c> attribute value.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="routeName">The name of the route.</param>
@@ -330,8 +329,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="routeName"/> route will forward the request to an action method.
+        /// Renders a &lt;form&gt; start tag to the response. The route with name <paramref name="routeName"/>
+        /// generates the &lt;form&gt;'s <c>action</c> attribute value.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="routeName">The name of the route.</param>
@@ -359,8 +358,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="routeName"/> route will forward the request to an action method.
+        /// Renders a &lt;form&gt; start tag to the response. The route with name <paramref name="routeName"/>
+        /// generates the &lt;form&gt;'s <c>action</c> attribute value.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="routeName">The name of the route.</param>

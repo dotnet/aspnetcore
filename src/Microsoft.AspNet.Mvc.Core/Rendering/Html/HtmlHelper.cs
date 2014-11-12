@@ -617,7 +617,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         /// <summary>
         /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="actionName"/> method will process the request.
+        /// the action with name <paramref name="actionName"/> will process the request.
         /// </summary>
         /// <param name="actionName">The name of the action method.</param>
         /// <param name="controllerName">The name of the controller.</param>
@@ -661,8 +661,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// <paramref name="routeName"/> route will forward the request to an action method.
+        /// Renders a &lt;form&gt; start tag to the response. The route with name <paramref name="routeName"/>
+        /// generates the &lt;form&gt;'s <c>action</c> attribute value.
         /// </summary>
         /// <param name="routeName">The name of the route.</param>
         /// <param name="routeValues">
@@ -894,7 +894,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected virtual string GenerateValue(string name, object value, string format, bool useViewData)
         {
             var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, name);
-            var attemptedValue = 
+            var attemptedValue =
                 (string)DefaultHtmlGenerator.GetModelStateValue(ViewContext, fullName, typeof(string));
 
             string resolvedValue;
