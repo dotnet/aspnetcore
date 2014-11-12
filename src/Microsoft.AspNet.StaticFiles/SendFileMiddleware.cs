@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.StaticFiles
 {
@@ -20,14 +21,17 @@ namespace Microsoft.AspNet.StaticFiles
     public class SendFileMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Creates a new instance of the SendFileMiddleware.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
-        public SendFileMiddleware([NotNull] RequestDelegate next)
+        /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
+        public SendFileMiddleware([NotNull] RequestDelegate next, [NotNull] ILoggerFactory loggerFactory)
         {
             _next = next;
+            _logger = loggerFactory.Create<SendFileMiddleware>();
         }
 
         public Task Invoke(HttpContext context)
@@ -35,7 +39,7 @@ namespace Microsoft.AspNet.StaticFiles
             // Check if there is a SendFile feature already present
             if (context.GetFeature<IHttpSendFileFeature>() == null)
             {
-                context.SetFeature<IHttpSendFileFeature>(new SendFileWrapper(context.Response.Body));
+                context.SetFeature<IHttpSendFileFeature>(new SendFileWrapper(context.Response.Body, _logger));
             }
 
             return _next(context);
@@ -44,10 +48,12 @@ namespace Microsoft.AspNet.StaticFiles
         private class SendFileWrapper : IHttpSendFileFeature
         {
             private readonly Stream _output;
+            private readonly ILogger _logger;
 
-            internal SendFileWrapper(Stream output)
+            internal SendFileWrapper(Stream output, ILogger logger)
             {
                 _output = output;
+                _logger = logger;
             }
 
             // Not safe for overlapped writes.
@@ -86,6 +92,10 @@ namespace Microsoft.AspNet.StaticFiles
                 try
                 {
                     fileStream.Seek(offset, SeekOrigin.Begin);
+                    if (_logger.IsEnabled(LogLevel.Verbose))
+                    {
+                        _logger.WriteVerbose(string.Format("Copying bytes {0}-{1} of file {2} to response body", offset, length != null ? (offset + length).ToString() : "*", fileName));
+                    }
                     await StreamCopyOperation.CopyToAsync(fileStream, _output, length, cancel);
                 }
                 finally

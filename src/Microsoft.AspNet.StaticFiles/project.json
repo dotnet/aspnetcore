@@ -6,7 +6,8 @@
         "Microsoft.AspNet.Hosting": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.AspNet.HttpFeature": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.AspNet.HttpFeature": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Framework.Logging": "1.0.0-*"
     },
     "frameworks": {
         "aspnet50": { },

@@ -7,6 +7,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.StaticFiles
 {
@@ -18,13 +19,15 @@ namespace Microsoft.AspNet.StaticFiles
         private readonly StaticFileOptions _options;
         private readonly PathString _matchUrl;
         private readonly RequestDelegate _next;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Creates a new instance of the StaticFileMiddleware.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="options">The configuration options.</param>
-        public StaticFileMiddleware([NotNull] RequestDelegate next, [NotNull] IHostingEnvironment hostingEnv, [NotNull] StaticFileOptions options)
+        /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
+        public StaticFileMiddleware([NotNull] RequestDelegate next, [NotNull] IHostingEnvironment hostingEnv, [NotNull] StaticFileOptions options, [NotNull] ILoggerFactory loggerFactory)
         {
             if (options.ContentTypeProvider == null)
             {
@@ -35,6 +38,7 @@ namespace Microsoft.AspNet.StaticFiles
             _next = next;
             _options = options;
             _matchUrl = options.RequestPath;
+            _logger = loggerFactory.Create<StaticFileMiddleware>();
         }
 
         /// <summary>
@@ -44,7 +48,7 @@ namespace Microsoft.AspNet.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            var fileContext = new StaticFileContext(context, _options, _matchUrl);
+            var fileContext = new StaticFileContext(context, _options, _matchUrl, _logger);
             if (fileContext.ValidateMethod()
                 && fileContext.ValidatePath()
                 && fileContext.LookupContentType()
@@ -64,16 +68,26 @@ namespace Microsoft.AspNet.StaticFiles
                         {
                             return fileContext.SendRangeAsync();
                         }
+                        if (_logger.IsEnabled(LogLevel.Verbose))
+                        {
+                            _logger.WriteVerbose(string.Format("Copying file {0} to the response body", fileContext.SubPath));
+                        }
                         return fileContext.SendAsync();
 
                     case StaticFileContext.PreconditionState.NotModified:
+                        if (_logger.IsEnabled(LogLevel.Verbose))
+                        {
+                            _logger.WriteVerbose(string.Format("{0} not modified", fileContext.SubPath));
+                        }
                         return fileContext.SendStatusAsync(Constants.Status304NotModified);
 
                     case StaticFileContext.PreconditionState.PreconditionFailed:
                         return fileContext.SendStatusAsync(Constants.Status412PreconditionFailed);
 
                     default:
-                        throw new NotImplementedException(fileContext.GetPreconditionState().ToString());
+                        var exception = new NotImplementedException(fileContext.GetPreconditionState().ToString());
+                        _logger.WriteError("No precondition state specified", exception);
+                        throw exception;
                 }
             }
 
