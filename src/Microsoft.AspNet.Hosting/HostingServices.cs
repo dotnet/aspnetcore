@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
-using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -43,11 +42,6 @@ namespace Microsoft.AspNet.Hosting
             yield return describer.Scoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
 
             foreach (var service in OptionsServices.GetDefaultServices())
-            {
-                yield return service;
-            }
-
-            foreach (var service in DataProtectionServices.GetDefaultServices())
             {
                 yield return service;
             }

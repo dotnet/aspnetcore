@@ -3,7 +3,6 @@
     "description": "ASP.NET 5 core hosting infrastructure and startup logic for web applications.",
     "dependencies": {
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
-        "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.OptionsModel": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" },

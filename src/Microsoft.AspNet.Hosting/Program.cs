@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
@@ -47,13 +46,6 @@ namespace Microsoft.AspNet.Hosting
             var serviceCollection = new ServiceCollection();
             serviceCollection.Add(HostingServices.GetDefaultServices(config));
             serviceCollection.AddInstance<IHostingEnvironment>(hostingEnv);
-            // The application name is a "good enough" mechanism to identify this application
-            // on the machine and to prevent subkeys from being shared across multiple applications
-            // by default.
-            serviceCollection.Configure<DataProtectionOptions>(options =>
-            {
-                options.ApplicationDiscriminator = appEnv.ApplicationName;
-            });
 
             var services = serviceCollection.BuildServiceProvider(_serviceProvider);
 
