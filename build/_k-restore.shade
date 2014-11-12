@@ -1,10 +1,10 @@
 @{/*
 
-k-restore 
+k-restore
     Restores nuget packages required for k projects. Downloads and executes k sdk tools.
 */}
 
-default restore_options='${E("K_build_options")}'
+default restore_options='${E("KPM_restore_options")}'
 
 exec program='cmd' commandline='/C kpm restore${restore_options}' if='!IsMono'
 exec program='kpm' commandline='restore${restore_options}' if='IsMono'

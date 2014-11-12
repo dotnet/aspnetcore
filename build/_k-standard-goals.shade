@@ -118,10 +118,10 @@ default Configuration='${E("Configuration")}'
   var npmDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json").Select(d => Path.Combine(d, "node_modules"))}'
   robocopy-delete dir='${npmDir}' each='var npmDir in npmDirs'
 
-#set-quiet
+#--quiet
   @{
-    E("K_build_options"," --quiet");
-    E("K_restore_options"," --quiet");
+    E("KPM_build_options"," --quiet");
+    E("KPM_restore_options"," --quiet");
   }
 
 #stylecop
