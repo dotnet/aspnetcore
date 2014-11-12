@@ -1,4 +1,6 @@
-﻿
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.IO;
 using Moq;
@@ -282,15 +284,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     null,   // actionName
                     null,   // controllerName
                     null,   // routeValues
-                    FormMethod.Post.ToString().ToLowerInvariant(),
+                    "post", // method
                     null))  // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -324,8 +325,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -361,8 +361,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -389,15 +388,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     null,   // actionName
                     null,   // controllerName
                     routeValues,
-                    FormMethod.Post.ToString().ToLowerInvariant(),
+                    "post", // method
                     null))  // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -426,15 +424,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     actionName,
                     controllerName,
                     null,   // routeValues
-                    FormMethod.Post.ToString().ToLowerInvariant(),
+                    "post", // method
                     null))  // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -464,15 +461,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     actionName,
                     controllerName,
                     routeValues,
-                    FormMethod.Post.ToString().ToLowerInvariant(),
+                    "post", // method
                     null))  // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -509,8 +505,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -548,8 +543,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -587,8 +581,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -614,15 +607,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     htmlHelper.ViewContext,
                     null,   // routeName
                     routeValues,
-                    FormMethod.Post.ToString().ToLowerInvariant(),
+                    "post", // method
                     null))  // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -648,15 +640,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     htmlHelper.ViewContext,
                     routeName,
                     null,   // routeValues
-                    FormMethod.Post.ToString().ToLowerInvariant(),
+                    "post", // method
                     null))  // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -684,15 +675,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     htmlHelper.ViewContext,
                     routeName,
                     routeValues,
-                    FormMethod.Post.ToString().ToLowerInvariant(),
+                    "post", // method
                     null))  // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -727,8 +717,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -764,8 +753,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -801,8 +789,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 

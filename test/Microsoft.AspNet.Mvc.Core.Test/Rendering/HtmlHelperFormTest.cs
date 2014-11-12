@@ -1,4 +1,6 @@
-﻿
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -126,8 +128,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
             Assert.NotNull(htmlHelper.ViewContext.HttpContext);
@@ -189,8 +190,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -233,8 +233,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
@@ -257,8 +256,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Guards
             Assert.NotNull(htmlHelper.ViewContext);
-            var writer = htmlHelper.ViewContext.Writer as StringWriter;
-            Assert.NotNull(writer);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
             var builder = writer.GetStringBuilder();
             Assert.NotNull(builder);
 
