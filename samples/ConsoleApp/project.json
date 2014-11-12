@@ -2,7 +2,6 @@
     "dependencies": {
         "System.Console": "4.0.0.0"
     },
-
     "frameworks": {
         "aspnet50": { },
         "aspnetcore50": { }
