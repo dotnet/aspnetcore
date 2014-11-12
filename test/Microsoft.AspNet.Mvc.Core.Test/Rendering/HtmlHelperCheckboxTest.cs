@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input checked=""checked"" id=""Property1"" name=""Property1"" " +
                            @"Property1-Property3=""Property3ObjValue"" type=""checkbox"" value=""true"" /><input " +
                            @"name=""Property1"" type=""hidden"" value=""false"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper<ViewDataDictionary<TestModel>>(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
             var htmlAttributes = new { Property1_Property3 = "Property3ObjValue" };
 
             // Act

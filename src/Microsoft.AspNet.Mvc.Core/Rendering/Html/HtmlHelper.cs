@@ -616,8 +616,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the
-        /// the action with name <paramref name="actionName"/> will process the request.
+        /// Renders a &lt;form&gt; start tag to the response. When the user submits the form, the action with name
+        /// <paramref name="actionName"/> will process the request.
         /// </summary>
         /// <param name="actionName">The name of the action method.</param>
         /// <param name="controllerName">The name of the controller.</param>
