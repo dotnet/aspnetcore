@@ -507,26 +507,6 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Return a user with the specified username and password or null if there is no match.
-        /// </summary>
-        /// <param name="userName"></param>
-        /// <param name="password"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual async Task<TUser> FindByUserNamePasswordAsync(string userName, string password,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            ThrowIfDisposed();
-            userName = NormalizeUserName(userName);
-            var user = await FindByNameAsync(userName, cancellationToken);
-            if (user == null)
-            {
-                return null;
-            }
-            return await CheckPasswordAsync(user, password, cancellationToken) ? user : null;
-        }
-
-        /// <summary>
         ///     Returns true if the password combination is valid for the user
         /// </summary>
         /// <param name="user"></param>

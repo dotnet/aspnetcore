@@ -258,7 +258,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.NotNull(logins);
             Assert.Equal(1, logins.Count());
             Assert.Equal(user, await manager.FindByLoginAsync(login.LoginProvider, login.ProviderKey));
-            Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, "password"));
+            Assert.True(await manager.CheckPasswordAsync(user, "password"));
         }
 
         [Fact]
@@ -324,8 +324,8 @@ namespace Microsoft.AspNet.Identity.Test
             var stamp = user.SecurityStamp;
             Assert.NotNull(stamp);
             IdentityResultAssert.IsSuccess(await manager.ChangePasswordAsync(user, password, newPassword));
-            Assert.Null(await manager.FindByUserNamePasswordAsync(user.UserName, password));
-            Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, newPassword));
+            Assert.False(await manager.CheckPasswordAsync(user, password));
+            Assert.True(await manager.CheckPasswordAsync(user, newPassword));
             Assert.NotEqual(stamp, user.SecurityStamp);
         }
 
@@ -525,8 +525,8 @@ namespace Microsoft.AspNet.Identity.Test
             var token = await manager.GeneratePasswordResetTokenAsync(user);
             Assert.NotNull(token);
             IdentityResultAssert.IsSuccess(await manager.ResetPasswordAsync(user, token, newPassword));
-            Assert.Null(await manager.FindByUserNamePasswordAsync(user.UserName, password));
-            Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, newPassword));
+            Assert.False(await manager.CheckPasswordAsync(user, password));
+            Assert.True(await manager.CheckPasswordAsync(user, newPassword));
             Assert.NotEqual(stamp, user.SecurityStamp);
         }
 
@@ -547,8 +547,7 @@ namespace Microsoft.AspNet.Identity.Test
             manager.PasswordValidator = new AlwaysBadValidator();
             IdentityResultAssert.IsFailure(await manager.ResetPasswordAsync(user, token, newPassword),
                 AlwaysBadValidator.ErrorMessage);
-            Assert.NotNull(await manager.FindByUserNamePasswordAsync(user.UserName, password));
-            Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, password));
+            Assert.True(await manager.CheckPasswordAsync(user, password));
             Assert.Equal(stamp, user.SecurityStamp);
         }
 
@@ -565,8 +564,7 @@ namespace Microsoft.AspNet.Identity.Test
             var stamp = user.SecurityStamp;
             Assert.NotNull(stamp);
             IdentityResultAssert.IsFailure(await manager.ResetPasswordAsync(user, "bogus", newPassword), "Invalid token.");
-            Assert.NotNull(await manager.FindByUserNamePasswordAsync(user.UserName, password));
-            Assert.Equal(user, await manager.FindByUserNamePasswordAsync(user.UserName, password));
+            Assert.True(await manager.CheckPasswordAsync(user, password));
             Assert.Equal(stamp, user.SecurityStamp);
         }
 

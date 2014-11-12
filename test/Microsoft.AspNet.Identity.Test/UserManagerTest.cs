@@ -386,13 +386,6 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task FindWithUnknownUserAndPasswordReturnsNull()
-        {
-            var manager = MockHelpers.TestUserManager(new EmptyStore());
-            Assert.Null(await manager.FindByUserNamePasswordAsync("bogus", "whatevs"));
-        }
-
-        [Fact]
         public void UsersQueryableFailWhenStoreNotImplemented()
         {
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -566,7 +559,6 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("claim", async () => await manager.ReplaceClaimAsync(null, null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("claims", async () => await manager.AddClaimsAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByNameAsync(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByUserNamePasswordAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.AddLoginAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("loginProvider",
                 async () => await manager.RemoveLoginAsync(null, null, null));
@@ -707,7 +699,6 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemovePasswordAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveFromRoleAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemoveFromRolesAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByUserNamePasswordAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByLoginAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByIdAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByNameAsync(null));
