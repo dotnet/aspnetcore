@@ -155,16 +155,25 @@ var buildTarget = "compile"
         }
     }
 
-#update-master
-    -// Merge release branch to master
+#pull-all
     for each='var repo in GetAllRepos()'
         -CloneOrUpdate(repo);
 
-        var gitFolder = '${repo}'
-        git gitCommand='fetch origin'
-        git gitCommand='checkout origin/master -B master'
-        git gitCommand='merge origin/release --ff-only'
-        git gitCommand='push origin master:master'
+#update-master
+    -// Merge release branch to master
+    @{
+        foreach (var repo in GetAllRepos())
+        {
+            CloneOrUpdate(repo);
+
+            GitCommand(repo, "checkout origin/release -B master");
+            File.Copy(Path.Combine("build-template", "NuGet.master.config"),
+                      Path.Combine(repo, "NuGet.config"),
+                      overwrite: true);
+            GitCommand(repo, "commit -am \"Updating NuGet.config\"");
+            GitCommand(repo, "push origin master");
+        }
+    }
 
 #only-compile target='compile'
     @{
