@@ -6,7 +6,7 @@ The Home repository is the starting point for people to learn about ASP.NET vNex
 
 ASP.NET vNext is being actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
 
-The samples provided in this repo are designed to show some of the features of the new framework and to provide a starting point for further exploration. The NuGet.config file in the repo points to a MyGet feed (https://www.myget.org/F/aspnetmaster/) that has all the packages being developed. This feed is updated with each preview release. To try out the latest bits under development use the dev feed instead (https://www.myget.org/F/aspnetvnext).
+The samples provided in this repo are designed to show some of the features of the new framework and to provide a starting point for further exploration. All the component packages are available on Nuget. To try out the latest bits under development switch to the dev branch of the Home repo and use the dev feed in Nuget.config (https://www.myget.org/F/aspnetvnext).
 
 ## Contents
 
@@ -31,7 +31,7 @@ These are the current minimum requirements for the latest preview release. They 
 
 ## Getting Started
 
-The easiest way to get started with ASP.NET vNext is to try out the latest preview of Visual Studio "14". You can find installation instructions and getting started documentation at http://www.asp.net/vnext.
+The easiest way to get started with ASP.NET vNext is to try out the latest preview of Visual Studio 2015 Preview. You can find installation instructions and getting started documentation at http://www.asp.net/vnext.
 
 That said, you can also try out ASP.NET vNext with just a command-prompt and a text editor. The following instructions will walk you through getting your dev environment setup.
 
@@ -52,7 +52,7 @@ To install KVM and the correct version of Mono on OS X using [Homebrew](http://b
 
  * Install [Homebrew](http://brew.sh) if it is not already installed.
  * Run command `brew tap aspnet/k` to tap the ASP.NET vNext related git repositories. If you had already tapped the repo for previous releases, run `brew untap aspnet/k` to delete the old commands and tap again to get the updated brew scripts.
- * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.myget.org/f/aspnetmaster/api/v2 feed.
+ * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.nuget.org/api/v2 feed.
  * Run command `source kvm.sh` on your terminal if your terminal cannot understand kvm. 
 
 #### Linux:
