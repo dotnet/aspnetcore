@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Security.Claims;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
@@ -16,7 +15,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             var validator = new UserValidator<IdentityUser>();
-            services.AddIdentity<IdentityUser>().AddUserValidator(validator);
+            services.AddIdentity().AddUserValidator(validator);
             Assert.Equal(validator, services.BuildServiceProvider().GetRequiredService<IUserValidator<IdentityUser>>());
         }
 
@@ -25,7 +24,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             var validator = new PasswordValidator<IdentityUser>();
-            services.AddIdentity<IdentityUser>().AddPasswordValidator(validator);
+            services.AddIdentity().AddPasswordValidator(validator);
             Assert.Equal(validator, services.BuildServiceProvider().GetRequiredService<IPasswordValidator<IdentityUser>>());
         }
 
@@ -39,7 +38,7 @@ namespace Microsoft.AspNet.Identity.Test
         public void EnsureDefaultServices()
         {
             var services = new ServiceCollection();
-            services.AddIdentity<IdentityUser>();
+            services.AddIdentity();
             services.Add(OptionsServices.GetDefaultServices());
 
             var provider = services.BuildServiceProvider();
@@ -57,7 +56,7 @@ namespace Microsoft.AspNet.Identity.Test
             where TService : class
         {
             var services = new ServiceCollection();
-            services.AddIdentity<IdentityUser>().AddInstance(instance);
+            services.AddIdentity().AddInstance(instance);
             Assert.Equal(instance, services.BuildServiceProvider().GetRequiredService<TService>());
         }
 

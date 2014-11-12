@@ -36,10 +36,12 @@ namespace IdentitySamples
                 options.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
             });
 
-            services.AddDefaultIdentity<ApplicationDbContext, ApplicationUser, IdentityRole>(Configuration.GetSubKey("Identity"), options =>
+            services.AddIdentity<ApplicationUser, IdentityRole>(Configuration, options =>
             {
                 options.SecurityStampValidationInterval = TimeSpan.FromMinutes(20);
-            });
+            })
+                    .AddEntityFrameworkStores<ApplicationDbContext>()
+                    .AddDefaultTokenProviders();
 
             services.ConfigureFacebookAuthentication(options =>
             {

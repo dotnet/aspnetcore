@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         public static RoleManager<IdentityRole> CreateRoleManager(InMemoryContext context)
         {
             var services = new ServiceCollection();
-            services.AddDefaultIdentity<IdentityUser, IdentityRole>().AddRoleStore(new RoleStore<IdentityRole>(context));
+            services.AddIdentity<IdentityUser, IdentityRole>().AddRoleStore(new RoleStore<IdentityRole>(context));
             return services.BuildServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
         }
 

@@ -54,8 +54,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             builder.UseServices(services =>
             {
                 DbUtil.ConfigureDbServices<ApplicationDbContext>(ConnectionString, services);
-                services.AddDefaultIdentity<ApplicationDbContext, ApplicationUser, IdentityRole>();
                 services.Add(DataProtectionServices.GetDefaultServices());
+                services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
             });
 
             var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<ApplicationUser>>();
@@ -84,14 +84,14 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 services.AddEntityFramework()
                         .AddSqlServer()
                         .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(ConnectionString));
-                services.AddIdentityEntityFramework<ApplicationDbContext, ApplicationUser>(options =>
+                services.AddIdentity<ApplicationUser, IdentityRole>(null, options =>
                 {
                     options.Password.RequiredLength = 1;
                     options.Password.RequireLowercase = false;
                     options.Password.RequireNonLetterOrDigit = false;
                     options.Password.RequireUppercase = false;
                     options.Password.RequireDigit = false;
-                });
+                }).AddEntityFrameworkStores<ApplicationDbContext>();
             });
 
             var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<ApplicationUser>>();

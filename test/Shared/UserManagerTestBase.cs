@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Identity.Test
             services.Add(OptionsServices.GetDefaultServices());
             services.Add(HostingServices.GetDefaultServices());
             services.Add(DataProtectionServices.GetDefaultServices());
-            services.AddDefaultIdentity<TUser, TRole>();
+            services.AddIdentity<TUser, TRole>().AddDefaultTokenProviders();
             AddUserStore(services, context);
             AddRoleStore(services, context);
             services.ConfigureIdentity(options =>
@@ -44,7 +44,6 @@ namespace Microsoft.AspNet.Identity.Test
                 options.Password.RequireUppercase = false;
                 options.User.UserNameValidationRegex = null;
             });
-
         }
 
         protected virtual UserManager<TUser> CreateManager(object context = null, IServiceCollection services = null)

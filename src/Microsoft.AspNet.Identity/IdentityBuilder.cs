@@ -3,18 +3,45 @@
 
 using System;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity
 {
-    public class IdentityBuilder<TUser, TRole> where TUser : class where TRole : class
+    public class IdentityBuilder
     {
-        public IServiceCollection Services { get; private set; }
-
-        public IdentityBuilder(IServiceCollection services)
+        public IdentityBuilder(Type user, Type role, IServiceCollection services)
         {
+            UserType = user;
+            RoleType = role;
             Services = services;
         }
+
+        public Type UserType { get; private set; }
+        public Type RoleType { get; private set; }
+        public IServiceCollection Services { get; private set; }
+
+        public IdentityBuilder AddTokenProvider(Type provider)
+        {
+            Services.AddScoped(typeof(IUserTokenProvider<>).MakeGenericType(UserType), provider);
+            return this;
+        }
+
+        public IdentityBuilder AddDefaultTokenProviders()
+        {
+            Services.Configure<DataProtectionTokenProviderOptions>(options =>
+            {
+                options.Name = Resources.DefaultTokenProvider;
+            });
+
+            return AddTokenProvider(typeof(DataProtectorTokenProvider<>).MakeGenericType(UserType))
+                .AddTokenProvider(typeof(PhoneNumberTokenProvider<>).MakeGenericType(UserType))
+                .AddTokenProvider(typeof(EmailTokenProvider<>).MakeGenericType(UserType));
+        }
+
+    }
+
+    public class IdentityBuilder<TUser, TRole> : IdentityBuilder where TUser : class where TRole : class
+    {
+        public IdentityBuilder(IServiceCollection services) : base(typeof(TUser), typeof(TRole), services) { }
 
         public IdentityBuilder<TUser, TRole> AddInstance<TService>(TService instance)
             where TService : class
@@ -43,7 +70,7 @@ namespace Microsoft.AspNet.Identity
             return AddInstance(validator);
         }
 
-        public IdentityBuilder<TUser, TRole> AddTokenProvider<TTokenProvider>() where TTokenProvider : class, IUserTokenProvider<TUser>
+        public IdentityBuilder<TUser, TRole> AddTokenProvider<TTokenProvider>() where TTokenProvider : IUserTokenProvider<TUser>
         {
             Services.AddScoped<IUserTokenProvider<TUser>, TTokenProvider>();
             return this;

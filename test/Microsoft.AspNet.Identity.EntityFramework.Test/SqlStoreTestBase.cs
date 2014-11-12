@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             builder.UseServices(services =>
             {
                 DbUtil.ConfigureDbServices<TestDbContext>(ConnectionString, services);
-                services.AddIdentityEntityFramework<TestDbContext, TUser, TRole, TKey>();
+                services.AddIdentity<TUser, TRole>().AddEntityFrameworkStores<TestDbContext, TKey>();
             });
 
             var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<TUser>>();
@@ -110,8 +110,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             builder.UseServices(services =>
             {
                 DbUtil.ConfigureDbServices<TestDbContext>(ConnectionString, services);
-                services.AddIdentityEntityFramework<TestDbContext, TUser, TRole, TKey>();
-                services.ConfigureIdentity(options =>
+                services.AddIdentity<TUser, TRole>(null, options =>
                 {
                     options.Password.RequiredLength = 1;
                     options.Password.RequireLowercase = false;
@@ -119,7 +118,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                     options.Password.RequireUppercase = false;
                     options.Password.RequireDigit = false;
                     options.User.UserNameValidationRegex = null;
-                });
+                }).AddEntityFrameworkStores<TestDbContext, TKey>();
             });
 
             var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<TUser>>();

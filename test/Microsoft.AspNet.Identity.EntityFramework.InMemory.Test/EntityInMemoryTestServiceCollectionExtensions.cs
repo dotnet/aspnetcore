@@ -20,7 +20,8 @@ namespace Microsoft.AspNet.Identity
             where TRole : IdentityRole
             where TDbContext : DbContext
         {
-            var builder = services.AddDefaultIdentity<TUser, TRole>();
+            var builder = services.AddIdentity<TUser, TRole>();
+            builder.AddDefaultTokenProviders();
             services.AddInstance<IUserStore<TUser>>(new InMemoryUserStore<TUser, TDbContext>(context));
             var store = new RoleStore<TRole, TDbContext>(context);
             services.AddInstance<IRoleStore<TRole>>(store);

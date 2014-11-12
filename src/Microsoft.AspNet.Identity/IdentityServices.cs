@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
@@ -30,6 +29,11 @@ namespace Microsoft.AspNet.Identity
             yield return describe.Transient<IPasswordHasher<TUser>, PasswordHasher<TUser>>();
             yield return describe.Transient<IUserNameNormalizer, UpperInvariantUserNameNormalizer>();
             yield return describe.Transient<IRoleValidator<TRole>, RoleValidator<TRole>>();
+            yield return describe.Scoped<ISecurityStampValidator, SecurityStampValidator<TUser>>();
+            yield return describe.Scoped<IClaimsIdentityFactory<TUser>, ClaimsIdentityFactory<TUser, TRole>>();
+            yield return describe.Scoped<UserManager<TUser>, UserManager<TUser>>();
+            yield return describe.Scoped<SignInManager<TUser>, SignInManager<TUser>>();
+            yield return describe.Scoped<RoleManager<TRole>, RoleManager<TRole>>();
         }
     }
 }
