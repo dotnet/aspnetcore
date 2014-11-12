@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -246,6 +246,101 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("Index", actionRouteData.Values["action"]);
 
             Assert.Equal(initialRouter, Assert.Single(actionRouteData.Routers));
+        }
+
+        [Fact]
+        public async Task RouteAsync_CreatesNewServiceScope()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+
+            var services = new Mock<IServiceProvider>(MockBehavior.Strict);
+            httpContext.ApplicationServices = services.Object;
+
+            var requestServices = new Mock<IServiceProvider>(MockBehavior.Strict);
+            requestServices
+                .Setup(s => s.GetService(It.IsAny<Type>()))
+                .Returns<Type>(t => services.Object.GetService(t));
+
+            var scope = new Mock<IServiceScope>(MockBehavior.Strict);
+            scope
+                .SetupGet(s => s.ServiceProvider)
+                .Returns(requestServices.Object);
+            scope
+                .Setup(s => s.Dispose())
+                .Verifiable();
+
+            var scopeFactory = new Mock<IServiceScopeFactory>(MockBehavior.Strict);
+            scopeFactory
+                .Setup(f => f.CreateScope())
+                .Returns(scope.Object);
+
+            // Needed by RequestContainer to create a new scope
+            services
+                .Setup(s => s.GetService(typeof(IServiceProvider)))
+                .Returns(services.Object);
+            services
+                .Setup(s => s.GetService(typeof(IContextAccessor<HttpContext>)))
+                .Returns(new ContextAccessor<HttpContext>());
+            services
+                .Setup(s => s.GetService(typeof(IServiceScopeFactory)))
+                .Returns(scopeFactory.Object);
+
+            // These services will be resolved from the request container
+            var action = new Mock<ActionDescriptor>();
+
+            var actionSelector = new Mock<IActionSelector>();
+            actionSelector
+                .Setup(a => a.SelectAsync(It.IsAny<RouteContext>()))
+                .Returns(Task.FromResult(action.Object));
+            requestServices
+                .Setup(s => s.GetService(typeof(IActionSelector)))
+                .Returns(actionSelector.Object);
+
+            var invoker = new Mock<IActionInvoker>();
+            invoker
+                .Setup(i => i.InvokeAsync())
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            var invokerFactory = new Mock<IActionInvokerFactory>();
+            invokerFactory
+                .Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))
+                .Returns(invoker.Object);
+            requestServices
+                .Setup(s => s.GetService(typeof(IActionInvokerFactory)))
+                .Returns(invokerFactory.Object);
+
+            requestServices
+                .Setup(s => s.GetService(typeof(IContextAccessor<ActionContext>)))
+                .Returns(new ContextAccessor<ActionContext>());
+
+            requestServices
+                .Setup(s => s.GetService(typeof(MvcMarkerService)))
+                .Returns(new MvcMarkerService());
+
+            requestServices
+                .Setup(s => s.GetService(typeof(ILoggerFactory)))
+                .Returns(NullLoggerFactory.Instance);
+
+            requestServices
+                .Setup(s => s.GetService(typeof(IOptions<MvcOptions>)))
+                .Returns(new MockMvcOptionsAccessor());
+
+            var context = new RouteContext(httpContext);
+            var handler = new MvcRouteHandler();
+
+            // Act
+            await handler.RouteAsync(context);
+
+            // Assert
+            //
+            // If we created the scope it should be disposed
+            scope.Verify(s => s.Dispose());
+
+            // We can't directly verify that the httpContext.RequestServices property was set,
+            // but we can verify that our invoker (only reachable through request services) was used.
+            invoker.Verify();
         }
 
         private RouteContext CreateRouteContext(
