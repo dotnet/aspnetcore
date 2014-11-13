@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Identity
     public class IdentityMessage
     {
         /// <summary>
-        ///     Destination, i.e. To email, or SMS phone number
+        ///     Target for the message, i.e. email or phone number
         /// </summary>
         public virtual string Destination { get; set; }
 

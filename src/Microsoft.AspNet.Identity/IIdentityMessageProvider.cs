@@ -6,17 +6,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
 {
-    /// <summary>
-    ///     Expose a way to send messages (email/txt)
-    /// </summary>
-    public interface IIdentityMessageService
+    public interface IIdentityMessageProvider
     {
-        /// <summary>
-        ///     This method should send the message
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        string Name { get; }
+
         Task SendAsync(IdentityMessage message, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

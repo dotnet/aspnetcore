@@ -2,9 +2,6 @@
     "DefaultAdminUsername": "Administrator",
     "DefaultAdminPassword": "YouShouldChangeThisPassword1!",
     "Data": {
-        "DefaultConnection": {
-            "Connectionstring": "Server=(localdb)\\mssqllocaldb;Database=IdentitySample-8-12-14;Trusted_Connection=True;MultipleActiveResultSets=true"
-        },
         "IdentityConnection": {
             "Connectionstring": "Server=(localdb)\\mssqllocaldb;Database=IdentityMvc-8-12-14;Trusted_Connection=True;MultipleActiveResultSets=true"
         }

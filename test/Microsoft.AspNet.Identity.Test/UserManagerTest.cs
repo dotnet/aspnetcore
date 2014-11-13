@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity.Test
             public TestManager(IUserStore<TestUser> store, IOptions<IdentityOptions> optionsAccessor,
                 IPasswordHasher<TestUser> passwordHasher, IUserValidator<TestUser> userValidator,
                 IPasswordValidator<TestUser> passwordValidator)
-                : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null, null) { }
+                : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null, null, null) { }
         }
 
         [Fact]
@@ -538,13 +538,13 @@ namespace Microsoft.AspNet.Identity.Test
             var passwordValidator = new PasswordValidator<TestUser>();
 
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>(null, null, null, null, null, null, null));
+                () => new UserManager<TestUser>(null, null, null, null, null, null, null, null));
             Assert.Throws<ArgumentNullException>("optionsAccessor",
-                () => new UserManager<TestUser>(store, null, null, null, null, null, null));
+                () => new UserManager<TestUser>(store, null, null, null, null, null, null, null));
             Assert.Throws<ArgumentNullException>("passwordHasher",
-                () => new UserManager<TestUser>(store, optionsAccessor, null, null, null, null, null));
+                () => new UserManager<TestUser>(store, optionsAccessor, null, null, null, null, null, null));
 
-            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null, null);
+            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null, null, null);
 
             Assert.Throws<ArgumentNullException>("value", () => manager.PasswordHasher = null);
             Assert.Throws<ArgumentNullException>("value", () => manager.Options = null);
@@ -671,10 +671,6 @@ namespace Microsoft.AspNet.Identity.Test
                 async () => await manager.GetLockoutEndDateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.IsLockedOutAsync(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.SendEmailAsync(null, null, null));
-            await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.SendSmsAsync(null, null));
         }
 
         [Fact]
@@ -714,6 +710,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GenerateEmailConfirmationTokenAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsEmailConfirmedAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ConfirmEmailAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.SendMessageAsync(null, null));
         }
 
         private class BadPasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : class

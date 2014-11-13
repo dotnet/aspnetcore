@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             var services = new ServiceCollection();
             services.AddEntityFramework().AddInMemoryStore();
             var store = new RoleStore<IdentityRole>(new InMemoryContext());
-            services.AddIdentity().AddRoleStore(store);
+            services.AddIdentity();
+            services.AddInstance<IRoleStore<IdentityRole>>(store);
             var provider = services.BuildServiceProvider();
             var manager = provider.GetRequiredService<RoleManager<IdentityRole>>();
             Assert.NotNull(manager);

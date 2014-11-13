@@ -7,6 +7,8 @@ using Microsoft.AspNet.Routing;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace IdentitySamples
 {
@@ -36,12 +38,11 @@ namespace IdentitySamples
                 options.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
             });
 
-            services.AddIdentity<ApplicationUser, IdentityRole>(Configuration, options =>
-            {
-                options.SecurityStampValidationInterval = TimeSpan.FromMinutes(20);
-            })
+            services.AddIdentity<ApplicationUser, IdentityRole>(Configuration)
                     .AddEntityFrameworkStores<ApplicationDbContext>()
-                    .AddDefaultTokenProviders();
+                    .AddDefaultTokenProviders()
+                    .AddMessageProvider<EmailMessageProvider>()
+                    .AddMessageProvider<SmsMessageProvider>();
 
             services.ConfigureFacebookAuthentication(options =>
             {
@@ -80,5 +81,40 @@ namespace IdentitySamples
             //Populates the Admin user and role 
             SampleData.InitializeIdentityDatabaseAsync(app.ApplicationServices).Wait();
         }
+
+        public class EmailMessageProvider : IIdentityMessageProvider
+        {
+            public string Name
+            {
+                get
+                {
+                    return "Email";
+                }
+            }
+
+            public Task SendAsync(IdentityMessage message, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                // Plug in your service
+                return Task.FromResult(0);
+            }
+        }
+
+        public class SmsMessageProvider : IIdentityMessageProvider
+        {
+            public string Name
+            {
+                get
+                {
+                    return "SMS";
+                }
+            }
+
+            public Task SendAsync(IdentityMessage message, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                // Plug in your service
+                return Task.FromResult(0);
+            }
+        }
+
     }
 }

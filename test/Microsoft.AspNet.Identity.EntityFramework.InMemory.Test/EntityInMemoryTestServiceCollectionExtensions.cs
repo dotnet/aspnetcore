@@ -10,12 +10,12 @@ namespace Microsoft.AspNet.Identity
 {
     public static class EntityInMemoryTestServiceCollectionExtensions
     {
-        public static IdentityBuilder<IdentityUser, IdentityRole> AddIdentityInMemory(this ServiceCollection services, InMemoryContext context)
+        public static IdentityBuilder AddIdentityInMemory(this ServiceCollection services, InMemoryContext context)
         {
             return services.AddIdentityInMemory<IdentityUser, IdentityRole, InMemoryContext>(context);
         }
 
-        public static IdentityBuilder<TUser, TRole> AddIdentityInMemory<TUser, TRole, TDbContext>(this ServiceCollection services, TDbContext context)
+        public static IdentityBuilder AddIdentityInMemory<TUser, TRole, TDbContext>(this ServiceCollection services, TDbContext context)
             where TUser : IdentityUser
             where TRole : IdentityRole
             where TDbContext : DbContext

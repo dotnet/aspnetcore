@@ -21,6 +21,8 @@ namespace Microsoft.AspNet.Identity
     {
         private readonly Dictionary<string, IUserTokenProvider<TUser>> _tokenProviders =
             new Dictionary<string, IUserTokenProvider<TUser>>();
+        private readonly Dictionary<string, IIdentityMessageProvider> _msgProviders =
+            new Dictionary<string, IIdentityMessageProvider>();
 
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
@@ -36,10 +38,14 @@ namespace Microsoft.AspNet.Identity
         /// <param name="userValidator"></param>
         /// <param name="passwordValidator"></param>
         /// <param name="claimsIdentityFactory"></param>
-        public UserManager(IUserStore<TUser> store, IOptions<IdentityOptions> optionsAccessor,
-            IPasswordHasher<TUser> passwordHasher, IUserValidator<TUser> userValidator,
-            IPasswordValidator<TUser> passwordValidator, IUserNameNormalizer userNameNormalizer,
-            IEnumerable<IUserTokenProvider<TUser>> tokenProviders)
+        public UserManager(IUserStore<TUser> store, 
+            IOptions<IdentityOptions> optionsAccessor,
+            IPasswordHasher<TUser> passwordHasher, 
+            IUserValidator<TUser> userValidator,
+            IPasswordValidator<TUser> passwordValidator, 
+            IUserNameNormalizer userNameNormalizer,
+            IEnumerable<IUserTokenProvider<TUser>> tokenProviders, 
+            IEnumerable<IIdentityMessageProvider> msgProviders)
         {
             if (store == null)
             {
@@ -68,6 +74,15 @@ namespace Microsoft.AspNet.Identity
                     RegisterTokenProvider(tokenProvider);
                 }
             }
+
+            if (msgProviders != null)
+            {
+                foreach (var msgProvider in msgProviders)
+                {
+                    RegisterMessageProvider(msgProvider);
+                }
+            }
+
         }
 
         /// <summary>
@@ -110,16 +125,6 @@ namespace Microsoft.AspNet.Identity
         ///     Used to normalize user names for uniqueness
         /// </summary>
         public IUserNameNormalizer UserNameNormalizer { get; set; }
-
-        /// <summary>
-        ///     Used to send email
-        /// </summary>
-        public IIdentityMessageService EmailService { get; set; }
-
-        /// <summary>
-        ///     Used to send a sms message
-        /// </summary>
-        public IIdentityMessageService SmsService { get; set; }
 
         public IdentityOptions Options
         {
@@ -1500,7 +1505,6 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Register a user token provider
         /// </summary>
-        /// <param name="twoFactorProvider"></param>
         /// <param name="provider"></param>
         public virtual void RegisterTokenProvider(IUserTokenProvider<TUser> provider)
         {
@@ -1510,6 +1514,20 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("provider");
             }
             _tokenProviders[provider.Name] = provider;
+        }
+
+        /// <summary>
+        ///     Register a user message provider
+        /// </summary>
+        /// <param name="provider"></param>
+        public virtual void RegisterMessageProvider(IIdentityMessageProvider provider)
+        {
+            ThrowIfDisposed();
+            if (provider == null)
+            {
+                throw new ArgumentNullException("provider");
+            }
+            _msgProviders[provider.Name] = provider;
         }
 
         /// <summary>
@@ -1664,60 +1682,30 @@ namespace Microsoft.AspNet.Identity
             return await UpdateAsync(user, cancellationToken);
         }
 
-        // SMS/Email methods
+        // Messaging methods
 
         /// <summary>
-        ///     Send an email to the user
+        /// Send a message to the user using the specified provider
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="subject"></param>
-        /// <param name="body"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual async Task SendEmailAsync(TUser user, string subject, string body,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-            if (EmailService != null)
-            {
-                var msg = new IdentityMessage
-                {
-                    Destination = await GetEmailAsync(user, cancellationToken),
-                    Subject = subject,
-                    Body = body,
-                };
-                await EmailService.SendAsync(msg, cancellationToken);
-            }
-        }
-
-        /// <summary>
-        ///     Send a user a sms message
-        /// </summary>
-        /// <param name="user"></param>
+        /// <param name="messageProvider"></param>
         /// <param name="message"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task SendSmsAsync(TUser user, string message,
+        public virtual async Task<IdentityResult> SendMessageAsync(string messageProvider, IdentityMessage message, 
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
-            if (user == null)
+            if (message == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(message));
             }
-            if (SmsService != null)
+            if (!_msgProviders.ContainsKey(messageProvider))
             {
-                var msg = new IdentityMessage
-                {
-                    Destination = await GetPhoneNumberAsync(user, cancellationToken),
-                    Body = message
-                };
-                await SmsService.SendAsync(msg, cancellationToken);
+                throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture,
+                    Resources.NoMessageProvider, messageProvider));
             }
+            await _msgProviders[messageProvider].SendAsync(message, cancellationToken);
+            return IdentityResult.Success;
         }
 
         // IUserLockoutStore methods

@@ -11,8 +11,6 @@ using Microsoft.AspNet.Testing;
 using Xunit;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
-using Microsoft.AspNet.Hosting;
 using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -30,8 +28,8 @@ namespace Microsoft.AspNet.Identity.Test
     {
         protected virtual void SetupIdentityServices(IServiceCollection services, object context = null)
         {
-            services.Add(OptionsServices.GetDefaultServices());
-            services.Add(HostingServices.GetDefaultServices());
+            services.AddOptions();
+            services.AddHosting();
             services.Add(DataProtectionServices.GetDefaultServices());
             services.AddIdentity<TUser, TRole>().AddDefaultTokenProviders();
             AddUserStore(services, context);
@@ -1206,8 +1204,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CanEmailTwoFactorToken()
         {
             var manager = CreateManager();
-            var messageService = new TestMessageService();
-            manager.EmailService = messageService;
+            var messageService = new TestMessageService<TUser> { Name = "Email" };
+            manager.RegisterMessageProvider(messageService);
             const string factorId = "Email"; // default
             var user = new TUser() { UserName = "EmailCodeTest", Email = "foo@foo.com" };
             user.EmailConfirmed = true;
@@ -1251,8 +1249,8 @@ namespace Microsoft.AspNet.Identity.Test
                 o.BodyFormat = body;
             });
             var manager = CreateManager(null, services);
-            var messageService = new TestMessageService();
-            manager.EmailService = messageService;
+            var messageService = new TestMessageService<TUser> { Name = "Email" };
+            manager.RegisterMessageProvider(messageService);
             var user = CreateTestUser();
             user.Email = user.UserName + "@foo.com";
             const string password = "password";
@@ -1300,30 +1298,16 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task CanSendSms()
+        public async Task CanSendMessage()
         {
             var manager = CreateManager();
-            var messageService = new TestMessageService();
-            manager.SmsService = messageService;
+            var messageService = new TestMessageService<TUser>();
+            manager.RegisterMessageProvider(messageService);
             var user = CreateTestUser();
-            user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            await manager.SendSmsAsync(user, "Hi");
+            await manager.SendMessageAsync(messageService.Name, new IdentityMessage { Destination = "foo", Subject = "Hi", Body = "Body" });
             Assert.NotNull(messageService.Message);
-            Assert.Equal("Hi", messageService.Message.Body);
-        }
-
-        [Fact]
-        public async Task CanSendEmail()
-        {
-            var manager = CreateManager();
-            var messageService = new TestMessageService();
-            manager.EmailService = messageService;
-            var user = CreateTestUser();
-            user.Email = user.UserName + "@foo.com";
-            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            await manager.SendEmailAsync(user, "Hi", "Body");
-            Assert.NotNull(messageService.Message);
+            Assert.Equal("foo", messageService.Message.Destination);
             Assert.Equal("Hi", messageService.Message.Subject);
             Assert.Equal("Body", messageService.Message.Body);
         }
@@ -1332,8 +1316,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CanSmsTwoFactorToken()
         {
             var manager = CreateManager();
-            var messageService = new TestMessageService();
-            manager.SmsService = messageService;
+            var messageService = new TestMessageService<TUser> { Name = "SMS" };
+            manager.RegisterMessageProvider(messageService);
             const string factorId = "Phone"; // default
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
@@ -1360,8 +1344,8 @@ namespace Microsoft.AspNet.Identity.Test
                 o.MessageFormat = "Your code is: {0}";
             });
             var manager = CreateManager(null, services);
-            var messageService = new TestMessageService();
-            manager.SmsService = messageService;
+            var messageService = new TestMessageService<TUser> { Name = "SMS" };
+            manager.RegisterMessageProvider(messageService);
             var user = CreateTestUser();
             user.PhoneNumber = "4251234567";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));

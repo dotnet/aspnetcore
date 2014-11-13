@@ -10,6 +10,8 @@ namespace Microsoft.AspNet.Identity
     {
         public string Name { get; set; } = Resources.DefaultEmailTokenProviderName;
 
+        public string MessageProvider { get; set; } = "Email";
+
         public string Subject { get; set; } = "Security Code";
 
         /// <summary>
@@ -48,7 +50,7 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var email = await manager.GetEmailAsync(user, cancellationToken);
-            return !String.IsNullOrWhiteSpace(email) && await manager.IsEmailConfirmedAsync(user, cancellationToken);
+            return !string.IsNullOrWhiteSpace(email) && await manager.IsEmailConfirmedAsync(user, cancellationToken);
         }
 
         /// <summary>
@@ -72,14 +74,20 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public override Task NotifyAsync(string token, UserManager<TUser> manager, TUser user,
+        public override async Task NotifyAsync(string token, UserManager<TUser> manager, TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
             {
-                throw new ArgumentNullException("manager");
+                throw new ArgumentNullException(nameof(manager));
             }
-            return manager.SendEmailAsync(user, Options.Subject, String.Format(CultureInfo.CurrentCulture, Options.BodyFormat, token), cancellationToken);
+            var msg = new IdentityMessage
+            {
+                Destination = await manager.GetEmailAsync(user, cancellationToken),
+                Subject = Options.Subject,
+                Body = string.Format(CultureInfo.CurrentCulture, Options.BodyFormat, token)
+            };
+            await manager.SendMessageAsync(Options.MessageProvider, msg, cancellationToken);
         }
     }
 }

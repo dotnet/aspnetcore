@@ -10,6 +10,8 @@ namespace Microsoft.AspNet.Identity
     {
         public string Name { get; set; } = Resources.DefaultPhoneNumberTokenProviderName;
 
+        public string MessageProvider { get; set; } = "SMS";
+
         /// <summary>
         ///     Message contents which should contain a format string which the token will be the only argument
         /// </summary>
@@ -50,7 +52,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("manager");
             }
             var phoneNumber = await manager.GetPhoneNumberAsync(user, cancellationToken);
-            return !String.IsNullOrWhiteSpace(phoneNumber) && await manager.IsPhoneNumberConfirmedAsync(user, cancellationToken);
+            return !string.IsNullOrWhiteSpace(phoneNumber) && await manager.IsPhoneNumberConfirmedAsync(user, cancellationToken);
         }
 
         /// <summary>
@@ -78,14 +80,19 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public override Task NotifyAsync(string token, UserManager<TUser> manager, TUser user, 
+        public override async Task NotifyAsync(string token, UserManager<TUser> manager, TUser user, 
             CancellationToken cancellationToken = default(CancellationToken))
         {
             if (manager == null)
             {
                 throw new ArgumentNullException("manager");
             }
-            return manager.SendSmsAsync(user, String.Format(CultureInfo.CurrentCulture, Options.MessageFormat, token), cancellationToken);
+            var msg = new IdentityMessage
+            {
+                Destination = await manager.GetPhoneNumberAsync(user, cancellationToken),
+                Body = string.Format(CultureInfo.CurrentCulture, Options.MessageFormat, token)
+            };
+            await manager.SendMessageAsync(Options.MessageProvider, msg, cancellationToken);
         }
     }
 }

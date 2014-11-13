@@ -19,10 +19,50 @@ namespace Microsoft.AspNet.Identity
         public Type RoleType { get; private set; }
         public IServiceCollection Services { get; private set; }
 
+        private IdentityBuilder AddScoped(Type serviceType, Type concreteType)
+        {
+            Services.AddScoped(serviceType, concreteType);
+            return this;
+        }
+
+        public IdentityBuilder AddUserValidator<T>() where T : class
+        {
+            return AddScoped(typeof(IUserValidator<>).MakeGenericType(UserType), typeof(T));
+        }
+
+        public IdentityBuilder AddRoleValidator<T>() where T : class
+        {
+            return AddScoped(typeof(IRoleValidator<>).MakeGenericType(RoleType), typeof(T));
+        }
+
+        public IdentityBuilder AddPasswordValidator<T>() where T : class
+        {
+            return AddScoped(typeof(IPasswordValidator<>).MakeGenericType(UserType), typeof(T));
+        }
+
+        public IdentityBuilder AddUserStore<T>() where T : class
+        {
+            return AddScoped(typeof(IUserStore<>).MakeGenericType(UserType), typeof(T));
+        }
+
+        public IdentityBuilder AddRoleStore<T>() where T : class
+        {
+            return AddScoped(typeof(IRoleStore<>).MakeGenericType(RoleType), typeof(T));
+        }
+
+        public IdentityBuilder AddTokenProvider<TProvider>() where TProvider : class
+        {
+            return AddTokenProvider(typeof(TProvider));
+        }
+
         public IdentityBuilder AddTokenProvider(Type provider)
         {
-            Services.AddScoped(typeof(IUserTokenProvider<>).MakeGenericType(UserType), provider);
-            return this;
+            return AddScoped(typeof(IUserTokenProvider<>).MakeGenericType(UserType), provider);
+        }
+
+        public IdentityBuilder AddMessageProvider<TProvider>() where TProvider : IIdentityMessageProvider
+        {
+            return AddScoped(typeof(IIdentityMessageProvider), typeof(TProvider));
         }
 
         public IdentityBuilder AddDefaultTokenProviders()
@@ -35,63 +75,6 @@ namespace Microsoft.AspNet.Identity
             return AddTokenProvider(typeof(DataProtectorTokenProvider<>).MakeGenericType(UserType))
                 .AddTokenProvider(typeof(PhoneNumberTokenProvider<>).MakeGenericType(UserType))
                 .AddTokenProvider(typeof(EmailTokenProvider<>).MakeGenericType(UserType));
-        }
-
-    }
-
-    public class IdentityBuilder<TUser, TRole> : IdentityBuilder where TUser : class where TRole : class
-    {
-        public IdentityBuilder(IServiceCollection services) : base(typeof(TUser), typeof(TRole), services) { }
-
-        public IdentityBuilder<TUser, TRole> AddInstance<TService>(TService instance)
-            where TService : class
-        {
-            Services.AddInstance(instance);
-            return this;
-        }
-
-        public IdentityBuilder<TUser, TRole> AddUserStore(IUserStore<TUser> store)
-        {
-            return AddInstance(store);
-        }
-
-        public IdentityBuilder<TUser, TRole> AddRoleStore(IRoleStore<TRole> store)
-        {
-            return AddInstance(store);
-        }
-
-        public IdentityBuilder<TUser, TRole> AddPasswordValidator(IPasswordValidator<TUser> validator)
-        {
-            return AddInstance(validator);
-        }
-
-        public IdentityBuilder<TUser, TRole> AddUserValidator(IUserValidator<TUser> validator)
-        {
-            return AddInstance(validator);
-        }
-
-        public IdentityBuilder<TUser, TRole> AddTokenProvider<TTokenProvider>() where TTokenProvider : IUserTokenProvider<TUser>
-        {
-            Services.AddScoped<IUserTokenProvider<TUser>, TTokenProvider>();
-            return this;
-        }
-
-        public IdentityBuilder<TUser, TRole> ConfigureIdentity(Action<IdentityOptions> action, int order = 0)
-        {
-            Services.Configure(action, order);
-            return this;
-        }
-
-        public IdentityBuilder<TUser, TRole> AddUserManager<TManager>() where TManager : UserManager<TUser>
-        {
-            Services.AddScoped<TManager>();
-            return this;
-        }
-
-        public IdentityBuilder<TUser, TRole> AddRoleManager<TManager>() where TManager : RoleManager<TRole>
-        {
-            Services.AddScoped<TManager>();
-            return this;
         }
     }
 }

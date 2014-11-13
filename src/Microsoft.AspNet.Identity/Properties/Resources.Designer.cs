@@ -267,6 +267,22 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
+        /// No IUserMessageProvider named '{0}' is registered.
+        /// </summary>
+        internal static string NoMessageProvider
+        {
+            get { return GetString("NoMessageProvider"); }
+        }
+
+        /// <summary>
+        /// No IUserMessageProvider named '{0}' is registered.
+        /// </summary>
+        internal static string FormatNoMessageProvider(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("NoMessageProvider"), p0);
+        }
+
+        /// <summary>
         /// No IUserTokenProvider named '{0}' is registered.
         /// </summary>
         internal static string NoTokenProvider
