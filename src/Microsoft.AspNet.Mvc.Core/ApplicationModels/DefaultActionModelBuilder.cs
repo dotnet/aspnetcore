@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         }
 
 
-        /// <suethodandlemary>
+        /// <summary>
         /// Creates an <see cref="ActionModel"/> for the given <see cref="MethodInfo"/>.
         /// </summary>
         /// <param name="methodInfo">The <see cref="MethodInfo"/>.</param>
