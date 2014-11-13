@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void CopyConstructor_CopiesAllProperties()
         {
             // Arrange
-            var parameter = new ParameterModel(typeof(TestController).GetMethod("Edit").GetParameters()[0]);
+            var parameter = new ParameterModel(typeof(TestController).GetMethod("Edit").GetParameters()[0], 
+                                               new List<object>() { new FromBodyAttribute() });
 
-            parameter.Action = new ActionModel(typeof(TestController).GetMethod("Edit"));
-            parameter.Attributes.Add(new FromBodyAttribute());
+            parameter.Action = new ActionModel(typeof(TestController).GetMethod("Edit"), new List<object>());
             parameter.BinderMetadata = (IBinderMetadata)parameter.Attributes[0];
             parameter.IsOptional = true;
             parameter.ParameterName = "id";

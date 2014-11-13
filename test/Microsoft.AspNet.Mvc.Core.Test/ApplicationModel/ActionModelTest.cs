@@ -14,9 +14,11 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void CopyConstructor_DoesDeepCopyOfOtherModels()
         {
             // Arrange
-            var action = new ActionModel(typeof(TestController).GetMethod("Edit"));
+            var action = new ActionModel(typeof(TestController).GetMethod("Edit"), 
+                                         new List<object>());
 
-            var parameter = new ParameterModel(action.ActionMethod.GetParameters()[0]);
+            var parameter = new ParameterModel(action.ActionMethod.GetParameters()[0], 
+                                               new List<object>());
             parameter.Action = action;
             action.Parameters.Add(parameter);
 
@@ -40,13 +42,14 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void CopyConstructor_CopiesAllProperties()
         {
             // Arrange
-            var action = new ActionModel(typeof(TestController).GetMethod("Edit"));
+            var action = new ActionModel(typeof(TestController).GetMethod("Edit"), 
+                                         new List<object>() { new HttpGetAttribute() });
 
             action.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
             action.ActionName = "Edit";
 
-            action.Attributes.Add(new HttpGetAttribute());
-            action.Controller = new ControllerModel(typeof(TestController).GetTypeInfo());
+            action.Controller = new ControllerModel(typeof(TestController).GetTypeInfo(), 
+                                                    new List<object>());
             action.Filters.Add(new AuthorizeAttribute());
             action.HttpMethods.Add("GET");
             action.IsActionNameMatchRequired = true;

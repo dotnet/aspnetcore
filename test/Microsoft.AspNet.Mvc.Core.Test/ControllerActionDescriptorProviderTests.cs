@@ -1136,19 +1136,25 @@ namespace Microsoft.AspNet.Mvc.Test
 
             var options = new MockMvcOptionsAccessor();
             options.Options.ApplicationModelConventions.Add(applicationConvention.Object);
-            
+
             var provider = GetProvider(typeof(ConventionsController).GetTypeInfo(), options);
 
             var model = provider.BuildModel();
 
             var controller = model.Controllers.Single();
-            controller.Attributes.Add(controllerConvention.Object);
+            model.Controllers.Remove(controller);
+            controller = BuildControllerModel(controller, controllerConvention.Object);
+            model.Controllers.Add(controller);
 
             var action = controller.Actions.Single();
-            action.Attributes.Add(actionConvention.Object);
+            controller.Actions.Remove(action);
+            action = BuildActionModel(action, actionConvention.Object);
+            controller.Actions.Add(action);
 
             var parameter = action.Parameters.Single();
-            parameter.Attributes.Add(parameterConvention.Object);
+            action.Parameters.Remove(parameter);
+            parameter = BuildParameterModel(parameter, parameterConvention.Object);
+            action.Parameters.Add(parameter);
 
             // Act
             ApplicationModelConventions.ApplyConventions(model, options.Options.ApplicationModelConventions);
@@ -1298,6 +1304,33 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(2, action.ActionConstraints.Count);
             Assert.Single(action.ActionConstraints, a => (a as RouteAndConstraintAttribute)?.Template == "~/A2");
             Assert.Single(action.ActionConstraints, a => a is ConstraintAttribute);
+        }
+
+        private ActionModel BuildActionModel(ActionModel action, IActionModelConvention actionConvention)
+        {
+            var t = new ActionModel(action.ActionMethod,
+                                          new List<object>(action.Attributes) { actionConvention });
+            t.Parameters.AddRange(action.Parameters);
+
+            return t;
+        }
+
+        private ParameterModel BuildParameterModel(ParameterModel parameter, IParameterModelConvention parameterConvention)
+        {
+            var t = new ParameterModel(parameter.ParameterInfo,
+                                        new List<object>(parameter.Attributes) { parameterConvention });
+            t.Action = parameter.Action;
+            
+            return t;
+        }
+
+        private ControllerModel BuildControllerModel(ControllerModel controller, IControllerModelConvention controllerConvention)
+        {
+            var t = new ControllerModel(controller.ControllerType,
+                                          new List<object>(controller.Attributes) { controllerConvention });
+            t.Actions.AddRange(controller.Actions);
+            
+            return t;
         }
 
         private ControllerActionDescriptorProvider GetProvider(

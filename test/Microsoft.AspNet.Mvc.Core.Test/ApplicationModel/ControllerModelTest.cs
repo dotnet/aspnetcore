@@ -14,9 +14,11 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void CopyConstructor_DoesDeepCopyOfOtherModels()
         {
             // Arrange
-            var controller = new ControllerModel(typeof(TestController).GetTypeInfo());
+            var controller = new ControllerModel(typeof(TestController).GetTypeInfo(), 
+                                                 new List<object>());
 
-            var action = new ActionModel(typeof(TestController).GetMethod("Edit"));
+            var action = new ActionModel(typeof(TestController).GetMethod("Edit"), 
+                                         new List<object>());
             controller.Actions.Add(action);
             action.Controller = controller;
 
@@ -46,11 +48,11 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void CopyConstructor_CopiesAllProperties()
         {
             // Arrange
-            var controller = new ControllerModel(typeof(TestController).GetTypeInfo());
+            var controller = new ControllerModel(typeof(TestController).GetTypeInfo(), 
+                                                 new List<object>() { new HttpGetAttribute() });
 
             controller.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
             controller.Application = new ApplicationModel();
-            controller.Attributes.Add(new HttpGetAttribute());
             controller.ControllerName = "cool";
             controller.Filters.Add(new AuthorizeAttribute());
             controller.RouteConstraints.Add(new AreaAttribute("Admin"));

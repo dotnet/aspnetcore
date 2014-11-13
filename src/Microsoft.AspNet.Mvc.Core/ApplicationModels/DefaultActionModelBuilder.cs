@@ -213,12 +213,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             [NotNull] MethodInfo methodInfo, 
             [NotNull] IReadOnlyList<object> attributes)
         {
-            var actionModel = new ActionModel(methodInfo)
+            var actionModel = new ActionModel(methodInfo, attributes)
             {
                 IsActionNameMatchRequired = true,
             };
-
-            actionModel.Attributes.AddRange(attributes);
 
             actionModel.ActionConstraints.AddRange(attributes.OfType<IActionConstraintMetadata>());
             actionModel.Filters.AddRange(attributes.OfType<IFilter>());
@@ -268,12 +266,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// <returns>A <see cref="ParameterModel"/> for the given <see cref="ParameterInfo"/>.</returns>
         protected virtual ParameterModel CreateParameterModel([NotNull] ParameterInfo parameterInfo)
         {
-            var parameterModel = new ParameterModel(parameterInfo);
-
             // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
             // is needed to so that the result of ToArray() is object
             var attributes = parameterInfo.GetCustomAttributes(inherit: true).OfType<object>().ToArray();
-            parameterModel.Attributes.AddRange(attributes);
+            var parameterModel = new ParameterModel(parameterInfo, attributes);
 
             parameterModel.BinderMetadata = attributes.OfType<IBinderMetadata>().FirstOrDefault();
 
