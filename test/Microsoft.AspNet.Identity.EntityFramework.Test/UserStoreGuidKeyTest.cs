@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
     [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
     public class UserStoreGuidTest : SqlStoreTestBase<GuidUser, GuidRole, Guid>
     {
-        private readonly string _connectionString = @"Server=(localdb)\v11.0;Database=SqlUserStoreGuidTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
+        private readonly string _connectionString = @"Server=(localdb)\mssqllocaldb;Database=SqlUserStoreGuidTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
 
         public override string ConnectionString
         {

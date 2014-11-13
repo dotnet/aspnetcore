@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
     {
         public class ApplicationDbContext : IdentityDbContext<ApplicationUser> { }
 
-        private readonly string ConnectionString = @"Server=(localdb)\v11.0;Database=SqlUserStoreTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
+        private readonly string ConnectionString = @"Server=(localdb)\mssqllocaldb;Database=SqlUserStoreTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
 
         [TestPriority(-1000)]
         [Fact]
