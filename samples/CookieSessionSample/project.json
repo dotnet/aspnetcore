@@ -3,7 +3,8 @@
         "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.Framework.Cache.Memory": "1.0.0-*",
-        "Kestrel": "1.0.0-*"
+        "Kestrel": "1.0.0-*",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*"
     },
     "commands": {
         "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:12345",
@@ -12,5 +13,6 @@
     "frameworks": {
         "aspnet50": { },
         "aspnetcore50": { }
-    }
+    },
+    "webroot": "wwwroot"
 }

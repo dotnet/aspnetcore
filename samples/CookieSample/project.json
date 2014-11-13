@@ -2,6 +2,7 @@
     "dependencies": {
         "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Kestrel": "1.0.0-*"
     },
     "commands": {
@@ -13,5 +14,6 @@
         },
         "aspnetcore50": {
         }
-    }
+    },
+    "webroot":"wwwroot"
 }
