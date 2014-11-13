@@ -13,9 +13,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Creates a <see cref="RazorView"/> providing it with the <see cref="IRazorPage"/> to execute.
         /// </summary>
-        /// <param name="razorPage">The <see cref="IRazorPage"/> instance to execute.</param>
+        /// <param name="page">The <see cref="IRazorPage"/> instance to execute.</param>
         /// <param name="isPartial">Determines if the view is to be executed as a partial.</param>
-        /// <returns>The IRazorPage instance if it exists, null otherwise.</returns>
+        /// <returns>A <see cref="IView"/> instance that renders the contents of the specified <paramref name="page"/></returns> 
         IView GetView([NotNull] IRazorPage page, bool isPartial);
     }
 }

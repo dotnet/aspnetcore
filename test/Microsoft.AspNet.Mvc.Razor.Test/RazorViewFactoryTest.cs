@@ -15,8 +15,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
     public class RazorViewFactoryTest
     {
 
-        [Fact]
-        public void GetView_SetsIsPartial()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GetView_SetsIsPartial(bool isPartial)
         {
             // Arrange
             var factory = new RazorViewFactory(
@@ -25,14 +27,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 Mock.Of<IViewStartProvider>());
 
             // Act 
-            var viewPartial = factory.GetView(Mock.Of<IRazorPage>(), isPartial: true) as RazorView;
-            var view = factory.GetView(Mock.Of<IRazorPage>(), isPartial: false) as RazorView;
+            var view = factory.GetView(Mock.Of<IRazorPage>(), isPartial);
 
             // Assert  
-            Assert.NotNull(viewPartial);
-            Assert.True(viewPartial.IsPartial);
-            Assert.NotNull(view);
-            Assert.True(!view.IsPartial);
+            var razorView = Assert.IsType<RazorView>(view);
+            Assert.Equal(razorView.IsPartial, isPartial);
         }
 
         [Fact]
@@ -53,22 +52,5 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             Assert.NotNull(view);
             Assert.Same(view.RazorPage, page);
         }
-
-        [Fact]
-        public void GetView_ReturnsRazorView()
-        {
-            // Arrange
-            var factory = new RazorViewFactory(
-                Mock.Of<IRazorPageFactory>(),
-                Mock.Of<IRazorPageActivator>(),
-                Mock.Of<IViewStartProvider>());
-
-            // Act 
-            var view = factory.GetView(Mock.Of<IRazorPage>(), isPartial: true);
-
-            // Assert  
-            Assert.IsType<RazorView>(view);
-        }
-
     }
 }
