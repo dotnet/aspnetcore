@@ -592,12 +592,8 @@ namespace Microsoft.AspNet.Mvc
             ControllerActionDescriptor actionDescriptor,
             IDictionary<MethodInfo, string> routingConfigurationErrors)
         {
-            string combinedErrorMessage = null;
-
             var hasAttributeRoutedActions = false;
             var hasConventionallyRoutedActions = false;
-
-            var invalidHttpMethodActions = new Dictionary<ActionModel, IEnumerable<string>>();
 
             var actionsForMethod = methodMap[actionDescriptor.MethodInfo];
             foreach (var reflectedAction in actionsForMethod)
@@ -613,132 +609,24 @@ namespace Microsoft.AspNet.Mvc
                         hasConventionallyRoutedActions = true;
                     }
                 }
-
-                // Keep a list of actions with possible invalid IHttpActionMethodProvider attributes
-                // to generate an error in case the method generates attribute routed actions.
-                ValidateActionHttpMethodProviders(reflectedAction.Key, invalidHttpMethodActions);
             }
 
             // Validate that no method result in attribute and non attribute actions at the same time.
             // By design, mixing attribute and conventionally actions in the same method is not allowed.
-            // This is for example the case when someone uses[HttpGet("Products")] and[HttpPost]
-            // on the same  method.
+            //
+            // This for example:
+            //
+            // [HttpGet]
+            // [HttpPost("Foo")]
+            // public void Foo() { }
             if (hasAttributeRoutedActions && hasConventionallyRoutedActions)
             {
-                combinedErrorMessage = CreateMixedRoutedActionDescriptorsErrorMessage(
+                var message = CreateMixedRoutedActionDescriptorsErrorMessage(
                     actionDescriptor,
                     actionsForMethod);
+
+                routingConfigurationErrors.Add(actionDescriptor.MethodInfo, message);
             }
-
-            // Validate that no method that creates attribute routed actions and
-            // also uses attributes that only constrain the set of HTTP methods. For example,
-            // if an attribute that implements IActionHttpMethodProvider but does not implement
-            // IRouteTemplateProvider is used with an attribute that implements IRouteTemplateProvider on
-            // the same action, the HTTP methods provided by the attribute that only implements
-            // IActionHttpMethodProvider would be silently ignored, so we choose to throw to
-            // inform the user of the invalid configuration.
-            if (hasAttributeRoutedActions && invalidHttpMethodActions.Any())
-            {
-                var errorMessage = CreateInvalidActionHttpMethodProviderErrorMessage(
-                    actionDescriptor,
-                    invalidHttpMethodActions,
-                    actionsForMethod);
-
-                combinedErrorMessage = CombineErrorMessage(combinedErrorMessage, errorMessage);
-            }
-
-            if (combinedErrorMessage != null)
-            {
-                routingConfigurationErrors.Add(actionDescriptor.MethodInfo, combinedErrorMessage);
-            }
-        }
-
-        private static void ValidateActionHttpMethodProviders(
-            ActionModel reflectedAction,
-            IDictionary<ActionModel, IEnumerable<string>> invalidHttpMethodActions)
-        {
-            var invalidHttpMethodProviderAttributes = reflectedAction.Attributes
-                .Where(attr => attr is IActionHttpMethodProvider &&
-                       !(attr is IRouteTemplateProvider))
-                .Select(attr => attr.GetType().FullName);
-
-            if (invalidHttpMethodProviderAttributes.Any())
-            {
-                invalidHttpMethodActions.Add(
-                    reflectedAction,
-                    invalidHttpMethodProviderAttributes);
-            }
-        }
-
-        private static string CombineErrorMessage(string combinedErrorMessage, string errorMessage)
-        {
-            if (combinedErrorMessage == null)
-            {
-                combinedErrorMessage = errorMessage;
-            }
-            else
-            {
-                combinedErrorMessage = string.Join(
-                    Environment.NewLine,
-                    combinedErrorMessage,
-                    errorMessage);
-            }
-
-            return combinedErrorMessage;
-        }
-
-        private static string CreateInvalidActionHttpMethodProviderErrorMessage(
-            ControllerActionDescriptor actionDescriptor,
-            IDictionary<ActionModel, IEnumerable<string>> invalidHttpMethodActions,
-            IDictionary<ActionModel, IList<ControllerActionDescriptor>> actionsForMethod)
-        {
-            var messagesForMethodInfo = new List<string>();
-            foreach (var invalidAction in invalidHttpMethodActions)
-            {
-                var invalidAttributesList = string.Join(", ", invalidAction.Value);
-
-                foreach (var descriptor in actionsForMethod[invalidAction.Key])
-                {
-                    // We only report errors in attribute routed actions. For example, an action
-                    // that contains [HttpGet("Products")], [HttpPost] and [HttpHead], where [HttpHead]
-                    // only implements IHttpActionMethodProvider and restricts the action to only allow
-                    // the head method, will report that the action contains invalid IActionHttpMethodProvider
-                    // attributes only for the action generated by [HttpGet("Products")].
-                    // [HttpPost] will be treated as an action that produces a conventionally routed action
-                    // and the fact that the method generates attribute and non attributed actions will be
-                    // reported as a different error.
-                    if (IsAttributeRoutedAction(descriptor))
-                    {
-                        var messageItem = Resources.FormatAttributeRoute_InvalidHttpConstraints_Item(
-                            descriptor.DisplayName,
-                            descriptor.AttributeRouteInfo.Template,
-                            invalidAttributesList,
-                            typeof(IActionHttpMethodProvider).FullName);
-
-                        messagesForMethodInfo.Add(messageItem);
-                    }
-                }
-            }
-
-            var methodFullName = string.Format(
-                CultureInfo.InvariantCulture,
-                "{0}.{1}",
-                actionDescriptor.MethodInfo.DeclaringType.FullName,
-                actionDescriptor.MethodInfo.Name);
-
-            // Sample message:
-            // A method 'MyApplication.CustomerController.Index' that defines attribute routed actions must
-            // not have attributes that implement 'Microsoft.AspNet.Mvc.IActionHttpMethodProvider'
-            // and do not implement 'Microsoft.AspNet.Mvc.Routing.IRouteTemplateProvider':
-            // Action 'MyApplication.CustomerController.Index' has 'Namespace.CustomHttpMethodAttribute'
-            // invalid 'Microsoft.AspNet.Mvc.IActionHttpMethodProvider' attributes.
-            return
-                Resources.FormatAttributeRoute_InvalidHttpConstraints(
-                    methodFullName,
-                    typeof(IActionHttpMethodProvider).FullName,
-                    typeof(IRouteTemplateProvider).FullName,
-                    Environment.NewLine,
-                    string.Join(Environment.NewLine, messagesForMethodInfo));
         }
 
         private static string CreateMixedRoutedActionDescriptorsErrorMessage(
@@ -748,12 +636,22 @@ namespace Microsoft.AspNet.Mvc
             // Text to show as the attribute route template for conventionally routed actions.
             var nullTemplate = Resources.AttributeRoute_NullTemplateRepresentation;
 
-            var actionDescriptions = actionsForMethod
-                .SelectMany(a => a.Value)
-                .Select(ad =>
+            var actionDescriptions = new List<string>();
+            foreach (var action in actionsForMethod.SelectMany(kvp => kvp.Value))
+            {
+                var routeTemplate = action.AttributeRouteInfo?.Template ?? nullTemplate;
+
+                var verbs = action.ActionConstraints.OfType<HttpMethodConstraint>().FirstOrDefault()?.HttpMethods;
+                var formattedVerbs = string.Join(", ", verbs.OrderBy(v => v, StringComparer.Ordinal));
+
+                var description =
                     Resources.FormatAttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod_Item(
-                        ad.DisplayName,
-                        ad.AttributeRouteInfo != null ? ad.AttributeRouteInfo.Template : nullTemplate));
+                        action.DisplayName,
+                        routeTemplate,
+                        formattedVerbs);
+
+                actionDescriptions.Add(description);
+            }
 
             var methodFullName = string.Format(
                 CultureInfo.InvariantCulture,
@@ -762,10 +660,14 @@ namespace Microsoft.AspNet.Mvc
                 actionDescriptor.MethodInfo.Name);
 
             // Sample error message:
+            //
             // A method 'MyApplication.CustomerController.Index' must not define attributed actions and
             // non attributed actions at the same time:
-            // Action: 'MyApplication.CustomerController.Index' - Template: 'Products'
-            // Action: 'MyApplication.CustomerController.Index' - Template: '(none)'
+            // Action: 'MyApplication.CustomerController.Index' - Route Template: 'Products' - HTTP Verbs: 'PUT'
+            // Action: 'MyApplication.CustomerController.Index' - Route Template: '(none)' - HTTP Verbs: 'POST'
+            //
+            // Use 'AcceptVerbsAttribute' to create a single route that allows multiple HTTP verbs and defines a route,
+            // or set a route template in all attributes that constrain HTTP verbs.
             return
                 Resources.FormatAttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod(
                     methodFullName,

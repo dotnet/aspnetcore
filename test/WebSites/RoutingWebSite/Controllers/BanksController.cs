@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNet.Mvc;
-using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNet.Mvc;
 
 namespace RoutingWebSite
 {
@@ -30,6 +32,21 @@ namespace RoutingWebSite
             return _generator.Generate(
                 Url.Action(),
                 Url.RouteUrl(new { }));
+        }
+
+        [AcceptVerbs("PUT", "POST")]
+        [Route("Bank/Deposit")]
+        [Route("Bank/Deposit/{amount}")]
+        public ActionResult Deposit()
+        {
+            return _generator.Generate("/Bank/Deposit", "/Bank/Deposit/5");
+        }
+
+        [HttpPost]
+        [Route("Bank/Withdraw/{id}")]
+        public ActionResult Withdraw(int id)
+        {
+            return _generator.Generate("/Bank/Withdraw/5");
         }
     }
 }

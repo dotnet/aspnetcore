@@ -576,6 +576,89 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Single(actions, ai => ai.AttributeRouteModel.Template.Equals("All"));
         }
 
+        [Fact]
+        public void GetActions_MixedHttpVerbsAndRoutes_EmptyVerbWithRoute()
+        {
+            // Arrange
+            var builder = new DefaultActionModelBuilder();
+            var typeInfo = typeof(MixedHttpVerbsAndRouteAttributeController).GetTypeInfo();
+            var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.VerbAndRoute);
+
+            // Act
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+
+            // Assert
+            var action = Assert.Single(actions);
+            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+            Assert.Equal("Products", action.AttributeRouteModel.Template);
+        }
+
+        [Fact]
+        public void GetActions_MixedHttpVerbsAndRoutes_MultipleEmptyVerbsWithMultipleRoutes()
+        {
+            // Arrange
+            var builder = new DefaultActionModelBuilder();
+            var typeInfo = typeof(MixedHttpVerbsAndRouteAttributeController).GetTypeInfo();
+            var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.MultipleVerbsAndRoutes);
+
+            // Act
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+
+            // Assert
+            Assert.Equal(2, actions.Count());
+
+            var action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products");
+            Assert.Equal(new string[] { "GET", "POST" }, action.HttpMethods);
+
+            action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "v2/Products");
+            Assert.Equal(new string[] { "GET", "POST" }, action.HttpMethods);
+        }
+
+        [Fact]
+        public void GetActions_MixedHttpVerbsAndRoutes_MultipleEmptyAndNonEmptyVerbsWithMultipleRoutes()
+        {
+            // Arrange
+            var builder = new DefaultActionModelBuilder();
+            var typeInfo = typeof(MixedHttpVerbsAndRouteAttributeController).GetTypeInfo();
+            var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.MultipleVerbsWithAnyWithoutTemplateAndRoutes);
+
+            // Act
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+
+            // Assert
+            Assert.Equal(3, actions.Count());
+
+            var action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products");
+            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+
+            action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "v2/Products");
+            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+
+            action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products/Buy");
+            Assert.Equal(new string[] { "POST" }, action.HttpMethods);
+        }
+
+        [Fact]
+        public void GetActions_MixedHttpVerbsAndRoutes_MultipleEmptyAndNonEmptyVerbs()
+        {
+            // Arrange
+            var builder = new DefaultActionModelBuilder();
+            var typeInfo = typeof(MixedHttpVerbsAndRouteAttributeController).GetTypeInfo();
+            var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.Invalid);
+
+            // Act
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+
+            // Assert
+            Assert.Equal(2, actions.Count());
+
+            var action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "Products");
+            Assert.Equal(new string[] { "POST" }, action.HttpMethods);
+
+            action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == null);
+            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+        }
+
         private class AccessibleActionModelBuilder : DefaultActionModelBuilder
         {
             public new bool IsAction([NotNull] TypeInfo typeInfo, [NotNull]MethodInfo methodInfo)
@@ -763,6 +846,42 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             public void Index() { }
 
             public void Delete() { }
+        }
+
+        private class MixedHttpVerbsAndRouteAttributeController : Controller
+        {
+            // Should produce a single action constrained to GET
+            [HttpGet]
+            [Route("Products")]
+            public void VerbAndRoute() { }
+
+            // Should produce two actions constrained to GET,POST
+            [HttpGet]
+            [HttpPost]
+            [Route("Products")]
+            [Route("v2/Products")]
+            public void MultipleVerbsAndRoutes() { }
+
+            // Produces:
+            //
+            // Products - GET
+            // v2/Products - GET
+            // Products/Buy - POST
+            [HttpGet]
+            [Route("Products")]
+            [Route("v2/Products")]
+            [HttpPost("Products/Buy")]
+            public void MultipleVerbsWithAnyWithoutTemplateAndRoutes() { }
+
+            // Produces:
+            //
+            // (no route) - GET
+            // Products - POST
+            //
+            // This is invalid, and will throw during the ADP construction phase. 
+            [HttpGet]
+            [HttpPost("Products")]
+            public void Invalid() { }
         }
 
         // Here the constraints on the methods are acting as an IActionHttpMethodProvider and

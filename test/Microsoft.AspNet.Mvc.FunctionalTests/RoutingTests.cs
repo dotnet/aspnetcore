@@ -1324,6 +1324,54 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Null(result.Link);
         }
 
+        [Theory]
+        [InlineData("/Bank/Deposit", "PUT", "Deposit")]
+        [InlineData("/Bank/Deposit", "POST", "Deposit")]
+        [InlineData("/Bank/Deposit/5", "PUT", "Deposit")]
+        [InlineData("/Bank/Deposit/5", "POST", "Deposit")]
+        [InlineData("/Bank/Withdraw/5", "POST", "Withdraw")]
+        public async Task AttributeRouting_MixedAcceptVerbsAndRoute_Reachable(string path, string verb, string actionName)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(new HttpMethod(verb), "http://localhost" + path);
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Contains(path, result.ExpectedUrls);
+            Assert.Equal("Banks", result.Controller);
+            Assert.Equal(actionName, result.Action);
+        }
+
+        // These verbs don't match
+        [Theory]
+        [InlineData("/Bank/Deposit", "GET")]
+        [InlineData("/Bank/Deposit/5", "DELETE")]
+        [InlineData("/Bank/Withdraw/5", "GET")]
+        public async Task AttributeRouting_MixedAcceptVerbsAndRoute_Unreachable(string path, string verb)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(new HttpMethod(verb), "http://localhost" + path);
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
         private static LinkBuilder LinkFrom(string url)
         {
             return new LinkBuilder(url);
