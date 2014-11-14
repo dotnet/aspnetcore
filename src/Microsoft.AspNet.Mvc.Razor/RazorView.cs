@@ -51,7 +51,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets a value that determines if the view is executed as a partial.
         /// </summary>
-        /// <inheritdoc />
         public bool IsPartial { get; }
 
 
