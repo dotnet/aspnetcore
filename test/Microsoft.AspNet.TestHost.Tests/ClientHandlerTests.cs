@@ -46,6 +46,21 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [Fact]
+        public Task SingleSlashNotMovedToPathBase()
+        {
+            var handler = new ClientHandler(env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.Equal("", context.Request.PathBase.Value);
+                Assert.Equal("/", context.Request.Path.Value);
+
+                return Task.FromResult(0);
+            }, new PathString(""));
+            var httpClient = new HttpClient(handler);
+            return httpClient.GetAsync("https://example.com/");
+        }
+
+        [Fact]
         public async Task ResubmitRequestWorks()
         {
             int requestCount = 1;

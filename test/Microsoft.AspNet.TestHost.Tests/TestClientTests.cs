@@ -46,6 +46,48 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [Fact]
+        public async Task NoTrailingSlash_NoPathBase()
+        {
+            // Arrange
+            var expected = "GET Response";
+            RequestDelegate appDelegate = ctx =>
+            {
+                Assert.Equal("", ctx.Request.PathBase.Value);
+                Assert.Equal("/", ctx.Request.Path.Value);
+                return ctx.Response.WriteAsync(expected);
+            };
+            var server = TestServer.Create(_services, app => app.Run(appDelegate));
+            var client = server.CreateClient();
+
+            // Act
+            var actual = await client.GetStringAsync("http://localhost:12345");
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public async Task SingleTrailingSlash_NoPathBase()
+        {
+            // Arrange
+            var expected = "GET Response";
+            RequestDelegate appDelegate = ctx =>
+            {
+                Assert.Equal("", ctx.Request.PathBase.Value);
+                Assert.Equal("/", ctx.Request.Path.Value);
+                return ctx.Response.WriteAsync(expected);
+            };
+            var server = TestServer.Create(_services, app => app.Run(appDelegate));
+            var client = server.CreateClient();
+
+            // Act
+            var actual = await client.GetStringAsync("http://localhost:12345/");
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
         public async Task PutAsyncWorks()
         {
             // Arrange

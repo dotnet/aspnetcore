@@ -72,6 +72,11 @@ namespace Microsoft.AspNet.TestHost
         public HttpMessageHandler CreateHandler()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
+            if (pathBase.Equals(new PathString("/")))
+            {
+                // When we just have http://host/ the trailing slash is really part of the Path, not the PathBase.
+                pathBase = PathString.Empty;
+            }
             return new ClientHandler(Invoke, pathBase);
         }
 
