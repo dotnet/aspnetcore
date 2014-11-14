@@ -291,6 +291,7 @@
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Shims\ConsoleColor.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Building\BuildManager.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\AddCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\WrapCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\InstallCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Packing\PackManager.cs;
                                     $(PoliCheckPath)**\**\Microsoft.Framework.PackageManager.dll">
