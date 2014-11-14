@@ -7,10 +7,10 @@ namespace Microsoft.AspNet.Security.Facebook
     {
         public const string AuthenticationType = "Facebook";
 
-        public const string AuthorizationEndpoint = "https://www.facebook.com/dialog/oauth";
+        public const string AuthorizationEndpoint = "https://www.facebook.com/v2.2/dialog/oauth";
 
-        public const string TokenEndpoint = "https://graph.facebook.com/oauth/access_token";
+        public const string TokenEndpoint = "https://graph.facebook.com/v2.2/oauth/access_token";
 
-        public const string UserInformationEndpoint = "https://graph.facebook.com/me";
+        public const string UserInformationEndpoint = "https://graph.facebook.com/v2.2/me";
     }
 }

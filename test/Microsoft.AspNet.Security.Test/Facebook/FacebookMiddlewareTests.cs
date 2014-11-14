@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Security.Facebook
             var transaction = await SendAsync(server, "http://example.com/challenge");
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            location.ShouldContain("https://www.facebook.com/dialog/oauth");
+            location.ShouldContain("https://www.facebook.com/v2.2/dialog/oauth");
             location.ShouldContain("response_type=code");
             location.ShouldContain("client_id=");
             location.ShouldContain("redirect_uri=");

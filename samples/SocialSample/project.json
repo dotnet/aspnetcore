@@ -11,8 +11,9 @@
         "Kestrel": "1.0.0-*"
     },
     "commands": {
-        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:12345",
-        "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5004"
+        /* Note all servers must use the same address and port because these are pre-registered with the various providers. */
+        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:54540",
+        "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:54540"
     },
     "frameworks": {
         "aspnet50": {

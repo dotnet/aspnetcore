@@ -37,6 +37,7 @@ namespace CookieSample
                     options.LoginPath = new PathString("/login");
                 });
 
+            // https://developers.facebook.com/apps/
             app.UseFacebookAuthentication(options =>
             {
                 options.AppId = "569522623154478";
@@ -55,23 +56,25 @@ namespace CookieSample
                 options.Scope.Add("email");
             });
 
+            // https://console.developers.google.com/project
             app.UseGoogleAuthentication(options =>
             {
                 options.ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com";
                 options.ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f";
             });
 
+            // https://apps.twitter.com/
             app.UseTwitterAuthentication(options =>
             {
                 options.ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g";
                 options.ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI";
             });
 
-            /*
-            The MicrosoftAccount service has restrictions that prevent the use of http://localhost:12345/ for test applications.
-            As such, here is how to change this sample to uses http://mssecsample.localhost.this:12345/ instead.
+            /* https://account.live.com/developers/applications
+            The MicrosoftAccount service has restrictions that prevent the use of http://localhost:54540/ for test applications.
+            As such, here is how to change this sample to uses http://mssecsample.localhost.this:54540/ instead.
 
-            Edit the Project.json file and replace http://localhost:12345/ with http://mssecsample.localhost.this:12345/.
+            Edit the Project.json file and replace http://localhost:54540/ with http://mssecsample.localhost.this:54540/.
 
             From an admin command console first enter:
              notepad C:\Windows\System32\drivers\etc\hosts
@@ -79,7 +82,7 @@ namespace CookieSample
              127.0.0.1 MsSecSample.localhost.this
 
             Then you can choose to run the app as admin (see below) or add the following ACL as admin:
-             netsh http add urlacl url=http://mssecsample.localhost.this:12345/ user=[domain\user]
+             netsh http add urlacl url=http://mssecsample.localhost.this:54540/ user=[domain\user]
 
             The sample app can then be run via:
              k web
@@ -102,6 +105,7 @@ namespace CookieSample
                 options.ClientSecret = "bLw2JIvf8Y1TaToipPEqxTVlOeJwCUsr";
             });
 
+            // https://github.com/settings/applications/
             app.UseOAuthAuthentication("GitHub-AccessToken", options =>
             {
                 options.ClientId = "8c0c5a572abe8fe89588";
