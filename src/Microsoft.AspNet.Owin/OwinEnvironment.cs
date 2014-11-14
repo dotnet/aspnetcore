@@ -37,11 +37,11 @@ namespace Microsoft.AspNet.Owin
         {
             if (context.GetFeature<IHttpRequestFeature>() == null)
             {
-                throw new ArgumentException("Missing required IHttpRequestFeature", "context");
+                throw new ArgumentException("Missing required feature: " + nameof(IHttpRequestFeature) + ".", "context");
             }
             if (context.GetFeature<IHttpResponseFeature>() == null)
             {
-                throw new ArgumentException("Missing required IHttpResponseFeature", "context");
+                throw new ArgumentException("Missing required feature: " + nameof(IHttpResponseFeature) + ".", "context");
             }
 
             _context = context;
