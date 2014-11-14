@@ -93,7 +93,8 @@
                          $(UnsignedPackagesPath)**\StyleCop.KRules*.dll;
                          $(UnsignedPackagesPath)**\System.Data.*.dll;
                          $(UnsignedPackagesPath)**\System.Security.Claims*.dll;
-                         $(UnsignedPackagesPath)**\klr*.exe"
+                         $(UnsignedPackagesPath)**\klr*.exe;
+                         $(UnsignedPackagesPath)**\CsprojDumper.exe"
             />
 
             <UnsignedPackageBinaries Include="@(_UnsignedPackageBinaries)">
