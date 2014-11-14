@@ -21,25 +21,14 @@ namespace Microsoft.AspNet.Razor.Parser
         private bool _terminated = false;
 
         private Stack<BlockBuilder> _blockStack = new Stack<BlockBuilder>();
+        private readonly ParserErrorSink _errorSink;
 
-        public ParserContext(ITextDocument source, ParserBase codeParser, ParserBase markupParser, ParserBase activeParser)
+        public ParserContext([NotNull] ITextDocument source,
+                             [NotNull] ParserBase codeParser,
+                             [NotNull] ParserBase markupParser,
+                             [NotNull] ParserBase activeParser,
+                             [NotNull] ParserErrorSink errorSink)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
-            if (codeParser == null)
-            {
-                throw new ArgumentNullException("codeParser");
-            }
-            if (markupParser == null)
-            {
-                throw new ArgumentNullException("markupParser");
-            }
-            if (activeParser == null)
-            {
-                throw new ArgumentNullException("activeParser");
-            }
             if (activeParser != codeParser && activeParser != markupParser)
             {
                 throw new ArgumentException(RazorResources.ActiveParser_Must_Be_Code_Or_Markup_Parser, "activeParser");
@@ -51,10 +40,17 @@ namespace Microsoft.AspNet.Razor.Parser
             CodeParser = codeParser;
             MarkupParser = markupParser;
             ActiveParser = activeParser;
-            Errors = new List<RazorError>();
+            _errorSink = errorSink;
         }
 
-        public IList<RazorError> Errors { get; private set; }
+        public IEnumerable<RazorError> Errors
+        {
+            get
+            {
+                return _errorSink.Errors;
+            }
+        }
+
         public TextDocumentReader Source { get; set; }
         public ParserBase CodeParser { get; private set; }
         public ParserBase MarkupParser { get; private set; }
@@ -194,18 +190,28 @@ namespace Microsoft.AspNet.Razor.Parser
             }
         }
 
+        public void OnError(RazorError error)
+        {
+            EnusreNotTerminated();
+            AssertOnOwnerTask();
+
+            _errorSink.OnError(error);
+        }
+
         public void OnError(SourceLocation location, string message)
         {
             EnusreNotTerminated();
             AssertOnOwnerTask();
-            Errors.Add(new RazorError(message, location));
+
+            _errorSink.OnError(location, message);
         }
 
         public void OnError(SourceLocation location, string message, params object[] args)
         {
             EnusreNotTerminated();
             AssertOnOwnerTask();
-            OnError(location, String.Format(CultureInfo.CurrentCulture, message, args));
+
+            OnError(location, string.Format(CultureInfo.CurrentCulture, message, args));
         }
 
         public ParserResults CompleteParse()
@@ -218,7 +224,8 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 throw new InvalidOperationException(RazorResources.ParserContext_CannotCompleteTree_OutstandingBlocks);
             }
-            return new ParserResults(_blockStack.Pop().Build(), Errors);
+
+            return new ParserResults(_blockStack.Pop().Build(), _errorSink.Errors.ToList());
         }
 
         [Conditional("DEBUG")]

@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
                 // We only create a single error because we can't reasonably determine other invalid tag helpers in the
                 // document; having one malformed tag helper puts the document into an invalid state.
-                context.OnError(
+                context.ErrorSink.OnError(
                     malformedTagHelper.Start,
                     RazorResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(
                         malformedTagHelper.TagName));

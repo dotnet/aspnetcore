@@ -17,10 +17,12 @@ namespace Microsoft.AspNet.Razor.Parser
         /// <summary>
         /// Instantiates a new <see cref="RewritingContext"/>.
         /// </summary>
-        public RewritingContext(Block syntaxTree)
+        public RewritingContext(Block syntaxTree, ParserErrorSink errorSink)
         {
             _errors = new List<RazorError>();
             SyntaxTree = syntaxTree;
+
+            ErrorSink = errorSink;
         }
 
         /// <summary>
@@ -28,25 +30,6 @@ namespace Microsoft.AspNet.Razor.Parser
         /// </summary>
         public Block SyntaxTree { get; set; }
 
-        /// <summary>
-        /// <see cref="RazorError"/>s collected.
-        /// </summary>
-        public IEnumerable<RazorError> Errors
-        {
-            get
-            {
-                return _errors;
-            }
-        }
-
-        /// <summary>
-        /// Creates and tracks a new <see cref="RazorError"/>.
-        /// </summary>
-        /// <param name="location"><see cref="SourceLocation"/> of the error.</param>
-        /// <param name="message">A message describing the error.</param>        
-        public void OnError(SourceLocation location, string message)
-        {
-            _errors.Add(new RazorError(message, location));
-        }
+        public ParserErrorSink ErrorSink { get; }
     }
 }

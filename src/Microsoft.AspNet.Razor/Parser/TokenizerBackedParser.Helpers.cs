@@ -208,7 +208,7 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 foreach (RazorError error in symbol.Errors)
                 {
-                    Context.Errors.Add(error);
+                    Context.OnError(error);
                 }
                 Span.Accept(symbol);
             }

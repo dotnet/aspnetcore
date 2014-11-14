@@ -149,7 +149,8 @@ namespace Microsoft.AspNet.Razor.Parser
         private ParserResults ParseCore(ITextDocument input)
         {
             // Setup the parser context
-            var context = new ParserContext(input, CodeParser, MarkupParser, MarkupParser)
+            var errorSink = new ParserErrorSink();
+            var context = new ParserContext(input, CodeParser, MarkupParser, MarkupParser, errorSink)
             {
                 DesignTimeMode = DesignTimeMode
             };
@@ -164,7 +165,7 @@ namespace Microsoft.AspNet.Razor.Parser
             var results = context.CompleteParse();
 
             // Rewrite whitespace if supported
-            var rewritingContext = new RewritingContext(results.Document);
+            var rewritingContext = new RewritingContext(results.Document, errorSink);
             foreach (ISyntaxTreeRewriter rewriter in Optimizers)
             {
                 rewriter.Rewrite(rewritingContext);
@@ -194,12 +195,8 @@ namespace Microsoft.AspNet.Razor.Parser
                 prev = node;
             }
 
-            // We want to surface both the parsing and rewriting errors as one unified list of errors because
-            // both parsing and rewriting errors affect the end users Razor page.
-            var errors = results.ParserErrors.Concat(rewritingContext.Errors).ToList();
-
             // Return the new result
-            return new ParserResults(syntaxTree, errors);
+            return new ParserResults(syntaxTree, errorSink.Errors.ToList());
         }
 
         /// <summary>
