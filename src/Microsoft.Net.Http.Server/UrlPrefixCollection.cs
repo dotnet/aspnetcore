@@ -15,7 +15,7 @@ namespace Microsoft.Net.Http.Server
         private readonly WebListener _webListener;
         private readonly IDictionary<int, UrlPrefix> _prefixes = new Dictionary<int, UrlPrefix>(1);
         private int _nextId = 1;
-        
+
         internal UrlPrefixCollection(WebListener webListener)
         {
             _webListener = webListener;
@@ -23,7 +23,13 @@ namespace Microsoft.Net.Http.Server
 
         public int Count
         {
-            get { return _prefixes.Count; }
+            get
+            {
+                lock (_prefixes)
+                {
+                    return _prefixes.Count;
+                }
+            }
         }
 
         public bool IsReadOnly
@@ -38,36 +44,51 @@ namespace Microsoft.Net.Http.Server
 
         public void Add(UrlPrefix item)
         {
-            var id = _nextId++;
-            if (_webListener.IsListening)
+            lock (_prefixes)
             {
-                RegisterPrefix(item.Whole, id);
+                var id = _nextId++;
+                if (_webListener.IsListening)
+                {
+                    RegisterPrefix(item.Whole, id);
+                }
+                _prefixes.Add(id, item);
             }
-            _prefixes.Add(id, item);
         }
 
         internal UrlPrefix GetPrefix(int id)
         {
-            return _prefixes[id];
+            lock (_prefixes)
+            {
+                return _prefixes[id];
+            }
         }
 
         public void Clear()
         {
-            if (_webListener.IsListening)
+            lock (_prefixes)
             {
-                UnregisterAllPrefixes();
+                if (_webListener.IsListening)
+                {
+                    UnregisterAllPrefixes();
+                }
+                _prefixes.Clear();
             }
-            _prefixes.Clear();
         }
 
         public bool Contains(UrlPrefix item)
         {
-            return _prefixes.Values.Contains(item);
+            lock (_prefixes)
+            {
+                return _prefixes.Values.Contains(item);
+            }
         }
 
         public void CopyTo(UrlPrefix[] array, int arrayIndex)
         {
-            _prefixes.Values.CopyTo(array, arrayIndex);
+            lock (_prefixes)
+            {
+                _prefixes.Values.CopyTo(array, arrayIndex);
+            }
         }
 
         public bool Remove(string prefix)
@@ -77,29 +98,35 @@ namespace Microsoft.Net.Http.Server
 
         public bool Remove(UrlPrefix item)
         {
-            int? id = null;
-            foreach (var pair in _prefixes)
+            lock (_prefixes)
             {
-                if (pair.Value.Equals(item))
+                int? id = null;
+                foreach (var pair in _prefixes)
                 {
-                    id = pair.Key;
-                    if (_webListener.IsListening)
+                    if (pair.Value.Equals(item))
                     {
-                        UnregisterPrefix(pair.Value.Whole);
+                        id = pair.Key;
+                        if (_webListener.IsListening)
+                        {
+                            UnregisterPrefix(pair.Value.Whole);
+                        }
                     }
                 }
+                if (id.HasValue)
+                {
+                    _prefixes.Remove(id.Value);
+                    return true;
+                }
+                return false;
             }
-            if (id.HasValue)
-            {
-                _prefixes.Remove(id.Value);
-                return true;
-            }
-            return false;
         }
 
         public IEnumerator<UrlPrefix> GetEnumerator()
         {
-            return _prefixes.Values.GetEnumerator();
+            lock (_prefixes)
+            {
+                return _prefixes.Values.GetEnumerator();
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -109,21 +136,27 @@ namespace Microsoft.Net.Http.Server
 
         internal void RegisterAllPrefixes()
         {
-            // go through the uri list and register for each one of them
-            foreach (var pair in _prefixes)
+            lock (_prefixes)
             {
-                // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
-                RegisterPrefix(pair.Value.Whole, pair.Key);
+                // go through the uri list and register for each one of them
+                foreach (var pair in _prefixes)
+                {
+                    // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
+                    RegisterPrefix(pair.Value.Whole, pair.Key);
+                }
             }
         }
 
         internal void UnregisterAllPrefixes()
         {
-            // go through the uri list and unregister for each one of them
-            foreach (var prefix in _prefixes.Values)
+            lock (_prefixes)
             {
-                // ignore possible failures
-                UnregisterPrefix(prefix.Whole);
+                // go through the uri list and unregister for each one of them
+                foreach (var prefix in _prefixes.Values)
+                {
+                    // ignore possible failures
+                    UnregisterPrefix(prefix.Whole);
+                }
             }
         }
 
