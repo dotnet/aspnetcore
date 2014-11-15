@@ -16,7 +16,7 @@ namespace MusicStore.Mocks.Facebook
             var response = new HttpResponseMessage();
             var queryParameters = QueryHelpers.ParseQuery(request.RequestUri.Query);
 
-            if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/oauth/access_token"))
+            if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.2/oauth/access_token"))
             {
                 if (queryParameters["grant_type"] == "authorization_code")
                 {
@@ -29,7 +29,7 @@ namespace MusicStore.Mocks.Facebook
                     }
                 }
             }
-            else if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/me"))
+            else if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.2/me"))
             {
                 Helpers.ThrowIfConditionFailed(() => queryParameters["appsecret_proof"] != null, "appsecret_proof is null");
                 if (queryParameters["access_token"] == "ValidAccessToken")
