@@ -34,9 +34,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                   [NotNull] CodeBuilderContext codeBuilderContext,
                                                   [NotNull] Action<CSharpCodeWriter> renderAttributeValue)
         {
-            var propertyType = attributeDescriptor.PropertyInfo.PropertyType;
-
-            if (propertyType.FullName.Equals(_context.ModelExpressionTypeName, StringComparison.Ordinal))
+            if (attributeDescriptor.TypeName.Equals(_context.ModelExpressionTypeName, StringComparison.Ordinal))
             {
                 writer.WriteStartMethodInvocation(_context.CreateModelExpressionMethodName)
                       .Write(ModelLambdaVariableName)

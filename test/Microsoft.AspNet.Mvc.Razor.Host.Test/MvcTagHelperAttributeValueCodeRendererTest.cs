@@ -26,9 +26,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     ModelExpressionTypeName = modelExpressionType,
                     CreateModelExpressionMethodName = "SomeMethod"
                 });
-            var propertyInfo = new Mock<PropertyInfo>();
-            propertyInfo.Setup(mock => mock.PropertyType.FullName).Returns(propertyType);
-            var attributeDescriptor = new TagHelperAttributeDescriptor("MyAttribute", propertyInfo.Object);
+            var attributeDescriptor = new TagHelperAttributeDescriptor("MyAttribute", "SomeProperty", propertyType);
             var writer = new CSharpCodeWriter();
             var generatorContext = new CodeGeneratorContext(host: null,
                                                             className: string.Empty,
