@@ -167,7 +167,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "class", "form-control" },
             };
             var originalContent = "original content";
-            var originalTagName = "not-select";
 
             var expectedAttributes = new Dictionary<string, string>(originalAttributes)
             {
@@ -176,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "valid", "from validation attributes" },
             };
             var expectedContent = originalContent;
-            var expectedTagName = "select";
+            var expectedTagName = "not-select";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
 
@@ -185,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var modelExpression = new ModelExpression(nameAndId.Name, metadata);
 
             var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
-            var output = new TagHelperOutput(originalTagName, originalAttributes, expectedContent)
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, expectedContent)
             {
                 SelfClosing = true,
             };
@@ -238,7 +237,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "class", "form-control" },
             };
             var originalContent = "original content";
-            var originalTagName = "not-select";
 
             var expectedAttributes = new Dictionary<string, string>(originalAttributes)
             {
@@ -256,7 +254,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var modelExpression = new ModelExpression(nameAndId.Name, metadata);
 
             var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
-            var output = new TagHelperOutput(originalTagName, originalAttributes, originalContent)
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, originalContent)
             {
                 SelfClosing = true,
             };
@@ -313,10 +311,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var originalAttributes = new Dictionary<string, string>();
             var content = "original content";
             var propertyName = "Property1";
-            var tagName = "not-select";
+            var expectedTagName = "select";
 
             var tagHelperContext = new TagHelperContext(contextAttributes);
-            var output = new TagHelperOutput(tagName, originalAttributes, content);
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
 
             // TODO: In real (model => model) scenario, ModelExpression should have name "" and
             // TemplateInfo.HtmlFieldPrefix should be "Property1" but empty ModelExpression name is not currently
@@ -376,7 +374,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var originalAttributes = new Dictionary<string, string>();
             var content = "original content";
             var propertyName = "Property1";
-            var tagName = "not-select";
+            var tagName = "select";
 
             var tagHelperContext = new TagHelperContext(contextAttributes);
             var output = new TagHelperOutput(tagName, originalAttributes, content);
@@ -440,7 +438,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedAttributes = new Dictionary<string, string>(originalAttributes);
             expectedAttributes[attributeName] = (string)contextAttributes[attributeName];
             var expectedContent = "original content";
-            var expectedTagName = "not-select";
+            var expectedTagName = "select";
 
             var tagHelperContext = new TagHelperContext(contextAttributes);
             var output = new TagHelperOutput(expectedTagName, originalAttributes, expectedContent)
@@ -470,11 +468,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var contextAttributes = new Dictionary<string, object>();
             var originalAttributes = new Dictionary<string, string>();
             var content = "original content";
-            var tagName = "not-select";
+            var expectedTagName = "select";
             var expectedMessage = "Cannot determine body for <select>. 'items' must be null if 'for' is null.";
 
             var tagHelperContext = new TagHelperContext(contextAttributes);
-            var output = new TagHelperOutput(tagName, originalAttributes, content);
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
             var tagHelper = new SelectTagHelper
             {
                 Items = Enumerable.Empty<SelectListItem>(),
@@ -500,12 +498,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var contextAttributes = new Dictionary<string, object>();
             var originalAttributes = new Dictionary<string, string>();
             var content = "original content";
-            var tagName = "not-select";
+            var expectedTagName = "select";
             var expectedMessage = "Cannot parse 'multiple' value '" + multiple +
                 "' for <select>. Acceptable values are 'false', 'true' and 'multiple'.";
 
             var tagHelperContext = new TagHelperContext(contextAttributes);
-            var output = new TagHelperOutput(tagName, originalAttributes, content);
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
 
             var metadataProvider = new EmptyModelMetadataProvider();
             string model = null;

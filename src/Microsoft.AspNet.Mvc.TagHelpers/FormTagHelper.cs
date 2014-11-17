@@ -97,8 +97,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                 if (tagBuilder != null)
                 {
-                    // We don't want to do a full merge because we want the TagHelper content to take precedence.
-                    output.Merge(tagBuilder);
+                    output.MergeAttributes(tagBuilder);
+                    output.Content += tagBuilder.InnerHtml;
+                    output.SelfClosing = false;
                 }
             }
 

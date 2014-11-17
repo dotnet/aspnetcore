@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "name", nameAndId.Name },
                 {  "valid", "from validation attributes" },
             };
-            var expectedTagName = "textarea";
+            var expectedTagName = "not-textarea";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
 
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput("original tag name", htmlAttributes, "original content")
+            var output = new TagHelperOutput(expectedTagName, htmlAttributes, "original content")
             {
                 SelfClosing = true,
             };
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "class", "form-control" },
             };
             var expectedContent = "original content";
-            var expectedTagName = "original tag name";
+            var expectedTagName = "textarea";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var metadata = metadataProvider.GetMetadataForProperty(

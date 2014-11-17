@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_GeneratesExpectedOutput()
         {
             // Arrange
+            var expectedTagName = "not-span";
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelExpression = CreateModelExpression("Name");
             var validationMessageTagHelper = new ValidationMessageTagHelper
@@ -34,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "for", modelExpression },
                 });
             var output = new TagHelperOutput(
-                "original tag name",
+                expectedTagName,
                 attributes: new Dictionary<string, string>
                 {
                     { "id", "myvalidationmessage" }
@@ -61,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-valmsg-replace"));
             Assert.Equal("true", attribute.Value);
             Assert.Equal("Something", output.Content);
-            Assert.Equal("original tag name", output.TagName);
+            Assert.Equal(expectedTagName, output.TagName);
         }
 
         [Fact]
@@ -134,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             await validationMessageTagHelper.ProcessAsync(context: null, output: output);
 
             // Assert
-            Assert.Equal(output.TagName, "span");
+            Assert.Equal("span", output.TagName);
             Assert.Equal(2, output.Attributes.Count);
             var attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-foo"));
             Assert.Equal("bar", attribute.Value);

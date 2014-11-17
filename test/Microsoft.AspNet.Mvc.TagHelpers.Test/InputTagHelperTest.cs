@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "value", expectedValue },
             };
             var expectedContent = "original content";
-            var expectedTagName = "input";
+            var expectedTagName = "not-input";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput("original tag name", htmlAttributes, expectedContent)
+            var output = new TagHelperOutput(expectedTagName, htmlAttributes, expectedContent)
             {
                 SelfClosing = false,
             };
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "value", "2014-10-15T23:24:19.000-7:00" },
             };
             var expectedContent = "original content";
-            var expectedTagName = "original tag name";
+            var expectedTagName = "input";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var metadata = metadataProvider.GetMetadataForProperty(

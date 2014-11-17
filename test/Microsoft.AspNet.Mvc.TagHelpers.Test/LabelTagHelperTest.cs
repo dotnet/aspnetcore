@@ -97,6 +97,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             TagHelperOutputContent tagHelperOutputContent)
         {
             // Arrange
+            var expectedTagName = "not-label";
             var expectedAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
@@ -117,8 +118,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput("A random tag name", htmlAttributes, tagHelperOutputContent.OriginalContent);
-            var expectedTagName = "label";
+            var output = new TagHelperOutput(expectedTagName, htmlAttributes, tagHelperOutputContent.OriginalContent);
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
             tagHelper.ViewContext = viewContext;
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "class", "form-control" },
             };
             var expectedContent = "original content";
-            var expectedTagName = "original tag name";
+            var expectedTagName = "label";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var metadata = metadataProvider.GetMetadataForProperty(

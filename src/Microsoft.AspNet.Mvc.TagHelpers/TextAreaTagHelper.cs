@@ -47,7 +47,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                     output.MergeAttributes(tagBuilder);
                     output.SelfClosing = false;
-                    output.TagName = tagBuilder.TagName;
                 }
             }
         }

@@ -61,23 +61,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Merges the given <paramref name="tagBuilder"/> into the <paramref name="tagHelperOutput"/>.
-        /// </summary>
-        /// <param name="tagHelperOutput">The <see cref="TagHelperOutput"/> this method extends.</param>
-        /// <param name="tagBuilder">The <see cref="TagBuilder"/> to merge.</param>
-        /// <remarks><paramref name="tagHelperOutput"/>'s <see cref="TagHelperOutput.Content"/> has the given
-        /// <paramref name="tagBuilder"/>s <see cref="TagBuilder.InnerHtml"/> appended to it. This is to ensure
-        /// multiple <see cref="ITagHelper"/>s running on the same HTML tag don't overwrite each other; therefore,
-        /// this method may not be appropriate for all <see cref="ITagHelper"/> scenarios.</remarks>
-        public static void Merge(this TagHelperOutput tagHelperOutput, TagBuilder tagBuilder)
-        {
-            tagHelperOutput.TagName = tagBuilder.TagName;
-            tagHelperOutput.Content += tagBuilder.InnerHtml;
-
-            MergeAttributes(tagHelperOutput, tagBuilder);
-        }
-
-        /// <summary>
         /// Merges the given <paramref name="tagBuilder"/>'s <see cref="TagBuilder.Attributes"/> into the 
         /// <paramref name="tagHelperOutput"/>.
         /// </summary>

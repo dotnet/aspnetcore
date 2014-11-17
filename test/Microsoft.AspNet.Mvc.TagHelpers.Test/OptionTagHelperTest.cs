@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "label", "my-label" },
             };
-            var originalTagName = "not-option";
+            var expectedTagName = "not-option";
 
             var contextAttributes = new Dictionary<string, object>
             {
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "value", value },
             };
             var tagHelperContext = new TagHelperContext(contextAttributes);
-            var output = new TagHelperOutput(originalTagName, originalAttributes, originalContent)
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, originalContent)
             {
                 SelfClosing = false,
             };

@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_GeneratesExpectedOutput()
         {
             // Arrange
+            var expectedTagName = "not-div";
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var validationSummaryTagHelper = new ValidationSummaryTagHelper
             {
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
             var output = new TagHelperOutput(
-                "div",
+                expectedTagName,
                 attributes: new Dictionary<string, string>
                 {
                     { "class", "form-control" }
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("true", attribute.Value);
             Assert.Equal("Custom Content<ul><li style=\"display:none\"></li>" + Environment.NewLine + "</ul>",
                          output.Content);
-            Assert.Equal("div", output.TagName);
+            Assert.Equal(expectedTagName, output.TagName);
         }
 
         [Fact]
@@ -124,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             await validationSummaryTagHelper.ProcessAsync(context: null, output: output);
 
             // Assert
-            Assert.Equal(output.TagName, "div");
+            Assert.Equal("div", output.TagName);
             Assert.Equal(3, output.Attributes.Count);
             var attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-foo"));
             Assert.Equal("bar", attribute.Value);

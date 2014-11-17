@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_GeneratesExpectedOutput()
         {
             // Arrange
+            var expectedTagName = "not-a";
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var anchorTagHelper = new AnchorTagHelper
             {
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "protocol", "http" }
                 });
             var output = new TagHelperOutput(
-                "a",
+                expectedTagName,
                 attributes: new Dictionary<string, string>
                 {
                     { "id", "myanchor" },
@@ -75,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("href"));
             Assert.Equal("home/index", attribute.Value);
             Assert.Equal("Something", output.Content);
-            Assert.Equal("a", output.TagName);
+            Assert.Equal(expectedTagName, output.TagName);
         }
 
         [Fact]

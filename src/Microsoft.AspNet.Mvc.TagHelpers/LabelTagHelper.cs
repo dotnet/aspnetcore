@@ -48,8 +48,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     {
                         output.Content = tagBuilder.InnerHtml;
                     }
-
-                    output.TagName = tagBuilder.TagName;
                 }
             }
         }

@@ -275,34 +275,5 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             attribute = Assert.Single(tagHelperOutput.Attributes, kvp => kvp.Key.Equals("for"));
             Assert.Equal(expectedBuilderAttribute.Value, attribute.Value);
         }
-
-        [Fact]
-        public void Merge_CombinesAllTagHelperOutputAndTagBuilderProperties()
-        {
-            // Arrange
-            var tagHelperOutput = new TagHelperOutput(
-                "p",
-                attributes: new Dictionary<string, string>(),
-                content: "Hello from tagHelperOutput");
-            var expectedOutputAttribute = new KeyValuePair<string, string>("class", "btn");
-            tagHelperOutput.Attributes.Add(expectedOutputAttribute);
-
-            var tagBuilder = new TagBuilder("div");
-            var expectedBuilderAttribute = new KeyValuePair<string, string>("for", "hello");
-            tagBuilder.Attributes.Add(expectedBuilderAttribute);
-            tagBuilder.InnerHtml = "Hello from tagBuilder.";
-
-            // Act
-            tagHelperOutput.Merge(tagBuilder);
-
-            // Assert
-            Assert.Equal("div", tagHelperOutput.TagName);
-            Assert.Equal("Hello from tagHelperOutputHello from tagBuilder.", tagHelperOutput.Content);
-            Assert.Equal(tagHelperOutput.Attributes.Count, 2);
-            var attribute = Assert.Single(tagHelperOutput.Attributes, kvp => kvp.Key.Equals("class"));
-            Assert.Equal(expectedOutputAttribute.Value, attribute.Value);
-            attribute = Assert.Single(tagHelperOutput.Attributes, kvp => kvp.Key.Equals("for"));
-            Assert.Equal(expectedBuilderAttribute.Value, attribute.Value);
-        }
     }
 }

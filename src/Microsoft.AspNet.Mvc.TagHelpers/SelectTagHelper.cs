@@ -137,8 +137,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                 if (tagBuilder != null)
                 {
+                    output.MergeAttributes(tagBuilder);
+                    output.Content += tagBuilder.InnerHtml;
                     output.SelfClosing = false;
-                    output.Merge(tagBuilder);
                 }
 
                 // Whether or not (not being highly unlikely) we generate anything, could update contained <option/>

@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_GeneratesExpectedOutput()
         {
             // Arrange
+            var expectedTagName = "not-form";
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var formTagHelper = new FormTagHelper
             {
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "anti-forgery", true }
                 });
             var output = new TagHelperOutput(
-                "form",
+                expectedTagName,
                 attributes: new Dictionary<string, string>
                 {
                     { "id", "myform" },
@@ -78,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("action"));
             Assert.Equal("home/index", attribute.Value);
             Assert.Equal(expectedContent, output.Content);
-            Assert.Equal("form", output.TagName);
+            Assert.Equal(expectedTagName, output.TagName);
         }
 
         [Theory]
