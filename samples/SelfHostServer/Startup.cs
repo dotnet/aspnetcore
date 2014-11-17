@@ -22,16 +22,20 @@ using System.Threading;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.WebListener;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Console;
 using Microsoft.Net.Http.Server;
 
 namespace SelfHostServer
 {
     public class Startup
     {
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
             var info = (ServerInformation)app.Server;
             info.Listener.AuthenticationManager.AuthenticationTypes = AuthenticationTypes.AllowAnonymous;
+
+            loggerfactory.AddConsole();
 
             app.Run(async context =>
             {

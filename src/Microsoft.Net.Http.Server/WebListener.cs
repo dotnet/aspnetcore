@@ -109,6 +109,12 @@ namespace Microsoft.Net.Http.Server
             _connectionCancellationTokens = new ConcurrentDictionary<ulong, ConnectionCancellation>();
         }
 
+        public WebListener(ILoggerFactory factory)
+            : this()
+        {
+            _logger = LogHelper.CreateLogger(factory, typeof(WebListener));
+        }
+
         internal enum State
         {
             Stopped,
@@ -470,7 +476,6 @@ namespace Microsoft.Net.Http.Server
                     {
                         return;
                     }
-                    LogHelper.LogInfo(_logger, "Stop");
 
                     _urlPrefixes.UnregisterAllPrefixes();
 

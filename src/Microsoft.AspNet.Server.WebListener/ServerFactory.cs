@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Server.WebListener
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by caller")]
         public IServerInformation Initialize(IConfiguration configuration)
         {
-            Microsoft.Net.Http.Server.WebListener listener = new Microsoft.Net.Http.Server.WebListener();
+            Microsoft.Net.Http.Server.WebListener listener = new Microsoft.Net.Http.Server.WebListener(_loggerFactory);
             ParseAddresses(configuration, listener);
             return new ServerInformation(new MessagePump(listener, _loggerFactory));
         }

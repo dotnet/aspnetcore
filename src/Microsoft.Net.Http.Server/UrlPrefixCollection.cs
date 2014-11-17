@@ -162,9 +162,9 @@ namespace Microsoft.Net.Http.Server
 
         private void RegisterPrefix(string uriPrefix, int contextId)
         {
-            uint statusCode = 0;
+            LogHelper.LogInfo(_webListener.Logger, "Listening on prefix: " + uriPrefix);
 
-            statusCode =
+            uint statusCode =
                 UnsafeNclNativeMethods.HttpApi.HttpAddUrlToUrlGroup(
                     _webListener.UrlGroupId,
                     uriPrefix,
@@ -187,6 +187,7 @@ namespace Microsoft.Net.Http.Server
         private bool UnregisterPrefix(string uriPrefix)
         {
             uint statusCode = 0;
+            LogHelper.LogInfo(_webListener.Logger, "Stop listening on prefix: " + uriPrefix);
 
             statusCode =
                 UnsafeNclNativeMethods.HttpApi.HttpRemoveUrlFromUrlGroup(

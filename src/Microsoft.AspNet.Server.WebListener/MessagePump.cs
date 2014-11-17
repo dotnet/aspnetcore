@@ -91,8 +91,6 @@ namespace Microsoft.AspNet.Server.WebListener
                 throw new InvalidOperationException("No address prefixes were defined.");
             }
 
-            LogHelper.LogInfo(_logger, "Start");
-
             _listener.Start();
 
             ActivateRequestProcessingLimits();
@@ -204,11 +202,11 @@ namespace Microsoft.AspNet.Server.WebListener
 
         public void Dispose()
         {
-            LogHelper.LogInfo(_logger, "Stop");
             _stopping = true;
             // Wait for active requests to drain
             if (_outstandingRequests > 0)
             {
+                LogHelper.LogInfo(_logger, "Stopping, waiting for " + _outstandingRequests + " request(s) to drain.");
                 _shutdownSignal.WaitOne();
             }
             // All requests are finished
