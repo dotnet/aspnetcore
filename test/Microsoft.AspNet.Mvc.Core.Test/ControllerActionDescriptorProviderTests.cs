@@ -1340,7 +1340,8 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 modelBuilder,
                 new TestGlobalFilterProvider(filters),
-                new MockMvcOptionsAccessor());
+                new MockMvcOptionsAccessor(),
+                new NullLoggerFactory());
 
             return provider;
         }
@@ -1359,7 +1360,8 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 modelBuilder,
                 new TestGlobalFilterProvider(),
-                new MockMvcOptionsAccessor());
+                new MockMvcOptionsAccessor(),
+                new NullLoggerFactory());
 
             return provider;
         }
@@ -1379,7 +1381,8 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 modelBuilder,
                 new TestGlobalFilterProvider(),
-                options);
+                options,
+                new NullLoggerFactory());
         }
 
         private IEnumerable<ActionDescriptor> GetDescriptors(params TypeInfo[] controllerTypeInfos)
@@ -1395,7 +1398,8 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 modelBuilder,
                 new TestGlobalFilterProvider(),
-                new MockMvcOptionsAccessor());
+                new MockMvcOptionsAccessor(),
+                new NullLoggerFactory());
 
             return provider.GetDescriptors();
         }

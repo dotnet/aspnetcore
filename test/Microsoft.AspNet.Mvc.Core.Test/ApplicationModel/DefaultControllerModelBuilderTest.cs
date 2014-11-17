@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         private class AccessibleControllerModelBuilder : DefaultControllerModelBuilder
         {
             public AccessibleControllerModelBuilder()
-                : base(new DefaultActionModelBuilder())
+                : base(new DefaultActionModelBuilder(), new NullLoggerFactory())
             {
             }
 

@@ -12,6 +12,7 @@ using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -360,7 +361,8 @@ namespace System.Web.Http
                 assemblyProvider.Object,
                 new NamespaceLimitedActionDiscoveryConventions(),
                 filterProvider.Object,
-                optionsAccessor.Object);
+                optionsAccessor.Object,
+                new NullLoggerFactory());
 
             return new NestedProviderManager<ActionDescriptorProviderContext>(
                 new INestedProvider<ActionDescriptorProviderContext>[]
@@ -372,7 +374,7 @@ namespace System.Web.Http
         private class NamespaceLimitedActionDiscoveryConventions : DefaultControllerModelBuilder
         {
             public NamespaceLimitedActionDiscoveryConventions()
-                : base(new DefaultActionModelBuilder())
+                : base(new DefaultActionModelBuilder(), new NullLoggerFactory())
             {
             }
 
