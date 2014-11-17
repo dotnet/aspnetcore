@@ -9,8 +9,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class ParameterModel
     {
-        public ParameterModel(ParameterInfo parameterInfo, 
-                              IReadOnlyList<object> attributes)
+        public ParameterModel([NotNull] ParameterInfo parameterInfo, 
+                              [NotNull] IReadOnlyList<object> attributes)
         {
             ParameterInfo = parameterInfo;
 

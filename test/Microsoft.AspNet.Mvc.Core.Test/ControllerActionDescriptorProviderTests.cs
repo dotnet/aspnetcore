@@ -1137,32 +1137,31 @@ namespace Microsoft.AspNet.Mvc.Test
             var options = new MockMvcOptionsAccessor();
             options.Options.ApplicationModelConventions.Add(applicationConvention.Object);
 
-            var provider = GetProvider(typeof(ConventionsController).GetTypeInfo(), options);
+            var applicationModel = new ApplicationModel();
 
-            var model = provider.BuildModel();
+            var controller = new ControllerModel(typeof(ConventionsController).GetTypeInfo(),
+                                                 new List<object>() { controllerConvention.Object });
+            controller.Application = applicationModel;
+            applicationModel.Controllers.Add(controller);
 
-            var controller = model.Controllers.Single();
-            model.Controllers.Remove(controller);
-            controller = BuildControllerModel(controller, controllerConvention.Object);
-            model.Controllers.Add(controller);
+            var methodInfo = typeof(ConventionsController).GetMethod("Create");
+            var actionModel = new ActionModel(methodInfo, new List<object>() { actionConvention.Object });
+            actionModel.Controller = controller;
+            controller.Actions.Add(actionModel);
 
-            var action = controller.Actions.Single();
-            controller.Actions.Remove(action);
-            action = BuildActionModel(action, actionConvention.Object);
-            controller.Actions.Add(action);
-
-            var parameter = action.Parameters.Single();
-            action.Parameters.Remove(parameter);
-            parameter = BuildParameterModel(parameter, parameterConvention.Object);
-            action.Parameters.Add(parameter);
+            var parameterInfo = actionModel.ActionMethod.GetParameters().Single();
+            var parameterModel = new ParameterModel(parameterInfo,
+                                           new List<object>() { parameterConvention.Object });
+            parameterModel.Action = actionModel;
+            actionModel.Parameters.Add(parameterModel);
 
             // Act
-            ApplicationModelConventions.ApplyConventions(model, options.Options.ApplicationModelConventions);
+            ApplicationModelConventions.ApplyConventions(applicationModel, options.Options.ApplicationModelConventions);
 
             // Assert
             Assert.Equal(4, sequence);
         }
-
+            
         [Fact]
         public void BuildModel_SplitsConstraintsBasedOnRoute()
         {
@@ -1304,33 +1303,6 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(2, action.ActionConstraints.Count);
             Assert.Single(action.ActionConstraints, a => (a as RouteAndConstraintAttribute)?.Template == "~/A2");
             Assert.Single(action.ActionConstraints, a => a is ConstraintAttribute);
-        }
-
-        private ActionModel BuildActionModel(ActionModel action, IActionModelConvention actionConvention)
-        {
-            var t = new ActionModel(action.ActionMethod,
-                                          new List<object>(action.Attributes) { actionConvention });
-            t.Parameters.AddRange(action.Parameters);
-
-            return t;
-        }
-
-        private ParameterModel BuildParameterModel(ParameterModel parameter, IParameterModelConvention parameterConvention)
-        {
-            var t = new ParameterModel(parameter.ParameterInfo,
-                                        new List<object>(parameter.Attributes) { parameterConvention });
-            t.Action = parameter.Action;
-            
-            return t;
-        }
-
-        private ControllerModel BuildControllerModel(ControllerModel controller, IControllerModelConvention controllerConvention)
-        {
-            var t = new ControllerModel(controller.ControllerType,
-                                          new List<object>(controller.Attributes) { controllerConvention });
-            t.Actions.AddRange(controller.Actions);
-            
-            return t;
         }
 
         private ControllerActionDescriptorProvider GetProvider(
