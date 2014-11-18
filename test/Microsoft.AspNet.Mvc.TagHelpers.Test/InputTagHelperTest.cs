@@ -7,14 +7,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     public class InputTagHelperTest
     {
-        // Model (List<Model> or Model instance), container type (Model or NestModel), model accessor,
-        // property path / id, expected value.
+        // Top-level container (List<Model> or Model instance), immediate container type (Model or NestModel),
+        // model accessor, expression path / id, expected value.
         public static TheoryData<object, Type, Func<object>, NameAndId, string> TestDataSet
         {
             get
@@ -74,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [Theory]
         [MemberData(nameof(TestDataSet))]
         public async Task ProcessAsync_GeneratesExpectedOutput(
-            object model,
+            object container,
             Type containerType,
             Func<object> modelAccessor,
             NameAndId nameAndId,
@@ -93,41 +94,410 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var expectedTagName = "not-input";
 
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
-
-            // Property name is either nameof(Model.Text) or nameof(NestedModel.Text).
-            var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
-            var modelExpression = new ModelExpression(nameAndId.Name, metadata);
-
-            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
-            var htmlAttributes = new Dictionary<string, string>
+            var context = new TagHelperContext(new Dictionary<string, object>());
+            var originalAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, htmlAttributes, expectedContent)
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, expectedContent)
             {
                 SelfClosing = false,
             };
 
-            var htmlGenerator = new TestableHtmlGenerator(metadataProvider)
+            var htmlGenerator = new TestableHtmlGenerator(new EmptyModelMetadataProvider())
             {
                 ValidationAttributes =
                 {
                     {  "valid", "from validation attributes" },
                 }
             };
-            var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
-            var tagHelper = new InputTagHelper
-            {
-                Generator = htmlGenerator,
-                For = modelExpression,
-                ViewContext = viewContext,
-            };
+
+            // Property name is either nameof(Model.Text) or nameof(NestedModel.Text).
+            var tagHelper = GetTagHelper(
+                htmlGenerator,
+                container,
+                containerType,
+                modelAccessor,
+                propertyName: nameof(Model.Text),
+                expressionName: nameAndId.Name);
 
             // Act
-            await tagHelper.ProcessAsync(tagHelperContext, output);
+            await tagHelper.ProcessAsync(context, output);
 
             // Assert
+            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedContent, output.Content);
+            Assert.True(output.SelfClosing);
+            Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_CallsGenerateCheckBox_WithExpectedParameters()
+        {
+            // Arrange
+            var originalContent = "something";
+            var originalTagName = "not-input";
+            var expectedContent = originalContent + "<input class=\"form-control\" /><hidden />";
+
+            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>());
+            var originalAttributes = new Dictionary<string, string>
+            {
+                { "class", "form-control" },
+            };
+            var output = new TagHelperOutput(originalTagName, originalAttributes, content: originalContent)
+            {
+                SelfClosing = true,
+            };
+
+            var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            var tagHelper = GetTagHelper(htmlGenerator.Object, model: false, propertyName: nameof(Model.IsACar));
+            var tagBuilder = new TagBuilder("input")
+            {
+                Attributes =
+                {
+                    { "class", "form-control" },
+                },
+            };
+            htmlGenerator
+                .Setup(mock => mock.GenerateCheckBox(
+                    tagHelper.ViewContext,
+                    tagHelper.For.Metadata,
+                    tagHelper.For.Name,
+                    null,                   // isChecked
+                    It.IsAny<object>()))    // htmlAttributes
+                .Returns(tagBuilder)
+                .Verifiable();
+            htmlGenerator
+                .Setup(mock => mock.GenerateHiddenForCheckbox(
+                    tagHelper.ViewContext,
+                    tagHelper.For.Metadata,
+                    tagHelper.For.Name))
+                .Returns(new TagBuilder("hidden"))
+                .Verifiable();
+
+            // Act
+            await tagHelper.ProcessAsync(context, output);
+
+            // Assert
+            htmlGenerator.Verify();
+
+            Assert.Empty(output.Attributes);    // Moved to Content and cleared
+            Assert.Equal(expectedContent, output.Content);
+            Assert.False(output.SelfClosing);
+            Assert.Empty(output.TagName);       // Cleared
+        }
+
+        [Theory]
+        [InlineData(null, "hidden", null)]
+        [InlineData(null, "Hidden", "not-null")]
+        [InlineData(null, "HIDden", null)]
+        [InlineData(null, "HIDDEN", "not-null")]
+        [InlineData("hiddeninput", null, null)]
+        [InlineData("HiddenInput", null, "not-null")]
+        [InlineData("hidDENinPUT", null, null)]
+        [InlineData("HIDDENINPUT", null, "not-null")]
+        public async Task ProcessAsync_CallsGenerateHidden_WithExpectedParameters(
+            string dataTypeName,
+            string inputTypeName,
+            string model)
+        {
+            // Arrange
+            var contextAttributes = new Dictionary<string, object>
+            {
+                { "class", "form-control" },
+            };
+            if (!string.IsNullOrEmpty(inputTypeName))
+            {
+                contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
+            }
+
+            var expectedAttributes = new Dictionary<string, string>
+            {
+                { "class", "form-control hidden-control" },
+                { "type", inputTypeName ?? "hidden" },      // Generator restores type attribute; adds "hidden" if none.
+            };
+            var expectedContent = "something";
+            var expectedTagName = "not-input";
+
+            var context = new TagHelperContext(allAttributes: contextAttributes);
+            var originalAttributes = new Dictionary<string, string>
+            {
+                { "class", "form-control" },
+            };
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, content: expectedContent)
+            {
+                SelfClosing = false,
+            };
+
+            var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            var tagHelper = GetTagHelper(htmlGenerator.Object, model, nameof(Model.Text));
+            tagHelper.For.Metadata.DataTypeName = dataTypeName;
+            tagHelper.InputTypeName = inputTypeName;
+
+            var tagBuilder = new TagBuilder("input")
+            {
+                Attributes =
+                {
+                    { "class", "hidden-control" },
+                },
+            };
+            htmlGenerator
+                .Setup(mock => mock.GenerateHidden(
+                    tagHelper.ViewContext,
+                    tagHelper.For.Metadata,
+                    tagHelper.For.Name,
+                    model,      // value
+                    false,      // useViewData
+                    null))      // htmlAttributes
+                .Returns(tagBuilder)
+                .Verifiable();
+
+            // Act
+            await tagHelper.ProcessAsync(context, output);
+
+            // Assert
+            htmlGenerator.Verify();
+
+            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedContent, output.Content);
+            Assert.True(output.SelfClosing);
+            Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        [Theory]
+        [InlineData(null, "password", null)]
+        [InlineData(null, "Password", "not-null")]
+        [InlineData(null, "PASSword", null)]
+        [InlineData(null, "PASSWORD", "not-null")]
+        [InlineData("password", null, null)]
+        [InlineData("Password", null, "not-null")]
+        [InlineData("PASSword", null, null)]
+        [InlineData("PASSWORD", null, "not-null")]
+        public async Task ProcessAsync_CallsGeneratePassword_WithExpectedParameters(
+            string dataTypeName,
+            string inputTypeName,
+            string model)
+        {
+            // Arrange
+            var contextAttributes = new Dictionary<string, object>
+            {
+                { "class", "form-control" },
+            };
+            if (!string.IsNullOrEmpty(inputTypeName))
+            {
+                contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
+            }
+
+            var expectedAttributes = new Dictionary<string, string>
+            {
+                { "class", "form-control password-control" },
+                { "type", inputTypeName ?? "password" },    // Generator restores type attribute; adds "password" if none.
+            };
+            var expectedContent = "something";
+            var expectedTagName = "not-input";
+
+            var context = new TagHelperContext(allAttributes: contextAttributes);
+            var originalAttributes = new Dictionary<string, string>
+            {
+                { "class", "form-control" },
+            };
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, content: expectedContent)
+            {
+                SelfClosing = false,
+            };
+
+            var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            var tagHelper = GetTagHelper(htmlGenerator.Object, model, nameof(Model.Text));
+            tagHelper.For.Metadata.DataTypeName = dataTypeName;
+            tagHelper.InputTypeName = inputTypeName;
+
+            var tagBuilder = new TagBuilder("input")
+            {
+                Attributes =
+                {
+                    { "class", "password-control" },
+                },
+            };
+            htmlGenerator
+                .Setup(mock => mock.GeneratePassword(
+                    tagHelper.ViewContext,
+                    tagHelper.For.Metadata,
+                    tagHelper.For.Name,
+                    null,       // value
+                    null))      // htmlAttributes
+                .Returns(tagBuilder)
+                .Verifiable();
+
+            // Act
+            await tagHelper.ProcessAsync(context, output);
+
+            // Assert
+            htmlGenerator.Verify();
+
+            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedContent, output.Content);
+            Assert.True(output.SelfClosing);
+            Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        [Theory]
+        [InlineData("radio", null)]
+        [InlineData("Radio", "not-null")]
+        [InlineData("RADio", null)]
+        [InlineData("RADIO", "not-null")]
+        public async Task ProcessAsync_CallsGenerateRadioButton_WithExpectedParameters(
+            string inputTypeName,
+            string model)
+        {
+            // Arrange
+            var value = "match";            // Real generator would use this for comparison with For.Metadata.Model.
+            var contextAttributes = new Dictionary<string, object>
+            {
+                { "class", "form-control" },
+                { "value", value },
+            };
+            if (!string.IsNullOrEmpty(inputTypeName))
+            {
+                contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
+            }
+
+            var expectedAttributes = new Dictionary<string, string>
+            {
+                { "class", "form-control radio-control" },
+                { "type", inputTypeName ?? "radio" },       // Generator restores type attribute; adds "radio" if none.
+                { "value", value },
+            };
+            var expectedContent = "something";
+            var expectedTagName = "not-input";
+
+            var context = new TagHelperContext(allAttributes: contextAttributes);
+            var originalAttributes = new Dictionary<string, string>
+            {
+                { "class", "form-control" },
+            };
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, content: expectedContent)
+            {
+                SelfClosing = false,
+            };
+
+            var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            var tagHelper = GetTagHelper(htmlGenerator.Object, model, nameof(Model.Text));
+            tagHelper.InputTypeName = inputTypeName;
+            tagHelper.Value = value;
+
+            var tagBuilder = new TagBuilder("input")
+            {
+                Attributes =
+                {
+                    { "class", "radio-control" },
+                },
+            };
+            htmlGenerator
+                .Setup(mock => mock.GenerateRadioButton(
+                    tagHelper.ViewContext,
+                    tagHelper.For.Metadata,
+                    tagHelper.For.Name,
+                    value,
+                    null,       // isChecked
+                    null))      // htmlAttributes
+                .Returns(tagBuilder)
+                .Verifiable();
+
+            // Act
+            await tagHelper.ProcessAsync(context, output);
+
+            // Assert
+            htmlGenerator.Verify();
+
+            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedContent, output.Content);
+            Assert.True(output.SelfClosing);
+            Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        [Theory]
+        [InlineData(null, null, null)]
+        [InlineData(null, null, "not-null")]
+        [InlineData(null, "string", null)]
+        [InlineData(null, "String", "not-null")]
+        [InlineData(null, "STRing", null)]
+        [InlineData(null, "STRING", "not-null")]
+        [InlineData(null, "text", null)]
+        [InlineData(null, "Text", "not-null")]
+        [InlineData(null, "TExt", null)]
+        [InlineData(null, "TEXT", "not-null")]
+        [InlineData("string", null, null)]
+        [InlineData("String", null, "not-null")]
+        [InlineData("STRing", null, null)]
+        [InlineData("STRING", null, "not-null")]
+        [InlineData("text", null, null)]
+        [InlineData("Text", null, "not-null")]
+        [InlineData("TExt", null, null)]
+        [InlineData("TEXT", null, "not-null")]
+        [InlineData("custom-datatype", null, null)]
+        [InlineData(null, "unknown-input-type", "not-null")]
+        public async Task ProcessAsync_CallsGenerateTextBox_WithExpectedParameters(
+            string dataTypeName,
+            string inputTypeName,
+            string model)
+        {
+            // Arrange
+            var contextAttributes = new Dictionary<string, object>
+            {
+                { "class", "form-control" },
+            };
+            if (!string.IsNullOrEmpty(inputTypeName))
+            {
+                contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
+            }
+
+            var expectedAttributes = new Dictionary<string, string>
+            {
+                { "class", "form-control text-control" },
+                { "type", inputTypeName ?? "text" },        // Generator restores type attribute; adds "text" if none.
+            };
+            var expectedContent = "something";
+            var expectedTagName = "not-input";
+
+            var context = new TagHelperContext(allAttributes: contextAttributes);
+            var originalAttributes = new Dictionary<string, string>
+            {
+                { "class", "form-control" },
+            };
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, content: expectedContent)
+            {
+                SelfClosing = false,
+            };
+
+            var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            var tagHelper = GetTagHelper(htmlGenerator.Object, model, nameof(Model.Text));
+            tagHelper.For.Metadata.DataTypeName = dataTypeName;
+            tagHelper.InputTypeName = inputTypeName;
+
+            var tagBuilder = new TagBuilder("input")
+            {
+                Attributes =
+                {
+                    { "class", "text-control" },
+                },
+            };
+            htmlGenerator
+                .Setup(mock => mock.GenerateTextBox(
+                    tagHelper.ViewContext,
+                    tagHelper.For.Metadata,
+                    tagHelper.For.Name,
+                    model,      // value
+                    null,       // format
+                    null))      // htmlAttributes
+                .Returns(tagBuilder)
+                .Verifiable();
+
+            // Act
+            await tagHelper.ProcessAsync(context, output);
+
+            // Assert
+            htmlGenerator.Verify();
+
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Equal(expectedContent, output.Content);
             Assert.True(output.SelfClosing);
@@ -147,33 +517,21 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var expectedTagName = "input";
 
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForProperty(
-                modelAccessor: () => null,
-                containerType: typeof(Model),
-                propertyName: nameof(Model.Text));
-            var modelExpression = new ModelExpression(nameof(Model.Text), metadata);
-
             var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
             var output = new TagHelperOutput(expectedTagName, expectedAttributes, expectedContent)
             {
                 SelfClosing = false,
             };
 
-            var htmlGenerator = new TestableHtmlGenerator(metadataProvider)
+            var htmlGenerator = new TestableHtmlGenerator(new EmptyModelMetadataProvider())
             {
                 ValidationAttributes =
                 {
                     {  "valid", "from validation attributes" },
                 }
             };
-            Model model = null;
-            var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
-            var tagHelper = new InputTagHelper
-            {
-                Generator = htmlGenerator,
-                ViewContext = viewContext,
-            };
+            var tagHelper = GetTagHelper(htmlGenerator, model: null, propertyName: nameof(Model.Text));
+            tagHelper.For = null;
 
             // Act
             await tagHelper.ProcessAsync(tagHelperContext, output);
@@ -183,6 +541,39 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedContent, output.Content);
             Assert.False(output.SelfClosing);
             Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        private static InputTagHelper GetTagHelper(IHtmlGenerator htmlGenerator, object model, string propertyName)
+        {
+            return GetTagHelper(
+                htmlGenerator,
+                container: new Model(),
+                containerType: typeof(Model),
+                modelAccessor: () => model,
+                propertyName: propertyName,
+                expressionName: propertyName);
+        }
+
+        private static InputTagHelper GetTagHelper(
+            IHtmlGenerator htmlGenerator,
+            object container,
+            Type containerType,
+            Func<object> modelAccessor,
+            string propertyName,
+            string expressionName)
+        {
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName);
+            var modelExpression = new ModelExpression(expressionName, metadata);
+            var viewContext = TestableHtmlGenerator.GetViewContext(container, htmlGenerator, metadataProvider);
+            var inputTagHelper = new InputTagHelper
+            {
+                For = modelExpression,
+                Generator = htmlGenerator,
+                ViewContext = viewContext,
+            };
+
+            return inputTagHelper;
         }
 
         public class NameAndId
@@ -203,6 +594,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             public string Text { get; set; }
 
             public NestedModel NestedModel { get; set; }
+
+            public bool IsACar { get; set; }
         }
 
         private class NestedModel
