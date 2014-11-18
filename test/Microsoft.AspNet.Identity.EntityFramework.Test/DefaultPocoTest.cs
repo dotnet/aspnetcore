@@ -7,6 +7,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.AspNet.Security.DataProtection;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
@@ -48,6 +49,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             {
                 DbUtil.ConfigureDbServices<IdentityDbContext>(ConnectionString, services);
                 services.AddDefaultIdentity<IdentityDbContext, IdentityUser, IdentityRole>();
+                services.Add(DataProtectionServices.GetDefaultServices());
             });
 
             var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();

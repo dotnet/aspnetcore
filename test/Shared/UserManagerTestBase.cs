@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             services.Add(OptionsServices.GetDefaultServices());
             services.Add(HostingServices.GetDefaultServices());
+            services.Add(DataProtectionServices.GetDefaultServices());
             services.AddDefaultIdentity<TUser, TRole>();
             AddUserStore(services, context);
             AddRoleStore(services, context);
