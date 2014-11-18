@@ -1,12 +1,11 @@
-using System;
-using System.Collections.Generic;
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Constraints;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
 
 namespace RoutingSample.Web
 {
@@ -56,7 +55,12 @@ namespace RoutingSample.Web
                                   new { controller = "Store" });
 
             routeBuilder.AddPrefixRoute("hello/world", endpoint2);
+
+            routeBuilder.MapLocaleRoute("en-US", "store/US/{action}", new { controller = "Store" });
+            routeBuilder.MapLocaleRoute("en-GB", "store/UK/{action}", new { controller = "Store" });
+
             routeBuilder.AddPrefixRoute("", endpoint2);
+
             builder.UseRouter(routeBuilder.Build());
         }
     }
