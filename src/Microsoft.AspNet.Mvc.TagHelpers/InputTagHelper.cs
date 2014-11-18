@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "HiddenInput", InputType.Hidden.ToString().ToLowerInvariant() },
                 { "Password", InputType.Password.ToString().ToLowerInvariant() },
-                { "Text", InputType.Text.ToString() },
+                { "Text", InputType.Text.ToString().ToLowerInvariant() },
                 { "PhoneNumber", "tel" },
                 { "Url", "url" },
                 { "EmailAddress", "email" },
@@ -143,6 +143,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 string inputTypeHint;
                 if (string.IsNullOrEmpty(InputTypeName))
                 {
+                    // Note GetInputType never returns null.
                     inputType = GetInputType(metadata, out inputTypeHint);
                 }
                 else
@@ -151,13 +152,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     inputTypeHint = null;
                 }
 
-                if (!string.IsNullOrEmpty(inputType))
+                // inputType may be more specific than default the generator chooses below.
+                if (!output.Attributes.ContainsKey("type"))
                 {
-                    // inputType may be more specific than default the generator chooses below.
-                    if (!output.Attributes.ContainsKey("type"))
-                    {
-                        output.Attributes["type"] = inputType;
-                    }
+                    output.Attributes["type"] = inputType;
                 }
 
                 TagBuilder tagBuilder;
