@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Security.Cookies;
+using Microsoft.AspNet.Security.DataProtection;
 
 namespace CookieSessionSample
 {
@@ -10,6 +11,11 @@ namespace CookieSessionSample
     {
         public void Configure(IApplicationBuilder app)
         {
+            app.UseServices(services =>
+            {
+                services.Add(DataProtectionServices.GetDefaultServices());
+            });
+
             app.UseCookieAuthentication(options => 
             {
                 options.SessionStore = new MemoryCacheSessionStore();

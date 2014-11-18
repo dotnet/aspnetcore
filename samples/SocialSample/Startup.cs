@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -8,13 +6,12 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security;
 using Microsoft.AspNet.Security.Cookies;
-using Microsoft.AspNet.Security.Facebook;
+using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Google;
 using Microsoft.AspNet.Security.MicrosoftAccount;
 using Microsoft.AspNet.Security.OAuth;
-using Microsoft.AspNet.Security.Twitter;
-using Newtonsoft.Json.Linq;
 using Microsoft.Framework.DependencyInjection;
+using Newtonsoft.Json.Linq;
 
 namespace CookieSample
 {
@@ -26,6 +23,7 @@ namespace CookieSample
 
             app.UseServices(services =>
             {
+                services.Add(DataProtectionServices.GetDefaultServices());
                 services.Configure<ExternalAuthenticationOptions>(options =>
                 {
                     options.SignInAsAuthenticationType = CookieAuthenticationDefaults.AuthenticationType;

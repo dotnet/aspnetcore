@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Security.Cookies;
+using Microsoft.AspNet.Security.DataProtection;
 
 namespace CookieSample
 {
@@ -9,6 +10,11 @@ namespace CookieSample
     {
         public void Configure(IApplicationBuilder app)
         {
+            app.UseServices(services =>
+            {
+                services.Add(DataProtectionServices.GetDefaultServices());
+            });
+
             app.UseCookieAuthentication(options =>
             {
             });
