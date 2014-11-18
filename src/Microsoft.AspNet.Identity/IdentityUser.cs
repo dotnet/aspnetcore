@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     DateTime in UTC when lockout ends, any time in the past is considered not locked out.
         /// </summary>
-        public virtual DateTimeOffset LockoutEnd { get; set; }
+        public virtual DateTimeOffset? LockoutEnd { get; set; }
 
         /// <summary>
         ///     Is lockout enabled for this user

@@ -1786,7 +1786,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<DateTimeOffset> GetLockoutEndDateAsync(TUser user,
+        public virtual async Task<DateTimeOffset?> GetLockoutEndDateAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
@@ -1805,7 +1805,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="lockoutEnd"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> SetLockoutEndDateAsync(TUser user, DateTimeOffset lockoutEnd,
+        public virtual async Task<IdentityResult> SetLockoutEndDateAsync(TUser user, DateTimeOffset? lockoutEnd,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();

@@ -1449,6 +1449,25 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.False(await manager.VerifyTwoFactorTokenAsync(user, "Phone", "bogus"));
         }
 
+        [Fact]
+        public async Task NullableDateTimeOperationTest()
+        {
+            var userMgr = CreateManager();
+            var user = CreateTestUser();
+            user.LockoutEnabled = true;
+            IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
+
+            Assert.Null(await userMgr.GetLockoutEndDateAsync(user));
+
+            // set LockoutDateEndDate to null
+            await userMgr.SetLockoutEndDateAsync(user, null);
+            Assert.Null(await userMgr.GetLockoutEndDateAsync(user));
+
+            // set to a valid value
+            await userMgr.SetLockoutEndDateAsync(user, DateTimeOffset.Parse("01/01/2014"));
+            Assert.Equal(DateTimeOffset.Parse("01/01/2014"), await userMgr.GetLockoutEndDateAsync(user));
+        }
+
         public List<TUser> GenerateUsers(string userNamePrefix, int count)
         {
             var users = new List<TUser>(count);

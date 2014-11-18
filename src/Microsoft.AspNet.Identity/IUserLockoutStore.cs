@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<DateTimeOffset> GetLockoutEndDateAsync(TUser user, 
+        Task<DateTimeOffset?> GetLockoutEndDateAsync(TUser user, 
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="lockoutEnd"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetLockoutEndDateAsync(TUser user, DateTimeOffset lockoutEnd, 
+        Task SetLockoutEndDateAsync(TUser user, DateTimeOffset? lockoutEnd, 
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
