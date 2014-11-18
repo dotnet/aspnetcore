@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
         public ApiParameterSource Source { get; set; }
 
-        public IRouteConstraint Constraint { get; set; }
+        public IEnumerable<IRouteConstraint> Constraints { get; set; }
 
         public object DefaultValue { get; set; }
 

@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             if (constraintType != null)
             {
-                Assert.IsType(constraintType, parameter.Constraint);
+                Assert.IsType(constraintType, Assert.Single(parameter.Constraints));
             }
 
             if (defaultValue != null)
@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             if (constraintType != null)
             {
-                Assert.IsType(constraintType, parameter.Constraint);
+                Assert.IsType(constraintType, Assert.Single(parameter.Constraints));
             }
 
             if (defaultValue != null)
@@ -303,7 +303,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             if (constraintType != null)
             {
-                Assert.IsType(constraintType, pathParameter.Constraint);
+                Assert.IsType(constraintType, Assert.Single(pathParameter.Constraints));
             }
 
             if (defaultValue != null)
@@ -388,11 +388,11 @@ namespace Microsoft.AspNet.Mvc.Description
             var description = Assert.Single(descriptions);
             var id1 = Assert.Single(description.ParameterDescriptions, p => p.Name == "id1");
             Assert.Equal(ApiParameterSource.Path, id1.Source);
-            Assert.Null(id1.Constraint);
+            Assert.Empty(id1.Constraints);
 
             var id2 = Assert.Single(description.ParameterDescriptions, p => p.Name == "id2");
             Assert.Equal(ApiParameterSource.Path, id2.Source);
-            Assert.IsType<IntRouteConstraint>(id2.Constraint);
+            Assert.IsType<IntRouteConstraint>(Assert.Single(id2.Constraints));
         }
 
         [Fact]

@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.Description
             if (action.AttributeRouteInfo != null &&
                 action.AttributeRouteInfo.Template != null)
             {
-                return TemplateParser.Parse(action.AttributeRouteInfo.Template, _constraintResolver);
+                return TemplateParser.Parse(action.AttributeRouteInfo.Template);
             }
 
             return null;
@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.Mvc.Description
             return resourceParameter;
         }
 
-        private static ApiParameterDescription CreateParameterFromTemplateAndParameterDescriptor(
+        private ApiParameterDescription CreateParameterFromTemplateAndParameterDescriptor(
             TemplatePart templateParameter,
             ParameterDescriptor parameter)
         {
@@ -291,7 +291,7 @@ namespace Microsoft.AspNet.Mvc.Description
                 IsOptional = parameter.IsOptional && IsOptionalParameter(templateParameter),
                 Name = parameter.Name,
                 ParameterDescriptor = parameter,
-                Constraint = templateParameter.InlineConstraint,
+                Constraints = GetConstraints(_constraintResolver, templateParameter.InlineConstraints),
                 DefaultValue = templateParameter.DefaultValue,
                 Type = parameter.ParameterType,
             };
@@ -299,12 +299,23 @@ namespace Microsoft.AspNet.Mvc.Description
             return resourceParameter;
         }
 
+        private static IEnumerable<IRouteConstraint> GetConstraints(
+            IInlineConstraintResolver constraintResolver, 
+            IEnumerable<InlineConstraint> constraints)
+        {
+            return 
+                constraints
+                .Select(c => constraintResolver.ResolveConstraint(c.Constraint))
+                .Where(c => c != null)
+                .ToArray();
+        }
+
         private static bool IsOptionalParameter(TemplatePart templateParameter)
         {
             return templateParameter.IsOptional || templateParameter.DefaultValue != null;
         }
 
-        private static ApiParameterDescription CreateParameterFromTemplate(TemplatePart templateParameter)
+        private ApiParameterDescription CreateParameterFromTemplate(TemplatePart templateParameter)
         {
             return new ApiParameterDescription
             {
@@ -312,7 +323,7 @@ namespace Microsoft.AspNet.Mvc.Description
                 IsOptional = IsOptionalParameter(templateParameter),
                 Name = templateParameter.Name,
                 ParameterDescriptor = null,
-                Constraint = templateParameter.InlineConstraint,
+                Constraints = GetConstraints(_constraintResolver, templateParameter.InlineConstraints),
                 DefaultValue = templateParameter.DefaultValue,
             };
         }

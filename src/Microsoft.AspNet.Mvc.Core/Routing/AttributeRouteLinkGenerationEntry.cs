@@ -21,12 +21,12 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <summary>
         /// The route constraints.
         /// </summary>
-        public IDictionary<string, IRouteConstraint> Constraints { get; set; }
+        public IReadOnlyDictionary<string, IRouteConstraint> Constraints { get; set; }
 
         /// <summary>
         /// The route defaults.
         /// </summary>
-        public IDictionary<string, object> Defaults { get; set; }
+        public IReadOnlyDictionary<string, object> Defaults { get; set; }
 
         /// <summary>
         /// The order of the template.

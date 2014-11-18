@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Description;
 
@@ -56,7 +57,7 @@ namespace ApiExplorer
                     Name = parameter.Name,
                     Source = parameter.Source.ToString(),
                     Type = parameter?.Type?.FullName,
-                    ConstraintType = parameter?.Constraint?.GetType()?.Name,
+                    ConstraintTypes = parameter?.Constraints?.Select(c => c.GetType().Name).ToArray(),
                 };
 
                 data.ParameterDescriptions.Add(parameterData);
@@ -103,7 +104,7 @@ namespace ApiExplorer
 
             public string Type { get; set; }
 
-            public string ConstraintType { get; set; }
+            public string[] ConstraintTypes { get; set; }
         }
 
         // Used to serialize data between client and server

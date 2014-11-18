@@ -63,11 +63,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             var options = new Mock<IOptions<RouteOptions>>();
             options.SetupGet(o => o.Options).Returns(new RouteOptions());
 
-            var constraintResolver = new DefaultInlineConstraintResolver(
-                Mock.Of<IServiceProvider>(),
-                options.Object);
-
-            var parsed = TemplateParser.Parse(template, constraintResolver);
+            var parsed = TemplateParser.Parse(template);
             return AttributeRoutePrecedence.Compute(parsed);
         }
     }

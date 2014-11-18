@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 if (!templateCache.TryGetValue(action.AttributeRouteInfo.Template, out parsedTemplate))
                 {
                     // Parsing with throw if the template is invalid.
-                    parsedTemplate = TemplateParser.Parse(action.AttributeRouteInfo.Template, constraintResolver);
+                    parsedTemplate = TemplateParser.Parse(action.AttributeRouteInfo.Template);
                     templateCache.Add(action.AttributeRouteInfo.Template, parsedTemplate);
                 }
 
@@ -218,9 +218,20 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             routeInfo.Name = action.AttributeRouteInfo.Name;
 
-            routeInfo.Constraints = routeInfo.ParsedTemplate.Parameters
-                .Where(p => p.InlineConstraint != null)
-                .ToDictionary(p => p.Name, p => p.InlineConstraint, StringComparer.OrdinalIgnoreCase);
+            var constraintBuilder = new RouteConstraintBuilder(constraintResolver, routeInfo.RouteTemplate);
+
+            foreach (var parameter in routeInfo.ParsedTemplate.Parameters)
+            {
+                if (parameter.InlineConstraints != null)
+                {
+                    foreach (var inlineConstraint in parameter.InlineConstraints)
+                    {
+                        constraintBuilder.AddResolvedConstraint(parameter.Name, inlineConstraint.Constraint);
+                    }
+                }
+            }
+
+            routeInfo.Constraints = constraintBuilder.Build();
 
             routeInfo.Defaults = routeInfo.ParsedTemplate.Parameters
                 .Where(p => p.DefaultValue != null)
@@ -233,9 +244,9 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             public ActionDescriptor ActionDescriptor { get; set; }
 
-            public IDictionary<string, IRouteConstraint> Constraints { get; set; }
+            public IReadOnlyDictionary<string, IRouteConstraint> Constraints { get; set; }
 
-            public IDictionary<string, object> Defaults { get; set; }
+            public IReadOnlyDictionary<string, object> Defaults { get; set; }
 
             public string ErrorMessage { get; set; }
 

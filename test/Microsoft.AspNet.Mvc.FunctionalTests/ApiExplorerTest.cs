@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("id", parameter.Name);
             Assert.False(parameter.IsOptional);
             Assert.Equal("Path", parameter.Source);
-            Assert.Null(parameter.ConstraintType);
+            Assert.Empty(parameter.ConstraintTypes);
         }
 
         [Fact]
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("integer", parameter.Name);
             Assert.False(parameter.IsOptional);
             Assert.Equal("Path", parameter.Source);
-            Assert.Equal("IntRouteConstraint", parameter.ConstraintType);
+            Assert.Equal("IntRouteConstraint", Assert.Single(parameter.ConstraintTypes));
         }
 
         [Fact]
@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("integer", parameter.Name);
             Assert.False(parameter.IsOptional);
             Assert.Equal("Path", parameter.Source);
-            Assert.Equal("IntRouteConstraint", parameter.ConstraintType);
+            Assert.Equal("IntRouteConstraint", Assert.Single(parameter.ConstraintTypes));
         }
 
         [Fact]
@@ -283,17 +283,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var month = Assert.Single(description.ParameterDescriptions, p => p.Name == "month");
             Assert.False(month.IsOptional);
             Assert.Equal("Path", month.Source);
-            Assert.Equal("RangeRouteConstraint", month.ConstraintType);
+            Assert.Equal("RangeRouteConstraint", Assert.Single(month.ConstraintTypes));
 
             var day = Assert.Single(description.ParameterDescriptions, p => p.Name == "day");
             Assert.False(day.IsOptional);
             Assert.Equal("Path", day.Source);
-            Assert.Equal("IntRouteConstraint", day.ConstraintType);
+            Assert.Equal("IntRouteConstraint", Assert.Single(day.ConstraintTypes));
 
             var year = Assert.Single(description.ParameterDescriptions, p => p.Name == "year");
             Assert.False(year.IsOptional);
             Assert.Equal("Path", year.Source);
-            Assert.Equal("IntRouteConstraint", year.ConstraintType);
+            Assert.Equal("IntRouteConstraint", Assert.Single(year.ConstraintTypes));
         }
 
         [Fact]
@@ -321,17 +321,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var month = Assert.Single(description.ParameterDescriptions, p => p.Name == "month");
             Assert.False(month.IsOptional);
             Assert.Equal("Path", month.Source);
-            Assert.Equal("RangeRouteConstraint", month.ConstraintType);
+            Assert.Equal("RangeRouteConstraint", Assert.Single(month.ConstraintTypes));
 
             var day = Assert.Single(description.ParameterDescriptions, p => p.Name == "day");
             Assert.False(day.IsOptional);
             Assert.Equal("Path", day.Source);
-            Assert.Equal("IntRouteConstraint", day.ConstraintType);
+            Assert.Equal("IntRouteConstraint", Assert.Single(day.ConstraintTypes));
 
             var year = Assert.Single(description.ParameterDescriptions, p => p.Name == "year");
             Assert.True(year.IsOptional);
             Assert.Equal("Path", year.Source);
-            Assert.Equal("IntRouteConstraint", year.ConstraintType);
+            Assert.Equal("IntRouteConstraint", Assert.Single(year.ConstraintTypes));
         }
 
         [Fact]
@@ -749,7 +749,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             public string Type { get; set; }
 
-            public string ConstraintType { get; set; }
+            public string[] ConstraintTypes { get; set; }
         }
 
         // Used to serialize data between client and server

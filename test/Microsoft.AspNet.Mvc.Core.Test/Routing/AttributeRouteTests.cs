@@ -1256,17 +1256,20 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         private static AttributeRouteMatchingEntry CreateMatchingEntry(IRouter router, string template, int order)
         {
-            var constraintResolver = CreateConstraintResolver();
-
-            var routeTemplate = TemplateParser.Parse(template, constraintResolver);
+            var routeGroup = string.Format("{0}&&{1}", order, template);
 
             var entry = new AttributeRouteMatchingEntry();
-            entry.Route = new TemplateRoute(router, template, constraintResolver);
+            entry.Route = new TemplateRoute(
+                target: router, 
+                routeTemplate: template,
+                defaults: new RouteValueDictionary(new { test_route_group = routeGroup }),
+                constraints: null,
+                dataTokens: null,
+                inlineConstraintResolver: CreateConstraintResolver());
+
+            var routeTemplate = TemplateParser.Parse(template);
             entry.Precedence = AttributeRoutePrecedence.Compute(routeTemplate);
             entry.Order = order;
-
-            string routeGroup = string.Format("{0}&&{1}", order, template);
-            entry.Route.Defaults.Add("test_route_group", routeGroup);
 
             return entry;
         }
@@ -1281,15 +1284,25 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             var entry = new AttributeRouteLinkGenerationEntry();
             entry.TemplateText = template;
-            entry.Template = TemplateParser.Parse(template, constraintResolver);
+            entry.Template = TemplateParser.Parse(template);
 
             var defaults = entry.Template.Parameters
                 .Where(p => p.DefaultValue != null)
                 .ToDictionary(p => p.Name, p => p.DefaultValue);
 
-            var constraints = entry.Template.Parameters
-                .Where(p => p.InlineConstraint != null)
-                .ToDictionary(p => p.Name, p => p.InlineConstraint);
+            var constraintBuilder = new RouteConstraintBuilder(CreateConstraintResolver(), template);
+            foreach (var parameter in entry.Template.Parameters)
+            {
+                if (parameter.InlineConstraints != null)
+                {
+                    foreach (var constraint in parameter.InlineConstraints)
+                    {
+                        constraintBuilder.AddResolvedConstraint(parameter.Name, constraint.Constraint);
+                    }
+                }
+            }
+
+            var constraints = constraintBuilder.Build();
 
             entry.Constraints = constraints;
             entry.Defaults = defaults;

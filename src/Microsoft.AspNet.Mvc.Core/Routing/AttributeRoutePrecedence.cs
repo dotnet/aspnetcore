@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using Microsoft.AspNet.Routing.Template;
 
 namespace Microsoft.AspNet.Mvc.Routing
@@ -59,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
                 // If there is a route constraint for the parameter, reduce order by 1
                 // Constrained parameters end up with order 2, Constrained catch alls end up with order 4
-                if (part.InlineConstraint != null)
+                if (part.InlineConstraints != null && part.InlineConstraints.Any())
                 {
                     digit--;
                 }
