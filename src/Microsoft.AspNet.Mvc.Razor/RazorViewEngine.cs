@@ -13,6 +13,10 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// <summary>
     /// Default implementation of <see cref="IRazorViewEngine"/>.
     /// </summary>
+    /// <remarks>
+    /// For <c>ViewResults</c> returned from controllers, views should be located in <see cref="ViewLocationFormats"/>
+    /// by default. For the controllers in an area, views should exist in <see cref="AreaViewLocationFormats"/>.
+    /// </remarks>
     public class RazorViewEngine : IRazorViewEngine
     {
         private const string ViewExtension = ".cshtml";
@@ -55,6 +59,16 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets the locations where this instance of <see cref="RazorViewEngine"/> will search for views.
         /// </summary>
+        /// <remarks>
+        /// The locations of the views returned from controllers that do not belong to an area.
+        /// Locations are composite format strings (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx),
+        /// which contains following indexes:
+        /// {0} - Action Name
+        /// {1} - Controller Name
+        /// The values for these locations are case-sensitive on case-senstive file systems.
+        /// For example, the view for the <c>Test</c> action of <c>HomeController</c> should be located at
+        /// <c>/Views/Home/Test.cshtml</c>. Locations such as <c>/views/home/test.cshtml</c> would not be discovered
+        /// </remarks>
         public virtual IEnumerable<string> ViewLocationFormats
         {
             get { return _viewLocationFormats; }
@@ -64,6 +78,17 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Gets the locations where this instance of <see cref="RazorViewEngine"/> will search for views within an
         /// area.
         /// </summary>
+        /// <remarks>
+        /// The locations of the views returned from controllers that belong to an area.
+        /// Locations are composite format strings (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx),
+        /// which contains following indexes:
+        /// {0} - Action Name
+        /// {1} - Controller Name
+        /// {2} - Area name
+        /// The values for these locations are case-sensitive on case-senstive file systems.
+        /// For example, the view for the <c>Test</c> action of <c>HomeController</c> should be located at
+        /// <c>/Views/Home/Test.cshtml</c>. Locations such as <c>/views/home/test.cshtml</c> would not be discovered
+        /// </remarks>
         public virtual IEnumerable<string> AreaViewLocationFormats
         {
             get { return _areaViewLocationFormats; }

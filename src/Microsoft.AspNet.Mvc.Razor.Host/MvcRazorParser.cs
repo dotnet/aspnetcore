@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
     /// A subtype of <see cref="RazorParser"/> that <see cref="MvcRazorHost"/> uses to support inheritance of tag
-    /// helpers from _viewstart files.
+    /// helpers from <c>_ViewStart</c> files.
     /// </summary>
     public class MvcRazorParser : RazorParser
     {

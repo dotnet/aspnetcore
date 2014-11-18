@@ -276,6 +276,28 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(expected, ex.Message);
         }
 
+        [Fact]
+        public void Execute_CallsFindPartialView_WithExpectedPath()
+        {
+            // Arrange
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), 
+                                              It.Is<string>(view => view.Contains("Components"))))
+                .Returns(ViewEngineResult.Found(string.Empty, new Mock<IView>().Object))
+                .Verifiable();
+
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
+            var componentContext = GetViewComponentContext(new Mock<IView>().Object, viewData);
+            var componentResult = new ViewViewComponentResult();
+            componentResult.ViewEngine = viewEngine.Object;
+            componentResult.ViewData = viewData;
+
+            // Act & Assert
+            componentResult.Execute(componentContext);
+            viewEngine.Verify();
+        }
+
         private static ViewComponentContext GetViewComponentContext(IView view, ViewDataDictionary viewData)
         {
             var actionContext = new ActionContext(new RouteContext(new DefaultHttpContext()), new ActionDescriptor());

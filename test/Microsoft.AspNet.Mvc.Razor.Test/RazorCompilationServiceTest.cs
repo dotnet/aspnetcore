@@ -14,13 +14,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
     public class RazorCompilationServiceTest
     {
         [Theory]
-        [InlineData(@"src\work\myapp", @"src\work\myapp\views\index\home.cshtml")]
-        [InlineData(@"src\work\myapp\", @"src\work\myapp\views\index\home.cshtml")]
+        [InlineData(@"src\work\myapp", @"src\work\myapp\Views\index\home.cshtml")]
+        [InlineData(@"src\work\myapp\", @"src\work\myapp\Views\index\home.cshtml")]
         public void CompileCalculatesRootRelativePath(string appPath, string viewPath)
         {
             // Arrange
             var host = new Mock<IMvcRazorHost>();
-            host.Setup(h => h.GenerateCode(@"views\index\home.cshtml", It.IsAny<Stream>()))
+            host.Setup(h => h.GenerateCode(@"Views\index\home.cshtml", It.IsAny<Stream>()))
                 .Returns(GetGeneratorResult())
                 .Verifiable();
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var relativeFileInfo = new RelativeFileInfo()
             {
                 FileInfo = fileInfo.Object,
-                RelativePath = @"views\index\home.cshtml",
+                RelativePath = @"Views\index\home.cshtml",
             };
 
             // Act

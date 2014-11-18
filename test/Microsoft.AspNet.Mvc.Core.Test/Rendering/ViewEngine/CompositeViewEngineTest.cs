@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var provider = new Mock<IViewEngineProvider>();
             var engine = new Mock<IViewEngine>();
             engine.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "shared/partial-view" }));
+                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "Shared/partial-view" }));
             provider.SetupGet(p => p.ViewEngines)
                     .Returns(new[] { engine.Object });
             var compositeViewEngine = new CompositeViewEngine(provider.Object);
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal(new[] { "shared/partial-view" }, result.SearchedLocations);
+            Assert.Equal(new[] { "Shared/partial-view" }, result.SearchedLocations);
         }
 
         [Fact]

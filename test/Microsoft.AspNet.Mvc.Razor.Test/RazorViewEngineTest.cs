@@ -594,6 +594,38 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             Assert.Equal(expected, result.SearchedLocations);
         }
 
+       [Fact]
+        public void AreaViewLocationFormats_ContainsExpectedLocations()
+        {
+            // Arrange
+            var viewEngine = CreateViewEngine();
+            var areaViewLocations = new string[]
+            {
+                "/Areas/{2}/Views/{1}/{0}.cshtml",
+                "/Areas/{2}/Views/Shared/{0}.cshtml",
+                "/Views/Shared/{0}.cshtml"
+            };
+
+            // Act & Assert
+            Assert.Equal(areaViewLocations, viewEngine.AreaViewLocationFormats);
+        }
+
+        [Fact]
+        public void ViewLocationFormats_ContainsExpectedLocations()
+        {
+            // Arrange
+            var viewEngine = CreateViewEngine();
+
+            var viewLocations = new string[]
+            {
+                "/Views/{1}/{0}.cshtml",
+                "/Views/Shared/{0}.cshtml"
+            };
+
+            // Act & Assert
+            Assert.Equal(viewLocations, viewEngine.ViewLocationFormats);
+        }
+
         private RazorViewEngine CreateViewEngine(IRazorPageFactory pageFactory = null,
                                                  IRazorViewFactory viewFactory = null,
                                                  IEnumerable<IViewLocationExpander> expanders = null,

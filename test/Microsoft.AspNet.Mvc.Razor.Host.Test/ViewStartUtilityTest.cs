@@ -24,17 +24,17 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Theory]
-        [InlineData("/views/Home/MyView.cshtml")]
-        [InlineData("~/views/Home/MyView.cshtml")]
-        [InlineData("views/Home/MyView.cshtml")]
+        [InlineData("/Views/Home/MyView.cshtml")]
+        [InlineData("~/Views/Home/MyView.cshtml")]
+        [InlineData("Views/Home/MyView.cshtml")]
         public void GetViewStartLocations_ReturnsPotentialViewStartLocations_PathStartswithSlash(string inputPath)
         {
             // Arrange
             var expected = new[]
             {
-                @"views\Home\_viewstart.cshtml",
-                @"views\_viewstart.cshtml",
-                @"_viewstart.cshtml"
+                @"Views\Home\_ViewStart.cshtml",
+                @"Views\_ViewStart.cshtml",
+                @"_ViewStart.cshtml"
             };
 
             // Act
@@ -45,16 +45,16 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Theory]
-        [InlineData("/views/Home/_ViewStart.cshtml")]
-        [InlineData("~/views/Home/_viewstart.cshtml")]
-        [InlineData("views/Home/_Viewstart.cshtml")]
+        [InlineData("/Views/Home/_ViewStart.cshtml")]
+        [InlineData("~/Views/Home/_Viewstart.cshtml")]
+        [InlineData("Views/Home/_Viewstart.cshtml")]
         public void GetViewStartLocations_SkipsCurrentPath_IfCurrentIsViewStart(string inputPath)
         {
             // Arrange
             var expected = new[]
             {
-                @"views\_viewstart.cshtml",
-                @"_viewstart.cshtml"
+                @"Views\_ViewStart.cshtml",
+                @"_ViewStart.cshtml"
             };
             var fileSystem = new PhysicalFileSystem(GetTestFileSystemBase());
 
@@ -73,12 +73,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var expected = new[]
             {
-                @"Areas\MyArea\Sub\Views\Admin\_viewstart.cshtml",
-                @"Areas\MyArea\Sub\Views\_viewstart.cshtml",
-                @"Areas\MyArea\Sub\_viewstart.cshtml",
-                @"Areas\MyArea\_viewstart.cshtml",
-                @"Areas\_viewstart.cshtml",
-                @"_viewstart.cshtml",
+                @"Areas\MyArea\Sub\Views\Admin\_ViewStart.cshtml",
+                @"Areas\MyArea\Sub\Views\_ViewStart.cshtml",
+                @"Areas\MyArea\Sub\_ViewStart.cshtml",
+                @"Areas\MyArea\_ViewStart.cshtml",
+                @"Areas\_ViewStart.cshtml",
+                @"_ViewStart.cshtml",
             };
             var viewPath = Path.Combine("Areas", "MyArea", "Sub", "Views", "Admin", fileName);
 
@@ -97,11 +97,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var expected = new[]
             {
-                @"Areas\MyArea\Sub\Views\_viewstart.cshtml",
-                @"Areas\MyArea\Sub\_viewstart.cshtml",
-                @"Areas\MyArea\_viewstart.cshtml",
-                @"Areas\_viewstart.cshtml",
-                @"_viewstart.cshtml",
+                @"Areas\MyArea\Sub\Views\_ViewStart.cshtml",
+                @"Areas\MyArea\Sub\_ViewStart.cshtml",
+                @"Areas\MyArea\_ViewStart.cshtml",
+                @"Areas\_ViewStart.cshtml",
+                @"_ViewStart.cshtml",
             };
             var viewPath = Path.Combine("Areas", "MyArea", "Sub", "Views", "Admin", fileName);
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var appBase = GetTestFileSystemBase();
-            var viewPath = "_viewstart.cshtml";
+            var viewPath = "_ViewStart.cshtml";
 
             // Act
             var result = ViewStartUtility.GetViewStartLocations(viewPath);
