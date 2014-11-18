@@ -199,6 +199,53 @@ namespace Microsoft.AspNet.Mvc.Routing
         }
 
         [Theory]
+        [InlineData("template/{parameter:int}", "/template/5", true)]
+        [InlineData("template/{parameter:int?}", "/template/5", true)]
+        [InlineData("template/{parameter:int?}", "/template", true)]
+        [InlineData("template/{parameter:int?}", "/template/qwer", false)]        
+        public async Task AttributeRoute_WithOptionalInlineConstraint(string template, string request, bool expectedResult)
+        {
+            // Arrange
+            var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
+
+            // We need to force the creation of a closure in order to avoid an issue with Moq and Roslyn.
+            var numberOfCalls = 0;
+            Action<RouteContext> callBack = ctx => { ctx.IsHandled = true; numberOfCalls++; };
+
+            var next = new Mock<IRouter>();
+            next.Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                            .Callback(callBack)
+                            .Returns(Task.FromResult(true))
+                            .Verifiable();
+
+            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
+
+            // We setup the route entries in reverse order of precedence to ensure that when we
+            // try to route the request, the route with a higher precedence gets tried first.
+            var matchingRoutes = new[] { firstRoute };
+
+            var linkGenerationEntries = Enumerable.Empty<AttributeRouteLinkGenerationEntry>();
+
+            var route = new AttributeRoute(next.Object, matchingRoutes, linkGenerationEntries, NullLoggerFactory.Instance);
+
+            var context = CreateRouteContext(request);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            if (expectedResult)
+            {
+                Assert.True(context.IsHandled);
+                Assert.Equal(expectedRouteGroup, context.RouteData.Values["test_route_group"]);
+            }
+            else
+            {
+                Assert.False(context.IsHandled);
+            }
+        }
+
+        [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
         [InlineData("template/5", "template/{parameter}")]
         [InlineData("template/5", "template/{*parameter:int}")]
@@ -244,6 +291,56 @@ namespace Microsoft.AspNet.Mvc.Routing
             Assert.NotNull(result);
             Assert.Equal("template/5", result);
             Assert.Equal(expectedGroup, selectedGroup);
+        }
+
+        [Theory]
+        [InlineData("template/{parameter:int}", "template/5", 5)]
+        [InlineData("template/{parameter:int?}", "template/5", 5)]
+        [InlineData("template/{parameter:int?}", "template", null)]
+        [InlineData("template/{parameter:int?}", null, "asdf")]
+        [InlineData("template/{parameter:alpha?}", "template/asdf", "asdf")]
+        [InlineData("template/{parameter:alpha?}", "template", null)]
+        [InlineData("template/{parameter:int:range(1,20)?}", "template", null)]
+        [InlineData("template/{parameter:int:range(1,20)?}", "template/5", 5)]
+        [InlineData("template/{parameter:int:range(1,20)?}", null, 21)]
+        public void AttributeRoute_GenerateLink_OptionalInlineParameter(string template, string expectedResult, object parameter)
+        {
+            // Arrange
+            var expectedGroup = CreateRouteGroup(0, template);
+
+            string selectedGroup = null;
+
+            var next = new Mock<IRouter>();
+            next.Setup(n => n.GetVirtualPath(It.IsAny<VirtualPathContext>())).Callback<VirtualPathContext>(ctx =>
+            {
+                selectedGroup = (string)ctx.ProvidedValues[AttributeRouting.RouteGroupKey];
+                ctx.IsBound = true;
+            })
+            .Returns((string)null);
+
+            var matchingRoutes = Enumerable.Empty<AttributeRouteMatchingEntry>();
+
+            var entry = CreateGenerationEntry(template, requiredValues: null);
+
+            var linkGenerationEntries = new[] { entry };
+
+            var route = new AttributeRoute(next.Object, matchingRoutes, linkGenerationEntries, NullLoggerFactory.Instance);
+            VirtualPathContext context;
+
+            if (parameter != null)
+            {
+                context = CreateVirtualPathContext(values: null, ambientValues: new { parameter = parameter });
+            }
+            else
+            {
+                context = CreateVirtualPathContext(values: null, ambientValues: null);
+            }
+
+            // Act
+            string result = route.GetVirtualPath(context);
+
+            // Assert            
+            Assert.Equal(expectedResult, result);
         }
 
         [Theory]
@@ -1295,6 +1392,11 @@ namespace Microsoft.AspNet.Mvc.Routing
             {
                 if (parameter.InlineConstraints != null)
                 {
+                    if (parameter.IsOptional)
+                    {
+                        constraintBuilder.SetOptional(parameter.Name);
+                    }
+
                     foreach (var constraint in parameter.InlineConstraints)
                     {
                         constraintBuilder.AddResolvedConstraint(parameter.Name, constraint.Constraint);

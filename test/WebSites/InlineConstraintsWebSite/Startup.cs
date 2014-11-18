@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.Framework.DependencyInjection;
 
 namespace InlineConstraints
@@ -23,6 +24,15 @@ namespace InlineConstraints
 
             app.UseMvc(routes =>
             {
+                routes.MapRoute("StoreId",
+                        "store/{action}/{id:guid?}",
+                        defaults: new { controller = "InlineConstraints_Store" });
+
+                routes.MapRoute("StoreLocation",
+                        "store/{action}/{location:minlength(3):maxlength(10)}",
+                        defaults: new { controller = "InlineConstraints_Store" },
+                        constraints: new { location = new AlphaRouteConstraint() });
+
                 // Used by tests for the 'exists' constraint.
                 routes.MapRoute("areaExists-area", "area-exists/{area:exists}/{controller=Home}/{action=Index}");
                 routes.MapRoute("areaExists", "area-exists/{controller=Home}/{action=Index}");

@@ -224,6 +224,11 @@ namespace Microsoft.AspNet.Mvc.Routing
             {
                 if (parameter.InlineConstraints != null)
                 {
+                    if (parameter.IsOptional)
+                    {
+                        constraintBuilder.SetOptional(parameter.Name);
+                    }
+
                     foreach (var inlineConstraint in parameter.InlineConstraints)
                     {
                         constraintBuilder.AddResolvedConstraint(parameter.Name, inlineConstraint.Constraint);
