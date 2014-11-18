@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Security.Tests.MicrosoftAccount
 
         private static TestServer CreateServer(Action<MicrosoftAccountAuthenticationOptions> configureOptions, Func<HttpContext, bool> handler)
         {
-            return TestServer.Create(app =>
+            return TestServer.Create(TestServices.CreateTestServices(), app =>
             {
                 app.UseServices(services =>
                 {

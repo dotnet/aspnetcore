@@ -463,7 +463,7 @@ namespace Microsoft.AspNet.Security.Google
 
         private static TestServer CreateServer(Action<GoogleAuthenticationOptions> configureOptions, Func<HttpContext, Task> testpath = null)
         {
-            return TestServer.Create(app =>
+            return TestServer.Create(TestServices.CreateTestServices(), app =>
             {
                 app.UseServices(services =>
                 {

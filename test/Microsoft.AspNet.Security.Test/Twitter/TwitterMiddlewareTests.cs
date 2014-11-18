@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Security.Twitter
 
         private static TestServer CreateServer(Action<IApplicationBuilder> configure, Func<HttpContext, bool> handler)
         {
-            return TestServer.Create(app =>
+            return TestServer.Create(TestServices.CreateTestServices(), app =>
             {
                 app.UseServices(services =>
                 {

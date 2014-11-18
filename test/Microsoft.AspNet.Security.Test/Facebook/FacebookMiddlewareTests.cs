@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Security.Facebook
 
         private static TestServer CreateServer(Action<IApplicationBuilder> configure, Func<HttpContext, bool> handler)
         {
-            return TestServer.Create(app =>
+            return TestServer.Create(TestServices.CreateTestServices(), app =>
             {
                 if (configure != null)
                 {
