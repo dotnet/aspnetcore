@@ -3,7 +3,6 @@
 
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Migrations.Infrastructure;
-using Microsoft.Data.Entity.SqlServer.FunctionalTests;
 using System;
 using System.Linq;
 using System.Reflection;

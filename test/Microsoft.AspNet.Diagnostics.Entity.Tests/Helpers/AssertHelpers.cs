@@ -10,32 +10,32 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers
     {
         public static void DisplaysScaffoldFirstMigration(Type contextType, string content)
         {
-            Assert.Contains(Strings.DatabaseErrorPage_NoDbOrMigrationsTitle(contextType.Name), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_NoDbOrMigrationsTitle", contextType.Name), content);
         }
 
         public static void NotDisplaysScaffoldFirstMigration(Type contextType, string content)
         {
-            Assert.DoesNotContain(Strings.DatabaseErrorPage_NoDbOrMigrationsTitle(contextType.Name), content);
+            Assert.DoesNotContain(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_NoDbOrMigrationsTitle", contextType.Name), content);
         }
 
         public static void DisplaysApplyMigrations(Type contextType, string content)
         {
-            Assert.Contains(Strings.DatabaseErrorPage_PendingMigrationsTitle(contextType.Name), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingMigrationsTitle", contextType.Name), content);
         }
 
         public static void NotDisplaysApplyMigrations(Type contextType, string content)
         {
-            Assert.DoesNotContain(Strings.DatabaseErrorPage_PendingMigrationsTitle(contextType.Name), content);
+            Assert.DoesNotContain(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingMigrationsTitle", contextType.Name), content);
         }
 
         public static void DisplaysScaffoldNextMigraion(Type contextType, string content)
         {
-            Assert.Contains(Strings.DatabaseErrorPage_PendingChangesTitle(contextType.Name), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingChangesTitle", contextType.Name), content);
         }
 
         public static void NotDisplaysScaffoldNextMigraion(Type contextType, string content)
         {
-            Assert.DoesNotContain(Strings.DatabaseErrorPage_PendingChangesTitle(contextType.Name), content);
+            Assert.DoesNotContain(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingChangesTitle", contextType.Name), content);
         }
     }
 }

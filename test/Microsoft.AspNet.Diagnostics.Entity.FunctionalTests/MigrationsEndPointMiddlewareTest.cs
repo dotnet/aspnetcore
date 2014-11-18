@@ -13,9 +13,9 @@ using Microsoft.AspNet.TestHost;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Migrations.Infrastructure;
 using Microsoft.Data.Entity.Migrations.Utilities;
-using Microsoft.Data.Entity.SqlServer.FunctionalTests;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
+using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
@@ -60,9 +60,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
         private async Task Migration_request(bool useCustomPath)
         {
-            using (var database = await SqlServerTestStore.CreateScratchAsync(createDatabase: false))
+            using (var database = SqlServerTestStore.CreateScratch())
             {
-                var options = new DbContextOptions().UseSqlServer(database.Connection.ConnectionString);
+                var options = new DbContextOptions().UseSqlServer(database.ConnectionString);
                 var path = useCustomPath ? new PathString("/EndPoints/ApplyMyMigrations") : MigrationsEndPointOptions.DefaultPath;
 
                 TestServer server = TestServer.Create(app =>
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.StartsWith(Strings.MigrationsEndPointMiddleware_NoContextType, content);
+            Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_NoContextType"), content);
             Assert.True(content.Length > 512);
         }
 
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.StartsWith(Strings.MigrationsEndPointMiddleware_InvalidContextType(typeName), content);
+            Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_InvalidContextType", typeName), content);
             Assert.True(content.Length > 512);
         }
 
@@ -169,16 +169,16 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.StartsWith(Strings.MigrationsEndPointMiddleware_ContextNotRegistered(typeof(BloggingContext)), content);
+            Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_ContextNotRegistered", typeof(BloggingContext)), content);
             Assert.True(content.Length > 512);
         }
 
         [Fact]
         public async Task Exception_while_applying_migrations()
         {
-            using (var database = await SqlServerTestStore.CreateScratchAsync(createDatabase: false))
+            using (var database = SqlServerTestStore.CreateScratch())
             {
-                var options = new DbContextOptions().UseSqlServer(database.Connection.ConnectionString);
+                var options = new DbContextOptions().UseSqlServer(database.ConnectionString);
 
                 TestServer server = TestServer.Create(app =>
                 {
@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                     await server.CreateClient().PostAsync("http://localhost" + MigrationsEndPointOptions.DefaultPath, formData));
 
-                Assert.Equal(Strings.MigrationsEndPointMiddleware_Exception(typeof(BloggingContextWithSnapshotThatThrows)), ex.Message);
+                Assert.Equal(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_Exception", typeof(BloggingContextWithSnapshotThatThrows)), ex.Message);
                 Assert.Equal("Welcome to the invalid snapshot!", ex.InnerException.Message);
             }
         }

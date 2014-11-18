@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Utilities
 
             if (value.Count == 0)
             {
-                throw new ArgumentException(Strings.CollectionArgumentIsEmpty(parameterName));
+                throw new ArgumentException(Strings.FormatCollectionArgumentIsEmpty(parameterName));
             }
 
             return value;
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Utilities
 
             if (parameterName.Length == 0)
             {
-                throw new ArgumentException(Strings.ArgumentIsEmpty("parameterName"));
+                throw new ArgumentException(Strings.FormatArgumentIsEmpty("parameterName"));
             }
 
             if (ReferenceEquals(value, null))
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Utilities
 
             if (value.Length == 0)
             {
-                throw new ArgumentException(Strings.ArgumentIsEmpty(parameterName));
+                throw new ArgumentException(Strings.FormatArgumentIsEmpty(parameterName));
             }
 
             return value;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Utilities
 
             if (!Enum.IsDefined(typeof(T), value))
             {
-                throw new ArgumentException(Strings.InvalidEnumValue(parameterName, typeof(T)));
+                throw new ArgumentException(Strings.FormatInvalidEnumValue(parameterName, typeof(T)));
             }
 
             return value;

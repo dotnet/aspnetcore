@@ -14,10 +14,10 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Migrations.Infrastructure;
-using Microsoft.Data.Entity.SqlServer.FunctionalTests;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Xunit;
+using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
@@ -75,14 +75,14 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Error_page_displayed_no_migrations()
         {
-            TestServer server = await SetupTestServer<BloggingContext, NoMigrationsMiddleware>();
+            TestServer server = SetupTestServer<BloggingContext, NoMigrationsMiddleware>();
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains(Strings.DatabaseErrorPage_NoDbOrMigrationsTitle(typeof(BloggingContext).Name), content);
-            Assert.Contains(Strings.DatabaseErrorPage_AddMigrationCommand.Replace(">", "&gt;"), content);
-            Assert.Contains(Strings.DatabaseErrorPage_ApplyMigrationsCommand.Replace(">", "&gt;"), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_NoDbOrMigrationsTitle", typeof(BloggingContext).Name), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommand").Replace(">", "&gt;"), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommand").Replace(">", "&gt;"), content);
         }
 
         class NoMigrationsMiddleware
@@ -104,18 +104,18 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Error_page_displayed_pending_migrations()
         {
-            TestServer server = await SetupTestServer<BloggingContextWithMigrations, PendingMigrationsMiddleware>();
+            TestServer server = SetupTestServer<BloggingContextWithMigrations, PendingMigrationsMiddleware>();
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains(Strings.DatabaseErrorPage_PendingMigrationsTitle(typeof(BloggingContextWithMigrations).Name), content);
-            Assert.Contains(Strings.DatabaseErrorPage_ApplyMigrationsCommand.Replace(">", "&gt;"), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingMigrationsTitle", typeof(BloggingContextWithMigrations).Name), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommand").Replace(">", "&gt;"), content);
             Assert.Contains("<li>111111111111111_MigrationOne</li>", content);
             Assert.Contains("<li>222222222222222_MigrationTwo</li>", content);
 
-            Assert.DoesNotContain(Strings.DatabaseErrorPage_AddMigrationCommand.Replace(">", "&gt;"), content);
+            Assert.DoesNotContain(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommand").Replace(">", "&gt;"), content);
         }
 
         class PendingMigrationsMiddleware
@@ -137,15 +137,15 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Error_page_displayed_pending_model_changes()
         {
-            TestServer server = await SetupTestServer<BloggingContextWithPendingModelChanges, PendingModelChangesMiddleware>();
+            TestServer server = SetupTestServer<BloggingContextWithPendingModelChanges, PendingModelChangesMiddleware>();
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains(Strings.DatabaseErrorPage_PendingChangesTitle(typeof(BloggingContextWithPendingModelChanges).Name), content);
-            Assert.Contains(Strings.DatabaseErrorPage_AddMigrationCommand.Replace(">", "&gt;"), content);
-            Assert.Contains(Strings.DatabaseErrorPage_ApplyMigrationsCommand.Replace(">", "&gt;"), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingChangesTitle", typeof(BloggingContextWithPendingModelChanges).Name), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommand").Replace(">", "&gt;"), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommand").Replace(">", "&gt;"), content);
         }
 
         class PendingModelChangesMiddleware
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Error_page_then_apply_migrations()
         {
-            TestServer server = await SetupTestServer<BloggingContextWithMigrations, ApplyMigrationsMiddleware>();
+            TestServer server = SetupTestServer<BloggingContextWithMigrations, ApplyMigrationsMiddleware>();
             var client = server.CreateClient();
 
             var expectedMigrationsEndpoint = "/ApplyDatabaseMigrations";
@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             var migrationsEndpoint = "/MyCustomEndPoints/ApplyMyMigrationsHere";
 
-            using (var database = await SqlServerTestStore.CreateScratchAsync(createDatabase: false))
+            using (var database = SqlServerTestStore.CreateScratch())
             {
                 var server = TestServer.Create(app =>
                 {
@@ -231,7 +231,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     {
                         services.AddEntityFramework().AddSqlServer();
                         services.AddScoped<BloggingContextWithMigrations>();
-                        services.AddInstance<DbContextOptions>(new DbContextOptions().UseSqlServer(database.Connection.ConnectionString));
+                        services.AddInstance<DbContextOptions>(new DbContextOptions().UseSqlServer(database.ConnectionString));
                     });
 
                     var options = DatabaseErrorPageOptions.ShowAll;
@@ -253,7 +253,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Pass_thru_when_context_not_in_services()
         {
-            using (var database = await SqlServerTestStore.CreateScratchAsync(createDatabase: false))
+            using (var database = SqlServerTestStore.CreateScratch())
             {
                 var logProvider = new TestLoggerProvider();
 
@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                         services.AddInstance<DbContextOptions>(
                             new DbContextOptions()
-                                .UseSqlServer(database.Connection.ConnectionString));
+                                .UseSqlServer(database.ConnectionString));
                     });
 
                     app.UseDatabaseErrorPage();
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     await server.CreateClient().GetAsync("http://localhost/"));
 
                 Assert.True(logProvider.Logger.Messages.Any(m =>
-                    m.StartsWith(Strings.DatabaseErrorPageMiddleware_ContextNotRegistered(typeof(BloggingContext)))));
+                    m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_ContextNotRegistered", typeof(BloggingContext)))));
             }
         }
 
@@ -304,17 +304,17 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Pass_thru_when_exception_in_logic()
         {
-            using (var database = await SqlServerTestStore.CreateScratchAsync(createDatabase: false))
+            using (var database = SqlServerTestStore.CreateScratch())
             {
                 var logProvider = new TestLoggerProvider();
 
-                var server = await SetupTestServer<BloggingContextWithSnapshotThatThrows, ExceptionInLogicMiddleware>(logProvider);
+                var server = SetupTestServer<BloggingContextWithSnapshotThatThrows, ExceptionInLogicMiddleware>(logProvider);
 
                 var ex = await Assert.ThrowsAsync<SqlException>(async () =>
                     await server.CreateClient().GetAsync("http://localhost/"));
 
                 Assert.True(logProvider.Logger.Messages.Any(m =>
-                    m.StartsWith(Strings.DatabaseErrorPageMiddleware_Exception)));
+                    m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_Exception"))));
             }
         }
 
@@ -334,10 +334,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             }
         }
 
-        private static async Task<TestServer> SetupTestServer<TContext, TMiddleware>(ILoggerProvider logProvider = null)
+        private static TestServer SetupTestServer<TContext, TMiddleware>(ILoggerProvider logProvider = null)
             where TContext : DbContext
         {
-            using (var database = await SqlServerTestStore.CreateScratchAsync(createDatabase: false))
+            using (var database = SqlServerTestStore.CreateScratch())
             {
                 return TestServer.Create(app =>
                 {
@@ -349,7 +349,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                         services.AddScoped<TContext>();
                         services.AddInstance<DbContextOptions>(
                             new DbContextOptions()
-                                .UseSqlServer(database.Connection.ConnectionString));
+                                .UseSqlServer(database.ConnectionString));
                     });
 
                     app.UseDatabaseErrorPage();

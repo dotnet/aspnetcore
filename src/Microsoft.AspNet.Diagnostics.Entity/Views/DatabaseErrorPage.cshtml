@@ -53,7 +53,7 @@
 
     @if (!Model.DatabaseExists && !Model.PendingMigrations.Any())
     {
-        <h2>@Strings.DatabaseErrorPage_NoDbOrMigrationsTitle(Model.ContextType.Name)</h2>
+        <h2>@Strings.FormatDatabaseErrorPage_NoDbOrMigrationsTitle(Model.ContextType.Name)</h2>
         <p>@Strings.DatabaseErrorPage_NoDbOrMigrationsInfo</p>
         <code> @Strings.DatabaseErrorPage_AddMigrationCommand </code>
         <br />
@@ -64,8 +64,8 @@
     else if (Model.PendingMigrations.Any())
     {
         <div>
-            <h2>@Strings.DatabaseErrorPage_PendingMigrationsTitle(Model.ContextType.Name)</h2>
-            <p>@Strings.DatabaseErrorPage_PendingMigrationsInfo(Model.ContextType.Name)</p>
+            <h2>@Strings.FormatDatabaseErrorPage_PendingMigrationsTitle(Model.ContextType.Name)</h2>
+            <p>@Strings.FormatDatabaseErrorPage_PendingMigrationsInfo(Model.ContextType.Name)</p>
 
             @if (Model.Options.ListMigrations)
             {
@@ -130,7 +130,7 @@
     else if (Model.PendingModelChanges)
     {
         <div>
-            <h2>@Strings.DatabaseErrorPage_PendingChangesTitle(Model.ContextType.Name)</h2>
+            <h2>@Strings.FormatDatabaseErrorPage_PendingChangesTitle(Model.ContextType.Name)</h2>
             <p>@Strings.DatabaseErrorPage_PendingChangesInfo</p>
             <code>@Strings.DatabaseErrorPage_AddMigrationCommand</code>
             <br />

@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
             if (context.Request.Path.Equals(_options.Path))
             {
-                _logger.WriteVerbose(Strings.MigrationsEndPointMiddleware_RequestPathMatched(context.Request.Path));
+                _logger.WriteVerbose(Strings.FormatMigrationsEndPointMiddleware_RequestPathMatched(context.Request.Path));
 
                 using (RequestServicesContainer.EnsureRequestServices(context, _serviceProvider))
                 { 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                     {
                         try
                         {
-                            _logger.WriteVerbose(Strings.MigrationsEndPointMiddleware_ApplyingMigrations(db.GetType().FullName));
+                            _logger.WriteVerbose(Strings.FormatMigrationsEndPointMiddleware_ApplyingMigrations(db.GetType().FullName));
 
                             db.Database.AsMigrationsEnabled().ApplyMigrations();
 
@@ -59,11 +59,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                             context.Response.Headers.Add("Pragma", new[] { "no-cache" });
                             context.Response.Headers.Add("Cache-Control", new[] { "no-cache" });
 
-                            _logger.WriteVerbose(Strings.MigrationsEndPointMiddleware_Applied(db.GetType().FullName));
+                            _logger.WriteVerbose(Strings.FormatMigrationsEndPointMiddleware_Applied(db.GetType().FullName));
                         }
                         catch (Exception ex)
                         {
-                            var message = Strings.MigrationsEndPointMiddleware_Exception(db.GetType().FullName);
+                            var message = Strings.FormatMigrationsEndPointMiddleware_Exception(db.GetType().FullName);
                             _logger.WriteError(message);
                             throw new InvalidOperationException(message, ex);
                         }
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             var contextType = Type.GetType(contextTypeName);
             if (contextType == null)
             {
-                var message = Strings.MigrationsEndPointMiddleware_InvalidContextType(contextTypeName);
+                var message = Strings.FormatMigrationsEndPointMiddleware_InvalidContextType(contextTypeName);
                 logger.WriteError(message);
                 await WriteErrorToResponse(context.Response, message).WithCurrentCulture();
                 return null;
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             var db = (DbContext)context.RequestServices.GetService(contextType);
             if (db == null)
             {
-                var message = Strings.MigrationsEndPointMiddleware_ContextNotRegistered(contextType.FullName);
+                var message = Strings.FormatMigrationsEndPointMiddleware_ContextNotRegistered(contextType.FullName);
                 logger.WriteError(message);
                 await WriteErrorToResponse(context.Response, message).WithCurrentCulture();
                 return null;
