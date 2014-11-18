@@ -32,10 +32,17 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             // This will recurse through the syntax tree.
             VisitBlock(root);
 
-            var resolutionContext = new TagHelperDescriptorResolutionContext(_directiveDescriptors);
+            var resolutionContext = GetTagHelperDescriptorResolutionContext(_directiveDescriptors);
             var descriptors = _descriptorResolver.Resolve(resolutionContext);
 
             return descriptors;
+        }
+
+        // Allows MVC a chance to override the TagHelperDescriptorResolutionContext
+        protected virtual TagHelperDescriptorResolutionContext GetTagHelperDescriptorResolutionContext(
+            [NotNull] IEnumerable<TagHelperDirectiveDescriptor> descriptors)
+        {
+            return new TagHelperDescriptorResolutionContext(descriptors);
         }
 
         public override void VisitSpan(Span span)
