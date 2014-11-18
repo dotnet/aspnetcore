@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -36,20 +38,42 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             foreach (var directiveDescriptor in context.DirectiveDescriptors)
             {
-                var lookupInfo = GetLookupInfo(directiveDescriptor);
-
-                if (directiveDescriptor.DirectiveType == TagHelperDirectiveType.RemoveTagHelper)
+                try
                 {
-                    resolvedDescriptors.RemoveWhere(descriptor => MatchesLookupInfo(descriptor, lookupInfo));
+                    var lookupInfo = GetLookupInfo(directiveDescriptor, context.ErrorSink);
+
+                    // Could not resolve the lookup info.
+                    if (lookupInfo == null)
+                    {
+                        return Enumerable.Empty<TagHelperDescriptor>();
+                    }
+
+                    if (directiveDescriptor.DirectiveType == TagHelperDirectiveType.RemoveTagHelper)
+                    {
+                        resolvedDescriptors.RemoveWhere(descriptor => MatchesLookupInfo(descriptor, lookupInfo));
+                    }
+                    else if (directiveDescriptor.DirectiveType == TagHelperDirectiveType.AddTagHelper)
+                    {
+                        var descriptors = ResolveDescriptorsInAssembly(lookupInfo.AssemblyName,
+                                                                       directiveDescriptor.Location,
+                                                                       context.ErrorSink);
+
+                        // Only use descriptors that match our lookup info
+                        descriptors = descriptors.Where(descriptor => MatchesLookupInfo(descriptor, lookupInfo));
+
+                        resolvedDescriptors.UnionWith(descriptors);
+                    }
                 }
-                else if (directiveDescriptor.DirectiveType == TagHelperDirectiveType.AddTagHelper)
+                catch (Exception ex)
                 {
-                    var descriptors = ResolveDescriptorsInAssembly(lookupInfo.AssemblyName);
+                    var directiveName = "@" + directiveDescriptor.DirectiveType.ToString().ToLowerInvariant();
 
-                    // Only use descriptors that match our lookup info
-                    descriptors = descriptors.Where(descriptor => MatchesLookupInfo(descriptor, lookupInfo));
-
-                    resolvedDescriptors.UnionWith(descriptors);
+                    context.ErrorSink.OnError(
+                        directiveDescriptor.Location,
+                        Resources.FormatTagHelperDescriptorResolver_EncounteredUnexpectedError(
+                            directiveName,
+                            directiveDescriptor.LookupText,
+                            ex.Message));
                 }
             }
 
@@ -63,13 +87,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="assemblyName">
         /// The name of the assembly to resolve <see cref="TagHelperDescriptor"/>s from.
         /// </param>
+        /// <param name="documentLocation">The <see cref="SourceLocation"/> of the directive.</param>
+        /// <param name="errorSink">Used to record errors found when resolving <see cref="TagHelperDescriptor"/>s 
+        /// within the given <paramref name="assemblyName"/>.</param>
         /// <returns><see cref="TagHelperDescriptor"/>s for <see cref="ITagHelper"/>s from the given
         /// <paramref name="assemblyName"/>.</returns>
         // This is meant to be overridden by tooling to enable assembly level caching.
-        protected virtual IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(string assemblyName)
+        protected virtual IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(string assemblyName,
+                                                                                        SourceLocation documentLocation,
+                                                                                        ParserErrorSink errorSink)
         {
             // Resolve valid tag helper types from the assembly.
-            var tagHelperTypes = _typeResolver.Resolve(assemblyName);
+            var tagHelperTypes = _typeResolver.Resolve(assemblyName, documentLocation, errorSink);
 
             // Convert types to TagHelperDescriptors
             var descriptors = tagHelperTypes.SelectMany(TagHelperDescriptorFactory.CreateDescriptors);
@@ -88,7 +117,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
               string.Equals(descriptor.TypeName, lookupInfo.TypeName, StringComparison.Ordinal);
         }
 
-        private static LookupInfo GetLookupInfo(TagHelperDirectiveDescriptor directiveDescriptor)
+        private static LookupInfo GetLookupInfo(TagHelperDirectiveDescriptor directiveDescriptor,
+                                                ParserErrorSink errorSink)
         {
             var lookupText = directiveDescriptor.LookupText;
             var lookupStrings = lookupText?.Split(new[] { ',' });
@@ -100,9 +130,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 lookupStrings.Any(string.IsNullOrWhiteSpace) ||
                 (lookupStrings.Length != 1 && lookupStrings.Length != 2))
             {
-                throw new ArgumentException(
-                    Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperLookupText(lookupText),
-                    nameof(lookupText));
+                errorSink.OnError(
+                    directiveDescriptor.Location,
+                    Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperLookupText(lookupText));
+
+                return null;
             }
 
             // Grab the assembly name from the lookup text strings. Due to our supported lookupText formats it will

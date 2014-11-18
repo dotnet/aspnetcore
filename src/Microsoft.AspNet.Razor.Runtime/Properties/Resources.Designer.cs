@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Runtime
         }
 
         /// <summary>
-        /// Cannot resolve TagHelper containing assembly '{0}'.
+        /// Cannot resolve TagHelper containing assembly '{0}'. Error: {1}
         /// </summary>
         internal static string TagHelperTypeResolver_CannotResolveTagHelperAssembly
         {
@@ -39,11 +39,11 @@ namespace Microsoft.AspNet.Razor.Runtime
         }
 
         /// <summary>
-        /// Cannot resolve TagHelper containing assembly '{0}'.
+        /// Cannot resolve TagHelper containing assembly '{0}'. Error: {1}
         /// </summary>
-        internal static string FormatTagHelperTypeResolver_CannotResolveTagHelperAssembly(object p0)
+        internal static string FormatTagHelperTypeResolver_CannotResolveTagHelperAssembly(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperTypeResolver_CannotResolveTagHelperAssembly"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperTypeResolver_CannotResolveTagHelperAssembly"), p0, p1);
         }
 
         /// <summary>
@@ -108,6 +108,22 @@ namespace Microsoft.AspNet.Razor.Runtime
         internal static string FormatArgumentCannotBeNullOrEmpty()
         {
             return GetString("ArgumentCannotBeNullOrEmpty");
+        }
+
+        /// <summary>
+        /// Encountered an unexpected error when attempting to resolve tag helper directive '{0}' with value '{1}'. Error: {2}
+        /// </summary>
+        internal static string TagHelperDescriptorResolver_EncounteredUnexpectedError
+        {
+            get { return GetString("TagHelperDescriptorResolver_EncounteredUnexpectedError"); }
+        }
+
+        /// <summary>
+        /// Encountered an unexpected error when attempting to resolve tag helper directive '{0}' with value '{1}'. Error: {2}
+        /// </summary>
+        internal static string FormatTagHelperDescriptorResolver_EncounteredUnexpectedError(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorResolver_EncounteredUnexpectedError"), p0, p1, p2);
         }
 
         private static string GetString(string name, params string[] formatterNames)

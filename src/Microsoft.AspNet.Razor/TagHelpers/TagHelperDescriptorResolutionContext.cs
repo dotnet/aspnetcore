@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNet.Razor.Parser;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
@@ -15,15 +16,23 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </summary>
         /// <param name="directiveDescriptors"><see cref="TagHelperDirectiveDescriptor"/>s used to resolve
         /// <see cref="TagHelperDescriptor"/>s.</param>
+        /// <param name="errorSink">Used to aggregate <see cref="Parser.SyntaxTree.RazorError"/>s.</param>
         public TagHelperDescriptorResolutionContext(
-            [NotNull] IEnumerable<TagHelperDirectiveDescriptor> directiveDescriptors)
+            [NotNull] IEnumerable<TagHelperDirectiveDescriptor> directiveDescriptors,
+            [NotNull] ParserErrorSink errorSink)
         {
             DirectiveDescriptors = new List<TagHelperDirectiveDescriptor>(directiveDescriptors);
+            ErrorSink = errorSink;
         }
 
         /// <summary>
         /// <see cref="TagHelperDirectiveDescriptor"/>s used to resolve <see cref="TagHelperDescriptor"/>s.
         /// </summary>
         public IList<TagHelperDirectiveDescriptor> DirectiveDescriptors { get; private set; }
+
+        /// <summary>
+        /// Used to aggregate <see cref="Parser.SyntaxTree.RazorError"/>s.
+        /// </summary>
+        public ParserErrorSink ErrorSink { get; private set; }
     }
 }

@@ -15,12 +15,15 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
     public class AddOrRemoveTagHelperSpanVisitor : ParserVisitor
     {
         private readonly ITagHelperDescriptorResolver _descriptorResolver;
+        private readonly ParserErrorSink _errorSink;
 
         private List<TagHelperDirectiveDescriptor> _directiveDescriptors;
 
-        public AddOrRemoveTagHelperSpanVisitor([NotNull] ITagHelperDescriptorResolver descriptorResolver)
+        public AddOrRemoveTagHelperSpanVisitor([NotNull] ITagHelperDescriptorResolver descriptorResolver,
+                                               [NotNull] ParserErrorSink errorSink)
         {
             _descriptorResolver = descriptorResolver;
+            _errorSink = errorSink;
         }
 
         public IEnumerable<TagHelperDescriptor> GetDescriptors([NotNull] Block root)
@@ -30,7 +33,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             // This will recurse through the syntax tree.
             VisitBlock(root);
 
-            var resolutionContext = GetTagHelperDescriptorResolutionContext(_directiveDescriptors);
+            var resolutionContext = GetTagHelperDescriptorResolutionContext(_directiveDescriptors, _errorSink);
             var descriptors = _descriptorResolver.Resolve(resolutionContext);
 
             return descriptors;
@@ -38,9 +41,10 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 
         // Allows MVC a chance to override the TagHelperDescriptorResolutionContext
         protected virtual TagHelperDescriptorResolutionContext GetTagHelperDescriptorResolutionContext(
-            [NotNull] IEnumerable<TagHelperDirectiveDescriptor> descriptors)
+            [NotNull] IEnumerable<TagHelperDirectiveDescriptor> descriptors,
+            [NotNull] ParserErrorSink errorSink)
         {
-            return new TagHelperDescriptorResolutionContext(descriptors);
+            return new TagHelperDescriptorResolutionContext(descriptors, errorSink);
         }
 
         public override void VisitSpan(Span span)
@@ -55,7 +59,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                                 TagHelperDirectiveType.RemoveTagHelper :
                                 TagHelperDirectiveType.AddTagHelper;
 
-                var directiveDescriptor = new TagHelperDirectiveDescriptor(codeGenerator.LookupText, directive);
+                var directiveDescriptor = new TagHelperDirectiveDescriptor(codeGenerator.LookupText, 
+                                                                           span.Start, 
+                                                                           directive);
 
                 _directiveDescriptors.Add(directiveDescriptor);
             }

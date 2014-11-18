@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -27,18 +29,43 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// all valid <see cref="ITagHelper"/> <see cref="Type"/>s.
         /// </summary>
         /// <param name="name">The name of an <see cref="Assembly"/> to search.</param>
-        /// <returns>An <see cref="IEnumerable{Type}"/> of valid <see cref="ITagHelper"/> <see cref="Type"/>s.</returns>
-        public IEnumerable<Type> Resolve(string name)
+        /// <param name="documentLocation">The <see cref="SourceLocation"/> of the associated
+        /// <see cref="Parser.SyntaxTree.SyntaxTreeNode"/> responsible for the current <see cref="Resolve"/> call.
+        /// </param>
+        /// <param name="errorSink">The <see cref="ParserErrorSink"/> used to record errors found when resolving 
+        /// <see cref="ITagHelper"/> <see cref="Type"/>s.</param>
+        /// <returns>An <see cref="IEnumerable{Type}"/> of valid <see cref="ITagHelper"/> <see cref="Type"/>s.
+        /// </returns>        
+        public IEnumerable<Type> Resolve(string name, 
+                                         SourceLocation documentLocation, 
+                                         [NotNull] ParserErrorSink errorSink)
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(
-                    Resources.TagHelperTypeResolver_TagHelperAssemblyNameCannotBeEmptyOrNull,
-                    nameof(name));
+                errorSink.OnError(documentLocation,
+                                  Resources.TagHelperTypeResolver_TagHelperAssemblyNameCannotBeEmptyOrNull);
+
+                return Type.EmptyTypes;
             }
 
             var assemblyName = new AssemblyName(name);
-            var libraryTypes = GetLibraryDefinedTypes(assemblyName);
+
+            IEnumerable<TypeInfo> libraryTypes;
+            try
+            {
+                libraryTypes = GetLibraryDefinedTypes(assemblyName);
+            }
+            catch (Exception ex)
+            {
+                errorSink.OnError(
+                    documentLocation,
+                    Resources.FormatTagHelperTypeResolver_CannotResolveTagHelperAssembly(
+                        assemblyName.Name,
+                        ex.Message));
+
+                return Type.EmptyTypes;
+            }
+
             var validTagHelpers = libraryTypes.Where(IsTagHelper);
 
             // Convert from TypeInfo[] to Type[]
@@ -48,17 +75,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         // Internal for testing, don't want to be loading assemblies during a test.
         internal virtual IEnumerable<TypeInfo> GetLibraryDefinedTypes(AssemblyName assemblyName)
         {
-            try
-            {
-                var assembly = Assembly.Load(assemblyName);
+            var assembly = Assembly.Load(assemblyName);
 
-                return assembly.DefinedTypes;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatTagHelperTypeResolver_CannotResolveTagHelperAssembly(assemblyName.Name), ex);
-            }
+            return assembly.ExportedTypes.Select(type => type.GetTypeInfo());
         }
 
         // Internal for testing.

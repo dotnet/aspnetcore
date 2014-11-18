@@ -243,9 +243,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                             // https://github.com/aspnet/Razor/issues/129
                             if (!isPlainTextValue)
                             {
-                                throw new InvalidOperationException(
-                                    RazorResources.FormatTagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols(
-                                        attributeDescriptor.PropertyName));
+                                _writer.WriteLine(";");
+                                return;
                             }
 
                             // We aren't a bufferable attribute which means we have no Razor code in our value.

@@ -123,7 +123,7 @@
 "typeName, assemblyName"</value>
   </data>
   <data name="TagHelperTypeResolver_CannotResolveTagHelperAssembly" xml:space="preserve">
-    <value>Cannot resolve TagHelper containing assembly '{0}'.</value>
+    <value>Cannot resolve TagHelper containing assembly '{0}'. Error: {1}</value>
   </data>
   <data name="TagHelperTypeResolver_TagHelperAssemblyNameCannotBeEmptyOrNull" xml:space="preserve">
     <value>Tag helper directive assembly name cannot be null or empty.</value>
@@ -136,5 +136,8 @@
   </data>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>The value cannot be null or empty.</value>
+  </data>
+  <data name="TagHelperDescriptorResolver_EncounteredUnexpectedError" xml:space="preserve">
+    <value>Encountered an unexpected error when attempting to resolve tag helper directive '{0}' with value '{1}'. Error: {2}</value>
   </data>
 </root>

@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             if (TagHelperDescriptorResolver != null)
             {
-                var descriptors = GetTagHelperDescriptors(rewritingContext.SyntaxTree);
+                var descriptors = GetTagHelperDescriptors(rewritingContext.SyntaxTree, rewritingContext.ErrorSink);
                 var tagHelperProvider = new TagHelperDescriptorProvider(descriptors);
 
                 var tagHelperParseTreeRewriter = new TagHelperParseTreeRewriter(tagHelperProvider);
@@ -203,10 +203,15 @@ namespace Microsoft.AspNet.Razor.Parser
         /// specified <paramref name="documentRoot"/>.
         /// </summary>
         /// <param name="documentRoot">The <see cref="Block"/> to scan for tag helper registrations in.</param>
-        /// <returns></returns>
-        protected virtual IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors([NotNull] Block documentRoot)
+        /// <param name="errorSink">Used to manage <see cref="RazorError"/>s encountered during the Razor parsing 
+        /// phase.</param>
+        /// <returns><see cref="TagHelperDescriptor"/>s that are applicable to the <paramref name="documentRoot"/>
+        /// </returns>
+        protected virtual IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors([NotNull] Block documentRoot,
+                                                                                   [NotNull] ParserErrorSink errorSink)
         {
-            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(TagHelperDescriptorResolver);
+            var addOrRemoveTagHelperSpanVisitor = 
+                new AddOrRemoveTagHelperSpanVisitor(TagHelperDescriptorResolver, errorSink);
             return addOrRemoveTagHelperSpanVisitor.GetDescriptors(documentRoot);
         }
 
