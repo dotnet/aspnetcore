@@ -102,6 +102,53 @@ namespace Microsoft.AspNet.Routing
                 "of type 'DefaultInlineConstraintResolver'.");
         }
 
+        [Fact]
+        public void AddResolvedConstraint_ForOptionalParameter()
+        {
+            var builder = CreateBuilder("{controller}/{action}/{id}");
+            builder.SetOptional("id");
+            builder.AddResolvedConstraint("id", "int");
+
+            var result = builder.Build();
+            Assert.Equal(1, result.Count);
+            Assert.Equal("id", result.First().Key);
+            Assert.IsType<OptionalRouteConstraint>(Assert.Single(result).Value);
+        }
+
+        [Fact]
+        public void AddResolvedConstraint_SetOptionalParameter_AfterAddingTheParameter()
+        {
+            var builder = CreateBuilder("{controller}/{action}/{id}");            
+            builder.AddResolvedConstraint("id", "int");
+            builder.SetOptional("id");
+
+            var result = builder.Build();
+            Assert.Equal(1, result.Count);
+            Assert.Equal("id", result.First().Key);
+            Assert.IsType<OptionalRouteConstraint>(Assert.Single(result).Value);
+        }
+
+        [Fact]
+        public void AddResolvedConstraint_And_AddConstraint_ForOptionalParameter()
+        {
+            var builder = CreateBuilder("{controller}/{action}/{name}");
+            builder.SetOptional("name");
+            builder.AddResolvedConstraint("name", "alpha");
+            var minLenConstraint = new MinLengthRouteConstraint(10);
+            builder.AddConstraint("name", minLenConstraint);
+
+            var result = builder.Build();
+            Assert.Equal(1, result.Count);
+            Assert.Equal("name", result.First().Key);
+            Assert.IsType<OptionalRouteConstraint>(Assert.Single(result).Value);
+            var optionalConstraint = (OptionalRouteConstraint)result.First().Value;            
+            var compositeConstraint = Assert.IsType<CompositeRouteConstraint>(optionalConstraint.InnerConstraint); ;
+            Assert.Equal(compositeConstraint.Constraints.Count(), 2);
+
+            Assert.Single(compositeConstraint.Constraints, c => c is MinLengthRouteConstraint);
+            Assert.Single(compositeConstraint.Constraints, c => c is AlphaRouteConstraint);
+        }
+
         [Theory]
         [InlineData("abc", "abc", true)]      // simple case
         [InlineData("abc", "bbb|abc", true)]  // Regex or

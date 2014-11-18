@@ -274,10 +274,15 @@ namespace Microsoft.AspNet.Routing.Template
 
             foreach (var parameter in parsedTemplate.Parameters)
             {
+                if (parameter.IsOptional)
+                {
+                    constraintBuilder.SetOptional(parameter.Name);
+                }
+
                 foreach (var inlineConstraint in parameter.InlineConstraints)
                 {
                     constraintBuilder.AddResolvedConstraint(parameter.Name, inlineConstraint.Constraint);
-                }
+                }                
             }
 
             return constraintBuilder.Build();

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Routing
         private readonly string _displayName;
 
         private readonly Dictionary<string, List<IRouteConstraint>> _constraints;
-
+        private readonly HashSet<string> _optionalParameters;
         /// <summary>
         /// Creates a new <see cref="RouteConstraintBuilder"/> instance.
         /// </summary>
@@ -34,6 +34,7 @@ namespace Microsoft.AspNet.Routing
             _displayName = displayName;
 
             _constraints = new Dictionary<string, List<IRouteConstraint>>(StringComparer.OrdinalIgnoreCase);
+            _optionalParameters = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -55,7 +56,15 @@ namespace Microsoft.AspNet.Routing
                     constraint = new CompositeRouteConstraint(kvp.Value.ToArray());
                 }
 
-                constraints.Add(kvp.Key, constraint);
+                if (_optionalParameters.Contains(kvp.Key))
+                {
+                    var optionalConstraint = new OptionalRouteConstraint(constraint);
+                    constraints.Add(kvp.Key, optionalConstraint);
+                }
+                else
+                {
+                    constraints.Add(kvp.Key, constraint);
+                }
             }
 
             return constraints;
@@ -121,6 +130,15 @@ namespace Microsoft.AspNet.Routing
             }
 
             Add(key, constraint);
+        }
+
+        /// <summary>
+        /// Sets the given key as optional.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        public void SetOptional([NotNull] string key)
+        {
+            _optionalParameters.Add(key); 
         }
 
         private void Add(string key, IRouteConstraint constraint)
