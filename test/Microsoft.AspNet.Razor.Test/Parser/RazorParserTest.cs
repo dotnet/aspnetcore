@@ -77,7 +77,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                                                Mock.Of<ITagHelperDescriptorResolver>());
             parser.CallBase = true;
             parser.Protected()
-                  .Setup<IEnumerable<TagHelperDescriptor>>("GetTagHelperDescriptors", ItExpr.IsAny<Block>())
+                  .Setup<IEnumerable<TagHelperDescriptor>>("GetTagHelperDescriptors", 
+                                                           ItExpr.IsAny<Block>(), 
+                                                           ItExpr.IsAny<ParserErrorSink>())
                   .Returns(Enumerable.Empty<TagHelperDescriptor>())
                   .Verifiable();
 

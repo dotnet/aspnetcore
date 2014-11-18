@@ -10,6 +10,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     /// </summary>
     public class TagHelperDirectiveDescriptor
     {
+        // Internal for testing purposes.
+        internal TagHelperDirectiveDescriptor(string lookupText,
+                                              TagHelperDirectiveType directiveType)
+            : this(lookupText, SourceLocation.Zero, directiveType)
+        {
+        }
+
         /// <summary>
         /// Instantiates a new instance of <see cref="TagHelperDirectiveDescriptor"/>.
         /// </summary>

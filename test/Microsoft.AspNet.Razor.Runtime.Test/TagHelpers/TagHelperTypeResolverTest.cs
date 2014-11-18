@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNet.Razor.Text;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -35,27 +35,29 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             ValidTestableTagHelpers.Concat(InvalidTestableTagHelpers).ToArray();
 
         [Fact]
-        public void TypeResolver_ThrowsWhenCannotResolveAssembly()
+        public void TypeResolver_RecordsErrorWhenCannotResolveAssembly()
         {
             // Arrange
             var tagHelperTypeResolver = new TagHelperTypeResolver();
-            var expectedErrorMessage = string.Format(
-                CultureInfo.InvariantCulture,
-                "Cannot resolve TagHelper containing assembly '{0}'.",
-                "abcd");
-
-            // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-            {
-                tagHelperTypeResolver.Resolve("abcd");
-            });
-
-            Assert.Equal(expectedErrorMessage, ex.Message);
-#if ASPNETCORE50
-            Assert.IsType<FileLoadException>(ex.InnerException);
+            var errorSink = new ParserErrorSink();
+            var documentLocation = new SourceLocation(1, 2, 3);
+            var expectedErrorMessage = "Cannot resolve TagHelper containing assembly 'abcd'. Error: " +
+                "Could not load file or assembly '" +
+#if ASPNET50
+                "abcd' or one of its dependencies. The system cannot find the file specified.";
 #else
-            Assert.IsType<FileNotFoundException>(ex.InnerException);
+                "abcd, Culture=neutral, PublicKeyToken=null' or one of its dependencies. Could not find or load a " +
+                "specific file. (Exception from HRESULT: 0x80131621)";
 #endif
+
+            // Act
+            tagHelperTypeResolver.Resolve("abcd", documentLocation, errorSink);
+
+            // Assert
+            var error = Assert.Single(errorSink.Errors);
+            Assert.Equal(1, error.Length);
+            Assert.Equal(documentLocation, error.Location);
+            Assert.Equal(expectedErrorMessage, error.Message);
         }
 
         [Fact]
@@ -65,7 +67,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperTypeResolver = new TestTagHelperTypeResolver(TestableTagHelpers);
 
             // Act
-            var types = tagHelperTypeResolver.Resolve("Foo");
+            var types = tagHelperTypeResolver.Resolve("Foo", SourceLocation.Zero, new ParserErrorSink());
 
             // Assert
             Assert.Equal(ValidTestableTagHelpers, types);
@@ -78,7 +80,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperTypeResolver = new TestTagHelperTypeResolver(InvalidTestableTagHelpers);
 
             // Act
-            var types = tagHelperTypeResolver.Resolve("Foo");
+            var types = tagHelperTypeResolver.Resolve("Foo", SourceLocation.Zero, new ParserErrorSink());
 
             // Assert
             Assert.Empty(types);
@@ -87,22 +89,22 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void TypeResolver_ResolveThrowsIfEmptyOrNullLookupText(string name)
+        public void TypeResolver_CreatesErrorIfNullOrEmptyAssmblyName_DoesNotThrow(string name)
         {
             // Arrange
             var tagHelperTypeResolver = new TestTagHelperTypeResolver(InvalidTestableTagHelpers);
-            var expectedMessage = "Tag helper directive assembly name cannot be null or empty." +
-                Environment.NewLine +
-                "Parameter name: name";
+            var errorSink = new ParserErrorSink();
+            var documentLocation = new SourceLocation(1, 2, 3);
+            var expectedErrorMessage = "Tag helper directive assembly name cannot be null or empty.";
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(nameof(name),
-            () =>
-            {
-                tagHelperTypeResolver.Resolve(name);
-            });
+            // Act
+            tagHelperTypeResolver.Resolve(name, documentLocation, errorSink);
 
-            Assert.Equal(expectedMessage, ex.Message);
+            // Assert
+            var error = Assert.Single(errorSink.Errors);
+            Assert.Equal(1, error.Length);
+            Assert.Equal(documentLocation, error.Location);
+            Assert.Equal(expectedErrorMessage, error.Message);
         }
 
         protected class TestTagHelperTypeResolver : TagHelperTypeResolver

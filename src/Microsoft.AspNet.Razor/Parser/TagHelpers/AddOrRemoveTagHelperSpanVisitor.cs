@@ -19,6 +19,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 
         private List<TagHelperDirectiveDescriptor> _directiveDescriptors;
 
+        // Internal for testing use
+        internal AddOrRemoveTagHelperSpanVisitor(ITagHelperDescriptorResolver descriptorResolver)
+            : this(descriptorResolver, new ParserErrorSink())
+        {
+        }
+
         public AddOrRemoveTagHelperSpanVisitor([NotNull] ITagHelperDescriptorResolver descriptorResolver,
                                                [NotNull] ParserErrorSink errorSink)
         {

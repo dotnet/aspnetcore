@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNet.Razor.Text;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -49,7 +51,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Arrange
             var tagHelperDescriptorResolver = new AssemblyCheckingTagHelperDescriptorResolver();
             var context = new TagHelperDescriptorResolutionContext(
-                new[] { new TagHelperDirectiveDescriptor(lookupText, TagHelperDirectiveType.AddTagHelper) });
+                new[] { new TagHelperDirectiveDescriptor(lookupText, TagHelperDirectiveType.AddTagHelper) },
+                new ParserErrorSink());
 
             // Act
             tagHelperDescriptorResolver.Resolve(context);
@@ -200,7 +203,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperDescriptorResolver =
                 new TestTagHelperDescriptorResolver(
                     new LookupBasedTagHelperTypeResolver(descriptorAssemblyLookups));
-            var resolutionContext = new TagHelperDescriptorResolutionContext(directiveDescriptors);
+            var resolutionContext = new TagHelperDescriptorResolutionContext(
+                directiveDescriptors, 
+                new ParserErrorSink());
 
             // Act
             var descriptors = tagHelperDescriptorResolver.Resolve(resolutionContext);
@@ -305,7 +310,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperDescriptorResolver =
                 new TestTagHelperDescriptorResolver(
                     new LookupBasedTagHelperTypeResolver(descriptorAssemblyLookups));
-            var resolutionContext = new TagHelperDescriptorResolutionContext(directiveDescriptors);
+            var resolutionContext = new TagHelperDescriptorResolutionContext(
+                directiveDescriptors,
+                new ParserErrorSink());
 
             // Act
             var descriptors = tagHelperDescriptorResolver.Resolve(resolutionContext);
@@ -437,26 +444,56 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void DescriptorResolver_ResolveThrowsIfNullOrEmptyLookupText(string lookupText)
+        public void DescriptorResolver_CreatesErrorIfNullOrEmptyLookupText_DoesNotThrow(string lookupText)
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var tagHelperDescriptorResolver =
                 new TestTagHelperDescriptorResolver(
                     new TestTagHelperTypeResolver(InvalidTestableTagHelpers));
+            var documentLocation = new SourceLocation(1, 2, 3);
+            var directiveType = TagHelperDirectiveType.AddTagHelper;
+            var expectedErrorMessage =
+                Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperLookupText(lookupText);
+            var resolutionContext = new TagHelperDescriptorResolutionContext(
+                new [] { new TagHelperDirectiveDescriptor(lookupText, documentLocation, directiveType)},
+                errorSink);
 
-            var expectedMessage =
-                Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperLookupText(lookupText) +
-                Environment.NewLine +
-                "Parameter name: lookupText";
+            // Act
+            tagHelperDescriptorResolver.Resolve(resolutionContext);
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(nameof(lookupText),
-            () =>
-            {
-                tagHelperDescriptorResolver.Resolve(lookupText);
-            });
+            // Assert
+            var error = Assert.Single(errorSink.Errors);
+            Assert.Equal(1, error.Length);
+            Assert.Equal(documentLocation, error.Location);
+            Assert.Equal(expectedErrorMessage, error.Message);
+        }
 
-            Assert.Equal(expectedMessage, ex.Message);
+        [Fact]
+        public void DescriptorResolver_UnderstandsUnexpectedExceptions_DoesNotThrow()
+        {
+            // Arrange
+            var expectedErrorMessage = "Encountered an unexpected error when attempting to resolve tag helper " +
+                                       "directive '@addtaghelper' with value 'A custom lookup text'. Error: A " +
+                                       "custom exception";
+            var documentLocation = new SourceLocation(1, 2, 3);
+            var directiveType = TagHelperDirectiveType.AddTagHelper;
+            var errorSink = new ParserErrorSink();
+            var expectedError = new Exception("A custom exception");
+            var tagHelperDescriptorResolver = new ThrowingTagHelperDescriptorResolver(expectedError);
+            var resolutionContext = new TagHelperDescriptorResolutionContext(
+                new[] { new TagHelperDirectiveDescriptor("A custom lookup text", documentLocation, directiveType) },
+                errorSink);
+
+
+            // Act
+            tagHelperDescriptorResolver.Resolve(resolutionContext);
+
+            // Assert
+            var error = Assert.Single(errorSink.Errors);
+            Assert.Equal(1, error.Length);
+            Assert.Equal(documentLocation, error.Location);
+            Assert.Equal(expectedErrorMessage, error.Message);
         }
 
         private class TestTagHelperDescriptorResolver : TagHelperDescriptorResolver
@@ -472,7 +509,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     new TagHelperDescriptorResolutionContext(
                         lookupTexts.Select(
                             lookupText =>
-                                new TagHelperDirectiveDescriptor(lookupText, TagHelperDirectiveType.AddTagHelper))));
+                                new TagHelperDirectiveDescriptor(lookupText, TagHelperDirectiveType.AddTagHelper)),
+                    new ParserErrorSink()));
             }
         }
 
@@ -504,11 +542,32 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             public string CalledWithAssemblyName { get; set; }
 
-            protected override IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(string assemblyName)
+            protected override IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(
+                string assemblyName,
+                SourceLocation documentLocation,
+                ParserErrorSink errorSink)
             {
                 CalledWithAssemblyName = assemblyName;
 
                 return Enumerable.Empty<TagHelperDescriptor>();
+            }
+        }
+
+        private class ThrowingTagHelperDescriptorResolver : TagHelperDescriptorResolver
+        {
+            private readonly Exception _error;
+
+            public ThrowingTagHelperDescriptorResolver(Exception error)
+            {
+                _error = error;
+            }
+
+            protected override IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(
+                string assemblyName, 
+                SourceLocation documentLocation, 
+                ParserErrorSink errorSink)
+            {
+                throw _error;
             }
         }
     }

@@ -11,6 +11,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     /// </summary>
     public class TagHelperDescriptorResolutionContext
     {
+        // Internal for testing purposes
+        internal TagHelperDescriptorResolutionContext(IEnumerable<TagHelperDirectiveDescriptor> directiveDescriptors)
+            : this(directiveDescriptors, new ParserErrorSink())
+        {
+        }
+
         /// <summary>
         /// Instantiates a new instance of <see cref="TagHelperDescriptorResolutionContext"/>.
         /// </summary>

@@ -28,7 +28,9 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var resolver = new Mock<ITagHelperDescriptorResolver>();
             resolver.Setup(mock => mock.Resolve(It.IsAny<TagHelperDescriptorResolutionContext>()))
                     .Returns(Enumerable.Empty<TagHelperDescriptor>());
-            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(resolver.Object);
+            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(
+                resolver.Object, 
+                new ParserErrorSink());
             var document = new MarkupBlock(
                 Factory.Code("\"one\"").AsAddTagHelper("one"),
                 Factory.Code("\"two\"").AsRemoveTagHelper("two"),
@@ -47,7 +49,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
-            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(resolver);
+            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(resolver, new ParserErrorSink());
             var document = new MarkupBlock(
                 Factory.Code("\"one\"").AsAddTagHelper("one"),
                 Factory.Code("\"two\"").AsRemoveTagHelper("two"),
@@ -85,13 +87,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             };
             var addOrRemoveTagHelperSpanVisitor = new CustomAddOrRemoveTagHelperSpanVisitor(
                 resolver,
-                (descriptors) =>
+                (descriptors, errorSink) =>
                 {
                     Assert.Equal(expectedInitialDirectiveDescriptors,
                                  descriptors,
                                  TagHelperDirectiveDescriptorComparer.Default);
 
-                    return new TagHelperDescriptorResolutionContext(expectedEndDirectiveDescriptors);
+                    return new TagHelperDescriptorResolutionContext(expectedEndDirectiveDescriptors, errorSink);
                 });
             var document = new MarkupBlock(
                 Factory.Code("\"one\"").AsAddTagHelper("one"),
@@ -113,7 +115,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
-            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(resolver);
+            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(resolver, new ParserErrorSink());
             var document = new MarkupBlock(
                 new DirectiveBlock(
                     Factory.CodeTransition(),
@@ -137,7 +139,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
-            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(resolver);
+            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(resolver, new ParserErrorSink());
             var document = new MarkupBlock(
                 new DirectiveBlock(
                     Factory.CodeTransition(),
@@ -162,7 +164,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             // Arrange
             var addOrRemoveTagHelperSpanVisitor =
                 new AddOrRemoveTagHelperSpanVisitor(
-                    new TestTagHelperDescriptorResolver());
+                    new TestTagHelperDescriptorResolver(),
+                    new ParserErrorSink());
             var document = new MarkupBlock(Factory.Markup("Hello World"));
 
             // Act & Assert
@@ -216,20 +219,25 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
         private class CustomAddOrRemoveTagHelperSpanVisitor : AddOrRemoveTagHelperSpanVisitor
         {
-            private Func<IEnumerable<TagHelperDirectiveDescriptor>, TagHelperDescriptorResolutionContext> _replacer;
+            private Func<IEnumerable<TagHelperDirectiveDescriptor>, 
+                         ParserErrorSink,
+                         TagHelperDescriptorResolutionContext> _replacer;
 
             public CustomAddOrRemoveTagHelperSpanVisitor(
                 ITagHelperDescriptorResolver descriptorResolver,
-                Func<IEnumerable<TagHelperDirectiveDescriptor>, TagHelperDescriptorResolutionContext> replacer)
-                : base(descriptorResolver)
+                Func<IEnumerable<TagHelperDirectiveDescriptor>, 
+                     ParserErrorSink, 
+                     TagHelperDescriptorResolutionContext> replacer)
+                : base(descriptorResolver, new ParserErrorSink())
             {
                 _replacer = replacer;
             }
 
             protected override TagHelperDescriptorResolutionContext GetTagHelperDescriptorResolutionContext(
-                IEnumerable<TagHelperDirectiveDescriptor> descriptors)
+                IEnumerable<TagHelperDirectiveDescriptor> descriptors,
+                ParserErrorSink errorSink)
             {
-                return _replacer(descriptors);
+                return _replacer(descriptors, errorSink);
             }
         }
     }
