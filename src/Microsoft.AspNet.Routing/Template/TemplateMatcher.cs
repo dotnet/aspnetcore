@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Routing.Template
                     }
                     else
                     {
-                        Contract.Assert(part.IsParameter);
+                        Debug.Assert(part.IsParameter);
 
                         if (part.IsCatchAll)
                         {
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Routing.Template
                     return null;
                 }
 
-                Contract.Assert(part.IsParameter);
+                Debug.Assert(part.IsParameter);
 
                 // It's ok for a catch-all to produce a null value
                 object defaultValue;
@@ -169,8 +169,8 @@ namespace Microsoft.AspNet.Routing.Template
                                          IReadOnlyDictionary<string, object> defaults,
                                          RouteValueDictionary values)
         {
-            Contract.Assert(routeSegment != null);
-            Contract.Assert(routeSegment.Parts.Count > 1);
+            Debug.Assert(routeSegment != null);
+            Debug.Assert(routeSegment.Parts.Count > 1);
 
             // Find last literal segment and get its last index in the string
             var lastIndex = requestSegment.Length;
@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.Routing.Template
                 }
                 else
                 {
-                    Contract.Assert(part.IsLiteral);
+                    Debug.Assert(part.IsLiteral);
                     lastLiteral = part;
 
                     var startIndex = lastIndex - 1;
@@ -246,7 +246,7 @@ namespace Microsoft.AspNet.Routing.Template
                         else
                         {
                             parameterStartIndex = newLastIndex;
-                            Contract.Assert(false, "indexOfLastSegementUsed should always be 0 from the check above");
+                            Debug.Assert(false, "indexOfLastSegementUsed should always be 0 from the check above");
                         }
                         parameterTextLength = lastIndex;
                     }

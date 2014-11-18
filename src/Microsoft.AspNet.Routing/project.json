@@ -13,7 +13,6 @@
     "aspnet50": {},
     "aspnetcore50": {
       "dependencies": {
-        "System.Diagnostics.Contracts": "4.0.0-beta-*",
         "System.Reflection.Extensions": "4.0.0-beta-*",
         "System.Text.RegularExpressions": "4.0.10-beta-*"
       }

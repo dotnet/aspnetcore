@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -178,8 +177,8 @@ namespace Microsoft.AspNet.Routing.Template
 
             for (var i = 0; i < _template.Segments.Count; i++)
             {
-                Contract.Assert(context.BufferState == SegmentState.Beginning);
-                Contract.Assert(context.UriState == SegmentState.Beginning);
+                Debug.Assert(context.BufferState == SegmentState.Beginning);
+                Debug.Assert(context.UriState == SegmentState.Beginning);
 
                 var segment = _template.Segments[i];
 
@@ -384,7 +383,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             public void AcceptDefault(string key)
             {
-                Contract.Assert(!_acceptedValues.ContainsKey(key));
+                Debug.Assert(!_acceptedValues.ContainsKey(key));
 
                 object value;
                 if (_defaults != null && _defaults.TryGetValue(key, out value))
@@ -502,7 +501,7 @@ namespace Microsoft.AspNet.Routing.Template
 
                     // We've already checked the conditions that could result in a rejected part, so this should
                     // always be true.
-                    Contract.Assert(result);
+                    Debug.Assert(result);
 
                     return result;
                 }

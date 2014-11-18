@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Routing.Template;
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Routing
                 var defaultValueMatch = defaultValueGroup.Value;
 
                 // Strip out the equal sign at the beginning
-                Contract.Assert(defaultValueMatch.StartsWith("=", StringComparison.Ordinal));
+                Debug.Assert(defaultValueMatch.StartsWith("=", StringComparison.Ordinal));
                 return defaultValueMatch.Substring(1);
             }
 

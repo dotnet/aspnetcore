@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Globalization;
 
 namespace Microsoft.AspNet.Routing.Template
@@ -62,8 +62,8 @@ namespace Microsoft.AspNet.Routing.Template
 
         private static bool ParseSegment(TemplateParserContext context, List<TemplateSegment> segments)
         {
-            Contract.Assert(context != null);
-            Contract.Assert(segments != null);
+            Debug.Assert(context != null);
+            Debug.Assert(segments != null);
 
             var segment = new TemplateSegment();
 
@@ -378,8 +378,8 @@ namespace Microsoft.AspNet.Routing.Template
 
         private static bool IsValidLiteral(TemplateParserContext context, string literal)
         {
-            Contract.Assert(context != null);
-            Contract.Assert(literal != null);
+            Debug.Assert(context != null);
+            Debug.Assert(literal != null);
 
             if (literal.IndexOf(QuestionMark) != -1)
             {
@@ -407,7 +407,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             public TemplateParserContext(string template)
             {
-                Contract.Assert(template != null);
+                Debug.Assert(template != null);
                 _template = template;
 
                 _index = -1;
