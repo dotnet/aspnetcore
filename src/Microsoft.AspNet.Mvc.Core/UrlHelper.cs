@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.Mvc
         private string GenerateUrl(string protocol, string host, string path, string fragment)
         {
             // We should have a robust and centrallized version of this code. See HttpAbstractions#28
-            Contract.Assert(path != null);
+            Debug.Assert(path != null);
 
             var url = path;
             if (!string.IsNullOrEmpty(fragment))

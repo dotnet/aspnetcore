@@ -4,7 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             if (metadata != null)
             {
                 // CheckBoxFor() case. That API does not support passing isChecked directly.
-                Contract.Assert(!isChecked.HasValue);
+                Debug.Assert(!isChecked.HasValue);
 
                 if (metadata.Model != null)
                 {
@@ -312,10 +312,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             else
             {
                 // RadioButtonFor() case. That API does not support passing isChecked directly.
-                Contract.Assert(!isChecked.HasValue);
+                Debug.Assert(!isChecked.HasValue);
 
                 // Need a value to determine isChecked.
-                Contract.Assert(value != null);
+                Debug.Assert(value != null);
 
                 var model = metadata.Model;
                 var valueString = Convert.ToString(value, CultureInfo.CurrentCulture);

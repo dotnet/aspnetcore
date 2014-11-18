@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.DependencyInjection;
 
@@ -97,8 +97,8 @@ namespace Microsoft.AspNet.Mvc.Filters
 
         private void ApplyFilterToContainer(object actualFilter, IFilter filterMetadata)
         {
-            Contract.Assert(actualFilter != null, "actualFilter should not be null");
-            Contract.Assert(filterMetadata != null, "filterMetadata should not be null");
+            Debug.Assert(actualFilter != null, "actualFilter should not be null");
+            Debug.Assert(filterMetadata != null, "filterMetadata should not be null");
 
             var container = actualFilter as IFilterContainer;
 

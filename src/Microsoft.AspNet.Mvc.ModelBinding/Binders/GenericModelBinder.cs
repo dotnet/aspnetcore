@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
@@ -90,9 +90,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                  Type openBinderType,
                                                  Type modelType)
         {
-            Contract.Assert(supportedInterfaceType != null);
-            Contract.Assert(openBinderType != null);
-            Contract.Assert(modelType != null);
+            Debug.Assert(supportedInterfaceType != null);
+            Debug.Assert(openBinderType != null);
+            Debug.Assert(modelType != null);
 
             var modelTypeArguments = GetGenericBinderTypeArgs(supportedInterfaceType, modelType);
 

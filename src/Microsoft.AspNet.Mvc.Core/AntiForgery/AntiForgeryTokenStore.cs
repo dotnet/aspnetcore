@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc
             // Add the cookie to the request based context.
             // This is useful if the cookie needs to be reloaded in the context of the same request.
             var contextAccessor = httpContext.RequestServices.GetRequiredService<IContextAccessor<AntiForgeryContext>>();
-            Contract.Assert(contextAccessor.Value == null, "AntiForgeryContext should be set only once per request.");
+            Debug.Assert(contextAccessor.Value == null, "AntiForgeryContext should be set only once per request.");
             contextAccessor.SetValue(new AntiForgeryContext() { CookieToken = token });
 
             var serializedToken = _serializer.Serialize(token);

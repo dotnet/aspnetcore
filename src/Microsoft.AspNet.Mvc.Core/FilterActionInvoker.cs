@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Mvc
                 // pipeline.
                 await InvokeExceptionFilter();
 
-                Contract.Assert(_exceptionContext != null);
+                Debug.Assert(_exceptionContext != null);
                 if (_exceptionContext.Exception != null)
                 {
                     // Exception filters only run when there's an exception - unsetting it will short-circuit
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc
                 // pipeline.
                 await InvokeExceptionFilter();
 
-                Contract.Assert(_exceptionContext != null);
+                Debug.Assert(_exceptionContext != null);
                 if (_exceptionContext.Exception != null)
                 {
                     // Exception filters only run when there's an exception - unsetting it will short-circuit
@@ -139,21 +139,21 @@ namespace Microsoft.AspNet.Mvc
                 //
                 // 1) Call the filter (if we have an exception)
                 // 2) No-op (if we don't have an exception)
-                Contract.Assert(_exceptionContext == null);
+                Debug.Assert(_exceptionContext == null);
                 _exceptionContext = new ExceptionContext(ActionContext, _filters);
 
                 try
                 {
                     await InvokeActionAuthorizationFilters();
 
-                    Contract.Assert(_authorizationContext != null);
+                    Debug.Assert(_authorizationContext != null);
                     if (_authorizationContext.Result == null)
                     {
                         // Authorization passed, run authorization filters and the action
                         await InvokeActionMethodWithFilters();
 
                         // Action filters might 'return' an unahndled exception instead of throwing
-                        Contract.Assert(_actionExecutedContext != null);
+                        Debug.Assert(_actionExecutedContext != null);
                         if (_actionExecutedContext.Exception != null && !_actionExecutedContext.ExceptionHandled)
                         {
                             _exceptionContext.Exception = _actionExecutedContext.Exception;
@@ -182,8 +182,8 @@ namespace Microsoft.AspNet.Mvc
         private async Task InvokeAuthorizationFilter()
         {
             // We should never get here if we already have a result.
-            Contract.Assert(_authorizationContext != null);
-            Contract.Assert(_authorizationContext.Result == null);
+            Debug.Assert(_authorizationContext != null);
+            Debug.Assert(_authorizationContext.Result == null);
 
             var current = _cursor.GetNextFilter<IAuthorizationFilter, IAsyncAuthorizationFilter>();
             if (current.FilterAsync != null)
@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.Mvc
 
         private async Task<ActionExecutedContext> InvokeActionMethodFilter()
         {
-            Contract.Assert(_actionExecutingContext != null);
+            Debug.Assert(_actionExecutingContext != null);
             if (_actionExecutingContext.Result != null)
             {
                 // If we get here, it means that an async filter set a result AND called next(). This is forbidden.
@@ -298,7 +298,7 @@ namespace Microsoft.AspNet.Mvc
             _resultExecutingContext = new ResultExecutingContext(ActionContext, _filters, result);
             await InvokeActionResultFilter();
 
-            Contract.Assert(_resultExecutingContext != null);
+            Debug.Assert(_resultExecutingContext != null);
             if (_resultExecutedContext.Exception != null && !_resultExecutedContext.ExceptionHandled)
             {
                 // There's an unhandled exception in filters
@@ -315,7 +315,7 @@ namespace Microsoft.AspNet.Mvc
 
         private async Task<ResultExecutedContext> InvokeActionResultFilter()
         {
-            Contract.Assert(_resultExecutingContext != null);
+            Debug.Assert(_resultExecutingContext != null);
             if (_resultExecutingContext.Cancel == true)
             {
                 // If we get here, it means that an async filter set cancel == true AND called next().
@@ -383,7 +383,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     await InvokeActionResult();
 
-                    Contract.Assert(_resultExecutedContext == null);
+                    Debug.Assert(_resultExecutedContext == null);
                     _resultExecutedContext = new ResultExecutedContext(
                         _resultExecutingContext,
                         _filters,

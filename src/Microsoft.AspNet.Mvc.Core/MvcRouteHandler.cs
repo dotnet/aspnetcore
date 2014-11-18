@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc
             // users understand they should call the per request scoped middleware
             // or set HttpContext.Services manually
             var services = context.HttpContext.RequestServices;
-            Contract.Assert(services != null);
+            Debug.Assert(services != null);
 
             // Verify if AddMvc was done before calling UseMvc
             // We use the MvcMarkerService to make sure if all the services were added.
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc
         private async Task InvokeActionAsync(RouteContext context, ActionDescriptor actionDescriptor)
         {
             var services = context.HttpContext.RequestServices;
-            Contract.Assert(services != null);
+            Debug.Assert(services != null);
 
             var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
 

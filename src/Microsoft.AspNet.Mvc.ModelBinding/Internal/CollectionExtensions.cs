@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
 {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
         /// </summary>
         public static T[] ToArrayWithoutNulls<T>(this ICollection<T> collection) where T : class
         {
-            Contract.Assert(collection != null);
+            Debug.Assert(collection != null);
 
             var result = new T[collection.Count];
             var count = 0;

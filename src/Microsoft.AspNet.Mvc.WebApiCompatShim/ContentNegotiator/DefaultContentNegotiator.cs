@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
@@ -451,7 +451,7 @@ namespace System.Net.Http.Formatting
 
         private static MediaTypeFormatter[] GetWritingFormatters(IEnumerable<MediaTypeFormatter> formatters)
         {
-            Contract.Assert(formatters != null);
+            Debug.Assert(formatters != null);
             MediaTypeFormatterCollection formatterCollection = formatters as MediaTypeFormatterCollection;
             return formatters.AsArray();
         }

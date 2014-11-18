@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Mvc
                 Type = typeInfo.AsType(),
             };
 
-            Contract.Assert(!string.IsNullOrEmpty(candidate.FullName));
+            Debug.Assert(!string.IsNullOrEmpty(candidate.FullName));
             var separatorIndex = candidate.FullName.LastIndexOf(".");
             if (separatorIndex >= 0)
             {

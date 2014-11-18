@@ -19,7 +19,6 @@
         "aspnetcore50": {
             "dependencies": {
                 "System.Collections.Concurrent": "4.0.10-beta-*",
-                "System.Diagnostics.Contracts": "4.0.0-beta-*",
                 "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
             }
         }

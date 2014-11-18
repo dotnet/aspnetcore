@@ -4,7 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static Type GetElementType(Type type)
         {
-            Contract.Assert(typeof(IEnumerable).IsAssignableFrom(type));
+            Debug.Assert(typeof(IEnumerable).IsAssignableFrom(type));
             if (type.IsArray)
             {
                 return type.GetElementType();

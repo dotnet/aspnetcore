@@ -23,7 +23,6 @@
       "dependencies": {
         "System.Collections.Concurrent": "4.0.10-beta-*",
         "System.ComponentModel.TypeConverter": "4.0.0-beta-*",
-        "System.Diagnostics.Contracts": "4.0.0-beta-*",
         "System.Reflection.TypeExtensions": "4.0.0-beta-*",
         "System.Runtime.Serialization.Primitives": "4.0.0-beta-*",
         "System.Runtime.Serialization.Xml": "4.0.10-beta-*",

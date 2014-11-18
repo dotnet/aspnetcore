@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -84,12 +84,12 @@ namespace Microsoft.AspNet.Mvc
         /// </remarks>
         public static Func<object, object> MakeFastPropertyGetter(PropertyInfo propertyInfo)
         {
-            Contract.Assert(propertyInfo != null);
+            Debug.Assert(propertyInfo != null);
 
             var getMethod = propertyInfo.GetMethod;
-            Contract.Assert(getMethod != null);
-            Contract.Assert(!getMethod.IsStatic);
-            Contract.Assert(getMethod.GetParameters().Length == 0);
+            Debug.Assert(getMethod != null);
+            Debug.Assert(!getMethod.IsStatic);
+            Debug.Assert(getMethod.GetParameters().Length == 0);
 
             // Instance methods in the CLR can be turned into static methods where the first parameter
             // is open over "target". This parameter is always passed by reference, so we have a code
@@ -135,15 +135,15 @@ namespace Microsoft.AspNet.Mvc
         /// </remarks>
         public static Action<object, object> MakeFastPropertySetter(PropertyInfo propertyInfo)
         {
-            Contract.Assert(propertyInfo != null);
-            Contract.Assert(!propertyInfo.DeclaringType.GetTypeInfo().IsValueType);
+            Debug.Assert(propertyInfo != null);
+            Debug.Assert(!propertyInfo.DeclaringType.GetTypeInfo().IsValueType);
 
             var setMethod = propertyInfo.SetMethod;
-            Contract.Assert(setMethod != null);
-            Contract.Assert(!setMethod.IsStatic);
-            Contract.Assert(setMethod.ReturnType == typeof(void));
+            Debug.Assert(setMethod != null);
+            Debug.Assert(!setMethod.IsStatic);
+            Debug.Assert(setMethod.ReturnType == typeof(void));
             var parameters = setMethod.GetParameters();
-            Contract.Assert(parameters.Length == 1);
+            Debug.Assert(parameters.Length == 1);
 
             // Instance methods in the CLR can be turned into static methods where the first parameter
             // is open over "target". This parameter is always passed by reference, so we have a code

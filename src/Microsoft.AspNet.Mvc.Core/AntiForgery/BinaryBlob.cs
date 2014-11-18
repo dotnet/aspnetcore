@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -75,7 +74,7 @@ namespace Microsoft.AspNet.Mvc
                 return false;
             }
 
-            Contract.Assert(this._data.Length == other._data.Length);
+            Debug.Assert(this._data.Length == other._data.Length);
             return AreByteArraysEqual(this._data, other._data);
         }
 
@@ -88,7 +87,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Since data should contain uniformly-distributed entropy, the
             // first 32 bits can serve as the hash code.
-            Contract.Assert(_data != null && _data.Length >= (32 / 8));
+            Debug.Assert(_data != null && _data.Length >= (32 / 8));
             return BitConverter.ToInt32(_data, 0);
         }
 

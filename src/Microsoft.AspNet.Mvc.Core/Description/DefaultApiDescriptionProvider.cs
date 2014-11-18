@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
@@ -246,7 +246,7 @@ namespace Microsoft.AspNet.Mvc.Description
             else
             {
                 // We will never call this method with templateParameter == null && parameterDescriptor == null
-                Contract.Assert(parameterDescriptor != null);
+                Debug.Assert(parameterDescriptor != null);
             }
 
             if (parameterDescription.Type != null)

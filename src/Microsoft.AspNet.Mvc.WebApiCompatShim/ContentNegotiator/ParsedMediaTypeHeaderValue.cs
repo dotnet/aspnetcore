@@ -3,7 +3,7 @@
 
 #if ASPNETCORE50
 
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 
 namespace System.Net.Http.Formatting
@@ -21,10 +21,10 @@ namespace System.Net.Http.Formatting
 
         public ParsedMediaTypeHeaderValue(MediaTypeHeaderValue mediaTypeHeaderValue)
         {
-            Contract.Assert(mediaTypeHeaderValue != null);
+            Debug.Assert(mediaTypeHeaderValue != null);
             string mediaType = _mediaType = mediaTypeHeaderValue.MediaType;
             _delimiterIndex = mediaType.IndexOf(MediaTypeSubtypeDelimiter);
-            Contract.Assert(_delimiterIndex > 0, "The constructor of the MediaTypeHeaderValue would have failed if there wasn't a type and subtype.");
+            Debug.Assert(_delimiterIndex > 0, "The constructor of the MediaTypeHeaderValue would have failed if there wasn't a type and subtype.");
 
             _isAllMediaRange = false;
             _isSubtypeMediaRange = false;

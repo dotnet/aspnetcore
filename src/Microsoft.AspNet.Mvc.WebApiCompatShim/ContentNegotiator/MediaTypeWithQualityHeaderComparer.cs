@@ -4,7 +4,7 @@
 #if ASPNETCORE50
 
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 
 namespace System.Net.Http.Formatting
@@ -38,8 +38,8 @@ namespace System.Net.Http.Formatting
         /// <returns></returns>
         public int Compare(MediaTypeWithQualityHeaderValue mediaType1, MediaTypeWithQualityHeaderValue mediaType2)
         {
-            Contract.Assert(mediaType1 != null, "The 'mediaType1' parameter should not be null.");
-            Contract.Assert(mediaType2 != null, "The 'mediaType2' parameter should not be null.");
+            Debug.Assert(mediaType1 != null, "The 'mediaType1' parameter should not be null.");
+            Debug.Assert(mediaType2 != null, "The 'mediaType2' parameter should not be null.");
 
             if (Object.ReferenceEquals(mediaType1, mediaType2))
             {
@@ -90,8 +90,8 @@ namespace System.Net.Http.Formatting
 
         private static int CompareBasedOnQualityFactor(MediaTypeWithQualityHeaderValue mediaType1, MediaTypeWithQualityHeaderValue mediaType2)
         {
-            Contract.Assert(mediaType1 != null);
-            Contract.Assert(mediaType2 != null);
+            Debug.Assert(mediaType1 != null);
+            Debug.Assert(mediaType2 != null);
 
             double mediaType1Quality = mediaType1.Quality ?? FormattingUtilities.Match;
             double mediaType2Quality = mediaType2.Quality ?? FormattingUtilities.Match;

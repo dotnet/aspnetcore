@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (_values == null)
             {
-                Contract.Assert(_valuesFactory != null);
+                Debug.Assert(_valuesFactory != null);
                 _values = await _valuesFactory();
             }
 

@@ -4,7 +4,7 @@
 #if ASPNETCORE50
 
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 
 namespace System.Net.Http.Formatting
@@ -43,8 +43,8 @@ namespace System.Net.Http.Formatting
         public int Compare(StringWithQualityHeaderValue stringWithQuality1,
                            StringWithQualityHeaderValue stringWithQuality2)
         {
-            Contract.Assert(stringWithQuality1 != null);
-            Contract.Assert(stringWithQuality2 != null);
+            Debug.Assert(stringWithQuality1 != null);
+            Debug.Assert(stringWithQuality2 != null);
 
             double quality1 = stringWithQuality1.Quality ?? FormattingUtilities.Match;
             double quality2 = stringWithQuality2.Quality ?? FormattingUtilities.Match;

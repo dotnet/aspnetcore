@@ -4,7 +4,7 @@
 #if ASPNETCORE50
 
 using System.Collections.ObjectModel;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Linq;
 
 namespace System.Collections.Generic
@@ -19,7 +19,7 @@ namespace System.Collections.Generic
         /// </summary>
         public static T[] AppendAndReallocate<T>(this T[] array, T value)
         {
-            Contract.Assert(array != null);
+            Debug.Assert(array != null);
 
             int originalLength = array.Length;
             T[] newArray = new T[originalLength + 1];
@@ -34,7 +34,7 @@ namespace System.Collections.Generic
         /// </summary>
         public static T[] AsArray<T>(this IEnumerable<T> values)
         {
-            Contract.Assert(values != null);
+            Debug.Assert(values != null);
 
             T[] array = values as T[];
             if (array == null)
@@ -50,7 +50,7 @@ namespace System.Collections.Generic
         /// </summary>
         public static Collection<T> AsCollection<T>(this IEnumerable<T> enumerable)
         {
-            Contract.Assert(enumerable != null);
+            Debug.Assert(enumerable != null);
 
             Collection<T> collection = enumerable as Collection<T>;
             if (collection != null)
@@ -71,7 +71,7 @@ namespace System.Collections.Generic
         /// </summary>
         public static IList<T> AsIList<T>(this IEnumerable<T> enumerable)
         {
-            Contract.Assert(enumerable != null);
+            Debug.Assert(enumerable != null);
 
             IList<T> list = enumerable as IList<T>;
             if (list != null)
@@ -87,7 +87,7 @@ namespace System.Collections.Generic
         /// </summary>
         public static List<T> AsList<T>(this IEnumerable<T> enumerable)
         {
-            Contract.Assert(enumerable != null);
+            Debug.Assert(enumerable != null);
 
             List<T> list = enumerable as List<T>;
             if (list != null)
@@ -107,8 +107,8 @@ namespace System.Collections.Generic
         /// </summary>
         public static void RemoveFrom<T>(this List<T> list, int start)
         {
-            Contract.Assert(list != null);
-            Contract.Assert(start >= 0 && start <= list.Count);
+            Debug.Assert(list != null);
+            Debug.Assert(start >= 0 && start <= list.Count);
 
             list.RemoveRange(start, list.Count - start);
         }
@@ -118,8 +118,8 @@ namespace System.Collections.Generic
         /// </summary>
         public static T SingleDefaultOrError<T, TArg1>(this IList<T> list, Action<TArg1> errorAction, TArg1 errorArg1)
         {
-            Contract.Assert(list != null);
-            Contract.Assert(errorAction != null);
+            Debug.Assert(list != null);
+            Debug.Assert(errorAction != null);
 
             switch (list.Count)
             {
@@ -142,8 +142,8 @@ namespace System.Collections.Generic
         /// </summary>
         public static TMatch SingleOfTypeDefaultOrError<TInput, TMatch, TArg1>(this IList<TInput> list, Action<TArg1> errorAction, TArg1 errorArg1) where TMatch : class
         {
-            Contract.Assert(list != null);
-            Contract.Assert(errorAction != null);
+            Debug.Assert(list != null);
+            Debug.Assert(errorAction != null);
 
             TMatch result = null;
             for (int i = 0; i < list.Count; i++)
@@ -170,7 +170,7 @@ namespace System.Collections.Generic
         /// </summary>
         public static T[] ToArrayWithoutNulls<T>(this ICollection<T> collection) where T : class
         {
-            Contract.Assert(collection != null);
+            Debug.Assert(collection != null);
 
             T[] result = new T[collection.Count];
             int count = 0;
@@ -199,8 +199,8 @@ namespace System.Collections.Generic
         /// </summary>
         public static Dictionary<TKey, TValue> ToDictionaryFast<TKey, TValue>(this TValue[] array, Func<TValue, TKey> keySelector, IEqualityComparer<TKey> comparer)
         {
-            Contract.Assert(array != null);
-            Contract.Assert(keySelector != null);
+            Debug.Assert(array != null);
+            Debug.Assert(keySelector != null);
 
             Dictionary<TKey, TValue> dictionary = new Dictionary<TKey, TValue>(array.Length, comparer);
             for (int i = 0; i < array.Length; i++)
@@ -216,8 +216,8 @@ namespace System.Collections.Generic
         /// </summary>
         public static Dictionary<TKey, TValue> ToDictionaryFast<TKey, TValue>(this IList<TValue> list, Func<TValue, TKey> keySelector, IEqualityComparer<TKey> comparer)
         {
-            Contract.Assert(list != null);
-            Contract.Assert(keySelector != null);
+            Debug.Assert(list != null);
+            Debug.Assert(keySelector != null);
 
             TValue[] array = list as TValue[];
             if (array != null)
@@ -232,8 +232,8 @@ namespace System.Collections.Generic
         /// </summary>
         public static Dictionary<TKey, TValue> ToDictionaryFast<TKey, TValue>(this IEnumerable<TValue> enumerable, Func<TValue, TKey> keySelector, IEqualityComparer<TKey> comparer)
         {
-            Contract.Assert(enumerable != null);
-            Contract.Assert(keySelector != null);
+            Debug.Assert(enumerable != null);
+            Debug.Assert(keySelector != null);
 
             TValue[] array = enumerable as TValue[];
             if (array != null)
@@ -258,8 +258,8 @@ namespace System.Collections.Generic
         /// </summary>
         private static Dictionary<TKey, TValue> ToDictionaryFastNoCheck<TKey, TValue>(IList<TValue> list, Func<TValue, TKey> keySelector, IEqualityComparer<TKey> comparer)
         {
-            Contract.Assert(list != null);
-            Contract.Assert(keySelector != null);
+            Debug.Assert(list != null);
+            Debug.Assert(keySelector != null);
 
             int listCount = list.Count;
             Dictionary<TKey, TValue> dictionary = new Dictionary<TKey, TValue>(listCount, comparer);

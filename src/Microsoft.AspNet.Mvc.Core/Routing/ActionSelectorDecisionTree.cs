@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Internal.DecisionTree;
 
 namespace Microsoft.AspNet.Mvc.Routing
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 }
                 else if (hasNonCatchAll)
                 {
-                    Contract.Assert(filtered != null);
+                    Debug.Assert(filtered != null);
                     filtered.Add(action);
                 }
                 else

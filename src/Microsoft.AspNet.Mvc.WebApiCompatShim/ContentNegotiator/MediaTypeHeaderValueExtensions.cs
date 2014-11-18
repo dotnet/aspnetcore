@@ -6,7 +6,7 @@
 using Microsoft.AspNet.Mvc;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Headers;
 
@@ -49,7 +49,7 @@ namespace System.Net.Http.Formatting
         public static bool IsSubsetOf(this MediaTypeHeaderValue mediaType1, MediaTypeHeaderValue mediaType2, out MediaTypeHeaderValueRange mediaType2Range)
         {
             // Performance-sensitive
-            Contract.Assert(mediaType1 != null);
+            Debug.Assert(mediaType1 != null);
 
             if (mediaType2 == null)
             {
