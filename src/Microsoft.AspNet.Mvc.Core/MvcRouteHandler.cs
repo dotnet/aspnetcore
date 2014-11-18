@@ -8,7 +8,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Logging;
-using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -33,62 +32,60 @@ namespace Microsoft.AspNet.Mvc
 
         public async Task RouteAsync([NotNull] RouteContext context)
         {
-            // This will create a scope if needed. This was likely already been done by routing, but
-            // we can enforce it just in case we're used in some other scenario.
-            using (RequestServicesContainer.EnsureRequestServices(context.HttpContext, services: null))
+            // TODO: Throw an error here that's descriptive enough so that
+            // users understand they should call the per request scoped middleware
+            // or set HttpContext.Services manually
+            var services = context.HttpContext.RequestServices;
+            Contract.Assert(services != null);
+
+            // Verify if AddMvc was done before calling UseMvc
+            // We use the MvcMarkerService to make sure if all the services were added.
+            MvcServicesHelper.ThrowIfMvcNotRegistered(services);
+
+            EnsureLogger(context.HttpContext);
+            using (_logger.BeginScope("MvcRouteHandler.RouteAsync"))
             {
-                var services = context.HttpContext.RequestServices;
-                Contract.Assert(services != null);
+                var actionSelector = services.GetRequiredService<IActionSelector>();
+                var actionDescriptor = await actionSelector.SelectAsync(context);
 
-                // Verify if AddMvc was done before calling UseMvc
-                // We use the MvcMarkerService to make sure if all the services were added.
-                MvcServicesHelper.ThrowIfMvcNotRegistered(services);
-
-                EnsureLogger(context.HttpContext);
-                using (_logger.BeginScope("MvcRouteHandler.RouteAsync"))
+                if (actionDescriptor == null)
                 {
-                    var actionSelector = services.GetRequiredService<IActionSelector>();
-                    var actionDescriptor = await actionSelector.SelectAsync(context);
-
-                    if (actionDescriptor == null)
-                    {
-                        LogActionSelection(actionSelected: false, actionInvoked: false, handled: context.IsHandled);
-                        return;
-                    }
-
-                    // Replacing the route data allows any code running here to dirty the route values or data-tokens
-                    // without affecting something upstream.
-                    var oldRouteData = context.RouteData;
-                    var newRouteData = new RouteData(oldRouteData);
-
-                    if (actionDescriptor.RouteValueDefaults != null)
-                    {
-                        foreach (var kvp in actionDescriptor.RouteValueDefaults)
-                        {
-                            if (!newRouteData.Values.ContainsKey(kvp.Key))
-                            {
-                                newRouteData.Values.Add(kvp.Key, kvp.Value);
-                            }
-                        }
-                    }
-
-                    try
-                    {
-                        context.RouteData = newRouteData;
-
-                        await InvokeActionAsync(context, actionDescriptor);
-                        context.IsHandled = true;
-                    }
-                    finally
-                    {
-                        if (!context.IsHandled)
-                        {
-                            context.RouteData = oldRouteData;
-                        }
-                    }
-
-                    LogActionSelection(actionSelected: true, actionInvoked: true, handled: context.IsHandled);
+                    LogActionSelection(actionSelected: false, actionInvoked: false, handled: context.IsHandled);
+                    return;
                 }
+
+                // Replacing the route data allows any code running here to dirty the route values or data-tokens
+                // without affecting something upstream.
+                var oldRouteData = context.RouteData;
+                var newRouteData = new RouteData(oldRouteData);
+
+                if (actionDescriptor.RouteValueDefaults != null)
+                {
+                    foreach (var kvp in actionDescriptor.RouteValueDefaults)
+                    {
+                        if (!newRouteData.Values.ContainsKey(kvp.Key))
+                        {
+                            newRouteData.Values.Add(kvp.Key, kvp.Value);
+                        }
+                    }
+                }
+
+                try
+                {
+                    context.RouteData = newRouteData;
+
+                    await InvokeActionAsync(context, actionDescriptor);
+                    context.IsHandled = true;
+                }
+                finally
+                {
+                    if (!context.IsHandled)
+                    {
+                        context.RouteData = oldRouteData;
+                    }
+                }
+
+                LogActionSelection(actionSelected: true, actionInvoked: true, handled: context.IsHandled);
             }
         }
 
