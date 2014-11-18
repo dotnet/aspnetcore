@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="bindingContext">The binding context which has the object to be bound.</param>
         /// <param name="metadata">The <see cref="IBinderMetadata"/> associated with the current binder.</param>
         /// <returns>A Task with a bool implying the success or failure of the operation.</returns>
-        protected abstract Task<bool> BindAsync(ModelBindingContext bindingContext, TBinderMetadata metadata);
+        protected abstract Task<bool> BindAsync([NotNull] ModelBindingContext bindingContext,
+                                                [NotNull] TBinderMetadata metadata);
 
         public Task<bool> BindModelAsync(ModelBindingContext context)
         {

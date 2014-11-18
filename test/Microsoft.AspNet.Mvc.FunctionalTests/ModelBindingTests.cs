@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.PostAsync("http://localhost/Home/GetCustomer?Id=1234", content);
-           
+
             //Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var customer = JsonConvert.DeserializeObject<Customer>(
@@ -73,6 +73,51 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(1234, customer.Id);
             Assert.Equal(25, customer.Age);
             Assert.Equal("dummy", customer.Name);
+        }
+
+        [Fact]
+        public async Task CanModelBindServiceToAnArgument()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/FromServices_Calculator/Add?left=1234&right=1");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("1235", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task CanModelBindServiceToAProperty()
+        {
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync(
+                "http://localhost/FromServices_Calculator/Calculate?Left=10&Right=5&Operator=*");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("50", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task CanModelBindServiceToAProperty_OnBaseType()
+        {
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync(
+               "http://localhost/FromServices_Calculator/CalculateWithPrecision?Left=10&Right=5&Operator=*");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("50", await response.Content.ReadAsStringAsync());
         }
 
         [Fact]

@@ -5,6 +5,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace ModelBindingWebSite
 {
@@ -24,6 +25,8 @@ namespace ModelBindingWebSite
                             m.MaxModelValidationErrors = 8;
                             m.ModelBinders.Insert(0, typeof(TestMetadataAwareBinder));
                         });
+
+                services.AddSingleton<ICalculator, DefaultCalculator>();
             });
 
             // Add MVC to the request pipeline

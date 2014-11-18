@@ -39,5 +39,17 @@ namespace RequestServicesWebSite
         {
             return View("ViewComponent");
         }
+
+        [HttpGet]
+        public string FromModelProperty(RequestModel requestContext)
+        {
+            return requestContext.RequestIdService.RequestId;
+        }
+
+        [HttpGet]
+        public string FromActionArgument([FromServices] RequestIdService requestIdService)
+        {
+            return requestIdService.RequestId;
+        }
     }
 }
