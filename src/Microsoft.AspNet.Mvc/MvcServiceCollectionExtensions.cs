@@ -3,8 +3,8 @@
 
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.ConfigurationModel;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -12,20 +12,20 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection AddMvc(this IServiceCollection services)
         {
-            services.Add(RoutingServices.GetDefaultServices());
-            AddMvcRouteOptions(services);
+            ConfigureDefaultServices(services);
             return services.Add(MvcServices.GetDefaultServices());
         }
 
         public static IServiceCollection AddMvc(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Add(RoutingServices.GetDefaultServices());
-            AddMvcRouteOptions(services);
+            ConfigureDefaultServices(services);
             return services.Add(MvcServices.GetDefaultServices(configuration));
         }
 
-        private static void AddMvcRouteOptions(IServiceCollection services)
+        private static void ConfigureDefaultServices(IServiceCollection services)
         {
+            services.Add(DataProtectionServices.GetDefaultServices());
+            services.Add(RoutingServices.GetDefaultServices());
             services.Configure<RouteOptions>(routeOptions =>
                                                     routeOptions.ConstraintMap
                                                          .Add("exists",
