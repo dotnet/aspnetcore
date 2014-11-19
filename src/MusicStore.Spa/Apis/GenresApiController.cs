@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
+using MusicStore.Spa.Infrastructure;
 
 namespace MusicStore.Apis
 {
@@ -52,6 +53,7 @@ namespace MusicStore.Apis
         }
 
         [HttpGet("{genreId:int}/albums")]
+        [NoCache]
         public async Task<ActionResult> GenreAlbums(int genreId)
         {
             var albums = await _storeContext.Albums
