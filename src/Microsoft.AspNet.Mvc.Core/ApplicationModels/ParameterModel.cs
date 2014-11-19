@@ -9,11 +9,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class ParameterModel
     {
-        public ParameterModel(ParameterInfo parameterInfo)
+        public ParameterModel([NotNull] ParameterInfo parameterInfo, 
+                              [NotNull] IReadOnlyList<object> attributes)
         {
             ParameterInfo = parameterInfo;
 
-            Attributes = new List<object>();
+            Attributes = new List<object>(attributes);
         }
 
         public ParameterModel([NotNull] ParameterModel other)
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public ActionModel Action { get; set; }
 
-        public List<object> Attributes { get; private set; }
+        public IReadOnlyList<object> Attributes { get; }
 
         public IBinderMetadata BinderMetadata { get; set; }
 

@@ -9,12 +9,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class ActionModel
     {
-        public ActionModel([NotNull] MethodInfo actionMethod)
+        public ActionModel([NotNull] MethodInfo actionMethod, 
+                           [NotNull] IReadOnlyList<object> attributes)
         {
             ActionMethod = actionMethod;
 
             ApiExplorer = new ApiExplorerModel();
-            Attributes = new List<object>();
+            Attributes = new List<object>(attributes);
             ActionConstraints = new List<IActionConstraintMetadata>();
             Filters = new List<IFilter>();
             HttpMethods = new List<string>();
@@ -45,9 +46,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 AttributeRouteModel = new AttributeRouteModel(other.AttributeRouteModel);
             }
         }
+
         public List<IActionConstraintMetadata> ActionConstraints { get; private set; }
 
-        public MethodInfo ActionMethod { get; private set; }
+        public MethodInfo ActionMethod { get; }
 
         public string ActionName { get; set; }
 
@@ -60,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// </remarks>
         public ApiExplorerModel ApiExplorer { get; set; }
 
-        public List<object> Attributes { get; private set; }
+        public IReadOnlyList<object> Attributes { get; }
 
         public ControllerModel Controller { get; set; }
 

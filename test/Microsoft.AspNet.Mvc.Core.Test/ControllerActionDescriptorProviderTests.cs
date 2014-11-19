@@ -1136,27 +1136,32 @@ namespace Microsoft.AspNet.Mvc.Test
 
             var options = new MockMvcOptionsAccessor();
             options.Options.ApplicationModelConventions.Add(applicationConvention.Object);
-            
-            var provider = GetProvider(typeof(ConventionsController).GetTypeInfo(), options);
 
-            var model = provider.BuildModel();
+            var applicationModel = new ApplicationModel();
 
-            var controller = model.Controllers.Single();
-            controller.Attributes.Add(controllerConvention.Object);
+            var controller = new ControllerModel(typeof(ConventionsController).GetTypeInfo(),
+                                                 new List<object>() { controllerConvention.Object });
+            controller.Application = applicationModel;
+            applicationModel.Controllers.Add(controller);
 
-            var action = controller.Actions.Single();
-            action.Attributes.Add(actionConvention.Object);
+            var methodInfo = typeof(ConventionsController).GetMethod("Create");
+            var actionModel = new ActionModel(methodInfo, new List<object>() { actionConvention.Object });
+            actionModel.Controller = controller;
+            controller.Actions.Add(actionModel);
 
-            var parameter = action.Parameters.Single();
-            parameter.Attributes.Add(parameterConvention.Object);
+            var parameterInfo = actionModel.ActionMethod.GetParameters().Single();
+            var parameterModel = new ParameterModel(parameterInfo,
+                                           new List<object>() { parameterConvention.Object });
+            parameterModel.Action = actionModel;
+            actionModel.Parameters.Add(parameterModel);
 
             // Act
-            ApplicationModelConventions.ApplyConventions(model, options.Options.ApplicationModelConventions);
+            ApplicationModelConventions.ApplyConventions(applicationModel, options.Options.ApplicationModelConventions);
 
             // Assert
             Assert.Equal(4, sequence);
         }
-
+            
         [Fact]
         public void BuildModel_SplitsConstraintsBasedOnRoute()
         {

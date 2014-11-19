@@ -9,13 +9,14 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class ControllerModel
     {
-        public ControllerModel([NotNull] TypeInfo controllerType)
+        public ControllerModel([NotNull] TypeInfo controllerType, 
+                               [NotNull] IReadOnlyList<object> attributes)
         {
             ControllerType = controllerType;
 
             Actions = new List<ActionModel>();
             ApiExplorer = new ApiExplorerModel();
-            Attributes = new List<object>();
+            Attributes = new List<object>(attributes);
             AttributeRoutes = new List<AttributeRouteModel>();
             ActionConstraints = new List<IActionConstraintMetadata>();
             Filters = new List<IFilter>();
@@ -56,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public List<AttributeRouteModel> AttributeRoutes { get; private set; }
 
-        public List<object> Attributes { get; private set; }
+        public IReadOnlyList<object> Attributes { get; }
 
         public string ControllerName { get; set; }
 
