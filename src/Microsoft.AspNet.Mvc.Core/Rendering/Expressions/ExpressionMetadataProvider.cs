@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -73,6 +72,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                 modelAccessor,
                 typeof(TValue),
                 propertyName,
+                container,
                 containerType,
                 metadataProvider);
         }
@@ -92,12 +92,14 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             Type modelType = null;
             Func<object> modelAccessor = null;
             string propertyName = null;
+            object container = null;
 
             if (viewDataInfo != null)
             {
                 if (viewDataInfo.Container != null)
                 {
                     containerType = viewDataInfo.Container.GetType();
+                    container = viewDataInfo.Container;
                 }
 
                 modelAccessor = () => viewDataInfo.Value;
@@ -124,8 +126,12 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                 }
             }
 
-            return GetMetadataFromProvider(modelAccessor, modelType ?? typeof(string), propertyName, containerType,
-                metadataProvider);
+            return GetMetadataFromProvider(modelAccessor, 
+                                           modelType ?? typeof(string), 
+                                           propertyName, 
+                                           container, 
+                                           containerType,
+                                           metadataProvider);
         }
 
         private static ModelMetadata FromModel([NotNull] ViewDataDictionary viewData,
@@ -138,6 +144,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                     modelAccessor: null,
                     modelType: typeof(string),
                     propertyName: null,
+                    container: null,
                     containerType: null,
                     metadataProvider: metadataProvider);
             }
@@ -149,12 +156,23 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 
         // An IModelMetadataProvider is not required unless this method is called. Therefore other methods in this
         // class lack [NotNull] attributes for their corresponding parameter.
-        private static ModelMetadata GetMetadataFromProvider(Func<object> modelAccessor, Type modelType,
-            string propertyName, Type containerType, [NotNull] IModelMetadataProvider metadataProvider)
+        private static ModelMetadata GetMetadataFromProvider(Func<object> modelAccessor, 
+                                                             Type modelType,
+                                                             string propertyName, 
+                                                             object container, 
+                                                             Type containerType, 
+                                                             [NotNull] IModelMetadataProvider metadataProvider)
         {
             if (containerType != null && !string.IsNullOrEmpty(propertyName))
             {
-                return metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName);
+                var metadata =
+                    metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName);
+                if (metadata != null)
+                {
+                    metadata.Container = container;
+                }
+
+                return metadata;
             }
 
             return metadataProvider.GetMetadataForType(modelAccessor, modelType);

@@ -17,6 +17,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             get
             {
+                var emptycontainerModel = new DummyModelContainer();
+                var contactModel = new DummyContactModel { FirstName = "test" };
+                var nonEmptycontainerModel = new DummyModelContainer { Model = contactModel };
+
                 return new TheoryData<Action<ModelMetadata>, Func<ModelMetadata, object>, object>
                 {
                     { m => m.ConvertEmptyStringToNull = false, m => m.ConvertEmptyStringToNull, false },
@@ -38,6 +42,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     { m => m.TemplateHint = "New template hint", m => m.TemplateHint, "New template hint" },
 
                     { m => m.Order = 23, m => m.Order, 23 },
+                    { m => m.Container = null, m => m.Container, null },
+                    { m => m.Container = emptycontainerModel, m => m.Container, emptycontainerModel },
+                    { m => m.Container = nonEmptycontainerModel, m => m.Container, nonEmptycontainerModel },
                 };
             }
         }
@@ -56,6 +63,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(typeof(Exception), metadata.ContainerType);
+            Assert.Null(metadata.Container);
 
             Assert.True(metadata.ConvertEmptyStringToNull);
             Assert.False(metadata.HasNonDefaultEditFormat);
