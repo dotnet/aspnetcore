@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -33,16 +34,37 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         protected override IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors([NotNull] Block documentRoot)
         {
-            var descriptors = base.GetTagHelperDescriptors(documentRoot);
+            // Grab all the @addtaghelper chunks from view starts and construct TagHelperDirectiveDescriptors
+            var directiveDescriptors = _viewStartChunks.OfType<AddTagHelperChunk>()
+                                                       .Select(chunk => new TagHelperDirectiveDescriptor(
+                                                            chunk.LookupText,
+                                                            TagHelperDirectiveType.AddTagHelper));
 
-            // TODO: https://github.com/aspnet/Razor/issues/112 Needs to support RemvoeHelperChunks too.
+            var visitor = new ViewStartAddRemoveTagHelperVisitor(TagHelperDescriptorResolver,
+                                                                 directiveDescriptors);
+            var descriptors = visitor.GetDescriptors(documentRoot);
 
-            // Grab all the @addTagHelper chunks from view starts
-            var viewStartDescriptors = _viewStartChunks.OfType<AddTagHelperChunk>()
-                                                       .Select(c => c.LookupText)
-                                                       .SelectMany(TagHelperDescriptorResolver.Resolve);
+            return descriptors;
+        }
 
-            return descriptors.Concat(viewStartDescriptors);
+        private class ViewStartAddRemoveTagHelperVisitor : AddOrRemoveTagHelperSpanVisitor
+        {
+            private readonly IEnumerable<TagHelperDirectiveDescriptor> _viewStartDirectiveDescriptors;
+
+            public ViewStartAddRemoveTagHelperVisitor(
+                ITagHelperDescriptorResolver descriptorResolver,
+                IEnumerable<TagHelperDirectiveDescriptor> viewStartDirectiveDescriptors)
+                : base(descriptorResolver)
+            {
+                _viewStartDirectiveDescriptors = viewStartDirectiveDescriptors;
+            }
+
+            protected override TagHelperDescriptorResolutionContext GetTagHelperDescriptorResolutionContext(
+                IEnumerable<TagHelperDirectiveDescriptor> descriptors)
+            {
+                return base.GetTagHelperDescriptorResolutionContext(
+                    _viewStartDirectiveDescriptors.Concat(descriptors));
+            }
         }
     }
 }
