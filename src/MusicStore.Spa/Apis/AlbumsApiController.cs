@@ -19,6 +19,7 @@ namespace MusicStore.Apis
         }
 
         [HttpGet]
+        [NoCache]
         public async Task<ActionResult> Paged(int page = 1, int pageSize = 50, string sortBy = null)
         {
             await _storeContext.Genres.LoadAsync();
@@ -36,6 +37,7 @@ namespace MusicStore.Apis
         }
 
         [HttpGet("all")]
+        [NoCache]
         public async Task<ActionResult> All()
         {
             var albums = await _storeContext.Albums
@@ -48,6 +50,7 @@ namespace MusicStore.Apis
         }
 
         [HttpGet("mostPopular")]
+        [NoCache]
         public async Task<ActionResult> MostPopular(int count = 6)
         {
             count = count > 0 && count < 20 ? count : 6;
@@ -61,6 +64,7 @@ namespace MusicStore.Apis
         }
 
         [HttpGet("{albumId:int}")]
+        [NoCache]
         public async Task<ActionResult> Details(int albumId)
         {
             await _storeContext.Genres.LoadAsync();

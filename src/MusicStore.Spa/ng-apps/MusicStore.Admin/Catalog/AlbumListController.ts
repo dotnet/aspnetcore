@@ -28,8 +28,9 @@
 
             this.currentPage = 1;
             this.pageSize = 50;
-            this.loadPage(1);
             this.sortColumn = "Title";
+
+            this.loadPage(1);
 
             this.showAlert(viewAlert.alert, 3000);
             viewAlert.alert = null;
