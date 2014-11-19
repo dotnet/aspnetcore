@@ -21,6 +21,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var contactModel = new DummyContactModel { FirstName = "test" };
                 var nonEmptycontainerModel = new DummyModelContainer { Model = contactModel };
 
+                var binderMetadata = new TestBinderMetadata();
+                var emptyPropertyList = new List<string>();
+                var nonEmptyPropertyList = new List<string>() { "SomeProperty" };
                 return new TheoryData<Action<ModelMetadata>, Func<ModelMetadata, object>, object>
                 {
                     { m => m.ConvertEmptyStringToNull = false, m => m.ConvertEmptyStringToNull, false },
@@ -45,21 +48,49 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     { m => m.Container = null, m => m.Container, null },
                     { m => m.Container = emptycontainerModel, m => m.Container, emptycontainerModel },
                     { m => m.Container = nonEmptycontainerModel, m => m.Container, nonEmptycontainerModel },
+
+                    { m => m.BinderMetadata = null, m => m.BinderMetadata, null },
+                    { m => m.BinderMetadata = binderMetadata, m => m.BinderMetadata, binderMetadata },
+                    { m => m.BinderModelName = null, m => m.BinderModelName, null },
+                    { m => m.BinderModelName = "newModelName", m => m.BinderModelName, "newModelName" },
+                    { m => m.BinderModelName = string.Empty, m => m.BinderModelName, string.Empty },
+                    { m => m.BinderIncludeProperties = null, m => m.BinderIncludeProperties, null },
+                    {
+                      m => m.BinderIncludeProperties = emptyPropertyList,
+                      m => m.BinderIncludeProperties,
+                      emptyPropertyList
+                    },
+                    {
+                      m => m.BinderIncludeProperties = nonEmptyPropertyList,
+                      m => m.BinderIncludeProperties,
+                      nonEmptyPropertyList
+                    },
+                    { m => m.BinderExcludeProperties = null, m => m.BinderExcludeProperties, null },
+                    {
+                        m => m.BinderExcludeProperties = emptyPropertyList,
+                        m => m.BinderExcludeProperties,
+                        emptyPropertyList
+                    },
+                    {
+                        m => m.BinderExcludeProperties = nonEmptyPropertyList,
+                        m => m.BinderExcludeProperties,
+                        nonEmptyPropertyList
+                    },
                 };
             }
         }
 
-#if ASPNET50
         // Constructor
 
         [Fact]
         public void DefaultValues()
         {
             // Arrange
-            var provider = new Mock<IModelMetadataProvider>();
+            var provider = new EmptyModelMetadataProvider();
 
             // Act
-            var metadata = new ModelMetadata(provider.Object, typeof(Exception), () => "model", typeof(string), "propertyName");
+            var metadata =
+                new ModelMetadata(provider, typeof(Exception), () => "model", typeof(string), "propertyName");
 
             // Assert
             Assert.Equal(typeof(Exception), metadata.ContainerType);
@@ -91,8 +122,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("propertyName", metadata.PropertyName);
 
             Assert.Equal(ModelMetadata.DefaultOrder, metadata.Order);
+
+            Assert.Null(metadata.BinderModelName);
+            Assert.Null(metadata.BinderMetadata);
+            Assert.Null(metadata.BinderIncludeProperties);
+            Assert.Null(metadata.BinderExcludeProperties);
         }
-#endif
 
         // IsComplexType
 
@@ -100,7 +135,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
-#if ASPNET50
         [Theory]
         [InlineData(typeof(string))]
         [InlineData(typeof(Nullable<int>))]
@@ -108,10 +142,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void IsComplexTypeTestsReturnsFalseForSimpleTypes(Type type)
         {
             // Arrange
-            var provider = new Mock<IModelMetadataProvider>();
+            var provider = new EmptyModelMetadataProvider();
 
             // Act
-            var modelMetadata = new ModelMetadata(provider.Object, null, null, type, null);
+            var modelMetadata = new ModelMetadata(provider, null, null, type, null);
 
             // Assert
             Assert.False(modelMetadata.IsComplexType);
@@ -125,10 +159,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void IsComplexTypeTestsReturnsTrueForComplexTypes(Type type)
         {
             // Arrange
-            var provider = new Mock<IModelMetadataProvider>();
+            var provider = new EmptyModelMetadataProvider();
 
             // Act
-            var modelMetadata = new ModelMetadata(provider.Object, null, null, type, null);
+            var modelMetadata = new ModelMetadata(provider, null, null, type, null);
 
             // Assert
             Assert.True(modelMetadata.IsComplexType);
@@ -140,13 +174,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void IsNullableValueTypeTests()
         {
             // Arrange
-            var provider = new Mock<IModelMetadataProvider>();
+            var provider = new EmptyModelMetadataProvider();
 
             // Act & Assert
-            Assert.False(new ModelMetadata(provider.Object, null, null, typeof(string), null).IsNullableValueType);
-            Assert.False(new ModelMetadata(provider.Object, null, null, typeof(IDisposable), null).IsNullableValueType);
-            Assert.True(new ModelMetadata(provider.Object, null, null, typeof(Nullable<int>), null).IsNullableValueType);
-            Assert.False(new ModelMetadata(provider.Object, null, null, typeof(int), null).IsNullableValueType);
+            Assert.False(new ModelMetadata(provider, null, null, typeof(string), null).IsNullableValueType);
+            Assert.False(new ModelMetadata(provider, null, null, typeof(IDisposable), null).IsNullableValueType);
+            Assert.True(new ModelMetadata(provider, null, null, typeof(Nullable<int>), null).IsNullableValueType);
+            Assert.False(new ModelMetadata(provider, null, null, typeof(int), null).IsNullableValueType);
         }
 
         // IsRequired
@@ -158,8 +192,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void IsRequired_ReturnsFalse_ForNullableTypes(Type modelType)
         {
             // Arrange
-            var provider = new Mock<IModelMetadataProvider>();
-            var metadata = new ModelMetadata(provider.Object,
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(provider,
                                              containerType: null,
                                              modelAccessor: null,
                                              modelType: modelType,
@@ -178,8 +212,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void IsRequired_ReturnsTrue_ForNonNullableTypes(Type modelType)
         {
             // Arrange
-            var provider = new Mock<IModelMetadataProvider>();
-            var metadata = new ModelMetadata(provider.Object,
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(provider,
                                              containerType: null,
                                              modelAccessor: null,
                                              modelType: modelType,
@@ -193,7 +227,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         // Properties
-
+#if ASPNET50
         [Fact]
         public void PropertiesCallsProvider()
         {
@@ -214,6 +248,61 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             provider.Verify();
         }
 #endif
+
+        [Theory]
+        [MemberData(nameof(MetadataModifierData))]
+        public void PropertiesPropertyChangesPersist(
+            Action<ModelMetadata> setter,
+            Func<ModelMetadata, object> getter,
+            object expected)
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(
+                provider,
+                containerType: null,
+                modelAccessor: () => new Class1(),
+                modelType: typeof(Class1),
+                propertyName: null);
+
+            // Act
+            foreach (var property in metadata.Properties)
+            {
+                setter(property);
+            }
+
+            // Assert
+            foreach (var property in metadata.Properties)
+            {
+                // Due to boxing of structs, can't Assert.Same().
+                Assert.Equal(expected, getter(property));
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MetadataModifierData))]
+        public void PropertyChangesPersist(
+            Action<ModelMetadata> setter,
+            Func<ModelMetadata, object> getter,
+            object expected)
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(
+                provider,
+                containerType: null,
+                modelAccessor: () => new Class1(),
+                modelType: typeof(Class1),
+                propertyName: null);
+
+            // Act
+            setter(metadata);
+            var result = getter(metadata);
+
+            // Assert
+            // Due to boxing of structs, can't Assert.Same().
+            Assert.Equal(expected, result);
+        }
 
         [Fact]
         public void PropertiesListGetsResetWhenModelGetsReset()
@@ -278,36 +367,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(firstPropertiesEvaluation, secondPropertiesEvaluation);
         }
 
-        [Theory]
-        [MemberData(nameof(MetadataModifierData))]
-        public void PropertiesPropertyChangesPersist(
-            Action<ModelMetadata> setter,
-            Func<ModelMetadata, object> getter,
-            object expected)
-        {
-            // Arrange
-            var provider = new EmptyModelMetadataProvider();
-            var metadata = new ModelMetadata(
-                provider,
-                containerType: null,
-                modelAccessor: () => new Class1(),
-                modelType: typeof(Class1),
-                propertyName: null);
-
-            // Act
-            foreach (var property in metadata.Properties)
-            {
-                setter(property);
-            }
-
-            // Assert
-            foreach (var property in metadata.Properties)
-            {
-                // Due to boxing of structs, can't Assert.Same().
-                Assert.Equal(expected, getter(property));
-            }
-        }
-
         private class Class1
         {
             public string Prop1 { get; set; }
@@ -341,13 +400,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("displayName", result);
         }
 
-#if ASPNET50
         [Fact]
         public void ReturnsPropertyNameWhenSetAndDisplayNameIsNull()
         {
             // Arrange
-            var provider = new Mock<IModelMetadataProvider>();
-            var metadata = new ModelMetadata(provider.Object, null, null, typeof(object), "PropertyName");
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(provider, null, null, typeof(object), "PropertyName");
 
             // Act
             var result = metadata.GetDisplayName();
@@ -360,8 +418,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ReturnsTypeNameWhenPropertyNameAndDisplayNameAreNull()
         {
             // Arrange
-            var provider = new Mock<IModelMetadataProvider>();
-            var metadata = new ModelMetadata(provider.Object, null, null, typeof(object), null);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(provider, null, null, typeof(object), null);
 
             // Act
             var result = metadata.GetDisplayName();
@@ -369,7 +427,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             Assert.Equal("Object", result);
         }
-#endif
 
         // SimpleDisplayText
 
@@ -435,33 +492,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public Class1 Prop1 { get; set; }
         }
 
-        [Theory]
-        [MemberData(nameof(MetadataModifierData))]
-        public void PropertyChangesPersist(
-            Action<ModelMetadata> setter,
-            Func<ModelMetadata, object> getter,
-            object expected)
-        {
-            // Arrange
-            var provider = new EmptyModelMetadataProvider();
-            var metadata = new ModelMetadata(
-                provider,
-                containerType: null,
-                modelAccessor: () => new Class1(),
-                modelType: typeof(Class1),
-                propertyName: null);
-
-            // Act
-            setter(metadata);
-            var result = getter(metadata);
-
-            // Assert
-            // Due to boxing of structs, can't Assert.Same().
-            Assert.Equal(expected, result);
-        }
-
         // Helpers
-
         private class DummyContactModel
         {
             public int IntField = 0;

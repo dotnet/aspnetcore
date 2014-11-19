@@ -49,13 +49,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Null(metadata.TemplateHint);
 
             Assert.Equal(ModelMetadata.DefaultOrder, metadata.Order);
+
+            Assert.Null(metadata.BinderModelName);
+            Assert.Null(metadata.BinderMetadata);
+            Assert.Empty(metadata.BinderIncludeProperties);
+            Assert.Null(metadata.BinderExcludeProperties);
         }
 
-        public static TheoryData<Attribute, Func<ModelMetadata, string>> ExpectedAttributeDataStrings
+        public static TheoryData<object, Func<ModelMetadata, string>> ExpectedAttributeDataStrings
         {
             get
             {
-                return new TheoryData<Attribute, Func<ModelMetadata, string>>
+                return new TheoryData<object, Func<ModelMetadata, string>>
                 {
                     {
                         new DataTypeAttribute("value"), metadata => metadata.DataTypeName
@@ -91,13 +96,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     {
                         new DisplayFormatAttribute { NullDisplayText = "value" }, metadata => metadata.NullDisplayText
                     },
+                    {
+                        new TestModelNameProvider() { Name = "value" }, metadata => metadata.BinderModelName
+                    },
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(ExpectedAttributeDataStrings))]
-        public void AttributesOverrideMetadataStrings(Attribute attribute, Func<ModelMetadata, string> accessor)
+        public void AttributesOverrideMetadataStrings(object attribute, Func<ModelMetadata, string> accessor)
         {
             // Arrange
             var attributes = new[] { attribute };
@@ -219,6 +227,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(expectedResult, result);
+        }
+
+        [Fact]
+        public void BinderMetadataIfPresent_Overrides_DefaultBinderMetadata()
+        {
+            // Arrange
+            var firstBinderMetadata = new TestBinderMetadata();
+            var secondBinderMetadata = new TestBinderMetadata();
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = new CachedDataAnnotationsModelMetadata(
+                provider,
+                containerType: null,
+                modelType: typeof(object),
+                propertyName: null,
+                attributes: new object[] { firstBinderMetadata, secondBinderMetadata });
+
+            // Act
+            var result = metadata.BinderMetadata;
+
+            // Assert
+            Assert.Same(firstBinderMetadata, result);
         }
 
         [Fact]

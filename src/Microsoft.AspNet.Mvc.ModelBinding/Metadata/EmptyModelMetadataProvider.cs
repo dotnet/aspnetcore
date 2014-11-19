@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class EmptyModelMetadataProvider : AssociatedMetadataProvider<ModelMetadata>
     {
-        protected override ModelMetadata CreateMetadataPrototype(IEnumerable<Attribute> attributes,
+        protected override ModelMetadata CreateMetadataPrototype(IEnumerable<object> attributes,
                                                                  Type containerType,
                                                                  Type modelType,
                                                                  string propertyName)

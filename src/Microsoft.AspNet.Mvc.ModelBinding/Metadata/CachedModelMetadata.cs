@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -30,6 +31,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _isRequired;
         private bool _showForDisplay;
         private bool _showForEdit;
+        private IBinderMetadata _binderMetadata;
+        private string _binderModelName;
+        private IReadOnlyList<string> _binderIncludeProperties;
+        private IReadOnlyList<string> _binderExcludeProperties;
 
         private bool _convertEmptyStringToNullComputed;
         private bool _nullDisplayTextComputed;
@@ -46,6 +51,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _isRequiredComputed;
         private bool _showForDisplayComputed;
         private bool _showForEditComputed;
+        private bool _isBinderMetadataComputed;
+        private bool _isBinderIncludePropertiesComputed;
+        private bool _isBinderModelNameComputed;
+        private bool _isBinderExcludePropertiesComputed;
 
         // Constructor for creating real instances of the metadata class based on a prototype
         protected CachedModelMetadata(CachedModelMetadata<TPrototypeCache> prototype, Func<object> modelAccessor)
@@ -57,10 +66,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             CacheKey = prototype.CacheKey;
             PrototypeCache = prototype.PrototypeCache;
-            BinderMetadata = prototype.BinderMetadata;
-            IncludedProperties = prototype.IncludedProperties;
-            ExcludedProperties = prototype.ExcludedProperties;
-            ModelName = prototype.ModelName;
             _isComplexType = prototype.IsComplexType;
             _isComplexTypeComputed = true;
         }
@@ -76,6 +81,91 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             PrototypeCache = prototypeCache;
         }
 
+        /// <inheritdoc />
+        public sealed override IBinderMetadata BinderMetadata
+        {
+            get
+            {
+                if (!_isBinderMetadataComputed)
+                {
+                    _binderMetadata = ComputeBinderMetadata();
+                    _isBinderMetadataComputed = true;
+                }
+
+                return _binderMetadata;
+            }
+
+            set
+            {
+                _binderMetadata = value;
+                _isBinderMetadataComputed = true;
+            }
+        }
+
+        /// <inheritdoc />
+        public sealed override IReadOnlyList<string> BinderIncludeProperties
+        {
+            get
+            {
+                if (!_isBinderIncludePropertiesComputed)
+                {
+                    _binderIncludeProperties = ComputeBinderIncludeProperties();
+                    _isBinderIncludePropertiesComputed = true;
+                }
+
+                return _binderIncludeProperties;
+            }
+
+            set
+            {
+                _binderIncludeProperties = value;
+                _isBinderIncludePropertiesComputed = true;
+            }
+        }
+
+        /// <inheritdoc />
+        public sealed override IReadOnlyList<string> BinderExcludeProperties
+        {
+            get
+            {
+                if (!_isBinderExcludePropertiesComputed)
+                {
+                    _binderExcludeProperties = ComputeBinderExcludeProperties();
+                    _isBinderExcludePropertiesComputed = true;
+                }
+
+                return _binderExcludeProperties;
+            }
+
+            set
+            {
+                _binderExcludeProperties = value;
+                _isBinderExcludePropertiesComputed = true;
+            }
+        }
+
+        /// <inheritdoc />
+        public sealed override string BinderModelName
+        {
+            get
+            {
+                if (!_isBinderModelNameComputed)
+                {
+                    _binderModelName = ComputeBinderModelNamePrefix();
+                    _isBinderModelNameComputed = true;
+                }
+
+                return _binderModelName;
+            }
+
+            set
+            {
+                _binderModelName = value;
+                _isBinderModelNameComputed = true;
+            }
+        }
+
+        /// <inheritdoc />
         public sealed override bool ConvertEmptyStringToNull
         {
             get
@@ -91,24 +181,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 _convertEmptyStringToNull = value;
                 _convertEmptyStringToNullComputed = true;
-            }
-        }
-
-        public sealed override string NullDisplayText
-        {
-            get
-            {
-                if (!_nullDisplayTextComputed)
-                {
-                    _nullDisplayText = ComputeNullDisplayText();
-                    _nullDisplayTextComputed = true;
-                }
-                return _nullDisplayText;
-            }
-            set
-            {
-                _nullDisplayText = value;
-                _nullDisplayTextComputed = true;
             }
         }
 
@@ -133,6 +205,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
         public sealed override string Description
         {
             get
@@ -172,6 +245,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
         public sealed override string DisplayName
         {
             get
@@ -275,6 +349,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
         public sealed override bool IsReadOnly
         {
             get
@@ -293,6 +368,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
         public sealed override bool IsRequired
         {
             get
@@ -311,6 +387,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
         public sealed override bool IsComplexType
         {
             get
@@ -324,6 +401,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
+        public sealed override string NullDisplayText
+        {
+            get
+            {
+                if (!_nullDisplayTextComputed)
+                {
+                    _nullDisplayText = ComputeNullDisplayText();
+                    _nullDisplayTextComputed = true;
+                }
+                return _nullDisplayText;
+            }
+            set
+            {
+                _nullDisplayText = value;
+                _nullDisplayTextComputed = true;
+            }
+        }
+
+        /// <inheritdoc />
         public sealed override bool ShowForDisplay
         {
             get
@@ -342,6 +439,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
         public sealed override bool ShowForEdit
         {
             get
@@ -377,14 +475,29 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         protected TPrototypeCache PrototypeCache { get; set; }
 
+        protected virtual IBinderMetadata ComputeBinderMetadata()
+        {
+            return base.BinderMetadata;
+        }
+
+        protected virtual IReadOnlyList<string> ComputeBinderIncludeProperties()
+        {
+            return base.BinderIncludeProperties;
+        }
+
+        protected virtual IReadOnlyList<string> ComputeBinderExcludeProperties()
+        {
+            return base.BinderExcludeProperties;
+        }
+
+        protected virtual string ComputeBinderModelNamePrefix()
+        {
+            return base.BinderModelName;
+        }
+
         protected virtual bool ComputeConvertEmptyStringToNull()
         {
             return base.ConvertEmptyStringToNull;
-        }
-
-        protected virtual string ComputeNullDisplayText()
-        {
-            return base.NullDisplayText;
         }
 
         /// <summary>
@@ -464,6 +577,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual bool ComputeIsComplexType()
         {
             return base.IsComplexType;
+        }
+
+        protected virtual string ComputeNullDisplayText()
+        {
+            return base.NullDisplayText;
         }
 
         protected virtual bool ComputeShowForDisplay()

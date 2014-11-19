@@ -26,20 +26,79 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                   Type containerType,
                                                   Type modelType,
                                                   string propertyName,
-                                                  IEnumerable<Attribute> attributes)
+                                                  IEnumerable<object> attributes)
             : base(provider,
                    containerType,
                    modelType,
                    propertyName,
                    new CachedDataAnnotationsMetadataAttributes(attributes))
         {
-            BinderMetadata = attributes.OfType<IBinderMetadata>().FirstOrDefault();
+        }
 
-            var modelNameProvider = attributes.OfType<IModelNameProvider>().FirstOrDefault();
-            ModelName = modelNameProvider?.Name;
+        protected override IBinderMetadata ComputeBinderMetadata()
+        {
+            return PrototypeCache.BinderMetadata != null
+                      ? PrototypeCache.BinderMetadata
+                      : base.ComputeBinderMetadata();
+        }
 
-            var bindAttribute = attributes.OfType<BindAttribute>().FirstOrDefault();
-            ReadSettingsFromBindAttribute(bindAttribute);
+        protected override string ComputeBinderModelNamePrefix()
+        {
+            return PrototypeCache.BinderModelNameProvider != null
+                      ? PrototypeCache.BinderModelNameProvider.Name
+                      : base.ComputeBinderModelNamePrefix();
+        }
+
+        protected override IReadOnlyList<string> ComputeBinderIncludeProperties()
+        {
+            var propertyBindingInfo = PrototypeCache.PropertyBindingInfo?.ToList();
+            if (propertyBindingInfo != null && propertyBindingInfo.Count != 0)
+            {
+                if (string.IsNullOrEmpty(propertyBindingInfo[0].Include))
+                {
+                    return Properties.Select(property => property.PropertyName).ToList();
+                }
+
+                var includeFirst = SplitString(propertyBindingInfo[0].Include).ToList();
+                if (propertyBindingInfo.Count != 2)
+                {
+                    return includeFirst;
+                }
+
+                var includedAtType = SplitString(propertyBindingInfo[1].Include).ToList();
+
+                if (includeFirst.Count == 0 && includedAtType.Count == 0)
+                {
+                    // Need to include everything by default.
+                    return Properties.Select(property => property.PropertyName).ToList();
+                }
+                else
+                {
+                    return includeFirst.Intersect(includedAtType).ToList();
+                }
+            }
+
+            // Need to include everything by default.
+            return Properties.Select(property => property.PropertyName).ToList();
+        }
+
+        protected override IReadOnlyList<string> ComputeBinderExcludeProperties()
+        {
+            var propertyBindingInfo = PrototypeCache.PropertyBindingInfo?.ToList();
+            if (propertyBindingInfo != null && propertyBindingInfo.Count != 0)
+            {
+                var excludeFirst = SplitString(propertyBindingInfo[0].Exclude).ToList();
+
+                if (propertyBindingInfo.Count != 2)
+                {
+                    return excludeFirst;
+                }
+
+                var excludedAtType = SplitString(propertyBindingInfo[1].Exclude).ToList();
+                return excludeFirst.Union(excludedAtType).ToList();
+            }
+
+            return base.ComputeBinderExcludeProperties();
         }
 
         protected override bool ComputeConvertEmptyStringToNull()
@@ -289,17 +348,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         Resources.FormatDataAnnotationsModelMetadataProvider_UnreadableProperty(
                         modelType.FullName, displayColumnAttribute.DisplayColumn));
             }
-        }
-
-        private void ReadSettingsFromBindAttribute(BindAttribute bindAttribute)
-        {
-            if (bindAttribute == null)
-            {
-                return;
-            }
-
-            ExcludedProperties = SplitString(bindAttribute.Exclude).ToList();
-            IncludedProperties = SplitString(bindAttribute.Include).ToList();
         }
 
         private static IEnumerable<string> SplitString(string original)

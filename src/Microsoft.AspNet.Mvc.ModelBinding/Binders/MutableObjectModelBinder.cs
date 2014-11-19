@@ -51,14 +51,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var bindingContext = context.ModelBindingContext;
             var isTopLevelObject = bindingContext.ModelMetadata.ContainerType == null;
-            var isThereAnExplicitAlias = bindingContext.ModelMetadata.ModelName != null;
-            
-            // The fact that this has reached here, 
-            // it is a complex object which was not directly bound by any previous model binders. 
+            var hasExplicitAlias = bindingContext.ModelMetadata.BinderModelName != null;
+
+            // The fact that this has reached here,
+            // it is a complex object which was not directly bound by any previous model binders.
             // Check if this was supposed to be handled by a non value provider based binder.
             // if it was then it should be not be bound using mutable object binder.
             // This check would prevent it from recursing in if a model contains a property of its own type.
-            // We skip this check if it is a top level object because we want to always evaluate 
+            // We skip this check if it is a top level object because we want to always evaluate
             // the creation of top level object (this is also required for ModelBinderAttribute to work.)
             if (!isTopLevelObject &&
                 bindingContext.ModelMetadata.BinderMetadata != null &&
@@ -68,14 +68,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             // Create the object if :
-            // 1. It is a top level model with an explicit user supplied prefix. 
+            // 1. It is a top level model with an explicit user supplied prefix.
             //    In this case since it will never fallback to empty prefix, we need to create the model here.
-            if (isTopLevelObject && isThereAnExplicitAlias)
+            if (isTopLevelObject && hasExplicitAlias)
             {
                 return true;
             }
 
-            // 2. It is a top level object and there is no model name ( Fallback to empty prefix case ). 
+            // 2. It is a top level object and there is no model name ( Fallback to empty prefix case ).
             //    This is necessary as we do not want to depend on a value provider to contain an empty prefix.
             if (isTopLevelObject && bindingContext.ModelName == string.Empty)
             {
@@ -83,9 +83,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             // 3. The model name is not prefixed and a value provider can directly provide a value for the model name.
-            //    The fact that it is not prefixed means that the containsPrefixAsync call checks for the exact model name
-            //    instead of doing a prefix match.
-            if (!bindingContext.ModelName.Contains(".") && 
+            //    The fact that it is not prefixed means that the containsPrefixAsync call checks for the exact
+            //    model name instead of doing a prefix match.
+            if (!bindingContext.ModelName.Contains(".") &&
                 await bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName))
             {
                 return true;
@@ -103,11 +103,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private async Task<bool> CanValueBindAnyModelProperties(MutableObjectBinderContext context)
         {
             // We need to enumerate the non marked properties and properties marked with IValueProviderMetadata
-            // instead of checking bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName) 
-            // because there can be a case 
-            // where a value provider might be willing to provide a marked property, which might never be bound.
-            // For example if person.Name is marked with FromQuery, and FormValueProvider has a key person.Name, and the
-            // QueryValueProvider does not, we do not want to create Person.
+            // instead of checking bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName)
+            // because there can be a case where a value provider might be willing to provide a marked property,
+            // which might never be bound.
+            // For example if person.Name is marked with FromQuery, and FormValueProvider has a key person.Name,
+            // and the QueryValueProvider does not, we do not want to create Person.
             var isAnyPropertyEnabledForValueProviderBasedBinding = false;
             foreach (var propertyMetadata in context.PropertyMetadata)
             {
@@ -144,7 +144,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (valueProviderMetadata != null)
             {
                 // if there is a binder metadata and since the property can be bound using a value provider.
-                var metadataAwareValueProvider = bindingContext.OperationBindingContext.ValueProvider as IMetadataAwareValueProvider;
+                var metadataAwareValueProvider =
+                    bindingContext.OperationBindingContext.ValueProvider as IMetadataAwareValueProvider;
                 if (metadataAwareValueProvider != null)
                 {
                     valueProvider = metadataAwareValueProvider.Filter(valueProviderMetadata);
@@ -268,19 +269,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual IEnumerable<ModelMetadata> GetMetadataForProperties(ModelBindingContext bindingContext)
         {
             var validationInfo = GetPropertyValidationInfo(bindingContext);
-            var propertyTypeMetadata = bindingContext.OperationBindingContext
-                                                     .MetadataProvider
-                                                     .GetMetadataForType(null, bindingContext.ModelType);
-            Predicate<string> newPropertyFilter =
-                propertyName => bindingContext.PropertyFilter(propertyName) &&
-                                BindAttribute.IsPropertyAllowed(
-                                                propertyName,
-                                                propertyTypeMetadata.IncludedProperties,
-                                                propertyTypeMetadata.ExcludedProperties);
-
             return bindingContext.ModelMetadata.Properties
                                  .Where(propertyMetadata =>
-                                    newPropertyFilter(propertyMetadata.PropertyName) &&
+                                    bindingContext.PropertyFilter(propertyMetadata.PropertyName) &&
                                     (validationInfo.RequiredProperties.Contains(propertyMetadata.PropertyName) ||
                                     !validationInfo.SkipProperties.Contains(propertyMetadata.PropertyName)) &&
                                     CanUpdateProperty(propertyMetadata));

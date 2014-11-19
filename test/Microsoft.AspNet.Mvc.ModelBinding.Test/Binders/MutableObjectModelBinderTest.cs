@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             };
 
-            bindingContext.ModelBindingContext.ModelMetadata.ModelName = isPrefixProvided ? "prefix" : null;
+            bindingContext.ModelBindingContext.ModelMetadata.BinderModelName = isPrefixProvided ? "prefix" : null;
             var mutableBinder = new TestableMutableObjectModelBinder();
             bindingContext.PropertyMetadata = mutableBinder.GetMetadataForProperties(
                                                                 bindingContext.ModelBindingContext);
@@ -586,79 +586,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(Person)),
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider()
-                }
-            };
-
-            var testableBinder = new TestableMutableObjectModelBinder();
-
-            // Act
-            var propertyMetadatas = testableBinder.GetMetadataForProperties(bindingContext);
-            var returnedPropertyNames = propertyMetadatas.Select(o => o.PropertyName).ToArray();
-
-            // Assert
-            Assert.Equal(expectedPropertyNames, returnedPropertyNames);
-        }
-
-        [Bind(Exclude = nameof(Excluded1) + "," + nameof(Excluded2))]
-        private class TypeWithExcludedPropertiesUsingBindAttribute
-        {
-            public int Excluded1 { get; set; }
-
-            public int Excluded2 { get; set; }
-
-            public int IncludedByDefault1 { get; set; }
-            public int IncludedByDefault2 { get; set; }
-        }
-
-        [Fact]
-        public void GetMetadataForProperties_DoesNotReturn_ExcludedProperties()
-        {
-            // Arrange
-            var expectedPropertyNames = new[] { "IncludedByDefault1", "IncludedByDefault2" };
-            var bindingContext = new ModelBindingContext
-            {
-                ModelMetadata = GetMetadataForType(typeof(TypeWithExcludedPropertiesUsingBindAttribute)),
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider()
-                }
-            };
-
-            var testableBinder = new TestableMutableObjectModelBinder();
-
-            // Act
-            var propertyMetadatas = testableBinder.GetMetadataForProperties(bindingContext);
-            var returnedPropertyNames = propertyMetadatas.Select(o => o.PropertyName).ToArray();
-
-            // Assert
-            Assert.Equal(expectedPropertyNames, returnedPropertyNames);
-        }
-
-        [Bind(Include = nameof(IncludedExplicitly1) + "," + nameof(IncludedExplicitly2))]
-        private class TypeWithIncludedPropertiesUsingBindAttribute
-        {
-            public int ExcludedByDefault1 { get; set; }
-
-            public int ExcludedByDefault2 { get; set; }
-
-            public int IncludedExplicitly1 { get; set; }
-
-            public int IncludedExplicitly2 { get; set; }
-        }
-
-        [Fact]
-        public void GetMetadataForProperties_ReturnsOnlyWhiteListedProperties_UsingBindAttributeInclude()
-        {
-            // Arrange
-            var expectedPropertyNames = new[] { "IncludedExplicitly1", "IncludedExplicitly2" };
-            var bindingContext = new ModelBindingContext
-            {
-                ModelMetadata = GetMetadataForType(typeof(TypeWithIncludedPropertiesUsingBindAttribute)),
                 OperationBindingContext = new OperationBindingContext
                 {
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
@@ -1274,8 +1201,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return metadataProvider.GetMetadataForParameter(
                 modelAccessor: null,
                 methodInfo: methodInfo,
-                parameterName: parameterName,
-                binderMetadata: null);
+                parameterName: parameterName);
         }
 
         private class EmptyModel

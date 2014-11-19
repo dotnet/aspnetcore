@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         ModelMetadata GetMetadataForParameter(
             Func<object> modelAccessor,
             [NotNull] MethodInfo methodInfo,
-            [NotNull] string parameterName,
-            IBinderMetadata binderMetadata);
+            [NotNull] string parameterName);
     }
 }

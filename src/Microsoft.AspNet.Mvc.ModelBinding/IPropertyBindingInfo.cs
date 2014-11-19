@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Represents an entity which has binding information for a model.
     /// </summary>
-    public interface IModelPropertyBindingInfo
+    public interface IPropertyBindingInfo
     {
         /// <summary>
         /// Comma separated set of properties which are to be excluded during model binding.

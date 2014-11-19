@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class DataAnnotationsModelMetadataProvider : AssociatedMetadataProvider<CachedDataAnnotationsModelMetadata>
     {
         protected override CachedDataAnnotationsModelMetadata CreateMetadataPrototype(
-            IEnumerable<Attribute> attributes,
+            IEnumerable<object> attributes,
             Type containerType,
             Type modelType,
             string propertyName)

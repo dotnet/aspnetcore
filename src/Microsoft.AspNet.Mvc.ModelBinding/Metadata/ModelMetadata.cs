@@ -50,22 +50,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Represents the name of a model if specified explicitly using <see cref="IModelNameProvider"/>.
         /// </summary>
-        public string ModelName { get; set; }
+        public virtual string BinderModelName { get; set; }
 
         /// <summary>
-        /// Properties which are marked as Included for this model.
+        /// Properties which are to be included while binding this model.
         /// </summary>
-        public IReadOnlyList<string> IncludedProperties { get; set; }
+        public virtual IReadOnlyList<string> BinderIncludeProperties { get; set; }
 
         /// <summary>
-        /// Properties which are marked as Excluded for this model.
+        /// Properties which are to be excluded while binding this model.
         /// </summary>
-        public IReadOnlyList<string> ExcludedProperties { get; set; }
+        public virtual IReadOnlyList<string> BinderExcludeProperties { get; set; }
 
         /// <summary>
         /// Gets or sets a binder metadata for this model.
         /// </summary>
-        public IBinderMetadata BinderMetadata { get; set; }
+        public virtual IBinderMetadata BinderMetadata { get; set; }
 
         /// <summary>
         /// A reference to the model's container <see cref="object"/>.
