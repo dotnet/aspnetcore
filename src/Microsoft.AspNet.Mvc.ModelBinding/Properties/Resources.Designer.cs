@@ -442,6 +442,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return GetString("ModelStateDictionary_MaxModelStateErrors");
         }
 
+        /// <summary>
+        /// The type '{0}' must implement either '{1}' or '{2}' to be used as a model binder.
+        /// </summary>
+        internal static string BinderType_MustBeIModelBinderOrIModelBinderProvider
+        {
+            get { return GetString("BinderType_MustBeIModelBinderOrIModelBinderProvider"); }
+        }
+
+        /// <summary>
+        /// The type '{0}' must implement either '{1}' or '{2}' to be used as a model binder.
+        /// </summary>
+        internal static string FormatBinderType_MustBeIModelBinderOrIModelBinderProvider(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("BinderType_MustBeIModelBinderOrIModelBinderProvider"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

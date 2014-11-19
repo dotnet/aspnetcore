@@ -64,8 +64,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.PostAsync("http://localhost/Home/GetCustomer?Id=1234", content);
-
-            //Assert
+           
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var customer = JsonConvert.DeserializeObject<Customer>(
                         await response.Content.ReadAsStringAsync());

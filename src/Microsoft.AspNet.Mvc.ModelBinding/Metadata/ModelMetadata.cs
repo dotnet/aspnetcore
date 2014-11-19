@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Represents the name of a model if specified explicitly using <see cref="IModelNameProvider"/>.
+        /// The name of the model if specified explicitly using <see cref="IModelNameProvider"/>.
         /// </summary>
         public virtual string BinderModelName { get; set; }
 
@@ -61,6 +61,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Properties which are to be excluded while binding this model.
         /// </summary>
         public virtual IReadOnlyList<string> BinderExcludeProperties { get; set; }
+
+        /// <summary>
+        /// The <see cref="Type"/> of an <see cref="IModelBinder"/> or an <see cref="IModelBinderProvider"/>
+        /// of a model if specified explicitly using <see cref="IBinderTypeProviderMetadata"/>.
+        /// </summary>
+        public virtual Type BinderType { get; set; }
 
         /// <summary>
         /// Gets or sets a binder metadata for this model.

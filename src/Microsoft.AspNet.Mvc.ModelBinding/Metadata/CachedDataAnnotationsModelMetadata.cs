@@ -35,6 +35,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
+        protected override Type ComputeBinderType()
+        {
+            if (PrototypeCache.BinderTypeProviders != null)
+            {
+                // The need for fallback here is to handle cases where a model binder is specified
+                // on a type and on a parameter to an action.
+                //
+                // We want to respect the value set by the parameter (if any), and use the value specifed
+                // on the type as a fallback.
+                // 
+                // We generalize this process, in case someone adds ordered providers (with count > 2) through
+                // extensibility.
+                foreach (var provider in PrototypeCache.BinderTypeProviders)
+                {
+                    if (provider.BinderType != null)
+                    {
+                        return provider.BinderType;
+                    }
+                }
+            }
+
+            return base.ComputeBinderType();
+        }
+
         protected override IBinderMetadata ComputeBinderMetadata()
         {
             return PrototypeCache.BinderMetadata != null

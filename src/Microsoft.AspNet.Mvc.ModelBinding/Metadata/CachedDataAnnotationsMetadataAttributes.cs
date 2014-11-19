@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             BinderMetadata = attributes.OfType<IBinderMetadata>().FirstOrDefault();
             PropertyBindingInfo = attributes.OfType<IPropertyBindingInfo>();
             BinderModelNameProvider = attributes.OfType<IModelNameProvider>().FirstOrDefault();
+            BinderTypeProviders = attributes.OfType<IBinderTypeProviderMetadata>();
 
             // Special case the [DisplayFormat] attribute hanging off an applied [DataType] attribute. This property is
             // non-null for DataType.Currency, DataType.Date, DataType.Time, and potentially custom [DataType]
@@ -34,6 +35,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 DisplayFormat = DataType.DisplayFormat;
             }
         }
+
+        /// <summary>
+        /// Gets (or sets in subclasses) <see cref="IEnumerable{IBinderTypeProviderMetadata}"/> found in collection passed
+        /// to the <see cref="CachedDataAnnotationsMetadataAttributes(IEnumerable{object})"/> constructor, if any.
+        /// </summary>
+        public IEnumerable<IBinderTypeProviderMetadata> BinderTypeProviders { get; set; }
 
         /// <summary>
         /// Gets (or sets in subclasses) <see cref="IBinderMetadata"/> found in collection passed to the
@@ -74,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public HiddenInputAttribute HiddenInput { get; protected set; }
 
         /// <summary>
-        /// Gets (or sets in subclasses) <see cref="IEnumerable{IModelPropertyBindingInfo}"/> found in collection
+        /// Gets (or sets in subclasses) <see cref="IEnumerable{IPropertyBindingInfo}"/> found in collection
         /// passed to the <see cref="CachedDataAnnotationsMetadataAttributes(IEnumerable{object})"/> constructor,
         /// if any.
         /// </summary>

@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private string _binderModelName;
         private IReadOnlyList<string> _binderIncludeProperties;
         private IReadOnlyList<string> _binderExcludeProperties;
+        private Type _binderType;
 
         private bool _convertEmptyStringToNullComputed;
         private bool _nullDisplayTextComputed;
@@ -55,6 +56,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _isBinderIncludePropertiesComputed;
         private bool _isBinderModelNameComputed;
         private bool _isBinderExcludePropertiesComputed;
+        private bool _isBinderTypeComputed;
 
         // Constructor for creating real instances of the metadata class based on a prototype
         protected CachedModelMetadata(CachedModelMetadata<TPrototypeCache> prototype, Func<object> modelAccessor)
@@ -473,7 +475,31 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
+        public sealed override Type BinderType
+        {
+            get
+            {
+                if (!_isBinderTypeComputed)
+                {
+                    _binderType = ComputeBinderType();
+                    _isBinderTypeComputed = true;
+                }
+                return _binderType;
+            }
+            set
+            {
+                _binderType = value;
+                _isBinderTypeComputed = true;
+            }
+        }
+
         protected TPrototypeCache PrototypeCache { get; set; }
+
+        protected virtual Type ComputeBinderType()
+        {
+            return base.BinderType;
+        }
 
         protected virtual IBinderMetadata ComputeBinderMetadata()
         {
