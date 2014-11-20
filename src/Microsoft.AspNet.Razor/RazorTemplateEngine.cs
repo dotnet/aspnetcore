@@ -160,9 +160,9 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <param name="inputStream">A <see cref="Stream"/> that represents the contents to be parsed.</param>
         /// <param name="className">The name of the generated class. When <c>null</c>, defaults to
-        /// <see cref="Host.DefaultClassName"/>.</param>
+        /// <see cref="RazorEngineHost.DefaultClassName"/> (<c>Host.DefaultClassName</c>).</param>
         /// <param name="rootNamespace">The namespace in which the generated class will reside. When <c>null</c>,
-        /// defaults to <see cref="Host.DefaultNamespace"/>.</param>
+        /// defaults to <see cref="RazorEngineHost.DefaultNamespace"/> (<c>Host.DefaultNamespace</c>).</param>
         /// <param name="sourceFileName">The file name to use in line pragmas, usually the original Razor file.</param>
         /// <returns>A <see cref="GeneratorResults"/> that represents the results of parsing the content.</returns>
         /// <remarks>

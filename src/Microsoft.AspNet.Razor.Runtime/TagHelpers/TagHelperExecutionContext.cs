@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public string TagName { get; private set; }
 
         /// <summary>
-        /// The <see cref="ITagHelper">s' output.
+        /// The <see cref="ITagHelper"/>s' output.
         /// </summary>
         public TagHelperOutput Output { get; set; }
 

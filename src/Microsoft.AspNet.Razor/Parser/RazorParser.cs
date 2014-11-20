@@ -22,8 +22,8 @@ namespace Microsoft.AspNet.Razor.Parser
         /// Initializes a new instance of <see cref="RazorParser"/>.
         /// </summary>
         /// <param name="codeParser">The <see cref="ParserBase"/> used for parsing code content.</param>
-        /// <param name="markupParser">The <see cref="ParserBase"/> used for parsing markpup content.</param>
-        /// <param name="tagHelperDescriptorResolver">The <see cref=ITagHelperDescriptorResolver"/> used to resolve
+        /// <param name="markupParser">The <see cref="ParserBase"/> used for parsing markup content.</param>
+        /// <param name="tagHelperDescriptorResolver">The <see cref="ITagHelperDescriptorResolver"/> used to resolve
         /// <see cref="TagHelperDescriptor"/>s.</param>
         public RazorParser([NotNull] ParserBase codeParser,
                            [NotNull] ParserBase markupParser,
@@ -59,8 +59,7 @@ namespace Microsoft.AspNet.Razor.Parser
         public bool DesignTimeMode { get; set; }
 
         /// <summary>
-        /// Gets the <see cref=ITagHelperDescriptorResolver"/> used to resolve
-        /// <see cref="TagHelperDescriptor"/>s.</param>
+        /// Gets the <see cref="ITagHelperDescriptorResolver"/> used to resolve <see cref="TagHelperDescriptor"/>s.
         /// </summary>
         protected ITagHelperDescriptorResolver TagHelperDescriptorResolver { get; private set; }
 

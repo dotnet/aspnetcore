@@ -52,7 +52,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public string TargetWriterName { get; set; }
 
         /// <summary>
-        /// Gets or sets the <c>SHA1</c> based checksum for the file whose location is defined by <see cref="SourceFile"/>.
+        /// Gets or sets the <c>SHA1</c> based checksum for the file whose location is defined by
+        /// <see cref="CodeGeneratorContext.SourceFile"/>.
         /// </summary>
         public string Checksum { get; set; }
     }

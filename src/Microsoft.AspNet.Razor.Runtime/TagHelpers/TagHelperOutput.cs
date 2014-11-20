@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// Generates the <see cref="TagHelperOutput"/>'s body.
         /// </summary>
-        /// <returns><c>string.Empty</c> if <see cref="SelfClosing"/> is <c>true</c>. <see cref="Output"/> otherwise.
+        /// <returns><c>string.Empty</c> if <see cref="SelfClosing"/> is <c>true</c>. <see cref="Content"/> otherwise.
         /// </returns>
         public string GenerateContent()
         {
