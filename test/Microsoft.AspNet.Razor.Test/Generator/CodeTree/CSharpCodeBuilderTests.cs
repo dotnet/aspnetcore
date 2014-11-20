@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
             var result = codeBuilder.Build();
 
             BaselineWriter.WriteBaseline(
-                @"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\CS\Output\CSharpCodeBuilder.cs", 
+                @"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\CS\Output\CSharpCodeBuilder.cs",
                 result.Code);
 
             var expectedOutput = TestFile.Create("TestFiles/CodeGenerator/CS/Output/CSharpCodeBuilder.cs").ReadAllText();

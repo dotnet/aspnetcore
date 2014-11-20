@@ -322,7 +322,7 @@ namespace Microsoft.AspNet.Razor.Parser
             ImplicitExpression(AcceptedCharacters.NonWhiteSpace);
         }
 
-        // Async implicit expressions include the "await" keyword and therefore need to allow spaces to 
+        // Async implicit expressions include the "await" keyword and therefore need to allow spaces to
         // separate the "await" and the following code.
         private void AsyncImplicitExpression()
         {

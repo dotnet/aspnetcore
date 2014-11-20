@@ -1181,9 +1181,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             return new TagHelperDescriptorProvider(descriptors);
         }
 
-        public override ParserContext CreateParserContext(ITextDocument input, 
-                                                          ParserBase codeParser, 
-                                                          ParserBase markupParser, 
+        public override ParserContext CreateParserContext(ITextDocument input,
+                                                          ParserBase codeParser,
+                                                          ParserBase markupParser,
                                                           ParserErrorSink errorSink)
         {
             return base.CreateParserContext(input, codeParser, markupParser, errorSink);

@@ -10,8 +10,8 @@ namespace Microsoft.AspNet.Razor
     public class GeneratorResults : ParserResults
     {
         public GeneratorResults(ParserResults parserResults, CodeBuilderResult codeBuilderResult, CodeTree codeTree)
-            : this(parserResults.Document, 
-                   parserResults.ParserErrors, 
+            : this(parserResults.Document,
+                   parserResults.ParserErrors,
                    codeBuilderResult,
                    codeTree)
         {

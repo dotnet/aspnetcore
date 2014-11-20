@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Razor.Parser
         }
 
         /// <summary>
-        /// Returns a sequence of <see cref="TagHelperDescriptor"/>s for tag helpers that are registered in the 
+        /// Returns a sequence of <see cref="TagHelperDescriptor"/>s for tag helpers that are registered in the
         /// specified <paramref name="documentRoot"/>.
         /// </summary>
         /// <param name="documentRoot">The <see cref="Block"/> to scan for tag helper registrations in.</param>
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             return new ISyntaxTreeRewriter[]
             {
-                // TODO: Modify the below WhiteSpaceRewriter & ConditionalAttributeCollapser to handle 
+                // TODO: Modify the below WhiteSpaceRewriter & ConditionalAttributeCollapser to handle
                 // TagHelperBlock's: https://github.com/aspnet/Razor/issues/117
 
                 // Move whitespace from start of expression block to markup

@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Razor.Parser
         /// <summary>
         /// Tracks the given <paramref name="error"/>.
         /// </summary>
-        /// <param name="error">The <see cref="RazorError"/> to track.</param>        
+        /// <param name="error">The <see cref="RazorError"/> to track.</param>
         public void OnError(RazorError error)
         {
             _errors.Add(error);
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Razor.Parser
         /// Creates and tracks a new <see cref="RazorError"/>.
         /// </summary>
         /// <param name="location"><see cref="SourceLocation"/> of the error.</param>
-        /// <param name="message">A message describing the error.</param>        
+        /// <param name="message">A message describing the error.</param>
         public void OnError(SourceLocation location, string message)
         {
             _errors.Add(new RazorError(message, location));

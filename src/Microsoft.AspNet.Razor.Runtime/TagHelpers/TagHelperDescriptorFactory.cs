@@ -73,8 +73,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private static TagHelperAttributeDescriptor ToAttributeDescriptor(PropertyInfo property)
         {
             var attributeNameAttribute = property.GetCustomAttribute<HtmlAttributeNameAttribute>(inherit: false);
-            var attributeName = attributeNameAttribute != null ? 
-                                attributeNameAttribute.Name : 
+            var attributeName = attributeNameAttribute != null ?
+                                attributeNameAttribute.Name :
                                 property.Name;
 
             return new TagHelperAttributeDescriptor(attributeName, property.Name, property.PropertyType.FullName);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var typeInfo = type.GetTypeInfo();
             var contentBehaviorAttribute = typeInfo.GetCustomAttribute<ContentBehaviorAttribute>(inherit: false);
 
-            return contentBehaviorAttribute != null ? 
+            return contentBehaviorAttribute != null ?
                 contentBehaviorAttribute.ContentBehavior :
                 ContentBehavior.None;
         }

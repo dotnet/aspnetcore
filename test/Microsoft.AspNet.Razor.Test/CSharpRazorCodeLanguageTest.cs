@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Razor.Test
         {
             // Arrange
             var language = new CSharpRazorCodeLanguage();
-            var host = new RazorEngineHost(language);            
+            var host = new RazorEngineHost(language);
             var codeBuilderContext = new CodeBuilderContext(
                 host,
                 "myclass",

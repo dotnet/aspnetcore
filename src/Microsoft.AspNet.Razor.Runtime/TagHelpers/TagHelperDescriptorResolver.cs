@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
-        /// Resolves all <see cref="TagHelperDescriptor"/>s for <see cref="ITagHelper"/>s from the given 
+        /// Resolves all <see cref="TagHelperDescriptor"/>s for <see cref="ITagHelper"/>s from the given
         /// <paramref name="assemblyName"/>.
         /// </summary>
         /// <param name="assemblyName">
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     nameof(lookupText));
             }
 
-            // Grab the assembly name from the lookup text strings. Due to our supported lookupText formats it will 
+            // Grab the assembly name from the lookup text strings. Due to our supported lookupText formats it will
             // always be the last element provided.
             var assemblyName = lookupStrings.Last().Trim();
             string typeName = null;

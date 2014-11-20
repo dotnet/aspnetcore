@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.Razor.Parser
             var blockGen = new HelperCodeGenerator(signature, headerComplete);
             Context.CurrentBlock.CodeGenerator = blockGen;
 
-            // The block will generate appropriate code, 
+            // The block will generate appropriate code,
             Span.CodeGenerator = SpanCodeGenerator.Null;
 
             if (!headerComplete)
@@ -551,9 +551,9 @@ namespace Microsoft.AspNet.Razor.Parser
                     // Set up code generation
                     // The generated chunk of this code generator is picked up by CSharpDesignTimeHelpersVisitor which
                     // renders the C# to colorize the user provided value. We trim the quotes around the user's value
-                    // so when we render the code we can project the users value into double quotes to not invoke C# 
-                    // IntelliSense. 
-                    Span.CodeGenerator = 
+                    // so when we render the code we can project the users value into double quotes to not invoke C#
+                    // IntelliSense.
+                    Span.CodeGenerator =
                         new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors, rawValue.Trim('"'));
                 }
 
@@ -562,7 +562,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 if (!startsWithQuote ||
                     !rawValue.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
                 {
-                    Context.OnError(startLocation, 
+                    Context.OnError(startLocation,
                                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(keyword));
                 }
             }

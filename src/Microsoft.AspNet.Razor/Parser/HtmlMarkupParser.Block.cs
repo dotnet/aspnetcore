@@ -185,8 +185,8 @@ namespace Microsoft.AspNet.Razor.Parser
             EndTagBlock(tags, complete);
         }
 
-        private bool AfterTagStart(SourceLocation tagStart, 
-                                   Stack<Tuple<HtmlSymbol, SourceLocation>> tags, 
+        private bool AfterTagStart(SourceLocation tagStart,
+                                   Stack<Tuple<HtmlSymbol, SourceLocation>> tags,
                                    IDisposable tagBlockWrapper)
         {
             if (!EndOfFile)
@@ -269,8 +269,8 @@ namespace Microsoft.AspNet.Razor.Parser
             return false;
         }
 
-        private bool EndTag(SourceLocation tagStart, 
-                            Stack<Tuple<HtmlSymbol, SourceLocation>> tags, 
+        private bool EndTag(SourceLocation tagStart,
+                            Stack<Tuple<HtmlSymbol, SourceLocation>> tags,
                             IDisposable tagBlockWrapper)
         {
             // Accept "/" and move next
@@ -531,15 +531,15 @@ namespace Microsoft.AspNet.Razor.Parser
                 // Dynamic value, start a new block and set the code generator
                 using (Context.StartBlock(BlockType.Markup))
                 {
-                    Context.CurrentBlock.CodeGenerator = 
+                    Context.CurrentBlock.CodeGenerator =
                         new DynamicAttributeBlockCodeGenerator(prefix.GetContent(prefixStart), valueStart);
 
                     OtherParserBlock();
                 }
             }
-            else if (At(HtmlSymbolType.Text) && 
-                     CurrentSymbol.Content.Length > 0 && 
-                     CurrentSymbol.Content[0] == '~' && 
+            else if (At(HtmlSymbolType.Text) &&
+                     CurrentSymbol.Content.Length > 0 &&
+                     CurrentSymbol.Content[0] == '~' &&
                      NextIs(HtmlSymbolType.ForwardSlash))
             {
                 // Virtual Path value
@@ -558,7 +558,7 @@ namespace Microsoft.AspNet.Razor.Parser
                                       sym.Type != HtmlSymbolType.WhiteSpace &&
                                       sym.Type != HtmlSymbolType.NewLine &&
                                       sym.Type != HtmlSymbolType.Transition &&
-                                      // This condition checks for the end of the attribute value (it repeats some of the checks above 
+                                      // This condition checks for the end of the attribute value (it repeats some of the checks above
                                       // but for now that's ok)
                                       !IsEndOfAttributeValue(quote, sym));
                 Accept(value);
@@ -577,7 +577,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private bool IsUnquotedEndOfAttributeValue(HtmlSymbol sym)
         {
-            // If unquoted, we have a larger set of terminating characters: 
+            // If unquoted, we have a larger set of terminating characters:
             // http://dev.w3.org/html5/spec/tokenization.html#attribute-value-unquoted-state
             // Also we need to detect "/" and ">"
             return sym.Type == HtmlSymbolType.DoubleQuote ||
@@ -714,8 +714,8 @@ namespace Microsoft.AspNet.Razor.Parser
             return RestOfTag(tag, tags, tagBlockWrapper);
         }
 
-        private bool RestOfTag(Tuple<HtmlSymbol, SourceLocation> tag, 
-                               Stack<Tuple<HtmlSymbol, SourceLocation>> tags, 
+        private bool RestOfTag(Tuple<HtmlSymbol, SourceLocation> tag,
+                               Stack<Tuple<HtmlSymbol, SourceLocation>> tags,
                                IDisposable tagBlockWrapper)
         {
             TagContent();
@@ -873,11 +873,11 @@ namespace Microsoft.AspNet.Razor.Parser
             }
         }
 
-        private void CompleteTagBlockWithSpan(IDisposable tagBlockWrapper, 
+        private void CompleteTagBlockWithSpan(IDisposable tagBlockWrapper,
                                               AcceptedCharacters acceptedCharacters,
                                               SpanKind spanKind)
         {
-            Debug.Assert(tagBlockWrapper != null, 
+            Debug.Assert(tagBlockWrapper != null,
                 "Tag block wrapper should not be null when attempting to complete a block");
 
             Span.EditHandler.AcceptedCharacters = acceptedCharacters;

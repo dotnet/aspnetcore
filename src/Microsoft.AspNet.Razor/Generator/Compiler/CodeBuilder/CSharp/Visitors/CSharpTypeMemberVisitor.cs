@@ -9,8 +9,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
     {
         private CSharpCodeVisitor _csharpCodeVisitor;
 
-        public CSharpTypeMemberVisitor([NotNull] CSharpCodeVisitor csharpCodeVisitor, 
-                                       [NotNull] CSharpCodeWriter writer, 
+        public CSharpTypeMemberVisitor([NotNull] CSharpCodeVisitor csharpCodeVisitor,
+                                       [NotNull] CSharpCodeWriter writer,
                                        [NotNull] CodeBuilderContext context)
             : base(writer, context)
         {

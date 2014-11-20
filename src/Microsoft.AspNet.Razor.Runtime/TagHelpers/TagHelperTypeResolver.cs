@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// all valid <see cref="ITagHelper"/> <see cref="Type"/>s.
         /// </summary>
         /// <param name="name">The name of an <see cref="Assembly"/> to search.</param>
-        /// <returns>An <see cref="IEnumerable{Type}"/> of valid <see cref="ITagHelper"/> <see cref="Type"/>s.</returns>        
+        /// <returns>An <see cref="IEnumerable{Type}"/> of valid <see cref="ITagHelper"/> <see cref="Type"/>s.</returns>
         public IEnumerable<Type> Resolve(string name)
         {
             if (string.IsNullOrEmpty(name))

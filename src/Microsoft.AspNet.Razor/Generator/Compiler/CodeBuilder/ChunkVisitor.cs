@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             else if (chunk is TypeMemberChunk)
             {
                 Visit((TypeMemberChunk)chunk);
-            }            
+            }
             else if (chunk is UsingChunk)
             {
                 Visit((UsingChunk)chunk);

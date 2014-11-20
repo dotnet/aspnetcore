@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
     public class TagHelperBlockBuilder : BlockBuilder
     {
         /// <summary>
-        /// Instantiates a new <see cref="TagHelperBlockBuilder"/> instance based on given the 
+        /// Instantiates a new <see cref="TagHelperBlockBuilder"/> instance based on given the
         /// <paramref name="original"/>.
         /// </summary>
         /// <param name="original">The original <see cref="TagHelperBlock"/> to copy data from.</param>
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                 {
                     // We've found an '=' symbol, this means that the coming symbols will either be a quote
                     // or value (in the case that the value is unquoted).
-                    // Spaces after/before the equal symbol are not yet supported: 
+                    // Spaces after/before the equal symbol are not yet supported:
                     // https://github.com/aspnet/Razor/issues/123
 
                     // TODO: Handle malformed tags, if there's an '=' then there MUST be a value.
@@ -290,7 +290,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                     else if (isDynamic && childSpan.CodeGenerator == SpanCodeGenerator.Null)
                     {
                         // Usually the dynamic code generator handles rendering the null code generators underneath
-                        // it. This doesn't make sense in terms of tag helpers though, we need to change null code 
+                        // it. This doesn't make sense in terms of tag helpers though, we need to change null code
                         // generators to markup code generators.
 
                         newCodeGenerator = new MarkupCodeGenerator();

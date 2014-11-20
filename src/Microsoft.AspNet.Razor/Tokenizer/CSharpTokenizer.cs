@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             if (CurrentCharacter == '\\')
             {
                 TakeCurrent(); // Take the '\'
-                
+
                 // If the next char is the same quote that started this
                 if (CurrentCharacter == quote || CurrentCharacter == '\\')
                 {

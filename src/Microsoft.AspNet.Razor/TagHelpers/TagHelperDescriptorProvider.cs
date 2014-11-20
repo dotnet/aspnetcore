@@ -35,10 +35,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// Gets all tag helpers that match the given <paramref name="tagName"/>.
         /// </summary>
-        /// <param name="tagName">The name of the HTML tag to match. Providing a '*' tag name 
+        /// <param name="tagName">The name of the HTML tag to match. Providing a '*' tag name
         /// retrieves catch-all <see cref="TagHelperDescriptor"/>s (descriptors that target every tag).</param>
         /// <returns><see cref="TagHelperDescriptor"/>s that apply to the given <paramref name="tagName"/>.
-        /// Will return an empty <see cref="Enumerable" /> if no <see cref="TagHelperDescriptor"/>s are 
+        /// Will return an empty <see cref="Enumerable" /> if no <see cref="TagHelperDescriptor"/>s are
         /// found.</returns>
         public IEnumerable<TagHelperDescriptor> GetTagHelpers(string tagName)
         {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             {
                 return matchingDescriptors.Concat(descriptors);
             }
-            
+
             // We couldn't any descriptors associated with the requested tag name, return all
             // of the "catch-all" tag descriptors (there may not be any).
             return descriptors;

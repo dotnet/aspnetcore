@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public abstract void ParseBlock();
 
-        // Markup Parsers need the ParseDocument and ParseSection methods since the markup parser is the first parser to hit the document 
+        // Markup Parsers need the ParseDocument and ParseSection methods since the markup parser is the first parser to hit the document
         // and the logic may be different than the ParseBlock method.
         public virtual void ParseDocument()
         {

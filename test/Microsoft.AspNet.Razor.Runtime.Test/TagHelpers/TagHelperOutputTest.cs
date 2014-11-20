@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void GenerateStartTag_ReturnsSelfClosingStartTag_Attributes()
         {
             // Arrange
-            var tagHelperOutput = new TagHelperOutput("p", 
+            var tagHelperOutput = new TagHelperOutput("p",
                 attributes: new Dictionary<string, string>
                 {
                     { "class", "btn" },
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void GenerateStartTag_ReturnsNothingIfWhitespaceTagName()
         {
             // Arrange
-            var tagHelperOutput = new TagHelperOutput("  ", 
+            var tagHelperOutput = new TagHelperOutput("  ",
                 attributes: new Dictionary<string, string>
                 {
                     { "class", "btn" },

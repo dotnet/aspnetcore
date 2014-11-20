@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             Writer.WriteStartAssignment(TagHelperDirectiveSyntaxHelper);
 
-            // The parsing mechanism for the add/remove TagHelper chunk (CSharpCodeParser.TagHelperDirective()) 
+            // The parsing mechanism for the add/remove TagHelper chunk (CSharpCodeParser.TagHelperDirective())
             // removes quotes that surround the lookupText.
             _csharpCodeVisitor.CreateExpressionCodeMapping(
                 string.Format(

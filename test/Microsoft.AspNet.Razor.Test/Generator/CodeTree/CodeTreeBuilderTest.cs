@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Razor
             var block = new ExpressionBlock();
             var addTagHelperDirective = spanFactory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ");
 
-            // Act 
+            // Act
             builder.StartChunkBlock<ExpressionBlockChunk>(block);
             builder.AddAddTagHelperChunk("some text", addTagHelperDirective);
             builder.EndChunkBlock();
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Razor
             var block = new ExpressionBlock();
             var removeTagHelperDirective = spanFactory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ");
 
-            // Act 
+            // Act
             builder.StartChunkBlock<ExpressionBlockChunk>(block);
             builder.AddRemoveTagHelperChunk("some text", removeTagHelperDirective);
             builder.EndChunkBlock();
@@ -67,8 +67,8 @@ namespace Microsoft.AspNet.Razor
             var spanFactory = SpanFactory.CreateCsHtml();
             var previousSpan = spanFactory.EmptyHtml().Builder.Build();
             var builder = new CodeTreeBuilder();
-            
-            // Act 
+
+            // Act
             builder.AddLiteralChunk("some text", previousSpan);
 
             // Assert
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Razor
             var newSpan = spanFactory.Markup("<p>").Builder.Build();
             var builder = new CodeTreeBuilder();
 
-            // Act 
+            // Act
             builder.AddLiteralChunk("<a>", previousSpan);
             builder.AddLiteralChunk("<p>", newSpan);
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Razor
             var literalSpan = spanFactory.Markup("<p>").Builder.Build();
             var builder = new CodeTreeBuilder();
 
-            // Act 
+            // Act
             builder.AddStatementChunk("int a = 10;", codeSpan);
             builder.AddLiteralChunk("<p>", literalSpan);
 

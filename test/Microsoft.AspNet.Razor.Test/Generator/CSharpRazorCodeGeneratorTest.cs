@@ -492,40 +492,40 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             });
         }
 
-        protected static LineMapping BuildLineMapping(int documentAbsoluteIndex, 
-                                                      int documentLineIndex, 
-                                                      int generatedAbsoluteIndex, 
-                                                      int generatedLineIndex, 
-                                                      int characterOffsetIndex, 
+        protected static LineMapping BuildLineMapping(int documentAbsoluteIndex,
+                                                      int documentLineIndex,
+                                                      int generatedAbsoluteIndex,
+                                                      int generatedLineIndex,
+                                                      int characterOffsetIndex,
                                                       int contentLength)
         {
-            return BuildLineMapping(documentAbsoluteIndex, 
-                                    documentLineIndex, 
-                                    characterOffsetIndex, 
-                                    generatedAbsoluteIndex, 
-                                    generatedLineIndex, 
-                                    characterOffsetIndex, 
+            return BuildLineMapping(documentAbsoluteIndex,
+                                    documentLineIndex,
+                                    characterOffsetIndex,
+                                    generatedAbsoluteIndex,
+                                    generatedLineIndex,
+                                    characterOffsetIndex,
                                     contentLength);
         }
 
-        protected static LineMapping BuildLineMapping(int documentAbsoluteIndex, 
-                                                      int documentLineIndex, 
-                                                      int documentCharacterOffsetIndex, 
-                                                      int generatedAbsoluteIndex, 
-                                                      int generatedLineIndex, 
-                                                      int generatedCharacterOffsetIndex, 
+        protected static LineMapping BuildLineMapping(int documentAbsoluteIndex,
+                                                      int documentLineIndex,
+                                                      int documentCharacterOffsetIndex,
+                                                      int generatedAbsoluteIndex,
+                                                      int generatedLineIndex,
+                                                      int generatedCharacterOffsetIndex,
                                                       int contentLength)
         {
             return new LineMapping(
                         documentLocation: new MappingLocation(
-                            new SourceLocation(documentAbsoluteIndex, 
-                                               documentLineIndex, 
-                                               documentCharacterOffsetIndex), 
+                            new SourceLocation(documentAbsoluteIndex,
+                                               documentLineIndex,
+                                               documentCharacterOffsetIndex),
                             contentLength),
                         generatedLocation: new MappingLocation(
-                            new SourceLocation(generatedAbsoluteIndex, 
-                                               generatedLineIndex, 
-                                               generatedCharacterOffsetIndex), 
+                            new SourceLocation(generatedAbsoluteIndex,
+                                               generatedLineIndex,
+                                               generatedCharacterOffsetIndex),
                         contentLength)
                     );
         }

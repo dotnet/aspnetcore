@@ -284,7 +284,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                 Factory.Markup("<script>")),
                             Factory.Markup("(function foo() { return 1; })();"),
                             new MarkupTagBlock(
-                                Factory.Markup("</script>")), 
+                                Factory.Markup("</script>")),
                             Factory.Markup(" ")),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));

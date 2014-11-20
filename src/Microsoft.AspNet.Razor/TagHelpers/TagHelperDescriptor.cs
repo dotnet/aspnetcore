@@ -24,16 +24,16 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                    [NotNull] string typeName,
                                    [NotNull] string assemblyName,
                                    ContentBehavior contentBehavior)
-            : this(tagName, 
-                   typeName, 
-                   assemblyName, 
-                   contentBehavior, 
+            : this(tagName,
+                   typeName,
+                   assemblyName,
+                   contentBehavior,
                    Enumerable.Empty<TagHelperAttributeDescriptor>())
         {
         }
 
         /// <summary>
-        /// Instantiates a new instance of the <see cref="TagHelperDescriptor"/> class with the given 
+        /// Instantiates a new instance of the <see cref="TagHelperDescriptor"/> class with the given
         /// <paramref name="attributes"/>.
         /// </summary>
         /// <param name="tagName">The tag name that the tag helper targets. '*' indicates a catch-all

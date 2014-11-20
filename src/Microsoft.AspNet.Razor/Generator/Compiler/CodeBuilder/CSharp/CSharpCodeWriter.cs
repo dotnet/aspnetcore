@@ -443,9 +443,9 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 }
                 if (i > 0 && i % 80 == 0)
                 {
-                    // If current character is a high surrogate and the following 
-                    // character is a low surrogate, don't break them. 
-                    // Otherwise when we write the string to a file, we might lose 
+                    // If current character is a high surrogate and the following
+                    // character is a low surrogate, don't break them.
+                    // Otherwise when we write the string to a file, we might lose
                     // the characters.
                     if (Char.IsHighSurrogate(literal[i])
                         && (i < literal.Length - 1)

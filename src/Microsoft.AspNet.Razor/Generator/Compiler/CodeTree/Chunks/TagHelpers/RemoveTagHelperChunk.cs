@@ -4,7 +4,7 @@
 namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
     /// <summary>
-    /// A <see cref="Chunk"/> used to look up <see cref="TagHelpers.TagHelperDescriptor"/>s that should be ignored 
+    /// A <see cref="Chunk"/> used to look up <see cref="TagHelpers.TagHelperDescriptor"/>s that should be ignored
     /// within the Razor page.
     /// </summary>
     public class RemoveTagHelperChunk : Chunk

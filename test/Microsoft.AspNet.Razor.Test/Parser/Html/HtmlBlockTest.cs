@@ -331,7 +331,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<foo>").Accepts(AcceptedCharacters.None)),
-                    Factory.Markup("bar"), 
+                    Factory.Markup("bar"),
                     Factory.Markup("<!-- zoop -->").Accepts(AcceptedCharacters.None),
                     Factory.Markup("baz"),
                     new MarkupTagBlock(

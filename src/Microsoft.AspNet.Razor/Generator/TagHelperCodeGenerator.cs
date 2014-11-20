@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Razor.Generator
         /// <param name="target">
         /// The <see cref="Block"/> responsible for this <see cref="TagHelperCodeGenerator"/>.
         /// </param>
-        /// <param name="context">A <see cref="CodeGeneratorContext"/> instance that contains information about 
+        /// <param name="context">A <see cref="CodeGeneratorContext"/> instance that contains information about
         /// the current code generation process.</param>
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Razor.Generator
         /// <param name="target">
         /// The <see cref="Block"/> responsible for this <see cref="TagHelperCodeGenerator"/>.
         /// </param>
-        /// <param name="context">A <see cref="CodeGeneratorContext"/> instance that contains information about 
+        /// <param name="context">A <see cref="CodeGeneratorContext"/> instance that contains information about
         /// the current code generation process.</param>
         public override void GenerateEndBlockCode(Block target, CodeGeneratorContext context)
         {

@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                                     // Found a new tag helper block
                                     TrackTagHelperBlock(new TagHelperBlockBuilder(tagName, descriptors, childBlock));
 
-                                    // If it's a self closing block then we don't have to worry about nested children 
+                                    // If it's a self closing block then we don't have to worry about nested children
                                     // within the tag... complete it.
                                     if (IsSelfClosing(childBlock))
                                     {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 // At this point the child is a Span or Block with Type BlockType.Tag that doesn't happen to be a
                 // tag helper.
 
-                // Add the child to current block. 
+                // Add the child to current block.
                 _currentBlock.Children.Add(child);
             }
 
@@ -130,12 +130,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             // the document, that's the only way we can have a non-zero _blockStack.Count.
             if (_blockStack.Count != 0)
             {
-                // We reverse the children so we can search from the back to the front for the TagHelper that is 
+                // We reverse the children so we can search from the back to the front for the TagHelper that is
                 // malformed.
                 var candidateChildren = _currentBlock.Children.Reverse();
                 var malformedTagHelper = candidateChildren.OfType<TagHelperBlock>().FirstOrDefault();
 
-                // If the malformed tag helper is null that means something other than a TagHelper caused the 
+                // If the malformed tag helper is null that means something other than a TagHelper caused the
                 // unbalancing of the syntax tree (should never happen).
                 Debug.Assert(malformedTagHelper != null);
 

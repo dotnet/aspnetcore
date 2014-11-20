@@ -67,13 +67,13 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         }
 
         /// <summary>
-        /// Determines whether two <see cref="TagHelperBlock"/>s are equal by comparing the <see cref="TagName"/>, 
+        /// Determines whether two <see cref="TagHelperBlock"/>s are equal by comparing the <see cref="TagName"/>,
         /// <see cref="Attributes"/>, <see cref="Block.Type"/>, <see cref="Block.CodeGenerator"/> and
         /// <see cref="Block.Children"/>.
         /// </summary>
         /// <param name="other">The <see cref="TagHelperBlock"/> to check equality against.</param>
         /// <returns>
-        /// <c>true</c> if the current <see cref="TagHelperBlock"/> is equivalent to the given 
+        /// <c>true</c> if the current <see cref="TagHelperBlock"/> is equivalent to the given
         /// <paramref name="other"/>, <c>false</c> otherwise.
         /// </returns>
         public bool Equals(TagHelperBlock other)

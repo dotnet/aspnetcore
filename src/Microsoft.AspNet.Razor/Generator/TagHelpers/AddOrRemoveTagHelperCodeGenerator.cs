@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Razor.Generator
         }
 
         /// <summary>
-        /// Gets the text used to look up <see cref="TagHelpers.TagHelperDescriptor"/>s that should be added to or 
+        /// Gets the text used to look up <see cref="TagHelpers.TagHelperDescriptor"/>s that should be added to or
         /// removed from the Razor page.
         /// </summary>
         public string LookupText { get; }
@@ -37,13 +37,13 @@ namespace Microsoft.AspNet.Razor.Generator
         public bool RemoveTagHelperDescriptors { get; }
 
         /// <summary>
-        /// Generates <see cref="Compiler.AddTagHelperChunk"/>s if <see cref="RemoveTagHelperDescriptors"/> is 
+        /// Generates <see cref="Compiler.AddTagHelperChunk"/>s if <see cref="RemoveTagHelperDescriptors"/> is
         /// <c>true</c>, otherwise <see cref="Compiler.RemoveTagHelperChunk"/>s are generated.
         /// </summary>
         /// <param name="target">
         /// The <see cref="Span"/> responsible for this <see cref="AddOrRemoveTagHelperCodeGenerator"/>.
         /// </param>
-        /// <param name="context">A <see cref="CodeGeneratorContext"/> instance that contains information about 
+        /// <param name="context">A <see cref="CodeGeneratorContext"/> instance that contains information about
         /// the current code generation process.</param>
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {

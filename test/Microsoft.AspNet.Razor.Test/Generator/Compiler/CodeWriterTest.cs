@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 
             var expected = new SourceLocation(
                 absoluteIndex: 6 + newLine.Length + WriterNewLineLength,
-                lineIndex: 2, 
+                lineIndex: 2,
                 characterIndex: 0);
 
             Assert.Equal(expected, location);
@@ -111,8 +111,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             var location = writer.GetCurrentSourceLocation();
 
             var expected = new SourceLocation(
-                absoluteIndex: 9 + newLine.Length + newLine.Length, 
-                lineIndex: 2, 
+                absoluteIndex: 9 + newLine.Length + newLine.Length,
+                lineIndex: 2,
                 characterIndex: 2);
 
             Assert.Equal(expected, location);

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Razor
     /// This parser is designed to allow editors to avoid having to worry about incremental parsing.
     /// The CheckForStructureChanges method can be called with every change made by a user in an editor and
     /// the parser will provide a result indicating if it was able to incrementally reparse the document.
-    /// 
+    ///
     /// The general workflow for editors with this parser is:
     /// 0. User edits document
     /// 1. Editor builds TextChange structure describing the edit and providing a reference to the _updated_ text buffer
@@ -30,25 +30,25 @@ namespace Microsoft.AspNet.Razor
     ///   b.  If it can not, the Parser starts a background parse task and return PartialParseResult.Rejected
     /// NOTE: Additional flags can be applied to the PartialParseResult, see that enum for more details.  However,
     ///       the Accepted or Rejected flags will ALWAYS be present
-    /// 
+    ///
     /// A change can only be incrementally parsed if a single, unique, Span (see Microsoft.AspNet.Razor.Parser.SyntaxTree) in the syntax tree can
     /// be identified as owning the entire change.  For example, if a change overlaps with multiple spans, the change cannot be
     /// parsed incrementally and a full reparse is necessary.  A Span "owns" a change if the change occurs either a) entirely
     /// within it's boundaries or b) it is a pure insertion (see TextChange) at the end of a Span whose CanGrow flag (see Span) is
     /// true.
-    /// 
+    ///
     /// Even if a single unique Span owner can be identified, it's possible the edit will cause the Span to split or merge with other
     /// Spans, in which case, a full reparse is necessary to identify the extent of the changes to the tree.
-    /// 
+    ///
     /// When the RazorEditorParser returns Accepted, it updates CurrentParseTree immediately.  However, the editor is expected to
     /// update it's own data structures independently.  It can use CurrentParseTree to do this, as soon as the editor returns from
     /// CheckForStructureChanges, but it should (ideally) have logic for doing so without needing the new tree.
-    /// 
+    ///
     /// When Rejected is returned by CheckForStructureChanges, a background parse task has _already_ been started.  When that task
     /// finishes, the DocumentStructureChanged event will be fired containing the new generated code, parse tree and a reference to
-    /// the original TextChange that caused the reparse, to allow the editor to resolve the new tree against any changes made since 
+    /// the original TextChange that caused the reparse, to allow the editor to resolve the new tree against any changes made since
     /// calling CheckForStructureChanges.
-    /// 
+    ///
     /// If a call to CheckForStructureChanges occurs while a reparse is already in-progress, the reparse is cancelled IMMEDIATELY
     /// and Rejected is returned without attempting to reparse.  This means that if a conusmer calls CheckForStructureChanges, which
     /// returns Rejected, then calls it again before DocumentParseComplete is fired, it will only recieve one DocumentParseComplete

@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         /// </summary>
         /// <param name="bodyVisitor">The <see cref="IChunkVisitor"/> used to render chunks found in the body.</param>
         /// <param name="writer">The <see cref="CSharpCodeWriter"/> used to write code.</param>
-        /// <param name="context">A <see cref="CodeBuilderContext"/> instance that contains information about 
+        /// <param name="context">A <see cref="CodeBuilderContext"/> instance that contains information about
         /// the current code generation process.</param>
         public CSharpTagHelperCodeRenderer([NotNull] IChunkVisitor bodyVisitor,
                                            [NotNull] CSharpCodeWriter writer,
@@ -194,13 +194,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     // Bufferable attributes are attributes that can have Razor code inside of them.
                     var bufferableAttribute = IsStringAttribute(attributeDescriptor);
 
-                    // Plain text values are non Razor code (@DateTime.Now) values. If an attribute is bufferable it 
-                    // may be more than just a plain text value, it may also contain Razor code which is why we attempt 
+                    // Plain text values are non Razor code (@DateTime.Now) values. If an attribute is bufferable it
+                    // may be more than just a plain text value, it may also contain Razor code which is why we attempt
                     // to retrieve a plain text value here.
                     string textValue;
                     var isPlainTextValue = TryGetPlainTextValue(attributeValueChunk, out textValue);
 
-                    // If we haven't recorded a value and we need to buffer an attribute value and the value is not 
+                    // If we haven't recorded a value and we need to buffer an attribute value and the value is not
                     // plain text then we need to prepare the value prior to setting it below.
                     if (!attributeValueRecorded && bufferableAttribute && !isPlainTextValue)
                     {
@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                         }
                         else
                         {
-                            // TODO: Make complex types in non-bufferable attributes work in 
+                            // TODO: Make complex types in non-bufferable attributes work in
                             // https://github.com/aspnet/Razor/issues/129
                             if (!isPlainTextValue)
                             {
@@ -291,7 +291,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 var attributeValue = htmlAttribute.Value;
                 var isPlainTextValue = TryGetPlainTextValue(attributeValue, out textValue);
 
-                // HTML attributes are always strings. So if this value is not plain text i.e. if the value contains 
+                // HTML attributes are always strings. So if this value is not plain text i.e. if the value contains
                 // C# code, then we need to buffer it.
                 if (!isPlainTextValue)
                 {
@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 }
 
                 _writer.WriteStartInstanceMethodInvocation(
-                    ExecutionContextVariableName, 
+                    ExecutionContextVariableName,
                     _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName);
                 _writer.WriteStringLiteral(htmlAttribute.Key)
                        .WriteParameterSeparator();
@@ -435,7 +435,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         private void BuildBufferedWritingScope(IList<Chunk> chunks)
         {
             // We're building a writing scope around the provided chunks which captures everything written from the
-            // page. Therefore, we do not want to write to any other buffer since we're using the pages buffer to 
+            // page. Therefore, we do not want to write to any other buffer since we're using the pages buffer to
             // ensure we capture all content that's written, directly or indirectly.
             var oldWriter = _context.TargetWriterName;
             _context.TargetWriterName = null;
@@ -483,7 +483,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             if (_designTimeMode)
             {
-                // There is no value buffer in design time mode but we still want to write out a value. We write a 
+                // There is no value buffer in design time mode but we still want to write out a value. We write a
                 // value to ensure the tag helper's property type is string.
                 writer.Write("string.Empty");
             }

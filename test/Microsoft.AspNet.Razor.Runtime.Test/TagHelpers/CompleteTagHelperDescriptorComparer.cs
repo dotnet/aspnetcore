@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             public bool Equals(TagHelperAttributeDescriptor descriptorX, TagHelperAttributeDescriptor descriptorY)
             {
                 return descriptorX.Name == descriptorY.Name &&
-                       descriptorX.PropertyName == descriptorY.PropertyName && 
+                       descriptorX.PropertyName == descriptorY.PropertyName &&
                        descriptorX.TypeName == descriptorY.TypeName;
             }
 

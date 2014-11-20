@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void TestIsDelete()
         {
-            // Arrange 
+            // Arrange
             var oldBuffer = new Mock<ITextBuffer>().Object;
             var newBuffer = new Mock<ITextBuffer>().Object;
             var change = new TextChange(0, 1, oldBuffer, 0, newBuffer);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void TestDeleteCreatesTheRightSizeChange()
         {
-            // Arrange 
+            // Arrange
             var oldBuffer = new Mock<ITextBuffer>().Object;
             var newBuffer = new Mock<ITextBuffer>().Object;
             var change = new TextChange(0, 1, oldBuffer, 0, newBuffer);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void TestIsInsert()
         {
-            // Arrange 
+            // Arrange
             var oldBuffer = new Mock<ITextBuffer>().Object;
             var newBuffer = new Mock<ITextBuffer>().Object;
             var change = new TextChange(0, 0, oldBuffer, 35, newBuffer);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void TestInsertCreateTheRightSizeChange()
         {
-            // Arrange 
+            // Arrange
             var oldBuffer = new Mock<ITextBuffer>().Object;
             var newBuffer = new Mock<ITextBuffer>().Object;
             var change = new TextChange(0, 0, oldBuffer, 1, newBuffer);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void TestIsReplace()
         {
-            // Arrange 
+            // Arrange
             var oldBuffer = new Mock<ITextBuffer>().Object;
             var newBuffer = new Mock<ITextBuffer>().Object;
             var change = new TextChange(0, 5, oldBuffer, 10, newBuffer);
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void ReplaceCreatesTheRightSizeChange()
         {
-            // Arrange 
+            // Arrange
             var oldBuffer = new Mock<ITextBuffer>().Object;
             var newBuffer = new Mock<ITextBuffer>().Object;
             var change = new TextChange(0, 5, oldBuffer, 10, newBuffer);
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
         [Fact]
         public void ReplaceCreatesTheRightSizeChange1()
         {
-            // Arrange 
+            // Arrange
             var oldBuffer = new Mock<ITextBuffer>().Object;
             var newBuffer = new Mock<ITextBuffer>().Object;
             var change = new TextChange(0, 5, oldBuffer, 1, newBuffer);

@@ -69,10 +69,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
                 // We're treating 'string' as a TagHelper so we can test TagHelpers in multiple assemblies without
                 // building a separate assembly with a single TagHelper.
-                var stringTagHelperDescriptor = 
-                    new TagHelperDescriptor("string", 
-                                            "System.String", 
-                                            assemblyB, 
+                var stringTagHelperDescriptor =
+                    new TagHelperDescriptor("string",
+                                            "System.String",
+                                            assemblyB,
                                             ContentBehavior.None);
 
                 return new TheoryData<Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         new []
                         {
                             new TagHelperDirectiveDescriptor(
-                                Valid_PlainTagHelperType.FullName + ", " + assemblyA, 
+                                Valid_PlainTagHelperType.FullName + ", " + assemblyA,
                                 TagHelperDirectiveType.AddTagHelper),
                             new TagHelperDirectiveDescriptor(assemblyA, TagHelperDirectiveType.AddTagHelper)
                         },
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             new TagHelperDirectiveDescriptor(assemblyA, TagHelperDirectiveType.AddTagHelper),
                             new TagHelperDirectiveDescriptor(
-                                Valid_PlainTagHelperType.FullName + ", " + assemblyA, 
+                                Valid_PlainTagHelperType.FullName + ", " + assemblyA,
                                 TagHelperDirectiveType.RemoveTagHelper)
                         },
                         new [] { Valid_InheritedTagHelperDescriptor }
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             new TagHelperDirectiveDescriptor(assemblyA, TagHelperDirectiveType.AddTagHelper),
                             new TagHelperDirectiveDescriptor(
-                                Valid_PlainTagHelperType.FullName + ", " + assemblyA, 
+                                Valid_PlainTagHelperType.FullName + ", " + assemblyA,
                                 TagHelperDirectiveType.RemoveTagHelper),
                             new TagHelperDirectiveDescriptor(assemblyA, TagHelperDirectiveType.AddTagHelper)
                         },
@@ -471,7 +471,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 return Resolve(
                     new TagHelperDescriptorResolutionContext(
                         lookupTexts.Select(
-                            lookupText => 
+                            lookupText =>
                                 new TagHelperDirectiveDescriptor(lookupText, TagHelperDirectiveType.AddTagHelper))));
             }
         }

@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         {
         }
 
-        public MarkupTagHelperBlock(string tagName, 
+        public MarkupTagHelperBlock(string tagName,
                                     IDictionary<string, SyntaxTreeNode> attributes)
             : this(tagName, attributes, new SyntaxTreeNode[0])
         {

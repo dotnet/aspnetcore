@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void ParseBlockSupportsLineCommentBetweenIfAndElseClause()
         {
-            SingleSpanBlockTest(@"if(foo) { bar(); } 
+            SingleSpanBlockTest(@"if(foo) { bar(); }
 // Foo
 // Bar
 else { baz(); }", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
@@ -176,10 +176,10 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         public void ParseBlockParsesElseIfBranchesOfIfStatement()
         {
             const string ifStatement = @"if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) {
-    Debug.WriteLine(@""foo } bar""); 
+    Debug.WriteLine(@""foo } bar"");
 }";
-            const string elseIfBranch = @" else if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) { 
-    Debug.WriteLine(@""bar } baz""); 
+            const string elseIfBranch = @" else if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) {
+    Debug.WriteLine(@""bar } baz"");
 }";
             const string document = ifStatement + elseIfBranch;
 
@@ -190,10 +190,10 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         public void ParseBlockParsesMultipleElseIfBranchesOfIfStatement()
         {
             const string ifStatement = @"if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) {
-    Debug.WriteLine(@""foo } bar""); 
+    Debug.WriteLine(@""foo } bar"");
 }";
-            const string elseIfBranch = @" else if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) { 
-    Debug.WriteLine(@""bar } baz""); 
+            const string elseIfBranch = @" else if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) {
+    Debug.WriteLine(@""bar } baz"");
 }";
             const string document = ifStatement + elseIfBranch + elseIfBranch + elseIfBranch + elseIfBranch;
             SingleSpanBlockTest(document, BlockType.Statement, SpanKind.Code);
@@ -203,10 +203,10 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         public void ParseBlockParsesMultipleElseIfBranchesOfIfStatementFollowedByOneElseBranch()
         {
             const string ifStatement = @"if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) {
-    Debug.WriteLine(@""foo } bar""); 
+    Debug.WriteLine(@""foo } bar"");
 }";
-            const string elseIfBranch = @" else if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) { 
-    Debug.WriteLine(@""bar } baz""); 
+            const string elseIfBranch = @" else if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) {
+    Debug.WriteLine(@""bar } baz"");
 }";
             const string elseBranch = @" else { Debug.WriteLine(@""bar } baz""); }";
             const string document = ifStatement + elseIfBranch + elseIfBranch + elseBranch;
@@ -218,10 +218,10 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         public void ParseBlockStopsParsingCodeAfterElseBranch()
         {
             const string ifStatement = @"if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) {
-    Debug.WriteLine(@""foo } bar""); 
+    Debug.WriteLine(@""foo } bar"");
 }";
-            const string elseIfBranch = @" else if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) { 
-    Debug.WriteLine(@""bar } baz""); 
+            const string elseIfBranch = @" else if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) {
+    Debug.WriteLine(@""bar } baz"");
 }";
             const string elseBranch = @" else { Debug.WriteLine(@""bar } baz""); }";
             const string document = ifStatement + elseIfBranch + elseBranch + elseIfBranch;
@@ -234,7 +234,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         public void ParseBlockStopsParsingIfIfStatementNotFollowedByElse()
         {
             const string document = @"if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) {
-    Debug.WriteLine(@""foo } bar""); 
+    Debug.WriteLine(@""foo } bar"");
 }";
 
             SingleSpanBlockTest(document, BlockType.Statement, SpanKind.Code);
@@ -245,7 +245,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         {
             // We don't want to be a full C# parser - If the else if is missing it's condition, the C# compiler can handle that, we have all the info we need to keep parsing
             const string ifBranch = @"if(int i = 0; i < 10; new Foo { Bar = ""baz"" }) {
-    Debug.WriteLine(@""foo } bar""); 
+    Debug.WriteLine(@""foo } bar"");
 }";
             const string elseIfBranch = @" else if { foo(); }";
             const string document = ifBranch + elseIfBranch;
@@ -292,7 +292,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         [Fact]
         public void ParseBlockSupportsLineCommentBetweenDoAndWhileClause()
         {
-            SingleSpanBlockTest(@"do { var foo = bar; } 
+            SingleSpanBlockTest(@"do { var foo = bar; }
 // Foo
 // Bar
 while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
@@ -449,7 +449,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
         [Fact]
         public void ParseBlockSupportsLineCommentBetweenTryAndFinallyClause()
         {
-            SingleSpanBlockTest(@"try { bar(); } 
+            SingleSpanBlockTest(@"try { bar(); }
 // Foo
 // Bar
 finally { baz(); }", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
@@ -483,8 +483,8 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         public void ParseBlockSupportsMarkupWithinTryClause()
         {
             RunSimpleWrappedMarkupTest(
-                prefix: "try {", 
-                markup: " <p>Foo</p> ", 
+                prefix: "try {",
+                markup: " <p>Foo</p> ",
                 suffix: "}",
                 expectedMarkup: new MarkupBlock(
                     Factory.Markup(" "),
@@ -504,8 +504,8 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         public void ParseBlockSupportsMarkupWithinCatchClause()
         {
             RunSimpleWrappedMarkupTest(
-                prefix: "try { var foo = new { } } catch(Foo Bar Baz) {", 
-                markup: " <p>Foo</p> ", 
+                prefix: "try { var foo = new { } } catch(Foo Bar Baz) {",
+                markup: " <p>Foo</p> ",
                 suffix: "}",
                 expectedMarkup: new MarkupBlock(
                     Factory.Markup(" "),

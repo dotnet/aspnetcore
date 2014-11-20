@@ -58,9 +58,9 @@ namespace Microsoft.AspNet.Razor.Editor
                 return PartialParseResult.Rejected;
             }
 
-            // In some editors intellisense insertions are handled as "dotless commits".  If an intellisense selection is confirmed 
-            // via something like '.' a dotless commit will append a '.' and then insert the remaining intellisense selection prior 
-            // to the appended '.'.  This 'if' statement attempts to accept the intermediate steps of a dotless commit via 
+            // In some editors intellisense insertions are handled as "dotless commits".  If an intellisense selection is confirmed
+            // via something like '.' a dotless commit will append a '.' and then insert the remaining intellisense selection prior
+            // to the appended '.'.  This 'if' statement attempts to accept the intermediate steps of a dotless commit via
             // intellisense.  It will accept two cases:
             //     1. '@foo.' -> '@foobaz.'.
             //     2. '@foobaz..' -> '@foobaz.bar.'. Includes Sub-cases '@foobaz()..' -> '@foobaz().bar.' etc.
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Razor.Editor
         }
 
         // Once a dotless commit has been performed you then have something like '@DateTime.'.  This scenario is used to detect the
-        // situation when you try to perform another dotless commit resulting in a textchange with '..'.  Completing 'DateTime.Now' 
+        // situation when you try to perform another dotless commit resulting in a textchange with '..'.  Completing 'DateTime.Now'
         // in intellisense with a '.' could result in: '@DateTime.' -> '@DateTime..' -> '@DateTime.Now.' which is accepted.
         private static bool IsSecondaryDotlessCommitInsertion(Span target, TextChange change)
         {

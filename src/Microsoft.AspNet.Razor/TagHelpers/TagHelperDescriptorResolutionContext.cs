@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
         /// <summary>
         /// <see cref="TagHelperDirectiveDescriptor"/>s used to resolve <see cref="TagHelperDescriptor"/>s.
-        /// </summary>        
+        /// </summary>
         public IList<TagHelperDirectiveDescriptor> DirectiveDescriptors { get; private set; }
     }
 }

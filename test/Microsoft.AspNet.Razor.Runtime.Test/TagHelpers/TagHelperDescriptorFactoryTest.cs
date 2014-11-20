@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var objectAssemblyName = typeof(object).GetTypeInfo().Assembly.GetName().Name;
-            var expectedDescriptor = 
+            var expectedDescriptor =
                 new TagHelperDescriptor("Object", "System.Object", objectAssemblyName, ContentBehavior.None);
 
             // Act
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         [Fact]
         public void CreateDescriptor_ResolvesCustomContentBehavior()
         {
-            // Arrange            
+            // Arrange
             var expectedDescriptor = new TagHelperDescriptor(
                 "CustomContentBehavior",
                 typeof(CustomContentBehaviorTagHelper).FullName,
@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         [Fact]
         public void CreateDescriptor_DoesNotResolveInheritedCustomContentBehavior()
         {
-            // Arrange            
+            // Arrange
             var expectedDescriptor = new TagHelperDescriptor(
                 "InheritedCustomContentBehavior",
                 typeof(InheritedCustomContentBehaviorTagHelper).FullName,
@@ -340,18 +340,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Arrange
             var expectedDescriptors = new[] {
                 new TagHelperDescriptor(
-                    "span", 
-                    typeof(MultipleAttributeTagHelper).FullName, 
-                    AssemblyName, 
-                    ContentBehavior.None),
-                new TagHelperDescriptor(
-                    "p", 
-                    typeof(MultipleAttributeTagHelper).FullName, 
+                    "span",
+                    typeof(MultipleAttributeTagHelper).FullName,
                     AssemblyName,
                     ContentBehavior.None),
                 new TagHelperDescriptor(
-                    "div", 
-                    typeof(MultipleAttributeTagHelper).FullName, 
+                    "p",
+                    typeof(MultipleAttributeTagHelper).FullName,
+                    AssemblyName,
+                    ContentBehavior.None),
+                new TagHelperDescriptor(
+                    "div",
+                    typeof(MultipleAttributeTagHelper).FullName,
                     AssemblyName,
                     ContentBehavior.None)
             };

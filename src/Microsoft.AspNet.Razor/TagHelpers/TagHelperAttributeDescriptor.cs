@@ -20,10 +20,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// Instantiates a new instance of the <see cref="TagHelperAttributeDescriptor"/> class.
         /// </summary>
         /// <param name="name">The HTML attribute name.</param>
-        /// <param name="propertyName">The name of the CLR property name that corresponds to the HTML 
+        /// <param name="propertyName">The name of the CLR property name that corresponds to the HTML
         /// attribute.</param>
         /// <param name="typeName">
-        /// The full name of the named (see <paramref name="propertyName"/>) property's 
+        /// The full name of the named (see <paramref name="propertyName"/>) property's
         /// <see cref="System.Type"/>.
         /// </param>
         public TagHelperAttributeDescriptor(string name,
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public string PropertyName { get; private set; }
 
         /// <summary>
-        /// The full name of the named (see <see name="PropertyName"/>) property's 
+        /// The full name of the named (see <see name="PropertyName"/>) property's
         /// <see cref="System.Type"/>.
         /// </summary>
         public string TypeName { get; private set; }

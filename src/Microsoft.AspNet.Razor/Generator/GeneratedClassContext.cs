@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Generator
         public static readonly string DefaultWriteAttributeMethodName = "WriteAttribute";
         public static readonly string DefaultWriteAttributeToMethodName = "WriteAttributeTo";
 
-        public static readonly GeneratedClassContext Default = 
+        public static readonly GeneratedClassContext Default =
             new GeneratedClassContext(DefaultExecuteMethodName,
                                       DefaultWriteMethodName,
                                       DefaultWriteLiteralMethodName,
@@ -30,19 +30,19 @@ namespace Microsoft.AspNet.Razor.Generator
             if (string.IsNullOrEmpty(executeMethodName))
             {
                 throw new ArgumentException(
-                    CommonResources.Argument_Cannot_Be_Null_Or_Empty, 
+                    CommonResources.Argument_Cannot_Be_Null_Or_Empty,
                     nameof(executeMethodName));
             }
             if (string.IsNullOrEmpty(writeMethodName))
             {
                 throw new ArgumentException(
-                    CommonResources.Argument_Cannot_Be_Null_Or_Empty, 
+                    CommonResources.Argument_Cannot_Be_Null_Or_Empty,
                     nameof(writeMethodName));
             }
             if (string.IsNullOrEmpty(writeLiteralMethodName))
             {
                 throw new ArgumentException(
-                    CommonResources.Argument_Cannot_Be_Null_Or_Empty, 
+                    CommonResources.Argument_Cannot_Be_Null_Or_Empty,
                     nameof(writeLiteralMethodName));
             }
 
@@ -69,8 +69,8 @@ namespace Microsoft.AspNet.Razor.Generator
                                      string writeLiteralToMethodName,
                                      string templateTypeName,
                                      GeneratedTagHelperContext generatedTagHelperContext)
-            : this(executeMethodName, 
-                   writeMethodName, 
+            : this(executeMethodName,
+                   writeMethodName,
                    writeLiteralMethodName,
                    generatedTagHelperContext)
         {

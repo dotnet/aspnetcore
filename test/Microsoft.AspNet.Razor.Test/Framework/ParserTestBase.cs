@@ -35,15 +35,15 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         protected abstract ParserBase SelectActiveParser(ParserBase codeParser, ParserBase markupParser);
 
-        public virtual ParserContext CreateParserContext(ITextDocument input, 
-                                                         ParserBase codeParser, 
+        public virtual ParserContext CreateParserContext(ITextDocument input,
+                                                         ParserBase codeParser,
                                                          ParserBase markupParser,
                                                          ParserErrorSink errorSink)
         {
-            return new ParserContext(input, 
-                                     codeParser, 
-                                     markupParser, 
-                                     SelectActiveParser(codeParser, markupParser), 
+            return new ParserContext(input,
+                                     codeParser,
+                                     markupParser,
+                                     SelectActiveParser(codeParser, markupParser),
                                      errorSink);
         }
 
@@ -161,13 +161,13 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return ParseDocument(document, designTimeParser: false, errorSink: errorSink);
         }
 
-        protected virtual ParserResults ParseDocument(string document, 
-                                                      bool designTimeParser, 
+        protected virtual ParserResults ParseDocument(string document,
+                                                      bool designTimeParser,
                                                       ParserErrorSink errorSink)
         {
-            return RunParse(document, 
-                            parser => parser.ParseDocument, 
-                            designTimeParser, 
+            return RunParse(document,
+                            parser => parser.ParseDocument,
+                            designTimeParser,
                             parserSelector: c => c.MarkupParser,
                             errorSink: errorSink);
         }
@@ -180,9 +180,9 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return RunParse(document, parser => parser.ParseBlock, designTimeParser);
         }
 
-        protected virtual ParserResults RunParse(string document, 
-                                                 Func<ParserBase, Action> parserActionSelector, 
-                                                 bool designTimeParser, 
+        protected virtual ParserResults RunParse(string document,
+                                                 Func<ParserBase, Action> parserActionSelector,
+                                                 bool designTimeParser,
                                                  Func<ParserContext, ParserBase> parserSelector = null,
                                                  ParserErrorSink errorSink = null)
         {

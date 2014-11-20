@@ -56,10 +56,10 @@ namespace Microsoft.AspNet.Razor
         /// <remarks>
         /// IMPORTANT: This does NOT need to be called before GeneratedCode! GenerateCode will automatically
         /// parse the document first.
-        /// 
+        ///
         /// The cancel token provided can be used to cancel the parse.  However, please note
-        /// that the parse occurs _synchronously_, on the callers thread.  This parameter is 
-        /// provided so that if the caller is in a background thread with a CancellationToken, 
+        /// that the parse occurs _synchronously_, on the callers thread.  This parameter is
+        /// provided so that if the caller is in a background thread with a CancellationToken,
         /// it can pass it along to the parser.
         /// </remarks>
         /// <param name="input">The input text to parse</param>
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Razor
             return ParseTemplateCore(input.ToDocument(), sourceFileName: null, cancelToken: cancelToken);
         }
 
-        // See ParseTemplate(ITextBuffer, CancellationToken?), 
+        // See ParseTemplate(ITextBuffer, CancellationToken?),
         // this overload simply wraps a TextReader in a TextBuffer (see ITextBuffer and BufferingTextReader)
         public ParserResults ParseTemplate(TextReader input, string sourceFileName)
         {
@@ -114,14 +114,14 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <remarks>
         /// The cancel token provided can be used to cancel the parse.  However, please note
-        /// that the parse occurs _synchronously_, on the callers thread.  This parameter is 
-        /// provided so that if the caller is in a background thread with a CancellationToken, 
+        /// that the parse occurs _synchronously_, on the callers thread.  This parameter is
+        /// provided so that if the caller is in a background thread with a CancellationToken,
         /// it can pass it along to the parser.
-        /// 
+        ///
         /// The className, rootNamespace and sourceFileName parameters are optional and override the default
         /// specified by the Host.  For example, the WebPageRazorHost in System.Web.WebPages.Razor configures the
         /// Class Name, Root Namespace and Source File Name based on the virtual path of the page being compiled.
-        /// However, the built-in RazorEngineHost class uses constant defaults, so the caller will likely want to 
+        /// However, the built-in RazorEngineHost class uses constant defaults, so the caller will likely want to
         /// change them using these parameters
         /// </remarks>
         /// <param name="input">The input text to parse</param>

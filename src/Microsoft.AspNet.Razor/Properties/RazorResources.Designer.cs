@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// The "@" character must be followed by a ":", "(", or a C# identifier.  If you intended to switch to markup, use an HTML start tag, for example:
-        /// 
+        ///
         /// @if(isLoggedIn) {
         ///     &lt;p&gt;Hello, @user!&lt;/p&gt;
         /// }
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// The "@" character must be followed by a ":", "(", or a C# identifier.  If you intended to switch to markup, use an HTML start tag, for example:
-        /// 
+        ///
         /// @if(isLoggedIn) {
         ///     &lt;p&gt;Hello, @user!&lt;/p&gt;
         /// }
@@ -228,7 +228,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Sections cannot be empty.  The "@section" keyword must be followed by a block of markup surrounded by "{}".  For example:
-        /// 
+        ///
         /// @section Sidebar {
         ///    &lt;!-- Markup and text goes here --&gt;
         /// }
@@ -240,7 +240,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Sections cannot be empty.  The "@section" keyword must be followed by a block of markup surrounded by "{}".  For example:
-        /// 
+        ///
         /// @section Sidebar {
         ///    &lt;!-- Markup and text goes here --&gt;
         /// }
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Namespace imports and type aliases cannot be placed within code blocks.  They must immediately follow an "@" character in markup.  It is recommended that you put them at the top of the page, as in the following example:
-        /// 
+        ///
         /// @using System.Drawing;
         /// @{
         ///     // OK here to use types from System.Drawing in the page.
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Namespace imports and type aliases cannot be placed within code blocks.  They must immediately follow an "@" character in markup.  It is recommended that you put them at the top of the page, as in the following example:
-        /// 
+        ///
         /// @using System.Drawing;
         /// @{
         ///     // OK here to use types from System.Drawing in the page.
@@ -278,12 +278,12 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Expected a "{0}" but found a "{1}".  Block statements must be enclosed in "{{" and "}}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
-        /// 
+        ///
         /// @if(isLoggedIn)
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
-        /// 
+        ///
         /// Instead, wrap the contents of the block in "{{}}":
-        /// 
+        ///
         /// @if(isLoggedIn) {{
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
         /// }}
@@ -295,12 +295,12 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Expected a "{0}" but found a "{1}".  Block statements must be enclosed in "{{" and "}}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
-        /// 
+        ///
         /// @if(isLoggedIn)
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
-        /// 
+        ///
         /// Instead, wrap the contents of the block in "{{}}":
-        /// 
+        ///
         /// @if(isLoggedIn) {{
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
         /// }}

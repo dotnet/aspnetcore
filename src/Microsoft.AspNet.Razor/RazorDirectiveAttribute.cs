@@ -7,7 +7,7 @@ using Microsoft.Internal.Web.Utils;
 namespace Microsoft.AspNet.Razor
 {
     /// <summary>
-    /// Specifies a Razor directive that is rendered as an attribute on the generated class. 
+    /// Specifies a Razor directive that is rendered as an attribute on the generated class.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public sealed class RazorDirectiveAttribute : Attribute

@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
                 // Check the first character of the current write operation.
                 builder[builder.Length - data.Length] == '\n')
             {
-                // This is newline that's spread across two writes. Skip the first character of the 
+                // This is newline that's spread across two writes. Skip the first character of the
                 // current write operation.
                 //
                 // We don't need to increment our newline counter because we already did that when we
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
                 trailingPartStart = 1;
             }
 
-            // Iterate the string, stopping at each occurrence of a newline character. This lets us count the 
+            // Iterate the string, stopping at each occurrence of a newline character. This lets us count the
             // newline occurrences and keep the index of the last one.
             while ((i = data.IndexOfAny(NewLineCharacters, i)) >= 0)
             {

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // Accept the "await" and move on
             AcceptAndMoveNext();
-            
+
             // Accept 1 or more spaces between the await and the following code.
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 

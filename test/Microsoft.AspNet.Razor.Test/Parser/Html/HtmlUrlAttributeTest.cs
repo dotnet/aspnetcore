@@ -285,7 +285,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                         .Accepts(AcceptedCharacters.NonWhiteSpace))),
                                     Factory.Markup("/Boz").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 49, 0, 49), new LocationTagged<string>("/Boz", 49, 0, 49)))),
                                 Factory.Markup(" />")),
-                                Factory.Markup(" ")    
+                                Factory.Markup(" ")
                             ),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));

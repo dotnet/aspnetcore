@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             // In design time: __o = somecode();
             // In Run time: Write(somecode());
             //
-            // In both cases the padding would have been 1 space to remote the space the @ symbol takes, which will be smaller than the 6 
+            // In both cases the padding would have been 1 space to remote the space the @ symbol takes, which will be smaller than the 6
             // chars the hidden generated code takes.
             if (padding < 0)
             {
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             while (firstSpanInLine.Previous != null)
             {
-                // When scanning previous spans we need to be break down the spans with spaces. The parser combines 
+                // When scanning previous spans we need to be break down the spans with spaces. The parser combines
                 // whitespace into existing spans so you'll see tabs, newlines etc. within spans.  We only care about
                 // the \t in existing spans.
                 var previousContent = firstSpanInLine.Previous.Content ?? String.Empty;

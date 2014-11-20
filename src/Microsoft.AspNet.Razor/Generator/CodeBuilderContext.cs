@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Razor.Generator
         /// The current C# rendering mode.
         /// </summary>
         /// <remarks>
-        /// <see cref="ExpressionRenderingMode.WriteToOutput"/> forces C# generation to write 
+        /// <see cref="ExpressionRenderingMode.WriteToOutput"/> forces C# generation to write
         /// <see cref="Compiler.Chunk"/>s to the output page, i.e. WriteLiteral("Hello World").
         /// <see cref="ExpressionRenderingMode.InjectCode"/> writes <see cref="Compiler.Chunk"/> values in their
         /// rawest form, i.g. "Hello World".
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Razor.Generator
         /// <remarks>
         /// If <see cref="TargetWriterName"/> is <c>null</c> values will be written using a default write method
         /// i.e. WriteLiteral("Hello World").
-        /// If <see cref="TargetWriterName"/> is not <c>null</c> values will be written to the given 
+        /// If <see cref="TargetWriterName"/> is not <c>null</c> values will be written to the given
         /// <see cref="TargetWriterName"/>, i.e. WriteLiteralTo(myWriter, "Hello World").
         /// </remarks>
         public string TargetWriterName { get; set; }

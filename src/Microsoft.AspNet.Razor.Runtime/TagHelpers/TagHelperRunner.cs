@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Calls the <see cref="ITagHelper.ProcessAsync"/> method on <see cref="ITagHelper"/>s.
         /// </summary>
         /// <param name="context">Contains information associated with running <see cref="ITagHelper"/>s.</param>
-        /// <returns>Resulting <see cref="TagHelperOutput"/> from processing all of the 
+        /// <returns>Resulting <see cref="TagHelperOutput"/> from processing all of the
         /// <paramref name="context"/>'s <see cref="ITagHelper"/>s.</returns>
         public async Task<TagHelperOutput> RunAsync([NotNull] TagHelperExecutionContext context)
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="context">Contains information associated with running <see cref="ITagHelper"/>s.</param>
         /// <param name="bufferedBody">Contains the buffered content of the current HTML tag.</param>
-        /// <returns>Resulting <see cref="TagHelperOutput"/> from processing all of the 
+        /// <returns>Resulting <see cref="TagHelperOutput"/> from processing all of the
         /// <paramref name="context"/>'s <see cref="ITagHelper"/>s.</returns>
         public async Task<TagHelperOutput> RunAsync([NotNull] TagHelperExecutionContext context,
                                                     [NotNull] TextWriter bufferedBody)

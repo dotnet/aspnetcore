@@ -21,15 +21,15 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// Determines if the two given tag helpers are equal.
         /// </summary>
-        /// <param name="descriptorX">A <see cref="TagHelperDescriptor"/> to compare with the given 
+        /// <param name="descriptorX">A <see cref="TagHelperDescriptor"/> to compare with the given
         /// <paramref name="descriptorY"/>.</param>
-        /// <param name="descriptorY">A <see cref="TagHelperDescriptor"/> to compare with the given 
+        /// <param name="descriptorY">A <see cref="TagHelperDescriptor"/> to compare with the given
         /// <paramref name="descriptorX"/>.</param>
         /// <returns><c>true</c> if <paramref name="descriptorX"/> and <paramref name="descriptorY"/> are equal,
         /// <c>false</c> otherwise.</returns>
         /// <remarks>
-        /// Determines equality based on <see cref="TagHelperDescriptor.TypeName"/>, 
-        /// <see cref="TagHelperDescriptor.AssemblyName"/>, <see cref="TagHelperDescriptor.TagName"/> and 
+        /// Determines equality based on <see cref="TagHelperDescriptor.TypeName"/>,
+        /// <see cref="TagHelperDescriptor.AssemblyName"/>, <see cref="TagHelperDescriptor.TagName"/> and
         /// <see cref="TagHelperDescriptor.ContentBehavior"/>.
         /// </remarks>
         public bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// Returns an <see cref="int"/> value that uniquely identifies the given <see cref="TagHelperDescriptor"/>.
         /// </summary>
         /// <param name="descriptor">The <see cref="TagHelperDescriptor"/> to create a hash code for.</param>
-        /// <returns>An <see cref="int"/> that uniquely identifies the given <paramref name="descriptor"/>.</returns>        
+        /// <returns>An <see cref="int"/> that uniquely identifies the given <paramref name="descriptor"/>.</returns>
         public int GetHashCode(TagHelperDescriptor descriptor)
         {
             return HashCodeCombiner.Start()
