@@ -97,7 +97,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     modelAccessor = () => propertyInfo.PropertyHelper.GetValue(container);
                 }
-                yield return CreatePropertyMetadata(modelAccessor, propertyInfo);
+                var propertyMetadata = CreatePropertyMetadata(modelAccessor, propertyInfo);
+                if (propertyMetadata != null)
+                {
+                    propertyMetadata.Container = container;
+                }
+
+                yield return propertyMetadata;
             }
         }
 

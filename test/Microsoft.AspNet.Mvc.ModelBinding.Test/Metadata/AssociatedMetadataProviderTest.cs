@@ -199,6 +199,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 #endif
 
+        [Fact]
+        public void GetMetadataForProperties_SetsContainerAsExpected()
+        {
+            // Arrange
+            var model = new PropertyModel { LocalAttributes = 42, MetadataAttributes = "hello", MixedAttributes = 21.12 };
+            var provider = new EmptyModelMetadataProvider();
+
+            // Act
+            var metadata = provider.GetMetadataForProperties(model, typeof(PropertyModel)).ToList();
+
+            // Assert
+            Assert.Equal(3, metadata.Count);
+            Assert.Same(model, metadata[0].Container);
+            Assert.Same(model, metadata[1].Container);
+            Assert.Same(model, metadata[2].Container);
+        }
+
         // Helpers
 
         private class PropertyModel

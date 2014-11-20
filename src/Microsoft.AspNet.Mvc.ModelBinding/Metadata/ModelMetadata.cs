@@ -67,6 +67,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         public IBinderMetadata BinderMetadata { get; set; }
 
+        /// <summary>
+        /// A reference to the model's container <see cref="object"/>. 
+        /// Will be non-<c>null</c> if the model represents a property.
+        /// </summary>
+        public object Container { get; set; }
+
         public Type ContainerType
         {
             get { return _containerType; }
