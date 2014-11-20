@@ -32,11 +32,7 @@ namespace Microsoft.AspNet.Mvc
 
         public async Task RouteAsync([NotNull] RouteContext context)
         {
-            // TODO: Throw an error here that's descriptive enough so that
-            // users understand they should call the per request scoped middleware
-            // or set HttpContext.Services manually
             var services = context.HttpContext.RequestServices;
-            Debug.Assert(services != null);
 
             // Verify if AddMvc was done before calling UseMvc
             // We use the MvcMarkerService to make sure if all the services were added.
