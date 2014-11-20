@@ -255,7 +255,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetMetadataForProperties_WithoutBindAttribute()
         {
             // Arrange
-            var expectedPropertyNames = new[] { "DateOfBirth", "DateOfDeath", "ValueTypeRequired", "FirstName", "LastName", "PropertyWithDefaultValue" };
+            var expectedPropertyNames = new[]
+            {
+                "DateOfBirth",
+                "DateOfDeath",
+                "ValueTypeRequired",
+                "FirstName",
+                "LastName",
+                "PropertyWithDefaultValue"
+            };
             var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(Person)),
@@ -435,15 +443,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
-            Assert.Equal(false, modelStateDictionary.IsValid);
-            Assert.Equal(1, modelStateDictionary.Count);
+            Assert.False(modelStateDictionary.IsValid);
+            Assert.Single(modelStateDictionary);
 
             // Check Age error.
             ModelState modelState;
             Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out modelState));
-            Assert.Equal(1, modelState.Errors.Count);
-
-            var modelError = modelState.Errors[0];
+            var modelError = Assert.Single(modelState.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
             Assert.Equal("The 'Age' property is required.", modelError.ErrorMessage);
@@ -493,7 +499,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
-            Assert.Equal(false, modelStateDictionary.IsValid);
+            Assert.False(modelStateDictionary.IsValid);
             Assert.Equal(2, modelStateDictionary.Count);
 
             // Check Name field
@@ -504,10 +510,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Check Age error.
             Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out modelState));
-            Assert.Equal(1, modelState.Errors.Count);
             Assert.Equal(ModelValidationState.Invalid, modelState.ValidationState);
 
-            var modelError = modelState.Errors[0];
+            var modelError = Assert.Single(modelState.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
             Assert.Equal("A value is required.", modelError.ErrorMessage);
@@ -531,15 +536,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
-            Assert.Equal(false, modelStateDictionary.IsValid);
+            Assert.False(modelStateDictionary.IsValid);
             Assert.Equal(2, modelStateDictionary.Count);
 
             // Check Age error.
             ModelState modelState;
             Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out modelState));
-            Assert.Equal(1, modelState.Errors.Count);
 
-            var modelError = modelState.Errors[0];
+            var modelError = Assert.Single(modelState.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
             var expected = ValidationAttributeUtil.GetRequiredErrorMessage(nameof(ModelWithRequired.Age));
@@ -547,9 +551,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Check City error.
             Assert.True(modelStateDictionary.TryGetValue("theModel.City", out modelState));
-            Assert.Equal(1, modelState.Errors.Count);
 
-            modelError = modelState.Errors[0];
+            modelError = Assert.Single(modelState.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
             expected = ValidationAttributeUtil.GetRequiredErrorMessage(nameof(ModelWithRequired.City));
@@ -581,15 +584,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
-            Assert.Equal(false, modelStateDictionary.IsValid);
-            Assert.Equal(1, modelStateDictionary.Count);
+            Assert.False(modelStateDictionary.IsValid);
+            Assert.Single(modelStateDictionary);
 
             // Check City error.
             ModelState modelState;
             Assert.True(modelStateDictionary.TryGetValue("theModel.City", out modelState));
-            Assert.Equal(1, modelState.Errors.Count);
 
-            var modelError = modelState.Errors[0];
+            var modelError = Assert.Single(modelState.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
             var expected = ValidationAttributeUtil.GetRequiredErrorMessage(nameof(ModelWithRequired.City));
@@ -613,15 +615,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
-            Assert.Equal(false, modelStateDictionary.IsValid);
-            Assert.Equal(1, modelStateDictionary.Count);
+            Assert.False(modelStateDictionary.IsValid);
+            Assert.Single(modelStateDictionary);
 
             // Check ValueTypeRequired error.
             ModelState modelState;
             Assert.True(modelStateDictionary.TryGetValue("theModel.ValueTypeRequired", out modelState));
-            Assert.Equal(1, modelState.Errors.Count);
 
-            var modelError = modelState.Errors[0];
+            var modelError = Assert.Single(modelState.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
             Assert.Equal("Sample message", modelError.ErrorMessage);
@@ -649,15 +650,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
-            Assert.Equal(false, modelStateDictionary.IsValid);
-            Assert.Equal(1, modelStateDictionary.Count);
+            Assert.False(modelStateDictionary.IsValid);
+            Assert.Single(modelStateDictionary);
 
             // Check ValueTypeRequired error.
             ModelState modelState;
             Assert.True(modelStateDictionary.TryGetValue("theModel.ValueTypeRequired", out modelState));
-            Assert.Equal(1, modelState.Errors.Count);
 
-            var modelError = modelState.Errors[0];
+            var modelError = Assert.Single(modelState.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
             Assert.Equal("Sample message", modelError.ErrorMessage);
@@ -693,7 +693,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal("John", model.FirstName);
             Assert.Equal("Doe", model.LastName);
             Assert.Equal(dob, model.DateOfBirth);
-            Assert.Equal(true, bindingContext.ModelState.IsValid);
+            Assert.True(bindingContext.ModelState.IsValid);
         }
 
         [Fact]
@@ -717,7 +717,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             var person = Assert.IsType<Person>(bindingContext.Model);
             Assert.Equal(123.456m, person.PropertyWithDefaultValue);
-            Assert.Equal(true, bindingContext.ModelState.IsValid);
+            Assert.True(bindingContext.ModelState.IsValid);
         }
 
         [Fact]
@@ -760,7 +760,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             validationNode.Validate(validationContext);
-            Assert.Equal(true, bindingContext.ModelState.IsValid);
+            Assert.True(bindingContext.ModelState.IsValid);
             Assert.Equal(new DateTime(2001, 1, 1), model.DateOfBirth);
         }
 
@@ -807,9 +807,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             testableBinder.SetPropertyPublic(bindingContext, propertyMetadata, dtoResult, requiredValidator);
 
             // Assert
-            Assert.Equal(true, bindingContext.ModelState.IsValid);
+            Assert.True(bindingContext.ModelState.IsValid);
             validationNode.Validate(validationContext, bindingContext.ValidationNode);
-            Assert.Equal(false, bindingContext.ModelState.IsValid);
+            Assert.False(bindingContext.ModelState.IsValid);
         }
 
         [Fact]
@@ -829,7 +829,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             testableBinder.SetPropertyPublic(bindingContext, propertyMetadata, dtoResult, requiredValidator);
 
             // Assert
-            Assert.Equal(false, bindingContext.ModelState.IsValid);
+            Assert.False(bindingContext.ModelState.IsValid);
             Assert.Equal("Sample message", bindingContext.ModelState["foo.ValueTypeRequired"].Errors[0].ErrorMessage);
         }
 
@@ -851,7 +851,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             testableBinder.SetPropertyPublic(bindingContext, propertyMetadata, dtoResult, requiredValidator);
 
             // Assert
-            Assert.Equal(false, bindingContext.ModelState.IsValid);
+            Assert.False(bindingContext.ModelState.IsValid);
             Assert.Equal(1, bindingContext.ModelState["foo.NameNoAttribute"].Errors.Count);
             Assert.Equal("This is a different exception." + Environment.NewLine
                        + "Parameter name: value",
@@ -875,9 +875,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             testableBinder.SetPropertyPublic(bindingContext, propertyMetadata, dtoResult, requiredValidator);
 
             // Assert
-            Assert.Equal(false, bindingContext.ModelState.IsValid);
-            Assert.Equal(1, bindingContext.ModelState["foo.Name"].Errors.Count);
-            Assert.Equal("This message comes from the [Required] attribute.", bindingContext.ModelState["foo.Name"].Errors[0].ErrorMessage);
+            Assert.False(bindingContext.ModelState.IsValid);
+            var error = Assert.Single(bindingContext.ModelState["foo.Name"].Errors);
+            Assert.Equal("This message comes from the [Required] attribute.", error.ErrorMessage);
         }
 
         private static ModelBindingContext CreateContext(ModelMetadata metadata)
@@ -1075,12 +1075,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return GetMetadataForPropertiesPublic(bindingContext);
             }
 
-            public virtual void SetPropertyPublic(ModelBindingContext bindingContext, ModelMetadata propertyMetadata, ComplexModelDtoResult dtoResult, IModelValidator requiredValidator)
+            public virtual void SetPropertyPublic(ModelBindingContext bindingContext,
+                                                  ModelMetadata propertyMetadata,
+                                                  ComplexModelDtoResult dtoResult,
+                                                  IModelValidator requiredValidator)
             {
                 base.SetProperty(bindingContext, propertyMetadata, dtoResult, requiredValidator);
             }
 
-            protected override void SetProperty(ModelBindingContext bindingContext, ModelMetadata propertyMetadata, ComplexModelDtoResult dtoResult, IModelValidator requiredValidator)
+            protected override void SetProperty(ModelBindingContext bindingContext,
+                                                ModelMetadata propertyMetadata,
+                                                ComplexModelDtoResult dtoResult,
+                                                IModelValidator requiredValidator)
             {
                 SetPropertyPublic(bindingContext, propertyMetadata, dtoResult, requiredValidator);
             }

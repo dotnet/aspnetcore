@@ -52,9 +52,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.NotNull(fieldToken);
             Assert.Equal(cookieToken.SecurityToken, fieldToken.SecurityToken);
             Assert.False(fieldToken.IsSessionToken);
-            Assert.Equal("", fieldToken.Username);
-            Assert.Equal(null, fieldToken.ClaimUid);
-            Assert.Equal("", fieldToken.AdditionalData);
+            Assert.Empty(fieldToken.Username);
+            Assert.Null(fieldToken.ClaimUid);
+            Assert.Empty(fieldToken.AdditionalData);
         }
 
         [Fact]
@@ -118,8 +118,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.NotNull(fieldToken);
             Assert.Equal(cookieToken.SecurityToken, fieldToken.SecurityToken);
             Assert.False(fieldToken.IsSessionToken);
-            Assert.Equal("", fieldToken.Username);
-            Assert.Equal(null, fieldToken.ClaimUid);
+            Assert.Empty(fieldToken.Username);
+            Assert.Null(fieldToken.ClaimUid);
             Assert.Equal("additional-data", fieldToken.AdditionalData);
         }
 
@@ -191,8 +191,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Equal(cookieToken.SecurityToken, fieldToken.SecurityToken);
             Assert.False(fieldToken.IsSessionToken);
             Assert.Equal("my-username", fieldToken.Username);
-            Assert.Equal(null, fieldToken.ClaimUid);
-            Assert.Equal("", fieldToken.AdditionalData);
+            Assert.Null(fieldToken.ClaimUid);
+            Assert.Empty(fieldToken.AdditionalData);
         }
 
         [Fact]

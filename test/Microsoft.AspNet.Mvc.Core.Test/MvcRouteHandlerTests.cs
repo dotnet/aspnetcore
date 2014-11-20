@@ -32,21 +32,18 @@ namespace Microsoft.AspNet.Mvc
             await handler.RouteAsync(context);
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
+            var scope = Assert.Single(sink.Scopes);
             Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
             Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope);
 
-            Assert.Equal(1, sink.Writes.Count);
-
-            var write = sink.Writes[0];
+            var write = Assert.Single(sink.Writes);
             Assert.Equal(typeof(MvcRouteHandler).FullName, write.LoggerName);
             Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope);
             var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);
             Assert.Equal("MvcRouteHandler.RouteAsync", values.Name);
-            Assert.Equal(true, values.ActionSelected);
-            Assert.Equal(true, values.ActionInvoked);
-            Assert.Equal(true, values.Handled);
+            Assert.True(values.ActionSelected);
+            Assert.True(values.ActionInvoked);
+            Assert.True(values.Handled);
         }
 
         [Fact]
@@ -70,21 +67,18 @@ namespace Microsoft.AspNet.Mvc
             await handler.RouteAsync(context);
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
+            var scope = Assert.Single(sink.Scopes);
             Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
             Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope);
 
-            Assert.Equal(1, sink.Writes.Count);
-
-            var write = sink.Writes[0];
+            var write = Assert.Single(sink.Writes);
             Assert.Equal(typeof(MvcRouteHandler).FullName, write.LoggerName);
             Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope);
             var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);
             Assert.Equal("MvcRouteHandler.RouteAsync", values.Name);
-            Assert.Equal(false, values.ActionSelected);
-            Assert.Equal(false, values.ActionInvoked);
-            Assert.Equal(false, values.Handled);
+            Assert.False(values.ActionSelected);
+            Assert.False(values.ActionInvoked);
+            Assert.False(values.Handled);
         }
 
         [Fact]
@@ -109,8 +103,7 @@ namespace Microsoft.AspNet.Mvc
                 await handler.RouteAsync(context));
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
+            var scope = Assert.Single(sink.Scopes);
             Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
             Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope);
 
@@ -121,9 +114,9 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope);
             var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);
             Assert.Equal("MvcRouteHandler.RouteAsync", values.Name);
-            Assert.Equal(true, values.ActionSelected);
-            Assert.Equal(false, values.ActionInvoked);
-            Assert.Equal(false, values.Handled);
+            Assert.True(values.ActionSelected);
+            Assert.False(values.ActionInvoked);
+            Assert.False(values.Handled);
         }
 
         [Fact]

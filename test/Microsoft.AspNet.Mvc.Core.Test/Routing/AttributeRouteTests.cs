@@ -689,7 +689,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             Assert.Equal("AttributeRoute.RouteAsync", write.Scope);
             var values = Assert.IsType<AttributeRouteRouteAsyncValues>(write.State);
             Assert.Equal("AttributeRoute.RouteAsync", values.Name);
-            Assert.Equal(true, values.Handled);
+            Assert.True(values.Handled);
         }
 
         [Fact]
@@ -720,7 +720,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             Assert.Equal("AttributeRoute.RouteAsync", write.Scope);
             var values = Assert.IsType<AttributeRouteRouteAsyncValues>(write.State);
             Assert.Equal("AttributeRoute.RouteAsync", values.Name);
-            Assert.Equal(false, values.Handled);
+            Assert.False(values.Handled);
         }
 
         [Fact]

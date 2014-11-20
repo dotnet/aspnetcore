@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var convertedValue = valueProviderResult.ConvertTo(typeof(string));
 
-            Assert.Equal(null, convertedValue);
+            Assert.Null(convertedValue);
         }
 
         [Fact]
