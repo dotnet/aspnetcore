@@ -70,13 +70,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text,
                         new NameAndId("NestedModel.Text", "NestedModel_Text"), innerSelected },
 
-                    // Top-level indexing does not work end-to-end due to code generation issue #1345.
-                    // TODO: Remove above comment when #1345 is fixed.
                     { models, typeof(Model), () => models[0].Text,
                         new NameAndId("[0].Text", "z0__Text"), noneSelected },
                     { models, typeof(NestedModel), () => models[0].NestedModel.Text,
                         new NameAndId("[0].NestedModel.Text", "z0__NestedModel_Text"), noneSelected },
 
+                    // TODO: https://github.com/aspnet/Mvc/issues/1468
                     // Skip last two test cases because DefaultHtmlGenerator evaluates expression name against
                     // ViewData, not using ModelMetadata.Model. ViewData.Eval() handles simple property paths and some
                     // dictionary lookups, but not indexing into an array or list. See #1468...
@@ -316,9 +315,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelperContext = new TagHelperContext(contextAttributes);
             var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
 
-            // TODO: In real (model => model) scenario, ModelExpression should have name "" and
+            // TODO: https://github.com/aspnet/Mvc/issues/1253
+            // In real (model => model) scenario, ModelExpression should have name "" and
             // TemplateInfo.HtmlFieldPrefix should be "Property1" but empty ModelExpression name is not currently
-            // supported, see #1408.
+            // supported, see also #1408.
             var metadataProvider = new EmptyModelMetadataProvider();
             string model = null;
             var metadata = metadataProvider.GetMetadataForType(() => model, typeof(string));

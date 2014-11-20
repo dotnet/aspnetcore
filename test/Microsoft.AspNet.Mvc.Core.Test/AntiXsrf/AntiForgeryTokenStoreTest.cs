@@ -269,7 +269,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var token = new AntiForgeryToken();
             var mockCookies = new Mock<IResponseCookies>();
 
-            // TODO : Once we decide on where to pick this value from enable this.
             bool defaultCookieSecureValue = expectedCookieSecureFlag ?? false; // pulled from config; set by ctor
             var cookies = new MockResponseCookieCollection();
 

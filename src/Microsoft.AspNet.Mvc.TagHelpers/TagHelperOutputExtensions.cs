@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public static IEnumerable<KeyValuePair<string, string>> FindPrefixedAttributes(
             this TagHelperOutput tagHelperOutput, string prefix)
         {
-            // TODO: We will not need this method once https://github.com/aspnet/Razor/issues/89 is completed.
+            // TODO: https://github.com/aspnet/Razor/issues/89 - We will not need this method once #89 is completed.
 
             // We're only interested in HTML attributes that have the desired prefix.
             var prefixedAttributes = tagHelperOutput.Attributes

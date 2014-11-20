@@ -141,8 +141,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 if (validationState == ModelValidationState.Unvalidated)
                 {
-                    // Tracked via https://github.com/aspnet/Mvc/issues/450
-                    // TODO: Revive ModelBinderConfig
+                    // TODO: https://github.com/aspnet/Mvc/issues/450 Revive ModelBinderConfig
                     // var errorMessage =  ModelBinderConfig.ValueRequiredErrorMessageProvider(e.ValidationContext, 
                     //                                                                            modelMetadata, 
                     //                                                                            incomingValue);

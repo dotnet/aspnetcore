@@ -167,7 +167,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.True(result);
         }
 
-        // TODO #1000; enable test once we detect attributes on the property's type
+        // TODO https://github.com/aspnet/Mvc/issues/1000
+        // Enable test once we detect attributes on the property's type
         public void HiddenInputWorksOnPropertyType()
         {
             // Arrange

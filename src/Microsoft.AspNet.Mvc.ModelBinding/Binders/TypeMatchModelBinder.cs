@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             ModelBindingHelper.ReplaceEmptyStringWithNull(bindingContext.ModelMetadata, ref model);
             bindingContext.Model = model;
 
-            // TODO: Determine if we need IBodyValidator here.
             return true;
         }
 

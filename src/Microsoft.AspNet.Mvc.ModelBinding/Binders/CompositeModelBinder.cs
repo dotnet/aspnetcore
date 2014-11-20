@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -95,9 +96,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private async Task<bool> TryBind(ModelBindingContext bindingContext)
         {
-            // TODO: RuntimeHelpers.EnsureSufficientExecutionStack does not exist in the CoreCLR.
-            // Protects against stack overflow for deeply nested model binding
-            // RuntimeHelpers.EnsureSufficientExecutionStack();
+            RuntimeHelpers.EnsureSufficientExecutionStack();
 
             foreach (var binder in ModelBinders)
             {

@@ -32,8 +32,6 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="methods">The HTTP methods the action supports.</param>
         public AcceptVerbsAttribute(params string[] methods)
         {
-            // TODO: This assumes that the methods are exactly same as standard Http Methods.
-            // The Http Abstractions should take care of these.
             _httpMethods = methods.Select(method => method.ToUpperInvariant());
         }
 

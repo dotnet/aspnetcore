@@ -101,8 +101,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             {
                 if (mergerMappings.TryGetValue(chunk.GetType(), out merger))
                 {
-                    // TODO: When mapping chunks, we should remove mapping information since it would be incorrect
-                    // to generate it in the page that inherits it. Tracked by #945
                     merger.Merge(codeTree, chunk);
                 }
             }
@@ -119,7 +117,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             };
         }
 
-        // TODO: This needs to be cached (#1016)
         private static CodeTree ParseViewFile(RazorTemplateEngine engine,
                                               IFileInfo fileInfo)
         {

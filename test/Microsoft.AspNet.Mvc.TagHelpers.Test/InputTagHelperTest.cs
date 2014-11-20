@@ -57,8 +57,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text,
                         new NameAndId("NestedModel.Text", "NestedModel_Text"), "inner text" },
 
-                    // Top-level indexing does not work end-to-end due to code generation issue #1345.
-                    // TODO: Remove above comment when #1345 is fixed.
                     { models, typeof(Model), () => models[0].Text,
                         new NameAndId("[0].Text", "z0__Text"), string.Empty },
                     { models, typeof(Model), () => models[1].Text,

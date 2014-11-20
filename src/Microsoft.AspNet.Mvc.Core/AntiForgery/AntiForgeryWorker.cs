@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -70,7 +69,6 @@ namespace Microsoft.AspNet.Mvc
                 if (user != null)
                 {
                     // We only support ClaimsIdentity.
-                    // Todo remove this once httpContext.User moves to ClaimsIdentity.
                     return user.Identity as ClaimsIdentity;
                 }
             }

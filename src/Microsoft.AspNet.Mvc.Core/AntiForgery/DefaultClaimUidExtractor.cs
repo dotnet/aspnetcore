@@ -28,7 +28,6 @@ namespace Microsoft.AspNet.Mvc
 
         internal static IEnumerable<string> GetUniqueIdentifierParameters(ClaimsIdentity claimsIdentity)
         {
-            // TODO: Need to enable support for special casing acs identities.
             var nameIdentifierClaim = claimsIdentity.FindFirst(claim =>
                                                             String.Equals(ClaimTypes.NameIdentifier,
                                                                         claim.Type, StringComparison.Ordinal));

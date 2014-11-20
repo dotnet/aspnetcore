@@ -27,7 +27,6 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
                 var nameValuePair = parameter.Split(new[] { '=' }, 2);
                 if (nameValuePair.Length > 1 && nameValuePair[0].Trim().Equals("q"))
                 {
-                    // TODO: all extraneous parameters are ignored. Throw/return null if that is the case.
                     if (!double.TryParse(
                             nameValuePair[1],
                             NumberStyles.AllowLeadingWhite | NumberStyles.AllowDecimalPoint |

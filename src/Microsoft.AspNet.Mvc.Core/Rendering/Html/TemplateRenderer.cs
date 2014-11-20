@@ -94,7 +94,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     using (var writer = new StringWriter(CultureInfo.InvariantCulture))
                     {
                         // Forcing synchronous behavior so users don't have to await templates.
-                        // TODO: Pass through TempData once implemented.
                         var view = viewEngineResult.View;
                         using (view as IDisposable)
                         {

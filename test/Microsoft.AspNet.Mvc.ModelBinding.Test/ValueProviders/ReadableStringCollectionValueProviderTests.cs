@@ -157,8 +157,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(culture, vpResult.Culture);
         }
 
-        // TODO: Determine if this is still relevant. Right now the lookup returns null while
-        // we expect a ValueProviderResult that wraps a null value.
+        // TODO: https://github.com/aspnet/Mvc/issues/1609
+        //
+        // This test was present in MVC5 and WebAPI2, but our VP implementation doesn't behave this
+        // way currently.
+        //
         //[Theory]
         //[InlineData("null_value")]
         //[InlineData("prefix.null_value")]
@@ -166,16 +169,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         //{
         //    // Arrange
         //    var culture = new CultureInfo("fr-FR");
-        //    var valueProvider = new ReadableStringCollectionValueProvider(_backingStore, culture);
+        //    var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, culture);
+
+        //    System.Diagnostics.Debugger.Launch();
+        //    System.Diagnostics.Debugger.Break();
 
         //    // Act
-        //    ValueProviderResult vpResult = valueProvider.GetValue(key);
+        //    var result = await valueProvider.GetValueAsync(key);
 
         //    // Assert
-        //    Assert.NotNull(vpResult);
-        //    Assert.Equal(null, vpResult.RawValue);
-        //    Assert.Equal(null, vpResult.AttemptedValue);
-        //    Assert.Equal(culture, vpResult.Culture);
+        //    Assert.NotNull(result);
+        //    Assert.Null(result.RawValue);
+        //    Assert.Null(result.AttemptedValue);
+        //    Assert.Equal(culture, result.Culture);
         //}
 
         [Fact]

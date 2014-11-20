@@ -21,7 +21,6 @@ namespace MvcSample.Web
             CustomUser = new User() { Name = "User Name", Address = "Home Address" };
         }
 
-        // TODO: Add a real filter here
         [ServiceFilter(typeof(PassThroughAttribute))]
         [AllowAnonymous]
         [AgeEnhancer]

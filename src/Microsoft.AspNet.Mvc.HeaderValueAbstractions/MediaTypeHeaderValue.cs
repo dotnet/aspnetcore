@@ -76,7 +76,6 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
                 return false;
             }
 
-            // TODO: throw if the media type and subtypes are invalid.
             var mediaType = mediaTypeParts[0].Trim();
             var mediaSubType = mediaTypeParts[1].Trim();
             var mediaTypeRange = MediaTypeHeaderValueRange.None;
@@ -118,7 +117,6 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
                 var index = parameter.Split('=');
                 if (index.Length == 2)
                 {
-                    // TODO: throw exception if this is not the case.
                     parameterNameValue.Add(index[0].Trim(), index[1].Trim());
                 }
             }

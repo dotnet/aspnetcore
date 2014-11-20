@@ -35,7 +35,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             builder.Append(Bottom);
 
-            // TODO: consider saving the file for debuggability
             var sourceCode = builder.ToString();
             var syntaxTree = SyntaxTreeGenerator.Generate(sourceCode, 
                                                           "__AUTO__GeneratedViewsCollection.cs",

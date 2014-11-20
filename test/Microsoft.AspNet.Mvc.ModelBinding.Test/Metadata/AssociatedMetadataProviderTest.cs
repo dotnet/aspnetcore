@@ -201,8 +201,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         // Helpers
 
-        // TODO: This type used System.ComponentModel.MetadataType to separate attribute declaration from property
-        // declaration. Need to figure out if this is still relevant since the type does not exist in CoreCLR.
         private class PropertyModel
         {
             [Required]

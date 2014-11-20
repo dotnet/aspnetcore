@@ -37,8 +37,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static CultureInfo GetCultureInfo(HttpRequest request)
         {
-            // TODO: Tracked via https://github.com/aspnet/HttpAbstractions/issues/10. 
-            // Determine what's the right way to map Accept-Language to culture.
             return CultureInfo.CurrentCulture;
         }
     }

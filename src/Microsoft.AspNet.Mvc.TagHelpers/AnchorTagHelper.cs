@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        // TODO: We will not need this method once https://github.com/aspnet/Razor/issues/89 is completed.
+        // TODO: https://github.com/aspnet/Razor/issues/89 - We will not need this method once #89 is completed.
         private static Dictionary<string, object> GetRouteValues(
             TagHelperOutput output, IEnumerable<KeyValuePair<string, string>> routePrefixedAttributes)
         {

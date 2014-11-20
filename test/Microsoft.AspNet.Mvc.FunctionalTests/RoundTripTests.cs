@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal("Parent.Attributes[height]", expression);
-            // TODO Requires resolution in model binding as part of #1418
+            // TODO: https://github.com/aspnet/Mvc/issues/1418 Requires resolution in model binding
         }
 
         // Uses the expression p => p.Dependents[0].Dependents[0].Name

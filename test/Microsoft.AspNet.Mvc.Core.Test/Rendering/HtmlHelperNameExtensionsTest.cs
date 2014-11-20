@@ -12,10 +12,6 @@ namespace Microsoft.AspNet.Mvc.Core
     /// <summary>
     /// Test the <see cref="HtmlHelperNameExtensions" /> class.
     /// </summary>
-    /// <remarks>
-    /// TODO #704: When that bug is fixed and Id() behaves differently than Name(), will need to break some
-    /// test methods below in two.
-    /// </remarks>
     public class HtmlHelperNameExtensionsTest
     {
         [Fact]

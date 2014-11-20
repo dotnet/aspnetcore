@@ -67,9 +67,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         protected override void BuildConstructor([NotNull] CSharpCodeWriter writer)
         {
-            // TODO: Move this to a proper extension point. Right now, we don't have a place to print out properties
-            // in the generated view.
-            // Tracked by #773
             base.BuildConstructor(writer);
 
             writer.WriteLineHiddenDirective();
