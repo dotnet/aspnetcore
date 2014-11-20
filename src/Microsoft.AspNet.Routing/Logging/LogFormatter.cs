@@ -8,11 +8,7 @@ namespace Microsoft.AspNet.Routing.Logging.Internal
     public static class LogFormatter
     {
         /// <summary>
-        /// A formatter for use with <see cref="Microsoft.Framework.Logging.ILogger.WriteCore(
-        /// Framework.Logging.LogLevel,
-        /// int,
-        /// object,
-        /// Exception, Func{object, Exception, string})"/>.
+        /// A formatter for use with <see cref="Microsoft.Framework.Logging.ILogger.Write"/>.
         /// </summary>
         public static string Formatter(object o, Exception e)
         {
