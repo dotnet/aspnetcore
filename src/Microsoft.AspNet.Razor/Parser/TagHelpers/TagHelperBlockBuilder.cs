@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             TagName = tagName;
             CodeGenerator = new TagHelperCodeGenerator(descriptors);
             Type = startTag.Type;
-            Attributes = GetTagAttributes(startTag);
+            Attributes = GetTagAttributes(startTag, descriptors);
 
             // There will always be at least one child for the '<'.
             Start = startTag.Children.First().Start;
@@ -107,11 +107,19 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// </summary>
         public SourceLocation Start { get; private set; }
 
-        private static IDictionary<string, SyntaxTreeNode> GetTagAttributes(Block tagBlock)
+        private static IDictionary<string, SyntaxTreeNode> GetTagAttributes(
+            Block tagBlock,
+            IEnumerable<TagHelperDescriptor> descriptors)
         {
             var attributes = new Dictionary<string, SyntaxTreeNode>(StringComparer.OrdinalIgnoreCase);
 
-            // TODO: Handle malformed tags: https://github.com/aspnet/razor/issues/104
+            // Build a dictionary so we can easily lookup expected attribute value lookups
+            IReadOnlyDictionary<string, string> attributeValueTypes = 
+                descriptors.SelectMany(descriptor => descriptor.Attributes)
+                           .Distinct(TagHelperAttributeDescriptorComparer.Default)
+                           .ToDictionary(descriptor => descriptor.Name,
+                                       descriptor => descriptor.TypeName,
+                                       StringComparer.OrdinalIgnoreCase);
 
             // We skip the first child "<tagname" and take everything up to the "ending" portion of the tag ">" or "/>".
             // The -2 accounts for both the start and end tags.
@@ -123,11 +131,11 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 
                 if (child.IsBlock)
                 {
-                    attribute = ParseBlock((Block)child);
+                    attribute = ParseBlock((Block)child, attributeValueTypes);
                 }
                 else
                 {
-                    attribute = ParseSpan((Span)child);
+                    attribute = ParseSpan((Span)child, attributeValueTypes);
                 }
 
                 attributes.Add(attribute.Key, attribute.Value);
@@ -139,7 +147,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         // This method handles cases when the attribute is a simple span attribute such as
         // class="something moresomething".  This does not handle complex attributes such as
         // class="@myclass". Therefore the span.Content is equivalent to the entire attribute.
-        private static KeyValuePair<string, SyntaxTreeNode> ParseSpan(Span span)
+        private static KeyValuePair<string, SyntaxTreeNode> ParseSpan(
+            Span span,
+            IReadOnlyDictionary<string, string> attributeValueTypes)
         {
             var afterEquals = false;
             var builder = new SpanBuilder
@@ -192,10 +202,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                 }
             }
 
-            return new KeyValuePair<string, SyntaxTreeNode>(name, builder.Build());
+            return CreateMarkupAttribute(name, builder, attributeValueTypes);
         }
 
-        private static KeyValuePair<string, SyntaxTreeNode> ParseBlock(Block block)
+        private static KeyValuePair<string, SyntaxTreeNode> ParseBlock(
+            Block block,
+            IReadOnlyDictionary<string, string> attributeValueTypes)
         {
             // TODO: Accept more than just spans: https://github.com/aspnet/Razor/issues/96.
             // The first child will only ever NOT be a Span if a user is doing something like:
@@ -214,7 +226,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             // i.e. <div class="plain text in attribute">
             if (builder.Children.Count == 1)
             {
-                return ParseSpan(childSpan);
+                return ParseSpan(childSpan, attributeValueTypes);
             }
 
             var textSymbol = childSpan.Symbols.FirstHtmlSymbolAs(HtmlSymbolType.Text);
@@ -245,6 +257,22 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             // We need to rebuild the code generators of the builder and its children (this is needed to
             // ensure we don't do special attribute code generation since this is a tag helper).
             block = RebuildCodeGenerators(builder.Build());
+
+            // If there's only 1 child at this point its value could be a simple markup span (treated differently than
+            // block level elements for attributes).
+            if (block.Children.Count() == 1)
+            {
+                var child = block.Children.First() as Span;
+
+                if (child != null)
+                {
+                    // After pulling apart the block we just have a value span.
+
+                    var spanBuilder = new SpanBuilder(child);
+
+                    return CreateMarkupAttribute(name, spanBuilder, attributeValueTypes);
+                }
+            }
 
             return new KeyValuePair<string, SyntaxTreeNode>(name, block);
         }
@@ -312,10 +340,46 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             return builder.Build();
         }
 
+        private static KeyValuePair<string, SyntaxTreeNode> CreateMarkupAttribute(
+            string name, 
+            SpanBuilder builder,
+            IReadOnlyDictionary<string, string> attributeValueTypes)
+        {
+            string attributeTypeName;
+
+            // If the attribute was requested by the tag helper and doesn't happen to be a string then we need to treat
+            // its value as code. Any non-string value can be any C# value so we need to ensure the SyntaxTreeNode
+            // reflects that.
+            if (attributeValueTypes.TryGetValue(name, out attributeTypeName) &&
+                !string.Equals(attributeTypeName, typeof(string).FullName, StringComparison.OrdinalIgnoreCase))
+            {
+                builder.Kind = SpanKind.Code;
+            }
+
+            return new KeyValuePair<string, SyntaxTreeNode>(name, builder.Build());
+        }
+
         private static bool IsQuote(HtmlSymbol htmlSymbol)
         {
             return htmlSymbol.Type == HtmlSymbolType.DoubleQuote ||
                    htmlSymbol.Type == HtmlSymbolType.SingleQuote;
+        }
+
+        // This class is used to compare tag helper attributes by comparing only the HTML attribute name.
+        private class TagHelperAttributeDescriptorComparer : IEqualityComparer<TagHelperAttributeDescriptor>
+        {
+            public static readonly TagHelperAttributeDescriptorComparer Default =
+                new TagHelperAttributeDescriptorComparer();
+
+            public bool Equals(TagHelperAttributeDescriptor descriptorX, TagHelperAttributeDescriptor descriptorY)
+            {
+                return string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.OrdinalIgnoreCase);
+            }
+
+            public int GetHashCode(TagHelperAttributeDescriptor descriptor)
+            {
+                return StringComparer.OrdinalIgnoreCase.GetHashCode(descriptor.Name);
+            }
         }
     }
 }

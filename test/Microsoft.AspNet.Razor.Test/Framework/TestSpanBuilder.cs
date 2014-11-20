@@ -114,6 +114,11 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return self.Span(SpanKind.Markup, content, markup: true).With(new MarkupCodeGenerator());
         }
 
+        public static SpanConstructor CodeMarkup(this SpanFactory self, params string[] content)
+        {
+            return self.Span(SpanKind.Code, content, markup: true).With(new MarkupCodeGenerator());
+        }
+
         public static SourceLocation GetLocationAndAdvance(this SourceLocationTracker self, string content)
         {
             var ret = self.CurrentLocation;

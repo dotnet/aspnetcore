@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -18,6 +19,98 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : CsHtmlMarkupParserTestBase
     {
+        public static TheoryData CodeTagHelperAttributesData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var dateTimeNow = new MarkupBlock(
+                    factory.Markup(" "),
+                    new ExpressionBlock(
+                        factory.CodeTransition(),
+                            factory.Code("DateTime.Now")
+                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                .Accepts(AcceptedCharacters.NonWhiteSpace)));
+
+                return new TheoryData<string, Block>
+                {
+                    {
+                        "<person age=\"12\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("person",
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "age", factory.CodeMarkup("12") }
+                            }))
+                    },
+                    {
+                        "<person birthday=\"DateTime.Now\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("person",
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "birthday", factory.CodeMarkup("DateTime.Now") }
+                            }))
+                    },
+                    {
+                        "<person name=\"John\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("person",
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "name", factory.Markup("John") }
+                            }))
+                    },
+                    {
+                        "<person name=\"Time: @DateTime.Now\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("person",
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "name", new MarkupBlock(factory.Markup("Time:"), dateTimeNow) }
+                            }))
+                    },
+                    {
+                        "<person age=\"12\" birthday=\"DateTime.Now\" name=\"Time: @DateTime.Now\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("person",
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "age", factory.CodeMarkup("12") },
+                                { "birthday", factory.CodeMarkup("DateTime.Now") },
+                                { "name", new MarkupBlock(factory.Markup("Time:"), dateTimeNow) }
+                            }))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CodeTagHelperAttributesData))]
+        public void TagHelperParseTreeRewriter_CreatesMarkupCodeSpansForNonStringTagHelperAttributes(
+            string documentContent,
+            MarkupBlock expectedOutput)
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+            {
+                new TagHelperDescriptor("person", "PersonTagHelper", "personAssembly", ContentBehavior.None,
+                    attributes: new[]
+                    {
+                        new TagHelperAttributeDescriptor("age", "Age", typeof(int).FullName),
+                        new TagHelperAttributeDescriptor("birthday", "BirthDay", typeof(DateTime).FullName),
+                        new TagHelperAttributeDescriptor("name", "Name", typeof(string).FullName),
+                    })
+            };
+            var providerContext = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(providerContext, 
+                         documentContent, 
+                         expectedOutput, 
+                         expectedErrors: Enumerable.Empty<RazorError>());
+        }
+
         public static IEnumerable<object[]> IncompleteHelperBlockData
         {
             get
@@ -39,9 +132,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                         new Dictionary<string, SyntaxTreeNode>
                         {
-                            { "class", new MarkupBlock(factory.Markup("foo")) },
+                            { "class", factory.Markup("foo") },
                             { "dynamic", new MarkupBlock(dateTimeNow) },
-                            { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                            { "style", factory.Markup("color:red;") }
                         },
                         new MarkupTagHelperBlock("strong",
                             blockFactory.MarkupTagBlock("</p>")))),
@@ -78,13 +171,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "class", new MarkupBlock(factory.Markup("foo")) }
+                                { "class", factory.Markup("foo") }
                             },
                             factory.Markup("Hello "),
                             new MarkupTagHelperBlock("p",
                                 new Dictionary<string, SyntaxTreeNode>
                                 {
-                                    { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                                    { "style", factory.Markup("color:red;") }
                                 },
                                 factory.Markup("World")))),
                     new RazorError(string.Format(CultureInfo.InvariantCulture, errorFormat, "p"),
@@ -426,7 +519,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                         new Dictionary<string, SyntaxTreeNode>
                         {
-                            { "class", new MarkupBlock(factory.Markup("     foo")) },
+                            { "class", factory.Markup("     foo") },
                             { "style",
                                 new MarkupBlock(
                                     factory.Markup("   color"),
@@ -443,7 +536,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "class", new MarkupBlock(factory.Markup("     foo")) },
+                                { "class", factory.Markup("     foo") },
                                 { "style",
                                     new MarkupBlock(
                                         factory.Markup("   color"),
@@ -782,8 +875,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("script",
                         new Dictionary<string, SyntaxTreeNode>
                         {
-                            { "class", new MarkupBlock(factory.Markup("foo")) },
-                            { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                            { "class", factory.Markup("foo") },
+                            { "style", factory.Markup("color:red;") }
                         }))
                 };
                 yield return new object[] {
@@ -794,8 +887,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock("script",
                                 new Dictionary<string, SyntaxTreeNode>
                                 {
-                                    { "class", new MarkupBlock(factory.Markup("foo")) },
-                                    { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                                    { "class", factory.Markup("foo") },
+                                    { "style", factory.Markup("color:red;") }
                                 }),
                             factory.Markup(" World")))
                 };
@@ -823,8 +916,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                         new Dictionary<string, SyntaxTreeNode>
                         {
-                            { "class", new MarkupBlock(factory.Markup("foo")) },
-                            { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                            { "class", factory.Markup("foo") },
+                            { "style", factory.Markup("color:red;") }
                         }))
                 };
                 yield return new object[] {
@@ -835,8 +928,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock("p",
                                 new Dictionary<string, SyntaxTreeNode>
                                 {
-                                    { "class", new MarkupBlock(factory.Markup("foo")) },
-                                    { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                                    { "class", factory.Markup("foo") },
+                                    { "style", factory.Markup("color:red;") }
                                 }),
                             factory.Markup(" World")))
                 };
@@ -847,13 +940,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "class", new MarkupBlock(factory.Markup("foo")) }
+                                { "class", factory.Markup("foo") }
                             }),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                                { "style", factory.Markup("color:red;") }
                             }),
                         factory.Markup("World"))
                 };
@@ -888,9 +981,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                         new Dictionary<string, SyntaxTreeNode>
                         {
-                            { "class", new MarkupBlock(factory.Markup("foo")) },
+                            { "class", factory.Markup("foo") },
                             { "dynamic", new MarkupBlock(dateTimeNow) },
-                            { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                            { "style", factory.Markup("color:red;") }
                         }))
                 };
                 yield return new object[] {
@@ -899,9 +992,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "class", new MarkupBlock(factory.Markup("foo")) },
+                                { "class", factory.Markup("foo") },
                                 { "dynamic", new MarkupBlock(dateTimeNow) },
-                                { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                                { "style", factory.Markup("color:red;") }
                             },
                             factory.Markup("Hello World")))
                 };
@@ -911,7 +1004,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "class", new MarkupBlock(factory.Markup("foo")) },
+                                { "class", factory.Markup("foo") },
                                 { "dynamic", new MarkupBlock(dateTimeNow) }
                             },
                             factory.Markup("Hello")),
@@ -919,7 +1012,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "style", new MarkupBlock(factory.Markup("color:red;")) },
+                                { "style", factory.Markup("color:red;") },
                                 { "dynamic", new MarkupBlock(dateTimeNow) }
                             },
                             factory.Markup("World")))
@@ -930,9 +1023,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "class", new MarkupBlock(factory.Markup("foo")) },
+                                { "class", factory.Markup("foo") },
                                 { "dynamic", new MarkupBlock(dateTimeNow) },
-                                { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                                { "style", factory.Markup("color:red;") }
                             },
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(
@@ -973,8 +1066,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                         new Dictionary<string, SyntaxTreeNode>
                         {
-                            { "class", new MarkupBlock(factory.Markup("foo")) },
-                            { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                            { "class", factory.Markup("foo") },
+                            { "style", factory.Markup("color:red;") }
                         }))
                 };
                 yield return new object[] {
@@ -983,8 +1076,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "class", new MarkupBlock(factory.Markup("foo")) },
-                                { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                                { "class", factory.Markup("foo") },
+                                { "style", factory.Markup("color:red;") }
                             },
                             factory.Markup("Hello World")))
                 };
@@ -994,14 +1087,14 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "class", new MarkupBlock(factory.Markup("foo")) }
+                                { "class", factory.Markup("foo") }
                             },
                             factory.Markup("Hello")),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                                { "style", factory.Markup("color:red;") }
                             },
                             factory.Markup("World")))
                 };
@@ -1011,8 +1104,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new Dictionary<string, SyntaxTreeNode>
                             {
-                                { "class", new MarkupBlock(factory.Markup("foo")) },
-                                { "style", new MarkupBlock(factory.Markup("color:red;")) }
+                                { "class", factory.Markup("foo") },
+                                { "style", factory.Markup("color:red;") }
                             },
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(
