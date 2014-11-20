@@ -128,39 +128,39 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             TakeCurrent();
             switch (sym)
             {
-            case '<':
-                return EndSymbol(HtmlSymbolType.OpenAngle);
-            case '!':
-                return EndSymbol(HtmlSymbolType.Bang);
-            case '/':
-                return EndSymbol(HtmlSymbolType.ForwardSlash);
-            case '?':
-                return EndSymbol(HtmlSymbolType.QuestionMark);
-            case '[':
-                return EndSymbol(HtmlSymbolType.LeftBracket);
-            case '>':
-                return EndSymbol(HtmlSymbolType.CloseAngle);
-            case ']':
-                return EndSymbol(HtmlSymbolType.RightBracket);
-            case '=':
-                return EndSymbol(HtmlSymbolType.Equals);
-            case '"':
-                return EndSymbol(HtmlSymbolType.DoubleQuote);
-            case '\'':
-                return EndSymbol(HtmlSymbolType.SingleQuote);
-            case '-':
-                Debug.Assert(CurrentCharacter == '-');
-                TakeCurrent();
-                return EndSymbol(HtmlSymbolType.DoubleHyphen);
-            default:
+                case '<':
+                    return EndSymbol(HtmlSymbolType.OpenAngle);
+                case '!':
+                    return EndSymbol(HtmlSymbolType.Bang);
+                case '/':
+                    return EndSymbol(HtmlSymbolType.ForwardSlash);
+                case '?':
+                    return EndSymbol(HtmlSymbolType.QuestionMark);
+                case '[':
+                    return EndSymbol(HtmlSymbolType.LeftBracket);
+                case '>':
+                    return EndSymbol(HtmlSymbolType.CloseAngle);
+                case ']':
+                    return EndSymbol(HtmlSymbolType.RightBracket);
+                case '=':
+                    return EndSymbol(HtmlSymbolType.Equals);
+                case '"':
+                    return EndSymbol(HtmlSymbolType.DoubleQuote);
+                case '\'':
+                    return EndSymbol(HtmlSymbolType.SingleQuote);
+                case '-':
+                    Debug.Assert(CurrentCharacter == '-');
+                    TakeCurrent();
+                    return EndSymbol(HtmlSymbolType.DoubleHyphen);
+                default:
 #if NET45
-                // No Debug.Fail in CoreCLR
+                    // No Debug.Fail in CoreCLR
 
-                Debug.Fail("Unexpected symbol!");
+                    Debug.Fail("Unexpected symbol!");
 #else
                 Debug.Assert(false, "Unexpected symbol");
 #endif
-                return EndSymbol(HtmlSymbolType.Unknown);
+                    return EndSymbol(HtmlSymbolType.Unknown);
             }
         }
 

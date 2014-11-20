@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public static bool IsCombining(char value)
         {
-            UnicodeCategory cat= CharUnicodeInfo.GetUnicodeCategory(value);
+            UnicodeCategory cat = CharUnicodeInfo.GetUnicodeCategory(value);
 
             return cat == UnicodeCategory.SpacingCombiningMark || cat == UnicodeCategory.NonSpacingMark;
 

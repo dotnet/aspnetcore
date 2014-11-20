@@ -13,7 +13,6 @@ using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 using Moq;
-using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test

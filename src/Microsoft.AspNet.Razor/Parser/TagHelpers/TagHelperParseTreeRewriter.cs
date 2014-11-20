@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 return null;
             }
 
-            return textSymbol.Type == HtmlSymbolType.WhiteSpace ? null :  textSymbol.Content;
+            return textSymbol.Type == HtmlSymbolType.WhiteSpace ? null : textSymbol.Content;
         }
 
         private static bool IsSelfClosing(Block beginTagBlock)

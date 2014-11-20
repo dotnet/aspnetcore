@@ -253,9 +253,9 @@ namespace Microsoft.AspNet.Razor.Parser
                         Language.TokenizeString,
                         DefaultKeywords,
                         acceptTrailingDot: IsNested)
-                        {
-                            AcceptedCharacters = AcceptedCharacters.NonWhiteSpace
-                        };
+                    {
+                        AcceptedCharacters = AcceptedCharacters.NonWhiteSpace
+                    };
                     if (At(CSharpSymbolType.WhiteSpace) || At(CSharpSymbolType.NewLine))
                     {
                         Context.OnError(CurrentLocation, RazorResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS);

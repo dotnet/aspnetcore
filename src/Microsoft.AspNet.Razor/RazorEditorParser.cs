@@ -9,7 +9,6 @@ using System.IO;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor
 {

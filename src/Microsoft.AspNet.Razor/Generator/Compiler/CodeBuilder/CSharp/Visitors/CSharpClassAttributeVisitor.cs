@@ -8,7 +8,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
     public class CSharpClassAttributeVisitor : CodeVisitor<CSharpCodeWriter>
     {
         public CSharpClassAttributeVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
-            : base(writer, context) { }
+            : base(writer, context)
+        { }
 
         protected override void Visit(SessionStateChunk chunk)
         {

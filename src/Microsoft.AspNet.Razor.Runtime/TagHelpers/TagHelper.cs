@@ -28,11 +28,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="output">A stateful HTML element used to generate an HTML tag.</param>
         /// <returns>A <see cref="Task"/> that on completion updates the <paramref name="output"/>.</returns>
         /// <remarks>By default this calls into <see cref="Process"/>.</remarks>.
-        #pragma warning disable 1998
+#pragma warning disable 1998
         public virtual async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             Process(context, output);
         }
-        #pragma warning restore 1998
+#pragma warning restore 1998
     }
 }

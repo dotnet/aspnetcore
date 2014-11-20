@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
@@ -124,10 +123,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                                                    "Instrumentation.BeginContext",
                                                                    "Instrumentation.EndContext",
                                                                    new GeneratedTagHelperContext())
-                                                                   {
-                                                                       LayoutPropertyName = "Layout",
-                                                                       ResolveUrlMethodName = "Href"
-                                                                   };
+            {
+                LayoutPropertyName = "Layout",
+                ResolveUrlMethodName = "Href"
+            };
             if (hostConfig != null)
             {
                 host = hostConfig(host);
@@ -138,7 +137,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
             var engine = new RazorTemplateEngine(host);
 
-            if(templateEngineConfig != null)
+            if (templateEngineConfig != null)
             {
                 engine = templateEngineConfig(engine);
             }

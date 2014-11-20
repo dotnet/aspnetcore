@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Text
 {

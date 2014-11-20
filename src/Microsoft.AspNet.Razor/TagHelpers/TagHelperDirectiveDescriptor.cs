@@ -27,6 +27,6 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// The <see cref="TagHelperDirectiveType"/> of this directive.
         /// </summary>
-        public TagHelperDirectiveType DirectiveType { get; private set;  }
+        public TagHelperDirectiveType DirectiveType { get; private set; }
     }
 }

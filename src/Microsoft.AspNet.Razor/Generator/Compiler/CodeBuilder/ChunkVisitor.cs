@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             {
                 Visit((StatementChunk)chunk);
             }
-            else if(chunk is TagHelperChunk)
+            else if (chunk is TagHelperChunk)
             {
                 Visit((TagHelperChunk)chunk);
             }
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             {
                 Visit((RemoveTagHelperChunk)chunk);
             }
-            else if(chunk is SetLayoutChunk)
+            else if (chunk is SetLayoutChunk)
             {
                 Visit((SetLayoutChunk)chunk);
             }
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             {
                 Visit((UsingChunk)chunk);
             }
-            else if(chunk is HelperChunk)
+            else if (chunk is HelperChunk)
             {
                 Visit((HelperChunk)chunk);
             }
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             {
                 Visit((ChunkBlock)chunk);
             }
-            else if(chunk is SessionStateChunk)
+            else if (chunk is SessionStateChunk)
             {
                 Visit((SessionStateChunk)chunk);
             }
