@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser {UserName="Foo"};
+            var user = new TestUser { UserName = "Foo" };
             store.Setup(s => s.FindByNameAsync(user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
             var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
 
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser {UserName="Foo"};
+            var user = new TestUser { UserName = "Foo" };
             store.Setup(s => s.FindByNameAsync(user.UserName, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
             var userManager = MockHelpers.TestUserManager(store.Object);
             userManager.KeyNormalizer = null;
@@ -246,7 +246,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserRoleStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            var roles = new string[] {"A", "B", "C"};
+            var roles = new string[] { "A", "B", "C" };
             store.Setup(s => s.AddToRoleAsync(user, "A", CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
@@ -642,7 +642,7 @@ namespace Microsoft.AspNet.Identity.Test
             var store = new NotImplementedStore();
 
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>(null));
+                () => new UserManager<TestUser>(null, null));
 
             var manager = new UserManager<TestUser>(store);
 
@@ -682,7 +682,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.AddClaimAsync(null, new Claim("a", "b")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.AddLoginAsync(null, new UserLoginInfo("","","")));
+                async () => await manager.AddLoginAsync(null, new UserLoginInfo("", "", "")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.AddPasswordAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",

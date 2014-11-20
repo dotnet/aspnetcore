@@ -130,7 +130,7 @@
     <comment>Default name for the email token provider</comment>
   </data>
   <data name="DefaultEmailTokenProviderSubject" xml:space="preserve">
-    <value>Security Code</value>
+    <value>Security code</value>
     <comment>Default subject for the email</comment>
   </data>
   <data name="DefaultError" xml:space="preserve">
@@ -146,24 +146,24 @@
     <comment>Default name for the phone number token provider</comment>
   </data>
   <data name="DefaultTokenProvider" xml:space="preserve">
-    <value>DefaultTokenProvider</value>
+    <value>Default Token Provider</value>
     <comment>Name of the default token provider</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
     <value>Email '{0}' is already taken.</value>
-    <comment>error for duplicate emails</comment>
+    <comment>Error for duplicate emails</comment>
   </data>
   <data name="DuplicateRoleName" xml:space="preserve">
-    <value>Role Name '{0}' is already taken.</value>
-    <comment>error for duplicate usernames</comment>
+    <value>Role name '{0}' is already taken.</value>
+    <comment>Error for duplicate user names</comment>
   </data>
   <data name="DuplicateUserName" xml:space="preserve">
-    <value>UserName '{0}' is already taken.</value>
-    <comment>error for duplicate usernames</comment>
+    <value>User name '{0}' is already taken.</value>
+    <comment>Error for duplicate user names</comment>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
     <value>Email '{0}' is invalid.</value>
-    <comment>invalid email</comment>
+    <comment>Invalid email</comment>
   </data>
   <data name="InvalidPasswordHasherCompatibilityMode" xml:space="preserve">
     <value>The provided PasswordHasherCompatibilityMode is invalid.</value>
@@ -175,7 +175,7 @@
   </data>
   <data name="InvalidRoleName" xml:space="preserve">
     <value>Role name '{0}' is invalid.</value>
-    <comment>error for invalid role names</comment>
+    <comment>Error for invalid role names</comment>
   </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>Invalid token.</value>
@@ -183,7 +183,7 @@
   </data>
   <data name="InvalidUserName" xml:space="preserve">
     <value>User name '{0}' is invalid, can only contain letters or digits.</value>
-    <comment>usernames can only contain letters or digits</comment>
+    <comment>User names can only contain letters or digits</comment>
   </data>
   <data name="LoginAlreadyAssociated" xml:space="preserve">
     <value>A user with this login already exists.</value>
@@ -223,63 +223,63 @@
   </data>
   <data name="RoleNotFound" xml:space="preserve">
     <value>Role {0} does not exist.</value>
-    <comment>error when a role does not exist</comment>
+    <comment>Error when a role does not exist</comment>
   </data>
   <data name="StoreNotIQueryableRoleStore" xml:space="preserve">
     <value>Store does not implement IQueryableRoleStore&lt;TRole&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIQueryableUserStore" xml:space="preserve">
     <value>Store does not implement IQueryableUserStore&lt;TUser&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIRoleClaimStore" xml:space="preserve">
     <value>Store does not implement IRoleClaimStore&lt;TRole&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIUserClaimStore" xml:space="preserve">
     <value>Store does not implement IUserClaimStore&lt;TUser&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIUserConfirmationStore" xml:space="preserve">
     <value>Store does not implement IUserConfirmationStore&lt;TUser&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIUserEmailStore" xml:space="preserve">
     <value>Store does not implement IUserEmailStore&lt;TUser&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIUserLockoutStore" xml:space="preserve">
     <value>Store does not implement IUserLockoutStore&lt;TUser&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIUserLoginStore" xml:space="preserve">
     <value>Store does not implement IUserLoginStore&lt;TUser&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIUserPasswordStore" xml:space="preserve">
     <value>Store does not implement IUserPasswordStore&lt;TUser&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIUserPhoneNumberStore" xml:space="preserve">
     <value>Store does not implement IUserPhoneNumberStore&lt;TUser&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIUserRoleStore" xml:space="preserve">
     <value>Store does not implement IUserRoleStore&lt;TUser&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIUserSecurityStampStore" xml:space="preserve">
     <value>Store does not implement IUserSecurityStampStore&lt;TUser&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="StoreNotIUserTwoFactorStore" xml:space="preserve">
     <value>Store does not implement IUserTwoFactorStore&lt;TUser&gt;.</value>
-    <comment>error when the store does not implement this interface</comment>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
   <data name="UserAlreadyHasPassword" xml:space="preserve">
     <value>User already has a password set.</value>
-    <comment>error when AddPasswordAsync called when a user already has a password</comment>
+    <comment>Error when AddPasswordAsync called when a user already has a password</comment>
   </data>
   <data name="UserAlreadyInRole" xml:space="preserve">
     <value>User already in role '{0}'.</value>
@@ -291,14 +291,34 @@
   </data>
   <data name="UserLockoutNotEnabled" xml:space="preserve">
     <value>Lockout is not enabled for this user.</value>
-    <comment>error when lockout is not enabled</comment>
+    <comment>Error when lockout is not enabled</comment>
   </data>
   <data name="UserNameNotFound" xml:space="preserve">
     <value>User {0} does not exist.</value>
-    <comment>error when a user does not exist</comment>
+    <comment>Error when a user does not exist</comment>
   </data>
   <data name="UserNotInRole" xml:space="preserve">
     <value>User is not in role '{0}'.</value>
     <comment>Error when a user is not in the role</comment>
+  </data>
+  <data name="LogIdentityResultFailure" xml:space="preserve">
+    <value>{0} : Failed : {1}</value>
+    <comment>Logging method execution failure</comment>
+  </data>
+  <data name="LogIdentityResultSuccess" xml:space="preserve">
+    <value>{0} : Success</value>
+    <comment>Logging method execution success</comment>
+  </data>
+  <data name="LoggingSigninResult" xml:space="preserve">
+    <value>{0} : Result : {1}</value>
+    <comment>Logging statement for SignInManager</comment>
+  </data>
+  <data name="LoggingResultMessage" xml:space="preserve">
+    <value>{0} for user: {1}</value>
+    <comment>Message prefix for Identity result</comment>
+  </data>
+  <data name="LoggingResultMessageForRole" xml:space="preserve">
+    <value>{0} for role: {1}</value>
+    <comment>Message prefix for Identity result for role operation</comment>
   </data>
 </root>

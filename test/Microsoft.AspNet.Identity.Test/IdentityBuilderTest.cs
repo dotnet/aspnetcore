@@ -10,6 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Identity.Test
 {
@@ -236,13 +237,13 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class MyUserManager : UserManager<TestUser>
         {
-            public MyUserManager(IUserStore<TestUser> store) :  base(store) { }
+            public MyUserManager(IUserStore<TestUser> store) : base(store) { }
         }
 
         private class MyRoleManager : RoleManager<TestRole>
         {
             public MyRoleManager(IRoleStore<TestRole> store,
-                IEnumerable<IRoleValidator<TestRole>> roleValidators) : base(store, roleValidators)
+                IEnumerable<IRoleValidator<TestRole>> roleValidators) : base(store)
             {
 
             }

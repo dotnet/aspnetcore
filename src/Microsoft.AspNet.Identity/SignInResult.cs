@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Framework.Logging;
+
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
@@ -77,6 +79,35 @@ namespace Microsoft.AspNet.Identity
         public static SignInResult TwoFactorRequired
         {
             get { return _twoFactorRequired; }
+        }
+
+        /// <summary>
+        ///     Log result based on properties
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="message"></param>
+        public virtual void Log(ILogger logger, string message)
+        {
+            if (IsLockedOut)
+            {
+                logger.WriteInformation(Resources.FormatLoggingSigninResult(message, "Lockedout"));
+            }
+            else if (IsNotAllowed)
+            {
+                logger.WriteInformation(Resources.FormatLoggingSigninResult(message, "NotAllowed"));
+            }
+            else if (RequiresTwoFactor)
+            {
+                logger.WriteInformation(Resources.FormatLoggingSigninResult(message, "RequiresTwoFactor"));
+            }
+            else if (Succeeded)
+            {
+                logger.WriteInformation(Resources.FormatLoggingSigninResult(message, "Succeeded"));
+            }
+            else
+            {
+                logger.WriteInformation(Resources.FormatLoggingSigninResult(message, "Failed"));
+            }
         }
     }
 }
