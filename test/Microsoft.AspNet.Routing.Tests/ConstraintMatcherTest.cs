@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Logging;
 #if ASPNET50
+using Microsoft.AspNet.Routing.Logging;
 using Moq;
 #endif
 using Xunit;

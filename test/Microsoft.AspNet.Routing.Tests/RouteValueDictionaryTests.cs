@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Routing.Tests
         public void CreateFromObject_CopiesPropertiesFromAnonymousType()
         {
             // Arrange
-            var obj = new {cool = "beans", awesome = 123};
+            var obj = new { cool = "beans", awesome = 123 };
 
             // Act
             var dict = new RouteValueDictionary(obj);
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Routing.Tests
         public void CreateFromObject_CopiesPropertiesFromRegularType()
         {
             // Arrange
-            var obj = new RegularType() { CoolnessFactor = 73};
+            var obj = new RegularType() { CoolnessFactor = 73 };
 
             // Act
             var dict = new RouteValueDictionary(obj);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Routing.Tests
         public void CreateFromObject_CopiesPropertiesFromRegularType_IgnoresSetOnly()
         {
             // Arrange
-            var obj = new SetterOnly() {CoolSetOnly = false};
+            var obj = new SetterOnly() { CoolSetOnly = false };
 
             // Act
             var dict = new RouteValueDictionary(obj);
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Routing.Tests
         public void CreateFromObject_CopiesPropertiesFromRegularType_IncludesInherited()
         {
             // Arrange
-            var obj = new Derived() {TotallySweetProperty = true, DerivedProperty = false};
+            var obj = new Derived() { TotallySweetProperty = true, DerivedProperty = false };
 
             // Act
             var dict = new RouteValueDictionary(obj);
@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             private bool _coolSetOnly;
 
-            public bool CoolSetOnly { set { _coolSetOnly = value; }}
+            public bool CoolSetOnly { set { _coolSetOnly = value; } }
         }
 
         private class Base
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.Routing.Tests
             public bool this[string key]
             {
                 get { return false; }
-                set {}
+                set { }
             }
         }
     }
