@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Routing.Template
             };
         }
 
-        public static TemplatePart CreateParameter([NotNull] string name, 
+        public static TemplatePart CreateParameter([NotNull] string name,
                                                    bool isCatchAll,
                                                    bool isOptional,
                                                    object defaultValue,

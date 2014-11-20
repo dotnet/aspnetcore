@@ -227,10 +227,10 @@ namespace Microsoft.AspNet.Routing.Tests
 
         private class IndexerProperty
         {
-            public bool this[string key] 
+            public bool this[string key]
             {
-                get { return false; } 
-                set {} 
+                get { return false; }
+                set {}
             }
         }
     }

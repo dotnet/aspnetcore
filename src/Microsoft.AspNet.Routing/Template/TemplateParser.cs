@@ -176,8 +176,8 @@ namespace Microsoft.AspNet.Routing.Template
 
             var rawParameter = context.Capture();
 
-            // At this point, we need to parse the raw name for inline constraint, 
-            // default values and optional parameters. 
+            // At this point, we need to parse the raw name for inline constraint,
+            // default values and optional parameters.
             var templatePart = InlineRouteParameterParser.ParseRouteParameter(rawParameter);
 
             if (templatePart.IsCatchAll && templatePart.IsOptional)
@@ -189,14 +189,14 @@ namespace Microsoft.AspNet.Routing.Template
             if (templatePart.IsOptional && templatePart.DefaultValue != null)
             {
                 // Cannot be optional and have a default value.
-                // The only way to declare an optional parameter is to have a ? at the end, 
-                // hence we cannot have both default value and optional parameter within the template. 
+                // The only way to declare an optional parameter is to have a ? at the end,
+                // hence we cannot have both default value and optional parameter within the template.
                 // A workaround is to add it as a separate entry in the defaults argument.
                 context.Error = Resources.TemplateRoute_OptionalCannotHaveDefaultValue;
                 return false;
             }
 
-            var parameterName = templatePart.Name; 
+            var parameterName = templatePart.Name;
             if (IsValidParameterName(context, parameterName))
             {
                 segment.Parts.Add(templatePart);
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.Routing.Template
 
                     if (context.Current == OpenBrace)
                     {
-                        // This is an 'escaped' brace in a literal, like "{{foo" - keep going. 
+                        // This is an 'escaped' brace in a literal, like "{{foo" - keep going.
                     }
                     else
                     {
@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.Routing.Template
 
                     if (context.Current == CloseBrace)
                     {
-                        // This is an 'escaped' brace in a literal, like "{{foo" - keep going. 
+                        // This is an 'escaped' brace in a literal, like "{{foo" - keep going.
                     }
                     else
                     {
@@ -292,7 +292,7 @@ namespace Microsoft.AspNet.Routing.Template
                 for (var j = 0; j < segment.Parts.Count; j++)
                 {
                     var part = segment.Parts[j];
-                    if (part.IsParameter && 
+                    if (part.IsParameter &&
                         part.IsCatchAll &&
                         (i != segments.Count - 1 || j != segment.Parts.Count - 1))
                     {
@@ -425,8 +425,8 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             public HashSet<string> ParameterNames
-            { 
-                get { return _parameterNames; } 
+            {
+                get { return _parameterNames; }
             }
 
             public bool Back()

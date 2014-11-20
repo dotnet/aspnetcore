@@ -25,100 +25,100 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 {
                     new object[]
                     {
-                        "Test/{val1}/{val2}", 
+                        "Test/{val1}/{val2}",
                         new RouteValueDictionary(new {val1 = "", val2 = ""}),
-                        new RouteValueDictionary(new {val2 = "SomeVal2"}), 
+                        new RouteValueDictionary(new {val2 = "SomeVal2"}),
                         null,
                     },
                     new object[]
                     {
-                        "Test/{val1}/{val2}", 
+                        "Test/{val1}/{val2}",
                         new RouteValueDictionary(new {val1 = "", val2 = ""}),
-                        new RouteValueDictionary(new {val1 = "a"}), 
+                        new RouteValueDictionary(new {val1 = "a"}),
                         "Test/a"
                     },
                     new object[]
                     {
-                        "Test/{val1}/{val2}/{val3}", 
+                        "Test/{val1}/{val2}/{val3}",
                         new RouteValueDictionary(new {val1 = "", val3 = ""}),
-                        new RouteValueDictionary(new {val2 = "a"}), 
+                        new RouteValueDictionary(new {val2 = "a"}),
                         null
                     },
                     new object[]
                     {
-                        "Test/{val1}/{val2}", 
+                        "Test/{val1}/{val2}",
                         new RouteValueDictionary(new {val1 = "", val2 = ""}),
-                        new RouteValueDictionary(new {val1 = "a", val2 = "b"}), 
+                        new RouteValueDictionary(new {val1 = "a", val2 = "b"}),
                         "Test/a/b"
                     },
                     new object[]
                     {
-                        "Test/{val1}/{val2}/{val3}", 
+                        "Test/{val1}/{val2}/{val3}",
                         new RouteValueDictionary(new {val1 = "", val2 = "", val3 = ""}),
-                        new RouteValueDictionary(new {val1 = "a", val2 = "b", val3 = "c"}), 
+                        new RouteValueDictionary(new {val1 = "a", val2 = "b", val3 = "c"}),
                         "Test/a/b/c"
                     },
                     new object[]
                     {
-                        "Test/{val1}/{val2}/{val3}", 
+                        "Test/{val1}/{val2}/{val3}",
                         new RouteValueDictionary(new {val1 = "", val2 = "", val3 = ""}),
-                        new RouteValueDictionary(new {val1 = "a", val2 = "b"}), 
+                        new RouteValueDictionary(new {val1 = "a", val2 = "b"}),
                         "Test/a/b"
                     },
                     new object[]
                     {
-                        "Test/{val1}/{val2}/{val3}", 
+                        "Test/{val1}/{val2}/{val3}",
                         new RouteValueDictionary(new {val1 = "", val2 = "", val3 = ""}),
-                        new RouteValueDictionary(new {val1 = "a"}), 
+                        new RouteValueDictionary(new {val1 = "a"}),
                         "Test/a"
                     },
                     new object[]
                     {
-                        "Test/{val1}", 
+                        "Test/{val1}",
                         new RouteValueDictionary(new {val1 = "42", val2 = "", val3 = ""}),
-                        new RouteValueDictionary(), 
+                        new RouteValueDictionary(),
                         "Test"
                     },
                     new object[]
                     {
                        "Test/{val1}/{val2}/{val3}",
                        new RouteValueDictionary(new {val1 = "42", val2 = (string)null, val3 = (string)null}),
-                       new RouteValueDictionary(), 
+                       new RouteValueDictionary(),
                        "Test"
                     },
                     new object[]
                     {
                         "Test/{val1}/{val2}/{val3}/{val4}",
                         new RouteValueDictionary(new {val1 = "21", val2 = "", val3 = "", val4 = ""}),
-                        new RouteValueDictionary(new {val1 = "42", val2 = "11", val3 = "", val4 = ""}), 
+                        new RouteValueDictionary(new {val1 = "42", val2 = "11", val3 = "", val4 = ""}),
                         "Test/42/11"
                     },
                     new object[]
                     {
-                        "Test/{val1}/{val2}/{val3}", 
+                        "Test/{val1}/{val2}/{val3}",
                         new RouteValueDictionary(new {val1 = "21", val2 = "", val3 = ""}),
-                        new RouteValueDictionary(new {val1 = "42"}), 
+                        new RouteValueDictionary(new {val1 = "42"}),
                         "Test/42"
                     },
                     new object[]
                     {
                         "Test/{val1}/{val2}/{val3}/{val4}",
                         new RouteValueDictionary(new {val1 = "21", val2 = "", val3 = "", val4 = ""}),
-                        new RouteValueDictionary(new {val1 = "42", val2 = "11"}), 
+                        new RouteValueDictionary(new {val1 = "42", val2 = "11"}),
                         "Test/42/11"
                     },
                     new object[]
                     {
                         "Test/{val1}/{val2}/{val3}",
                         new RouteValueDictionary(new {val1 = "21", val2 = (string)null, val3 = (string)null}),
-                        new RouteValueDictionary(new {val1 = "42"}), 
+                        new RouteValueDictionary(new {val1 = "42"}),
                         "Test/42"
                     },
                     new object[]
                     {
                         "Test/{val1}/{val2}/{val3}/{val4}",
                         new RouteValueDictionary(new {val1 = "21", val2 = (string)null, val3 = (string)null, val4 = (string)null}),
-                        new RouteValueDictionary(new {val1 = "42", val2 = "11"}), 
+                        new RouteValueDictionary(new {val1 = "42", val2 = "11"}),
                         "Test/42/11"
                     },
                 };
@@ -901,8 +901,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // DevDiv Bugs 199612: UrlRouting: UrlGeneration should not append parameter to query string if it is a Constraint parameter and not a Url parameter
             RunTest(
-                "{Controller}.mvc/{action}/{end}", 
-                null, 
+                "{Controller}.mvc/{action}/{end}",
+                null,
                 new RouteValueDictionary(new { foo = CreateHttpMethodConstraint("GET") }),
                 new RouteValueDictionary(),
                 new RouteValueDictionary(new { controller = "Orders", action = "Index", end = "end", foo = "GET" }),

@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal(expected, actual);
         }
 
-        static Expression<Func<IRouteConstraint, bool>> ConstraintMatchMethodExpression = 
+        static Expression<Func<IRouteConstraint, bool>> ConstraintMatchMethodExpression =
             c => c.Match(It.IsAny<HttpContext>(),
                          It.IsAny<IRouter>(),
                          It.IsAny<string>(),

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Routing
             var isHandled = false;
 
             var sink = new TestSink(
-                TestSink.EnableWithTypeName<RouterMiddleware>, 
+                TestSink.EnableWithTypeName<RouterMiddleware>,
                 TestSink.EnableWithTypeName<RouterMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 

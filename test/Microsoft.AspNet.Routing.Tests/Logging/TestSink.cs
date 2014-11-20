@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Routing
     public class TestSink
     {
         public TestSink(
-            Func<WriteContext, bool> writeEnabled = null, 
+            Func<WriteContext, bool> writeEnabled = null,
             Func<BeginScopeContext, bool> beginEnabled = null)
         {
             WriteEnabled = writeEnabled;

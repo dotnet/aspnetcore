@@ -23,9 +23,9 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Act
             var result = constraint.Match(
-                Mock.Of<HttpContext>(), 
-                Mock.Of<IRouter>(), 
-                "area", 
+                Mock.Of<HttpContext>(),
+                Mock.Of<IRouter>(),
+                "area",
                 new RouteValueDictionary(new { controller = "Home", action = "Index" }),
                 direction);
 

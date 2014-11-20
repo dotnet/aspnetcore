@@ -7,11 +7,11 @@ namespace Microsoft.AspNet.Routing.Logging
 {
     /// <summary>
     /// Describes the state of <see cref="RouteConstraintMatcher.Match(
-    /// System.Collections.Generic.IDictionary{string, IRouteConstraint}, 
-    /// System.Collections.Generic.IDictionary{string, object}, 
-    /// Http.HttpContext, 
-    /// IRouter, 
-    /// RouteDirection, 
+    /// System.Collections.Generic.IDictionary{string, IRouteConstraint},
+    /// System.Collections.Generic.IDictionary{string, object},
+    /// Http.HttpContext,
+    /// IRouter,
+    /// RouteDirection,
     /// Framework.Logging.ILogger)"/>.
     /// </summary>
     public class RouteConstraintMatcherMatchValues

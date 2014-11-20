@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Routing.Constraints
     public class GuidRouteConstraint : IRouteConstraint
     {
         /// <inheritdoc />
-        public bool Match([NotNull] HttpContext httpContext, 
+        public bool Match([NotNull] HttpContext httpContext,
                           [NotNull] IRouter route,
                           [NotNull] string routeKey,
                           [NotNull] IDictionary<string, object> values,

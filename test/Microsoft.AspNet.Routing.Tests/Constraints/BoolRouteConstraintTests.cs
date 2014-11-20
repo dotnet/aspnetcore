@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             // Arrange
             var constraint = new BoolRouteConstraint();
-            
+
             // Act
             var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 

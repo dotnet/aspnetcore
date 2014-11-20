@@ -6,7 +6,7 @@ using System.Text;
 namespace Microsoft.AspNet.Routing.Logging
 {
     /// <summary>
-    /// Describes the state of 
+    /// Describes the state of
     /// <see cref="Microsoft.AspNet.Builder.RouterMiddleware.Invoke(Http.HttpContext)"/>.
     /// </summary>
     public class RouterMiddlewareInvokeValues

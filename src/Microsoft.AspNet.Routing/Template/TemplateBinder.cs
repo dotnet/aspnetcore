@@ -341,7 +341,7 @@ namespace Microsoft.AspNet.Routing.Template
             private readonly RouteValueDictionary _filters;
 
             public TemplateBindingContext(
-                IReadOnlyDictionary<string, object> defaults, 
+                IReadOnlyDictionary<string, object> defaults,
                 IDictionary<string, object> values)
             {
                 if (values == null)

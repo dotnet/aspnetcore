@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Routing.Template
                                 }
                                 else if (part.IsOptional)
                                 {
-                                    // This is optional (with no default value) 
+                                    // This is optional (with no default value)
                                     // - there's nothing to capture here, so just move on.
                                 }
                                 else

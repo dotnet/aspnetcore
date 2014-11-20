@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Routing.Constraints
 
             if (minLength > maxLength)
             {
-                var errorMessage = 
+                var errorMessage =
                     Resources.FormatRangeConstraint_MinShouldBeLessThanOrEqualToMax("minLength", "maxLength");
                 throw new ArgumentOutOfRangeException("minLength", minLength, errorMessage);
             }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Routing.Constraints
         public int MaxLength { get; private set; }
 
         /// <inheritdoc />
-        public bool Match([NotNull] HttpContext httpContext, 
+        public bool Match([NotNull] HttpContext httpContext,
                           [NotNull] IRouter route,
                           [NotNull] string routeKey,
                           [NotNull] IDictionary<string, object> values,

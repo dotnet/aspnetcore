@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Routing
             }
 
             var parameterName = parameterMatch.Groups["parameterName"].Value;
-            
+
             // Add the default value if present
             var defaultValueGroup = parameterMatch.Groups["defaultValue"];
             var defaultValue = GetDefaultValue(defaultValueGroup);
@@ -55,12 +55,12 @@ namespace Microsoft.AspNet.Routing
             // Register inline constraints if present
             var constraintGroup = parameterMatch.Groups["constraint"];
             var inlineConstraints = GetInlineConstraints(constraintGroup);
-            
+
             return TemplatePart.CreateParameter(parameterName,
                                                 isCatchAll,
                                                 isOptional,
                                                 defaultValue,
-                                                inlineConstraints); 
+                                                inlineConstraints);
         }
 
         private static string GetDefaultValue(Group defaultValueGroup)

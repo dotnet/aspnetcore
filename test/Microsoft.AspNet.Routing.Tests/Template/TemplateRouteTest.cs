@@ -520,7 +520,7 @@ namespace Microsoft.AspNet.Routing.Template
         {
             // Arrange
             var route = CreateRoute(
-                "{controller}/{action}", 
+                "{controller}/{action}",
                 defaults: new { action = "Index" },
                 dataTokens: new { culture = "en-CA" });
 
@@ -1057,7 +1057,7 @@ namespace Microsoft.AspNet.Routing.Template
             // Arrange
             var routeBuilder = CreateRouteBuilder();
 
-            // Act 
+            // Act
             routeBuilder.MapRoute("mockName",
                                   "{controller}/{action}",
                                   defaults: null,

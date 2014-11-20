@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Routing.Tests
         public void EmptyDefaultValue_WithOptionalParameter_Throws()
         {
             // Arrange
-            var message = "An optional parameter cannot have default value." + Environment.NewLine + 
+            var message = "An optional parameter cannot have default value." + Environment.NewLine +
                           "Parameter name: routeTemplate";
             var routeBuilder = CreateRouteBuilder();
 
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Routing.Tests
         public void NonEmptyDefaultValue_WithOptionalParameter_Throws()
         {
             // Arrange
-            var message = "An optional parameter cannot have default value." + Environment.NewLine + 
+            var message = "An optional parameter cannot have default value." + Environment.NewLine +
                           "Parameter name: routeTemplate";
             var routeBuilder = CreateRouteBuilder();
 

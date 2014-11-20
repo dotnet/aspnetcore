@@ -7,7 +7,7 @@ using System.Text;
 namespace Microsoft.AspNet.Routing.Logging
 {
     /// <summary>
-    /// Describes the state of 
+    /// Describes the state of
     /// <see cref="Microsoft.AspNet.Routing.Template.TemplateRoute.RouteAsync(RouteContext)"/>.
     /// </summary>
     public class TemplateRouteRouteAsyncValues

@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Routing
         /// </param>
         /// <remarks>
         /// If the <paramref name="value"/> is a string, it will be converted to a <see cref="RegexRouteConstraint"/>.
-        /// 
+        ///
         /// For example, the string <code>Product[0-9]+</code> will be converted to the regular expression
         /// <code>^(Product[0-9]+)</code>. See <see cref="System.Text.RegularExpressions.Regex"/> for more details.
         /// </remarks>

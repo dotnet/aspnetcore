@@ -16,14 +16,14 @@ namespace Microsoft.AspNet.Routing.Template
         public IDictionary<string, object> AcceptedValues { get; set; }
 
         /// <summary>
-        /// The set of values that that were supplied for URL generation. 
+        /// The set of values that that were supplied for URL generation.
         /// </summary>
         /// <remarks>
         /// This combines implicit (ambient) values from the <see cref="RouteData"/> of the current request
         /// (if applicable), explictly provided values, and default values for parameters that appear in
         /// the route template.
-        /// 
-        /// Implicit (ambient) values which are invalidated due to changes in values lexically earlier in the 
+        ///
+        /// Implicit (ambient) values which are invalidated due to changes in values lexically earlier in the
         /// route template are excluded from this set.
         /// </remarks>
         public IDictionary<string, object> CombinedValues { get; set; }

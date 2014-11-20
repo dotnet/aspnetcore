@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Builder
         public RouterMiddleware(
             RequestDelegate next,
             IServiceProvider services,
-            ILoggerFactory loggerFactory, 
+            ILoggerFactory loggerFactory,
             IRouter router)
         {
             _next = next;

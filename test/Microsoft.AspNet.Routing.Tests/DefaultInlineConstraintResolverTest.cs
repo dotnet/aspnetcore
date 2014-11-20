@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.Routing.Tests
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => resolver.ResolveConstraint("custom"));
             Assert.Equal("The constraint type 'System.String' which is mapped to constraint key 'custom'"+
-                         " must implement the 'IRouteConstraint' interface.", 
+                         " must implement the 'IRouteConstraint' interface.",
                          ex.Message);
         }
 

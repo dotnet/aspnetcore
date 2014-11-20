@@ -12,17 +12,17 @@ namespace Microsoft.AspNet.Routing.Constraints
     /// Constraints a route parameter that must have a value.
     /// </summary>
     /// <remarks>
-    /// This constraint is primarily used to enforce that a non-parameter value is present during 
+    /// This constraint is primarily used to enforce that a non-parameter value is present during
     /// URL generation.
     /// </remarks>
     public class RequiredRouteConstraint : IRouteConstraint
     {
         /// <inheritdoc />
         public bool Match(
-            [NotNull]HttpContext httpContext, 
-            [NotNull]IRouter route, 
-            [NotNull]string routeKey, 
-            [NotNull]IDictionary<string, object> values, 
+            [NotNull]HttpContext httpContext,
+            [NotNull]IRouter route,
+            [NotNull]string routeKey,
+            [NotNull]IDictionary<string, object> values,
             RouteDirection routeDirection)
         {
             object value;

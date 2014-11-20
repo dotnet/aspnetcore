@@ -54,12 +54,12 @@ namespace Microsoft.AspNet.Routing
             {
                 var type = obj.GetType();
                 var allProperties = type.GetRuntimeProperties();
-                
+
                 // This is done to support 'new' properties that hide a property on a base class
                 var orderedByDeclaringType = allProperties.OrderBy(p => p.DeclaringType == type ? 0 : 1);
                 foreach (var property in orderedByDeclaringType)
                 {
-                    if (property.GetMethod != null && 
+                    if (property.GetMethod != null &&
                         property.GetMethod.IsPublic &&
                         !property.GetMethod.IsStatic &&
                         property.GetIndexParameters().Length == 0)
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Routing
 
         /// <inheritdoc />
         void ICollection<KeyValuePair<string, object>>.CopyTo(
-            [NotNull] KeyValuePair<string, object>[] array, 
+            [NotNull] KeyValuePair<string, object>[] array,
             int arrayIndex)
         {
             ((ICollection<KeyValuePair<string, object>>)_dictionary).CopyTo(array, arrayIndex);

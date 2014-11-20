@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Routing.Constraints
     /// Constrains a route parameter to represent only <see cref="DateTime"/> values.
     /// </summary>
     /// <remarks>
-    /// This constraint tries to parse strings by using all of the formats returned by the 
+    /// This constraint tries to parse strings by using all of the formats returned by the
     /// CultureInfo.InvariantCulture.DateTimeFormat.GetAllDateTimePatterns() method.
     /// For a sample on how to list all formats which are considered, please visit
     /// http://msdn.microsoft.com/en-us/library/aszyst2c(v=vs.110).aspx
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Routing.Constraints
     public class DateTimeRouteConstraint : IRouteConstraint
     {
         /// <inheritdoc />
-        public bool Match([NotNull] HttpContext httpContext, 
+        public bool Match([NotNull] HttpContext httpContext,
                           [NotNull] IRouter route,
                           [NotNull] string routeKey,
                           [NotNull] IDictionary<string, object> values,

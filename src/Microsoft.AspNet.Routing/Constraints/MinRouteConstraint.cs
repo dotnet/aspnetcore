@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Routing.Constraints
         public long Min { get; private set; }
 
         /// <inheritdoc />
-        public bool Match([NotNull] HttpContext httpContext, 
+        public bool Match([NotNull] HttpContext httpContext,
                           [NotNull] IRouter route,
                           [NotNull] string routeKey,
                           [NotNull] IDictionary<string, object> values,

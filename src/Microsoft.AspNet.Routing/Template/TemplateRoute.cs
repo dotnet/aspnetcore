@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         public TemplateRoute(
             [NotNull] IRouter target,
-            string routeTemplate, 
+            string routeTemplate,
             IInlineConstraintResolver inlineConstraintResolver)
                         : this(target,
                                routeTemplate,
@@ -259,7 +259,7 @@ namespace Microsoft.AspNet.Routing.Template
         private static IReadOnlyDictionary<string, IRouteConstraint> GetConstraints(
             IInlineConstraintResolver inlineConstraintResolver,
             string template,
-            RouteTemplate parsedTemplate, 
+            RouteTemplate parsedTemplate,
             IDictionary<string, object> constraints)
         {
             var constraintBuilder = new RouteConstraintBuilder(inlineConstraintResolver, template);
