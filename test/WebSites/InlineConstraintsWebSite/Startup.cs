@@ -2,14 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Runtime;
 
 namespace InlineConstraints
 {
@@ -21,59 +16,19 @@ namespace InlineConstraints
         {
             var configuration = app.GetTestConfiguration();
 
-            configuration.AddEnvironmentVariables();
-
-            var commandLineBuilder = app.ApplicationServices.GetRequiredService<ICommandLineArgumentBuilder>();
-            string appConfigPath;
-            if (configuration.TryGet("AppConfigPath", out appConfigPath))
-            {
-                configuration.AddJsonFile(appConfigPath);
-            }
-            else if (commandLineBuilder != null)
-            {
-                var args = commandLineBuilder.Build();
-                configuration.AddCommandLine(args.ToArray());
-            }
-            else
-            {
-                var basePath = app.ApplicationServices.GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
-                configuration.AddJsonFile(Path.Combine(basePath, @"App_Data\config.json"));
-            }
-
-            // Set up application services
             app.UseServices(services =>
             {
-                // Add MVC services to the services container
                 services.AddMvc(configuration);
             });
 
-            // Add MVC to the request pipeline
             app.UseMvc(routes =>
-                        {
-                            foreach (var item in GetDataFromConfig(configuration))
-                            {
-                                routes.MapRoute(item.RouteName, item.RouteTemplateValue);
-                            }
-                        });
-        }
-
-        private IEnumerable<RouteConfigData> GetDataFromConfig(IConfiguration config)
-        {
-            foreach (var template in config.GetSubKey("TemplateCollection").GetSubKeys())
             {
-                yield return
-                    new RouteConfigData()
-                    {
-                        RouteName = template.Key,
-                        RouteTemplateValue = template.Value.Get("TemplateValue")
-                    };
-            }
-        }
-
-        private class RouteConfigData
-        {
-            public string RouteName { get; set; }
-            public string RouteTemplateValue { get; set; }
+                // Used by tests for the 'exists' constraint.
+                routes.MapRoute("areaExists-area", "area-exists/{area:exists}/{controller=Home}/{action=Index}");
+                routes.MapRoute("areaExists", "area-exists/{controller=Home}/{action=Index}");
+                routes.MapRoute("areaWithoutExists-area", "area-withoutexists/{area}/{controller=Home}/{action=Index}");
+                routes.MapRoute("areaWithoutExists", "area-withoutexists/{controller=Home}/{action=Index}");
+            });
         }
     }
 }
