@@ -1,1 +1,4 @@
-Functional test for usage of RazorViewEngineOptions.FileSystem
+RazorViewEngineOptionsWebSite
+===
+
+This web site illustrates use cases for `RazorViewEngineOptions.FileSystem`.

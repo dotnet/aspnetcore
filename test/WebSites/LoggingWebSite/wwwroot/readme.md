@@ -1,1 +1,4 @@
-﻿This file exists as Git does not allow to add empty directories into the repo
+﻿LoggingWebSite
+===
+
+This web site illustrates how to register and configure `Elm` logger.
