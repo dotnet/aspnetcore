@@ -9,5 +9,6 @@ var bowerCmd = '${ bowerGloballyInstalled ? "bower" : Path.Combine(nodeDir, "nod
 npm npmCommand='install --prefix ${nodeDir} bower' if='!(bowerGloballyInstalled || bowerInstalled)' once='installBower'
 
 - // Run bower
-exec program='cmd' commandline='/C ${bowerCmd} ${bowerCommand}' workingdir='${bowerDir}' if='bowerGloballyInstalled'
+exec program='cmd' commandline='/C ${bowerCmd} ${bowerCommand}' workingdir='${bowerDir}' if='bowerGloballyInstalled && !IsLinux'
+exec program='${bowerCmd}' commandline='${bowerCommand}' workingdir='${bowerDir}' if='bowerGloballyInstalled && IsLinux'
 node nodeCommand='${bowerCmd} ${bowerCommand}' workingdir='${bowerDir}' if='!bowerGloballyInstalled'

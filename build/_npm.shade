@@ -6,4 +6,5 @@ var npmGloballyInstalled = '${TestCommand("npm" , "--version")}'
 var npmCmd = '${ npmGloballyInstalled ? "npm" : Path.Combine(nodeDir, "npm.cmd") }'
 
 node-install once='installNode'
-exec program='cmd' commandline='/C ${npmCmd} ${npmCommand}' workingdir='${npmDir}'
+exec program='cmd' commandline='/C ${npmCmd} ${npmCommand}' workingdir='${npmDir}' if='!IsLinux'
+exec program='${npmCmd}' commandline='${npmCommand}' workingdir='${npmDir}' if='IsLinux'

@@ -131,7 +131,8 @@ default Configuration='${E("Configuration")}'
 functions @{
     string E(string key) { return Environment.GetEnvironmentVariable(key); }
     void E(string key, string value) { Environment.SetEnvironmentVariable(key, value); }
-    IEnumerable<string> GetDirectoriesContaining(string path, string searchPattern) {
+    IEnumerable<string> GetDirectoriesContaining(string path, string searchPattern)
+    {
       var sep = Path.DirectorySeparatorChar;
       // Don't include directories that are children of a node_modules or bower_components directory
       return Directory.GetFiles(path, searchPattern, SearchOption.AllDirectories)
@@ -140,28 +141,45 @@ functions @{
                       .Select(p => Path.GetDirectoryName(p))
                       .Distinct();
     }
-    bool TestCommand(string program, string commandline) {
+    bool TestCommand(string program, string commandline) 
+    {
       // Tests whether a given command succeeds at the command line.
       // Useful for testing whether a given command is installed and on the path, e.g. node
-      var processStartInfo = new ProcessStartInfo {
-        UseShellExecute = false,
-        FileName = "cmd",
-        Arguments = "/C " + program + " " + commandline,
-      };
-      try {
+      ProcessStartInfo processStartInfo;
+
+      if(!IsLinux)
+      {
+        processStartInfo = new ProcessStartInfo {
+      	UseShellExecute = false,
+      	FileName = "cmd",
+      	Arguments = "/C " + program + " " + commandline,
+        };
+      } else 
+      {
+      	processStartInfo = new ProcessStartInfo {
+      	UseShellExecute = false,
+      	FileName = program,
+      	Arguments = commandline,
+        };
+      }
+      try 
+      {
         Log.Info(string.Format("Testing for command: {0} {1}", program, commandline));
         var process = Process.Start(processStartInfo);
         process.WaitForExit();
-        if (process.ExitCode == 0) {
+        if (process.ExitCode == 0) 
+        {
           Log.Info("   command found (0 exit code)");
           return true;
         }
-        else {
+        else
+        {
           Log.Warn("   command not found (non-0 exit code)");
           return false;
         }
       }
-      catch (Exception ex) {
+      catch (Exception ex) 
+      {
         Log.Warn("   command exception: " + ex.ToString());
         Log.Warn("   command not found");
         return false;
