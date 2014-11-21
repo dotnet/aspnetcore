@@ -3,7 +3,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Routing;
-using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
@@ -26,31 +25,25 @@ namespace MusicStore
 
         public void ConfigureServices(IServiceCollection services)
         {
-            //If this type is present - we're on mono
-            var runningOnMono = Type.GetType("Mono.Runtime") != null;
+            //Sql client not available on mono
+            var useInMemoryStore = Type.GetType("Mono.Runtime") != null;
 
             // Add EF services to the services container
-            if (runningOnMono)
+            if (useInMemoryStore)
             {
-                services.AddEntityFramework()
+                services.AddEntityFramework(Configuration)
                         .AddInMemoryStore()
-                        .AddDbContext<MusicStoreContext>(options =>
-                        {
-                            options.UseInMemoryStore();
-                        }); ;
+                        .AddDbContext<MusicStoreContext>();
             }
             else
             {
-                services.AddEntityFramework()
+                services.AddEntityFramework(Configuration)
                         .AddSqlServer()
-                        .AddDbContext<MusicStoreContext>(options =>
-                        {
-                            options.UseSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString"));
-                        });
+                        .AddDbContext<MusicStoreContext>();
             }
 
             // Add Identity services to the services container
-            services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(Configuration.GetSubKey("Identity"));
+            services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(Configuration);
 
             services.ConfigureFacebookAuthentication(options =>
             {

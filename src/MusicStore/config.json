@@ -5,5 +5,10 @@
         "DefaultConnection": {
             "Connectionstring": "Server=(localdb)\\MSSQLLocalDB;Database=MusicStore;Trusted_Connection=True;MultipleActiveResultSets=true"
         }
+    },
+    "EntityFramework": {
+        "MusicStoreContext": {
+            "ConnectionStringKey": "Data:DefaultConnection:ConnectionString"
+        }
     }
 }

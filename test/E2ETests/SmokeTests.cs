@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using Xunit;
 
 namespace E2ETests
@@ -87,6 +88,7 @@ namespace E2ETests
                         {
                             Console.WriteLine("Failed to complete the request with error: {0}", exception.ToString());
                             Console.WriteLine("Retrying request..");
+                            Thread.Sleep(1 * 1000); //Wait for a second before retry
                         }
                     }
                 }

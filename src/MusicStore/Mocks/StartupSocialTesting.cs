@@ -4,8 +4,6 @@ using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Security.Cookies;
-using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
@@ -13,7 +11,6 @@ using Microsoft.AspNet.Security.Facebook;
 using Microsoft.AspNet.Security.Google;
 using Microsoft.AspNet.Security.Twitter;
 using Microsoft.AspNet.Security.MicrosoftAccount;
-using Microsoft.AspNet.Security;
 using Microsoft.Framework.Cache.Memory;
 using MusicStore.Mocks.Common;
 using MusicStore.Mocks.Facebook;
@@ -27,46 +24,44 @@ namespace MusicStore
 {
     public class StartupSocialTesting
     {
-        public void Configure(IApplicationBuilder app)
+        public StartupSocialTesting()
         {
-            Console.WriteLine("Social Testing mode...");
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
-            var configuration = new Configuration()
+            Configuration = new Configuration()
                         .AddJsonFile("config.json")
                         .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
+        }
 
+        public IConfiguration Configuration { get; private set; }
+
+        public void Configure(IApplicationBuilder app)
+        {
             //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
             //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
             app.UseErrorPage(ErrorPageOptions.ShowAll);
 
             app.UseServices(services =>
             {
-                //If this type is present - we're on mono
-                var runningOnMono = Type.GetType("Mono.Runtime") != null;
+                //Sql client not available on mono
+                var useInMemoryStore = Type.GetType("Mono.Runtime") != null;
 
                 // Add EF services to the services container
-                if (runningOnMono)
+                if (useInMemoryStore)
                 {
-                    services.AddEntityFramework()
+                    services.AddEntityFramework(Configuration)
                             .AddInMemoryStore()
-                            .AddDbContext<MusicStoreContext>(options =>
-                            {
-                                options.UseInMemoryStore();
-                            }); ;
+                            .AddDbContext<MusicStoreContext>();
                 }
                 else
                 {
-                    services.AddEntityFramework()
+                    services.AddEntityFramework(Configuration)
                             .AddSqlServer()
-                            .AddDbContext<MusicStoreContext>(options =>
-                            {
-                                options.UseSqlServer(configuration.Get("Data:DefaultConnection:ConnectionString"));
-                            });
+                            .AddDbContext<MusicStoreContext>();
                 }
 
                 // Add Identity services to the services container
-                services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(configuration);
+                services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(Configuration);
 
                 services.ConfigureFacebookAuthentication(options =>
                 {
