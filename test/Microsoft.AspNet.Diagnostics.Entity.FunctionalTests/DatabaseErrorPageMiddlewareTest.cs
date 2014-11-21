@@ -13,7 +13,9 @@ using Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Helpers;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Migrations.Infrastructure;
+using Microsoft.Data.Entity.Utilities;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Xunit;
@@ -157,7 +159,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             {
                 using (var db = context.ApplicationServices.GetService<BloggingContextWithPendingModelChanges>())
                 {
-                    var services = (MigrationsDataStoreServices)db.Configuration.DataStoreServices;
+                    var contextServices = ((IDbContextServices)db).ScopedServiceProvider;
+                    var services = (MigrationsDataStoreServices)contextServices.GetRequiredService<DbContextConfiguration>().DataStoreServices;
                     services.Migrator.ApplyMigrations();
 
                     db.Blogs.Add(new Blog());

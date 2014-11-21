@@ -8,10 +8,12 @@ using Microsoft.AspNet.Diagnostics.Entity.Views;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Migrations;
 using Microsoft.Data.Entity.Migrations.Infrastructure;
 using Microsoft.Data.Entity.Migrations.Utilities;
 using Microsoft.Data.Entity.Relational;
+using Microsoft.Data.Entity.Utilities;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using System;
@@ -81,15 +83,17 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                                 {
                                     var databaseExists = dbContext.Database.AsRelational().Exists();
 
-                                    var services = (MigrationsDataStoreServices)dbContext.Configuration.DataStoreServices;
+                                    var contextServices = ((IDbContextServices)dbContext).ScopedServiceProvider;
+                                    var services = (MigrationsDataStoreServices)contextServices.GetRequiredService<DbContextConfiguration>().DataStoreServices;
+                                    var migrator = services.Migrator;
 
-                                    var pendingMigrations = services.Migrator.GetPendingMigrations().Select(m => m.GetMigrationId());
+                                    var pendingMigrations = migrator.GetPendingMigrations().Select(m => m.GetMigrationId());
 
                                     var pendingModelChanges = true;
-                                    var snapshot = services.Migrator.MigrationAssembly.Model;
+                                    var snapshot = migrator.MigrationAssembly.Model;
                                     if (snapshot != null)
                                     {
-                                        pendingModelChanges = services.Migrator.ModelDiffer.Diff(snapshot, dbContext.Model).Any();
+                                        pendingModelChanges = migrator.ModelDiffer.Diff(snapshot, dbContext.Model).Any();
                                     }
 
                                     if ((!databaseExists && pendingMigrations.Any()) || pendingMigrations.Any() || pendingModelChanges)
