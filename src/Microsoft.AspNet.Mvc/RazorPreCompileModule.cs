@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.DependencyInjection.ServiceLookup;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime;
 
