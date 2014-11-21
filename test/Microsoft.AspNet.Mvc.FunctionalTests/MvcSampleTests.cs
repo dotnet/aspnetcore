@@ -20,8 +20,20 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             TestHelper.CreateServices("MvcSample.Web", Path.Combine("..", "..", "samples"));
         private readonly Action<IApplicationBuilder> _app = new MvcSample.Web.Startup().Configure;
 
-        [Fact]
-        public async Task Home_Index_ReturnsSuccess()
+        [Theory]
+        [InlineData("")]                        // Shared/MyView.cshtml
+        [InlineData("/")]                       // Shared/MyView.cshtml
+        [InlineData("/Home/Index")]             // Shared/MyView.cshtml
+        [InlineData("/Home/Create")]            // Home/Create.cshtml
+        [InlineData("/Home/FlushPoint")]        // Home/FlushPoint.cshtml
+        [InlineData("/Home/InjectSample")]      // Home/InjectSample.cshtml
+        [InlineData("/Home/Language")]          // Home/Language.cshtml
+        [InlineData("/Home/MyView")]            // Shared/MyView.cshtml
+        [InlineData("/Home/NullUser")]          // Home/NullUser.cshtml
+        [InlineData("/Home/Post")]              // Shared/MyView.cshtml with null User
+        [InlineData("/Home/SaveUser")]          // Shared/MyView.cshtml with uninitialized User instance
+        [InlineData("/Home/ValidationSummary")] // Home/ValidationSummary.cshtml
+        public async Task Home_Pages_ReturnSuccess(string path)
         {
             using (TestHelper.ReplaceCallContextServiceLocationService(_services))
             {
@@ -30,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 var client = server.CreateClient();
 
                 // Act
-                var response = await client.GetAsync("http://localhost/Home/Index");
+                var response = await client.GetAsync("http://localhost" + path);
 
                 // Assert
                 Assert.NotNull(response);
