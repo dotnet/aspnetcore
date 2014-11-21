@@ -361,7 +361,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 data.Add(null, Create("/", order: 2), 2);
                 data.Add(null, Create("/", order: null), null);
 
-                // We don't a test case for (left = null, right = null) as it is already tested in another test 
+                // We don't a test case for (left = null, right = null) as it is already tested in another test
                 // and will produce a null ReflectedAttributeRouteModel, which complicates the test case.
 
                 return data;

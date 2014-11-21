@@ -9,7 +9,7 @@ using System.Net.Http.Headers;
 namespace System.Net.Http.Formatting
 {
     /// <summary>
-    /// Performs content negotiation. 
+    /// Performs content negotiation.
     /// This is the process of selecting a response writer (formatter) in compliance with header values in the request.
     /// </summary>
     public interface IContentNegotiator

@@ -19,28 +19,28 @@ namespace Microsoft.AspNet.Mvc
     public interface IOutputFormatter
     {
         /// <summary>
-        /// Gets a filtered list of content types which are supported by this formatter 
+        /// Gets a filtered list of content types which are supported by this formatter
         /// for the <paramref name="declaredType"/> and <paramref name="contentType"/>.
         /// </summary>
         /// <param name="declaredType">The declared type for which the supported content types are desired.</param>
         /// <param name="runtimeType">The runtime type for which the supported content types are desired.</param>
         /// <param name="contentType">
-        /// The content type for which the supported content types are desired, or <c>null</c> if any content 
+        /// The content type for which the supported content types are desired, or <c>null</c> if any content
         /// type can be used.
         /// </param>
         /// <returns>Content types which are supported by this formatter.</returns>
         /// <remarks>
         /// If the value of <paramref name="contentType"/> is <c>null</c>, then the formatter should return a list
-        /// of all content types that it can produce for the given data type. This may occur during content 
+        /// of all content types that it can produce for the given data type. This may occur during content
         /// negotiation when the HTTP Accept header is not specified, or when no match for the value in the Accept
         /// header can be found.
-        /// 
+        ///
         /// If the value of <paramref name="contentType"/> is not <c>null</c>, then the formatter should return
         /// a list of all content types that it can produce which match the given data type and content type.
         /// </remarks>
         IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(
-            Type declaredType, 
-            Type runtimeType, 
+            Type declaredType,
+            Type runtimeType,
             MediaTypeHeaderValue contentType);
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="context">The formatter context associated with the call.</param>
         /// <param name="contentType">The desired contentType on the response.</param>
-        /// <returns>True if this <see cref="IOutputFormatter"/> supports the passed in 
+        /// <returns>True if this <see cref="IOutputFormatter"/> supports the passed in
         /// <paramref name="contentType"/> and is able to serialize the object
         /// represent by <paramref name="context"/>'s Object property.
         /// False otherwise.</returns>

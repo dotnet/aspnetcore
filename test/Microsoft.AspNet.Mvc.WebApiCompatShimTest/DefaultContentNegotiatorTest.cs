@@ -671,7 +671,7 @@ namespace System.Net.Http.Formatting
             {
                 return new TheoryData<string[], string[]>
                 {
-                    { 
+                    {
                         new string[]
                         {
                             "application/*",
@@ -689,7 +689,7 @@ namespace System.Net.Http.Formatting
                             "*/*;q=0.4",
                             "text/plain;q=0.6",
                             "text/xml",
-                        }, 
+                        },
                         new string[]
                         {
                             "text/plain",

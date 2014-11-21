@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             _next = next;
 
             // Order all the entries by order, then precedence, and then finally by template in order to provide
-            // a stable routing and link generation order for templates with same order and precedence. 
+            // a stable routing and link generation order for templates with same order and precedence.
             // We use ordinal comparison for the templates because we only care about them being exactly equal and
             // we don't want to make any equivalence between templates based on the culture of the machine.
 
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // So, we need to exclude from here any values that are 'required link values', but aren't
             // parameters in the template.
             //
-            // Ex: 
+            // Ex:
             //      template: api/Products/{action}
             //      required values: { id = "5", action = "Buy", Controller = "CoolProducts" }
             //
@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             {
                 // If the required value is an 'empty' route value, then ignore ambient values.
                 // This handles a case where we're generating a link to an action like:
-                // { area = "", controller = "Home", action = "Index" } 
+                // { area = "", controller = "Home", action = "Index" }
                 //
                 // and the ambient values has a value for area.
                 if (value != null)

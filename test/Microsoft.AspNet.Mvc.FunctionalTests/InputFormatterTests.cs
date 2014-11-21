@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
             var content = new StringContent(jsonInput, Encoding.UTF8, requestContentType);
-            
+
             // Act
             var response = await client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
             var responseBody = await response.Content.ReadAsStringAsync();

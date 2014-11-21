@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public ActionContext ActionContext { get; private set; }
 
         /// <summary>
-        /// Gets the view name 
+        /// Gets the view name
         /// </summary>
         public string ViewName { get; private set; }
 

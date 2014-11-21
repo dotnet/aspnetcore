@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var topLevelObject = bindingContext.ModelMetadata.ContainerType == null;
             var isThereAnExplicitAlias = bindingContext.ModelMetadata.ModelName != null;
 
-            
+
             // The first check is necessary because if we fallback to empty prefix, we do not want to depend
             // on a value provider to provide a value for empty prefix.
             var containsPrefix = (bindingContext.ModelName == string.Empty && topLevelObject) ||
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         protected virtual object CreateModel(ModelBindingContext bindingContext)
         {
-            // If the Activator throws an exception, we want to propagate it back up the call stack, since the 
+            // If the Activator throws an exception, we want to propagate it back up the call stack, since the
             // application developer should know that this was an invalid type to try to bind to.
             return Activator.CreateInstance(bindingContext.ModelType);
         }
@@ -142,8 +142,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 if (validationState == ModelValidationState.Unvalidated)
                 {
                     // TODO: https://github.com/aspnet/Mvc/issues/450 Revive ModelBinderConfig
-                    // var errorMessage =  ModelBinderConfig.ValueRequiredErrorMessageProvider(e.ValidationContext, 
-                    //                                                                            modelMetadata, 
+                    // var errorMessage =  ModelBinderConfig.ValueRequiredErrorMessageProvider(e.ValidationContext,
+                    //                                                                            modelMetadata,
                     //                                                                            incomingValue);
                     var errorMessage = Resources.ModelBinderConfig_ValueRequired;
                     if (errorMessage != null)
@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             propertyMetadata.Model = value;
 
             // 'Required' validators need to run first so that we can provide useful error messages if
-            // the property setters throw, e.g. if we're setting entity keys to null. 
+            // the property setters throw, e.g. if we're setting entity keys to null.
             if (value == null)
             {
                 var modelStateKey = dtoResult.ValidationNode.ModelStateKey;

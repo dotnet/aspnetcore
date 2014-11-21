@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
         }
 
-        public void ParameterHasEmptyFieldPrefix([Bind(Prefix = "")] MySimpleModel foo, 
+        public void ParameterHasEmptyFieldPrefix([Bind(Prefix = "")] MySimpleModel foo,
                                                  [Bind(Prefix = "")] MySimpleModelWithTypeBasedBind foo1)
         {
         }
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
             actionBindingContextProvider.Setup(p => p.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
                                         .Returns(Task.FromResult(bindingContext));
-                                                    
+
             var invoker = new DefaultControllerActionArgumentBinder(
                 actionBindingContextProvider.Object);
 
@@ -283,7 +283,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             }
         }
 
-   
+
         private class NonValueProviderBinderMetadataAttribute : Attribute, IBinderMetadata
         {
         }

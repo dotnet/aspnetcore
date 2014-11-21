@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class ControllerModel
     {
-        public ControllerModel([NotNull] TypeInfo controllerType, 
+        public ControllerModel([NotNull] TypeInfo controllerType,
                                [NotNull] IReadOnlyList<object> attributes)
         {
             ControllerType = controllerType;

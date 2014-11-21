@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Mvc.Internal.DecisionTree
             var checkout = Assert.Single(action.Branches);
             Assert.Equal("Checkout", checkout.Key);
             Assert.Empty(checkout.Value.Criteria);
-            Assert.Same(item3, Assert.Single(checkout.Value.Matches));           
+            Assert.Same(item3, Assert.Single(checkout.Value.Matches));
         }
 
         [Fact]

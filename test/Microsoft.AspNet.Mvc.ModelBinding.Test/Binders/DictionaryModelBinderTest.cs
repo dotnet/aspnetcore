@@ -27,9 +27,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 },
                 ModelBinder = CreateKvpBinder(),
                 MetadataProvider = metadataProvider
-            };            
+            };
             var binder = new DictionaryModelBinder<int, string>();
-            
+
             // Act
             bool retVal = await binder.BindModelAsync(bindingContext);
 

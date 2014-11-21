@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 
             // Act
             var metadata = ExpressionMetadataProvider.FromLambdaExpression<TestModel,Category>(
-                model => model.SelectedCategory, 
+                model => model.SelectedCategory,
                 viewData,
                 provider);
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 
             // Act
             var metadata = ExpressionMetadataProvider.FromStringExpression("Object.SelectedCategory",
-                                                                           viewData, 
+                                                                           viewData,
                                                                            provider);
 
             // Assert

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
         private readonly AntiForgeryOptions _config;
         private readonly IAntiForgeryAdditionalDataProvider _additionalDataProvider;
 
-        internal TokenProvider(AntiForgeryOptions config, 
+        internal TokenProvider(AntiForgeryOptions config,
                                IClaimUidExtractor claimUidExtractor,
                                IAntiForgeryAdditionalDataProvider additionalDataProvider)
         {

@@ -185,7 +185,7 @@ namespace System.Web.Http
         [NonAction]
         public virtual CreatedAtRouteNegotiatedContentResult<T> CreatedAtRoute<T>(
             [NotNull] string routeName,
-            object routeValues, 
+            object routeValues,
             [NotNull] T content)
         {
             var values = routeValues as IDictionary<string, object>;
@@ -395,7 +395,7 @@ namespace System.Web.Http
         /// <typeparam name="TEntity">The type of the entity to be validated.</typeparam>
         /// <param name="entity">The entity being validated.</param>
         /// <param name="keyPrefix">
-        /// The key prefix under which the model state errors would be added in the 
+        /// The key prefix under which the model state errors would be added in the
         /// <see cref="ApiController.ModelState"/>.
         /// </param>
         public void Validate<TEntity>(TEntity entity, string keyPrefix)

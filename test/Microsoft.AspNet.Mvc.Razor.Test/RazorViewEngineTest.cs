@@ -443,7 +443,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                      .Returns("some-view-location")
                      .Verifiable();
 
-            var viewEngine = CreateViewEngine(pageFactory.Object, 
+            var viewEngine = CreateViewEngine(pageFactory.Object,
                                               viewFactory.Object,
                                               new[] { expander.Object },
                                               cacheMock.Object);

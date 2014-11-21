@@ -126,10 +126,10 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                 }
             }
 
-            return GetMetadataFromProvider(modelAccessor, 
-                                           modelType ?? typeof(string), 
-                                           propertyName, 
-                                           container, 
+            return GetMetadataFromProvider(modelAccessor,
+                                           modelType ?? typeof(string),
+                                           propertyName,
+                                           container,
                                            containerType,
                                            metadataProvider);
         }
@@ -156,11 +156,11 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 
         // An IModelMetadataProvider is not required unless this method is called. Therefore other methods in this
         // class lack [NotNull] attributes for their corresponding parameter.
-        private static ModelMetadata GetMetadataFromProvider(Func<object> modelAccessor, 
+        private static ModelMetadata GetMetadataFromProvider(Func<object> modelAccessor,
                                                              Type modelType,
-                                                             string propertyName, 
-                                                             object container, 
-                                                             Type containerType, 
+                                                             string propertyName,
+                                                             object container,
+                                                             Type containerType,
                                                              [NotNull] IModelMetadataProvider metadataProvider)
         {
             if (containerType != null && !string.IsNullOrEmpty(propertyName))

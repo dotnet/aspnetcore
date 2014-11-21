@@ -26,7 +26,7 @@ namespace System.Web.Http
         /// <param name="content">The content value to negotiate and format in the entity body.</param>
         /// <param name="formatters">The formatters to use to negotiate and format the content.</param>
         public CreatedAtRouteNegotiatedContentResult(
-            [NotNull] string routeName, 
+            [NotNull] string routeName,
             [NotNull] IDictionary<string, object> routeValues,
             [NotNull] T content)
             : base(HttpStatusCode.Created, content)

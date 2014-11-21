@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private ViewDataDictionary CreateViewDataDictionary(ViewContext context, PageActivationInfo activationInfo)
         {
-            // Create a ViewDataDictionary<TModel> if the ViewContext.ViewData is not set or the type of 
+            // Create a ViewDataDictionary<TModel> if the ViewContext.ViewData is not set or the type of
             // ViewContext.ViewData is an incompatibile type.
             if (context.ViewData == null)
             {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private PageActivationInfo CreateViewActivationInfo(Type type)
         {
-            // Look for a property named "Model". If it is non-null, we'll assume this is 
+            // Look for a property named "Model". If it is non-null, we'll assume this is
             // the equivalent of TModel Model property on RazorPage<TModel>
             var modelProperty = type.GetRuntimeProperty(ModelPropertyName);
             if (modelProperty == null)

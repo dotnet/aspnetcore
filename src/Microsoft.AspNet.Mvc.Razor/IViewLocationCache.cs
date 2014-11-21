@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets a cached view location based on the specified <paramref name="context"/>.
         /// </summary>
-        /// <param name="context">The <see cref="ViewLocationExpanderContext"/> for the current view location 
+        /// <param name="context">The <see cref="ViewLocationExpanderContext"/> for the current view location
         /// expansion.</param>
         /// <returns>The cached location, if available, <c>null</c> otherwise.</returns>
         string Get(ViewLocationExpanderContext context);
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Adds a cache entry for values specified by <paramref name="context"/>.
         /// </summary>
-        /// <param name="context">The <see cref="ViewLocationExpanderContext"/> for the current view location 
+        /// <param name="context">The <see cref="ViewLocationExpanderContext"/> for the current view location
         /// expansion.</param>
         /// <param name="value">The view location that is to be cached.</param>
         void Set(ViewLocationExpanderContext context, string value);

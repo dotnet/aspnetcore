@@ -134,9 +134,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private static HtmlHelper<TModel> GetHtmlHelper<TModel>(
             ViewDataDictionary<TModel> viewData,
-            IUrlHelper urlHelper, 
-            ICompositeViewEngine viewEngine, 
-            IModelMetadataProvider provider, 
+            IUrlHelper urlHelper,
+            ICompositeViewEngine viewEngine,
+            IModelMetadataProvider provider,
             Func<IHtmlHelper, IHtmlHelper> innerHelperWrapper,
             IHtmlGenerator htmlGenerator)
         {

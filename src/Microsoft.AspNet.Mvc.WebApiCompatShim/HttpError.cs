@@ -13,8 +13,8 @@ using ShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
 namespace System.Web.Http
 {
     /// <summary>
-    /// Defines a serializable container for storing error information. This information is stored 
-    /// as key/value pairs. The dictionary keys to look up standard error information are available 
+    /// Defines a serializable container for storing error information. This information is stored
+    /// as key/value pairs. The dictionary keys to look up standard error information are available
     /// on the <see cref="HttpErrorKeys"/> type.
     /// </summary>
     [XmlRoot("Error")]
@@ -104,7 +104,7 @@ namespace System.Web.Http
         }
 
         /// <summary>
-        /// The high-level, user-visible message explaining the cause of the error. Information carried in this field 
+        /// The high-level, user-visible message explaining the cause of the error. Information carried in this field
         /// should be considered public in that it will go over the wire regardless of the value of error detail policy.
         /// As a result care should be taken not to disclose sensitive information about the server or the application.
         /// </summary>
@@ -120,7 +120,7 @@ namespace System.Web.Http
         /// <remarks>
         /// The inclusion of <see cref="System.Exception"/> information carried in the <see cref="ModelState"/> is
         /// controlled by the error detail policy. All other information in the <see cref="ModelState"/>
-        /// should be considered public in that it will go over the wire. As a result care should be taken not to 
+        /// should be considered public in that it will go over the wire. As a result care should be taken not to
         /// disclose sensitive information about the server or the application.
         /// </remarks>
         public HttpError ModelState
@@ -132,8 +132,8 @@ namespace System.Web.Http
         /// A detailed description of the error intended for the developer to understand exactly what failed.
         /// </summary>
         /// <remarks>
-        /// The inclusion of this field is controlled by the error detail policy. The 
-        /// field is expected to contain information about the server or the application that should not 
+        /// The inclusion of this field is controlled by the error detail policy. The
+        /// field is expected to contain information about the server or the application that should not
         /// be disclosed broadly.
         /// </remarks>
         public string MessageDetail
@@ -146,8 +146,8 @@ namespace System.Web.Http
         /// The message of the <see cref="System.Exception"/> if available.
         /// </summary>
         /// <remarks>
-        /// The inclusion of this field is controlled by the error detail policy. The 
-        /// field is expected to contain information about the server or the application that should not 
+        /// The inclusion of this field is controlled by the error detail policy. The
+        /// field is expected to contain information about the server or the application that should not
         /// be disclosed broadly.
         /// </remarks>
         public string ExceptionMessage
@@ -160,8 +160,8 @@ namespace System.Web.Http
         /// The type of the <see cref="System.Exception"/> if available.
         /// </summary>
         /// <remarks>
-        /// The inclusion of this field is controlled by the error detail policy. The 
-        /// field is expected to contain information about the server or the application that should not 
+        /// The inclusion of this field is controlled by the error detail policy. The
+        /// field is expected to contain information about the server or the application that should not
         /// be disclosed broadly.
         /// </remarks>
         public string ExceptionType
@@ -174,8 +174,8 @@ namespace System.Web.Http
         /// The stack trace information associated with this instance if available.
         /// </summary>
         /// <remarks>
-        /// The inclusion of this field is controlled by the error detail policy. The 
-        /// field is expected to contain information about the server or the application that should not 
+        /// The inclusion of this field is controlled by the error detail policy. The
+        /// field is expected to contain information about the server or the application that should not
         /// be disclosed broadly.
         /// </remarks>
         public string StackTrace
@@ -188,8 +188,8 @@ namespace System.Web.Http
         /// The inner <see cref="System.Exception"/> associated with this instance if available.
         /// </summary>
         /// <remarks>
-        /// The inclusion of this field is controlled by the error detail policy. The 
-        /// field is expected to contain information about the server or the application that should not 
+        /// The inclusion of this field is controlled by the error detail policy. The
+        /// field is expected to contain information about the server or the application that should not
         /// be disclosed broadly.
         /// </remarks>
         public HttpError InnerException

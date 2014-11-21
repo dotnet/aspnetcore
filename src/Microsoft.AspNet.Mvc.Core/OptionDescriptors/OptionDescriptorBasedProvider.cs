@@ -8,7 +8,7 @@ using Microsoft.Framework.DependencyInjection;
 namespace Microsoft.AspNet.Mvc.OptionDescriptors
 {
     /// <summary>
-    /// Provides a default implementation for instantiating options from a sequence of 
+    /// Provides a default implementation for instantiating options from a sequence of
     /// <see cref="OptionDescriptor{TOption}"/>.
     /// </summary>
     /// <typeparam name="TOption">The type of the option.</typeparam>

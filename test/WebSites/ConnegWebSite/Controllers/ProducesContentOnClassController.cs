@@ -21,7 +21,7 @@ namespace ConnegWebsite
             base.OnActionExecuted(context);
         }
 
-        // No Content type defined by the derived class action. 
+        // No Content type defined by the derived class action.
         public override string ReturnClassName()
         {
             // should be written using the content defined at base class's action.

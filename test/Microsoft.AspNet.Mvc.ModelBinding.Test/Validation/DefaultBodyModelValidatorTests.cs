@@ -359,7 +359,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 var mockExcludeTypeFilter = new Mock<IExcludeTypeValidationFilter>();
                 mockExcludeTypeFilter.Setup(o => o.IsTypeExcluded(It.IsAny<Type>()))
-                                     .Returns<Type>(excludedType => 
+                                     .Returns<Type>(excludedType =>
                                                         excludedTypes.Any(t => t.IsAssignableFrom(excludedType)));
 
                 excludedValidationTypesPredicate.Add(mockExcludeTypeFilter.Object);

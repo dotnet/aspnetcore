@@ -40,9 +40,9 @@ namespace Microsoft.AspNet.Mvc
         public ModelStateDictionary ModelState { get; private set; }
 
         public ActionDescriptor ActionDescriptor { get; private set; }
-        
+
         /// <summary>
-        /// Input formatters associated with this context. 
+        /// Input formatters associated with this context.
         /// The formatters are populated only after IInputFormattersProvider runs.
         /// </summary>
         public IList<IInputFormatter> InputFormatters { get; set; }

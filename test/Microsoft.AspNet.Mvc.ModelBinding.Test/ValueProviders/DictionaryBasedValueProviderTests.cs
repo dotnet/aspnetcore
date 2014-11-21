@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 { "test-key", "value" }
             };
             var provider = new DictionaryBasedValueProvider<TestValueProviderMetadata>(values);
-            
+
             // Act
             var result = await provider.GetValueAsync("not-test-key");
 

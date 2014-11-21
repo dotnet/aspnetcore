@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
-                new HttpMethod(httpMethod), 
+                new HttpMethod(httpMethod),
                 "http://localhost/api/Admin/WebAPIActionConventions");
 
             // Act
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
-                new HttpMethod(httpMethod), 
+                new HttpMethod(httpMethod),
                 "http://localhost/api/Blog/WebAPIActionConventions/" + actionName);
 
             // Act
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
-                new HttpMethod("POST"), 
+                new HttpMethod("POST"),
                 "http://localhost/api/Blog/WebAPIActionConventions/GetItems");
 
             // Act
@@ -605,7 +605,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedActionName, result.ActionName);
         }
 
-        // Verify response has all the methods in its Allow header. values are unsorted. 
+        // Verify response has all the methods in its Allow header. values are unsorted.
         private void AssertAllowedHeaders(HttpResponseMessage response, params HttpMethod[] allowedMethods)
         {
             foreach (var method in allowedMethods)

@@ -73,9 +73,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public static string RouteUrl(
-            [NotNull] this IUrlHelper helper, 
-            string routeName, 
-            object values, 
+            [NotNull] this IUrlHelper helper,
+            string routeName,
+            object values,
             string protocol)
         {
             return helper.RouteUrl(routeName, values, protocol, host: null, fragment: null);

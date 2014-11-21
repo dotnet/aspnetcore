@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc
     public interface IUrlHelper
     {
         /// <summary>
-        /// Generates a fully qualified or absolute URL for an action method by using the specified action name, 
+        /// Generates a fully qualified or absolute URL for an action method by using the specified action name,
         /// controller name, route values, protocol to use, host name and fragment.
         /// </summary>
         /// <param name="action">The name of the action method.</param>
@@ -25,13 +25,13 @@ namespace Microsoft.AspNet.Mvc
         /// Converts a virtual (relative) path to an application absolute path.
         /// </summary>
         /// <remarks>
-        /// If the specified content path does not start with the tilde (~) character, 
+        /// If the specified content path does not start with the tilde (~) character,
         /// this method returns <paramref name="contentPath"/> unchanged.
         /// </remarks>
         /// <param name="contentPath">The virtual path of the content.</param>
         /// <returns>The application absolute path.</returns>
         string Content(string contentPath);
-        
+
         /// <summary>
         /// Returns a value that indicates whether the URL is local.
         /// </summary>
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc
         bool IsLocalUrl(string url);
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for the specified route values by 
+        /// Generates a fully qualified or absolute URL for the specified route values by
         /// using the specified route name, protocol to use, host name and fragment.
         /// </summary>
         /// <param name="routeName">The name of the route that is used to generate URL.</param>

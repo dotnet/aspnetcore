@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             var selector = new DefaultInputFormatterSelector();
 
-            // Act 
+            // Act
             var selectedFormatter = selector.SelectFormatter(context);
 
             // Assert
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             var httpContext = Mock.Of<HttpContext>();
             return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-           
+
         }
 
         private class TestInputFormatter : IInputFormatter

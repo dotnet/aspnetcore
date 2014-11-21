@@ -11,14 +11,14 @@ namespace Microsoft.AspNet.Mvc
     public static class ModelBindingHelper
     {
         /// <summary>
-        /// Updates the specified model instance using the specified binder and value provider and 
+        /// Updates the specified model instance using the specified binder and value provider and
         /// executes validation using the specified sequence of validator providers.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
         /// <param name="model">The model instance to update.</param>
         /// <param name="prefix">The prefix to use when looking up values in the value provider.</param>
         /// <param name="httpContext">The context for the current executing request.</param>
-        /// <param name="modelState">The ModelStateDictionary used for maintaining state and 
+        /// <param name="modelState">The ModelStateDictionary used for maintaining state and
         /// results of model-binding validation.</param>
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The model binder used for binding.</param>

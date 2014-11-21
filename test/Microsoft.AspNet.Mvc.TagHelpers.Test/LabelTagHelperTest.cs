@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text, "NestedModel.Text",
                         new TagHelperOutputContent("Hello World", "Hello World", "NestedModel_Text") },
 
-                    // Note: Tests cases below here will not work in practice due to current limitations on indexing 
+                    // Note: Tests cases below here will not work in practice due to current limitations on indexing
                     // into ModelExpressions. Will be fixed in https://github.com/aspnet/Mvc/issues/1345.
                     { models, typeof(Model), () => models[0].Text, "[0].Text",
                         new TagHelperOutputContent(Environment.NewLine, "Text", "z0__Text") },

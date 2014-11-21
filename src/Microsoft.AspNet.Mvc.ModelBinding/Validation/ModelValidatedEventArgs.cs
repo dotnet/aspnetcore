@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public sealed class ModelValidatedEventArgs : EventArgs
     {
-        public ModelValidatedEventArgs([NotNull] ModelValidationContext validationContext, 
+        public ModelValidatedEventArgs([NotNull] ModelValidationContext validationContext,
                                        [NotNull] ModelValidationNode parentNode)
         {
             ValidationContext = validationContext;

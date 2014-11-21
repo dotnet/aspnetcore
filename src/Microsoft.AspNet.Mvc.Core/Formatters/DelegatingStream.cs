@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
-            // No-op. In CoreCLR this is equivalent to Close. 
+            // No-op. In CoreCLR this is equivalent to Close.
             // Given that we don't own the underlying stream, we never want to do anything interesting here.
         }
     }

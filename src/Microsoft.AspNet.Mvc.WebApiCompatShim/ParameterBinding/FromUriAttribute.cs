@@ -10,10 +10,10 @@ namespace System.Web.Http
     /// An attribute that specifies that the value can be bound from the query string or route data.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-    public class FromUriAttribute : 
-        Attribute, 
-        IQueryValueProviderMetadata, 
-        IRouteDataValueProviderMetadata, 
+    public class FromUriAttribute :
+        Attribute,
+        IQueryValueProviderMetadata,
+        IRouteDataValueProviderMetadata,
         IModelNameProvider
     {
         /// <inheritdoc />

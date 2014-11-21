@@ -5,7 +5,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public sealed class ComplexModelDtoResult
     {
-        public ComplexModelDtoResult(object model, 
+        public ComplexModelDtoResult(object model,
                                     [NotNull] ModelValidationNode validationNode)
         {
             Model = model;

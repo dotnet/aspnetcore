@@ -443,10 +443,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             var codeParser = new TestMvcCSharpRazorCodeParser();
             var reader = new SeekableTextReader(documentContents);
             var context = new ParserContext(
-                reader, 
-                codeParser, 
-                markupParser, 
-                markupParser, 
+                reader,
+                codeParser,
+                markupParser,
+                markupParser,
                 new ParserErrorSink());
             codeParser.Context = context;
             markupParser.Context = context;

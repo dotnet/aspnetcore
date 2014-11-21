@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
     /// <remarks>
     /// Implementaions of this interface can be registered in <see cref="MvcOptions.ApplicationModelConventions"/>
     /// to customize metadata about the application.
-    /// 
+    ///
     /// <see cref="IApplicationModelConvention"/> run before other types of customizations to the
     /// reflected model.
     /// </remarks>

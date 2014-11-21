@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="routeContext">The route context.</param>
         /// <param name="action">Information about the action.</param>
         /// <returns>
-        /// <see langword="true"/> if the action  selection is valid for the specified context; 
+        /// <see langword="true"/> if the action  selection is valid for the specified context;
         /// otherwise, <see langword="false"/>.
         /// </returns>
         public abstract bool IsValidForRequest(RouteContext routeContext, ActionDescriptor action);

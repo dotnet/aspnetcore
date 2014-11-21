@@ -133,8 +133,8 @@ namespace Microsoft.AspNet.Mvc
             MediaTypeHeaderValue mediaType = null;
             if (contentType == null)
             {
-                // If the desired content type is set to null, the current formatter is free to choose the 
-                // response media type. 
+                // If the desired content type is set to null, the current formatter is free to choose the
+                // response media type.
                 mediaType = SupportedMediaTypes.FirstOrDefault();
             }
             else
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Mvc
 
             context.SelectedEncoding = selectedEncoding;
 
-            // Override the content type value even if one already existed. 
+            // Override the content type value even if one already existed.
             selectedMediaType.Charset = selectedEncoding.WebName;
 
             context.SelectedContentType = context.SelectedContentType ?? selectedMediaType;

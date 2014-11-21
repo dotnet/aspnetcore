@@ -147,8 +147,8 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Act
             var contentTypes = formatter.GetSupportedContentTypes(
-                declaredType: typeof(string), 
-                runtimeType: typeof(string), 
+                declaredType: typeof(string),
+                runtimeType: typeof(string),
                 contentType: null);
 
             // Assert
@@ -207,8 +207,8 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Act
             var contentTypes = formatter.GetSupportedContentTypes(
-                typeof(int), 
-                typeof(int), 
+                typeof(int),
+                typeof(int),
                 contentType: MediaTypeHeaderValue.Parse("application/*"));
 
             // Assert
@@ -294,7 +294,7 @@ namespace Microsoft.AspNet.Mvc.Test
             public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
             {
                 // Do not set the selected media Type.
-                // The WriteResponseContentHeader should do it for you. 
+                // The WriteResponseContentHeader should do it for you.
                 return true;
             }
 

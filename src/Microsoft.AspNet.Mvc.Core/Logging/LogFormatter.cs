@@ -9,9 +9,9 @@ namespace Microsoft.AspNet.Mvc.Logging
     {
         /// <summary>
         /// A formatter for use with <see cref="Microsoft.Framework.Logging.ILogger.Write(
-        /// Framework.Logging.LogLevel, 
-        /// int, 
-        /// object, 
+        /// Framework.Logging.LogLevel,
+        /// int,
+        /// object,
         /// Exception, Func{object, Exception, string})"/>.
         /// </summary>
         public static string Formatter(object o, Exception e)

@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc
     public class JsonOutputFormatter : OutputFormatter, IJsonOutputFormatter
     {
         private JsonSerializerSettings _serializerSettings;
-        
+
         public JsonOutputFormatter()
         {
             SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc
 
             _serializerSettings = new JsonSerializerSettings();
         }
-        
+
         /// <summary>
         /// Gets or sets the <see cref="JsonSerializerSettings"/> used to configure the <see cref="JsonSerializer"/>.
         /// </summary>

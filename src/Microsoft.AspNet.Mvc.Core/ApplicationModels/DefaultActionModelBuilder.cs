@@ -40,12 +40,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // If the attribute that 'defines' a route is NOT an IActionHttpMethodProvider, then we'll include with
             // it, any IActionHttpMethodProvider that are 'silent' IRouteTemplateProviders. In this case the 'extra'
             // action for silent route providers isn't needed.
-            // 
+            //
             // Ex:
             // [HttpGet]
             // [AcceptVerbs("POST", "PUT")]
             // [HttpPost("Api/Things")]
-            // public void DoThing() 
+            // public void DoThing()
             //
             // This will generate 2 actions:
             // 1. [HttpPost("Api/Things")]
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Note that having a route attribute that doesn't define a route template _might_ be an error. We
             // don't have enough context to really know at this point so we just pass it on.
             var routeProviders = new List<object>();
-            
+
             var createActionForSilentRouteProviders = false;
             foreach (var attribute in attributes)
             {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 // [HttpGet]
                 // [HttpPost("Products")]
                 // public void Foo() { }
-                // 
+                //
                 // Is two actions. And...
                 //
                 // [HttpGet]
@@ -242,14 +242,14 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// <returns>An <see cref="ActionModel"/> for the given <see cref="MethodInfo"/>.</returns>
         /// <remarks>
         /// An action-method in code may expand into multiple <see cref="ActionModel"/> instances depending on how
-        /// the action is routed. In the case of multiple routing attributes, this method will invoked be once for 
+        /// the action is routed. In the case of multiple routing attributes, this method will invoked be once for
         /// each action that can be created.
-        /// 
+        ///
         /// If overriding this method, use the provided <paramref name="attributes"/> list to find metadata related to
         /// the action being created.
         /// </remarks>
         protected virtual ActionModel CreateActionModel(
-            [NotNull] MethodInfo methodInfo, 
+            [NotNull] MethodInfo methodInfo,
             [NotNull] IReadOnlyList<object> attributes)
         {
             var actionModel = new ActionModel(methodInfo, attributes)
@@ -289,7 +289,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                     .SelectMany(a => a.HttpMethods)
                     .Distinct());
 
-            var routeTemplateProvider = 
+            var routeTemplateProvider =
                 attributes
                 .OfType<IRouteTemplateProvider>()
                 .Where(a => !IsSilentRouteAttribute(a))
@@ -325,8 +325,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         private bool IsSilentRouteAttribute(IRouteTemplateProvider routeTemplateProvider)
         {
-            return 
-                routeTemplateProvider.Template == null && 
+            return
+                routeTemplateProvider.Template == null &&
                 routeTemplateProvider.Order == null &&
                 routeTemplateProvider.Name == null;
         }

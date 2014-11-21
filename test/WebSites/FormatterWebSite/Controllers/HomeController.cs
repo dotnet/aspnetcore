@@ -24,7 +24,7 @@ namespace FormatterWebSite.Controllers
         {
             return dummy != null;
         }
-        
+
         [HttpPost]
         public DummyClass GetDerivedDummyClass(int sampleInput)
         {

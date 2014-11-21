@@ -21,8 +21,8 @@ namespace MvcSample.Web
                 if (action.AttributeRouteModel.Name == null)
                 {
                     action.AttributeRouteModel.Name = string.Format(
-                        "{0}_{1}", 
-                        model.ControllerName, 
+                        "{0}_{1}",
+                        model.ControllerName,
                         action.ActionName);
                 }
             }

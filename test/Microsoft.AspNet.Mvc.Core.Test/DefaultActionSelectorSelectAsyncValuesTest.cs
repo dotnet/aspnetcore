@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.AspNet.Mvc.Logging
 {
     public class DefaultActionSelectorSelectAsyncValuesTest
-    {       
+    {
         [Fact]
         public void EmptyDefaultActionSelectorSelectAsyncValues_ReturnValue()
         {

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Act & Assert
             var ex = Assert.Throws<ArgumentNullException>(() => options.CookieName = null);
-            Assert.Equal("The 'CookieName' property of 'Microsoft.AspNet.Mvc.AntiForgeryOptions' must not be null." + 
+            Assert.Equal("The 'CookieName' property of 'Microsoft.AspNet.Mvc.AntiForgeryOptions' must not be null." +
                          Environment.NewLine + "Parameter name: value", ex.Message);
         }
 

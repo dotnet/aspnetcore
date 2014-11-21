@@ -47,7 +47,7 @@ namespace WebApiCompatShimWebSite
         {
             return OptionsAccessor.Options.Formatters.Select(f => f.GetType().FullName).ToArray();
         }
-        
+
         [HttpGet]
         public bool ValidateObject_Passes()
         {

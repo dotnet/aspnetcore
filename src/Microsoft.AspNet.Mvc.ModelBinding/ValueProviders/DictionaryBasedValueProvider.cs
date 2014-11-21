@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 result = null;
             }
-            
+
             return Task.FromResult(result);
         }
     }

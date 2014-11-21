@@ -9,7 +9,7 @@ using Microsoft.Framework.DependencyInjection;
 using MvcSample.Web.Filters;
 using MvcSample.Web.Services;
 
-#if ASPNET50 
+#if ASPNET50
 using Autofac;
 using Microsoft.Framework.DependencyInjection.Autofac;
 #endif
@@ -55,10 +55,10 @@ namespace MvcSample.Web
                         options.ViewLocationExpanders.Insert(0, expander);
                     });
 
-                    // Create the autofac container 
+                    // Create the autofac container
                     ContainerBuilder builder = new ContainerBuilder();
 
-                    // Create the container and use the default application services as a fallback 
+                    // Create the container and use the default application services as a fallback
                     AutofacRegistration.Populate(
                         builder,
                         services,

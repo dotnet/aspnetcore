@@ -51,20 +51,20 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         [Fact]
         public void OnActionExecuted_HandlesExceptionAndReturnsObjectResult()
         {
-            // Arrange 
+            // Arrange
             var filter = new HttpResponseExceptionActionFilter();
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = "GET";
 
             var context = new ActionExecutedContext(
                 new ActionContext(
-                            httpContext, 
+                            httpContext,
                             new RouteData(),
                             actionDescriptor: Mock.Of<ActionDescriptor>()),
                 filters: null);
             context.Exception = new HttpResponseException(HttpStatusCode.BadRequest);
 
-            // Act 
+            // Act
             filter.OnActionExecuted(context);
 
             // Assert

@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc
     internal static class TaskHelper
     {
         /// <summary>
-        /// Waits for the task to complete and throws the first faulting exception if the task is faulted. 
+        /// Waits for the task to complete and throws the first faulting exception if the task is faulted.
         /// It preserves the original stack trace when throwing the exception.
         /// </summary>
         /// <remarks>
@@ -23,11 +23,11 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Waits for the task to complete and throws the first faulting exception if the task is faulted. 
+        /// Waits for the task to complete and throws the first faulting exception if the task is faulted.
         /// It preserves the original stack trace when throwing the exception.
         /// </summary>
         /// <remarks>
-        /// Invoking this method is equivalent to calling <see cref="Task{TResult}.Result"/> on the 
+        /// Invoking this method is equivalent to calling <see cref="Task{TResult}.Result"/> on the
         /// <paramref name="task"/> if it is not completed.
         /// </remarks>
         public static TVal WaitAndThrowIfFaulted<TVal>(Task<TVal> task)

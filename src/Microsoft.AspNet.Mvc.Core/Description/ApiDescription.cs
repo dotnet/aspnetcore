@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.Description
         /// The CLR data type of the response or null.
         /// </summary>
         /// <remarks>
-        /// Will be null if the action returns no response, or if the response type is unclear. Use 
+        /// Will be null if the action returns no response, or if the response type is unclear. Use
         /// <see cref="ProducesAttribute"/> on an action method to specify a response type.
         /// </remarks>
         public Type ResponseType { get; set; }

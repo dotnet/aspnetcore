@@ -372,7 +372,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         [Flags]
         private enum TemplateParserState : uint
         {
-            // default state - allow non-special characters to pass through to the 
+            // default state - allow non-special characters to pass through to the
             // buffer.
             Plaintext = 0,
 

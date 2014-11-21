@@ -129,11 +129,11 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private IReadOnlyList<ActionSelectorCandidate> EvaluateActionConstraints(
-            RouteContext context, 
-            IReadOnlyList<ActionSelectorCandidate> candidates, 
+            RouteContext context,
+            IReadOnlyList<ActionSelectorCandidate> candidates,
             int? startingOrder)
         {
-            // Find the next group of constraints to process. This will be the lowest value of 
+            // Find the next group of constraints to process. This will be the lowest value of
             // order that is higher than startingOrder.
             int? order = null;
             foreach (var candidate in candidates)
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Mvc
 
             _actionConstraintProvider.Invoke(context);
 
-            return 
+            return
                 context.Results
                 .Where(item => item.Constraint != null)
                 .Select(item => item.Constraint)

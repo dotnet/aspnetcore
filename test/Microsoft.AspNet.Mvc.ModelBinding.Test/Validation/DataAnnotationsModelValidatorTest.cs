@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class DataAnnotationsModelValidatorTest
     {
-        private static DataAnnotationsModelMetadataProvider _metadataProvider = 
+        private static DataAnnotationsModelMetadataProvider _metadataProvider =
             new DataAnnotationsModelMetadataProvider();
 
         [Fact]

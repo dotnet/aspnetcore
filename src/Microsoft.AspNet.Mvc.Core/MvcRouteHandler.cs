@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc
                         Resources.FormatActionInvokerFactory_CouldNotCreateInvoker(
                             actionDescriptor.DisplayName));
 
-                    // Add tracing/logging (what do we think of this pattern of 
+                    // Add tracing/logging (what do we think of this pattern of
                     // tacking on extra data on the exception?)
                     ex.Data.Add("AD", actionDescriptor);
                     throw ex;

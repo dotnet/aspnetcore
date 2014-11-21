@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 new TestApplicationEnvironment(appEnvironment, appBasePath));
 
             // Injecting a custom assembly provider via configuration setting. It's not good enough to just
-            // add the service directly since it's registered by MVC. 
+            // add the service directly since it's registered by MVC.
             var providerType = CreateAssemblyProviderType(applicationWebSiteName);
 
             var configuration = new TestConfigurationProvider();

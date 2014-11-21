@@ -80,10 +80,10 @@ namespace Microsoft.AspNet.Mvc.Filters
 
             // BinarySearch will return the index of where the item _should_be_ in the list.
             //
-            // If index > 0: 
+            // If index > 0:
             //      Other items in the list have the same order and scope - the item was 'found'.
             //
-            // If index < 0: 
+            // If index < 0:
             //      No other items in the list have the same order and scope - the item was not 'found'
             //      Index will be the bitwise compliment of of the 'right' location.
             var index = context.Results.BinarySearch(item, FilterItemOrderComparer.Comparer);

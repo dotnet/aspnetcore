@@ -7,7 +7,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Provides an implementation of <see cref="IExcludeTypeValidationFilter"/> which can filter 
+    /// Provides an implementation of <see cref="IExcludeTypeValidationFilter"/> which can filter
     /// based on a type.
     /// </summary>
     public class DefaultTypeBasedExcludeFilter : IExcludeTypeValidationFilter
@@ -30,6 +30,6 @@ namespace Microsoft.AspNet.Mvc
         public bool IsTypeExcluded([NotNull] Type propertyType)
         {
             return ExcludedType.IsAssignableFrom(propertyType);
-        }    
+        }
     }
 }

@@ -10,7 +10,7 @@ using Microsoft.Framework.OptionsModel;
 namespace Microsoft.AspNet.Mvc.OptionDescriptors
 {
     /// <inheritdoc />
-    public class DefaultValueProviderFactoryProvider : 
+    public class DefaultValueProviderFactoryProvider :
         OptionDescriptorBasedProvider<IValueProviderFactory>, IValueProviderFactoryProvider
     {
         /// <summary>
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         /// </summary>
         /// <param name="options">An accessor to the <see cref="MvcOptions"/> configured for this application.</param>
         /// <param name="typeActivator">An <see cref="ITypeActivator"/> instance used to instantiate types.</param>
-        /// <param name="serviceProvider">A <see cref="IServiceProvider"/> instance that retrieves services from the 
+        /// <param name="serviceProvider">A <see cref="IServiceProvider"/> instance that retrieves services from the
         /// service collection.</param>
         public DefaultValueProviderFactoryProvider(
             IOptions<MvcOptions> optionsAccessor,

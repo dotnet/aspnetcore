@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="action">The <see cref="ActionDescriptor"/> for which constraints are being created.</param>
         /// <param name="items">The list of <see cref="ActionConstraintItem"/> objects.</param>
         public ActionConstraintProviderContext(
-            [NotNull] ActionDescriptor action, 
+            [NotNull] ActionDescriptor action,
             [NotNull] IList<ActionConstraintItem> items)
         {
             Action = action;

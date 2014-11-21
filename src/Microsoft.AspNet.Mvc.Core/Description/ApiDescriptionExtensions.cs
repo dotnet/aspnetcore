@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.Description
     public static class ApiDescriptionExtensions
     {
         /// <summary>
-        /// Gets the value of a property from the <see cref="ApiDescription.Properties"/> collection 
+        /// Gets the value of a property from the <see cref="ApiDescription.Properties"/> collection
         /// using the provided value of <typeparamref name="T"/> as the key.
         /// </summary>
         /// <typeparam name="T">The type of the property.</typeparam>

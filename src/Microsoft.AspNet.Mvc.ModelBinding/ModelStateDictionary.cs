@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="key">The key of the <see cref="ModelState"/> to add errors to.</param>
         /// <param name="exception">The <see cref="Exception"/> to add.</param>
-        /// <returns>True if the error was added, false if the dictionary has already recorded 
+        /// <returns>True if the error was added, false if the dictionary has already recorded
         /// at least <see cref="MaxAllowedErrors"/> number of errors.</returns>
         /// <remarks>
         /// This method only allows adding up to <see cref="MaxAllowedErrors"/> - 1. <see cref="MaxAllowedErrors"/>nt
@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="key">The key of the <see cref="ModelState"/> to add errors to.</param>
         /// <param name="errorMessage">The error message to add.</param>
-        /// <returns>True if the error was added, false if the dictionary has already recorded 
+        /// <returns>True if the error was added, false if the dictionary has already recorded
         /// at least <see cref="MaxAllowedErrors"/> number of errors.</returns>
         /// <remarks>
         /// This method only allows adding up to <see cref="MaxAllowedErrors"/> - 1. <see cref="MaxAllowedErrors"/>nt

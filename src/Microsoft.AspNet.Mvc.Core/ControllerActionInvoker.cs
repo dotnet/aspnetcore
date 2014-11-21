@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
                 _controllerFactory.ReleaseController(ActionContext.Controller);
             }
         }
-            
+
         protected override async Task<IActionResult> InvokeActionAsync(ActionExecutingContext actionExecutingContext)
         {
             var actionMethodInfo = _descriptor.MethodInfo;
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc
                 };
             }
 
-            // Unwrap potential Task<T> types. 
+            // Unwrap potential Task<T> types.
             var actualReturnType = TypeHelper.GetTaskInnerTypeOrNull(declaredReturnType) ?? declaredReturnType;
             if (actionReturnValue == null && typeof(IActionResult).IsAssignableFrom(actualReturnType))
             {

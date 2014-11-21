@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 ModelBindingHelper.AddModelErrorBasedOnExceptionType(bindingContext, ex);
             }
-            
+
             return true;
         }
     }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
     {
         [Theory]
         [InlineData("", null)]
-        [InlineData("", "")] // empty 
+        [InlineData("", "")] // empty
         [InlineData("x", "x")] // normal key
         [InlineData("", "[]")] // trim []
         [InlineData("x", "x[]")] // trim []

@@ -18,9 +18,9 @@ namespace Microsoft.AspNet.Mvc
 {
     public class JsonResultTest
     {
-        private static readonly byte[] _abcdUTF8Bytes 
+        private static readonly byte[] _abcdUTF8Bytes
             = new byte[] { 123, 34, 102, 111, 111, 34, 58, 34, 97, 98, 99, 100, 34, 125 };
-        
+
         [Fact]
         public async Task ExecuteResultAsync_OptionsFormatter_WithoutBOM()
         {
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private HttpContext GetHttpContext(
-            IReadOnlyList<IOutputFormatter> optionsFormatters = null, 
+            IReadOnlyList<IOutputFormatter> optionsFormatters = null,
             bool enableFallback = false)
         {
             var httpContext = new DefaultHttpContext();

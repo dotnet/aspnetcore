@@ -18,9 +18,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             var validUser = new ClaimsPrincipal(
                 new ClaimsIdentity(
-                    new Claim[] { 
+                    new Claim[] {
                         new Claim("Permission", "CanViewPage"),
-                        new Claim(ClaimTypes.Role, "Administrator"), 
+                        new Claim(ClaimTypes.Role, "Administrator"),
                         new Claim(ClaimTypes.NameIdentifier, "John")},
                         "Basic"));
 

@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void CopyConstructor_DoesDeepCopyOfOtherModels()
         {
             // Arrange
-            var controller = new ControllerModel(typeof(TestController).GetTypeInfo(), 
+            var controller = new ControllerModel(typeof(TestController).GetTypeInfo(),
                                                  new List<object>());
 
-            var action = new ActionModel(typeof(TestController).GetMethod("Edit"), 
+            var action = new ActionModel(typeof(TestController).GetMethod("Edit"),
                                          new List<object>());
             controller.Actions.Add(action);
             action.Controller = controller;
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void CopyConstructor_CopiesAllProperties()
         {
             // Arrange
-            var controller = new ControllerModel(typeof(TestController).GetTypeInfo(), 
+            var controller = new ControllerModel(typeof(TestController).GetTypeInfo(),
                                                  new List<object>() { new HttpGetAttribute() });
 
             controller.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Assert
             foreach (var property in typeof(ControllerModel).GetProperties())
             {
-                if (property.Name.Equals("Actions") || 
+                if (property.Name.Equals("Actions") ||
                     property.Name.Equals("AttributeRoutes") ||
                     property.Name.Equals("ApiExplorer"))
                 {
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                     // Ensure non-default value
                     Assert.NotEmpty((IEnumerable<object>)value1);
                 }
-                else if (property.PropertyType.IsValueType || 
+                else if (property.PropertyType.IsValueType ||
                     Nullable.GetUnderlyingType(property.PropertyType) != null)
                 {
                     Assert.Equal(value1, value2);

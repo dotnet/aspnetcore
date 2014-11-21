@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
         private readonly ITypeActivator _typeActivator;
         private readonly IControllerActivator _controllerActivator;
 
-        public DefaultControllerFactory(IServiceProvider serviceProvider, 
+        public DefaultControllerFactory(IServiceProvider serviceProvider,
                                         ITypeActivator typeActivator,
                                         IControllerActivator controllerActivator)
         {

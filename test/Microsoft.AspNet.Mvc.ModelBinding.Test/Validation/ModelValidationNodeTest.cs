@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             Assert.Equal(3, context.ModelState.Count);
             Assert.IsType<TooManyModelErrorsException>(context.ModelState[""].Errors[0].Exception);
-            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("RequiredString"), 
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("RequiredString"),
                         context.ModelState["theKey.RequiredString"].Errors[0].ErrorMessage);
             Assert.False(context.ModelState.ContainsKey("theKey.RangedInt"));
             Assert.False(context.ModelState.ContainsKey("theKey.ValidString"));

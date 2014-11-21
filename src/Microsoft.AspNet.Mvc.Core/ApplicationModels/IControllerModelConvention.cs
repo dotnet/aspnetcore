@@ -9,9 +9,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
     /// <remarks>
     /// To use this interface, create an <see cref="System.Attribute"/> class which implements the interface and
     /// place it on a controller class.
-    /// 
-    /// <see cref="IControllerModelConvention"/> customizations run after 
-    /// <see cref="IApplicationModelConvention"/> customizations and before 
+    ///
+    /// <see cref="IControllerModelConvention"/> customizations run after
+    /// <see cref="IApplicationModelConvention"/> customizations and before
     /// <see cref="IActionModelConvention"/> customizations.
     /// </remarks>
     public interface IControllerModelConvention

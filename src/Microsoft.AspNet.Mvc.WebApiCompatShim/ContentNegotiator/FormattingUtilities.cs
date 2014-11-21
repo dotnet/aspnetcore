@@ -21,7 +21,7 @@ namespace System.Net.Http
     internal static class FormattingUtilities
     {
         // Supported date formats for input.
-        private static readonly string[] dateFormats = new string[] 
+        private static readonly string[] dateFormats = new string[]
         {
             // "r", // RFC 1123, required output format but too strict for input
             "ddd, d MMM yyyy H:m:s 'GMT'", // RFC 1123 (r, except it allows both 1 and 01 for date and time)
@@ -129,7 +129,7 @@ namespace System.Net.Http
         }
 
         /// <summary>
-        /// Creates an empty <see cref="HttpContentHeaders"/> instance. The only way is to get it from a dummy 
+        /// Creates an empty <see cref="HttpContentHeaders"/> instance. The only way is to get it from a dummy
         /// <see cref="HttpContent"/> instance.
         /// </summary>
         /// <returns>The created instance.</returns>

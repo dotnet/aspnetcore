@@ -40,8 +40,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public SpanConstructor AsImplicitExpression(ISet<string> keywords, bool acceptTrailingDot)
         {
-            return _self.With(new ImplicitExpressionEditHandler(SpanConstructor.TestTokenizer, 
-                                                                keywords, 
+            return _self.With(new ImplicitExpressionEditHandler(SpanConstructor.TestTokenizer,
+                                                                keywords,
                                                                 acceptTrailingDot))
                         .With(new ExpressionCodeGenerator());
         }

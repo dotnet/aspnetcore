@@ -63,10 +63,10 @@ namespace Microsoft.TestCommon
             TestDataVariations testDataVariations = TestCommon.TestDataVariations.All)
             : this(declaringType, propertyName, testDataVariations)
         {
-            ExtraDataSets = new List<Tuple<Type, string>> 
-            { 
-                Tuple.Create(declaringType1, propertyName1), Tuple.Create(declaringType2, propertyName2), 
-                Tuple.Create(declaringType3, propertyName3), Tuple.Create(declaringType4, propertyName4) 
+            ExtraDataSets = new List<Tuple<Type, string>>
+            {
+                Tuple.Create(declaringType1, propertyName1), Tuple.Create(declaringType2, propertyName2),
+                Tuple.Create(declaringType3, propertyName3), Tuple.Create(declaringType4, propertyName4)
             };
         }
 
@@ -138,7 +138,7 @@ namespace Microsoft.TestCommon
         {
             object propertyValue = GetTestDataPropertyValue(declaringType, propertyName);
 
-            // box the dataset items if the property is not a RefTypeTestData 
+            // box the dataset items if the property is not a RefTypeTestData
             IEnumerable<object> value = (propertyValue as IEnumerable<object>) ?? (propertyValue as IEnumerable).Cast<object>();
             if (value == null)
             {

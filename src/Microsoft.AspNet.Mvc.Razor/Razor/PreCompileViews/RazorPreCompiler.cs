@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IMvcRazorHost _host;
 
         public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider) :
-            this(designTimeServiceProvider, 
+            this(designTimeServiceProvider,
                  designTimeServiceProvider.GetRequiredService<IMvcRazorHost>(),
                  designTimeServiceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>())
         {

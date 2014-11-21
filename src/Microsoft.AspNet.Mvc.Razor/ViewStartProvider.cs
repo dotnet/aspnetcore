@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                .Where(p => p != null)
                                                .ToArray();
 
-            // GetViewStartLocations return ViewStarts inside-out that is the _ViewStart closest to the page 
+            // GetViewStartLocations return ViewStarts inside-out that is the _ViewStart closest to the page
             // is the first: e.g. [ /Views/Home/_ViewStart, /Views/_ViewStart, /_ViewStart ]
             // However they need to be executed outside in, so we'll reverse the sequence.
             Array.Reverse(viewStarts);

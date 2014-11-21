@@ -15,15 +15,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     public static class TagHelperOutputExtensions
     {
         /// <summary>
-        /// Copies a user-provided attribute from <paramref name="context"/>'s 
+        /// Copies a user-provided attribute from <paramref name="context"/>'s
         /// <see cref="TagHelperContext.AllAttributes"/> to <paramref name="tagHelperOutput"/>'s
         /// <see cref="TagHelperOutput.Attributes"/>.
         /// </summary>
         /// <param name="tagHelperOutput">The <see cref="TagHelperOutput"/> this method extends.</param>
         /// <param name="attributeName">The name of the bound attribute.</param>
         /// <param name="context">The <see cref="TagHelperContext"/>.</param>
-        /// <remarks>Only copies the attribute if <paramref name="tagHelperOutput"/>'s 
-        /// <see cref="TagHelperOutput.Attributes"/> does not contain an attribute with the given 
+        /// <remarks>Only copies the attribute if <paramref name="tagHelperOutput"/>'s
+        /// <see cref="TagHelperOutput.Attributes"/> does not contain an attribute with the given
         /// <paramref name="attributeName"/></remarks>
         public static void CopyHtmlAttribute(this TagHelperOutput tagHelperOutput,
                                              string attributeName,
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Returns all attributes from <paramref name="tagHelperOutput"/>'s 
+        /// Returns all attributes from <paramref name="tagHelperOutput"/>'s
         /// <see cref="TagHelperOutput.Attributes"/> that have the given <paramref name="prefix"/>.
         /// </summary>
         /// <param name="tagHelperOutput">The <see cref="TagHelperOutput"/> this method extends.</param>
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Merges the given <paramref name="tagBuilder"/>'s <see cref="TagBuilder.Attributes"/> into the 
+        /// Merges the given <paramref name="tagBuilder"/>'s <see cref="TagBuilder.Attributes"/> into the
         /// <paramref name="tagHelperOutput"/>.
         /// </summary>
         /// <param name="tagHelperOutput">The <see cref="TagHelperOutput"/> this method extends.</param>

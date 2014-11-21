@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// Requires that the key will be in the route values, but ignore the content.
-        /// Constraints with this value are considered less important than ones with 
+        /// Constraints with this value are considered less important than ones with
         /// <see cref="RequireKey"/>
         /// </summary>
         CatchAll,

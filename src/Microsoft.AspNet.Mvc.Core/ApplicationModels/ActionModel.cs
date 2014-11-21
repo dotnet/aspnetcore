@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class ActionModel
     {
-        public ActionModel([NotNull] MethodInfo actionMethod, 
+        public ActionModel([NotNull] MethodInfo actionMethod,
                            [NotNull] IReadOnlyList<object> attributes)
         {
             ActionMethod = actionMethod;

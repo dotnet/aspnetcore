@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
                     return formatter;
                 }
             }
-         
+
             return null;
         }
     }

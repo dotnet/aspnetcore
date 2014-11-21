@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     // Describes a complex model, but uses a collection rather than individual properties as the data store.
     public class ComplexModelDto
     {
-        public ComplexModelDto([NotNull] ModelMetadata modelMetadata, 
+        public ComplexModelDto([NotNull] ModelMetadata modelMetadata,
                                [NotNull] IEnumerable<ModelMetadata> propertyMetadata)
         {
             ModelMetadata = modelMetadata;

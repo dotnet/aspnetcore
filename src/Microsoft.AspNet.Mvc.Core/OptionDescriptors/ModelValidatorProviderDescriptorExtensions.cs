@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
         /// the specified <paramref name="index"/>.
         /// </summary>
         /// <param name="descriptors">A list of <see cref="ModelValidatorProviderDescriptor"/>.</param>
-        /// <param name="index">The zero-based index at which <paramref name="modelValidatorProviderType"/> 
+        /// <param name="index">The zero-based index at which <paramref name="modelValidatorProviderType"/>
         /// should be inserted.</param>
         /// <param name="modelValidatorProviderType">Type representing an <see cref="IModelValidatorProvider"/></param>
         /// <returns>A <see cref="ModelValidatorProviderDescriptor"/> representing the inserted instance.</returns>
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc
         /// <paramref name="index"/>.
         /// </summary>
         /// <param name="descriptors">A list of <see cref="ModelValidatorProviderDescriptor"/>.</param>
-        /// <param name="index">The zero-based index at which <paramref name="modelValidatorProvider"/> 
+        /// <param name="index">The zero-based index at which <paramref name="modelValidatorProvider"/>
         /// should be inserted.</param>
         /// <param name="modelValidatorProvider">An <see cref="IModelBinder"/> instance.</param>
         /// <returns>A <see cref="ModelValidatorProviderDescriptor"/> representing the added instance.</returns>

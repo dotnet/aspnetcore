@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private const string RequiredValidationType = "required";
 
-        public ModelClientValidationRequiredRule(string errorMessage) : 
+        public ModelClientValidationRequiredRule(string errorMessage) :
             base(RequiredValidationType, errorMessage)
         {
         }

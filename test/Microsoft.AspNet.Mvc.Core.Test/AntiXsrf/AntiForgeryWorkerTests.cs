@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var context = GetAntiForgeryWorkerContext(config, isOldCookieValid: false);
             var worker = GetAntiForgeryWorker(context);
 
-            // This will cause the cookieToken to be null.           
+            // This will cause the cookieToken to be null.
             context.TokenStore.Setup(o => o.GetCookieToken(context.HttpContext.Object))
                               .Throws(new Exception("should be swallowed"));
 
@@ -251,7 +251,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Make sure the existing cookie is invalid.
             var context = GetAntiForgeryWorkerContext(new AntiForgeryOptions(), useOldCookie: false, isOldCookieValid: false);
 
-            // This will cause the cookieToken to be null.           
+            // This will cause the cookieToken to be null.
             context.TokenSerializer.Setup(o => o.Deserialize("serialized-old-cookie-token"))
                                    .Throws(new Exception("should be swallowed"));
 

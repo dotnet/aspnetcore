@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var selector = CreateSelector();
 
-            var expected = 
+            var expected =
                 "The view component name 'Ambiguous' matched multiple types:" + Environment.NewLine +
                 "Type: 'Microsoft.AspNet.Mvc.DefaultViewComponentSelectorTest+Ambiguous1' - " +
                 "Name: 'Namespace1.Ambiguous'" + Environment.NewLine +

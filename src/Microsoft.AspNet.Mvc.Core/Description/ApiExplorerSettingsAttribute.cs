@@ -11,9 +11,9 @@ namespace Microsoft.AspNet.Mvc
     /// controller class or action method.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class ApiExplorerSettingsAttribute : 
-        Attribute, 
-        IApiDescriptionGroupNameProvider, 
+    public class ApiExplorerSettingsAttribute :
+        Attribute,
+        IApiDescriptionGroupNameProvider,
         IApiDescriptionVisibilityProvider
     {
         /// <inheritdoc />

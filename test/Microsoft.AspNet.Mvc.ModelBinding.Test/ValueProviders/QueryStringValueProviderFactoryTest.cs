@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             context.SetupGet(c => c.Items).Returns(new Dictionary<object, object>());
             context.SetupGet(c => c.Request).Returns(request.Object);
             var factoryContext = new ValueProviderFactoryContext(
-                context.Object, 
+                context.Object,
                 new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
 
             // Act

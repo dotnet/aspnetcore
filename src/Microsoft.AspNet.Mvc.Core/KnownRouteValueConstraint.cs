@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc
                 if (valueAsString != null)
                 {
                     var allValues = GetAndCacheAllMatchingValues(routeKey, httpContext);
-                    var match = allValues.Any(existingRouteValue => 
+                    var match = allValues.Any(existingRouteValue =>
                                                 existingRouteValue.Equals(
                                                                     valueAsString,
                                                                     StringComparison.OrdinalIgnoreCase));

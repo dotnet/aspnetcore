@@ -10,7 +10,7 @@ using System.Net.Http.Headers;
 namespace System.Net.Http.Formatting
 {
     /// Implementation of <see cref="IComparer{T}"/> that can compare accept media type header fields
-    /// based on their quality values (a.k.a q-values). See 
+    /// based on their quality values (a.k.a q-values). See
     /// <see cref="StringWithQualityHeaderValueComparer"/> for a comparer for other content negotiation
     /// header field q-values.
     internal class MediaTypeWithQualityHeaderValueComparer : IComparer<MediaTypeWithQualityHeaderValue>
@@ -28,8 +28,8 @@ namespace System.Net.Http.Formatting
 
         /// <summary>
         /// Compares two <see cref="MediaTypeWithQualityHeaderValue"/> based on their quality value (a.k.a their "q-value").
-        /// Values with identical q-values are considered equal (i.e the result is 0) with the exception that sub-type wild-cards are 
-        /// considered less than specific media types and full wild-cards are considered less than sub-type wild-cards. This allows to 
+        /// Values with identical q-values are considered equal (i.e the result is 0) with the exception that sub-type wild-cards are
+        /// considered less than specific media types and full wild-cards are considered less than sub-type wild-cards. This allows to
         /// sort a sequence of <see cref="StringWithQualityHeaderValue"/> following their q-values in the order of specific media types,
         /// sub-type wildcards, and last any full wild-cards.
         /// </summary>

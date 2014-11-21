@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Returns a cached collection of <see cref="ActionDescriptor" />.
         /// </summary>
-        public ActionDescriptorsCollection ActionDescriptors 
+        public ActionDescriptorsCollection ActionDescriptors
         {
             get
             {
@@ -42,8 +42,8 @@ namespace Microsoft.AspNet.Mvc
 
         private ActionDescriptorsCollection GetCollection()
         {
-            var actionDescriptorProvider = 
-                _serviceProvider.GetRequiredService<INestedProviderManager<ActionDescriptorProviderContext>>();            
+            var actionDescriptorProvider =
+                _serviceProvider.GetRequiredService<INestedProviderManager<ActionDescriptorProviderContext>>();
             var actionDescriptorProviderContext = new ActionDescriptorProviderContext();
 
             actionDescriptorProvider.Invoke(actionDescriptorProviderContext);

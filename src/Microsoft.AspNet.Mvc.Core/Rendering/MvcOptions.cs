@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Gets a list of <see cref="IFilter"/> which are used to construct filters that 
+        /// Gets a list of <see cref="IFilter"/> which are used to construct filters that
         /// apply to all actions.
         /// </summary>
         public ICollection<IFilter> Filters { get; private set; }

@@ -1260,7 +1260,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             var entry = new AttributeRouteMatchingEntry();
             entry.Route = new TemplateRoute(
-                target: router, 
+                target: router,
                 routeTemplate: template,
                 defaults: new RouteValueDictionary(new { test_route_group = routeGroup }),
                 constraints: null,

@@ -7,7 +7,7 @@ using System.Web.Http;
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
     /// <summary>
-    /// An action filter which sets <see cref="ActionExecutedContext.Result"/> to an <see cref="ObjectResult"/> 
+    /// An action filter which sets <see cref="ActionExecutedContext.Result"/> to an <see cref="ObjectResult"/>
     /// if the exception type is <see cref="HttpResponseException"/>.
     /// This filter runs immediately after the action.
     /// </summary>

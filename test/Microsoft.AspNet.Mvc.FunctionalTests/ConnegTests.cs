@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ProducesContentAttribute_SingleContentType_PicksTheFirstSupportedFormatter()
         {
-            // Arrange            
+            // Arrange
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ProducesContentAttribute_MultipleContentTypes_RunsConnegToSelectFormatter()
         {
-            // Arrange            
+            // Arrange
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
@@ -109,15 +109,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("ContactInfoUsingV3Format", "text/vcard; charset=utf-8; version=v3.0", "BEGIN:VCARD#FN:John Williams#END:VCARD#")]
         [InlineData("ContactInfoUsingV4Format", "text/vcard; charset=utf-8; version=v4.0", "BEGIN:VCARD#FN:John Williams#GENDER:M#END:VCARD#")]
         public async Task ProducesAttribute_WithMediaTypeHavingParameters_IsCaseInsensitiveMatch(
-                                                                                            string action, 
-                                                                                            string expectedMediaType, 
+                                                                                            string action,
+                                                                                            string expectedMediaType,
                                                                                             string expectedResponseBody)
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
             expectedResponseBody = expectedResponseBody.Replace("#", Environment.NewLine);
-            
+
             // Act
             var response = await client.GetAsync("http://localhost/ProducesWithMediaTypeParameters/" + action);
 
@@ -357,7 +357,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.SendAsync(request);
-           
+
             // Assert
             Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
         }

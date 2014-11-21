@@ -15,7 +15,7 @@ namespace ActivatorWebSite
 
         public void Contextualize(ViewContext viewContext)
         {
-            _context = viewContext;    
+            _context = viewContext;
         }
 
         public string GetValue()

@@ -16,21 +16,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static readonly string HtmlName = DataType.Html.ToString();
         private bool _isEditFormatStringFromCache;
 
-        public CachedDataAnnotationsModelMetadata(CachedDataAnnotationsModelMetadata prototype, 
+        public CachedDataAnnotationsModelMetadata(CachedDataAnnotationsModelMetadata prototype,
                                                   Func<object> modelAccessor)
             : base(prototype, modelAccessor)
         {
         }
 
-        public CachedDataAnnotationsModelMetadata(DataAnnotationsModelMetadataProvider provider, 
-                                                  Type containerType, 
-                                                  Type modelType, 
-                                                  string propertyName, 
+        public CachedDataAnnotationsModelMetadata(DataAnnotationsModelMetadataProvider provider,
+                                                  Type containerType,
+                                                  Type modelType,
+                                                  string propertyName,
                                                   IEnumerable<Attribute> attributes)
-            : base(provider, 
-                   containerType, 
-                   modelType, 
-                   propertyName, 
+            : base(provider,
+                   containerType,
+                   modelType,
+                   propertyName,
                    new CachedDataAnnotationsMetadataAttributes(attributes))
         {
             BinderMetadata = attributes.OfType<IBinderMetadata>().FirstOrDefault();

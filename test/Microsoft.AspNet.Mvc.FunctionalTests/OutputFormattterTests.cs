@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("ReturnTaskOfString_NullValue")]
         [InlineData("ReturnTaskOfObject_NullValue")]
         [InlineData("ReturnObject_NullValue")]
-        public async Task 
+        public async Task
             NoContentFormatter_ForNullValue_AndTreatNullAsNoContentFlagSetToFalse_DoesNotGetSelected(string actionName)
         {
             // Arrange

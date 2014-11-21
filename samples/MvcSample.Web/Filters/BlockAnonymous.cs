@@ -6,12 +6,12 @@ namespace MvcSample.Web.Filters
     {
         public override void OnAuthorization(AuthorizationContext context)
         {
-            if (!HasAllowAnonymous(context)) 
+            if (!HasAllowAnonymous(context))
             {
                 var user = context.HttpContext.User;
-                var userIsAnonymous = 
-                    user == null || 
-                    user.Identity == null || 
+                var userIsAnonymous =
+                    user == null ||
+                    user.Identity == null ||
                     !user.Identity.IsAuthenticated;
 
                 if(userIsAnonymous)

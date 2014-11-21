@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc
             FormToken = formToken;
 
             // Cookie Token is allowed to be null in the case when the old cookie is valid
-            // and there is no new cookieToken generated. 
+            // and there is no new cookieToken generated.
             CookieToken = cookieToken;
         }
 

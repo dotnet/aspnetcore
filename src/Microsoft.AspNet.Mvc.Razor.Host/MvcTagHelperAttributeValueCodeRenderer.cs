@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        /// <remarks>If the attribute being rendered is of the type 
+        /// <remarks>If the attribute being rendered is of the type
         /// <see cref="GeneratedTagHelperAttributeContext.ModelExpressionTypeName"/> then a model expression will be
         /// created by calling into <see cref="GeneratedTagHelperAttributeContext.CreateModelExpressionMethodName"/>.
         /// </remarks>

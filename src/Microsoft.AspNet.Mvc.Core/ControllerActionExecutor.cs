@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
 {
     public static class ControllerActionExecutor
     {
-        private static readonly MethodInfo _convertOfTMethod = 
+        private static readonly MethodInfo _convertOfTMethod =
             typeof(ControllerActionExecutor).GetRuntimeMethods().Single(methodInfo => methodInfo.Name == "Convert");
 
         // Method called via reflection.
@@ -24,8 +24,8 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public static async Task<object> ExecuteAsync(
-            MethodInfo actionMethodInfo, 
-            object instance, 
+            MethodInfo actionMethodInfo,
+            object instance,
             IDictionary<string, object> actionArguments)
         {
             var orderedArguments = PrepareArguments(actionArguments, actionMethodInfo.GetParameters());
@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public static async Task<object> ExecuteAsync(
-            MethodInfo actionMethodInfo, 
-            object instance, 
+            MethodInfo actionMethodInfo,
+            object instance,
             object[] orderedActionArguments)
         {
             object invocationResult = null;
@@ -50,9 +50,9 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return await CoerceResultToTaskAsync(
-                invocationResult, 
-                actionMethodInfo.ReturnType, 
-                actionMethodInfo.Name, 
+                invocationResult,
+                actionMethodInfo.ReturnType,
+                actionMethodInfo.Name,
                 actionMethodInfo.DeclaringType);
         }
 
@@ -62,9 +62,9 @@ namespace Microsoft.AspNet.Mvc
         // Returning Task<object> enables us to await on the result.
         // This method is intentionally not using async pattern to keep jit time (on cold start) to a minimum.
         private static Task<object> CoerceResultToTaskAsync(
-            object result, 
-            Type returnType, 
-            string methodName, 
+            object result,
+            Type returnType,
+            string methodName,
             Type declaringType)
         {
             // If it is either a Task or Task<T>
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc
                 // 1. Types which have derived from Task and Task<T>,
                 // 2. Action methods which use dynamic keyword but return a Task or Task<T>.
                 throw new InvalidOperationException(Resources.FormatActionExecutor_UnexpectedTaskInstance(
-                    methodName, 
+                    methodName,
                     declaringType));
             }
             else
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private static object[] PrepareArguments(
-            IDictionary<string, object> actionParameters, 
+            IDictionary<string, object> actionParameters,
             ParameterInfo[] declaredParameterInfos)
         {
             var count = declaredParameterInfos.Length;

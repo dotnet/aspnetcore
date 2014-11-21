@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             RouteAttributePrefix));
                 }
 
-                // User is using the FormTagHelper like a normal <form> tag, anti-forgery default should be false to 
+                // User is using the FormTagHelper like a normal <form> tag, anti-forgery default should be false to
                 // not force the anti-forgery token onto the user.
                 antiForgeryDefault = false;
 

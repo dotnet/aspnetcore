@@ -265,10 +265,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
             var markupParser = new HtmlMarkupParser();
             var codeParser = new TestMvcCSharpRazorCodeParser();
             var context = new ParserContext(
-                new SeekableTextReader(documentContents), 
-                codeParser, 
-                markupParser, 
-                markupParser, 
+                new SeekableTextReader(documentContents),
+                codeParser,
+                markupParser,
+                markupParser,
                 new ParserErrorSink());
             codeParser.Context = context;
             markupParser.Context = context;

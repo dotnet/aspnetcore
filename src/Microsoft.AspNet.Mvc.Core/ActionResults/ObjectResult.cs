@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (ContentTypes == null || ContentTypes.Count == 0)
             {
-                // Select based on sorted accept headers. 
+                // Select based on sorted accept headers.
                 selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
                                                                         formatterContext,
                                                                         formatters,
@@ -78,17 +78,17 @@ namespace Microsoft.AspNet.Mvc
                     MediaTypeHeaderValue incomingContentType = null;
                     MediaTypeHeaderValue.TryParse(requestContentType, out incomingContentType);
 
-                    // In case the incomingContentType is null (as can be the case with get requests), 
-                    // we need to pick the first formatter which 
-                    // can support writing this type. 
+                    // In case the incomingContentType is null (as can be the case with get requests),
+                    // we need to pick the first formatter which
+                    // can support writing this type.
                     var contentTypes = new[] { incomingContentType };
                     selectedFormatter = SelectFormatterUsingAnyAcceptableContentType(
                                                                                 formatterContext,
                                                                                 formatters,
                                                                                 contentTypes);
 
-                    // This would be the case when no formatter could write the type base on the 
-                    // accept headers and the request content type. Fallback on type based match. 
+                    // This would be the case when no formatter could write the type base on the
+                    // accept headers and the request content type. Fallback on type based match.
                     if (selectedFormatter == null)
                     {
                         foreach (var formatter in formatters)
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc
             }
             else
             {
-                // Filter and remove accept headers which cannot support any of the user specified content types. 
+                // Filter and remove accept headers which cannot support any of the user specified content types.
                 var filteredAndSortedAcceptHeaders = sortedAcceptHeaders
                                                         .Where(acceptHeader =>
                                                                 ContentTypes
@@ -134,9 +134,9 @@ namespace Microsoft.AspNet.Mvc
 
                 if (selectedFormatter == null)
                 {
-                    // Either there were no acceptHeaders that were present OR 
+                    // Either there were no acceptHeaders that were present OR
                     // There were no accept headers which matched OR
-                    // There were acceptHeaders which matched but there was no formatter 
+                    // There were acceptHeaders which matched but there was no formatter
                     // which supported any of them.
                     // In any of these cases, if the user has specified content types,
                     // do a last effort to find a formatter which can write any of the user specified content type.
@@ -158,14 +158,14 @@ namespace Microsoft.AspNet.Mvc
             IOutputFormatter selectedFormatter = null;
             foreach (var contentType in sortedAcceptHeaders)
             {
-                // Loop through each of the formatters and see if any one will support this 
-                // mediaType Value. 
+                // Loop through each of the formatters and see if any one will support this
+                // mediaType Value.
                 selectedFormatter = formatters.FirstOrDefault(
                                                     formatter =>
                                                         formatter.CanWriteResult(formatterContext, contentType));
                 if (selectedFormatter != null)
                 {
-                    // we found our match. 
+                    // we found our match.
                     break;
                 }
             }

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Builder
         }
 
         public static IApplicationBuilder UseMvc(
-            [NotNull] this IApplicationBuilder app, 
+            [NotNull] this IApplicationBuilder app,
             [NotNull] Action<IRouteBuilder> configureRoutes)
         {
             // Verify if AddMvc was done before calling UseMvc
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Builder
             };
 
             routes.Routes.Add(AttributeRouting.CreateAttributeMegaRoute(
-                routes.DefaultHandler, 
+                routes.DefaultHandler,
                 app.ApplicationServices));
 
             configureRoutes(routes);

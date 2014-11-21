@@ -1181,7 +1181,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.Equal(4, sequence);
         }
-            
+
         [Fact]
         public void BuildModel_SplitsConstraintsBasedOnRoute()
         {

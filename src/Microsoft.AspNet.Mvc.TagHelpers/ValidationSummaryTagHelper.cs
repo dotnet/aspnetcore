@@ -9,7 +9,7 @@ using Microsoft.AspNet.Razor.TagHelpers;
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     /// <summary>
-    /// <see cref="ITagHelper"/> implementation targeting &lt;div&gt; elements with a <c>validation-summary</c> 
+    /// <see cref="ITagHelper"/> implementation targeting &lt;div&gt; elements with a <c>validation-summary</c>
     /// attribute.
     /// </summary>
     [TagName("div")]
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         // TODO: https://github.com/aspnet/Razor/issues/196 Change to ValidationSummary enum once #196 has been completed.
         /// <summary>
-        /// If <c>All</c> or <c>ModelOnly</c>, appends a validation summary. Acceptable values are defined by the 
+        /// If <c>All</c> or <c>ModelOnly</c>, appends a validation summary. Acceptable values are defined by the
         /// <see cref="ValidationSummary"/> enum.
         /// </summary>
         [HtmlAttributeName("validation-summary")]

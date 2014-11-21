@@ -10,8 +10,8 @@ namespace Microsoft.AspNet.Mvc
     /// A default implementation of <see cref="INestedProvider{ActionConstraintProviderContext}"/>.
     /// </summary>
     /// <remarks>
-    /// This provider is able to provide an <see cref="IActionConstraint"/> instance when the 
-    /// <see cref="IActionConstraintMetadata"/> implements <see cref="IActionConstraint"/> or 
+    /// This provider is able to provide an <see cref="IActionConstraint"/> instance when the
+    /// <see cref="IActionConstraintMetadata"/> implements <see cref="IActionConstraint"/> or
     /// <see cref="IActionConstraintFactory"/>/
     /// </remarks>
     public class DefaultActionConstraintProvider : INestedProvider<ActionConstraintProviderContext>
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public int Order 
+        public int Order
         {
             get { return DefaultOrder.DefaultFrameworkSortOrder; }
         }

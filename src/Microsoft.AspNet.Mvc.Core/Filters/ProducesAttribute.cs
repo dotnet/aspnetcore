@@ -9,7 +9,7 @@ using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Specifies the allowed content types and the type of the value returned by the action 
+    /// Specifies the allowed content types and the type of the value returned by the action
     /// which can be used to select a formatter while executing <see cref="ObjectResult"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]

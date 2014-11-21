@@ -7,9 +7,9 @@ using System.Linq;
 
 namespace Microsoft.AspNet.Mvc.Internal.DecisionTree
 {
-    // This code generates a minimal tree of decision criteria that map known categorical data 
-    // (key-value-pairs) to a set of inputs. Action Selection is the best example of how this 
-    // can be used, so the comments  here will describe the process from the point-of-view, 
+    // This code generates a minimal tree of decision criteria that map known categorical data
+    // (key-value-pairs) to a set of inputs. Action Selection is the best example of how this
+    // can be used, so the comments  here will describe the process from the point-of-view,
     // though the decision tree is generally applicable to like-problems.
     //
     // Care has been taken here to keep the performance of building the data-structure at a
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Internal.DecisionTree
     //
     // The generated tree looks like this (json-like-notation):
     //
-    //  { 
+    //  {
     //      action : {
     //          "AddUser" : {
     //              controller : {
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.Internal.DecisionTree
             DecisionCriterionValueEqualityComparer comparer,
             IList<ItemDescriptor<TItem>> items)
         {
-            // The extreme use of generics here is intended to reduce the number of intermediate 
+            // The extreme use of generics here is intended to reduce the number of intermediate
             // allocations of wrapper classes. Performance testing found that building these trees allocates
             // significant memory that we can avoid and that it has a real impact on startup.
             var criteria = new Dictionary<string, Criterion>(StringComparer.OrdinalIgnoreCase);
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Mvc.Internal.DecisionTree
 
             public HashSet<ItemDescriptor<TItem>> MatchedItems { get; private set; }
         }
-        
+
         // Subclass just to give a logical name to a mess of generics
         private class Criterion : Dictionary<DecisionCriterionValue, List<ItemDescriptor<TItem>>>
         {

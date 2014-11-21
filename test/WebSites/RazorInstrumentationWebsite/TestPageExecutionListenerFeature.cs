@@ -12,7 +12,7 @@ namespace RazorInstrumentationWebSite
 
         public TestPageExecutionListenerFeature(IPageExecutionContext context)
         {
-            _context = context; 
+            _context = context;
         }
 
         public TextWriter DecorateWriter(TextWriter writer)

@@ -928,8 +928,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             return metadataProvider.GetMetadataForParameter(
-                modelAccessor: null, 
-                methodInfo: methodInfo, 
+                modelAccessor: null,
+                methodInfo: methodInfo,
                 parameterName: parameterName,
                 binderMetadata: null);
         }

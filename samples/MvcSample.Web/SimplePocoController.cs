@@ -22,7 +22,7 @@ namespace MvcSample.Web
         {
             var time = _timer.ElapsedMilliseconds;
             context.HttpContext.Response.Headers.Add(
-                "ActionElapsedTime", 
+                "ActionElapsedTime",
                 new string[] { time.ToString(CultureInfo.InvariantCulture) + " ms" });
         }
 
@@ -35,7 +35,7 @@ namespace MvcSample.Web
         {
             var time = _timer.ElapsedMilliseconds;
             context.HttpContext.Response.Headers.Add(
-                "ResultElapsedTime", 
+                "ResultElapsedTime",
                 new string[] { time.ToString(CultureInfo.InvariantCulture) + " ms" });
         }
     }

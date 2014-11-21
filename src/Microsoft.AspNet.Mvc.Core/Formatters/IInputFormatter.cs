@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc
         /// an object of the specified type.
         /// </summary>
         /// <param name="context">Input formatter context associated with this call.</param>
-        /// <returns>True if this <see cref="IInputFormatter"/> supports the passed in 
+        /// <returns>True if this <see cref="IInputFormatter"/> supports the passed in
         /// request's content-type and is able to de-serialize the request body.
         /// False otherwise.</returns>
         bool CanRead(InputFormatterContext context);

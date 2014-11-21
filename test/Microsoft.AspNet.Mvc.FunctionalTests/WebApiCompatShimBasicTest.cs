@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(
-                "Hello, Anonymous User from WebApiCompatShimWebSite.BasicApiController.WriteToHttpContext", 
+                "Hello, Anonymous User from WebApiCompatShimWebSite.BasicApiController.WriteToHttpContext",
                 content);
         }
 
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(1, json.Count);
             Assert.Equal("The field ID must be between 0 and 100.", json["prefix.ID"]);
         }
-        
+
         [Fact]
         public async Task ApiController_CanValidateCustomObject_IsSuccessFul()
         {
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         [Fact]
         public async Task ApiController_RequestParameter()
-        { 
+        {
             // Arrange
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
@@ -313,7 +313,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
-                HttpMethod.Get, 
+                HttpMethod.Get,
                 "http://localhost/api/Blog/HttpRequestMessage/GetUser");
 
             request.Headers.Accept.ParseAdd(accept);
@@ -488,7 +488,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
-            
+
             // Act
             var response = await client.GetAsync("http://localhost/api/Blog/HttpRequestMessage/" + action );
 

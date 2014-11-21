@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             )]
         public void Deserialize_BadToken_Throws(string serializedToken)
         {
-            // Arrange 
+            // Arrange
             var testSerializer = new AntiForgeryTokenSerializer(_dataProtector.Object);
 
             // Act & assert
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Act
             var actualSerializedData = testSerializer.Serialize(token);
             var deserializedToken = testSerializer.Deserialize(actualSerializedData);
-            
+
             // Assert
             AssertTokensEqual(token, deserializedToken);
             _dataProtector.Verify();
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var testSerializer = new AntiForgeryTokenSerializer(_dataProtector.Object);
-            
+
             //"01" // Version
             //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
             //+ "01"; // IsSessionToken
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             AssertTokensEqual(token, deserializedToken);
             _dataProtector.Verify();
         }
-       
+
         private static Mock<IDataProtector> GetDataProtector()
         {
             var mockCryptoSystem = new Mock<IDataProtector>();
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         private static byte[] UnProtect(byte[] data)
         {
-            var salt = data[data.Length - 1]; 
+            var salt = data[data.Length - 1];
             if (salt != _salt)
             {
                 throw new ArgumentException("Invalid salt value in data");

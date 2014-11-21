@@ -253,7 +253,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             var expectedException = string.Format(
                 CultureInfo.CurrentCulture,
-                "The method 'UnwrappedTask' on type '{0}' returned an instance of '{1}'. " + 
+                "The method 'UnwrappedTask' on type '{0}' returned an instance of '{1}'. " +
                 "Make sure to call Unwrap on the returned value to avoid unobserved faulted Task.",
                 typeof(TestController),
                 typeof(Task<Task>).FullName);

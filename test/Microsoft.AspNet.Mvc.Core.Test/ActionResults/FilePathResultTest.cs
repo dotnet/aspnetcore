@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Mvc
         [InlineData("..\\TestFiles\\SubFolder/SubFolderTestFile.txt", "TestFiles/SubFolder/SubFolderTestFile.txt")]
         // '~/' and '~\' mean the application root folder
         [InlineData("~/FilePathResultTestFile.txt", "TestFiles/FilePathResultTestFile.txt")]
-        [InlineData("~/SubFolder/SubFolderTestFile.txt", "TestFiles/SubFolder/SubFolderTestFile.txt")]       
+        [InlineData("~/SubFolder/SubFolderTestFile.txt", "TestFiles/SubFolder/SubFolderTestFile.txt")]
         [InlineData("~/SubFolder\\SubFolderTestFile.txt", "TestFiles/SubFolder/SubFolderTestFile.txt")]
         public void GetFilePath_Resolves_RelativePaths(string path, string relativePathToFile)
         {

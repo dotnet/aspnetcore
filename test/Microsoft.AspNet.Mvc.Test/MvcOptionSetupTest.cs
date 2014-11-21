@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             Assert.Equal(5, mvcOptions.ValidationExcludeFilters.Count);
 
-            // Verify if the delegates registered by default exclude the given types. 
+            // Verify if the delegates registered by default exclude the given types.
             Assert.Equal(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[0].OptionType);
             var instance = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[0].Instance);
             Assert.Equal(instance.ExcludedType, typeof(XObject));

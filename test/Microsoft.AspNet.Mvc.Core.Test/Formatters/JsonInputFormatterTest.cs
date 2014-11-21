@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc
         [Fact]
         public void DefaultMediaType_ReturnsApplicationJson()
         {
-            // Arrange 
+            // Arrange
             var formatter = new JsonInputFormatter();
 
             // Act
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.Mvc
             jsonFormatter.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Error;
 
             var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(modelAccessor: null, 
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(modelAccessor: null,
                                                                                 modelType: typeof(UserLogin));
             var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
 
@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.Mvc
             };
 
             var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(modelAccessor: null, 
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(modelAccessor: null,
                                                                             modelType: typeof(UserLogin));
             var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
 

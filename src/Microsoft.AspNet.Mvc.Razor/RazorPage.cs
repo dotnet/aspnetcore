@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Starts a new writing scope.
         /// </summary>
         /// <remarks>
-        /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will 
+        /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will
         /// be buffered until <see cref="EndWritingScope"/> is called.
         /// </remarks>
         public void StartWritingScope()
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Ends the current writing scope that was started by calling <see cref="StartWritingScope"/>.
         /// </summary>
-        /// <returns>The <see cref="TextWriter"/> that contains the content written to the <see cref="Output"/> or 
+        /// <returns>The <see cref="TextWriter"/> that contains the content written to the <see cref="Output"/> or
         /// <see cref="ViewContext.Writer"/> during the writing scope.</returns>
         public TextWriter EndWritingScope()
         {
@@ -325,7 +325,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         continue;
                     }
 
-                    // The special cases here are that the value we're writing might already be a string, or that the 
+                    // The special cases here are that the value we're writing might already be a string, or that the
                     // value might be a bool. If the value is the bool 'true' we want to write the attribute name
                     // instead of the string 'true'. If the value is the bool 'false' we don't want to write anything.
                     // Otherwise the value is another object (perhaps an HtmlString) and we'll ask it to format itself.
@@ -427,7 +427,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Creates a named content section in the page that can be invoked in a Layout page using 
+        /// Creates a named content section in the page that can be invoked in a Layout page using
         /// <see cref="RenderSection(string)"/> or <see cref="RenderSectionAsync(string, bool)"/>.
         /// </summary>
         /// <param name="name">The name of the section to create.</param>

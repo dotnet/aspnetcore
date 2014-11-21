@@ -6,12 +6,12 @@ using System;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// A factory for <see cref="IActionConstraint"/>. 
+    /// A factory for <see cref="IActionConstraint"/>.
     /// </summary>
     /// <remarks>
     /// <see cref="IActionConstraintFactory"/> will be invoked by <see cref="DefaultActionConstraintProvider"/>
     /// to create constraint instances for an action.
-    /// 
+    ///
     /// Place an attribute implementing this interface on a controller or action to insert an action
     /// constraint created by a factory.
     /// </remarks>

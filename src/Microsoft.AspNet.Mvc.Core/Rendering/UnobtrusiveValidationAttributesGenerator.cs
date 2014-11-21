@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             if (string.IsNullOrEmpty(rule.ValidationType))
             {
                 throw new ArgumentException(
-                    Resources.FormatUnobtrusiveJavascript_ValidationTypeCannotBeEmpty(rule.GetType().FullName), 
+                    Resources.FormatUnobtrusiveJavascript_ValidationTypeCannotBeEmpty(rule.GetType().FullName),
                     "rule");
             }
 

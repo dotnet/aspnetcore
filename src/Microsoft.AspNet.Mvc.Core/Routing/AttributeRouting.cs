@@ -113,8 +113,8 @@ namespace Microsoft.AspNet.Mvc.Routing
             var errors = new List<RouteInfo>();
 
             // This keeps a cache of 'Template' objects. It's a fairly common case that multiple actions
-            // will use the same route template string; thus, the `Template` object can be shared. 
-            // 
+            // will use the same route template string; thus, the `Template` object can be shared.
+            //
             // For a relatively simple route template, the `Template` object will hold about 500 bytes
             // of memory, so sharing is worthwhile.
             var templateCache = new Dictionary<string, RouteTemplate>(StringComparer.OrdinalIgnoreCase);

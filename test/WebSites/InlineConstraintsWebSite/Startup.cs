@@ -58,7 +58,7 @@ namespace InlineConstraints
         {
             foreach (var template in config.GetSubKey("TemplateCollection").GetSubKeys())
             {
-                yield return 
+                yield return
                     new RouteConfigData()
                     {
                         RouteName = template.Key,

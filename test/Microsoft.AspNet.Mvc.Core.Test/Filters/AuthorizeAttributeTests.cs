@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
             var authorizeAttribute = new AuthorizeAttribute("Permission", "CanViewPage");
-            var authorizationContext = GetAuthorizationContext(services => 
+            var authorizationContext = GetAuthorizationContext(services =>
                 services.AddInstance<IAuthorizationService>(authorizationService)
                 );
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
             var authorizeAttribute = new AuthorizeAttribute();
-            var authorizationContext = GetAuthorizationContext(services => 
+            var authorizationContext = GetAuthorizationContext(services =>
                 services.AddInstance<IAuthorizationService>(authorizationService),
                 anonymous: true
                 );
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
             var authorizeAttribute = new AuthorizeAttribute();
-            var authorizationContext = GetAuthorizationContext(services => 
+            var authorizationContext = GetAuthorizationContext(services =>
                 services.AddInstance<IAuthorizationService>(authorizationService),
                 anonymous: true
                 );
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
             var authorizeAttribute = new AuthorizeAttribute();
-            var authorizationContext = GetAuthorizationContext(services => 
+            var authorizationContext = GetAuthorizationContext(services =>
                 services.AddInstance<IAuthorizationService>(authorizationService)
                 );
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
             var authorizeAttribute = new AuthorizeAttribute("Permission", "CanViewComment", "CanViewPage");
-            var authorizationContext = GetAuthorizationContext(services => 
+            var authorizationContext = GetAuthorizationContext(services =>
                 services.AddInstance<IAuthorizationService>(authorizationService)
                 );
 
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var authorizationContext = GetAuthorizationContext(services =>
                 services.AddInstance<IAuthorizationService>(authorizationService.Object)
                 );
-            
+
             authorizationContext.Result = new HttpStatusCodeResult(401);
 
             // Act
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var authorizationService = new DefaultAuthorizationService(policies: null);
             var authorizeAttribute = new AuthorizeAttribute("Permission", "CanViewPage");
-            var authorizationContext = GetAuthorizationContext(services => 
+            var authorizationContext = GetAuthorizationContext(services =>
                 services.AddInstance<IAuthorizationService>(authorizationService)
                 );
 

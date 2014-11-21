@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// Represents an <see cref="IModelBinder"/> that delegates to one of a collection of <see cref="IModelBinder"/> 
+    /// Represents an <see cref="IModelBinder"/> that delegates to one of a collection of <see cref="IModelBinder"/>
     /// instances.
     /// </summary>
     /// <remarks>
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 newBindingContext.ValidationNode = oldBindingContext.ValidationNode;
             }
 
-            // look at the value providers and see if they need to be restricted. 
+            // look at the value providers and see if they need to be restricted.
             var metadata = oldBindingContext.ModelMetadata.BinderMetadata as IValueProviderMetadata;
             if (metadata != null)
             {

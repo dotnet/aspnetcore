@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
                 return attribute.Name;
             }
 
-            // If the view component didn't define a name explicitly then use the namespace + the 
+            // If the view component didn't define a name explicitly then use the namespace + the
             // 'short name'.
             var shortName = GetShortNameByConvention(componentType);
             if (string.IsNullOrEmpty(componentType.Namespace))

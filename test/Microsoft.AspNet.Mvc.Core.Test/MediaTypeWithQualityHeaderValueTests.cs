@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void SortMediaTypeWithQualityHeaderValuesByQFactor_SortsCorrectly(IEnumerable<string> unsorted, IEnumerable<string> expectedSorted)
         {
             // Arrange
-            var unsortedValues = 
+            var unsortedValues =
                 new List<MediaTypeWithQualityHeaderValue>(
                     unsorted.Select(u => MediaTypeWithQualityHeaderValue.Parse(u)));
 

@@ -47,8 +47,8 @@ namespace Microsoft.AspNet.Mvc
             // We allow a property to be bound if its both in the include list AND not in the exclude list.
             // An empty include list implies all properties are allowed.
             // An empty exclude list implies no properties are disallowed.
-            var includeProperty = (includeProperties == null) || 
-                                   (includeProperties.Count == 0) || 
+            var includeProperty = (includeProperties == null) ||
+                                   (includeProperties.Count == 0) ||
                                    includeProperties.Contains(propertyName, StringComparer.OrdinalIgnoreCase);
             var excludeProperty = (excludeProperties != null) &&
                                   excludeProperties.Contains(propertyName, StringComparer.OrdinalIgnoreCase);

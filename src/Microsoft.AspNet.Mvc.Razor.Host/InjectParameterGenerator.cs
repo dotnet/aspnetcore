@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         public string TypeName { get; private set; }
-        
+
         public string PropertyName { get; private set; }
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public override int GetHashCode()
         {
-            return TypeName.GetHashCode() + 
+            return TypeName.GetHashCode() +
                    (PropertyName.GetHashCode() * 13);
         }
     }

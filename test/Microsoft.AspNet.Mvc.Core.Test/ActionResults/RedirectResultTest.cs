@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             return serviceCollection.BuildServiceProvider();
         }
 
-        private static HttpContext GetHttpContext(string appRoot, 
+        private static HttpContext GetHttpContext(string appRoot,
                                                      string contentPath,
                                                      string expectedPath,
                                                      HttpResponse response)

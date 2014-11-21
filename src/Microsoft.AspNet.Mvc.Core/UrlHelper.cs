@@ -12,7 +12,7 @@ using Microsoft.Framework.DependencyInjection;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// An implementation of <see cref="IUrlHelper"/> that contains methods to 
+    /// An implementation of <see cref="IUrlHelper"/> that contains methods to
     /// build URLs for ASP.NET MVC within an application.
     /// </summary>
     public class UrlHelper : IUrlHelper
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Generates the absolute path of the url for the specified route values by 
+        /// Generates the absolute path of the url for the specified route values by
         /// using the specified route name.
         /// </summary>
         /// <param name="routeName">The name of the route that is used to generate the URL.</param>

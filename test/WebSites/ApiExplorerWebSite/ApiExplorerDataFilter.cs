@@ -10,7 +10,7 @@ namespace ApiExplorer
 {
     /// <summary>
     /// An action filter that looks up and serializes Api Explorer data for the action.
-    /// 
+    ///
     /// This replaces the 'actual' output of the action.
     /// </summary>
     public class ApiExplorerDataFilter : ActionFilterAttribute
@@ -38,7 +38,7 @@ namespace ApiExplorer
 
             context.Result = new JsonResult(descriptions);
         }
-        
+
         private ApiExplorerData CreateSerializableData(ApiDescription description)
         {
             var data = new ApiExplorerData()

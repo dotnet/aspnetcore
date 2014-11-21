@@ -20,10 +20,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 Mock.Of<IRazorPageActivator>(),
                 Mock.Of<IViewStartProvider>());
 
-            // Act 
+            // Act
             var view = factory.GetView(Mock.Of<IRazorPage>(), isPartial);
 
-            // Assert  
+            // Assert
             var razorView = Assert.IsType<RazorView>(view);
             Assert.Equal(razorView.IsPartial, isPartial);
         }
@@ -39,10 +39,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             var page = Mock.Of<IRazorPage>();
 
-            // Act 
+            // Act
             var view = factory.GetView(page, isPartial: false) as RazorView;
 
-            // Assert  
+            // Assert
             Assert.NotNull(view);
             Assert.Same(view.RazorPage, page);
         }

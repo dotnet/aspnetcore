@@ -18,7 +18,7 @@ namespace ConnegWebsite
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/plain"));
             SupportedEncodings.Add(Encoding.GetEncoding("utf-8"));
         }
-        
+
         public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
         {
             if (base.CanWriteResult(context, contentType))

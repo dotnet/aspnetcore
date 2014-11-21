@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             mockHttpContext.SetupGet(o => o.RequestServices)
                            .Returns(GetServiceProvider(contextAccessor));
 
-            // add a cookie explicitly. 
+            // add a cookie explicitly.
             var cookie = new AntiForgeryToken();
             contextAccessor.SetValue(new AntiForgeryContext() { CookieToken = cookie });
             var config = new AntiForgeryOptions()
@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var contextAccessor = new ContextAccessor<AntiForgeryContext>();
             mockHttpContext.SetupGet(o => o.RequestServices)
                            .Returns(GetServiceProvider(contextAccessor));
-         
+
             var mockSerializer = new Mock<IAntiForgeryTokenSerializer>();
             mockSerializer.Setup(o => o.Serialize(token))
                           .Returns("serialized-value");

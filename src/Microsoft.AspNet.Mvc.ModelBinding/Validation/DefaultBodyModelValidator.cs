@@ -12,7 +12,7 @@ using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// Recursively validate an object. 
+    /// Recursively validate an object.
     /// </summary>
     public class DefaultBodyModelValidator : IBodyModelValidator
     {

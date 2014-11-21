@@ -878,7 +878,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // (no route) - GET
             // Products - POST
             //
-            // This is invalid, and will throw during the ADP construction phase. 
+            // This is invalid, and will throw during the ADP construction phase.
             [HttpGet]
             [HttpPost("Products")]
             public void Invalid() { }

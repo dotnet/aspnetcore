@@ -12,13 +12,13 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// <remarks>
     /// Individual <see cref="IViewLocationExpander"/>s are invoked in two steps:
     /// (1) <see cref="PopulateValues(ViewLocationExpanderContext)"/> is invoked and each expander
-    /// adds values that it would later consume as part of 
+    /// adds values that it would later consume as part of
     /// <see cref="ExpandViewLocations(ViewLocationExpanderContext, IEnumerable{string})"/>.
     /// The populated values are used to determine a cache key - if all values are identical to the last time
     /// <see cref="PopulateValues(ViewLocationExpanderContext)"/> was invoked, the cached result
     /// is used as the view location.
-    /// (2) If no result was found in the cache or if a view was not found at the cached location, 
-    /// <see cref="ExpandViewLocations(ViewLocationExpanderContext, IEnumerable{string})"/> is invoked to determine 
+    /// (2) If no result was found in the cache or if a view was not found at the cached location,
+    /// <see cref="ExpandViewLocations(ViewLocationExpanderContext, IEnumerable{string})"/> is invoked to determine
     /// all potential paths for a view.
     /// </remarks>
     public interface IViewLocationExpander

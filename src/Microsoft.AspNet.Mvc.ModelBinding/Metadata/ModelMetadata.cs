@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public IBinderMetadata BinderMetadata { get; set; }
 
         /// <summary>
-        /// A reference to the model's container <see cref="object"/>. 
+        /// A reference to the model's container <see cref="object"/>.
         /// Will be non-<c>null</c> if the model represents a property.
         /// </summary>
         public object Container { get; set; }
@@ -330,7 +330,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                                              string propertyName)
         {
             // If metadata is for a property then containerType != null && propertyName != null
-            // If metadata is for a type then containerType == null && propertyName == null, 
+            // If metadata is for a type then containerType == null && propertyName == null,
             // so we have to use modelType for the cache key.
             return new EfficientTypePropertyKey<Type, string>(containerType ?? modelType, propertyName);
         }

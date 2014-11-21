@@ -187,8 +187,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return;
             }
 
-            // If the Model at the current node is null and there is no parent, we cannot validate, and the 
-            // DataAnnotationsModelValidator will throw. So we intercept here to provide a catch-all value-required 
+            // If the Model at the current node is null and there is no parent, we cannot validate, and the
+            // DataAnnotationsModelValidator will throw. So we intercept here to provide a catch-all value-required
             // validation error
             var modelStateKey = ModelBindingHelper.CreatePropertyModelName(ModelStateKey,
                                                                            ModelMetadata.GetDisplayName());

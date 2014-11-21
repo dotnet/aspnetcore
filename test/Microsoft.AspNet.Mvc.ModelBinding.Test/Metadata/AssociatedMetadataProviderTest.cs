@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.True(mixed.Attributes.Any(a => a is RequiredAttribute));
             Assert.True(mixed.Attributes.Any(a => a is RangeAttribute));
         }
-        
+
         [Fact]
         public void GetMetadataForProperties_ExcludesIndexers()
         {

@@ -12,10 +12,10 @@ namespace Microsoft.AspNet.Mvc.Routing
     /// they were route value strings.
     /// </summary>
     /// <remarks>
-    /// Values that are are not strings are converted to strings using 
+    /// Values that are are not strings are converted to strings using
     /// <c>Convert.ToString(x, CultureInfo.InvariantCulture)</c>. <c>null</c> values are converted
     /// to the empty string.
-    /// 
+    ///
     /// strings are compared using <see cref="StringComparison.OrdinalIgnoreCase"/>.
     /// </remarks>
     public class RouteValueEqualityComparer : IEqualityComparer<object>

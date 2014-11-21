@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                                           bool expectedCanwriteResult,
                                                                           bool useNonNullContentType)
         {
-            // Arrange 
+            // Arrange
             var typeToUse = declaredTypeAsString ? typeof(string) : typeof(object);
             var formatterContext = new OutputFormatterContext()
             {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.Test
         [InlineData(typeof(Task))]
         public void CanWriteResult_ReturnsTrue_IfReturnTypeIsVoidOrTask(Type declaredType)
         {
-            // Arrange 
+            // Arrange
             var formatterContext = new OutputFormatterContext()
             {
                 Object = "Something non null.",
@@ -86,12 +86,12 @@ namespace Microsoft.AspNet.Mvc.Test
         [InlineData(null, true, true)]
         [InlineData(null, false, false)]
         [InlineData("some value", true, false)]
-        public void 
+        public void
             CanWriteResult_ReturnsTrue_IfReturnValueIsNullAndTreatNullValueAsNoContentIsNotSet(string value,
                                                                                       bool treatNullValueAsNoContent,
                                                                                       bool expectedCanwriteResult)
         {
-            // Arrange 
+            // Arrange
             var formatterContext = new OutputFormatterContext()
             {
                 Object = value,
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.Test
         [Fact]
         public async Task WriteAsync_WritesTheStatusCode204()
         {
-            // Arrange 
+            // Arrange
             var defaultHttpContext = new DefaultHttpContext();
             var formatterContext = new OutputFormatterContext()
             {

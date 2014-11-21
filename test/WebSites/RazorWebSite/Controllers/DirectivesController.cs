@@ -15,7 +15,7 @@ namespace RazorWebSite
 
         public ViewResult ViewInheritsBasePageFromViewStarts()
         {
-            return View("/views/directives/scoped/ViewInheritsBasePageFromViewStarts.cshtml", 
+            return View("/views/directives/scoped/ViewInheritsBasePageFromViewStarts.cshtml",
                         new Person { Name = "Person2" });
         }
     }

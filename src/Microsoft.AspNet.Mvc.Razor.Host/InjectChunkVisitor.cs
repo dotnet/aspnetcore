@@ -30,9 +30,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             Writer.WriteLine(_activateAttribute);
 
-            // Some of the chunks that we visit are either InjectDescriptors that are added by default or 
-            // are chunks from _ViewStart files and are not associated with any Spans. Invoking 
-            // CreateExpressionMapping to produce line mappings on these chunks would fail. We'll skip 
+            // Some of the chunks that we visit are either InjectDescriptors that are added by default or
+            // are chunks from _ViewStart files and are not associated with any Spans. Invoking
+            // CreateExpressionMapping to produce line mappings on these chunks would fail. We'll skip
             // generating code mappings for these chunks. This makes sense since the chunks do not map
             // to any code in the current view.
             if (Context.Host.DesignTimeMode && chunk.Association != null)

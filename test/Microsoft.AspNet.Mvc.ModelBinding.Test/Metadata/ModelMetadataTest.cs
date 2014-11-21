@@ -152,24 +152,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // IsRequired
 
         [Theory]
-        [InlineData(typeof(string))]        
+        [InlineData(typeof(string))]
         [InlineData(typeof(IDisposable))]
         [InlineData(typeof(Nullable<int>))]
         public void IsRequired_ReturnsFalse_ForNullableTypes(Type modelType)
         {
             // Arrange
             var provider = new Mock<IModelMetadataProvider>();
-            var metadata = new ModelMetadata(provider.Object, 
-                                             containerType: null, 
-                                             modelAccessor: null, 
-                                             modelType: modelType, 
+            var metadata = new ModelMetadata(provider.Object,
+                                             containerType: null,
+                                             modelAccessor: null,
+                                             modelType: modelType,
                                              propertyName: null);
 
             // Act
             var isRequired = metadata.IsRequired;
-            
+
             // Assert
-            Assert.False(isRequired); 
+            Assert.False(isRequired);
         }
 
         [Theory]

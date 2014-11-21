@@ -91,7 +91,7 @@ namespace WebApiCompatShimWebSite
         public IActionResult GetJsonSettingsEncoding()
         {
             return Json(
-                CreateUser(), 
+                CreateUser(),
                 new JsonSerializerSettings() { Formatting = Formatting.Indented },
                 Encoding.UTF32);
         }

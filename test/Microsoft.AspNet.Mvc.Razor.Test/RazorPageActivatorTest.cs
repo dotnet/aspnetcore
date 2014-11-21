@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        
+
 
         private class MyModel
         {

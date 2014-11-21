@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             builder.Append(Bottom);
 
             var sourceCode = builder.ToString();
-            var syntaxTree = SyntaxTreeGenerator.Generate(sourceCode, 
+            var syntaxTree = SyntaxTreeGenerator.Generate(sourceCode,
                                                           "__AUTO__GeneratedViewsCollection.cs",
                                                           Options);
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             get
             {
-                return 
+                return
 @"using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Razor;

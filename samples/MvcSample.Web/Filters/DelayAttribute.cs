@@ -22,7 +22,7 @@ namespace MvcSample.Web.Filters
             }
 
             var executedContext = await next();
-            
+
             if (executedContext.Result is ViewResult)
             {
                 // slow down outgoing view results

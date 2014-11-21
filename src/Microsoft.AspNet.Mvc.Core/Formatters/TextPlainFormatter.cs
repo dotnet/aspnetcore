@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc
 
         public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
         {
-            // Ignore the passed in content type, if the object is string 
+            // Ignore the passed in content type, if the object is string
             // always return it as a text/plain format.
             if (context.DeclaredType == typeof(string))
             {

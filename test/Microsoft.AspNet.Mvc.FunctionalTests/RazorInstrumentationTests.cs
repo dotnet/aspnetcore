@@ -95,8 +95,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         [Theory]
         [MemberData(nameof(InstrumentationData))]
-        public async Task ViewsAreServedWithoutInstrumentationByDefault(string actionName, 
-                                                                        string expected, 
+        public async Task ViewsAreServedWithoutInstrumentationByDefault(string actionName,
+                                                                        string expected,
                                                                         IEnumerable<Tuple<int, int, bool>> expectedLineMappings)
         {
             // Arrange

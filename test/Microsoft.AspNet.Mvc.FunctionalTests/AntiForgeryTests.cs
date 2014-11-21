@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var setCookieHeader = response.Headers.GetValues("Set-Cookie").ToArray();
 
-            // Even though there are two forms there should only be one response cookie, 
+            // Even though there are two forms there should only be one response cookie,
             // as for the second form, the cookie from the first token should be reused.
             Assert.Equal(1, setCookieHeader.Length);
             Assert.True(setCookieHeader[0].StartsWith("__RequestVerificationToken"));
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var getResponse = await client.GetAsync("http://localhost/Account/Login");
             var resposneBody = await getResponse.Content.ReadAsStringAsync();
 
-            // Get the AF token for the second login. If the cookies are generated twice(i.e are different), 
+            // Get the AF token for the second login. If the cookies are generated twice(i.e are different),
             // this AF token will not work with the first cookie.
             var formToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(resposneBody, "Account/UseFacebookLogin");
             var cookieToken = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse);
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var cookieToken = "asdad";
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
             request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
-            
+
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string,string>("__RequestVerificationToken", formToken),

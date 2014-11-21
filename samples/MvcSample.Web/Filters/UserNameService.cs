@@ -6,7 +6,7 @@ namespace MvcSample.Web.Filters
     {
         private static readonly string[] _userNames = new[] { "Jon", "David", "Goliath" };
         private static int _index;
-        
+
         public string GetName()
         {
             return _userNames[_index++ % 3];

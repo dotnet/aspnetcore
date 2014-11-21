@@ -6,7 +6,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// Represents the default <see cref="IRazorViewFactory"/> implementation that creates 
+    /// Represents the default <see cref="IRazorViewFactory"/> implementation that creates
     /// <see cref="RazorView"/> instances with a given <see cref="IRazorPage"/>.
     /// </summary>
     public class RazorViewFactory : IRazorViewFactory

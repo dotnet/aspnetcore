@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc
     public static class ActionDescriptorExtensions
     {
         /// <summary>
-        /// Gets the value of a property from the <see cref="ActionDescriptor.Properties"/> collection 
+        /// Gets the value of a property from the <see cref="ActionDescriptor.Properties"/> collection
         /// using the provided value of <typeparamref name="T"/> as the key.
         /// </summary>
         /// <typeparam name="T">The type of the property.</typeparam>

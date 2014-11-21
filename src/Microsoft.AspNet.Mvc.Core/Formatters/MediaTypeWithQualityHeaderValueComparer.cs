@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class MediaTypeWithQualityHeaderValueComparer : IComparer<MediaTypeWithQualityHeaderValue>
     {
-        private static readonly MediaTypeWithQualityHeaderValueComparer _mediaTypeComparer = 
+        private static readonly MediaTypeWithQualityHeaderValueComparer _mediaTypeComparer =
                                                                     new MediaTypeWithQualityHeaderValueComparer();
 
         private MediaTypeWithQualityHeaderValueComparer()

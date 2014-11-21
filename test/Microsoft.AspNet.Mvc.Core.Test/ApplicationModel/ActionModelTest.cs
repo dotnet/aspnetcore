@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void CopyConstructor_DoesDeepCopyOfOtherModels()
         {
             // Arrange
-            var action = new ActionModel(typeof(TestController).GetMethod("Edit"), 
+            var action = new ActionModel(typeof(TestController).GetMethod("Edit"),
                                          new List<object>());
 
-            var parameter = new ParameterModel(action.ActionMethod.GetParameters()[0], 
+            var parameter = new ParameterModel(action.ActionMethod.GetParameters()[0],
                                                new List<object>());
             parameter.Action = action;
             action.Parameters.Add(parameter);
@@ -42,13 +42,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void CopyConstructor_CopiesAllProperties()
         {
             // Arrange
-            var action = new ActionModel(typeof(TestController).GetMethod("Edit"), 
+            var action = new ActionModel(typeof(TestController).GetMethod("Edit"),
                                          new List<object>() { new HttpGetAttribute() });
 
             action.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
             action.ActionName = "Edit";
 
-            action.Controller = new ControllerModel(typeof(TestController).GetTypeInfo(), 
+            action.Controller = new ControllerModel(typeof(TestController).GetTypeInfo(),
                                                     new List<object>());
             action.Filters.Add(new AuthorizeAttribute());
             action.HttpMethods.Add("GET");
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             foreach (var property in typeof(ActionModel).GetProperties())
             {
                 if (property.Name.Equals("ApiExplorer") ||
-                    property.Name.Equals("AttributeRouteModel") || 
+                    property.Name.Equals("AttributeRouteModel") ||
                     property.Name.Equals("Parameters"))
                 {
                     // This test excludes other ApplicationModel objects on purpose because we deep copy them.
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                     // Ensure non-default value
                     Assert.NotEmpty((IEnumerable<object>)value1);
                 }
-                else if (property.PropertyType.IsValueType || 
+                else if (property.PropertyType.IsValueType ||
                     Nullable.GetUnderlyingType(property.PropertyType) != null)
                 {
                     Assert.Equal(value1, value2);

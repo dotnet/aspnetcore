@@ -10,7 +10,7 @@ using Microsoft.AspNet.PageExecutionInstrumentation;
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// Default implementation for <see cref="IView"/> that executes one or more <see cref="IRazorPage"/> 
+    /// Default implementation for <see cref="IView"/> that executes one or more <see cref="IRazorPage"/>
     /// as parts of its exeuction.
     /// </summary>
     public class RazorView : IView
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                          IRazorPageActivator pageActivator,
                          IViewStartProvider viewStartProvider,
                          IRazorPage razorPage,
-                         bool isPartial 
+                         bool isPartial
             )
         {
             _pageFactory = pageFactory;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Gets <see cref="IRazorPage"/> instance that the views executes on. 
+        /// Gets <see cref="IRazorPage"/> instance that the views executes on.
         /// </summary>
         public IRazorPage RazorPage { get; }
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                // For the non-instrumented case, we don't need to buffer contents. For Html.Partial, the writer is 
+                // For the non-instrumented case, we don't need to buffer contents. For Html.Partial, the writer is
                 // an in memory writer and for Partial views, we directly write to the Response.
                 await RenderPageCoreAsync(RazorPage, context);
             }

@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         }
 
         /// <summary>
-        /// Returns a string with the &lt;TModel&gt; token replaced with the value specified in 
+        /// Returns a string with the &lt;TModel&gt; token replaced with the value specified in
         /// <paramref name="modelName"/>.
         /// </summary>
         /// <param name="value">The string to replace the token in.</param>

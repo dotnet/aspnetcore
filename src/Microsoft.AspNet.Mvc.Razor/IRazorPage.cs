@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <remarks>
         /// Sections defined in a page are deferred and executed as part of the layout page.
-        /// When this flag is set, all write operations performed by the page are part of a 
+        /// When this flag is set, all write operations performed by the page are part of a
         /// section being rendered.
         /// </remarks>
         bool IsLayoutBeingRendered { get; set; }

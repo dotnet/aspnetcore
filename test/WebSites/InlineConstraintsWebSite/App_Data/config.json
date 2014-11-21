@@ -2,7 +2,7 @@
     "TemplateCollection" : {
         "areaRoute" : {
             "TemplateValue" : "{area:exists}/{controller=Home}/{action=Index}"
-        }, 
+        },
         "actionRoute" : {
             "TemplateValue" : "{controller=Home}/{action=Index}"
         }

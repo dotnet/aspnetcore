@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private readonly IFileSystem _fileSystem;
 
-        // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>. 
+        // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>.
         // This field holds the type name without the generic decoration (MyBaseType)
         private readonly string _baseType;
         private ChunkInheritanceUtility _chunkInheritanceUtility;

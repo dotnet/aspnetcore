@@ -46,11 +46,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             //Arrange
             string expectedLink = string.Format(@"<a href=""{0}{1}{2}{3}{4}{5}""{6}>Details</a>",
-                                                                protocol, 
-                                                                hostname, 
-                                                                controller, 
-                                                                action, 
-                                                                GetRouteValuesAsString(routeValues), 
+                                                                protocol,
+                                                                hostname,
+                                                                controller,
+                                                                action,
+                                                                GetRouteValuesAsString(routeValues),
                                                                 fragment,
                                                                 GetHtmlAttributesAsString(htmlAttributes));
 

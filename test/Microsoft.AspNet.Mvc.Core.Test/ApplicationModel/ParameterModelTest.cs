@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void CopyConstructor_CopiesAllProperties()
         {
             // Arrange
-            var parameter = new ParameterModel(typeof(TestController).GetMethod("Edit").GetParameters()[0], 
+            var parameter = new ParameterModel(typeof(TestController).GetMethod("Edit").GetParameters()[0],
                                                new List<object>() { new FromBodyAttribute() });
 
             parameter.Action = new ActionModel(typeof(TestController).GetMethod("Edit"), new List<object>());
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                     // Ensure non-default value
                     Assert.NotEmpty((IEnumerable<object>)value1);
                 }
-                else if (property.PropertyType.IsValueType || 
+                else if (property.PropertyType.IsValueType ||
                     Nullable.GetUnderlyingType(property.PropertyType) != null)
                 {
                     Assert.Equal(value1, value2);

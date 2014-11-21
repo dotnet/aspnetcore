@@ -7,7 +7,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Provides an implementation of <see cref="IExcludeTypeValidationFilter"/> which can filter 
+    /// Provides an implementation of <see cref="IExcludeTypeValidationFilter"/> which can filter
     /// based on a type full name.
     /// </summary>
     public class DefaultTypeNameBasedExcludeFilter : IExcludeTypeValidationFilter

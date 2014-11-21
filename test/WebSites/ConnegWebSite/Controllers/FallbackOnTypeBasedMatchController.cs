@@ -24,8 +24,8 @@ namespace ConnegWebsite
             var objectResult = new ObjectResult(input);
 
             // Request content type is application/custom.
-            // PlainTextFormatter cannot write because it does not support the type. 
-            // JsonOutputFormatter cannot write in the first attempt because it does not support the 
+            // PlainTextFormatter cannot write because it does not support the type.
+            // JsonOutputFormatter cannot write in the first attempt because it does not support the
             // request content type.
             objectResult.Formatters.Add(new PlainTextFormatter());
             objectResult.Formatters.Add(new JsonOutputFormatter());
@@ -38,7 +38,7 @@ namespace ConnegWebsite
             var objectResult = new ObjectResult(input);
 
             // Request content type is application/custom.
-            // PlainTextFormatter cannot write because it does not support the type. 
+            // PlainTextFormatter cannot write because it does not support the type.
             objectResult.Formatters.Add(new PlainTextFormatter());
 
             return objectResult;

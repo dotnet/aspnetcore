@@ -8,28 +8,28 @@ using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Represents information used by a formatter for participating in 
-    /// output content negotiation and in writing out the response. 
+    /// Represents information used by a formatter for participating in
+    /// output content negotiation and in writing out the response.
     /// </summary>
     public class OutputFormatterContext
     {
         /// <summary>
-        /// The return value of the action method. 
+        /// The return value of the action method.
         /// </summary>
         public object Object { get; set; }
 
         /// <summary>
-        /// The declared return type of the action.  
+        /// The declared return type of the action.
         /// </summary>
         public Type DeclaredType { get; set; }
 
         /// <summary>
-        /// Action context associated with the current call. 
+        /// Action context associated with the current call.
         /// </summary>
         public ActionContext ActionContext { get; set; }
 
         /// <summary>
-        /// The encoding which is chosen by the selected formatter. 
+        /// The encoding which is chosen by the selected formatter.
         /// </summary>
         public Encoding SelectedEncoding { get; set; }
 

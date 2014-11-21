@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var innerBinder = new CompositeModelBinder(binderProviders.Object);
             var valueProvider = new SimpleHttpValueProvider();
             var bindingContext = GetBindingContext(valueProvider, innerBinder);
-            
+
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     return Task.FromResult(true);
                 });
             var bindingContext = GetBindingContext(new SimpleHttpValueProvider(), innerBinder.Object);
-            
+
 
             var binder = new KeyValuePairModelBinder<int, string>();
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             };
             return bindingContext;
         }
-        
+
         private static IModelBinder CreateIntBinder()
         {
             var mockIntBinder = new Mock<IModelBinder>();

@@ -6,7 +6,7 @@ using System.Reflection;
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     /// <summary>
-    /// Creates a set of <see cref="ControllerModel"/> for a type. 
+    /// Creates a set of <see cref="ControllerModel"/> for a type.
     /// </summary>
     public interface IControllerModelBuilder
     {
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// <returns>A <see cref="ControllerModel"/> or null.</returns>
         /// <remarks>
         /// Instances of <see cref="ControllerModel"/> returned from this interface should have their
-        /// <see cref="ControllerModel.Actions"/> initialized. 
+        /// <see cref="ControllerModel.Actions"/> initialized.
         /// </remarks>
         ControllerModel BuildControllerModel([NotNull] TypeInfo typeInfo);
     }

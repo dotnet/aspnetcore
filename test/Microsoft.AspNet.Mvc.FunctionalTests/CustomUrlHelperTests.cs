@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     /// <summary>
     /// The tests here verify the extensibility of <see cref="UrlHelper"/>.
-    /// 
+    ///
     /// Following are some of the scenarios exercised here:
     /// 1. Based on configuration, generate Content urls pointing to local or a CDN server
     /// 2. Based on configuration, generate lower case urls

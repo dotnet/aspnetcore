@@ -47,8 +47,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         public ModelMetadata GetMetadataForParameter(
-            Func<object> modelAccessor, 
-            [NotNull] MethodInfo methodInfo, 
+            Func<object> modelAccessor,
+            [NotNull] MethodInfo methodInfo,
             [NotNull] string parameterName,
             IBinderMetadata binderMetadata)
         {
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                           ParameterInfo parameter,
                                                           IBinderMetadata binderMetadata)
         {
-            var parameterInfo = 
+            var parameterInfo =
                 CreateParameterInfo(parameter.ParameterType,
                                     parameter.GetCustomAttributes(),
                                     parameterName,
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private TypeInformation GetTypeInformation(Type type, IEnumerable<Attribute> associatedAttributes = null)
         {
-            // This retrieval is implemented as a TryGetValue/TryAdd instead of a GetOrAdd 
+            // This retrieval is implemented as a TryGetValue/TryAdd instead of a GetOrAdd
             // to avoid the performance cost of creating instance delegates
             TypeInformation typeInfo;
             if (!_typeInfoCache.TryGetValue(type, out typeInfo))
@@ -176,8 +176,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         private ParameterInformation CreateParameterInfo(
-            Type parameterType, 
-            IEnumerable<Attribute> attributes, 
+            Type parameterType,
+            IEnumerable<Attribute> attributes,
             string parameterName,
             IBinderMetadata binderMetadata)
         {
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                     containerType: null,
                                                     modelType: parameterType,
                                                     propertyName: parameterName);
-      
+
             if (binderMetadata != null)
             {
                 metadataProtoType.BinderMetadata = binderMetadata;

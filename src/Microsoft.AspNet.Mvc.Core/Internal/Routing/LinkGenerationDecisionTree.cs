@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         }
 
         // We need to recursively walk the decision tree based on the provided route data
-        // (context.Values + context.AmbientValues) to find all entries that match. This process is 
+        // (context.Values + context.AmbientValues) to find all entries that match. This process is
         // virtually identical to action selection.
         //
         // Each entry has a collection of 'required link values' that must be satisfied. These are
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
 
         private class AttributeRouteLinkGenerationEntryComparer : IComparer<AttributeRouteLinkGenerationEntry>
         {
-            public static readonly AttributeRouteLinkGenerationEntryComparer Instance = 
+            public static readonly AttributeRouteLinkGenerationEntryComparer Instance =
                 new AttributeRouteLinkGenerationEntryComparer();
 
             public int Compare(AttributeRouteLinkGenerationEntry x, AttributeRouteLinkGenerationEntry y)

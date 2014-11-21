@@ -9,7 +9,7 @@ using Microsoft.Framework.DependencyInjection;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Represents a model binder which understands <see cref="IFormatterBinderMetadata"/> and uses 
+    /// Represents a model binder which understands <see cref="IFormatterBinderMetadata"/> and uses
     /// InputFomatters to bind the model to request's body.
     /// </summary>
     public class BodyModelBinder : MetadataAwareBinder<IFormatterBinderMetadata>
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         protected override async Task<bool> BindAsync(
-            ModelBindingContext bindingContext, 
+            ModelBindingContext bindingContext,
             IFormatterBinderMetadata metadata)
         {
             var formatterContext = new InputFormatterContext(_actionContext, bindingContext.ModelType);

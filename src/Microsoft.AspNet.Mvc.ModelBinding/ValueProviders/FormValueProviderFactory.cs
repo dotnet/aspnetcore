@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class FormValueProviderFactory : IValueProviderFactory
     {
-        private static MediaTypeHeaderValue _formEncodedContentType = 
+        private static MediaTypeHeaderValue _formEncodedContentType =
             MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
 
         public IValueProvider GetValueProvider([NotNull] ValueProviderFactoryContext context)
@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 var culture = GetCultureInfo(request);
                 return new ReadableStringCollectionValueProvider<IFormDataValueProviderMetadata>(
-                    () => request.GetFormAsync(), 
+                    () => request.GetFormAsync(),
                     culture);
             }
 

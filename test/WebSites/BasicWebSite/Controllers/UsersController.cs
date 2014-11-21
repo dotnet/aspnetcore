@@ -7,6 +7,6 @@ namespace BasicWebSite.Controllers
         public IActionResult Index()
         {
             return Content("Users.Index");
-        }        
+        }
     }
 }

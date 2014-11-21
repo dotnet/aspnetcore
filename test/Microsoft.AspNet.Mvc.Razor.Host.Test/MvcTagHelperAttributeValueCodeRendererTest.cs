@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         [InlineData("SomeType", "SomeType", "SomeMethod(__model => __model.MyValue)")]
         [InlineData("SomeType", "SomeType2", "MyValue")]
         public void RenderAttributeValue_RendersModelExpressionsCorrectly(string modelExpressionType,
-                                                                          string propertyType, 
+                                                                          string propertyType,
                                                                           string expectedValue)
         {
             // Arrange

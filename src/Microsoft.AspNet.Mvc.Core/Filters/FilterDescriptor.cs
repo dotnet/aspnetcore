@@ -7,15 +7,15 @@ namespace Microsoft.AspNet.Mvc
     /// Descriptor for an <see cref="IFilter"/>.
     /// </summary>
     /// <remarks>
-    /// <see cref="FilterDescriptor"/> describes an <see cref="IFilter"/> with an order and scope. 
-    /// 
+    /// <see cref="FilterDescriptor"/> describes an <see cref="IFilter"/> with an order and scope.
+    ///
     /// Order and scope control the execution order of filters. Filters with a higher value of Order execute
-    /// later in the pipeline. 
-    /// 
+    /// later in the pipeline.
+    ///
     /// When filters have the same Order, the Scope value is used to determine the order of execution. Filters
     /// with a higher value of Scope execute later in the pipeline. See <see cref="FilterScope"/> for commonly
     /// used scopes.
-    /// 
+    ///
     /// For <see cref="IExceptionFilter"/> implementions, the filter runs only after an exception has occurred,
     /// and so the observed order of execution will be opposite that of other filters.
     /// </remarks>
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="filter">The <see cref="IFilter"/>.</param>
         /// <param name="filterScope">The filter scope.</param>
         /// <remarks>
-        /// If the <paramref name="filter"/> implements <see cref="IOrderedFilter"/>, then the value of 
+        /// If the <paramref name="filter"/> implements <see cref="IOrderedFilter"/>, then the value of
         /// <see cref="Order"/> will be taken from <see cref="IOrderedFilter.Order"/>. Otherwise the value
         /// of <see cref="Order"/> will default to <c>0</c>.
         /// </remarks>

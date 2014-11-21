@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [ReplaceCulture]
         public void WriteLine_WritesDataTypes_ToBuffer()
         {
-            // Arrange 
+            // Arrange
             var newLine = Environment.NewLine;
             var expected = new List<object> { "False", newLine, "1.1", newLine, "3", newLine };
             var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);

@@ -15,7 +15,7 @@ namespace MvcSample.Web.Filters
             {
                 controller.CustomUser.Log += "Age Enhanced!" + Environment.NewLine;
             }
-            
+
             if (context.ActionArguments.TryGetValue("age", out age))
             {
                 if (age is int)

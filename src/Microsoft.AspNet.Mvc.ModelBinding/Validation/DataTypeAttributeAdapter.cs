@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// A validation adapter that is used to map <see cref="DataTypeAttribute"/>'s to a single client side validation 
+    /// A validation adapter that is used to map <see cref="DataTypeAttribute"/>'s to a single client side validation
     /// rule.
     /// </summary>
     public class DataTypeAttributeAdapter : DataAnnotationsModelValidator

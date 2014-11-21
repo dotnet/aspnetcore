@@ -8,7 +8,7 @@ using System.Reflection;
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     /// <summary>
-    /// Creates a set of <see cref="ActionModel"/> for a method. 
+    /// Creates a set of <see cref="ActionModel"/> for a method.
     /// </summary>
     public interface IActionModelBuilder
     {
@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// <returns>A set of <see cref="ActionModel"/> or null.</returns>
         /// <remarks>
         /// Instances of <see cref="ActionModel"/> returned from this interface should have their
-        /// <see cref="ActionModel.Parameters"/> initialized. 
+        /// <see cref="ActionModel.Parameters"/> initialized.
         /// </remarks>
         IEnumerable<ActionModel> BuildActionModels([NotNull] TypeInfo typeInfo, [NotNull] MethodInfo methodInfo);
     }

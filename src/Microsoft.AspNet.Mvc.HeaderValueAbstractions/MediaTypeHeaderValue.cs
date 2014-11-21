@@ -126,8 +126,8 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
 
         /// <summary>
         /// Determines whether this instance is a subset of passed <see cref="MediaTypeHeaderValue"/>.
-        /// If the media type and media type parameters of this media type are all present 
-        /// and match those of <paramref name="otherMediaType"/> then it is a match even though 
+        /// If the media type and media type parameters of this media type are all present
+        /// and match those of <paramref name="otherMediaType"/> then it is a match even though
         /// <paramref name="otherMediaType"/> may have additional parameters.
         /// </summary>
         /// <param name="mediaType">The first media type.</param>
@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
                     return false;
                 }
 
-                // So far we either have a full match or a subset match. Now check that all of 
+                // So far we either have a full match or a subset match. Now check that all of
                 // mediaType1's parameters are present and equal in mediatype2
                 if (!MatchParameters(Parameters, otherMediaType.Parameters))
                 {

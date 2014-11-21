@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Description
         }
 
         /// <inheritdoc />
-        public int Order 
+        public int Order
         {
             get { return DefaultOrder.DefaultFrameworkSortOrder; }
         }
@@ -300,10 +300,10 @@ namespace Microsoft.AspNet.Mvc.Description
         }
 
         private static IEnumerable<IRouteConstraint> GetConstraints(
-            IInlineConstraintResolver constraintResolver, 
+            IInlineConstraintResolver constraintResolver,
             IEnumerable<InlineConstraint> constraints)
         {
-            return 
+            return
                 constraints
                 .Select(c => constraintResolver.ResolveConstraint(c.Constraint))
                 .Where(c => c != null)

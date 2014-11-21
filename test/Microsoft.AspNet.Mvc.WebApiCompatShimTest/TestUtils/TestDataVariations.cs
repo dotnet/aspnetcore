@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.TestCommon
 {
     /// <summary>
-    /// An flags enum that can be used to indicate different variations of a given 
+    /// An flags enum that can be used to indicate different variations of a given
     /// <see cref="TestData"/> instance.
     /// </summary>
     [Flags]
@@ -23,7 +23,7 @@ namespace Microsoft.TestCommon
         AsDerivedType = 0x2,
 
         /// <summary>
-        /// An individual instance of a given <see cref="TestData"/> type that has a property value 
+        /// An individual instance of a given <see cref="TestData"/> type that has a property value
         /// that is a known type of the declared property type.
         /// </summary>
         AsKnownType = 0x4,
@@ -60,7 +60,7 @@ namespace Microsoft.TestCommon
         AsDataMember = 0x100,
 
         /// <summary>
-        /// An instance of a type in which a given <see cref="TestData"/> type is decorated with a 
+        /// An instance of a type in which a given <see cref="TestData"/> type is decorated with a
         /// <see cref="System.Xml.Serialization.XmlElementAttribute"/>.
         /// </summary>
         AsXmlElementProperty = 0x200,

@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class ValueProviderFactoryContext
     {
         public ValueProviderFactoryContext(
-            [NotNull] HttpContext httpContext, 
+            [NotNull] HttpContext httpContext,
             [NotNull] IDictionary<string, object> routeValues)
         {
             HttpContext = httpContext;

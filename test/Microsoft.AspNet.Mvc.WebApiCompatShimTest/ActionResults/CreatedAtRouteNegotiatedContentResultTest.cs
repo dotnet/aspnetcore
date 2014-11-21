@@ -32,8 +32,8 @@ namespace System.Web.Http
 
             var context = new ActionContext(new RouteContext(httpContext), new ActionDescriptor());
             var result = new CreatedAtRouteNegotiatedContentResult<Product>(
-                "api_route", 
-                new RouteValueDictionary(new { controller = "Products", id = 5 }), 
+                "api_route",
+                new RouteValueDictionary(new { controller = "Products", id = 5 }),
                 new Product());
 
             // Act

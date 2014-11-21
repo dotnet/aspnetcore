@@ -8,13 +8,13 @@ namespace ModelBindingWebSite.Controllers
 {
     public class BindAttributeController : Controller
     {
-        public Dictionary<string, string> 
+        public Dictionary<string, string>
            BindAtParamterLevelAndBindAtTypeLevelAreBothEvaluated_BlackListingAtEitherLevelDoesNotBind(
             [Bind(Exclude = "IncludedExplicitlyAtTypeLevel")] TypeWithIncludedPropertyAtBindAttribute param1,
             [Bind(Include = "ExcludedExplicitlyAtTypeLevel")] TypeWithExcludedPropertyAtBindAttribute param2)
         {
             return new Dictionary<string, string>()
-            { 
+            {
                 // The first one should not be included because the parameter level bind attribute filters it out.
                 { "param1.IncludedExplicitlyAtTypeLevel", param1.IncludedExplicitlyAtTypeLevel },
 
@@ -23,7 +23,7 @@ namespace ModelBindingWebSite.Controllers
             };
         }
 
-        public Dictionary<string, string> 
+        public Dictionary<string, string>
           BindAtParamterLevelAndBindAtTypeLevelAreBothEvaluated_WhiteListingAtBothLevelBinds(
           [Bind(Include = "IncludedExplicitlyAtTypeLevel")] TypeWithIncludedPropertyAtBindAttribute param1)
         {
@@ -34,7 +34,7 @@ namespace ModelBindingWebSite.Controllers
             };
         }
 
-        public Dictionary<string, string> 
+        public Dictionary<string, string>
           BindAtParamterLevelAndBindAtTypeLevelAreBothEvaluated_WhiteListingAtOnlyOneLevelDoesNotBind(
           [Bind(Include = "IncludedExplicitlyAtParameterLevel")]
           TypeWithIncludedPropertyAtParameterAndTypeUsingBindAttribute param1)

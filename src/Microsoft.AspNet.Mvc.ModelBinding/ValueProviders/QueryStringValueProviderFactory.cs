@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public IValueProvider GetValueProvider([NotNull] ValueProviderFactoryContext context)
         {
-            // Process the query collection once-per request. 
+            // Process the query collection once-per request.
             var storage = context.HttpContext.Items;
             object value;
             IValueProvider provider;

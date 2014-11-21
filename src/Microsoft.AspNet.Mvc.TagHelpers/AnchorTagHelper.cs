@@ -58,8 +58,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public string Route { get; set; }
 
         /// <inheritdoc />
-        /// <remarks>Does nothing if user provides an "href" attribute. Throws an 
-        /// <see cref="InvalidOperationException"/> if "href" attribute is provided and <see cref="Action"/>, 
+        /// <remarks>Does nothing if user provides an "href" attribute. Throws an
+        /// <see cref="InvalidOperationException"/> if "href" attribute is provided and <see cref="Action"/>,
         /// <see cref="Controller"/>, or <see cref="Route"/> are non-<c>null</c>.</remarks>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
@@ -68,12 +68,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // If there's an "href" on the tag it means it's being used as a normal anchor.
             if (output.Attributes.ContainsKey(Href))
             {
-                if (Action != null || 
-                    Controller != null || 
-                    Route != null || 
-                    Protocol != null || 
-                    Host != null || 
-                    Fragment != null || 
+                if (Action != null ||
+                    Controller != null ||
+                    Route != null ||
+                    Protocol != null ||
+                    Host != null ||
+                    Fragment != null ||
                     routePrefixedAttributes.Any())
                 {
                     // User specified an href and one of the bound attributes; can't determine the href attribute.

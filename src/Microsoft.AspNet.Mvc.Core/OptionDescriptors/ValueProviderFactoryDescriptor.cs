@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         /// <summary>
         /// Creates a new instance of <see cref="ValueProviderFactoryDescriptor"/> using the specified type.
         /// </summary>
-        /// <param name="valueProviderFactory">An instance of <see cref="IValueProviderFactory"/> 
+        /// <param name="valueProviderFactory">An instance of <see cref="IValueProviderFactory"/>
         /// that the descriptor represents.</param>
         public ValueProviderFactoryDescriptor([NotNull] IValueProviderFactory valueProviderFactory)
             : base(valueProviderFactory)

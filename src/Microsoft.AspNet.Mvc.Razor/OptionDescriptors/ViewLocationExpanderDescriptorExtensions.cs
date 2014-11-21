@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// the specified <paramref name="index"/>.
         /// </summary>
         /// <param name="descriptors">A list of <see cref="ViewLocationExpanderDescriptor"/>.</param>
-        /// <param name="index">The zero-based index at which <paramref name="viewLocationExpanderType"/> 
+        /// <param name="index">The zero-based index at which <paramref name="viewLocationExpanderType"/>
         /// should be inserted.</param>
         /// <param name="viewLocationExpanderType">Type representing an <see cref="IViewLocationExpander"/></param>
         /// <returns>A <see cref="ViewLocationExpanderDescriptor"/> representing the inserted instance.</returns>
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <paramref name="index"/>.
         /// </summary>
         /// <param name="descriptors">A list of <see cref="ViewLocationExpanderDescriptor"/>.</param>
-        /// <param name="index">The zero-based index at which <paramref name="viewLocationExpander"/> 
+        /// <param name="index">The zero-based index at which <paramref name="viewLocationExpander"/>
         /// should be inserted.</param>
         /// <param name="viewLocationExpander">An <see cref="IViewLocationExpander"/> instance.</param>
         /// <returns>A <see cref="ViewLocationExpanderDescriptor"/> representing the added instance.</returns>

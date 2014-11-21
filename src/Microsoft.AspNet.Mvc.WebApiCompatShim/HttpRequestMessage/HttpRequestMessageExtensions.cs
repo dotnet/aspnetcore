@@ -38,7 +38,7 @@ namespace System.Net.Http
             [NotNull] InvalidByteRangeException invalidByteRangeException)
         {
             var rangeNotSatisfiableResponse = request.CreateErrorResponse(
-                HttpStatusCode.RequestedRangeNotSatisfiable, 
+                HttpStatusCode.RequestedRangeNotSatisfiable,
                 invalidByteRangeException);
             rangeNotSatisfiableResponse.Content.Headers.ContentRange = invalidByteRangeException.ContentRange;
             return rangeNotSatisfiableResponse;
@@ -106,8 +106,8 @@ namespace System.Net.Http
         /// <param name="exception">The exception.</param>
         /// <returns>An error response for <paramref name="exception"/> with status code <paramref name="statusCode"/>.</returns>
         public static HttpResponseMessage CreateErrorResponse(
-            [NotNull] this HttpRequestMessage request, 
-            HttpStatusCode statusCode, 
+            [NotNull] this HttpRequestMessage request,
+            HttpStatusCode statusCode,
             [NotNull] Exception exception)
         {
             return request.CreateErrorResponse(statusCode, new HttpError(exception, includeErrorDetail: false));
@@ -127,7 +127,7 @@ namespace System.Net.Http
         /// <param name="modelState">The model state.</param>
         /// <returns>An error response for <paramref name="modelState"/> with status code <paramref name="statusCode"/>.</returns>
         public static HttpResponseMessage CreateErrorResponse(
-            [NotNull] this HttpRequestMessage request, 
+            [NotNull] this HttpRequestMessage request,
             HttpStatusCode statusCode,
             [NotNull] ModelStateDictionary modelState)
         {

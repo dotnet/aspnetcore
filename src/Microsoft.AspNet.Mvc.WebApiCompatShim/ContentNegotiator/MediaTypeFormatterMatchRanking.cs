@@ -6,7 +6,7 @@
 namespace System.Net.Http.Formatting
 {
     /// <summary>
-    /// Contains information about the degree to which a <see cref="MediaTypeFormatter"/> matches the  
+    /// Contains information about the degree to which a <see cref="MediaTypeFormatter"/> matches the
     /// explicit or implicit preferences found in an incoming request.
     /// </summary>
     public enum MediaTypeFormatterMatchRanking
@@ -22,7 +22,7 @@ namespace System.Net.Http.Formatting
         MatchOnCanWriteType,
 
         /// <summary>
-        /// Matched on explicit literal accept header in <see cref="HttpRequestMessage"/>, 
+        /// Matched on explicit literal accept header in <see cref="HttpRequestMessage"/>,
         /// e.g. "application/json".
         /// </summary>
         MatchOnRequestAcceptHeaderLiteral,

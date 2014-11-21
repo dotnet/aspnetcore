@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc
     public class ViewComponentConventionsTest
     {
         [Theory]
-        
+
         // Only public top-level classes can be view components.
         [InlineData(typeof(PublicClass), true)]
         [InlineData(typeof(InternalClass), false)]

@@ -33,11 +33,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
 
                 // Empty accept header, should select based on contentTypes.
                 yield return new object[] { contentTypes, "", "application/json;charset=utf-8" };
-                
+
                 // null accept header, should select based on contentTypes.
                 yield return new object[] { contentTypes, null, "application/json;charset=utf-8" };
 
-                // No accept Header match with given contentype collection. 
+                // No accept Header match with given contentype collection.
                 // Should select based on if any formatter supported any content type.
                 yield return new object[] { contentTypes, "text/custom", "application/json;charset=utf-8" };
 
@@ -72,8 +72,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
 
             var actionContext = CreateMockActionContext(httpResponse.Object, acceptHeader);
             var result = new ObjectResult(input);
-            
-            // Set the content type property explicitly. 
+
+            // Set the content type property explicitly.
             result.ContentTypes = contentTypes.Select(contentType => MediaTypeHeaderValue.Parse(contentType)).ToList();
             result.Formatters = new List<IOutputFormatter>
                                             {
@@ -109,12 +109,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             // Arrange
             var expectedContentType = "application/json;charset=utf-8";
 
-            // non string value. 
+            // non string value.
             var input = 123;
             var httpResponse = GetMockHttpResponse();
             var actionContext = CreateMockActionContext(httpResponse.Object);
-            
-            // Set the content type property explicitly to a single value. 
+
+            // Set the content type property explicitly to a single value.
             var result = new ObjectResult(input);
             result.ContentTypes = new List<MediaTypeHeaderValue>();
             result.ContentTypes.Add(MediaTypeHeaderValue.Parse(expectedContentType));
@@ -133,12 +133,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var contentType = "application/json;charset=utf-8";
             var expectedContentType = "text/plain;charset=utf-8";
 
-            // string value. 
+            // string value.
             var input = "1234";
             var httpResponse = GetMockHttpResponse();
             var actionContext = CreateMockActionContext(httpResponse.Object);
 
-            // Set the content type property explicitly to a single value. 
+            // Set the content type property explicitly to a single value.
             var result = new ObjectResult(input);
             result.ContentTypes = new List<MediaTypeHeaderValue>();
             result.ContentTypes.Add(MediaTypeHeaderValue.Parse(contentType));
@@ -160,11 +160,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var actionContext = CreateMockActionContext(httpResponse.Object, requestAcceptHeader: null);
             var result = new ObjectResult(input);
 
-            // It should not select TestOutputFormatter, 
+            // It should not select TestOutputFormatter,
             // This is because it should accept the first formatter which supports any of the two contentTypes.
             var contentTypes = new[] { "application/custom", "application/json" };
 
-            // Set the content type and the formatters property explicitly. 
+            // Set the content type and the formatters property explicitly.
             result.ContentTypes = contentTypes.Select(contentType => MediaTypeHeaderValue.Parse(contentType))
                                               .ToList();
             result.Formatters = new List<IOutputFormatter>
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            // Asserts that content type is not text/custom. 
+            // Asserts that content type is not text/custom.
             httpResponse.VerifySet(r => r.ContentType = expectedContentType);
         }
 
@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var stream = new MemoryStream();
 
             var httpResponse = GetMockHttpResponse();
-            var actionContext = 
+            var actionContext =
                 CreateMockActionContext(httpResponse.Object,
                                         requestAcceptHeader: "text/custom;q=0.1,application/json;q=0.9",
                                         requestContentType: "application/custom");
@@ -269,7 +269,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            // Asserts that content type is not text/custom. 
+            // Asserts that content type is not text/custom.
             httpResponse.VerifySet(r => r.ContentType = expectedContentType);
         }
 
@@ -283,10 +283,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             (string acceptHeader)
         {
             // For no accept headers,
-            // can write is called twice once for the request media type and once for the type match pass. 
-            // For each additional accept header, it is called once. 
+            // can write is called twice once for the request media type and once for the type match pass.
+            // For each additional accept header, it is called once.
             // Arrange
-            var acceptHeaderCollection = string.IsNullOrEmpty(acceptHeader) ? 
+            var acceptHeaderCollection = string.IsNullOrEmpty(acceptHeader) ?
                 null :
                 acceptHeader?.Split(',')
                              .Select(header => MediaTypeWithQualityHeaderValue.Parse(header))
@@ -344,7 +344,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         }
 
         [Fact]
-        public async Task 
+        public async Task
             ObjectResult_NoContentTypeSetWithNoAcceptHeadersAndNoRequestContentType_PicksFirstFormatterWhichCanWrite()
         {
             // Arrange
@@ -370,7 +370,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            // Asserts that content type is not text/custom. 
+            // Asserts that content type is not text/custom.
             httpResponse.VerifySet(r => r.ContentType = expectedContentType);
         }
 
@@ -398,7 +398,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            // Asserts that content type is not text/custom. 
+            // Asserts that content type is not text/custom.
             httpResponse.VerifySet(r => r.StatusCode = 406);
         }
 
@@ -446,7 +446,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             tempHttpResponse.SetupProperty<string>(o => o.ContentType);
             tempHttpContext.SetupGet(o => o.Response).Returns(tempHttpResponse.Object);
             tempHttpContext.SetupGet(o => o.Request.AcceptCharset).Returns(string.Empty);
-            var tempActionContext = new ActionContext(tempHttpContext.Object, 
+            var tempActionContext = new ActionContext(tempHttpContext.Object,
                                                       new RouteData(),
                                                       new ActionDescriptor());
             var formatterContext = new OutputFormatterContext()
@@ -501,7 +501,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var httpResponse = new Mock<HttpResponse>();
             httpResponse.SetupProperty<string>(o => o.ContentType);
             httpResponse.SetupGet(r => r.Body).Returns(stream);
-            return httpResponse; 
+            return httpResponse;
         }
 
         private static Mock<CannotWriteFormatter> GetMockFormatter()

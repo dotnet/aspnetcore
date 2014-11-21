@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    // Each of these tests makes two requests, because we want each test to verify that the data is 
+    // Each of these tests makes two requests, because we want each test to verify that the data is
     // PER-REQUEST and does not linger around to impact the next request.
     public class RequestServicesTest
     {

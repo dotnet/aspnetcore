@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         /// <summary>
         /// Gets the order of the route associated with a given action. This property determines
-        /// the order in which routes get executed. Routes with a lower order value are tried first. In case a route 
+        /// the order in which routes get executed. Routes with a lower order value are tried first. In case a route
         /// doesn't specify a value, it gets a default order of 0.
         /// </summary>
         public int Order { get; set; }

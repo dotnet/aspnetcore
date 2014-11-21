@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var values = new Dictionary<string, object>();
             var httpContext = GetHttpContext(new ActionDescriptor());
             var route = (new Mock<IRouter>()).Object;
-            
+
             // Act
             var match = _constraint.Match(httpContext, route, keyName, values, direction);
 

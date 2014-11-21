@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
 
             var bindingContext = GetBindingContext(typeof(Person), inputFormatter: mockInputFormatter.Object);
             bindingContext.ModelMetadata.BinderMetadata = Mock.Of<IFormatterBinderMetadata>();
-            
+
             var binder = GetBodyBinder(mockInputFormatter.Object, mockValidator.Object);
 
             // Act
