@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Core.Test
 {

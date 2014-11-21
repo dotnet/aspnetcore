@@ -11,12 +11,12 @@ namespace Microsoft.AspNet.Mvc
     {
         public int Order { get; set; }
 
-        #pragma warning disable 1998
+#pragma warning disable 1998
         public virtual async Task OnExceptionAsync([NotNull] ExceptionContext context)
         {
             OnException(context);
         }
-        #pragma warning restore 1998
+#pragma warning restore 1998
 
         public virtual void OnException([NotNull] ExceptionContext context)
         {

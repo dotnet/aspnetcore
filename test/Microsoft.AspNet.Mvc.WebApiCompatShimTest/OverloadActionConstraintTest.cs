@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Web.Http;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Xunit;

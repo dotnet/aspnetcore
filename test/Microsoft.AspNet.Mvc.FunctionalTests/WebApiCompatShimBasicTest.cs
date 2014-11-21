@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetAsync(
-                "http://localhost/api/Blog/HttpResponseException"+
+                "http://localhost/api/Blog/HttpResponseException" +
                 "/ThrowsHttpResponseExceptionWithHttpResponseMessage?message=send some message");
 
             // Assert
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetAsync(
-                "http://localhost/api/Blog/"+
+                "http://localhost/api/Blog/" +
                 "HttpResponseException/ThrowsHttpResponseExceptionInjectAFilterToHandleHttpResponseException");
 
             // Assert
@@ -490,7 +490,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/HttpRequestMessage/" + action );
+            var response = await client.GetAsync("http://localhost/api/Blog/HttpRequestMessage/" + action);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

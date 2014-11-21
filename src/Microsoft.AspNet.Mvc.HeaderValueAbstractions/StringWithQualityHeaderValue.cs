@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
         public static StringWithQualityHeaderValue Parse(string input)
         {
             StringWithQualityHeaderValue headerValue;
-            if(!TryParse(input, out headerValue))
+            if (!TryParse(input, out headerValue))
             {
                 throw new ArgumentException(Resources.FormatInvalidAcceptCharset(input));
             }

@@ -161,36 +161,36 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 TagBuilder tagBuilder;
                 switch (inputType)
                 {
-                case "checkbox":
-                    GenerateCheckBox(metadata, output);
-                    return;
+                    case "checkbox":
+                        GenerateCheckBox(metadata, output);
+                        return;
 
-                case "hidden":
-                    tagBuilder = Generator.GenerateHidden(
-                        ViewContext,
-                        metadata,
-                        For.Name,
-                        value: metadata.Model,
-                        useViewData: false,
-                        htmlAttributes: null);
-                    break;
+                    case "hidden":
+                        tagBuilder = Generator.GenerateHidden(
+                            ViewContext,
+                            metadata,
+                            For.Name,
+                            value: metadata.Model,
+                            useViewData: false,
+                            htmlAttributes: null);
+                        break;
 
-                case "password":
-                    tagBuilder = Generator.GeneratePassword(
-                        ViewContext,
-                        metadata,
-                        For.Name,
-                        value: null,
-                        htmlAttributes: null);
-                    break;
+                    case "password":
+                        tagBuilder = Generator.GeneratePassword(
+                            ViewContext,
+                            metadata,
+                            For.Name,
+                            value: null,
+                            htmlAttributes: null);
+                        break;
 
-                case "radio":
-                    tagBuilder = GenerateRadio(metadata);
-                    break;
+                    case "radio":
+                        tagBuilder = GenerateRadio(metadata);
+                        break;
 
-                default:
-                    tagBuilder = GenerateTextBox(metadata, inputTypeHint, inputType);
-                    break;
+                    default:
+                        tagBuilder = GenerateTextBox(metadata, inputTypeHint, inputType);
+                        break;
                 }
 
                 if (tagBuilder != null)

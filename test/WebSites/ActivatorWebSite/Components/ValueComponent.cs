@@ -5,7 +5,7 @@ using Microsoft.AspNet.Mvc;
 
 namespace ActivatorWebSite
 {
-    [ViewComponent(Name ="Value")]
+    [ViewComponent(Name = "Value")]
     public class ValueComponent : ViewComponent
     {
         [Activate]

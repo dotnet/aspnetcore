@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 #if ASPNET50
+using System.Linq;
 using Moq;
 using Moq.Protected;
 #endif

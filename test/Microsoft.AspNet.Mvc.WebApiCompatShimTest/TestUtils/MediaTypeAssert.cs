@@ -4,7 +4,6 @@
 using System;
 using System.Net.Http.Headers;
 using Xunit;
-using Microsoft.AspNet.Mvc;
 
 namespace Microsoft.TestCommon
 {

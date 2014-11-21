@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNet.PipelineCore;
+﻿using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Xunit;
 

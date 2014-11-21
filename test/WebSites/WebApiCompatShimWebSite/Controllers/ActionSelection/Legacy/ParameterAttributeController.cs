@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Web.Http;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.WebApiCompatShim;
 
 namespace WebApiCompatShimWebSite
 {

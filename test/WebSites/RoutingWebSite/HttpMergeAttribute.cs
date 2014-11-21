@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Routing;
 
 namespace RoutingWebSite
 {

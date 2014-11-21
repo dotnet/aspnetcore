@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNet.Mvc;
-using System;
 
 namespace RoutingWebSite
 {
@@ -40,7 +39,7 @@ namespace RoutingWebSite
         [HttpGet("/Club/{clubId?}")]
         public ActionResult GetClub()
         {
-            return Content(Url.Action(),"text/plain");
+            return Content(Url.Action(), "text/plain");
         }
 
         [HttpGet("/Organization/{clubId?}", Order = 1)]

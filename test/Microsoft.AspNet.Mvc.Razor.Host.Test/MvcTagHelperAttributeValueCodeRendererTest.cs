@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Reflection;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -37,7 +35,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Act
             renderer.RenderAttributeValue(attributeDescriptor, writer, context,
-            (codeWriter) => {
+            (codeWriter) =>
+            {
                 codeWriter.Write("MyValue");
             });
 

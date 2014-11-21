@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             viewData.Model = myModel;
 
             // Act
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression<TestModel,Category>(
+            var metadata = ExpressionMetadataProvider.FromLambdaExpression<TestModel, Category>(
                 model => model.SelectedCategory,
                 viewData,
                 provider);

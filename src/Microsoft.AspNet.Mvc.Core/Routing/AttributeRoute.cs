@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 }
             }
 
-                if (_logger.IsEnabled(LogLevel.Verbose))
+            if (_logger.IsEnabled(LogLevel.Verbose))
             {
                 _logger.WriteValues(new AttributeRouteRouteAsyncValues()
                 {

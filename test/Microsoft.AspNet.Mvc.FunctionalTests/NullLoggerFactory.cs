@@ -1,5 +1,5 @@
-﻿using Microsoft.Framework.Logging;
-using System;
+﻿using System;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {

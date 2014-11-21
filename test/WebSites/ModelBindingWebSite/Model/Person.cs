@@ -11,7 +11,7 @@ namespace ModelBindingWebSite
 
         public int Age { get; set; }
 
-        public Person Parent  { get; set; }
+        public Person Parent { get; set; }
 
         public List<Person> Dependents { get; set; }
 

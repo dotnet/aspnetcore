@@ -3,9 +3,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http.Formatting;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Newtonsoft.Json.Linq;
 using Xunit;
-using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace System.Web.Http.Dispatcher
 {

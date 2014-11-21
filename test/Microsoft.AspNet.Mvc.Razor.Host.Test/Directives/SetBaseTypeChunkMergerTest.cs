@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public void Visit_ThrowsIfThePassedInChunkIsNotASetBaseTypeChunk()
         {
             // Arrange
-            var expected = "Argument must be an instance of "+
+            var expected = "Argument must be an instance of " +
                            "'Microsoft.AspNet.Razor.Generator.Compiler.SetBaseTypeChunk'.";
             var merger = new SetBaseTypeChunkMerger("dynamic");
 

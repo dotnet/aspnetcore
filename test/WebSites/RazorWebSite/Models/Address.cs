@@ -5,6 +5,6 @@ namespace RazorWebSite
 {
     public class Address
     {
-	    public string ZipCode { get; set; }
+        public string ZipCode { get; set; }
     }
 }

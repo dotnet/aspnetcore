@@ -7,9 +7,8 @@ using System.ComponentModel.Design;
 using System.Linq;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
-using Xunit;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {

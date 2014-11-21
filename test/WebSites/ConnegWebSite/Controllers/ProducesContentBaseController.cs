@@ -11,7 +11,7 @@ namespace ConnegWebsite
         public override void OnActionExecuted(ActionExecutedContext context)
         {
             var result = context.Result as ObjectResult;
-            if(result != null)
+            if (result != null)
             {
                 result.Formatters.Add(new PlainTextFormatter());
                 result.Formatters.Add(new CustomFormatter("application/custom_ProducesContentBaseController"));

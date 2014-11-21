@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNet.Mvc;
-using System;
 
 namespace RoutingWebSite
 {
@@ -10,9 +9,9 @@ namespace RoutingWebSite
         private readonly TestResponseGenerator _generator;
 
         public MapsController(TestResponseGenerator generator)
-	    {
+        {
             _generator = generator;
-	    }
+        }
 
         [HttpGet]
         public ActionResult Get()

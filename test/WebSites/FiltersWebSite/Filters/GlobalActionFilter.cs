@@ -24,7 +24,7 @@ namespace FiltersWebSite
 
         public void OnActionExecuting(ActionExecutingContext context)
         {
-            if(context.ActionDescriptor.DisplayName == "FiltersWebSite.ActionFilterController.GetHelloWorld")
+            if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ActionFilterController.GetHelloWorld")
             {
                 (context.ActionArguments["fromGlobalActionFilter"] as List<ContentResult>)
                     .Add(Helpers.GetContentResult(null, "GlobalActionFilter.OnActionExecuting"));

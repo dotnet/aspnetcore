@@ -2,15 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web.Http;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc;
 using System.Net;
-using System.Net.Http.Formatting;
-using Newtonsoft.Json;
+using System.Net.Http;
 using System.Text;
+using System.Web.Http;
+using Microsoft.AspNet.Mvc;
+using Newtonsoft.Json;
 
 namespace WebApiCompatShimWebSite
 {

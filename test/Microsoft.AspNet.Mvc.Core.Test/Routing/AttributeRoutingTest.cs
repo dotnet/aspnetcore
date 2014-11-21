@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if ASPNET50
+using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.OptionsModel;
 using Moq;
-using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Routing

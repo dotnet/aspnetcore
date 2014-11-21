@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using ConnegWebsite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests

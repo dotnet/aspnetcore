@@ -234,15 +234,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 switch (testChar)
                 {
-                case '-':
-                case '_':
-                case ':':
-                    // Note '.' is valid according to the HTML 4.01 specification. Disallowed here to avoid confusion
-                    // with CSS class selectors or when using jQuery.
-                    return true;
+                    case '-':
+                    case '_':
+                    case ':':
+                        // Note '.' is valid according to the HTML 4.01 specification. Disallowed here to avoid confusion
+                        // with CSS class selectors or when using jQuery.
+                        return true;
 
-                default:
-                    return false;
+                    default:
+                        return false;
                 }
             }
         }

@@ -36,14 +36,14 @@ namespace Microsoft.AspNet.Mvc.HeaderValueAbstractions
             }
 
             headerValue = new MediaTypeWithQualityHeaderValue()
-                {
-                    MediaType = mediaTypeHeaderValue.MediaType,
-                    MediaSubType = mediaTypeHeaderValue.MediaSubType,
-                    MediaTypeRange = mediaTypeHeaderValue.MediaTypeRange,
-                    Charset = mediaTypeHeaderValue.Charset,
-                    Parameters = mediaTypeHeaderValue.Parameters,
-                    Quality = quality,
-                };
+            {
+                MediaType = mediaTypeHeaderValue.MediaType,
+                MediaSubType = mediaTypeHeaderValue.MediaSubType,
+                MediaTypeRange = mediaTypeHeaderValue.MediaTypeRange,
+                Charset = mediaTypeHeaderValue.Charset,
+                Parameters = mediaTypeHeaderValue.Parameters,
+                Quality = quality,
+            };
 
             return true;
         }

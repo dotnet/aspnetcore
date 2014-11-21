@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -22,11 +20,11 @@ namespace Microsoft.AspNet.Mvc
             formatter.WriteObject(context.Writer, Data);
         }
 
-        #pragma warning disable 1998
+#pragma warning disable 1998
         public async Task ExecuteAsync([NotNull] ViewComponentContext context)
         {
             Execute(context);
         }
-        #pragma warning restore 1998
+#pragma warning restore 1998
     }
 }

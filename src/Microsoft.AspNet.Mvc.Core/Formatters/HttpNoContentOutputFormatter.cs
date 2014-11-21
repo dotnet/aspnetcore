@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc
             // ignore the contentType and just look at the content.
             // This formatter will be selected if the content is null.
             // We check for Task as a user can directly create an ObjectContentResult with the unwrapped type.
-            if(context.DeclaredType == typeof(void) || context.DeclaredType == typeof(Task))
+            if (context.DeclaredType == typeof(void) || context.DeclaredType == typeof(Task))
             {
                 return true;
             }

@@ -13,7 +13,6 @@ using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
-using MvcMediaTypeHeaderValue = Microsoft.AspNet.Mvc.HeaderValueAbstractions.MediaTypeHeaderValue;
 
 namespace System.Web.Http
 {

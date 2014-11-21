@@ -450,11 +450,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
                                                       new RouteData(),
                                                       new ActionDescriptor());
             var formatterContext = new OutputFormatterContext()
-                                    {
-                                        ActionContext = tempActionContext,
-                                        Object = nonStringValue,
-                                        DeclaredType = nonStringValue.GetType()
-                                    };
+            {
+                ActionContext = tempActionContext,
+                Object = nonStringValue,
+                DeclaredType = nonStringValue.GetType()
+            };
             var formatter = new JsonOutputFormatter();
             formatter.WriteResponseHeaders(formatterContext);
             await formatter.WriteAsync(formatterContext);

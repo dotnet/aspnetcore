@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Formatting;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
-using System.Net.Http.Formatting;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {

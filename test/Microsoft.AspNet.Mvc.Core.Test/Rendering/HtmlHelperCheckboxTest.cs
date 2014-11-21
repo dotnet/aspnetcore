@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CheckBoxWithComplexExpressionsEvaluatesValuesInViewDataDictionary()
         {
             // Arrange
-            var expected = @"<input checked=""checked"" id=""ComplexProperty_Property1"" name=""ComplexProperty."+
+            var expected = @"<input checked=""checked"" id=""ComplexProperty_Property1"" name=""ComplexProperty." +
                            @"Property1"" type=""checkbox"" value=""true"" /><input name=""ComplexProperty.Property1""" +
                            @" type=""hidden"" value=""false"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetModelWithValidationViewData());

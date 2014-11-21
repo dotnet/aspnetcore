@@ -21,8 +21,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 
             // Assert
             Assert.Same(response, exception.Response);
-            Assert.Equal("Processing of the HTTP request resulted in an exception."+
-                         " Please see the HTTP response returned by the 'Response' "+
+            Assert.Equal("Processing of the HTTP request resulted in an exception." +
+                         " Please see the HTTP response returned by the 'Response' " +
                          "property of this exception for details.",
                          exception.Message);
         }
@@ -36,8 +36,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 
             // Assert
             Assert.Equal(HttpStatusCode.BadGateway, exception.Response.StatusCode);
-            Assert.Equal("Processing of the HTTP request resulted in an exception."+
-                         " Please see the HTTP response returned by the 'Response' "+
+            Assert.Equal("Processing of the HTTP request resulted in an exception." +
+                         " Please see the HTTP response returned by the 'Response' " +
                          "property of this exception for details.",
                          exception.Message);
         }

@@ -12,38 +12,38 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
         }
 
-        #pragma warning disable 1998
+#pragma warning disable 1998
         public async Task TaskAction(int i, string s)
         {
             return;
         }
-        #pragma warning restore 1998
+#pragma warning restore 1998
 
-        #pragma warning disable 1998
+#pragma warning disable 1998
         public async Task<int> TaskValueTypeAction(int i, string s)
         {
             return i;
         }
-        #pragma warning restore 1998
+#pragma warning restore 1998
 
-        #pragma warning disable 1998
+#pragma warning disable 1998
         public async Task<Task<int>> TaskOfTaskAction(int i, string s)
         {
             return TaskValueTypeAction(i, s);
         }
-        #pragma warning restore 1998
+#pragma warning restore 1998
 
         public Task<int> TaskValueTypeActionWithoutAsync(int i, string s)
         {
             return TaskValueTypeAction(i, s);
         }
 
-        #pragma warning disable 1998
+#pragma warning disable 1998
         public async Task<int> TaskActionWithException(int i, string s)
         {
             throw new NotImplementedException("Not Implemented Exception");
         }
-        #pragma warning restore 1998
+#pragma warning restore 1998
 
         public Task<int> TaskActionWithExceptionWithoutAsync(int i, string s)
         {

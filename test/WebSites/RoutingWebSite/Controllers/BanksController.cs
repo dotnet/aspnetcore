@@ -10,9 +10,9 @@ namespace RoutingWebSite
         private readonly TestResponseGenerator _generator;
 
         public BanksController(TestResponseGenerator generator)
-	    {
+        {
             _generator = generator;
-	    }
+        }
 
         [HttpGet("Banks/[action]/{id}")]
         [HttpGet("Bank/[action]/{id}")]
@@ -23,9 +23,9 @@ namespace RoutingWebSite
                 Url.RouteUrl(new { }));
         }
 
-        [AcceptVerbs("PUT", Route ="Bank")]
+        [AcceptVerbs("PUT", Route = "Bank")]
         [HttpPatch("Bank")]
-        [AcceptVerbs("PUT", Route ="Bank/Update")]
+        [AcceptVerbs("PUT", Route = "Bank/Update")]
         [HttpPatch("Bank/Update")]
         public ActionResult UpdateBank()
         {

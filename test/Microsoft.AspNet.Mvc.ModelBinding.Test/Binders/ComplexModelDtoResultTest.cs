@@ -26,6 +26,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var provider = new EmptyModelMetadataProvider();
             var metadata = provider.GetMetadataForType(null, typeof(object));
             return new ModelValidationNode(metadata, "someKey");
+        }
     }
-}
 }

@@ -158,11 +158,11 @@ namespace Microsoft.AspNet.Mvc
                 oldCookieToken);
 
             return new AntiForgeryTokenSetInternal()
-                            {
-                                // Note : The new cookie would be null if the old cookie is valid.
-                                CookieToken = newCookieToken,
-                                FormToken = formToken
-                            };
+            {
+                // Note : The new cookie would be null if the old cookie is valid.
+                CookieToken = newCookieToken,
+                FormToken = formToken
+            };
         }
 
         private string Serialize(AntiForgeryToken token)

@@ -15,10 +15,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     /// </remarks>
     public class TestAssemblyProvider<T> : IAssemblyProvider
     {
-	    public TestAssemblyProvider()
-	    {
+        public TestAssemblyProvider()
+        {
             CandidateAssemblies = new Assembly[] { typeof(T).GetTypeInfo().Assembly };
-	    }
+        }
 
         public IEnumerable<Assembly> CandidateAssemblies { get; private set; }
     }

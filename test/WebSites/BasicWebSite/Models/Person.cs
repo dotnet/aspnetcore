@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BasicWebSite.Models
+﻿namespace BasicWebSite.Models
 {
     public class Person
     {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace UrlHelperWebSite
+﻿namespace UrlHelperWebSite
 {
     public class AppOptions
     {

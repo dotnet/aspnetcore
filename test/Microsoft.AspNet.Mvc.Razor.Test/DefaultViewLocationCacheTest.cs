@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     Values = values
                 };
 
-                yield return new [] { expanderContext };
+                yield return new[] { expanderContext };
             }
         }
 

@@ -14,7 +14,7 @@ namespace MvcSample.Web.Filters
                     user.Identity == null ||
                     !user.Identity.IsAuthenticated;
 
-                if(userIsAnonymous)
+                if (userIsAnonymous)
                 {
                     base.Fail(context);
                 }

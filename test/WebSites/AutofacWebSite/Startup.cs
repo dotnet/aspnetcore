@@ -13,12 +13,13 @@ namespace AutofacWebSite
         {
             var configuration = app.GetTestConfiguration();
 
-            app.UseServices(services => {
+            app.UseServices(services =>
+            {
                 services.AddMvc(configuration);
                 services.AddTransient<HelloWorldBuilder>();
 
                 var builder = new ContainerBuilder();
-                AutofacRegistration.Populate(builder, 
+                AutofacRegistration.Populate(builder,
                                              services);
 
                 var container = builder.Build();

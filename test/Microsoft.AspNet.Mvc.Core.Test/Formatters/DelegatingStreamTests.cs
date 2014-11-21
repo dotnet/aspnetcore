@@ -3,10 +3,8 @@
 
 #if ASPNET50
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc

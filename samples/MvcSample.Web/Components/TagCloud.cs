@@ -5,7 +5,7 @@ using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web.Components
 {
-    [ViewComponent(Name="Tags")]
+    [ViewComponent(Name = "Tags")]
     public class TagCloud : ViewComponent
     {
         private readonly string[] Tags =
@@ -13,7 +13,7 @@ namespace MvcSample.Web.Components
              "Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat Duis aute irure " +
              "dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur Excepteur sint occaecat cupidatat" +
              "non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
-                .Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries)
+                .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 .OrderBy(s => Guid.NewGuid().ToString())
                 .ToArray();
 

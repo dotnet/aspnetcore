@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.Description
                     templateParameter,
                     parameterDescriptor);
             }
-            else if(templateParameter == null && parameterDescriptor != null)
+            else if (templateParameter == null && parameterDescriptor != null)
             {
                 // The parameter is part of the ActionDescriptor but is not part of the route template.
                 parameterDescription = CreateParameterFromParameterDescriptor(parameterDescriptor);

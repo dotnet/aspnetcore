@@ -4,10 +4,7 @@
 using System;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Security.Principal;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.PipelineCore;
-using Microsoft.AspNet.Security.DataProtection;
 using Moq;
 using Xunit;
 
@@ -84,9 +81,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 Assert.Throws<InvalidOperationException>(
                     () => tokenProvider.GenerateFormToken(httpContext, identity, cookieToken));
             Assert.Equal(
-                "The provided identity of type "+
-                "'Microsoft.AspNet.Mvc.Core.Test.TokenProviderTest+MyAuthenticatedIdentityWithoutUsername' "+
-                "is marked IsAuthenticated = true but does not have a value for Name. "+
+                "The provided identity of type " +
+                "'Microsoft.AspNet.Mvc.Core.Test.TokenProviderTest+MyAuthenticatedIdentityWithoutUsername' " +
+                "is marked IsAuthenticated = true but does not have a value for Name. " +
                 "By default, the anti-forgery system requires that all authenticated identities have a unique Name. " +
                 "If it is not possible to provide a unique Name for this identity, " +
                 "consider extending IAdditionalDataProvider by overriding the DefaultAdditionalDataProvider " +
@@ -333,7 +330,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 Assert.Throws<InvalidOperationException>(
                     () => tokenProvider.ValidateTokens(httpContext, identity, fieldtoken, fieldtoken));
             Assert.Equal(
-                "Validation of the provided anti-forgery token failed. "+
+                "Validation of the provided anti-forgery token failed. " +
                 @"The cookie ""my-cookie-name"" and the form field ""my-form-field-name"" were swapped.",
                 ex1.Message);
 

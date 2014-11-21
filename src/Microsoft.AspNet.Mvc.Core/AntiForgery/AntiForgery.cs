@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Security.DataProtection;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
@@ -80,7 +79,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="context">The HTTP context associated with the current call.</param>
         public async Task ValidateAsync([NotNull] HttpContext context)
         {
-           await _worker.ValidateAsync(context);
+            await _worker.ValidateAsync(context);
         }
 
         /// <summary>

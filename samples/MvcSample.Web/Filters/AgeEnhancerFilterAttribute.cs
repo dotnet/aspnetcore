@@ -20,7 +20,7 @@ namespace MvcSample.Web.Filters
             {
                 if (age is int)
                 {
-                    var intAge = (int) age;
+                    var intAge = (int)age;
 
                     if (intAge < 21)
                     {

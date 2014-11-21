@@ -142,9 +142,9 @@ namespace Microsoft.AspNet.Routing.Tests
                                     () => _constraint.Match(httpContext.Object,
                                                             null,
                                                             "area",
-                                                            new Dictionary<string, object>{ { "area", "area" } },
+                                                            new Dictionary<string, object> { { "area", "area" } },
                                                             direction));
-            Assert.Equal("The 'ActionDescriptors' property of "+
+            Assert.Equal("The 'ActionDescriptors' property of " +
                          "'Castle.Proxies.IActionDescriptorsCollectionProviderProxy' must not be null.",
                          ex.Message);
         }

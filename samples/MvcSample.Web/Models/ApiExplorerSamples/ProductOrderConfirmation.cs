@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MvcSample.Web.ApiExplorerSamples
+﻿namespace MvcSample.Web.ApiExplorerSamples
 {
     public class ProductOrderConfirmation
     {

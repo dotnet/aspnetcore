@@ -17,9 +17,9 @@ namespace RoutingWebSite
 
         [HttpGet("Store/Shop/Products")]
         public IActionResult ListProducts()
-	    {
+        {
             return _generator.Generate("/Store/Shop/Products");
-	    }
+        }
 
         // Intentionally designed to conflict with HomeController#About.
         [HttpGet("Home/About")]

@@ -1,7 +1,5 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web
 {

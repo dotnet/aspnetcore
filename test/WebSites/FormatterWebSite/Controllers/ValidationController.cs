@@ -51,7 +51,7 @@ namespace FormatterWebSite
             }
             else
             {
-               return ModelState["Name"].Errors[0].ErrorMessage;
+                return ModelState["Name"].Errors[0].ErrorMessage;
             }
         }
     }

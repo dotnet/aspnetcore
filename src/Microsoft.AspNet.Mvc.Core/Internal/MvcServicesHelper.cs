@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Internal
 {

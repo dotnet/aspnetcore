@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNet.Mvc;
 
 namespace UrlHelperWebSite.Controllers
 {

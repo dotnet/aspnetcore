@@ -70,7 +70,7 @@ namespace MvcSample.Web
             _instances.Clear();
             _registrations.Clear();
 
-           // return count;
+            // return count;
         }
     }
 }

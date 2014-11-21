@@ -7,6 +7,6 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
     public interface IHttpRequestMessageFeature
     {
-        HttpRequestMessage HttpRequestMessage  { get; set; }
+        HttpRequestMessage HttpRequestMessage { get; set; }
     }
 }

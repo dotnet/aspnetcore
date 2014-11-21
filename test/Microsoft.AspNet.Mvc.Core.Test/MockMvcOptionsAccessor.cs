@@ -7,10 +7,10 @@ namespace Microsoft.AspNet.Mvc
 {
     public class MockMvcOptionsAccessor : IOptions<MvcOptions>
     {
-	    public MockMvcOptionsAccessor()
-	    {
+        public MockMvcOptionsAccessor()
+        {
             Options = new MvcOptions();
-	    }
+        }
 
         public MvcOptions Options { get; private set; }
 

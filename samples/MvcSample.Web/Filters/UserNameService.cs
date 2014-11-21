@@ -1,5 +1,3 @@
-using Microsoft.AspNet.Mvc;
-
 namespace MvcSample.Web.Filters
 {
     public class UserNameService

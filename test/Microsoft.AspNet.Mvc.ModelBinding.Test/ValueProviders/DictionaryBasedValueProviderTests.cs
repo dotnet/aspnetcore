@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
-        private class DerivedValueProviderMetadata :TestValueProviderMetadata
+        private class DerivedValueProviderMetadata : TestValueProviderMetadata
         {
         }
     }

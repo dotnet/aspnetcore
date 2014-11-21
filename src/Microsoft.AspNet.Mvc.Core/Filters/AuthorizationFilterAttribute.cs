@@ -13,12 +13,12 @@ namespace Microsoft.AspNet.Mvc
     {
         public int Order { get; set; }
 
-        #pragma warning disable 1998
+#pragma warning disable 1998
         public virtual async Task OnAuthorizationAsync([NotNull] AuthorizationContext context)
         {
             OnAuthorization(context);
         }
-        #pragma warning restore 1998
+#pragma warning restore 1998
 
         public virtual void OnAuthorization([NotNull] AuthorizationContext context)
         {

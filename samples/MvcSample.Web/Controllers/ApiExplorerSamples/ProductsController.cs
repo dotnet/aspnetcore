@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using Microsoft.AspNet.Mvc;
-using System.Collections.Generic;
 
 namespace MvcSample.Web.ApiExplorerSamples
 {

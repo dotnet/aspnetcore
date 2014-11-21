@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         // Original content, selected attribute, value attribute, selected values (to place in FormContext.FormData)
         // and expected output (concatenation of TagHelperOutput generations). Excludes non-null selected attribute,
         // null selected values, and empty selected values cases.
-        public static IEnumerable<object []> DoesNotUseGeneratorDataSet
+        public static IEnumerable<object[]> DoesNotUseGeneratorDataSet
         {
             get
             {

@@ -6,7 +6,6 @@ using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Framework.OptionsModel;
 using Moq;
-using System;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Routing

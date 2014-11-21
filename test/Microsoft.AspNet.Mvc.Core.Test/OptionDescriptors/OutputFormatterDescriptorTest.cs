@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
@@ -27,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Core
             ExceptionAssert.ThrowsArgument(() => new OutputFormatterDescriptor(type), "type", expected);
         }
 
-         [Fact]
+        [Fact]
         public void ConstructorSets_OutputFormatterType()
         {
             // Arrange

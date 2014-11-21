@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
@@ -103,9 +102,9 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return new ObjectResult(actionReturnValue)
-                       {
-                           DeclaredType = actualReturnType
-                       };
+            {
+                DeclaredType = actualReturnType
+            };
         }
     }
 }

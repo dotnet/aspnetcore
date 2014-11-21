@@ -12,11 +12,11 @@ namespace Microsoft.AspNet.Mvc
         private TestSink _sink;
         private string _name;
 
-	    public TestLogger(string name, TestSink sink)
-	    {
+        public TestLogger(string name, TestSink sink)
+        {
             _sink = sink;
             _name = name;
-	    }
+        }
 
         public string Name { get; set; }
 

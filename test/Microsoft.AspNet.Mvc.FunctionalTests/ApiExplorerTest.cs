@@ -7,8 +7,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
-using Xunit;
 using Newtonsoft.Json;
+using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {

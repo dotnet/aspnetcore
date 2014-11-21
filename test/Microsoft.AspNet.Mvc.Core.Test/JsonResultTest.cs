@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc
             };
 
             var context = GetHttpContext(optionsFormatters);
-            var actionContext = new ActionContext(context,  new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());
 
             var result = new JsonResult(new { foo = "abcd" });
 

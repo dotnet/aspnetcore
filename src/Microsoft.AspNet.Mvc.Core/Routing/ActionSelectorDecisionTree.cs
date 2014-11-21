@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+#if ASPNET50
 using System.ComponentModel;
+#endif
 using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Internal.DecisionTree;
 

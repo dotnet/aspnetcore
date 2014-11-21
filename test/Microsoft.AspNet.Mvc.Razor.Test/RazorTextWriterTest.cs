@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Act
             target.Flush();
             source.Write("Hello world");
-            source.Write(new [] { 'a', 'b', 'c', 'd' }, 1, 2);
+            source.Write(new[] { 'a', 'b', 'c', 'd' }, 1, 2);
             source.CopyTo(target);
 
             // Assert
@@ -277,7 +277,7 @@ abc";
         public async Task CopyAsync_WritesContent_IfTargetTextWriterIsARazorTextWriterAndBuffering()
         {
             // Arrange
-            var source = new RazorTextWriter(TextWriter.Null,Encoding.UTF8);
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
             var target = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
 
             // Act
@@ -302,7 +302,7 @@ abc";
             // Act
             await target.FlushAsync();
             source.WriteLine("Hello from Asp.Net");
-            await source.WriteAsync(new [] { 'x', 'y', 'z', 'u' }, 0, 3);
+            await source.WriteAsync(new[] { 'x', 'y', 'z', 'u' }, 0, 3);
             await source.CopyToAsync(target);
 
             // Assert

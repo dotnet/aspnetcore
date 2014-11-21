@@ -921,9 +921,9 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Returns(viewEngine);
 
             var httpContext = new Mock<HttpContext>();
-                httpContext
-                    .Setup(c => c.RequestServices)
-                    .Returns(serviceProvider.Object);
+            httpContext
+                .Setup(c => c.RequestServices)
+                .Returns(serviceProvider.Object);
 
             controller.ActionContext = new ActionContext(httpContext.Object,
                                                   Mock.Of<RouteData>(),

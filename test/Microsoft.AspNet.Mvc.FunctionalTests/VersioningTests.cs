@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -576,7 +575,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var path = "/" + version + "/Vouchers?version=" + version;
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost" +  path);
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost" + path);
             var response = await client.SendAsync(message);
 
             // Assert

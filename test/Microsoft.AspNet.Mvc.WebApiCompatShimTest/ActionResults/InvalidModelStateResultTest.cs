@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;
-using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace System.Web.Http
 {

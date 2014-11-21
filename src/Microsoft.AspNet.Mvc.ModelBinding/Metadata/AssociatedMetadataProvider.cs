@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             return new ParameterInformation
             {
-                Prototype =  metadataProtoType
+                Prototype = metadataProtoType
             };
         }
 
