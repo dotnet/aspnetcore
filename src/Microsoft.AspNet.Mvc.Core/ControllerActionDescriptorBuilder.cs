@@ -430,18 +430,9 @@ namespace Microsoft.AspNet.Mvc
             // Lastly add the 'default' values
             if (!HasConstraint(actionDescriptor.RouteConstraints, "action"))
             {
-                if (action.IsActionNameMatchRequired)
-                {
-                    actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                        "action",
-                        action.ActionName));
-                }
-                else
-                {
-                    actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                        "action",
-                        string.Empty));
-                }
+                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                    "action",
+                    action.ActionName ?? string.Empty));
             }
 
             if (!HasConstraint(actionDescriptor.RouteConstraints, "controller"))

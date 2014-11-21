@@ -27,7 +27,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         {
             ActionMethod = other.ActionMethod;
             ActionName = other.ActionName;
-            IsActionNameMatchRequired = other.IsActionNameMatchRequired;
 
             // Not making a deep copy of the controller, this action still belongs to the same controller.
             Controller = other.Controller;
@@ -73,8 +72,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public List<IFilter> Filters { get; private set; }
 
         public List<string> HttpMethods { get; private set; }
-
-        public bool IsActionNameMatchRequired { get; set; }
 
         public List<ParameterModel> Parameters { get; private set; }
 

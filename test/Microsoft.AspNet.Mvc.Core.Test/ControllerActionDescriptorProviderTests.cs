@@ -475,11 +475,9 @@ namespace Microsoft.AspNet.Mvc.Test
 
             var getPerson = Assert.Single(controller.Actions, a => a.ActionName == "GetPerson");
             Assert.Empty(getPerson.HttpMethods);
-            Assert.True(getPerson.IsActionNameMatchRequired);
 
             var showPeople = Assert.Single(controller.Actions, a => a.ActionName == "ShowPeople");
             Assert.Empty(showPeople.HttpMethods);
-            Assert.True(showPeople.IsActionNameMatchRequired);
         }
 
         [Fact]

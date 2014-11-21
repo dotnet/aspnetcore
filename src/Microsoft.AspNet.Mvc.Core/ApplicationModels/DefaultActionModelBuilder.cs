@@ -252,10 +252,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             [NotNull] MethodInfo methodInfo,
             [NotNull] IReadOnlyList<object> attributes)
         {
-            var actionModel = new ActionModel(methodInfo, attributes)
-            {
-                IsActionNameMatchRequired = true,
-            };
+            var actionModel = new ActionModel(methodInfo, attributes);
 
             actionModel.ActionConstraints.AddRange(attributes.OfType<IActionConstraintMetadata>());
             actionModel.Filters.AddRange(attributes.OfType<IFilter>());

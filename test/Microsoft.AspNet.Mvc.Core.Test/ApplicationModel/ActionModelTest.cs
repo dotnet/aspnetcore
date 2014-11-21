@@ -52,7 +52,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                                                     new List<object>());
             action.Filters.Add(new AuthorizeAttribute());
             action.HttpMethods.Add("GET");
-            action.IsActionNameMatchRequired = true;
             action.RouteConstraints.Add(new AreaAttribute("Admin"));
 
             // Act
