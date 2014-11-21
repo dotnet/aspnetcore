@@ -104,8 +104,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal("Hello world", body);
+            Assert.Equal("Hello, World!", Assert.Single(response.Headers.GetValues("Message")));
         }
 
         [Fact]

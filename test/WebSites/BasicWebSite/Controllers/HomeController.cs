@@ -48,9 +48,10 @@ namespace BasicWebSite.Controllers
             return new HttpStatusCodeResult(200);
         }
 
-        public async Task ActionReturningTask()
+        public Task ActionReturningTask()
         {
-            await Context.Response.WriteAsync("Hello world");
+            Response.Headers.Add("Message", new[] { "Hello, World!" });
+            return Task.FromResult(true);
         }
 
         public IActionResult JsonTextInView()
