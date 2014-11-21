@@ -21,10 +21,10 @@ namespace MusicStore.Models
         {
             using (var db = serviceProvider.GetService<MusicStoreContext>())
             {
-                var sqlServerDataStore = db.Configuration.DataStore as SqlServerDataStore;
-                if (sqlServerDataStore != null)
+                var sqlServerDatabase = db.Database as SqlServerDatabase;
+                if (sqlServerDatabase != null)
                 {
-                    if (await db.Database.EnsureCreatedAsync())
+                    if (await sqlServerDatabase.EnsureCreatedAsync())
                     {
                         await InsertTestData(serviceProvider);
                         await CreateAdminUser(serviceProvider);
