@@ -6,10 +6,8 @@ using Microsoft.Framework.Runtime;
 namespace Microsoft.AspNet.Hosting
 {
     [AssemblyNeutral]
-    public interface IHostingEnvironment
+    public interface IConfigureHostingEnvironment
     {
-        string EnvironmentName { get; set; }
-
-        string WebRoot { get; }
+        void Configure(IHostingEnvironment hostingEnv);
     }
 }

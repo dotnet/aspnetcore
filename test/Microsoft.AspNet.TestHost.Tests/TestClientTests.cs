@@ -6,10 +6,9 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.Runtime;
 using Xunit;
 
 namespace Microsoft.AspNet.TestHost
@@ -21,9 +20,7 @@ namespace Microsoft.AspNet.TestHost
 
         public TestClientTests()
         {
-            _services = new ServiceCollection()
-                .AddSingleton<IApplicationEnvironment, TestApplicationEnvironment>()
-                .BuildServiceProvider();
+            _services = HostingServices.Create().BuildServiceProvider();
 
             _server = TestServer.Create(_services, app => app.Run(ctx => Task.FromResult(0)));
         }

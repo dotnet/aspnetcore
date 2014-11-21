@@ -3,6 +3,7 @@
   "description": "ASP.NET 5 enables per-request scoping of services.",
   "dependencies": {
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNet.Hosting": "1.0.0-*",
     "Microsoft.Framework.OptionsModel": "1.0.0-*"
   },
   "frameworks": {

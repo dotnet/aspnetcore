@@ -151,8 +151,11 @@ namespace Microsoft.AspNet.Hosting.Startup
             {
                 if (servicesMethod != null)
                 {
-                    var services = new ServiceCollection();
+                    var services = HostingServices.Create(builder.ApplicationServices);
+                    // TODO: remove adding options
                     services.Add(OptionsServices.GetDefaultServices());
+                    services.AddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
+
                     if (servicesMethod.ReturnType == typeof(IServiceProvider))
                     {
                         // IServiceProvider ConfigureServices(IServiceCollection)
@@ -165,7 +168,7 @@ namespace Microsoft.AspNet.Hosting.Startup
                         Invoke(servicesMethod, instance, builder, services);
                         if (builder != null)
                         {
-                            builder.ApplicationServices = services.BuildServiceProvider(builder.ApplicationServices);
+                            builder.ApplicationServices = services.BuildServiceProvider();
                         }
                     }
                 }

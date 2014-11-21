@@ -3,5 +3,5 @@
 
 namespace Microsoft.AspNet.Hosting.Fakes
 {
-    public interface IFakeService { }
+    public class FakeService : IFakeEveryService { }
 }

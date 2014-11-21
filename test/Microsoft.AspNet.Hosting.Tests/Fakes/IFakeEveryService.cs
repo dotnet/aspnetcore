@@ -3,5 +3,10 @@
 
 namespace Microsoft.AspNet.Hosting.Fakes
 {
-    public interface IFakeService { }
+    interface IFakeEveryService :
+            IFakeService,
+            IFakeServiceInstance,
+            IFakeSingletonService
+    {
+    }
 }

@@ -6,9 +6,8 @@ using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Runtime.Infrastructure;
 using Xunit;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.PipelineCore;
 
 namespace Microsoft.AspNet.Hosting.Tests
 {
@@ -17,8 +16,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         [Fact]
         public void OptionsAccessorCanBeResolvedAfterCallingUseServicesWithAction()
         {
-            var baseServiceProvider = new ServiceCollection().BuildServiceProvider();
-            var builder = new ApplicationBuilder(baseServiceProvider);
+            var builder = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
 
             builder.UseServices(serviceCollection => { });
 
@@ -30,13 +28,12 @@ namespace Microsoft.AspNet.Hosting.Tests
         [Fact]
         public void OptionsAccessorCanBeResolvedAfterCallingUseServicesWithFunc()
         {
-            var baseServiceProvider = new ServiceCollection().BuildServiceProvider();
-            var builder = new ApplicationBuilder(baseServiceProvider);
+            var builder = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
             IServiceProvider serviceProvider = null;
 
             builder.UseServices(serviceCollection =>
             {
-                serviceProvider = serviceCollection.BuildServiceProvider(builder.ApplicationServices);
+                serviceProvider = serviceCollection.BuildServiceProvider();
                 return serviceProvider;
             });
 

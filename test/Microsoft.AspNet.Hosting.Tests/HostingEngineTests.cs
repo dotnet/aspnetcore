@@ -20,9 +20,7 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public void HostingEngineCanBeResolvedWithDefaultServices()
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.Add(HostingServices.GetDefaultServices());
-            var services = serviceCollection.BuildServiceProvider();
+            var services = HostingServices.Create().BuildServiceProvider();
 
             var engine = services.GetRequiredService<IHostingEngine>();
 
@@ -32,9 +30,7 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public void HostingEngineCanBeStarted()
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.Add(HostingServices.GetDefaultServices());
-            var services = serviceCollection.BuildServiceProvider();
+            var services = HostingServices.Create().BuildServiceProvider();
 
             var engine = services.GetRequiredService<IHostingEngine>();
 

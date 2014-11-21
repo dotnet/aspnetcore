@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
@@ -46,25 +49,16 @@ namespace Microsoft.AspNet.TestHost
 
         public static TestServer Create(Action<IApplicationBuilder> app)
         {
-            return Create(provider: CallContextServiceLocator.Locator.ServiceProvider, app: app);
+            return Create(CallContextServiceLocator.Locator.ServiceProvider, app);
         }
 
-        public static TestServer Create(IServiceProvider provider, Action<IApplicationBuilder> app)
+        public static TestServer Create(IServiceProvider serviceProvider, Action<IApplicationBuilder> app)
         {
-            var appEnv = provider.GetRequiredService<IApplicationEnvironment>();
+            var services = HostingServices.Create(serviceProvider);
+            services.AddSingleton<IConfigureHostingEnvironment, ConfigureTestHostingEnvironment>();
 
-            var hostingEnv = new HostingEnvironment()
-            {
-                EnvironmentName = DefaultEnvironmentName,
-                WebRoot = HostingUtilities.GetWebRoot(appEnv.ApplicationBasePath),
-            };
-
-            var collection = new ServiceCollection();
-            collection.Add(HostingServices.GetDefaultServices());
-            collection.AddInstance<IHostingEnvironment>(hostingEnv);
-
-            var appServices = collection.BuildServiceProvider(provider);
-
+            //var appServices = BuildFallbackServiceProvider(services, serviceProvider);
+            var appServices = services.BuildServiceProvider();
             var config = new Configuration();
             return new TestServer(config, appServices, app);
         }
@@ -133,6 +127,11 @@ namespace Microsoft.AspNet.TestHost
             {
                 get { return TestServer.ServerName; }
             }
+        }
+
+        private class ConfigureTestHostingEnvironment : ConfigureHostingEnvironment
+        {
+            public ConfigureTestHostingEnvironment() : base(env => env.EnvironmentName = DefaultEnvironmentName) { }
         }
     }
 }
