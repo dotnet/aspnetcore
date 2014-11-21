@@ -61,8 +61,7 @@ namespace MvcSample.Web
                     // Create the container and use the default application services as a fallback
                     AutofacRegistration.Populate(
                         builder,
-                        services,
-                        fallbackServiceProvider: app.ApplicationServices);
+                        services);
 
                     builder.RegisterModule<MonitoringModule>();
 

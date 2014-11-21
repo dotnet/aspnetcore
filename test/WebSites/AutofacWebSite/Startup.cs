@@ -18,9 +18,8 @@ namespace AutofacWebSite
                 services.AddTransient<HelloWorldBuilder>();
 
                 var builder = new ContainerBuilder();
-                AutofacRegistration.Populate(builder,
-                                             services,
-                                             fallbackServiceProvider: app.ApplicationServices);
+                AutofacRegistration.Populate(builder, 
+                                             services);
 
                 var container = builder.Build();
 

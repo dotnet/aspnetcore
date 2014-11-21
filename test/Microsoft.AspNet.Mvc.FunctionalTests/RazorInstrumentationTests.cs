@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using RazorInstrumentationWebSite;
 using Xunit;
 
@@ -209,7 +208,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             var services = new ServiceCollection();
             services.AddInstance(pageExecutionContext);
-            return services.BuildServiceProvider(_services);
+            return TestHelper.CreateServices("RazorInstrumentationWebsite", services);
         }
     }
 }

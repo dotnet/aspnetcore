@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             var services = new ServiceCollection();
             services.AddInstance(waitService);
-            return services.BuildServiceProvider(_provider);
+            return TestHelper.CreateServices("RazorWebSite", services);
         }
 
         private string GetTrimmedString(Stream stream)

@@ -8,7 +8,6 @@ using InlineConstraints;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -20,10 +19,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         public InlineConstraintTests()
         {
-            _provider = TestHelper.CreateServices("InlineConstraintsWebSite");
-            _provider = new ServiceCollection()
-                         .AddScoped<ICommandLineArgumentBuilder, DefaultCommandLineArgumentBuilder>()
-                         .BuildServiceProvider(_provider);
+            var services = new ServiceCollection()
+                .AddScoped<ICommandLineArgumentBuilder, DefaultCommandLineArgumentBuilder>();
+            _provider = TestHelper.CreateServices("InlineConstraintsWebSite", services);
         }
 
         [Fact]

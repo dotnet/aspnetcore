@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Runtime.Versioning;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Hosting;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Runtime;
@@ -35,10 +36,10 @@ namespace PrecompilationWebSite
                 originalEnvironment,
                 newPath);
 
-            var collection = new ServiceCollection();
+            var collection = HostingServices.Create(provider);
             collection.AddInstance<IApplicationEnvironment>(precompilationApplicationEnvironment);
 
-            return collection.BuildServiceProvider(provider);
+            return new DelegatingServiceProvider(provider, collection.BuildServiceProvider());
         }
 
         private class PrecompilationApplicationEnvironment : IApplicationEnvironment
@@ -80,5 +81,23 @@ namespace PrecompilationWebSite
                 get { return _originalApplicationEnvironment.RuntimeFramework; }
             }
         }
+
+        private class DelegatingServiceProvider : IServiceProvider
+        {
+            private readonly IServiceProvider _fallback;
+            private readonly IServiceProvider _services;
+
+            public DelegatingServiceProvider(IServiceProvider fallback, IServiceProvider services)
+            {
+                _fallback = fallback;
+                _services = services;
+            }
+
+            public object GetService(Type serviceType)
+            {
+                return _services.GetService(serviceType) ?? _fallback.GetService(serviceType);
+            }
+        }
+
     }
 }
