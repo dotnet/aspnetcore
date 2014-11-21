@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.Diagnostics
             int lineNumber = line.ToInt32();
 
             return string.IsNullOrEmpty(file)
-                ? LoadFrame(function, string.Empty, 0, showSource)
+                ? LoadFrame(string.IsNullOrEmpty(function) ? line.ToString() : function, string.Empty, 0, showSource)
                 : LoadFrame(function, file, lineNumber, showSource);
         }
 
