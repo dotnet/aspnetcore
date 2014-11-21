@@ -15,6 +15,7 @@ using System.Xml.Linq;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
+using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.TestHost;
 using Shouldly;
 using Xunit;
@@ -365,8 +366,9 @@ namespace Microsoft.AspNet.Security.Cookies
 
         private static TestServer CreateServer(Action<CookieAuthenticationOptions> configureOptions, Func<HttpContext, Task> testpath = null)
         {
-            return TestServer.Create(TestServices.CreateTestServices(), app =>
+            return TestServer.Create(app =>
             {
+                app.UseServices(services => services.Add(DataProtectionServices.GetDefaultServices()));
                 app.UseCookieAuthentication(configureOptions);
                 app.Use(async (context, next) =>
                 {

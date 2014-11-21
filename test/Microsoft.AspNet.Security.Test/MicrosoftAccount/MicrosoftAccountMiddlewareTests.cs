@@ -161,10 +161,11 @@ namespace Microsoft.AspNet.Security.Tests.MicrosoftAccount
 
         private static TestServer CreateServer(Action<MicrosoftAccountAuthenticationOptions> configureOptions, Func<HttpContext, bool> handler)
         {
-            return TestServer.Create(TestServices.CreateTestServices(), app =>
+            return TestServer.Create(app =>
             {
                 app.UseServices(services =>
                 {
+                    services.Add(DataProtectionServices.GetDefaultServices());
                     services.Configure<ExternalAuthenticationOptions>(options =>
                     {
                         options.SignInAsAuthenticationType = "External";

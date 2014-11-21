@@ -9,11 +9,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.Security.Cookies;
+using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
 using Shouldly;
 using Xunit;
 
@@ -29,6 +27,7 @@ namespace Microsoft.AspNet.Security.Facebook
                 {
                     app.UseServices(services =>
                     {
+                        services.Add(DataProtectionServices.GetDefaultServices());
                         services.ConfigureFacebookAuthentication(options =>
                         {
                             options.AppId = "Test App Id";
@@ -72,6 +71,7 @@ namespace Microsoft.AspNet.Security.Facebook
                 {
                     app.UseServices(services =>
                     {
+                        services.Add(DataProtectionServices.GetDefaultServices());
                         services.ConfigureFacebookAuthentication(options =>
                         {
                             options.AppId = "Test App Id";
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Security.Facebook
 
         private static TestServer CreateServer(Action<IApplicationBuilder> configure, Func<HttpContext, bool> handler)
         {
-            return TestServer.Create(TestServices.CreateTestServices(), app =>
+            return TestServer.Create(app =>
             {
                 if (configure != null)
                 {

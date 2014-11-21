@@ -463,10 +463,11 @@ namespace Microsoft.AspNet.Security.Google
 
         private static TestServer CreateServer(Action<GoogleAuthenticationOptions> configureOptions, Func<HttpContext, Task> testpath = null)
         {
-            return TestServer.Create(TestServices.CreateTestServices(), app =>
+            return TestServer.Create(app =>
             {
                 app.UseServices(services =>
                 {
+                    services.Add(DataProtectionServices.GetDefaultServices());
                     services.Configure<ExternalAuthenticationOptions>(options =>
                     {
                         options.SignInAsAuthenticationType = CookieAuthenticationType;

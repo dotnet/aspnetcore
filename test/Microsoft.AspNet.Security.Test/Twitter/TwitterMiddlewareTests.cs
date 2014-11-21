@@ -17,6 +17,7 @@ using Shouldly;
 using Xunit;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.AspNet.Security.DataProtection;
 
 namespace Microsoft.AspNet.Security.Twitter
 {
@@ -107,10 +108,11 @@ namespace Microsoft.AspNet.Security.Twitter
 
         private static TestServer CreateServer(Action<IApplicationBuilder> configure, Func<HttpContext, bool> handler)
         {
-            return TestServer.Create(TestServices.CreateTestServices(), app =>
+            return TestServer.Create(app =>
             {
                 app.UseServices(services =>
                 {
+                    services.Add(DataProtectionServices.GetDefaultServices());
                     services.Configure<ExternalAuthenticationOptions>(options =>
                     {
                         options.SignInAsAuthenticationType = "External";
