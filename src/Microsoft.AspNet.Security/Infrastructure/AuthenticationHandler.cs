@@ -60,6 +60,8 @@ namespace Microsoft.AspNet.Security.Infrastructure
 
         public IAuthenticationHandler PriorHandler { get; set; }
 
+        public bool Faulted { get; set; }
+
         protected async Task BaseInitializeAsync(AuthenticationOptions options, HttpContext context)
         {
             _baseOptions = options;
@@ -94,12 +96,29 @@ namespace Microsoft.AspNet.Security.Infrastructure
         }
 
         /// <summary>
-        /// Called once per request after Initialize and Invoke. 
+        /// Called once per request after Initialize and Invoke.
         /// </summary>
         /// <returns>async completion</returns>
         internal async Task TeardownAsync()
         {
-            await ApplyResponseAsync();
+            try
+            {
+                await ApplyResponseAsync();
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    await TeardownCoreAsync();
+                }
+                catch (Exception)
+                {
+                    // Don't mask the original exception
+                }
+                UnregisterAuthenticationHandler();
+                throw;
+            }
+
             await TeardownCoreAsync();
             UnregisterAuthenticationHandler();
         }
@@ -217,15 +236,29 @@ namespace Microsoft.AspNet.Security.Infrastructure
 
         private void ApplyResponse()
         {
-            LazyInitializer.EnsureInitialized(
-                ref _applyResponse,
-                ref _applyResponseInitialized,
-                ref _applyResponseSyncLock,
-                () =>
+            // If ApplyResponse already failed in the OnSendingHeaderCallback or TeardownAsync code path then a
+            // failed task is cached. If called again the same error will be re-thrown. This breaks error handling
+            // scenarios like the ability to display the error page or re-execute the request.
+            try
+            {
+                if (!Faulted)
                 {
-                    ApplyResponseCore();
-                    return Task.FromResult(0);
-                }).GetAwaiter().GetResult(); // Block if the async version is in progress.
+                    LazyInitializer.EnsureInitialized(
+                        ref _applyResponse,
+                        ref _applyResponseInitialized,
+                        ref _applyResponseSyncLock,
+                        () =>
+                        {
+                            ApplyResponseCore();
+                            return Task.FromResult(0);
+                        }).GetAwaiter().GetResult(); // Block if the async version is in progress.
+                }
+            }
+            catch (Exception)
+            {
+                Faulted = true;
+                throw;
+            }
         }
 
         protected virtual void ApplyResponseCore()
@@ -240,13 +273,27 @@ namespace Microsoft.AspNet.Security.Infrastructure
         /// or later, as the last step when the original async call to the middleware is returning.
         /// </summary>
         /// <returns></returns>
-        private Task ApplyResponseAsync()
+        private async Task ApplyResponseAsync()
         {
-            return LazyInitializer.EnsureInitialized(
-                ref _applyResponse,
-                ref _applyResponseInitialized,
-                ref _applyResponseSyncLock,
-                ApplyResponseCoreAsync);
+            // If ApplyResponse already failed in the OnSendingHeaderCallback or TeardownAsync code path then a
+            // failed task is cached. If called again the same error will be re-thrown. This breaks error handling
+            // scenarios like the ability to display the error page or re-execute the request.
+            try
+            {
+                if (!Faulted)
+                {
+                    await LazyInitializer.EnsureInitialized(
+                        ref _applyResponse,
+                        ref _applyResponseInitialized,
+                        ref _applyResponseSyncLock,
+                        ApplyResponseCoreAsync);
+                }
+            }
+            catch (Exception)
+            {
+                Faulted = true;
+                throw;
+            }
         }
 
         /// <summary>
