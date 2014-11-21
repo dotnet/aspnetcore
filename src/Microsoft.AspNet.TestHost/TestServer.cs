@@ -57,7 +57,6 @@ namespace Microsoft.AspNet.TestHost
             var services = HostingServices.Create(serviceProvider);
             services.AddSingleton<IConfigureHostingEnvironment, ConfigureTestHostingEnvironment>();
 
-            //var appServices = BuildFallbackServiceProvider(services, serviceProvider);
             var appServices = services.BuildServiceProvider();
             var config = new Configuration();
             return new TestServer(config, appServices, app);

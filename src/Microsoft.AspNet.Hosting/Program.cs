@@ -38,6 +38,10 @@ namespace Microsoft.AspNet.Hosting
             config.AddCommandLine(args);
 
             var serviceCollection = HostingServices.Create(_serviceProvider, config);
+            serviceCollection.AddInstance<IConfigureHostingEnvironment>(new ConfigureHostingEnvironment(env =>
+            {
+                env.EnvironmentName = config.Get(EnvironmentKey) ?? DefaultEnvironmentName;
+            }));
             var services = serviceCollection.BuildServiceProvider();
 
             var appEnv = services.GetRequiredService<IApplicationEnvironment>();
