@@ -14,10 +14,10 @@ namespace IdentitySample.Models
         {
             using (var db = serviceProvider.GetRequiredService<ApplicationDbContext>())
             {
-                var sqlServerDataStore = db.Configuration.DataStore as SqlServerDataStore;
-                if (sqlServerDataStore != null)
+                var sqlServerDatabase = db.Database as SqlServerDatabase;
+                if (sqlServerDatabase != null)
                 {
-                    if (await db.Database.EnsureCreatedAsync())
+                    if (await sqlServerDatabase.EnsureCreatedAsync())
                     {
                         await CreateAdminUser(serviceProvider);
                     }
