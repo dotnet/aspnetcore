@@ -9,6 +9,7 @@ using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Runtime.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -113,7 +114,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void CanCustomizeIdentityOptions()
         {
-            var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
+            var builder = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
             builder.UseServices(services =>
             {
                 services.AddIdentity<IdentityUser>();
@@ -135,7 +136,7 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void CanSetupIdentityOptions()
         {
-            var app = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
+            var app = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
             app.UseServices(services =>
             {
                 services.AddIdentity<IdentityUser>().ConfigureIdentity(options => options.User.RequireUniqueEmail = true);

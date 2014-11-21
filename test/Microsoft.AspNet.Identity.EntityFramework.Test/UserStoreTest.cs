@@ -14,6 +14,7 @@ using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Logging;
 using Microsoft.AspNet.Security.DataProtection;
 using Xunit;
+using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         public async Task EnsureStartupUsageWorks()
         {
             EnsureDatabase();
-            var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
+            var builder = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
 
             builder.UseServices(services =>
             {
@@ -74,7 +75,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         public async Task EnsureStartupOptionsChangeWorks()
         {
             EnsureDatabase();
-            var builder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
+            var builder = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
 
             builder.UseServices(services =>
             {

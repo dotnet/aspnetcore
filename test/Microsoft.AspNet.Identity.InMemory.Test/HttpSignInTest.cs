@@ -12,6 +12,7 @@ using Moq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.Identity.InMemory.Test
 {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         [InlineData(false)]
         public async Task VerifyAccountControllerSignIn(bool isPersistent)
         {
-            var app = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
+            var app = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
             app.UseCookieAuthentication();
 
             var context = new Mock<HttpContext>();
