@@ -7,9 +7,9 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace ModelBindingWebSite.Controllers
 {
-    public class WithMetadataController : Controller
+    public class WithBinderMetadataController : Controller
     {
-        public EmployeeWithMetadata BindWithTypeMetadata(EmployeeWithMetadata emp)
+        public EmployeeWithBinderMetadata BindWithTypeMetadata(EmployeeWithBinderMetadata emp)
         {
             return emp;
         }

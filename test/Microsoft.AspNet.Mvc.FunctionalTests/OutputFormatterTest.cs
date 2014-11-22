@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class OutputFormatterTests
+    public class OutputFormatterTest
     {
         private readonly IServiceProvider _provider = TestHelper.CreateServices("ConnegWebSite");
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;

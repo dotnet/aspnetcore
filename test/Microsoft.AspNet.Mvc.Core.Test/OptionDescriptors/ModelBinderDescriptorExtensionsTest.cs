@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ModelBinderDescriptorExtensionTest
+    public class ModelBinderDescriptorExtensionsTest
     {
         [Theory]
         [InlineData(-1)]

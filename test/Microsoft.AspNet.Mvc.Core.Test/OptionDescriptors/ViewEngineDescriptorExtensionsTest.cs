@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ViewEngineDescriptorExtensionTest
+    public class ViewEngineDescriptorExtensionsTest
     {
         [Theory]
         [InlineData(-1)]

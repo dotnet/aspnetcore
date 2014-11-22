@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core
 {
-    public class DefaultDisplayTemplateTests
+    public class DefaultDisplayTemplatesTest
     {
         // Input value; HTML encode; expected value.
         public static TheoryData<string, bool, string> HtmlEncodeData

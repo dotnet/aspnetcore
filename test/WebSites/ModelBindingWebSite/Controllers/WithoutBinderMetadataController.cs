@@ -6,7 +6,7 @@ using Microsoft.AspNet.Mvc;
 
 namespace ModelBindingWebSite.Controllers
 {
-    public class WithoutMetadataController : Controller
+    public class WithoutBinderMetadataController : Controller
     {
         public Person Person { get; set; }
 

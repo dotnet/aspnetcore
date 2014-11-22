@@ -26,7 +26,7 @@ namespace MvcSample.Web
 
         [ServiceFilter(typeof(PassThroughAttribute))]
         [AllowAnonymous]
-        [AgeEnhancer]
+        [AgeEnhancerFilter]
         [Delay(500)]
         public ActionResult Index(int age = 20, string userName = "SampleUser")
         {

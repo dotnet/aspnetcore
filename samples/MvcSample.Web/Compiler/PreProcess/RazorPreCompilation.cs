@@ -6,9 +6,9 @@ using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web
 {
-    public class MyCompilation : RazorPreCompileModule
+    public class RazorPreCompilation : RazorPreCompileModule
     {
-        public MyCompilation(IServiceProvider provider) : base(provider)
+        public RazorPreCompilation(IServiceProvider provider) : base(provider)
         {
         }
     }

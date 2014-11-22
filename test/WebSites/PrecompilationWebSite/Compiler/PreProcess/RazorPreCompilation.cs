@@ -12,9 +12,9 @@ using Microsoft.Framework.Runtime;
 
 namespace PrecompilationWebSite
 {
-    public class MyCompilation : RazorPreCompileModule
+    public class RazorPreCompilation : RazorPreCompileModule
     {
-        public MyCompilation(IServiceProvider provider) : base(ReplaceProvider(provider))
+        public RazorPreCompilation(IServiceProvider provider) : base(ReplaceProvider(provider))
         {
         }
 

@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Theory]
-        [MemberData(nameof(DefaultDisplayTemplateTests.HtmlEncodeData), MemberType = typeof(DefaultDisplayTemplateTests))]
+        [MemberData(nameof(DefaultDisplayTemplatesTest.HtmlEncodeData), MemberType = typeof(DefaultDisplayTemplatesTest))]
         public void ObjectTemplateDisplaysSimpleDisplayTextWithNonNullModelTemplateDepthGreaterThanOne(
             string simpleDisplayText,
             bool htmlEncode,

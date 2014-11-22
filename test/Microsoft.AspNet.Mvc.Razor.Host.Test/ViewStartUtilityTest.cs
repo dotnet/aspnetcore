@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class ViewStartProviderTest
+    public class ViewStartUtilityTest
     {
         [Theory]
         [InlineData(null)]

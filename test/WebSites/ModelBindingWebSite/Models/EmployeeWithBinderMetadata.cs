@@ -4,11 +4,11 @@
 
 namespace ModelBindingWebSite
 {
-    public class EmployeeWithMetadata : Employee
+    public class EmployeeWithBinderMetadata : Employee
     {
     }
 
-    public class DerivedEmployee : EmployeeWithMetadata
+    public class DerivedEmployee : EmployeeWithBinderMetadata
     {
 
     }

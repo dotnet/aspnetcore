@@ -348,7 +348,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act & Assert
-            var response = await client.GetStringAsync("http://localhost/WithMetadata/EchoDocument");
+            var response = await client.GetStringAsync("http://localhost/WithBinderMetadata/EchoDocument");
 
             var document = JsonConvert.DeserializeObject<Document>
                           (response);
@@ -367,7 +367,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await
-                     client.GetAsync("http://localhost/WithMetadata" +
+                     client.GetAsync("http://localhost/WithBinderMetadata" +
                      "/ParametersWithNoValueProviderMetadataUseTheAvailableValueProviders" +
                      "?Name=somename&Age=12");
 
@@ -389,7 +389,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await
-                     client.GetAsync("http://localhost/WithoutMetadata" +
+                     client.GetAsync("http://localhost/WithoutBinderMetadata" +
                      "/GetPersonParameter" +
                      "?Name=somename&Age=12");
 
@@ -411,7 +411,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await
-                     client.GetAsync("http://localhost/WithoutMetadata" +
+                     client.GetAsync("http://localhost/WithoutBinderMetadata" +
                      "/GetPersonParameter?p="); // here p is the model name.
 
             //Assert
@@ -432,7 +432,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await
-                     client.GetAsync("http://localhost/WithoutMetadata" +
+                     client.GetAsync("http://localhost/WithoutBinderMetadata" +
                      "/GetPersonParameter");
 
             //Assert

@@ -6,7 +6,7 @@ using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web.Filters
 {
-    public class AgeEnhancerAttribute : ActionFilterAttribute
+    public class AgeEnhancerFilterAttribute : ActionFilterAttribute
     {
         public override void OnActionExecuting(ActionExecutingContext context)
         {
