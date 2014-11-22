@@ -2,6 +2,10 @@
 @using TagHelperSample.Web.Models
 @model User
 
+@{
+    Html.Html5DateRenderingMode = Html5DateRenderingMode.Rfc3339;
+}
+
 <h2>Create</h2>
 
 @* anti-forgery is on by default *@
@@ -35,7 +39,7 @@
         <div class="form-group">
             <label for="DateOfBirth" class="control-label col-md-2" />
             <div class="col-md-10">
-                @* will automatically infer type="date" (reused HTML attribute) and format="{0:d}" (optional bound attribute) *@
+                @* will automatically infer type="date" (reused HTML attribute) and format="{0:yyyy-MM-dd}" (optional bound attribute) *@
                 <input for="DateOfBirth" />
                 <span validation-for="DateOfBirth">When were you born?</span>
             </div>

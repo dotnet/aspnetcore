@@ -17,14 +17,17 @@ namespace TagHelperSample.Web.Controllers
 
         public HomeController()
         {
-            // Unable to set ViewBag from constructor. Does this work in MVC 5.2?
+            // Unable to set ViewBag (or ViewData) entries from constructor due to an InvalidOperationException thrown
+            // from the DynamicViewData.ViewData getter. In MVC 5.2, no properties in the Controller class except
+            // ControllerContext, Url, and anything ControllerContext-derived (e.g. HttpContext and User) return null
+            // even if invoked from the constructor i.e. prior to the Initialize() call.
             ////ViewBag.Items = _items;
         }
 
         // GET: /<controller>/
         public IActionResult Index()
         {
-            return View(_users.Values);
+            return View(new List<User>(_users.Values));
         }
 
         // GET: /Home/Create

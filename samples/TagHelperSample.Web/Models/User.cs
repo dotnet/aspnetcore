@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace TagHelperSample.Web.Models
 {
@@ -13,6 +14,7 @@ namespace TagHelperSample.Web.Models
 
         public string Blurb { get; set; }
 
+        [DataType(DataType.Date)]
         public DateTimeOffset DateOfBirth { get; set; }
 
         public int YearsEmployeed { get; set; }
