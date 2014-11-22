@@ -1,22 +1,23 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.AspNet.Hosting
 {
-    public class ConfigureHostingEnvironment : IConfigureHostingEnvironment
+    internal class ConfigureHostingEnvironment : IConfigureHostingEnvironment
     {
-        private readonly Action<IHostingEnvironment> _action;
+        private IConfiguration _config;
+        private const string EnvironmentKey = "KRE_ENV";
 
-        public ConfigureHostingEnvironment(Action<IHostingEnvironment> configure)
+        public ConfigureHostingEnvironment(IConfiguration config)
         {
-            _action = configure;
+            _config = config;
         }
 
         public void Configure(IHostingEnvironment hostingEnv)
         {
-            _action.Invoke(hostingEnv);
+            hostingEnv.EnvironmentName = _config.Get(EnvironmentKey) ?? hostingEnv.EnvironmentName;
         }
     }
 }

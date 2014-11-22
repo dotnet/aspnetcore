@@ -40,6 +40,7 @@ namespace Microsoft.AspNet.Hosting
             var services = Import(fallbackServices);
             services.Add(GetDefaultServices(configuration));
             services.AddSingleton<IServiceManifest>(sp => new HostingManifest(fallbackServices));
+            services.AddInstance<IConfigureHostingEnvironment>(new ConfigureHostingEnvironment(configuration));
             return services;
         }
 

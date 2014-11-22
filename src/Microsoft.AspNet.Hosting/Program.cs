@@ -15,8 +15,6 @@ namespace Microsoft.AspNet.Hosting
     public class Program
     {
         private const string HostingIniFile = "Microsoft.AspNet.Hosting.ini";
-        private const string DefaultEnvironmentName = "Development";
-        private const string EnvironmentKey = "KRE_ENV";
 
         private readonly IServiceProvider _serviceProvider;
 
@@ -37,12 +35,8 @@ namespace Microsoft.AspNet.Hosting
             config.AddEnvironmentVariables();
             config.AddCommandLine(args);
 
-            var serviceCollection = HostingServices.Create(_serviceProvider, config);
-            serviceCollection.AddInstance<IConfigureHostingEnvironment>(new ConfigureHostingEnvironment(env =>
-            {
-                env.EnvironmentName = config.Get(EnvironmentKey) ?? DefaultEnvironmentName;
-            }));
-            var services = serviceCollection.BuildServiceProvider();
+            var services = HostingServices.Create(_serviceProvider, config)
+                .BuildServiceProvider();
 
             var appEnv = services.GetRequiredService<IApplicationEnvironment>();
             var hostingEnv = services.GetRequiredService<IHostingEnvironment>();

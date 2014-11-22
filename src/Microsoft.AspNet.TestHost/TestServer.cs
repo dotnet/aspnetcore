@@ -54,10 +54,7 @@ namespace Microsoft.AspNet.TestHost
 
         public static TestServer Create(IServiceProvider serviceProvider, Action<IApplicationBuilder> app)
         {
-            var services = HostingServices.Create(serviceProvider);
-            services.AddSingleton<IConfigureHostingEnvironment, ConfigureTestHostingEnvironment>();
-
-            var appServices = services.BuildServiceProvider();
+            var appServices = HostingServices.Create(serviceProvider).BuildServiceProvider();
             var config = new Configuration();
             return new TestServer(config, appServices, app);
         }
@@ -126,11 +123,6 @@ namespace Microsoft.AspNet.TestHost
             {
                 get { return TestServer.ServerName; }
             }
-        }
-
-        private class ConfigureTestHostingEnvironment : ConfigureHostingEnvironment
-        {
-            public ConfigureTestHostingEnvironment() : base(env => env.EnvironmentName = DefaultEnvironmentName) { }
         }
     }
 }
