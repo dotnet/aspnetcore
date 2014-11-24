@@ -4,7 +4,7 @@
 namespace Microsoft.AspNet.Hosting.Fakes
 {
     interface IFakeEveryService :
-            IFakeService,
+            IFakeScopedService,
             IFakeServiceInstance,
             IFakeSingletonService
     {
