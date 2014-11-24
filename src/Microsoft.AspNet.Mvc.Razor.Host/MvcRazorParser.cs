@@ -32,16 +32,20 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        protected override IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors([NotNull] Block documentRoot)
+        protected override IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors(
+            [NotNull] Block documentRoot,
+            [NotNull] ParserErrorSink errorSink)
         {
             // Grab all the @addtaghelper chunks from view starts and construct TagHelperDirectiveDescriptors
             var directiveDescriptors = _viewStartChunks.OfType<AddTagHelperChunk>()
                                                        .Select(chunk => new TagHelperDirectiveDescriptor(
                                                             chunk.LookupText,
+                                                            chunk.Start,
                                                             TagHelperDirectiveType.AddTagHelper));
 
             var visitor = new ViewStartAddRemoveTagHelperVisitor(TagHelperDescriptorResolver,
-                                                                 directiveDescriptors);
+                                                                 directiveDescriptors,
+                                                                 errorSink);
             var descriptors = visitor.GetDescriptors(documentRoot);
 
             return descriptors;
@@ -53,17 +57,20 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             public ViewStartAddRemoveTagHelperVisitor(
                 ITagHelperDescriptorResolver descriptorResolver,
-                IEnumerable<TagHelperDirectiveDescriptor> viewStartDirectiveDescriptors)
-                : base(descriptorResolver)
+                IEnumerable<TagHelperDirectiveDescriptor> viewStartDirectiveDescriptors,
+                ParserErrorSink errorSink)
+                : base(descriptorResolver, errorSink)
             {
                 _viewStartDirectiveDescriptors = viewStartDirectiveDescriptors;
             }
 
             protected override TagHelperDescriptorResolutionContext GetTagHelperDescriptorResolutionContext(
-                IEnumerable<TagHelperDirectiveDescriptor> descriptors)
+                IEnumerable<TagHelperDirectiveDescriptor> descriptors,
+                ParserErrorSink errorSink)
             {
                 return base.GetTagHelperDescriptorResolutionContext(
-                    _viewStartDirectiveDescriptors.Concat(descriptors));
+                    _viewStartDirectiveDescriptors.Concat(descriptors),
+                    errorSink);
             }
         }
     }
