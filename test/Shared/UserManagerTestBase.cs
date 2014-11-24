@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
 using Xunit;
-using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 
@@ -28,9 +27,7 @@ namespace Microsoft.AspNet.Identity.Test
     {
         protected virtual void SetupIdentityServices(IServiceCollection services, object context = null)
         {
-            services.AddOptions();
             services.AddHosting();
-            services.Add(DataProtectionServices.GetDefaultServices());
             services.AddIdentity<TUser, TRole>().AddDefaultTokenProviders();
             AddUserStore(services, context);
             AddRoleStore(services, context);

@@ -67,7 +67,6 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             services.AddIdentity();
-            services.Add(OptionsServices.GetDefaultServices());
 
             var provider = services.BuildServiceProvider();
             var userValidator = provider.GetRequiredService<IUserValidator<IdentityUser>>() as UserValidator<IdentityUser>;
@@ -85,8 +84,6 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             services.AddIdentity().AddDefaultTokenProviders();
-            services.Add(DataProtectionServices.GetDefaultServices());
-            services.Add(OptionsServices.GetDefaultServices());
 
             var provider = services.BuildServiceProvider();
             var tokenProviders = provider.GetRequiredService<IEnumerable<IUserTokenProvider<IdentityUser>>>();

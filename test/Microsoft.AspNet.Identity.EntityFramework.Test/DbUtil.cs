@@ -5,8 +5,6 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
@@ -25,10 +23,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             {
                 services = new ServiceCollection();
             }
-            services.Add(HostingServices.GetDefaultServices());
+            services.AddHosting();
             services.AddEntityFramework().AddSqlServer().AddDbContext<TContext>(options => options.UseSqlServer(connectionString));
-            services.Add(OptionsServices.GetDefaultServices());
-            services.AddInstance<ILoggerFactory>(new LoggerFactory());
             return services;
         }
 

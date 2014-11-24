@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Identity.Test
             var config = new Configuration { new MemoryConfigurationSource(dic) };
             Assert.Equal(roleClaimType, config.Get("identity:claimsidentity:roleclaimtype"));
 
-            var services = new ServiceCollection {OptionsServices.GetDefaultServices()};
+            var services = new ServiceCollection();
             if (useDefaultSubKey)
             {
                 services.AddIdentity(config);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Identity.Test
                 {"identity:lockout:MaxFailedAccessAttempts", "1000"}
             };
             var config = new Configuration { new MemoryConfigurationSource(dic) };
-            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            var services = new ServiceCollection();
             services.AddIdentity(config, 
                 o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
@@ -148,6 +148,7 @@ namespace Microsoft.AspNet.Identity.Test
             var app = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
             app.UseServices(services =>
             {
+                services.AddOptions();
                 services.ConfigureIdentity(options => options.User.RequireUniqueEmail = true);
             });
 

@@ -54,7 +54,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             builder.UseServices(services =>
             {
                 DbUtil.ConfigureDbServices<ApplicationDbContext>(ConnectionString, services);
-                services.Add(DataProtectionServices.GetDefaultServices());
                 services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
             });
 
@@ -79,8 +78,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
             builder.UseServices(services =>
             {
-                services.AddInstance<ILoggerFactory>(new LoggerFactory());
-                services.Add(HostingServices.GetDefaultServices());
+                services.AddHosting();
                 services.AddEntityFramework()
                         .AddSqlServer()
                         .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(ConnectionString));
