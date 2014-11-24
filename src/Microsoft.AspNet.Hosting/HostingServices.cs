@@ -32,11 +32,12 @@ namespace Microsoft.AspNet.Hosting
 
         public static IServiceCollection Create(IConfiguration configuration = null)
         {
-            return Create(CallContextServiceLocator.Locator.ServiceProvider);
+            return Create(CallContextServiceLocator.Locator.ServiceProvider, configuration);
         }
 
         public static IServiceCollection Create(IServiceProvider fallbackServices, IConfiguration configuration = null)
         {
+            configuration = configuration ?? new Configuration();
             var services = Import(fallbackServices);
             services.Add(GetDefaultServices(configuration));
             services.AddSingleton<IServiceManifest>(sp => new HostingManifest(fallbackServices));
