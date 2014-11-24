@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
         private static IInlineConstraintResolver GetInlineConstraintResolver()
         {
-            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            var services = new ServiceCollection().AddOptions();
             var serviceProvider = services.BuildServiceProvider();
             var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
             return new DefaultInlineConstraintResolver(serviceProvider, accessor);

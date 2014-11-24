@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
         private static IInlineConstraintResolver GetConstraintResolver()
         {
-            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            var services = new ServiceCollection().AddOptions();
             services.Configure<RouteOptions>(options =>
                                 options
                                 .ConstraintMap

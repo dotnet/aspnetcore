@@ -1,24 +1,18 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Routing
 {
-    public class RoutingServices
+    public static class RoutingServices
     {
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices()
+        public static IServiceCollection AddRouting(this IServiceCollection services, IConfiguration config = null)
         {
-            return GetDefaultServices(new Configuration());
-        }
-
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration)
-        {
-            var describe = new ServiceDescriber(configuration);
-
-            yield return describe.Transient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
+            var describe = new ServiceDescriber(config);
+            services.TryAdd(describe.Transient<IInlineConstraintResolver, DefaultInlineConstraintResolver>());
+            return services;
         }
     }
 }

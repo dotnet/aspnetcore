@@ -15,7 +15,7 @@ namespace RoutingSample.Web
         {
             builder.UseServices(services =>
             {
-                services.Add(RoutingServices.GetDefaultServices());
+                services.AddRouting();
             });
 
             var endpoint1 = new DelegateRouteEndpoint(async (context) =>
