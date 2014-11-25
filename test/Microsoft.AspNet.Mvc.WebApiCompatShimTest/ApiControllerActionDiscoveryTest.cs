@@ -34,7 +34,7 @@ namespace System.Web.Http
 
             // Assert
             var controllerType = typeof(TestControllers.ProductsController).GetTypeInfo();
-            var actions = results.Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType).ToArray();
+            var actions = results.Where(ad => ad.ControllerTypeInfo == controllerType).ToArray();
 
             Assert.NotEmpty(actions);
         }
@@ -53,7 +53,7 @@ namespace System.Web.Http
 
             // Assert
             var controllerType = typeof(TestControllers.Blog).GetTypeInfo();
-            var actions = results.Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType).ToArray();
+            var actions = results.Where(ad => ad.ControllerTypeInfo == controllerType).ToArray();
 
             Assert.Empty(actions);
         }
@@ -73,7 +73,7 @@ namespace System.Web.Http
             // Assert
             var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
             var actions = results
-                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.ControllerTypeInfo == controllerType)
                 .Where(ad => ad.MethodInfo.Name == "GetAll")
                 .ToArray();
 
@@ -109,7 +109,7 @@ namespace System.Web.Http
             // Assert
             var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
             var actions = results
-                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.ControllerTypeInfo == controllerType)
                 .Where(ad => ad.MethodInfo.Name == "Edit")
                 .ToArray();
 
@@ -145,7 +145,7 @@ namespace System.Web.Http
             // Assert
             var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
             var actions = results
-                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.ControllerTypeInfo == controllerType)
                 .Where(ad => ad.MethodInfo.Name == "Delete")
                 .ToArray();
 
@@ -182,7 +182,7 @@ namespace System.Web.Http
             // Assert
             var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
             var actions = results
-                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.ControllerTypeInfo == controllerType)
                 .Where(ad => ad.MethodInfo.Name == "Options")
                 .ToArray();
 
@@ -218,7 +218,7 @@ namespace System.Web.Http
             // Assert
             var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
             var actions = results
-                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.ControllerTypeInfo == controllerType)
                 .ToArray();
 
             Assert.NotEmpty(actions);
@@ -243,7 +243,7 @@ namespace System.Web.Http
             // Assert
             var controllerType = typeof(TestControllers.StoreController).GetTypeInfo();
             var actions = results
-                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.ControllerTypeInfo == controllerType)
                 .ToArray();
 
             Assert.NotEmpty(actions);
@@ -268,7 +268,7 @@ namespace System.Web.Http
             // Assert
             var controllerType = typeof(TestControllers.EmployeesController).GetTypeInfo();
             var actions = results
-                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.ControllerTypeInfo == controllerType)
                 .Where(ad => ad.Name == "Get")
                 .ToArray();
 
@@ -295,7 +295,7 @@ namespace System.Web.Http
             // Assert
             var controllerType = typeof(TestControllers.EmployeesController).GetTypeInfo();
             var actions = results
-                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.ControllerTypeInfo == controllerType)
                 .Where(ad => ad.Name == "Put")
                 .ToArray();
 
@@ -322,7 +322,7 @@ namespace System.Web.Http
             // Assert
             var controllerType = typeof(TestControllers.EmployeesController).GetTypeInfo();
             var actions = results
-                .Where(ad => ad.ControllerDescriptor.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.ControllerTypeInfo == controllerType)
                 .Where(ad => ad.Name == "Post")
                 .ToArray();
 

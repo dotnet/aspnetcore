@@ -10,27 +10,21 @@ namespace Microsoft.AspNet.Mvc
     [DebuggerDisplay("CA {DisplayName}(RC-{RouteConstraints.Count})")]
     public class ControllerActionDescriptor : ActionDescriptor
     {
-        public string ControllerName
-        {
-            get
-            {
-                return ControllerDescriptor.Name;
-            }
-        }
+        public string ControllerName { get; set; }
 
         public MethodInfo MethodInfo { get; set; }
 
-        public ControllerDescriptor ControllerDescriptor { get; set; }
+        public TypeInfo ControllerTypeInfo { get; set; }
 
         public override string DisplayName
         {
             get
             {
-                if (base.DisplayName == null && MethodInfo != null)
+                if (base.DisplayName == null && ControllerTypeInfo != null && MethodInfo != null)
                 {
                     base.DisplayName = string.Format(
                         "{0}.{1}",
-                        MethodInfo.DeclaringType.FullName,
+                        ControllerTypeInfo.FullName,
                         MethodInfo.Name);
                 }
 

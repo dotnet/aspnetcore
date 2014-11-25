@@ -41,12 +41,6 @@ namespace Microsoft.AspNet.Mvc
 
             foreach (var controller in application.Controllers)
             {
-                var controllerDescriptor = new ControllerDescriptor()
-                {
-                    ControllerTypeInfo = controller.ControllerType,
-                    Name = controller.ControllerName,
-                };
-
                 foreach (var action in controller.Actions)
                 {
                     // Controllers with multiple [Route] attributes (or user defined implementation of
@@ -58,7 +52,8 @@ namespace Microsoft.AspNet.Mvc
 
                     foreach (var actionDescriptor in actionDescriptors)
                     {
-                        actionDescriptor.ControllerDescriptor = controllerDescriptor;
+                        actionDescriptor.ControllerName = controller.ControllerName;
+                        actionDescriptor.ControllerTypeInfo = controller.ControllerType;
 
                         AddApiExplorerInfo(actionDescriptor, action, controller);
                         AddRouteConstraints(actionDescriptor, controller, action);
