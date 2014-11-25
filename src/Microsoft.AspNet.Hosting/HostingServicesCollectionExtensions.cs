@@ -1,0 +1,53 @@
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Hosting.Builder;
+using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Hosting.Startup;
+using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Logging;
+
+namespace Microsoft.Framework.DependencyInjection
+{
+    public static class HostingServicesExtensions
+    {
+        // REVIEW: Logging doesn't depend on DI, where should this live?
+        public static IServiceCollection AddLogging(this IServiceCollection services, IConfiguration config = null)
+        {
+            var describe = new ServiceDescriber(config);
+            services.TryAdd(describe.Singleton<ILoggerFactory, LoggerFactory>());
+            return services;
+        }
+
+        public static IServiceCollection AddHosting(this IServiceCollection services, IConfiguration configuration = null)
+        {
+            var describer = new ServiceDescriber(configuration);
+
+            services.TryAdd(describer.Transient<IHostingEngine, HostingEngine>());
+            services.TryAdd(describer.Transient<IServerManager, ServerManager>());
+
+            services.TryAdd(describer.Transient<IStartupManager, StartupManager>());
+            services.TryAdd(describer.Transient<IStartupLoaderProvider, StartupLoaderProvider>());
+
+            services.TryAdd(describer.Transient<IApplicationBuilderFactory, ApplicationBuilderFactory>());
+            services.TryAdd(describer.Transient<IHttpContextFactory, HttpContextFactory>());
+
+            services.TryAdd(describer.Instance<IApplicationLifetime>(new ApplicationLifetime()));
+
+            services.AddTypeActivator(configuration);
+            // TODO: Do we expect this to be provide by the runtime eventually?
+            services.AddLogging(configuration);
+            // REVIEW: okay to use existing hosting environment/httpcontext if specified?
+            services.TryAdd(describer.Singleton<IHostingEnvironment, HostingEnvironment>());
+
+            // TODO: Remove this once we have IHttpContextAccessor
+            services.AddContextAccessor(configuration);
+
+            // REVIEW: don't try add because we pull out IEnumerable<IConfigureHostingEnvironment>?
+            services.AddInstance<IConfigureHostingEnvironment>(new ConfigureHostingEnvironment(configuration));
+
+            return services;
+        }
+    }
+}

@@ -17,11 +17,13 @@ namespace Microsoft.AspNet.Hosting.Fakes
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
             services.Configure<FakeOptions>(o => o.Configured = true);
         }
 
         public void ConfigureDevServices(IServiceCollection services)
         {
+            services.AddOptions();
             services.Configure<FakeOptions>(o =>
             {
                 o.Configured = true;
@@ -31,6 +33,7 @@ namespace Microsoft.AspNet.Hosting.Fakes
 
         public void ConfigureRetailServices(IServiceCollection services)
         {
+            services.AddOptions();
             services.Configure<FakeOptions>(o =>
             {
                 o.Configured = true;
@@ -40,6 +43,7 @@ namespace Microsoft.AspNet.Hosting.Fakes
 
         public static void ConfigureStaticServices(IServiceCollection services)
         {
+            services.AddOptions();
             services.Configure<FakeOptions>(o =>
             {
                 o.Configured = true;
@@ -49,8 +53,7 @@ namespace Microsoft.AspNet.Hosting.Fakes
 
         public static IServiceProvider ConfigureStaticProviderServices()
         {
-            var services = new ServiceCollection();
-            services.Add(OptionsServices.GetDefaultServices());
+            var services = new ServiceCollection().AddOptions();
             services.Configure<FakeOptions>(o =>
             {
                 o.Configured = true;
@@ -71,6 +74,7 @@ namespace Microsoft.AspNet.Hosting.Fakes
 
         public IServiceProvider ConfigureProviderServices(IServiceCollection services)
         {
+            services.AddOptions();
             services.Configure<FakeOptions>(o =>
             {
                 o.Configured = true;
@@ -81,8 +85,7 @@ namespace Microsoft.AspNet.Hosting.Fakes
 
         public IServiceProvider ConfigureProviderArgsServices(IApplicationBuilder me)
         {
-            var services = new ServiceCollection();
-            services.Add(OptionsServices.GetDefaultServices());
+            var services = new ServiceCollection().AddOptions();
             services.Configure<FakeOptions>(o =>
             {
                 o.Configured = true;

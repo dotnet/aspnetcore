@@ -152,10 +152,8 @@ namespace Microsoft.AspNet.Hosting.Startup
                 if (servicesMethod != null)
                 {
                     var services = HostingServices.Create(builder.ApplicationServices);
-                    // TODO: remove adding options
-                    services.Add(OptionsServices.GetDefaultServices());
-                    services.AddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
-
+                    // TODO: remove this once IHttpContextAccessor service is added
+                    services.AddContextAccessor();
                     if (servicesMethod.ReturnType == typeof(IServiceProvider))
                     {
                         // IServiceProvider ConfigureServices(IServiceCollection)

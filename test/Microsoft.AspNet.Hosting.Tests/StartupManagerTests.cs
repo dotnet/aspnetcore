@@ -21,8 +21,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         [Fact]
         public void StartupClassMayHaveHostingServicesInjected()
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.Add(HostingServices.GetDefaultServices());
+            var serviceCollection = new ServiceCollection().AddHosting();
             serviceCollection.AddInstance<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 

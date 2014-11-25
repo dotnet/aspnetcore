@@ -7,7 +7,6 @@ using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Hosting;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -49,9 +48,8 @@ namespace Microsoft.AspNet.Builder
             // Import services from hosting/KRE as fallback
             var serviceCollection = HostingServices.Create(builder.ApplicationServices);
 
-            // TODO: should remove OptionServices here soon...
-            serviceCollection.Add(OptionsServices.GetDefaultServices());
-            serviceCollection.AddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
+            // TODO: remove this once IHttpContextAccessor service is added
+            serviceCollection.AddContextAccessor();
 
             // REVIEW: serviceCollection has the merged services, manifests are lost after this
             builder.ApplicationServices = configureServices(serviceCollection);
