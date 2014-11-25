@@ -174,7 +174,14 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                              generatedAbsoluteIndex: 475,
                                              generatedLineIndex: 15,
                                              characterOffsetIndex: 14,
-                                             contentLength: 11)
+                                             contentLength: 11),
+                            BuildLineMapping(documentAbsoluteIndex: 57,
+                                             documentLineIndex: 2,
+                                             documentCharacterOffsetIndex: 28,
+                                             generatedAbsoluteIndex: 927,
+                                             generatedLineIndex: 33,
+                                             generatedCharacterOffsetIndex: 31,
+                                             contentLength: 4)
                         }
                     },
                     {
@@ -188,7 +195,14 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                              generatedAbsoluteIndex: 475,
                                              generatedLineIndex: 15,
                                              characterOffsetIndex: 14,
-                                             contentLength: 11)
+                                             contentLength: 11),
+                            BuildLineMapping(documentAbsoluteIndex: 189,
+                                             documentLineIndex: 6,
+                                             documentCharacterOffsetIndex: 40,
+                                             generatedAbsoluteIndex: 1599,
+                                             generatedLineIndex: 44,
+                                             generatedCharacterOffsetIndex: 40,
+                                             contentLength: 4)
                         }
                     },
                     {
@@ -218,6 +232,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                             BuildLineMapping(218, 9, 13, 1356, 56, 12, 27),
                             BuildLineMapping(346, 12, 1754, 68, 0, 48),
                             BuildLineMapping(440, 15, 46, 2004, 78, 6, 8),
+                            BuildLineMapping(457, 15, 63, 2267, 85, 40, 4),
                             BuildLineMapping(501, 16, 31, 2384, 88, 6, 30),
                             BuildLineMapping(568, 17, 30, 2733, 97, 0, 10),
                             BuildLineMapping(601, 17, 63, 2815, 103, 0, 8),

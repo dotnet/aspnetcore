@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
@@ -265,7 +266,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
                             // We aren't a bufferable attribute which means we have no Razor code in our value.
                             // Therefore we can just use the "textValue" as the attribute value.
-                            RenderRawAttributeValue(textValue, attributeDescriptor);
+                            RenderRawAttributeValue(textValue, attributeValueChunk.Start, attributeDescriptor);
                         }
 
                         // End the assignment to the attribute.
@@ -421,13 +422,25 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 });
         }
 
-        private void RenderRawAttributeValue(string value, TagHelperAttributeDescriptor attributeDescriptor)
+        private void RenderRawAttributeValue(string value,
+                                             SourceLocation documentLocation,
+                                             TagHelperAttributeDescriptor attributeDescriptor)
         {
             RenderAttributeValue(
                 attributeDescriptor,
                 valueRenderer: (writer) =>
                 {
-                    writer.Write(value);
+                    if (_context.Host.DesignTimeMode)
+                    {
+                        using (new CSharpLineMappingWriter(writer, documentLocation, value.Length))
+                        {
+                            writer.Write(value);
+                        }
+                    }
+                    else
+                    {
+                        writer.Write(value);
+                    }
                 });
         }
 
