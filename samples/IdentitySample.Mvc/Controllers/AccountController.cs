@@ -40,6 +40,7 @@ namespace IdentitySample.Models
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
+            ViewBag.ReturnUrl = returnUrl;
             if (ModelState.IsValid)
             {
                 var signInStatus = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, shouldLockout: false);
@@ -55,7 +56,6 @@ namespace IdentitySample.Models
                     case SignInStatus.Failure:
                     default:
                         ModelState.AddModelError("", "Invalid username or password.");
-                        return View(model);
                 }
             }
 
