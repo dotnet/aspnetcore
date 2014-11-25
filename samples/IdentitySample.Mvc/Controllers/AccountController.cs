@@ -56,6 +56,7 @@ namespace IdentitySample.Models
                     case SignInStatus.Failure:
                     default:
                         ModelState.AddModelError("", "Invalid username or password.");
+                        return View(model);
                 }
             }
 
