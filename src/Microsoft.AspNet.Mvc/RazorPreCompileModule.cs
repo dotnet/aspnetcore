@@ -12,7 +12,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.DependencyInjection.ServiceLookup;
-using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc
@@ -33,10 +32,9 @@ namespace Microsoft.AspNet.Mvc
             var appEnv = _appServices.GetRequiredService<IApplicationEnvironment>();
 
             var setup = new RazorViewEngineOptionsSetup(appEnv);
-            var accessor = new OptionsManager<RazorViewEngineOptions>(new[] { setup });
             var sc = new ServiceCollection();
-            sc.AddInstance<IOptions<RazorViewEngineOptions>>(accessor);
-            sc.Add(MvcServices.GetDefaultServices());
+            sc.ConfigureOptions(setup);
+            sc.AddMvc();
 
             var viewCompiler = new RazorPreCompiler(BuildFallbackServiceProvider(sc, _appServices));
             viewCompiler.CompileViews(context);

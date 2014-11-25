@@ -10,22 +10,19 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class MvcServiceCollectionExtensions
     {
-        public static IServiceCollection AddMvc(this IServiceCollection services)
+        public static IServiceCollection AddMvc(this IServiceCollection services, IConfiguration configuration = null)
         {
-            ConfigureDefaultServices(services);
-            return services.Add(MvcServices.GetDefaultServices());
+            ConfigureDefaultServices(services, configuration);
+            services.TryAdd(MvcServices.GetDefaultServices(configuration));
+            return services;
         }
 
-        public static IServiceCollection AddMvc(this IServiceCollection services, IConfiguration configuration)
+        private static void ConfigureDefaultServices(IServiceCollection services, IConfiguration configuration)
         {
-            ConfigureDefaultServices(services);
-            return services.Add(MvcServices.GetDefaultServices(configuration));
-        }
-
-        private static void ConfigureDefaultServices(IServiceCollection services)
-        {
-            services.Add(DataProtectionServices.GetDefaultServices());
-            services.Add(RoutingServices.GetDefaultServices());
+            services.AddOptions(configuration);
+            services.AddDataProtection(configuration);
+            services.AddRouting(configuration);
+            services.AddContextAccessor(configuration);
             services.Configure<RouteOptions>(routeOptions =>
                                                     routeOptions.ConstraintMap
                                                          .Add("exists",
