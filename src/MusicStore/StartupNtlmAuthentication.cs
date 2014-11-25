@@ -78,7 +78,11 @@ namespace MusicStore
                         .AddDbContext<MusicStoreContext>();
 
                 // Add Identity services to the services container
-                services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(Configuration);
+                services.AddIdentity<ApplicationUser, IdentityRole>(Configuration)
+                        .AddEntityFrameworkStores<MusicStoreContext>()
+                        .AddDefaultTokenProviders()
+                        .AddMessageProvider<EmailMessageProvider>()
+                        .AddMessageProvider<SmsMessageProvider>();
 
                 // Add MVC services to the services container
                 services.AddMvc();

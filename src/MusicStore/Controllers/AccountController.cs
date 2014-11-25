@@ -141,7 +141,13 @@ namespace MusicStore.Controllers
                     // Send an email with this link
                     string code = await UserManager.GenerateEmailConfirmationTokenAsync(user, cancellationToken: Context.RequestAborted);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Context.Request.Scheme);
-                    await UserManager.SendEmailAsync(user, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>", cancellationToken: Context.RequestAborted);
+                    var email = new IdentityMessage
+                    {
+                        Destination = model.Email,
+                        Subject = "Confirm your account",
+                        Body = "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>"
+                    };
+                    await UserManager.SendMessageAsync("Email", email, cancellationToken: Context.RequestAborted);
 #if !DEMO
                     return RedirectToAction("Index", "Home");
 #else
@@ -204,7 +210,13 @@ namespace MusicStore.Controllers
                 // Send an email with this link
                 string code = await UserManager.GeneratePasswordResetTokenAsync(user, cancellationToken: Context.RequestAborted);
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { code = code }, protocol: Context.Request.Scheme);
-                await UserManager.SendEmailAsync(user, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>", cancellationToken: Context.RequestAborted);
+                var email = new IdentityMessage
+                {
+                    Destination = model.Email,
+                    Subject = "Reset Password",
+                    Body = "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>"
+                };
+                await UserManager.SendMessageAsync("Email", email, cancellationToken: Context.RequestAborted);
 #if !DEMO
                 return RedirectToAction("ForgotPasswordConfirmation");
 #else

@@ -53,7 +53,11 @@ namespace MusicStore.Spa
                 });
 
             // Add Identity services to the services container
-            services.AddDefaultIdentity<MusicStoreContext, ApplicationUser, IdentityRole>(Configuration);
+            services.AddIdentity<ApplicationUser, IdentityRole>(Configuration)
+                    .AddEntityFrameworkStores<MusicStoreContext>()
+                    .AddDefaultTokenProviders()
+                    .AddMessageProvider<EmailMessageProvider>()
+                    .AddMessageProvider<SmsMessageProvider>();
 
             // Add application services to the service container
             //services.AddTransient<IModelMetadataProvider, BuddyModelMetadataProvider>();
