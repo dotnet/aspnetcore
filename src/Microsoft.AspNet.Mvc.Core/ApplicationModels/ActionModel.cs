@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Filters = new List<IFilter>();
             HttpMethods = new List<string>();
             Parameters = new List<ParameterModel>();
+            RouteConstraints = new List<IRouteConstraintProvider>();
         }
 
         public ActionModel([NotNull] ActionModel other)
@@ -40,6 +41,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Make a deep copy of other 'model' types.
             ApiExplorer = new ApiExplorerModel(other.ApiExplorer);
             Parameters = new List<ParameterModel>(other.Parameters.Select(p => new ParameterModel(p)));
+            RouteConstraints = new List<IRouteConstraintProvider>(other.RouteConstraints);
 
             if (other.AttributeRouteModel != null)
             {
@@ -62,6 +64,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// </remarks>
         public ApiExplorerModel ApiExplorer { get; set; }
 
+        public AttributeRouteModel AttributeRouteModel { get; set; }
+
         public IReadOnlyList<object> Attributes { get; }
 
         public ControllerModel Controller { get; set; }
@@ -74,6 +78,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public List<ParameterModel> Parameters { get; private set; }
 
-        public AttributeRouteModel AttributeRouteModel { get; set; }
+        public List<IRouteConstraintProvider> RouteConstraints { get; private set; }
     }
 }

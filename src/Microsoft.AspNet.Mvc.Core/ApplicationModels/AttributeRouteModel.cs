@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Routing;
@@ -336,7 +337,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                                 var message = Resources.FormatAttributeRoute_TokenReplacement_ReplacementValueNotFound(
                                     template,
                                     token,
-                                    string.Join(", ", values.Keys));
+                                    string.Join(", ", values.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase)));
                                 throw new InvalidOperationException(message);
                             }
 

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             AttributeRoutes = new List<AttributeRouteModel>();
             ActionConstraints = new List<IActionConstraintMetadata>();
             Filters = new List<IFilter>();
-            RouteConstraints = new List<RouteConstraintAttribute>();
+            RouteConstraints = new List<IRouteConstraintProvider>();
         }
 
         public ControllerModel([NotNull] ControllerModel other)
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             ActionConstraints = new List<IActionConstraintMetadata>(other.ActionConstraints);
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilter>(other.Filters);
-            RouteConstraints = new List<RouteConstraintAttribute>(other.RouteConstraints);
+            RouteConstraints = new List<IRouteConstraintProvider>(other.RouteConstraints);
 
             // Make a deep copy of other 'model' types.
             Actions = new List<ActionModel>(other.Actions.Select(a => new ActionModel(a)));
@@ -65,6 +65,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public List<IFilter> Filters { get; private set; }
 
-        public List<RouteConstraintAttribute> RouteConstraints { get; private set; }
+        public List<IRouteConstraintProvider> RouteConstraints { get; private set; }
     }
 }

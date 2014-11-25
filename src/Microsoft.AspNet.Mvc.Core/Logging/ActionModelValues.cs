@@ -24,6 +24,8 @@ namespace Microsoft.AspNet.Mvc.Logging
                 ActionMethod = inner.ActionMethod;
                 ApiExplorer = new ApiExplorerModelValues(inner.ApiExplorer);
                 Parameters = inner.Parameters.Select(p => new ParameterModelValues(p)).ToList();
+                RouteConstraints = inner.RouteConstraints.Select(
+                    r => new RouteConstraintProviderValues(r)).ToList();
                 Filters = inner.Filters.Select(f => new FilterValues(f)).ToList();
                 if (inner.AttributeRouteModel != null)
                 {
@@ -60,6 +62,12 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// See <see cref="ActionModel.Filters"/>.
         /// </summary>
         public List<FilterValues> Filters { get; }
+        
+        /// <summary>
+        /// The route constraints on the controller as <see cref="RouteConstraintProviderValues"/>.
+        /// See <see cref="ControllerModel.RouteConstraints"/>.
+        /// </summary>
+        public List<RouteConstraintProviderValues> RouteConstraints { get; set; }
 
         /// <summary>
         /// The attribute route model of the action as <see cref="AttributeRouteModelValues"/>.

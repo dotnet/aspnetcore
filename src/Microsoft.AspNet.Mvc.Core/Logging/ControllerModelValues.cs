@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Logging
                 Filters = inner.Filters.Select(f => new FilterValues(f)).ToList();
                 ActionConstraints = inner.ActionConstraints?.Select(a => new ActionConstraintValues(a))?.ToList();
                 RouteConstraints = inner.RouteConstraints.Select(
-                    r => new RouteConstraintAttributeValues(r)).ToList();
+                    r => new RouteConstraintProviderValues(r)).ToList();
                 AttributeRoutes = inner.AttributeRoutes.Select(
                     a => new AttributeRouteModelValues(a)).ToList();
             }
@@ -72,10 +72,10 @@ namespace Microsoft.AspNet.Mvc.Logging
         public List<ActionConstraintValues> ActionConstraints { get; }
 
         /// <summary>
-        /// The route constraints on the controller as <see cref="RouteConstraintAttributeValues"/>.
+        /// The route constraints on the controller as <see cref="RouteConstraintProviderValues"/>.
         /// See <see cref="ControllerModel.RouteConstraints"/>.
         /// </summary>
-        public List<RouteConstraintAttributeValues> RouteConstraints { get; set; }
+        public List<RouteConstraintProviderValues> RouteConstraints { get; set; }
 
         /// <summary>
         /// The attribute routes on the controller as <see cref="AttributeRouteModelValues"/>.

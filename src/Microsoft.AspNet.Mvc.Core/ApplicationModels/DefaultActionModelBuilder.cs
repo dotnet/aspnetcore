@@ -289,6 +289,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                     .SelectMany(a => a.HttpMethods)
                     .Distinct());
 
+            actionModel.RouteConstraints.AddRange(attributes.OfType<IRouteConstraintProvider>());
+
             var routeTemplateProvider =
                 attributes
                 .OfType<IRouteTemplateProvider>()

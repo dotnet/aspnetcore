@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var expected =
                 "While processing template '[area]/[controller]/[action2]', " +
                 "a replacement value for the token 'action2' could not be found. " +
-                "Available tokens: 'area, controller, action'.";
+                "Available tokens: 'action, area, controller'.";
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(

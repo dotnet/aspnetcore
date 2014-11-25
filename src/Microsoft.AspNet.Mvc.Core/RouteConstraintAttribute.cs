@@ -15,11 +15,9 @@ namespace Microsoft.AspNet.Mvc
     ///
     /// When placed on a controller, unless overridden by the action, the constraint applies to all
     /// actions defined by the controller.
-    ///
-    ///
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public abstract class RouteConstraintAttribute : Attribute
+    public abstract class RouteConstraintAttribute : Attribute, IRouteConstraintProvider
     {
         /// <summary>
         /// Creates a new <see cref="RouteConstraintAttribute"/>.
@@ -65,25 +63,16 @@ namespace Microsoft.AspNet.Mvc
             BlockNonAttributedActions = blockNonAttributedActions;
         }
 
-        /// <summary>
-        /// The route value key.
-        /// </summary>
+        /// <inheritdoc />
         public string RouteKey { get; private set; }
 
-        /// <summary>
-        /// The <see cref="RouteKeyHandling"/>.
-        /// </summary>
+        /// <inheritdoc />
         public RouteKeyHandling RouteKeyHandling { get; private set; }
 
-        /// <summary>
-        /// The expected route value. Will be null unless <see cref="RouteConstraintAttribute.RouteKeyHandling"/> is
-        /// set to <see cref="RouteKeyHandling.RequireKey"/>.
-        /// </summary>
+        /// <inheritdoc />
         public string RouteValue { get; private set; }
 
-        /// <summary>
-        /// Set to true to negate this constraint on all actions that do not define a behavior for this route key.
-        /// </summary>
+        /// <inheritdoc />
         public bool BlockNonAttributedActions { get; private set; }
     }
 }

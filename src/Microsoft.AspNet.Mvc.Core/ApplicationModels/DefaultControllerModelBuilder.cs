@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             controllerModel.ActionConstraints.AddRange(attributes.OfType<IActionConstraintMetadata>());
             controllerModel.Filters.AddRange(attributes.OfType<IFilter>());
-            controllerModel.RouteConstraints.AddRange(attributes.OfType<RouteConstraintAttribute>());
+            controllerModel.RouteConstraints.AddRange(attributes.OfType<IRouteConstraintProvider>());
 
             controllerModel.AttributeRoutes.AddRange(
                 attributes.OfType<IRouteTemplateProvider>().Select(rtp => new AttributeRouteModel(rtp)));

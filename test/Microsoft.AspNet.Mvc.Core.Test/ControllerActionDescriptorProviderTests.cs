@@ -547,7 +547,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 "For action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "MultipleErrorsController.Unknown'" + Environment.NewLine +
                 "Error: While processing template 'stub/[action]/[unknown]', a replacement value for the token 'unknown' " +
-                "could not be found. Available tokens: 'controller, action'." + Environment.NewLine +
+                "could not be found. Available tokens: 'action, controller'." + Environment.NewLine +
                 Environment.NewLine +
                 "Error 2:" + Environment.NewLine +
                 "For action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +

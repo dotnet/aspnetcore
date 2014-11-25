@@ -6,12 +6,12 @@ using Microsoft.Framework.Logging;
 namespace Microsoft.AspNet.Mvc.Logging
 {
     /// <summary>
-    /// Logging representation of a <see cref="RouteConstraintAttribute"/>. Logged as a substructure of
+    /// Logging representation of a <see cref="IRouteConstraintProvider"/>. Logged as a substructure of
     /// <see cref="ControllerModelValues"/>
     /// </summary>
-    public class RouteConstraintAttributeValues : LoggerStructureBase
+    public class RouteConstraintProviderValues : LoggerStructureBase
     {
-        public RouteConstraintAttributeValues([NotNull] RouteConstraintAttribute inner)
+        public RouteConstraintProviderValues([NotNull] IRouteConstraintProvider inner)
         {
             RouteKey = inner.RouteKey;
             RouteValue = inner.RouteValue;
@@ -20,22 +20,22 @@ namespace Microsoft.AspNet.Mvc.Logging
         }
 
         /// <summary>
-        /// The route value key. See <see cref="RouteConstraintAttribute.RouteKey"/>.
+        /// The route value key. See <see cref="IRouteConstraintProvider.RouteKey"/>.
         /// </summary>
         public string RouteKey { get; }
 
         /// <summary>
-        /// The expected route value. See <see cref="RouteConstraintAttribute.RouteValue"/>.
+        /// The expected route value. See <see cref="IRouteConstraintProvider.RouteValue"/>.
         /// </summary>
         public string RouteValue { get; }
 
         /// <summary>
-        /// The <see cref="RouteKeyHandling"/>. See <see cref="RouteConstraintAttribute.RouteKeyHandling"/>.
+        /// The <see cref="RouteKeyHandling"/>. See <see cref="IRouteConstraintProvider.RouteKeyHandling"/>.
         /// </summary>
         public RouteKeyHandling RouteKeyHandling { get; }
 
         /// <summary>
-        /// See <see cref="RouteConstraintAttribute.BlockNonAttributedActions"/>.
+        /// See <see cref="IRouteConstraintProvider.BlockNonAttributedActions"/>.
         /// </summary>
         public bool BlockNonAttributedActions { get; }
 

@@ -5,10 +5,10 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
-    public class RouteConstraintAttributeValuesTest
+    public class RouteConstraintProviderValuesTest
     {
         [Fact]
-        public void RouteConstraintAttributeValues_IncludesAllProperties()
+        public void RouteConstraintProviderValues_IncludesAllProperties()
         {
             // Arrange
             var exclude = new[] { "TypeId" };
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Logging
             // Assert
             PropertiesAssert.PropertiesAreTheSame(
                 typeof(RouteConstraintAttribute), 
-                typeof(RouteConstraintAttributeValues), 
+                typeof(RouteConstraintProviderValues), 
                 exclude);
         }
     }
