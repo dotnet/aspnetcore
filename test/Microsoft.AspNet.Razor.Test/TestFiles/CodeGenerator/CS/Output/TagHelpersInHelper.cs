@@ -24,7 +24,7 @@ MyHelper(string val)
             Instrumentation.BeginContext(62, 19, true);
             WriteLiteralTo(__razor_helper_writer, "    <div>\r\n        ");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper", "test");
             __MyTagHelper = CreateTagHelper<MyTagHelper>();
             __tagHelperExecutionContext.Add(__MyTagHelper);
             StartWritingScope();
@@ -51,7 +51,7 @@ Write(DateTime.Now);
             Instrumentation.BeginContext(184, 52, true);
             WriteLiteralTo(__razor_helper_writer, "\r\n            In None ContentBehavior.\r\n            ");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper", "test");
             __NestedTagHelper = CreateTagHelper<NestedTagHelper>();
             __tagHelperExecutionContext.Add(__NestedTagHelper);
             StartWritingScope();
@@ -106,7 +106,7 @@ Write(DateTime.Now);
             Instrumentation.BeginContext(27, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper", "test");
             __MyTagHelper = CreateTagHelper<MyTagHelper>();
             __tagHelperExecutionContext.Add(__MyTagHelper);
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
@@ -114,7 +114,7 @@ Write(DateTime.Now);
             Instrumentation.BeginContext(367, 9, false);
 #line 12 "TagHelpersInHelper.cshtml"
 Write(MyHelper(item => new Template((__razor_template_writer) => {
-    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper");
+    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper", "test");
     __NestedTagHelper = CreateTagHelper<NestedTagHelper>();
     __tagHelperExecutionContext.Add(__NestedTagHelper);
     StartWritingScope();

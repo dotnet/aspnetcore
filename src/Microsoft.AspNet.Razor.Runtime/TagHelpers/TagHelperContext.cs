@@ -14,14 +14,21 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Instantiates a new <see cref="TagHelperContext"/>.
         /// </summary>
         /// <param name="allAttributes">Every attribute associated with the current HTML element.</param>
-        public TagHelperContext([NotNull] IDictionary<string, object> allAttributes)
+        /// <param name="uniqueId">The unique identifier for the source element this <see cref="TagHelperContext" /> applies to.</param>
+        public TagHelperContext([NotNull] IDictionary<string, object> allAttributes, [NotNull] string uniqueId)
         {
             AllAttributes = allAttributes;
+            UniqueId = uniqueId;
         }
 
         /// <summary>
         /// Every attribute associated with the current HTML element.
         /// </summary>
         public IDictionary<string, object> AllAttributes { get; private set; }
+
+        /// <summary>
+        /// An identifier unique to the HTML element this context is for.
+        /// </summary>
+        public string UniqueId { get; private set; }
     }
 }

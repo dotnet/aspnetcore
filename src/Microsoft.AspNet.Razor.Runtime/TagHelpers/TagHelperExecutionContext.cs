@@ -17,12 +17,22 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Instantiates a new <see cref="TagHelperExecutionContext"/>.
         /// </summary>
         /// <param name="tagName">The HTML tag name in the Razor source.</param>
-        public TagHelperExecutionContext([NotNull] string tagName)
+        public TagHelperExecutionContext([NotNull] string tagName, [NotNull] string uniqueId)
         {
             AllAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             HTMLAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             _tagHelpers = new List<ITagHelper>();
             TagName = tagName;
+            UniqueId = uniqueId;
+        }
+
+        /// <summary>
+        /// Internal for testing purposes only.
+        /// </summary>
+        internal TagHelperExecutionContext([NotNull] string tagName)
+            : this(tagName, string.Empty)
+        {
+
         }
 
         /// <summary>
@@ -34,6 +44,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <see cref="ITagHelper"/> bound attributes and HTML attributes.
         /// </summary>
         public IDictionary<string, object> AllAttributes { get; private set; }
+
+        /// <summary>
+        /// An identifier unique to the HTML element this context is for.
+        /// </summary>
+        public string UniqueId { get; private set; }
 
         /// <summary>
         /// <see cref="ITagHelper"/>s that should be run.

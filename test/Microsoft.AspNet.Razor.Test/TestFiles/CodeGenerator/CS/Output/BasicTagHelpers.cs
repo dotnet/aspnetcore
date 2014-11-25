@@ -26,7 +26,7 @@ namespace TestOutput
             Instrumentation.BeginContext(27, 49, true);
             WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    ");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test");
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute("class", "Hello World");
@@ -35,7 +35,7 @@ namespace TestOutput
             Instrumentation.BeginContext(99, 10, true);
             WriteLiteral("\r\n        ");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test");
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
@@ -45,7 +45,7 @@ namespace TestOutput
             Instrumentation.BeginContext(116, 10, true);
             WriteLiteral("\r\n        ");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", "test");
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
             __tagHelperExecutionContext.Add(__InputTagHelper);
             __InputTagHelper.Type = "text";
@@ -60,7 +60,7 @@ namespace TestOutput
             Instrumentation.BeginContext(147, 10, true);
             WriteLiteral("\r\n        ");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", "test");
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
             __tagHelperExecutionContext.Add(__InputTagHelper);
             __InputTagHelper.Type = "checkbox";

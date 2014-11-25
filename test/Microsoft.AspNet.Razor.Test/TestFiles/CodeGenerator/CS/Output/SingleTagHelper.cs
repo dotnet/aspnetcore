@@ -24,7 +24,7 @@ namespace TestOutput
             Instrumentation.BeginContext(27, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test");
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
             __PTagHelper.Age = 1337;

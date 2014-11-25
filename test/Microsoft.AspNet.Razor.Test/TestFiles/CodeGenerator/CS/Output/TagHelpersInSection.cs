@@ -38,7 +38,7 @@ namespace TestOutput
                 Instrumentation.BeginContext(87, 21, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n    <div>\r\n        ");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper");
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper", "test");
                 __MyTagHelper = CreateTagHelper<MyTagHelper>();
                 __tagHelperExecutionContext.Add(__MyTagHelper);
                 StartWritingScope();
@@ -65,7 +65,7 @@ Write(DateTime.Now);
                 Instrumentation.BeginContext(211, 52, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n            In None ContentBehavior.\r\n            ");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper");
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper", "test");
                 __NestedTagHelper = CreateTagHelper<NestedTagHelper>();
                 __tagHelperExecutionContext.Add(__NestedTagHelper);
                 StartWritingScope();

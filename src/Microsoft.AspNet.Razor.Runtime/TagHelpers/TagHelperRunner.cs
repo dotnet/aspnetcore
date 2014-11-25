@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private async Task<TagHelperOutput> RunAsyncCore(TagHelperExecutionContext executionContext, string outputContent)
         {
-            var tagHelperContext = new TagHelperContext(executionContext.AllAttributes);
+            var tagHelperContext = new TagHelperContext(executionContext.AllAttributes, executionContext.UniqueId);
             var tagHelperOutput = new TagHelperOutput(executionContext.TagName,
                                                       executionContext.HTMLAttributes,
                                                       outputContent);

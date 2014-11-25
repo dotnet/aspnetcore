@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             }
         }
 
-        private class AttributeCodeGeneratorReplacingCodeBuilder : CSharpCodeBuilder
+        private class AttributeCodeGeneratorReplacingCodeBuilder : TestCSharpCodeBuilder
         {
             public AttributeCodeGeneratorReplacingCodeBuilder(CodeBuilderContext context)
                 : base(context)

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Test.TagHelpers
             var scopeManager = new TagHelperScopeManager();
 
             // Act
-            var executionContext = scopeManager.Begin("p");
+            var executionContext = scopeManager.Begin("p", string.Empty);
 
             // Assert
             Assert.Equal("p", executionContext.TagName);
@@ -29,8 +29,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Test.TagHelpers
             var scopeManager = new TagHelperScopeManager();
 
             // Act
-            var executionContext = scopeManager.Begin("p");
-            executionContext = scopeManager.Begin("div");
+            var executionContext = scopeManager.Begin("p", string.Empty);
+            executionContext = scopeManager.Begin("div", string.Empty);
 
             // Assert
             Assert.Equal("div", executionContext.TagName);
@@ -43,8 +43,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Test.TagHelpers
             var scopeManager = new TagHelperScopeManager();
 
             // Act
-            var executionContext = scopeManager.Begin("p");
-            executionContext = scopeManager.Begin("div");
+            var executionContext = scopeManager.Begin("p", string.Empty);
+            executionContext = scopeManager.Begin("div", string.Empty);
             executionContext = scopeManager.End();
 
             // Assert
@@ -58,8 +58,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Test.TagHelpers
             var scopeManager = new TagHelperScopeManager();
 
             // Act
-            var executionContext = scopeManager.Begin("p");
-            executionContext = scopeManager.Begin("div");
+            var executionContext = scopeManager.Begin("p", string.Empty);
+            executionContext = scopeManager.Begin("div", string.Empty);
             executionContext = scopeManager.End();
             executionContext = scopeManager.End();
 
