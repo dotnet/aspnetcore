@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.Security.DataProtection.Cng;
 using Microsoft.AspNet.Security.DataProtection.Dpapi;
@@ -12,28 +13,19 @@ using Microsoft.AspNet.Security.DataProtection.KeyManagement;
 using Microsoft.AspNet.Security.DataProtection.Repositories;
 using Microsoft.AspNet.Security.DataProtection.XmlEncryption;
 using Microsoft.Framework.ConfigurationModel;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
 
-namespace Microsoft.AspNet.Security.DataProtection
+namespace Microsoft.Framework.DependencyInjection
 {
-    public static class DataProtectionServices
+    public static class DataProtectionServiceCollectionExtensions
     {
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices()
+        public static IServiceCollection AddDataProtection(this IServiceCollection services, IConfiguration configuration = null)
         {
-            return GetDefaultServices(new Configuration());
-        }
-
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration)
-        {
+            services.AddOptions(configuration);
             var describe = new ServiceDescriber(configuration);
-
-            List<IServiceDescriptor> descriptors = new List<IServiceDescriptor>();
-            descriptors.AddRange(OptionsServices.GetDefaultServices(configuration));
-            descriptors.AddRange(OSVersionUtil.IsBCryptOnWin7OrLaterAvailable()
+            services.TryAdd(OSVersionUtil.IsBCryptOnWin7OrLaterAvailable()
                 ? GetDefaultServicesWindows(describe)
                 : GetDefaultServicesNonWindows(describe));
-            return descriptors;
+            return services;
         }
 
         private static IEnumerable<IServiceDescriptor> GetDefaultServicesNonWindows(ServiceDescriber describe)

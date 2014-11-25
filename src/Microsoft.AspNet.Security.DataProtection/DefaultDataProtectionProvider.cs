@@ -16,10 +16,7 @@ namespace Microsoft.AspNet.Security.DataProtection
         public DefaultDataProtectionProvider()
         {
             // use DI defaults
-            var collection = new ServiceCollection();
-            var defaultServices = DataProtectionServices.GetDefaultServices();
-            collection.Add(defaultServices);
-            var serviceProvider = collection.BuildServiceProvider();
+            var serviceProvider = new ServiceCollection().AddDataProtection().BuildServiceProvider();
 
             _innerProvider = serviceProvider.GetRequiredService<IDataProtectionProvider>();
         }
