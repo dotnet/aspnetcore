@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Security.Facebook
                 {
                     app.UseServices(services =>
                     {
-                        services.Add(DataProtectionServices.GetDefaultServices());
+                        services.AddDataProtection();
                         services.ConfigureFacebookAuthentication(options =>
                         {
                             options.AppId = "Test App Id";
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Security.Facebook
                 {
                     app.UseServices(services =>
                     {
-                        services.Add(DataProtectionServices.GetDefaultServices());
+                        services.AddDataProtection();
                         services.ConfigureFacebookAuthentication(options =>
                         {
                             options.AppId = "Test App Id";

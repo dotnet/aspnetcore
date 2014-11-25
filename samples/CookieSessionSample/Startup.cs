@@ -3,7 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Security.Cookies;
-using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.Framework.DependencyInjection;
 
 namespace CookieSessionSample
 {
@@ -13,7 +13,7 @@ namespace CookieSessionSample
         {
             app.UseServices(services =>
             {
-                services.Add(DataProtectionServices.GetDefaultServices());
+                services.AddDataProtection();
             });
 
             app.UseCookieAuthentication(options => 
