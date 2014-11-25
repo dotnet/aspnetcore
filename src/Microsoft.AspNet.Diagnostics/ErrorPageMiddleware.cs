@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Diagnostics
     {
         private readonly RequestDelegate _next;
         private readonly ErrorPageOptions _options;
+        private static bool IsMono = Type.GetType("Mono.Runtime") != null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorPageMiddleware"/> class
@@ -138,7 +139,14 @@ namespace Microsoft.AspNet.Diagnostics
         {
             line.Advance("  at ");
             string function = line.Advance(" in ").ToString();
-            string file = line.Advance(":line ").ToString();
+
+            //exception message line format differences in .net and mono
+            //On .net : at ConsoleApplication.Program.Main(String[] args) in D:\Program.cs:line 16
+            //On Mono : at ConsoleApplication.Program.Main(String[] args) in d:\Program.cs:16
+            string file = !IsMono ?
+                line.Advance(":line ").ToString() :
+                line.Advance(":").ToString();
+
             int lineNumber = line.ToInt32();
 
             return string.IsNullOrEmpty(file)
