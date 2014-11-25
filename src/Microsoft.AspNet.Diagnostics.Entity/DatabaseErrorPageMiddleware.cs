@@ -83,9 +83,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                                 {
                                     var databaseExists = dbContext.Database.AsRelational().Exists();
 
-                                    var contextServices = ((IDbContextServices)dbContext).ScopedServiceProvider;
-                                    var services = (MigrationsDataStoreServices)contextServices.GetRequiredService<DbContextConfiguration>().DataStoreServices;
-                                    var migrator = services.Migrator;
+                                    var databaseInternals = (IMigrationsEnabledDatabaseInternals)dbContext.Database;
+                                    var migrator = databaseInternals.Migrator;
 
                                     var pendingMigrations = migrator.GetPendingMigrations().Select(m => m.GetMigrationId());
 

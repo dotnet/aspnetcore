@@ -12,6 +12,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
+using Microsoft.Data.Entity.Migrations;
 using Microsoft.Data.Entity.Migrations.Infrastructure;
 using Microsoft.Data.Entity.Migrations.Utilities;
 using Microsoft.Data.Entity.Utilities;
@@ -101,9 +102,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
                     Assert.True(db.Database.AsRelational().Exists());
-                    var contextServices = ((IDbContextServices)db).ScopedServiceProvider;
-                    var dataStoreServices = (MigrationsDataStoreServices)contextServices.GetRequiredService<DbContextConfiguration>().DataStoreServices;
-                    var appliedMigrations = dataStoreServices.Migrator.GetDatabaseMigrations();
+
+                    var databaseInternals = (IMigrationsEnabledDatabaseInternals)db.Database;
+                    var migrator = databaseInternals.Migrator;
+                    var appliedMigrations = migrator.GetDatabaseMigrations();
                     Assert.Equal(2, appliedMigrations.Count);
                     Assert.Equal("111111111111111_MigrationOne", appliedMigrations.ElementAt(0).GetMigrationId());
                     Assert.Equal("222222222222222_MigrationTwo", appliedMigrations.ElementAt(1).GetMigrationId());
