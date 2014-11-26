@@ -170,9 +170,11 @@ namespace Microsoft.AspNet.Razor.Parser
                 rewriter.Rewrite(rewritingContext);
             }
 
+            var descriptors = Enumerable.Empty<TagHelperDescriptor>();
+
             if (TagHelperDescriptorResolver != null)
             {
-                var descriptors = GetTagHelperDescriptors(rewritingContext.SyntaxTree, rewritingContext.ErrorSink);
+                descriptors = GetTagHelperDescriptors(rewritingContext.SyntaxTree, rewritingContext.ErrorSink);
                 var tagHelperProvider = new TagHelperDescriptorProvider(descriptors);
 
                 var tagHelperParseTreeRewriter = new TagHelperParseTreeRewriter(tagHelperProvider);
@@ -195,7 +197,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             // Return the new result
-            return new ParserResults(syntaxTree, errorSink.Errors.ToList());
+            return new ParserResults(syntaxTree, descriptors, errorSink.Errors.ToList());
         }
 
         /// <summary>

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 #if ASPNETCORE50
 using System.Reflection;
 #endif
@@ -61,6 +62,98 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     new TagHelperDescriptor("replace", "ReplaceTagHelper", "SomeAssembly", ContentBehavior.Replace)
                 };
             }
+        }
+
+        public static TheoryData TagHelperDescriptorFlowTestData
+        {
+            get
+            {
+                return new TheoryData<string, // Test name
+                                      string, // Baseline name
+                                      IEnumerable<TagHelperDescriptor>, // TagHelperDescriptors provided
+                                      IEnumerable<TagHelperDescriptor>, // Expected TagHelperDescriptors
+                                      bool> // Design time mode.
+                {
+                    {
+                        "SingleTagHelper",
+                        "SingleTagHelper",
+                        PAndInputTagHelperDescriptors,
+                        PAndInputTagHelperDescriptors,
+                        false
+                    },
+                    {
+                        "SingleTagHelper",
+                        "SingleTagHelper.DesignTime",
+                        PAndInputTagHelperDescriptors,
+                        PAndInputTagHelperDescriptors,
+                        true
+                    },
+                    {
+                        "BasicTagHelpers",
+                        "BasicTagHelpers",
+                        PAndInputTagHelperDescriptors,
+                        PAndInputTagHelperDescriptors,
+                        false
+                    },
+                    {
+                        "BasicTagHelpers",
+                        "BasicTagHelpers.DesignTime",
+                        PAndInputTagHelperDescriptors,
+                        PAndInputTagHelperDescriptors,
+                        true
+                    },
+                    {
+                        "BasicTagHelpers.RemoveTagHelper",
+                        "BasicTagHelpers.RemoveTagHelper",
+                        PAndInputTagHelperDescriptors,
+                        Enumerable.Empty<TagHelperDescriptor>(),
+                        false
+                    },
+                    {
+                        "ContentBehaviorTagHelpers",
+                        "ContentBehaviorTagHelpers",
+                        ContentBehaviorTagHelperDescriptors,
+                        ContentBehaviorTagHelperDescriptors,
+                        false
+                    },
+                    {
+                        "ComplexTagHelpers",
+                        "ComplexTagHelpers",
+                        PAndInputTagHelperDescriptors,
+                        PAndInputTagHelperDescriptors,
+                        false
+                    },
+                    {
+                        "ComplexTagHelpers",
+                        "ComplexTagHelpers.DesignTime",
+                        PAndInputTagHelperDescriptors,
+                        PAndInputTagHelperDescriptors,
+                        true
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TagHelperDescriptorFlowTestData))]
+        public void TagHelpers_RenderingOutputFlowsFoundTagHelperDescriptors(
+            string testName,
+            string baselineName,
+            IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
+            IEnumerable<TagHelperDescriptor> expectedTagHelperDescriptors,
+            bool designTimeMode)
+        {
+            RunTagHelperTest(
+                testName, 
+                baseLineName: baselineName,
+                tagHelperDescriptors: tagHelperDescriptors,
+                onResults: (results) =>
+                {
+                    Assert.Equal(expectedTagHelperDescriptors,
+                                 results.TagHelperDescriptors,
+                                 TagHelperDescriptorComparer.Default);
+                },
+                designTimeMode: designTimeMode);
         }
 
         public static TheoryData DesignTimeTagHelperTestData

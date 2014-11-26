@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
 {
@@ -17,7 +19,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                         bool designTimeMode = false,
                                         IEnumerable<TagHelperDescriptor> tagHelperDescriptors = null,
                                         Func<RazorEngineHost, RazorEngineHost> hostConfig = null,
-                                        IList<LineMapping> expectedDesignTimePragmas = null)
+                                        IList<LineMapping> expectedDesignTimePragmas = null,
+                                        Action<GeneratorResults> onResults = null)
         {
             RunTest(name: testName,
                     baselineName: baseLineName,
@@ -27,6 +30,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     {
                         return new TagHelperTemplateEngine(engine, tagHelperDescriptors);
                     },
+                    onResults: onResults,
                     hostConfig: hostConfig,
                     expectedDesignTimePragmas: expectedDesignTimePragmas);
         }

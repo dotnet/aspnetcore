@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Utils;
 
@@ -225,7 +226,11 @@ namespace Microsoft.AspNet.Razor.Parser
                 throw new InvalidOperationException(RazorResources.ParserContext_CannotCompleteTree_OutstandingBlocks);
             }
 
-            return new ParserResults(_blockStack.Pop().Build(), _errorSink.Errors.ToList());
+            return new ParserResults(_blockStack.Pop().Build(),
+                                     // TagHelperDescriptors are not found by default. The RazorParser is responsible 
+                                     // for identifying TagHelperDescriptors and rebuilding ParserResults.
+                                     tagHelperDescriptors: Enumerable.Empty<TagHelperDescriptor>(),
+                                     parserErrors: _errorSink.Errors.ToList());
         }
 
         [Conditional("DEBUG")]

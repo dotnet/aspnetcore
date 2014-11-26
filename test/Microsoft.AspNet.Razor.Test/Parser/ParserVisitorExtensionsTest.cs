@@ -4,8 +4,10 @@
 #if !ASPNETCORE50
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Moq;
 using Xunit;
 
@@ -17,7 +19,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void VisitThrowsOnNullVisitor()
         {
             ParserVisitor target = null;
-            var results = new ParserResults(new BlockBuilder() { Type = BlockType.Comment }.Build(), new List<RazorError>());
+            var results = new ParserResults(new BlockBuilder() { Type = BlockType.Comment }.Build(),
+                                            Enumerable.Empty<TagHelperDescriptor>(),
+                                            parserErrors: new List<RazorError>());
 
             Assert.Throws<ArgumentNullException>("self", () => target.Visit(results));
         }
@@ -35,7 +39,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Arrange
             Mock<ParserVisitor> targetMock = new Mock<ParserVisitor>();
             var root = new BlockBuilder() { Type = BlockType.Comment }.Build();
-            var results = new ParserResults(root, new List<RazorError>());
+            var results = new ParserResults(root,
+                                            Enumerable.Empty<TagHelperDescriptor>(),
+                                            parserErrors: new List<RazorError>());
 
             // Act
             targetMock.Object.Visit(results);
@@ -54,7 +60,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                 new RazorError("Foo", 1, 0, 1),
                 new RazorError("Bar", 2, 0, 2)
             };
-            var results = new ParserResults(root, errors);
+            var results = new ParserResults(root, Enumerable.Empty<TagHelperDescriptor>(), errors);
 
             // Act
             targetMock.Object.Visit(results);
@@ -74,7 +80,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                 new RazorError("Foo", 1, 0, 1),
                 new RazorError("Bar", 2, 0, 2)
             };
-            var results = new ParserResults(root, errors);
+            var results = new ParserResults(root, Enumerable.Empty<TagHelperDescriptor>(), errors);
 
             // Act
             targetMock.Object.Visit(results);
