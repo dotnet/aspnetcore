@@ -12,13 +12,17 @@ namespace MvcSample.Web.ApiExplorerSamples
     public class ProductsAdminController : Controller
     {
         [HttpPut]
-        public void AddProduct([FromBody] Product product)
+        [Produces("application/json", Type = typeof(Product))]
+        public IActionResult AddProduct([FromBody] Product product)
         {
+            return null;
         }
 
-        [HttpPost("{id}")]
-        public void UpdateProduct([FromBody] Product product)
+        [HttpPost("{id?}")]
+        [Produces("application/json", Type = typeof(Product))]
+        public IActionResult UpdateProduct(UpdateProductDTO dto)
         {
+            return null;
         }
 
         [HttpPost("{id}/Stock")]

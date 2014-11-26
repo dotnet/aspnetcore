@@ -290,6 +290,13 @@ namespace Microsoft.AspNet.Mvc
             var apiExplorerIsVisible = action.ApiExplorer?.IsVisible ?? controller.ApiExplorer?.IsVisible ?? false;
             if (apiExplorerIsVisible)
             {
+                if (!IsAttributeRoutedAction(actionDescriptor))
+                {
+                    // ApiExplorer is only supported on attribute routed actions.
+                    throw new InvalidOperationException(Resources.FormatApiExplorer_UnsupportedAction(
+                        actionDescriptor.DisplayName));
+                }
+
                 var apiExplorerActionData = new ApiDescriptionActionData()
                 {
                     GroupName = action.ApiExplorer?.GroupName ?? controller.ApiExplorer?.GroupName,

@@ -1,16 +1,20 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Mvc;
+
 namespace MvcSample.Web.ApiExplorerSamples
 {
-    public class Product
+    public class UpdateProductDTO
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        [FromBody]
+        public Product Product { get; set; }
 
-        public string Description { get; set; }
+        [FromHeader(Name = "Admin-User")]
+        public string AdminId { get; set; }
 
-        public decimal Price { get; set; }
+        public string Comments { get; set; }
     }
 }
