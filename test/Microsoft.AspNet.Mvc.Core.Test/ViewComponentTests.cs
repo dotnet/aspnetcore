@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.IsType<JsonViewComponentResult>(actualResult);
-            Assert.Same(testData, actualResult.Data);
+            Assert.Same(testData, actualResult.Value);
         }
 
         [Fact]

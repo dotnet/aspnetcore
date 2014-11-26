@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -15,22 +16,25 @@ namespace Microsoft.AspNet.Mvc
     {
         // {0} is the component name, {1} is the view name.
         private const string ViewPathFormat = "Components/{0}/{1}";
-        private readonly IViewEngine _viewEngine;
-
-        public ViewViewComponentResult([NotNull] IViewEngine viewEngine, string viewName,
-            ViewDataDictionary viewData)
-        {
-            _viewEngine = viewEngine;
-            ViewName = viewName;
-            ViewData = viewData;
-        }
-
-        public string ViewName { get; private set; }
-
-        public ViewDataDictionary ViewData { get; private set; }
 
         /// <summary>
-        /// Locates and renders a view specified by <paramref name="context"/>.
+        /// Gets or sets the view name.
+        /// </summary>
+        public string ViewName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ViewDataDictionary"/>.
+        /// </summary>
+        public ViewDataDictionary ViewData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ViewEngine"/>.
+        /// </summary>
+        public IViewEngine ViewEngine { get; set; }
+
+        /// <summary>
+        /// Locates and renders a view specified by <see cref="ViewName"/>. If <see cref="ViewName"/> is <c>null</c>,
+        /// then the view name searched for is<c>&quot;Default&quot;</c>.
         /// </summary>
         /// <param name="context">The <see cref="ViewComponentContext"/> for the current component execution.</param>
         /// <remarks>
@@ -42,9 +46,17 @@ namespace Microsoft.AspNet.Mvc
             TaskHelper.WaitAndThrowIfFaulted(task);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Locates and renders a view specified by <see cref="ViewName"/>. If <see cref="ViewName"/> is <c>null</c>,
+        /// then the view name searched for is<c>&quot;Default&quot;</c>.
+        /// </summary>
+        /// <param name="context">The <see cref="ViewComponentContext"/> for the current component execution.</param>
+        /// <returns>A <see cref="Task"/> which will complete when view rendering is completed.</returns>
         public async Task ExecuteAsync([NotNull] ViewComponentContext context)
         {
+            var viewEngine = ViewEngine ?? ResolveViewEngine(context);
+            var viewData = ViewData ?? context.ViewContext.ViewData;
+
             string qualifiedViewName;
             if (ViewName != null && ViewName.Length > 0 && ViewName[0] == '/')
             {
@@ -71,7 +83,7 @@ namespace Microsoft.AspNet.Mvc
                     ViewName ?? "Default");
             }
 
-            var view = FindView(context.ViewContext, qualifiedViewName);
+            var view = FindView(context.ViewContext, viewEngine, qualifiedViewName);
 
             var childViewContext = new ViewContext(
                 context.ViewContext,
@@ -85,11 +97,14 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private IView FindView(ActionContext context, string viewName)
+        private static IView FindView(ActionContext context, IViewEngine viewEngine, string viewName)
         {
-            return _viewEngine.FindPartialView(context, viewName)
-                              .EnsureSuccessful()
-                              .View;
+            return viewEngine.FindPartialView(context, viewName).EnsureSuccessful().View;
+        }
+
+        private static IViewEngine ResolveViewEngine(ViewComponentContext context)
+        {
+            return context.ViewContext.HttpContext.RequestServices.GetRequiredService<ICompositeViewEngine>();
         }
     }
 }
