@@ -3,7 +3,6 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "Microsoft.AspNet.Diagnostics": "1.0.0-*",
         "Microsoft.AspNet.Diagnostics.Elm": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*"
     },
@@ -15,9 +14,6 @@
             }
         },
         "aspnetcore50": {
-            "dependencies": {
-                "System.Runtime": "4.0.20-beta-*"
-            }
         }
     },
     "commands": {
