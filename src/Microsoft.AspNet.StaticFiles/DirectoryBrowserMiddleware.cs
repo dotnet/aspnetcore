@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.StaticFiles
         {
             // Check if the URL matches any expected paths
             PathString subpath;
-            IEnumerable<IFileInfo> contents;
+            IDirectoryContents contents;
             if (Helpers.IsGetOrHeadMethod(context.Request.Method)
                 && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out subpath)
                 && TryGetDirectoryInfo(subpath, out contents))
@@ -70,9 +70,10 @@ namespace Microsoft.AspNet.StaticFiles
             return _next(context);
         }
 
-        private bool TryGetDirectoryInfo(PathString subpath, out IEnumerable<IFileInfo> contents)
+        private bool TryGetDirectoryInfo(PathString subpath, out IDirectoryContents contents)
         {
-            return _options.FileSystem.TryGetDirectoryContents(subpath.Value, out contents);
+            contents = _options.FileSystem.GetDirectoryContents(subpath.Value);
+            return contents.Exists;
         }
     }
 }

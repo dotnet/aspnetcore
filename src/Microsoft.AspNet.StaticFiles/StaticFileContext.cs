@@ -116,8 +116,8 @@ namespace Microsoft.AspNet.StaticFiles
 
         public bool LookupFileInfo()
         {
-            bool found = _options.FileSystem.TryGetFileInfo(_subPath.Value, out _fileInfo);
-            if (found)
+            _fileInfo = _options.FileSystem.GetFileInfo(_subPath.Value);
+            if (_fileInfo.Exists)
             {
                 _length = _fileInfo.Length;
 
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.StaticFiles
                 _etag = Convert.ToString(etagHash, 16);
                 _etagQuoted = '\"' + _etag + '\"';
             }
-            return found;
+            return _fileInfo.Exists;
         }
 
         public void ComprehendRequestHeaders()

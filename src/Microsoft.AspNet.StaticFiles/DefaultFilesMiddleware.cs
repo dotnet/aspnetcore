@@ -48,32 +48,34 @@ namespace Microsoft.AspNet.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            IEnumerable<IFileInfo> dirContents;
             PathString subpath;
             if (Helpers.IsGetOrHeadMethod(context.Request.Method)
-                && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out subpath)
-                && _options.FileSystem.TryGetDirectoryContents(subpath.Value, out dirContents))
+                && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out subpath))
             {
-                // Check if any of our default files exist.
-                for (int matchIndex = 0; matchIndex < _options.DefaultFileNames.Count; matchIndex++)
+                var dirContents = _options.FileSystem.GetDirectoryContents(subpath.Value);
+                if (dirContents.Exists)
                 {
-                    string defaultFile = _options.DefaultFileNames[matchIndex];
-                    IFileInfo file;
-                    // TryMatchPath will make sure subpath always ends with a "/" by adding it if needed.
-                    if (_options.FileSystem.TryGetFileInfo(subpath + defaultFile, out file))
+                    // Check if any of our default files exist.
+                    for (int matchIndex = 0; matchIndex < _options.DefaultFileNames.Count; matchIndex++)
                     {
-                        // If the path matches a directory but does not end in a slash, redirect to add the slash.
-                        // This prevents relative links from breaking.
-                        if (!Helpers.PathEndsInSlash(context.Request.Path))
+                        string defaultFile = _options.DefaultFileNames[matchIndex];
+                        var file = _options.FileSystem.GetFileInfo(subpath + defaultFile);
+                        // TryMatchPath will make sure subpath always ends with a "/" by adding it if needed.
+                        if (file.Exists)
                         {
-                            context.Response.StatusCode = 301;
-                            context.Response.Headers[Constants.Location] = context.Request.PathBase + context.Request.Path + "/" + context.Request.QueryString;
-                            return Constants.CompletedTask;
-                        }
+                            // If the path matches a directory but does not end in a slash, redirect to add the slash.
+                            // This prevents relative links from breaking.
+                            if (!Helpers.PathEndsInSlash(context.Request.Path))
+                            {
+                                context.Response.StatusCode = 301;
+                                context.Response.Headers[Constants.Location] = context.Request.PathBase + context.Request.Path + "/" + context.Request.QueryString;
+                                return Constants.CompletedTask;
+                            }
 
-                        // Match found, re-write the url. A later middleware will actually serve the file.
-                        context.Request.Path = new PathString(context.Request.Path.Value + defaultFile);
-                        break;
+                            // Match found, re-write the url. A later middleware will actually serve the file.
+                            context.Request.Path = new PathString(context.Request.Path.Value + defaultFile);
+                            break;
+                        }
                     }
                 }
             }
