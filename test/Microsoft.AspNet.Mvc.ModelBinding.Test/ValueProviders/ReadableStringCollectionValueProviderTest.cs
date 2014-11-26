@@ -156,32 +156,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(culture, vpResult.Culture);
         }
 
-        // TODO: https://github.com/aspnet/Mvc/issues/1609
-        //
-        // This test was present in MVC5 and WebAPI2, but our VP implementation doesn't behave this
-        // way currently.
-        //
-        //[Theory]
-        //[InlineData("null_value")]
-        //[InlineData("prefix.null_value")]
-        //public async Task GetValue_NullValue(string key)
-        //{
-        //    // Arrange
-        //    var culture = new CultureInfo("fr-FR");
-        //    var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, culture);
+        [Theory]
+        [InlineData("null_value")]
+        [InlineData("prefix.null_value")]
+        public async Task GetValue_NullValue(string key)
+        {
+            // Arrange
+            var culture = new CultureInfo("fr-FR");
+            var valueProvider = new ReadableStringCollectionValueProvider<TestValueProviderMetadata>(_backingStore, culture);
 
-        //    System.Diagnostics.Debugger.Launch();
-        //    System.Diagnostics.Debugger.Break();
+            // Act
+            var result = await valueProvider.GetValueAsync(key);
 
-        //    // Act
-        //    var result = await valueProvider.GetValueAsync(key);
-
-        //    // Assert
-        //    Assert.NotNull(result);
-        //    Assert.Null(result.RawValue);
-        //    Assert.Null(result.AttemptedValue);
-        //    Assert.Equal(culture, result.Culture);
-        //}
+            // Assert
+            Assert.Null(result);
+        }
 
         [Fact]
         public async Task GetValueAsync_NullMultipleValue()
