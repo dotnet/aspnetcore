@@ -9,7 +9,7 @@ namespace MusicStore.Spa.Infrastructure
 {
     public class BuddyModelMetadataProvider : DataAnnotationsModelMetadataProvider
     {
-        protected override CachedDataAnnotationsModelMetadata CreateMetadataPrototype(IEnumerable<Attribute> attributes, Type containerType, Type modelType, string propertyName)
+        protected override CachedDataAnnotationsModelMetadata CreateMetadataPrototype(IEnumerable<object> attributes, Type containerType, Type modelType, string propertyName)
         {
             var realTypeMetadata = base.CreateMetadataPrototype(attributes, containerType, modelType, propertyName);
             var buddyType = BuddyTypeAttribute.GetBuddyType(modelType);
