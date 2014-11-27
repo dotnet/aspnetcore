@@ -518,7 +518,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                new TagHelperDescriptor("person", "PersonTagHelper", "personAssembly", ContentBehavior.None,
+                new TagHelperDescriptor("person", "PersonTagHelper", "personAssembly",
                     attributes: new[]
                     {
                         new TagHelperAttributeDescriptor("age", "Age", typeof(int).FullName),
@@ -1714,7 +1714,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             foreach (var tagName in tagNames)
             {
                 descriptors.Add(
-                    new TagHelperDescriptor(tagName, tagName + "taghelper", "SomeAssembly", ContentBehavior.None));
+                    new TagHelperDescriptor(tagName, tagName + "taghelper", "SomeAssembly"));
             }
 
             return new TagHelperDescriptorProvider(descriptors);

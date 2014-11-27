@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         public void TagHelperDescriptorProvider_GetTagHelpersReturnsNothingForUnregisteredTags()
         {
             // Arrange
-            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly", ContentBehavior.None);
-            var spanDescriptor = new TagHelperDescriptor("span", "foo2", "SomeAssembly", ContentBehavior.None);
+            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly");
+            var spanDescriptor = new TagHelperDescriptor("span", "foo2", "SomeAssembly");
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor };
             var provider = new TagHelperDescriptorProvider(descriptors);
 
@@ -29,9 +29,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         public void TagHelperDescriptorProvider_GetTagHelpersDoesNotReturnNonCatchAllTagsForCatchAll()
         {
             // Arrange
-            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly", ContentBehavior.None);
-            var spanDescriptor = new TagHelperDescriptor("span", "foo2", "SomeAssembly", ContentBehavior.None);
-            var catchAllDescriptor = new TagHelperDescriptor("*", "foo3", "SomeAssembly", ContentBehavior.None);
+            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly");
+            var spanDescriptor = new TagHelperDescriptor("span", "foo2", "SomeAssembly");
+            var catchAllDescriptor = new TagHelperDescriptor("*", "foo3", "SomeAssembly");
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor, catchAllDescriptor };
             var provider = new TagHelperDescriptorProvider(descriptors);
 
@@ -47,9 +47,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         public void TagHelperDescriptorProvider_GetTagHelpersReturnsCatchAllsWithEveryTagName()
         {
             // Arrange
-            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly", ContentBehavior.None);
-            var spanDescriptor = new TagHelperDescriptor("span", "foo2", "SomeAssembly", ContentBehavior.None);
-            var catchAllDescriptor = new TagHelperDescriptor("*", "foo3", "SomeAssembly", ContentBehavior.None);
+            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly");
+            var spanDescriptor = new TagHelperDescriptor("span", "foo2", "SomeAssembly");
+            var catchAllDescriptor = new TagHelperDescriptor("*", "foo3", "SomeAssembly");
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor, catchAllDescriptor };
             var provider = new TagHelperDescriptorProvider(descriptors);
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         public void TagHelperDescriptorProvider_DuplicateDescriptorsAreNotPartOfTagHelperDescriptorPool()
         {
             // Arrange
-            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly", ContentBehavior.None);
+            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly");
             var descriptors = new TagHelperDescriptor[] { divDescriptor, divDescriptor };
             var provider = new TagHelperDescriptorProvider(descriptors);
 

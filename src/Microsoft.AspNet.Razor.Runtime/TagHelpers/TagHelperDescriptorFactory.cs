@@ -38,14 +38,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagNames = GetTagNames(type);
             var typeName = type.FullName;
             var attributeDescriptors = GetAttributeDescriptors(type);
-            var contentBehavior = GetContentBehavior(type);
             var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
 
             return tagNames.Select(tagName =>
                 new TagHelperDescriptor(tagName,
                                         typeName,
                                         assemblyName,
-                                        contentBehavior,
                                         attributeDescriptors));
         }
 
@@ -87,16 +85,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 ToHtmlCase(property.Name);
 
             return new TagHelperAttributeDescriptor(attributeName, property.Name, property.PropertyType.FullName);
-        }
-
-        private static ContentBehavior GetContentBehavior(Type type)
-        {
-            var typeInfo = type.GetTypeInfo();
-            var contentBehaviorAttribute = typeInfo.GetCustomAttribute<ContentBehaviorAttribute>(inherit: false);
-
-            return contentBehaviorAttribute != null ?
-                contentBehaviorAttribute.ContentBehavior :
-                ContentBehavior.None;
         }
 
         private static bool IsValidProperty(PropertyInfo property)

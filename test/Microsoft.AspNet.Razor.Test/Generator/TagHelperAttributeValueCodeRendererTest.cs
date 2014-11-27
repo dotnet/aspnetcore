@@ -23,18 +23,16 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             var checkedPropertyInfo = typeof(TestType).GetProperty("Checked");
             var tagHelperDescriptors = new TagHelperDescriptor[]
             {
-                new TagHelperDescriptor("p", "PTagHelper", "SomeAssembly", ContentBehavior.None),
+                new TagHelperDescriptor("p", "PTagHelper", "SomeAssembly"),
                 new TagHelperDescriptor("input",
                                         "InputTagHelper",
                                         "SomeAssembly",
-                                        ContentBehavior.None,
                                         new TagHelperAttributeDescriptor[] {
                                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                                         }),
                 new TagHelperDescriptor("input",
                                         "InputTagHelper2",
                                         "SomeAssembly",
-                                        ContentBehavior.None,
                                         new TagHelperAttributeDescriptor[] {
                                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                                             new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)

@@ -26,40 +26,22 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     new TagHelperDescriptor("p",
                                             "PTagHelper",
                                             "SomeAssembly",
-                                            ContentBehavior.None,
                                             new [] {
                                                 new TagHelperAttributeDescriptor("age", pAgePropertyInfo)
                                             }),
                     new TagHelperDescriptor("input",
                                             "InputTagHelper",
                                             "SomeAssembly",
-                                            ContentBehavior.None,
                                             new TagHelperAttributeDescriptor[] {
                                                 new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                                             }),
                     new TagHelperDescriptor("input",
                                             "InputTagHelper2",
                                             "SomeAssembly",
-                                            ContentBehavior.None,
                                             new TagHelperAttributeDescriptor[] {
                                                 new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                                                 new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
                                             })
-                };
-            }
-        }
-
-        private static IEnumerable<TagHelperDescriptor> ContentBehaviorTagHelperDescriptors
-        {
-            get
-            {
-                return new[]
-                {
-                    new TagHelperDescriptor("modify", "ModifyTagHelper", "SomeAssembly", ContentBehavior.Modify),
-                    new TagHelperDescriptor("none", "NoneTagHelper", "SomeAssembly", ContentBehavior.None),
-                    new TagHelperDescriptor("append", "AppendTagHelper", "SomeAssembly", ContentBehavior.Append),
-                    new TagHelperDescriptor("prepend", "PrependTagHelper", "SomeAssembly", ContentBehavior.Prepend),
-                    new TagHelperDescriptor("replace", "ReplaceTagHelper", "SomeAssembly", ContentBehavior.Replace)
                 };
             }
         }
@@ -110,13 +92,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         false
                     },
                     {
-                        "ContentBehaviorTagHelpers",
-                        "ContentBehaviorTagHelpers",
-                        ContentBehaviorTagHelperDescriptors,
-                        ContentBehaviorTagHelperDescriptors,
-                        false
-                    },
-                    {
                         "ComplexTagHelpers",
                         "ComplexTagHelpers",
                         PAndInputTagHelperDescriptors,
@@ -144,7 +119,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             bool designTimeMode)
         {
             RunTagHelperTest(
-                testName, 
+                testName,
                 baseLineName: baselineName,
                 tagHelperDescriptors: tagHelperDescriptors,
                 onResults: (results) =>
@@ -201,20 +176,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                              generatedLineIndex: 45,
                                              characterOffsetIndex: 40,
                                              contentLength: 4)
-                        }
-                    },
-                    {
-                        "ContentBehaviorTagHelpers",
-                        "ContentBehaviorTagHelpers.DesignTime",
-                        ContentBehaviorTagHelperDescriptors,
-                        new List<LineMapping>
-                        {
-                            BuildLineMapping(documentAbsoluteIndex: 14,
-                                             documentLineIndex: 0,
-                                             generatedAbsoluteIndex: 495,
-                                             generatedLineIndex: 15,
-                                             characterOffsetIndex: 14,
-                                             contentLength: 11)
                         }
                     },
                     {
@@ -283,7 +244,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     { "SingleTagHelper", PAndInputTagHelperDescriptors },
                     { "BasicTagHelpers", PAndInputTagHelperDescriptors },
                     { "BasicTagHelpers.RemoveTagHelper", PAndInputTagHelperDescriptors },
-                    { "ContentBehaviorTagHelpers", ContentBehaviorTagHelperDescriptors },
                     { "ComplexTagHelpers", PAndInputTagHelperDescriptors },
                 };
             }
@@ -339,7 +299,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             RunTagHelperTest("AddTagHelperDirective",
                              designTimeMode: true,
                              tagHelperDescriptors: new[] {
-                                new TagHelperDescriptor("p", "pTagHelper", "SomeAssembly", ContentBehavior.None)
+                                new TagHelperDescriptor("p", "pTagHelper", "SomeAssembly")
                              });
         }
 
@@ -355,12 +315,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 new TagHelperDescriptor("MyTagHelper",
                                         "MyTagHelper",
                                         "SomeAssembly",
-                                        ContentBehavior.None,
                                         new [] {
                                             new TagHelperAttributeDescriptor("BoundProperty",
                                                                              propertyInfo)
                                         }),
-                new TagHelperDescriptor("NestedTagHelper", "NestedTagHelper", "SomeAssembly", ContentBehavior.Modify)
+                new TagHelperDescriptor("NestedTagHelper", "NestedTagHelper", "SomeAssembly")
             };
 
             // Act & Assert

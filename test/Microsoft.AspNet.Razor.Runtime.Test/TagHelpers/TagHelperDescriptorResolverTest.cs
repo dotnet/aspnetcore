@@ -27,8 +27,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 return new TagHelperDescriptor("valid_plain",
                                                Valid_PlainTagHelperType.FullName,
-                                               AssemblyName,
-                                               ContentBehavior.None);
+                                               AssemblyName);
             }
         }
 
@@ -38,8 +37,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 return new TagHelperDescriptor("valid_inherited",
                                                Valid_InheritedTagHelperType.FullName,
-                                               AssemblyName,
-                                               ContentBehavior.None);
+                                               AssemblyName);
             }
         }
 
@@ -75,8 +73,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 var stringTagHelperDescriptor =
                     new TagHelperDescriptor("string",
                                             "System.String",
-                                            assemblyB,
-                                            ContentBehavior.None);
+                                            assemblyB);
 
                 return new TheoryData<Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
                                       IEnumerable<TagHelperDirectiveDescriptor>, // directiveDescriptors
@@ -230,8 +227,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 var stringTagHelperDescriptor =
                     new TagHelperDescriptor("string",
                                             "System.String",
-                                            assemblyB,
-                                            ContentBehavior.None);
+                                            assemblyB);
 
                 return new TheoryData<Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
                                       IEnumerable<TagHelperDirectiveDescriptor>> // directiveDescriptors

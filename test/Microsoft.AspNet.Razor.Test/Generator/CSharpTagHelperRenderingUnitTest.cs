@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
@@ -16,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             // Arrange
             var chunk = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName", ContentBehavior.None)
+                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
             });
             var codeRenderer = CreateCodeRenderer();
 
@@ -32,8 +31,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             // Arrange
             var chunk = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName", ContentBehavior.None),
-                new TagHelperDescriptor("div", "Div2TagHelper", "FakeAssemblyName", ContentBehavior.None)
+                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName"),
+                new TagHelperDescriptor("div", "Div2TagHelper", "FakeAssemblyName")
             });
             var codeRenderer = CreateCodeRenderer();
 
@@ -49,10 +48,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             // Arrange
             var chunk1 = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName", ContentBehavior.None)
+                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
             });
             var chunk2 = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName", ContentBehavior.None)
+                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
             });
             var codeRenderer = CreateCodeRenderer();
 
@@ -69,10 +68,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             // Arrange
             var parentChunk = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName", ContentBehavior.None)
+                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
             });
             var childChunk = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName", ContentBehavior.None)
+                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
             });
             parentChunk.Children.Add(childChunk);
             var codeRenderer = CreateCodeRenderer();
@@ -89,10 +88,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             // Arrange
             var divChunk = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName", ContentBehavior.None)
+                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
             });
             var spanChunk = CreateTagHelperChunk("span", new[] {
-                new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName", ContentBehavior.None)
+                new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName")
             });
             var codeRenderer = CreateCodeRenderer();
 
@@ -109,15 +108,15 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             // Arrange
             var chunk1 = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName", ContentBehavior.None),
-                new TagHelperDescriptor("div", "Div2TagHelper", "FakeAssemblyName", ContentBehavior.None)
+                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName"),
+                new TagHelperDescriptor("div", "Div2TagHelper", "FakeAssemblyName")
             });
             var chunk2 = CreateTagHelperChunk("span", new[] {
-                new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName", ContentBehavior.None)
+                new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName")
             });
             var chunk3 = CreateTagHelperChunk("span", new[] {
-                new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName", ContentBehavior.None),
-                new TagHelperDescriptor("span", "Span2TagHelper", "FakeAssemblyName", ContentBehavior.None)
+                new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName"),
+                new TagHelperDescriptor("span", "Span2TagHelper", "FakeAssemblyName")
             });
             var codeRenderer = CreateCodeRenderer();
 

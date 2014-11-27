@@ -58,13 +58,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             var tagHelperDescriptors = chunk.Descriptors;
 
-            // Find the first content behavior that doesn't have a content behavior of None.
-            // The resolver restricts content behavior collisions so the first one that's not None will be
-            // the content behavior we need to abide by. None can work in unison with other ContentBehaviors.
-            var contentBehavior = tagHelperDescriptors.Select(descriptor => descriptor.ContentBehavior)
-                                                      .FirstOrDefault(
-                                                            behavior => behavior != ContentBehavior.None);
-
             RenderBeginTagHelperScope(chunk.TagName);
 
             RenderTagHelpersCreation(chunk);
@@ -78,42 +71,11 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             RenderUnboundHTMLAttributes(unboundHTMLAttributes);
 
-            switch (contentBehavior)
-            {
-                case ContentBehavior.None:
-                    RenderRunTagHelpers(bufferedBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-                    RenderTagHelperBody(chunk.Children, bufferBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
-                    break;
-                case ContentBehavior.Append:
-                    RenderRunTagHelpers(bufferedBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-                    RenderTagHelperBody(chunk.Children, bufferBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
-                    break;
-                case ContentBehavior.Prepend:
-                    RenderRunTagHelpers(bufferedBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName);
-                    RenderTagHelperBody(chunk.Children, bufferBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
-                    break;
-                case ContentBehavior.Replace:
-                    RenderRunTagHelpers(bufferedBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
-                    break;
-                case ContentBehavior.Modify:
-                    RenderTagHelperBody(chunk.Children, bufferBody: true);
-                    RenderRunTagHelpers(bufferedBody: true);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
-                    break;
-            }
+            // TODO: Modify code generation to handle all content modes
+            //RenderRunTagHelpers(bufferedBody: false);
+            //RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
+            //RenderTagHelperBody(chunk.Children, bufferBody: false);
+            //RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
 
             RenderEndTagHelpersScope();
         }
