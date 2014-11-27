@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var fileInfo = _fileInfoCache.GetFileInfo(relativePath);
 
-            if (fileInfo != null)
+            if (fileInfo.Exists)
             {
                 var relativeFileInfo = new RelativeFileInfo()
                 {

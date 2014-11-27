@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                _fileSystem.TryGetFileInfo(virtualPath, out fileInfo);
+                fileInfo = _fileSystem.GetFileInfo(virtualPath);
 
                 expiringFileInfo = new ExpiringFileInfo()
                 {

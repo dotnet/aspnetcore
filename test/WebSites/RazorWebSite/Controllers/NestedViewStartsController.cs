@@ -11,5 +11,15 @@ namespace RazorWebSite.Controllers
         {
             return View("NestedViewStarts/Index");
         }
+
+        public ViewResult NestedViewStartUsingParentDirectives()
+        {
+            var model = new Person
+            {
+                Name = "Controller-Person"
+            };
+
+            return View("~/Views/NestedViewStartUsingParentDirectives/Nested/Index.cshtml", model);
+        }
     }
 }

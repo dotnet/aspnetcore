@@ -105,8 +105,8 @@ namespace Microsoft.AspNet.Mvc
                 return path;
             }
 
-            IFileInfo fileInfo = null;
-            if (fileSystem.TryGetFileInfo(path, out fileInfo))
+            var fileInfo = fileSystem.GetFileInfo(path);
+            if (fileInfo.Exists)
             {
                 // The path is relative and IFileSystem found the file, so return the full
                 // path.

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNet.FileSystems;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -27,41 +26,54 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets the view start locations that are applicable to the specified path.
         /// </summary>
-        /// <param name="applicationBase">The base of the application.</param>
-        /// <param name="path">The path to locate view starts for.</param>
+        /// <param name="applicationRelativePath">The application relative path of the file to locate
+        /// <c>_ViewStart</c>s for.</param>
         /// <returns>A sequence of paths that represent potential view start locations.</returns>
         /// <remarks>
-        /// This method returns paths starting from the directory of <paramref name="path"/> and moves
-        /// upwards until it hits the application root.
+        /// This method returns paths starting from the directory of <paramref name="applicationRelativePath"/> and
+        /// moves upwards until it hits the application root.
         /// e.g.
         /// /Views/Home/View.cshtml -> [ /Views/Home/_ViewStart.cshtml, /Views/_ViewStart.cshtml, /_ViewStart.cshtml ]
         /// </remarks>
-        public static IEnumerable<string> GetViewStartLocations(IFileSystem fileSystem, string path)
+        public static IEnumerable<string> GetViewStartLocations(string applicationRelativePath)
         {
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(applicationRelativePath))
             {
                 return Enumerable.Empty<string>();
             }
-            if (path.StartsWith("~/", StringComparison.Ordinal))
+
+            if (applicationRelativePath.StartsWith("~/", StringComparison.Ordinal))
             {
-                path = path.Substring(1);
+                applicationRelativePath = applicationRelativePath.Substring(2);
             }
 
-            if (string.Equals(ViewStartFileName, Path.GetFileName(path), StringComparison.OrdinalIgnoreCase))
+            if (applicationRelativePath.StartsWith("/", StringComparison.Ordinal))
+            {
+                applicationRelativePath = applicationRelativePath.Substring(1);
+            }
+
+            if (Path.IsPathRooted(applicationRelativePath))
+            {
+                // If the path looks like it's app relative, don't attempt to construct _ViewStart paths.
+                return Enumerable.Empty<string>();
+            }
+
+            if (IsViewStart(applicationRelativePath))
             {
                 // If the specified path is a ViewStart file, then the first view start that applies to it is the
                 // parent view start.
-                if (!fileSystem.TryGetParentPath(path, out path))
+                applicationRelativePath = Path.GetDirectoryName(applicationRelativePath);
+                if (string.IsNullOrEmpty(applicationRelativePath))
                 {
                     return Enumerable.Empty<string>();
                 }
             }
 
             var viewStartLocations = new List<string>();
-
-            while (fileSystem.TryGetParentPath(path, out path))
+            while (!string.IsNullOrEmpty(applicationRelativePath))
             {
-                var viewStartPath = Path.Combine(path, ViewStartFileName);
+                applicationRelativePath = Path.GetDirectoryName(applicationRelativePath);
+                var viewStartPath = Path.Combine(applicationRelativePath, ViewStartFileName);
                 viewStartLocations.Add(viewStartPath);
             }
 

@@ -215,5 +215,26 @@ component-content";
             // Assert
             Assert.Equal(expected, body.Trim());
         }
+
+        // Inheritance of chunks in _ViewStart is affected by paths being app-relative and not absolute.
+        // This change ensures that _ViewStart files correctly inherits directives from parent _ViewStarts
+        // which guarantees that paths flow correctly through MvcRazorHost.
+        [Fact]
+        public async Task ViewStartsCanUseDirectivesInjectedFromParentViewStarts()
+        {
+            // Arrange
+            var expected = 
+@"<view-start>Hello Controller-Person</view-start>
+<page>Hello Controller-Person</page>";
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var target = "http://localhost/NestedViewStarts/NestedViewStartUsingParentDirectives";
+
+            // Act
+            var body = await client.GetStringAsync(target);
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
     }
 }

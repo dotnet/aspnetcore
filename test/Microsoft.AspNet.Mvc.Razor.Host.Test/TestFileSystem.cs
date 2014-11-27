@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly Dictionary<string, IFileInfo> _lookup =
             new Dictionary<string, IFileInfo>(StringComparer.Ordinal);
 
-        public bool TryGetDirectoryContents(string subpath, out IEnumerable<IFileInfo> contents)
+        public IDirectoryContents GetDirectoryContents(string subpath)
         {
             throw new NotImplementedException();
         }
@@ -29,6 +29,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                     .Returns(path);
             fileInfo.SetupGet(f => f.Name)
                     .Returns(Path.GetFileName(path));
+            fileInfo.SetupGet(f => f.Exists)
+                    .Returns(true);
             AddFile(path, fileInfo.Object);
         }
 
@@ -37,15 +39,16 @@ namespace Microsoft.AspNet.Mvc.Razor
             _lookup.Add(path, contents);
         }
 
-        public bool TryGetFileInfo(string subpath, out IFileInfo fileInfo)
+        public IFileInfo GetFileInfo(string subpath)
         {
-            return _lookup.TryGetValue(subpath, out fileInfo);
-        }
-
-        public bool TryGetParentPath(string subpath, out string parentPath)
-        {
-            parentPath = Path.GetDirectoryName(subpath);
-            return !string.IsNullOrEmpty(parentPath);
+            if (_lookup.ContainsKey(subpath))
+            {
+                return _lookup[subpath];
+            }
+            else
+            {
+                return new NotFoundFileInfo(subpath);
+            }
         }
     }
 }
