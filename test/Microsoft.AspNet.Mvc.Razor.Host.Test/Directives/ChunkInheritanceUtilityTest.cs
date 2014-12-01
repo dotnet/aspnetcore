@@ -25,31 +25,41 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
 }
 
 ");
+            var defaultChunks = new Chunk[]
+            {
+                new InjectChunk("MyTestHtmlHelper", "Html"),
+                new UsingChunk { Namespace = "AppNamespace.Model" },
+            };
             var host = new MvcRazorHost(fileSystem);
-            var utility = new ChunkInheritanceUtility(host, fileSystem, new Chunk[0]);
+            var utility = new ChunkInheritanceUtility(host, fileSystem, defaultChunks);
 
             // Act
-            var chunks = utility.GetInheritedChunks(@"Views\home\Index.cshtml");
+            var codeTrees = utility.GetInheritedCodeTrees(@"Views\home\Index.cshtml");
 
             // Assert
-            Assert.Equal(8, chunks.Count);
-            Assert.IsType<LiteralChunk>(chunks[0]);
+            Assert.Equal(2, codeTrees.Count);
+            var viewStartChunks = codeTrees[0].Chunks;
+            Assert.Equal(3, viewStartChunks.Count);
 
-            var usingChunk = Assert.IsType<UsingChunk>(chunks[1]);
+            Assert.IsType<LiteralChunk>(viewStartChunks[0]);
+            var usingChunk = Assert.IsType<UsingChunk>(viewStartChunks[1]);
             Assert.Equal("MyNamespace", usingChunk.Namespace);
+            Assert.IsType<LiteralChunk>(viewStartChunks[2]);
 
-            Assert.IsType<LiteralChunk>(chunks[2]);
-            Assert.IsType<LiteralChunk>(chunks[3]);
+            viewStartChunks = codeTrees[1].Chunks;
+            Assert.Equal(5, viewStartChunks.Count);
 
-            var injectChunk = Assert.IsType<InjectChunk>(chunks[4]);
+            Assert.IsType<LiteralChunk>(viewStartChunks[0]);
+
+            var injectChunk = Assert.IsType<InjectChunk>(viewStartChunks[1]);
             Assert.Equal("MyHelper<TModel>", injectChunk.TypeName);
             Assert.Equal("Helper", injectChunk.MemberName);
 
-            var setBaseTypeChunk = Assert.IsType<SetBaseTypeChunk>(chunks[5]);
+            var setBaseTypeChunk = Assert.IsType<SetBaseTypeChunk>(viewStartChunks[2]);
             Assert.Equal("MyBaseType", setBaseTypeChunk.TypeName);
 
-            Assert.IsType<StatementChunk>(chunks[6]);
-            Assert.IsType<LiteralChunk>(chunks[7]);
+            Assert.IsType<StatementChunk>(viewStartChunks[3]);
+            Assert.IsType<LiteralChunk>(viewStartChunks[4]);
         }
 
         [Fact]
@@ -61,17 +71,22 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             fileSystem.AddFile(@"Views\_Layout.cshtml", string.Empty);
             fileSystem.AddFile(@"Views\home\_not-viewstart.cshtml", string.Empty);
             var host = new MvcRazorHost(fileSystem);
-            var utility = new ChunkInheritanceUtility(host, fileSystem, new Chunk[0]);
+            var defaultChunks = new Chunk[]
+            {
+                new InjectChunk("MyTestHtmlHelper", "Html"),
+                new UsingChunk { Namespace = "AppNamespace.Model" },
+            };
+            var utility = new ChunkInheritanceUtility(host, fileSystem, defaultChunks);
 
             // Act
-            var chunks = utility.GetInheritedChunks(@"Views\home\Index.cshtml");
+            var codeTrees = utility.GetInheritedCodeTrees(@"Views\home\Index.cshtml");
 
             // Assert
-            Assert.Empty(chunks);
+            Assert.Empty(codeTrees);
         }
 
         [Fact]
-        public void GetInheritedChunks_ReturnsDefaultInheritedChunks()
+        public void MergeInheritedChunks_MergesDefaultInheritedChunks()
         {
             // Arrange
             var fileSystem = new TestFileSystem();
@@ -83,19 +98,38 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 new InjectChunk("MyTestHtmlHelper", "Html"),
                 new UsingChunk { Namespace = "AppNamespace.Model" },
             };
+            var inheritedCodeTrees = new CodeTree[]
+            {
+                new CodeTree
+                {
+                    Chunks = new Chunk[]
+                    {
+                        new UsingChunk { Namespace = "InheritedNamespace" },
+                        new LiteralChunk { Text = "some text" }
+                    }
+                },
+                new CodeTree
+                {
+                    Chunks = new Chunk[]
+                    {
+                        new UsingChunk { Namespace = "AppNamespace.Model" },
+                    }
+                }
+            };
+
             var utility = new ChunkInheritanceUtility(host, fileSystem, defaultChunks);
+            var codeTree = new CodeTree();
 
             // Act
-            var chunks = utility.GetInheritedChunks(@"Views\Home\Index.cshtml");
+            utility.MergeInheritedCodeTrees(codeTree,
+                                            inheritedCodeTrees,
+                                            "dynamic");
 
             // Assert
-            Assert.Equal(4, chunks.Count);
-            var injectChunk = Assert.IsType<InjectChunk>(chunks[1]);
-            Assert.Equal("DifferentHelper<TModel>", injectChunk.TypeName);
-            Assert.Equal("Html", injectChunk.MemberName);
-
-            Assert.Same(defaultChunks[0], chunks[2]);
-            Assert.Same(defaultChunks[1], chunks[3]);
+            Assert.Equal(3, codeTree.Chunks.Count);
+            Assert.Same(inheritedCodeTrees[0].Chunks[0], codeTree.Chunks[0]);
+            Assert.Same(inheritedCodeTrees[1].Chunks[0], codeTree.Chunks[1]);
+            Assert.Same(defaultChunks[0], codeTree.Chunks[2]);
         }
     }
 }
