@@ -1962,6 +1962,37 @@ namespace Microsoft.AspNet.Identity
             return await store.GetAccessFailedCountAsync(user, cancellationToken);
         }
 
+        public virtual Task<IList<TUser>> GetUsersForClaimAsync(Claim claim,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            var store = GetClaimStore();
+            if (claim == null)
+            {
+                throw new ArgumentNullException("claim");
+            }
+            return store.GetUsersForClaimAsync(claim, cancellationToken);
+        }
+
+        /// <summary>
+        ///     Get all the users in a role
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual Task<IList<TUser>> GetUsersInRoleAsync(string roleName,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            var store = GetUserRoleStore();
+            if (roleName == null)
+            {
+                throw new ArgumentNullException("role");
+            }
+
+            return store.GetUsersInRoleAsync(roleName, cancellationToken);
+        }
+
         private void ThrowIfDisposed()
         {
             if (_disposed)

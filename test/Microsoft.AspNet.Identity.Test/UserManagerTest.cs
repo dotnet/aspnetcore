@@ -961,6 +961,16 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 return Task.FromResult(0);
             }
+
+            public Task<IList<TestUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult<IList<TestUser>>(new List<TestUser>());
+            }
+
+            public Task<IList<TestUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult<IList<TestUser>>(new List<TestUser>());
+            }
         }
 
         private class NoOpTokenProvider : IUserTokenProvider<TestUser>
@@ -1215,6 +1225,16 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public Task SetNormalizedUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IList<TestUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IList<TestUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

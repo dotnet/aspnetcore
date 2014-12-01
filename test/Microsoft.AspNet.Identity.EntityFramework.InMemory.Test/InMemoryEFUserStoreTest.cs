@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddInstance<IUserStore<IdentityUser>>(new InMemoryUserStore<IdentityUser, InMemoryContext>((InMemoryContext)context));
+            services.AddInstance<IUserStore<IdentityUser>>(new UserStore<IdentityUser>((InMemoryContext)context));
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)

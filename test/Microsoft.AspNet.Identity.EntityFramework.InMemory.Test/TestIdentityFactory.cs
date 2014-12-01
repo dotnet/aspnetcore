@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             services.AddEntityFramework().AddInMemoryStore();
             var serviceProvider = services.BuildServiceProvider();
 
-            var db = new InMemoryContext(serviceProvider);
+            var db = new InMemoryContext();
             db.Database.EnsureCreated();
 
             return db;

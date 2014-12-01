@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         public Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
         {
             var matchedClaims = user.Claims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToList();
-            foreach(var matchedClaim in matchedClaims)
+            foreach (var matchedClaim in matchedClaims)
             {
                 matchedClaim.ClaimValue = newClaim.Value;
                 matchedClaim.ClaimType = newClaim.Type;
@@ -348,6 +348,31 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             user.NormalizedUserName = userName;
             return Task.FromResult(0);
+        }
+
+        // RoleId == rolename for inmemory store tests
+        public Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (String.IsNullOrEmpty(roleName))
+            {
+                throw new ArgumentNullException("role");
+            }
+
+            return Task.FromResult<IList<TUser>>(Users.Where(u => (u.Roles.Where(x => x.RoleId == roleName).Count() > 0)).Select(x => x).ToList());
+        }
+
+        public Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (claim == null)
+            {
+                throw new ArgumentNullException("claim");
+            }
+
+            var query = from user in Users
+                        where user.Claims.Where(x => x.ClaimType == claim.Type && x.ClaimValue == claim.Value).FirstOrDefault() != null
+                        select user;
+
+            return Task.FromResult<IList<TUser>>(query.ToList());
         }
     }
 }

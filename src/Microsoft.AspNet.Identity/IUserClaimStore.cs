@@ -51,5 +51,13 @@ namespace Microsoft.AspNet.Identity
         /// <returns></returns>
         Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims,
             CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Get users having a specific claim
+        /// </summary>
+        /// <param name="claim">Claim to look up</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

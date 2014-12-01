@@ -1579,6 +1579,59 @@ namespace Microsoft.AspNet.Identity.Test
             // set to a valid value
             await userMgr.SetLockoutEndDateAsync(user, DateTimeOffset.Parse("01/01/2014"));
             Assert.Equal(DateTimeOffset.Parse("01/01/2014"), await userMgr.GetLockoutEndDateAsync(user));
+	}
+
+	[Fact]
+        public async Task CanGetUsersWithClaims()
+        {
+            var manager = CreateManager();
+
+            for (int i = 0; i < 6; i++)
+            {
+                var user = CreateTestUser();
+                IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+                if ((i % 2) == 0)
+                {
+                    IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user, new Claim("foo", "bar"))); 
+                }
+            }
+
+            Assert.Equal(3, (await manager.GetUsersForClaimAsync(new Claim("foo", "bar"))).Count);
+
+            Assert.Equal(0, (await manager.GetUsersForClaimAsync(new Claim("123", "456"))).Count);
+        }
+
+        [Fact]
+        public async Task CanGetUsersInRole()
+        {
+            var context = CreateTestContext();
+            var manager = CreateManager(context);
+            var roleManager = CreateRoleManager(context);
+            var roles = GenerateRoles("UsersInRole", 4);
+
+            foreach (var role in roles)
+            {
+                IdentityResultAssert.IsSuccess(await roleManager.CreateAsync(role));
+            }
+
+            for (int i = 0; i < 6; i++)
+            {
+                var user = CreateTestUser();
+                IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+                if ((i % 2) == 0)
+                {
+                    IdentityResultAssert.IsSuccess(await manager.AddToRolesAsync(user, roles.Select(x=>x.Name).AsEnumerable()));
+                }
+            }
+
+            foreach (var role in roles)
+            {
+                Assert.Equal(3, (await manager.GetUsersInRoleAsync(role.Name)).Count);
+            }
+
+            Assert.Equal(0, (await manager.GetUsersInRoleAsync("123456")).Count);
         }
 
         public List<TUser> GenerateUsers(string userNamePrefix, int count)

@@ -25,8 +25,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         public RoleStore(TContext context) : base(context) { }
     }
 
-    public class RoleStore<TRole, TContext, TKey> : 
-        IQueryableRoleStore<TRole>, 
+    public class RoleStore<TRole, TContext, TKey> :
+        IQueryableRoleStore<TRole>,
         IRoleClaimStore<TRole>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("role");
             }
 
-            return await RoleClaims.Where(rc => rc.RoleId.Equals(role.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToListAsync();
+            return await RoleClaims.Where(rc => rc.RoleId.Equals(role.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToListAsync(cancellationToken);
         }
 
         public Task AddClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
@@ -213,7 +213,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("claim");
             }
 
-            return RoleClaims.AddAsync(new IdentityRoleClaim<TKey> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            return RoleClaims.AddAsync(new IdentityRoleClaim<TKey> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value }, cancellationToken);
         }
 
         public async Task RemoveClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("claim");
             }
-            var claims = await RoleClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync();
+            var claims = await RoleClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync(cancellationToken);
             foreach (var c in claims)
             {
                 RoleClaims.Remove(c);
