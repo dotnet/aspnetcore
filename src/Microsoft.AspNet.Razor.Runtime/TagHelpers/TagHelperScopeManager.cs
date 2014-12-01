@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -26,10 +28,21 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="tagName">The HTML tag name that the scope is associated with.</param>
         /// <param name="uniqueId">An identifier unique to the HTML element this scope is for.</param>
+        /// <param name="executeChildContentAsync">A delegate used to execute the child content asynchronously.</param>
+        /// <param name="startWritingScope">A delegate used to start a writing scope in a Razor page.</param>
+        /// <param name="endWritingScope">A delegate used to end a writing scope in a Razor page.</param>
         /// <returns>A <see cref="TagHelperExecutionContext"/> to use.</returns>
-        public TagHelperExecutionContext Begin(string tagName, string uniqueId)
+        public TagHelperExecutionContext Begin([NotNull] string tagName,
+                                               [NotNull] string uniqueId,
+                                               [NotNull] Func<Task> executeChildContentAsync,
+                                               [NotNull] Action startWritingScope,
+                                               [NotNull] Func<TextWriter> endWritingScope)
         {
-            var executionContext = new TagHelperExecutionContext(tagName, uniqueId);
+            var executionContext = new TagHelperExecutionContext(tagName,
+                                                                 uniqueId,
+                                                                 executeChildContentAsync,
+                                                                 startWritingScope,
+                                                                 endWritingScope);
 
             _executionScopes.Push(executionContext);
 

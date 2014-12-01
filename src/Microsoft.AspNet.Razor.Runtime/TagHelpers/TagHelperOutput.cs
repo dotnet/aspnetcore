@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     public class TagHelperOutput
     {
         private string _content;
-        private string _tagName;
+        private bool _contentSet;
 
         // Internal for testing
         internal TagHelperOutput(string tagName)
@@ -35,37 +35,34 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="tagName">The HTML element's tag name.</param>
         /// <param name="attributes">The HTML attributes.</param>
-        /// <param name="content">The HTML element's content.</param>
-        public TagHelperOutput(string tagName,
-                               [NotNull] IDictionary<string, string> attributes,
-                               string content)
+        public TagHelperOutput(string tagName, [NotNull] IDictionary<string, string> attributes)
         {
             TagName = tagName;
-            Content = content;
             Attributes = new Dictionary<string, string>(attributes, StringComparer.OrdinalIgnoreCase);
+            PreContent = string.Empty;
+            _content = string.Empty;
+            PostContent = string.Empty;
         }
 
         /// <summary>
         /// The HTML element's tag name.
         /// </summary>
         /// <remarks>
-        /// A whitespace value results in no start or end tag being rendered.
+        /// A whitespace or <c>null</c> value results in no start or end tag being rendered.
         /// </remarks>
-        public string TagName
-        {
-            get
-            {
-                return _tagName;
-            }
-            set
-            {
-                _tagName = value ?? string.Empty;
-            }
-        }
+        public string TagName { get; set; }
 
         /// <summary>
-        /// The HTML element's content.
+        /// The HTML element's pre content.
         /// </summary>
+        /// <remarks>Value is prepended to the <see cref="ITagHelper"/>'s final output.</remarks>
+        public string PreContent { get; set; }
+
+        /// <summary>
+        /// The HTML element's main content.
+        /// </summary>
+        /// <remarks>Value occurs in the <see cref="ITagHelper"/>'s final output after <see cref="PreContent"/> and 
+        /// before <see cref="PostContent"/></remarks>
         public string Content
         {
             get
@@ -74,7 +71,25 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             }
             set
             {
-                _content = value ?? string.Empty;
+                _contentSet = true;
+                _content = value;
+            }
+        }
+
+        /// <summary>
+        /// The HTML element's post content.
+        /// </summary>
+        /// <remarks>Value is appended to the <see cref="ITagHelper"/>'s final output.</remarks>
+        public string PostContent { get; set; }
+
+        /// <summary>
+        /// <c>true</c> if <see cref="Content"/> has been set, <c>false</c> otherwise.
+        /// </summary>
+        public bool ContentSet
+        {
+            get
+            {
+                return _contentSet;
             }
         }
 
@@ -86,7 +101,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// The HTML element's attributes.
         /// </summary>
-        public IDictionary<string, string> Attributes { get; private set; }
+        public IDictionary<string, string> Attributes { get; }
 
         /// <summary>
         /// Generates the <see cref="TagHelperOutput"/>'s start tag.
@@ -127,6 +142,22 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
+        /// Generates the <see cref="TagHelperOutput"/>'s <see cref="PreContent"/>.
+        /// </summary>
+        /// <returns><c>string.Empty</c> if <see cref="SelfClosing"/> is <c>true</c>. <see cref="PreContent"/> 
+        /// otherwise.
+        /// </returns>
+        public string GeneratePreContent()
+        {
+            if (SelfClosing)
+            {
+                return string.Empty;
+            }
+
+            return PreContent;
+        }
+
+        /// <summary>
         /// Generates the <see cref="TagHelperOutput"/>'s body.
         /// </summary>
         /// <returns><c>string.Empty</c> if <see cref="SelfClosing"/> is <c>true</c>. <see cref="Content"/> otherwise.
@@ -142,6 +173,22 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
+        /// Generates the <see cref="TagHelperOutput"/>'s <see cref="PostContent"/>.
+        /// </summary>
+        /// <returns><c>string.Empty</c> if <see cref="SelfClosing"/> is <c>true</c>. <see cref="PostContent"/> 
+        /// otherwise.
+        /// </returns>
+        public string GeneratePostContent()
+        {
+            if (SelfClosing)
+            {
+                return string.Empty;
+            }
+
+            return PostContent;
+        }
+
+        /// <summary>
         /// Generates the <see cref="TagHelperOutput"/>'s end tag.
         /// </summary>
         /// <returns><c>string.Empty</c> if <see cref="TagName"/> is <c>string.Empty</c> or whitespace. Otherwise, the
@@ -154,6 +201,21 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             }
 
             return string.Format(CultureInfo.InvariantCulture, "</{0}>", TagName);
+        }
+
+        /// <summary>
+        /// Changes <see cref="TagHelperOutput"/> to generate nothing.
+        /// </summary>
+        /// <remarks>
+        /// Sets <see cref="TagName"/>, <see cref="PreContent"/>, <see cref="Content"/>, and <see cref="PostContent"/> 
+        /// to <c>null</c> to suppress output.
+        /// </remarks>
+        public void SuppressOutput()
+        {
+            TagName = null;
+            PreContent = null;
+            Content = null;
+            PostContent = null;
         }
     }
 }
