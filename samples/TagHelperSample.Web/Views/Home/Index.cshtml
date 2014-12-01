@@ -9,36 +9,36 @@
         @for (var index = 0; index < Model.Count(); ++index)
         {
             <div class="form-group">
-                @Html.LabelFor(m => m[index].Name) @* [index].Name [0].Name *@
+                @Html.LabelFor(m => m[index].Name)
                 @Html.TextBoxFor(m => m[index].Name, htmlAttributes: new { disabled = "disabled", @readonly= "readonly" })
-                @*<label for="[index].Name" />
-                <input type="text" for="[index].Name" disabled="disabled" readonly="readonly" />*@
+                @*<label asp-for="[index].Name" />
+                <input type="text" asp-for="[index].Name" disabled="disabled" readonly="readonly" />*@
             </div>
             <div class="form-group">
                 @Html.LabelFor(m => m[index].DateOfBirth)
                 @Html.TextBoxFor(m => m[index].DateOfBirth, format: "{0:yyyy-MM-dd}", htmlAttributes: new { disabled = "disabled", @readonly = "readonly", type="date" })
-                @*<label for="[index].DateOfBirth" />
-                <input type="date" for="[index].DateOfBirth" disabled="disabled" readonly="readonly" />*@
+                @*<label asp-for="[index].DateOfBirth" />
+                <input type="date" asp-for="[index].DateOfBirth" disabled="disabled" readonly="readonly" />*@
             </div>
             <div class="form-group">
                 @Html.LabelFor(m => m[index].YearsEmployeed)
                 @Html.TextBoxFor(m => m[index].YearsEmployeed, htmlAttributes: new { disabled = "disabled", @readonly = "readonly", type="number" })
-                @*<label for="[index].YearsEmployeed" />
-                <input type="number" for="[index].YearsEmployeed" disabled="disabled" readonly="readonly" />*@
+                @*<label asp-for="[index].YearsEmployeed" />
+                <input type="number" asp-for="[index].YearsEmployeed" disabled="disabled" readonly="readonly" />*@
             </div>
             <div class="form-group">
                 @Html.LabelFor(m => m[index].Blurb)
                 @Html.TextAreaFor(m => m[index].Blurb, htmlAttributes: new { disabled = "disabled", @readonly = "readonly" })
-                @*<label for="[index].Blurb" />
-                <textarea rows="4" for="[index].Blurb" disabled="disabled" readonly="readonly" />*@
+                @*<label asp-for="[index].Blurb" />
+                <textarea rows="4" asp-for="[index].Blurb" disabled="disabled" readonly="readonly" />*@
             </div>
 
             <p>
-                <a action="Edit" route-id="@index">Edit</a>
+                <a asp-action="Edit" asp-route-id="@index">Edit</a>
             </p>
         }
     </div>
 }
 <p>
-    <a action="Create">Create New</a>
+    <a asp-action="Create">Create New</a>
 </p>

@@ -13,11 +13,14 @@ using Microsoft.AspNet.Razor.TagHelpers;
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     /// <summary>
-    /// <see cref="ITagHelper"/> implementation targeting &lt;input&gt; elements.
+    /// <see cref="ITagHelper"/> implementation targeting &lt;input&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
     [ContentBehavior(ContentBehavior.Replace)]
     public class InputTagHelper : TagHelper
     {
+        private const string ForAttributeName = "asp-for";
+        private const string FormatAttributeName = "asp-format";
+
         // Mapping from datatype names and data annotation hints to values for the <input/> element's "type" attribute.
         private static readonly Dictionary<string, string> _defaultInputTypes =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -64,6 +67,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <summary>
         /// An expression to be evaluated against the current model.
         /// </summary>
+        [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
 
         /// <summary>
@@ -76,6 +80,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <see cref="InputTypeName"/> is "String". That is, <see cref="Format"/> is used when calling
         /// <see cref="IHtmlGenerator.GenerateTextBox"/>.
         /// </remarks>
+        [HtmlAttributeName(FormatAttributeName)]
         public string Format { get; set; }
 
         /// <summary>
@@ -99,7 +104,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public string Value { get; set; }
 
         /// <inheritdoc />
-        /// <remarks>Does nothing if <see cref="For"/> is <c>null</c></remarks>
+        /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if <see cref="Format"/> is non-<c>null</c> but <see cref="For"/> is <c>null</c>.
+        /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             // Pass through attributes that are also well-known HTML attributes. Must be done prior to any copying
@@ -117,12 +125,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (For == null)
             {
                 // Regular HTML <input/> element. Just make sure Format wasn't specified.
+                // Reviewers: Should this instead ignore the unused helper-specific attribute?
                 if (Format != null)
                 {
                     throw new InvalidOperationException(Resources.FormatInputTagHelper_UnableToFormat(
                         "<input>",
-                        nameof(For).ToLowerInvariant(),
-                        nameof(Format).ToLowerInvariant()));
+                        ForAttributeName,
+                        FormatAttributeName));
                 }
             }
             else
@@ -134,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     throw new InvalidOperationException(Resources.FormatTagHelpers_NoProvidedMetadata(
                         "<input>",
-                        nameof(For).ToLowerInvariant(),
+                        ForAttributeName,
                         nameof(IModelMetadataProvider),
                         For.Name));
                 }
@@ -210,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 throw new InvalidOperationException(Resources.FormatInputTagHelper_InvalidExpressionResult(
                     "<input>",
-                    nameof(For).ToLowerInvariant(),
+                    ForAttributeName,
                     metadata.RealModelType.FullName,
                     typeof(bool).FullName,
                     "type",

@@ -15,7 +15,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [TagName("a")]
     public class AnchorTagHelper : TagHelper
     {
-        private const string RouteAttributePrefix = "route-";
+        private const string ActionAttributeName = "asp-action";
+        private const string ControllerAttributeName = "asp-controller";
+        private const string FragmentAttributeName = "asp-fragment";
+        private const string HostAttributeName = "asp-host";
+        private const string ProtocolAttributeName = "asp-protocol";
+        private const string RouteAttributeName = "asp-route";
+        private const string RouteAttributePrefix = "asp-route-";
         private const string Href = "href";
 
         // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
@@ -26,27 +32,32 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// The name of the action method.
         /// </summary>
         /// <remarks>Must be <c>null</c> if <see cref="Route"/> is non-<c>null</c>.</remarks>
+        [HtmlAttributeName(ActionAttributeName)]
         public string Action { get; set; }
 
         /// <summary>
         /// The name of the controller.
         /// </summary>
         /// <remarks>Must be <c>null</c> if <see cref="Route"/> is non-<c>null</c>.</remarks>
+        [HtmlAttributeName(ControllerAttributeName)]
         public string Controller { get; set; }
 
         /// <summary>
         /// The protocol for the URL, such as &quot;http&quot; or &quot;https&quot;.
         /// </summary>
+        [HtmlAttributeName(ProtocolAttributeName)]
         public string Protocol { get; set; }
 
         /// <summary>
         /// The host name.
         /// </summary>
+        [HtmlAttributeName(HostAttributeName)]
         public string Host { get; set; }
 
         /// <summary>
         /// The URL fragment name.
         /// </summary>
+        [HtmlAttributeName(FragmentAttributeName)]
         public string Fragment { get; set; }
 
         /// <summary>
@@ -55,17 +66,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <remarks>
         /// Must be <c>null</c> if <see cref="Action"/> or <see cref="Controller"/> is non-<c>null</c>.
         /// </remarks>
+        [HtmlAttributeName(RouteAttributeName)]
         public string Route { get; set; }
 
         /// <inheritdoc />
-        /// <remarks>Does nothing if user provides an "href" attribute. Throws an
-        /// <see cref="InvalidOperationException"/> if "href" attribute is provided and <see cref="Action"/>,
-        /// <see cref="Controller"/>, or <see cref="Route"/> are non-<c>null</c>.</remarks>
+        /// <remarks>Does nothing if user provides an <c>href</c> attribute.</remarks>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if <c>href</c> attribute is provided and <see cref="Action"/>, <see cref="Controller"/>,
+        /// <see cref="Fragment"/>, <see cref="Host"/>, <see cref="Protocol"/>, or <see cref="Route"/> are
+        /// non-<c>null</c> or if the user provided <c>asp-route-*</c> attributes. Also thrown if <see cref="Route"/>
+        /// and one or both of <see cref="Action"/> and <see cref="Controller"/> are non-<c>null</c>.
+        /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             var routePrefixedAttributes = output.FindPrefixedAttributes(RouteAttributePrefix);
 
-            // If there's an "href" on the tag it means it's being used as a normal anchor.
+            // If "href" is already set, it means the user is attempting to use a normal anchor.
             if (output.Attributes.ContainsKey(Href))
             {
                 if (Action != null ||
@@ -77,15 +93,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     routePrefixedAttributes.Any())
                 {
                     // User specified an href and one of the bound attributes; can't determine the href attribute.
+                    // Reviewers: Should this instead ignore the helper-specific attributes?
                     throw new InvalidOperationException(
-                        Resources.FormatAnchorTagHelper_CannotOverrideSpecifiedHref(
+                        Resources.FormatAnchorTagHelper_CannotOverrideHref(
                             "<a>",
-                            nameof(Action).ToLowerInvariant(),
-                            nameof(Controller).ToLowerInvariant(),
-                            nameof(Route).ToLowerInvariant(),
-                            nameof(Protocol).ToLowerInvariant(),
-                            nameof(Host).ToLowerInvariant(),
-                            nameof(Fragment).ToLowerInvariant(),
+                            ActionAttributeName,
+                            ControllerAttributeName,
+                            RouteAttributeName,
+                            ProtocolAttributeName,
+                            HostAttributeName,
+                            FragmentAttributeName,
                             RouteAttributePrefix,
                             Href));
                 }
@@ -112,9 +129,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     throw new InvalidOperationException(
                         Resources.FormatAnchorTagHelper_CannotDetermineHrefRouteActionOrControllerSpecified(
                             "<a>",
-                            nameof(Route).ToLowerInvariant(),
-                            nameof(Action).ToLowerInvariant(),
-                            nameof(Controller).ToLowerInvariant(),
+                            RouteAttributeName,
+                            ActionAttributeName,
+                            ControllerAttributeName,
                             Href));
                 }
                 else

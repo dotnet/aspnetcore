@@ -118,10 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AnchorTagHelper_CannotDetermineHrefRouteActionOrControllerSpecified" xml:space="preserve">
-    <value>Cannot determine an '{4}' for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.</value>
+    <value>Cannot determine an '{4}' attribute for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.</value>
   </data>
-  <data name="AnchorTagHelper_CannotOverrideSpecifiedHref" xml:space="preserve">
-    <value>Cannot determine an '{8}' for {0}. An {0} with a specified '{8}' must not have attributes starting with '{7}' or an '{1}', '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.</value>
+  <data name="AnchorTagHelper_CannotOverrideHref" xml:space="preserve">
+    <value>Cannot override the '{8}' attribute for {0}. An {0} with a specified '{8}' must not have attributes starting with '{7}' or an '{1}', '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.</value>
+  </data>
+  <data name="FormTagHelper_CannotOverrideAction" xml:space="preserve">
+    <value>Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{4}' or an '{2}' or '{3}' attribute.</value>
   </data>
   <data name="InputTagHelper_InvalidExpressionResult" xml:space="preserve">
     <value>Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' if '{4}' is '{5}'.</value>
@@ -131,9 +134,6 @@
   </data>
   <data name="InputTagHelper_ValueRequired" xml:space="preserve">
     <value>'{1}' must not be null for {0} if '{2}' is '{3}'.</value>
-  </data>
-  <data name="FormTagHelper_CannotDetermineAction" xml:space="preserve">
-    <value>Cannot determine an '{1}' for {0}. A {0} with a URL-based '{1}' must not have attributes starting with '{3}' or a '{2}' attribute.</value>
   </data>
   <data name="SelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified" xml:space="preserve">
     <value>Cannot determine body for {0}. '{2}' must be null if '{1}' is null.</value>

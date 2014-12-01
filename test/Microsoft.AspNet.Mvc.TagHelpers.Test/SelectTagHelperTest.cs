@@ -469,7 +469,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var originalAttributes = new Dictionary<string, string>();
             var content = "original content";
             var expectedTagName = "select";
-            var expectedMessage = "Cannot determine body for <select>. 'items' must be null if 'for' is null.";
+            var expectedMessage = "Cannot determine body for <select>. 'asp-items' must be null if 'asp-for' is null.";
 
             var tagHelperContext = new TagHelperContext(contextAttributes);
             var output = new TagHelperOutput(expectedTagName, originalAttributes, content);

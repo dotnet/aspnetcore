@@ -9,48 +9,47 @@
 <h2>Create</h2>
 
 @* anti-forgery is on by default *@
-@* form will special-case anything that looks like a URI i.e. contains a '/' or doesn't match an action *@
-<form anti-forgery="false" action="Create">
+@* <form/> tag helper will special-case only elements with an "asp-action" or "asp-anti-forgery" attribute. *@
+<form asp-anti-forgery="false" asp-action="Create">
     <div class="form-horizontal">
         @* validation summary tag helper will target just <div/> elements and append the list of errors *@
-        @* - i.e. this helper, like <select/> helper has ContentBehavior.Append *@
-        @* helper does nothing if model is valid and (client-side validation is disabled or validation-summary="ModelOnly") *@
+        @* - i.e. this helper, like <select/> helper, has ContentBehavior.Append *@
+        @* helper does nothing if model is valid and (client-side validation is disabled or asp-validation-summary="ModelOnly") *@
         @* don't need a bound attribute to match Html.ValidationSummary()'s headerTag parameter; users wrap message as they wish *@
         @* initially at least, will not remove the <div/> if list isn't generated *@
         @* - should helper remove the <div/> if list isn't generated? *@
         @* - (Html.ValidationSummary returns empty string despite non-empty message parameter) *@
         @* Acceptable values are: "None", "ModelOnly" and "All" *@
-        <div validation-summary="All" style="color:blue" id="validation_day" class="form-group">
+        <div asp-validation-summary="All" style="color:blue" id="validation_day" class="form-group">
             <span style="color:red">This is my message</span>
         </div>
 
         @* element will have correct name and id attributes for Id property. unusual part is the constant value. *@
         @* - the helper will _not_ override the user-specified "value" attribute *@
-        <input type="hidden" for="Id" value="0" />
+        <input type="hidden" asp-for="Id" value="0" />
 
         <div class="form-group">
-            @* no special-case for the "for" attribute; may eventually need to opt out on per-element basis here and in <form/> *@
-            <label for="Name" class="control-label col-md-2" style="color:blue" />
+            @* no special-case for the "asp-for" attribute; now distinct from HTML "for" attribute. *@
+            <label asp-for="Name" class="control-label col-md-2" style="color:blue" />
             <div class="col-md-10">
-                <input type="text" for="Name" style="color:blue" />
-                <span validation-for="Name" style="color:blue" />
+                <input type="text" asp-for="Name" style="color:blue" />
+                <span asp-validation-for="Name" style="color:blue" />
             </div>
         </div>
         <div class="form-group">
-            <label for="DateOfBirth" class="control-label col-md-2" />
+            <label asp-for="DateOfBirth" class="control-label col-md-2" />
             <div class="col-md-10">
-                @* will automatically infer type="date" (reused HTML attribute) and format="{0:yyyy-MM-dd}" (optional bound attribute) *@
-                <input for="DateOfBirth" />
-                <span validation-for="DateOfBirth">When were you born?</span>
+                @* will automatically infer type="date" (reused HTML attribute) and asp-format="{0:yyyy-MM-dd}" (optional bound attribute) *@
+                <input asp-for="DateOfBirth" />
+                <span asp-validation-for="DateOfBirth">When were you born?</span>
             </div>
         </div>
         <div class="form-group">
-            <label for="YearsEmployeed" class="control-label col-md-2" />
+            <label asp-for="YearsEmployeed" class="control-label col-md-2" />
             <div class="col-md-10">
                 @* <select/> tag helper has ContentBehavior.Append -- items render after static options *@
-                <select for="YearsEmployeed" items="(IEnumerable<SelectListItem>)ViewBag.Items" size="2" class="form-control">
-                    @* schedule-wise option tag helper (which adds "selected" attribute to static <option/>s) comes after helpers *@
-                    @* - static use of "selected" attribute may cause HTML errors if in a single-selection <select/> *@
+                <select asp-for="YearsEmployeed" asp-items="(IEnumerable<SelectListItem>)ViewBag.Items" size="2" class="form-control">
+                    @* Static use of "selected" attribute may cause HTML errors if in a single-selection <select/> *@
                     @* - @NTaylorMullen thinks <option/> tag helper could tell <select/> helper not to select anything from "items" *@
                     @* - wouldn't help if user selected one static <option/> and expression indicated another, especially one earlier in the <select/> *@
                     @* - may need a "default" bound parameter on the <select/> to avoid these cases and maintain "don't override" *@
@@ -68,20 +67,20 @@
 
                 @* targets only <span/> in Beta; does not support equivalent of Html.ValidationMessageFor()'s tag parameter *@
                 @* - may eventually either support additional tags e.g. <p/> and <div/> or all tags /> *@
-                <span validation-for="YearsEmployeed" />
+                <span asp-validation-for="YearsEmployeed" />
             </div>
         </div>
         <div class="form-group">
-            <label for="Blurb" class="control-label col-md-2" />
+            <label asp-for="Blurb" class="control-label col-md-2" />
             <div class="col-md-10">
-                <textarea rows="4" for="Blurb"></textarea>
-                <span validation-for="Blurb" />
+                <textarea rows="4" asp-for="Blurb"></textarea>
+                <span asp-validation-for="Blurb" />
             </div>
         </div>
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                @* this <input/> lacks a "for" attribute and will not be changed by the <input/> tag helper *@
+                @* this <input/> lacks a "asp-for" attribute and will not be changed by the <input/> tag helper *@
                 <input type="submit" value="Create" class="btn btn-default" />
             </div>
         </div>
@@ -89,5 +88,5 @@
 </form>
 
 <div>
-    <a action="Index">Back to list</a>
+    <a asp-action="Index">Back to list</a>
 </div>

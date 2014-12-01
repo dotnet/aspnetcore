@@ -13,11 +13,14 @@ using Microsoft.AspNet.Razor.TagHelpers;
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     /// <summary>
-    /// <see cref="ITagHelper"/> implementation targeting &lt;select&gt; elements.
+    /// <see cref="ITagHelper"/> implementation targeting &lt;select&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
     [ContentBehavior(ContentBehavior.Append)]
     public class SelectTagHelper : TagHelper
     {
+        private const string ForAttributeName = "asp-for";
+        private const string ItemsAttributeName = "asp-items";
+
         /// <summary>
         /// Key used for selected values in <see cref="FormContext.FormData"/>.
         /// </summary>
@@ -39,6 +42,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <summary>
         /// An expression to be evaluated against the current model.
         /// </summary>
+        [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
 
         /// <summary>
@@ -55,21 +59,26 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// A collection of <see cref="SelectListItem"/> objects used to populate the &lt;select&gt; element with
         /// &lt;optgroup&gt; and &lt;option&gt; elements.
         /// </summary>
+        [HtmlAttributeName(ItemsAttributeName)]
         public IEnumerable<SelectListItem> Items { get; set; }
 
         /// <inheritdoc />
         /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if <see cref="Items"/> is non-<c>null</c> but <see cref="For"/> is <c>null</c>.
+        /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             if (For == null)
             {
                 // Regular HTML <select/> element. Just make sure Items wasn't specified.
+                // Reviewers: Should this instead ignore the unused helper-specific attribute?
                 if (Items != null)
                 {
                     var message = Resources.FormatSelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified(
                         "<select>",
-                        nameof(For).ToLowerInvariant(),
-                        nameof(Items).ToLowerInvariant());
+                        ForAttributeName,
+                        ItemsAttributeName);
                     throw new InvalidOperationException(message);
                 }
 
@@ -88,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     throw new InvalidOperationException(Resources.FormatTagHelpers_NoProvidedMetadata(
                         "<select>",
-                        nameof(For).ToLowerInvariant(),
+                        ForAttributeName,
                         nameof(IModelMetadataProvider),
                         For.Name));
                 }

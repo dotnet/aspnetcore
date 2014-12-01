@@ -552,6 +552,30 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 expressionName: propertyName);
         }
 
+        [Fact]
+        public async Task ProcessAsync_Throws_IfForNotBoundButFormatIs()
+        {
+            // Arrange
+            var contextAttributes = new Dictionary<string, object>();
+            var originalAttributes = new Dictionary<string, string>();
+            var content = "original content";
+            var expectedTagName = "select";
+            var expectedMessage = "Unable to format without a 'asp-for' expression for <input>. 'asp-format' must " +
+                "be null if 'asp-for' is null.";
+
+            var tagHelperContext = new TagHelperContext(contextAttributes);
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
+            var tagHelper = new InputTagHelper
+            {
+                Format = "{0}",
+            };
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => tagHelper.ProcessAsync(tagHelperContext, output));
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
         private static InputTagHelper GetTagHelper(
             IHtmlGenerator htmlGenerator,
             object container,

@@ -8,12 +8,15 @@ using Microsoft.AspNet.Razor.TagHelpers;
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     /// <summary>
-    /// <see cref="ITagHelper"/> implementation targeting &lt;span&gt; elements with <c>validation-for</c> attributes.
+    /// <see cref="ITagHelper"/> implementation targeting &lt;span&gt; elements with an <c>asp-validation-for</c>
+    /// attribute.
     /// </summary>
     [TagName("span")]
     [ContentBehavior(ContentBehavior.Modify)]
     public class ValidationMessageTagHelper : TagHelper
     {
+        private const string ValidationForAttributeName = "asp-validation-for";
+
         // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
         protected internal ViewContext ViewContext { get; set; }
@@ -25,10 +28,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <summary>
         /// Name to be validated on the current model.
         /// </summary>
-        [HtmlAttributeName("validation-for")]
+        [HtmlAttributeName(ValidationForAttributeName)]
         public ModelExpression For { get; set; }
 
         /// <inheritdoc />
+        /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             if (For != null)

@@ -6,27 +6,27 @@
 
 <form>
     <div class="form-horizontal">
-        <div validation-summary="All"/>
-        <input type="hidden" for="Id" />
+        <div asp-validation-summary="All" />
+        <input type="hidden" asp-for="Id" />
 
         <div class="form-group">
-            <label for="Name" class="control-label col-md-2" />
+            <label asp-for="Name" class="control-label col-md-2" />
             <div class="col-md-10">
-                <input type="text" for="Name" />
+                <input type="text" asp-for="Name" />
                 <span validation-for="Name" />
             </div>
         </div>
         <div class="form-group">
-            <label for="DateOfBirth" class="control-label col-md-2" />
+            <label asp-for="DateOfBirth" class="control-label col-md-2" />
             <div class="col-md-10">
-                <input type="date" for="DateOfBirth" format="{0:yyyy-MM-dd}" />
-                <span validation-for="DateOfBirth" />
+                <input type="date" asp-for="DateOfBirth" asp-format="{0:yyyy-MM-dd}" />
+                <span asp-validation-for="DateOfBirth" />
             </div>
         </div>
         <div class="form-group">
-            <label for="YearsEmployeed" class="control-label col-md-2" />
+            <label asp-for="YearsEmployeed" class="control-label col-md-2" />
             <div class="col-md-10">
-                <select for="YearsEmployeed" items="(IEnumerable<SelectListItem>)ViewBag.Items" size="2" class="form-control">
+                <select asp-for="YearsEmployeed" asp-items="(IEnumerable<SelectListItem>)ViewBag.Items" size="2" class="form-control">
                     <optgroup label="Newby">
                         <option value="0">Less than 1</option>
                         <option value="1">1</option>
@@ -37,14 +37,14 @@
                     <option value="5">5</option>
                     <option value="6">6</option>
                 </select>
-                <span validation-for="YearsEmployeed" />
+                <span asp-validation-for="YearsEmployeed" />
             </div>
         </div>
         <div class="form-group">
-            <label for="Blurb" class="control-label col-md-2" />
+            <label asp-for="Blurb" class="control-label col-md-2" />
             <div class="col-md-10">
-                <textarea rows="4" for="Blurb"></textarea>
-                <span validation-for="Blurb" />
+                <textarea rows="4" asp-for="Blurb"></textarea>
+                <span asp-validation-for="Blurb" />
             </div>
         </div>
 
@@ -57,5 +57,5 @@
 </form>
 
 <div>
-    <a action="Index">Back to list</a>
+    <a asp-action="Index">Back to list</a>
 </div>

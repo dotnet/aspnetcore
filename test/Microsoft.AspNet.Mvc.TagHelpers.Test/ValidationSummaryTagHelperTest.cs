@@ -253,8 +253,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new Dictionary<string, string>(),
                 content: "Content of validation message");
             var expectedViewContext = CreateViewContext();
-            var expectedMessage = "Cannot parse 'validation-summary' value 'Hello World' for <div>. Acceptable values " +
-                                  "are 'All', 'ModelOnly' and 'None'.";
+            var expectedMessage = "Cannot parse 'asp-validation-summary' value 'Hello World' for <div>. Acceptable " +
+                                  "values are 'All', 'ModelOnly' and 'None'.";
 
             // Act
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(

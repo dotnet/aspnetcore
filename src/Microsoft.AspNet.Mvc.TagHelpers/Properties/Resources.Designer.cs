@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             = new ResourceManager("Microsoft.AspNet.Mvc.TagHelpers.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Cannot determine an '{4}' for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// Cannot determine an '{4}' attribute for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
         /// </summary>
         internal static string AnchorTagHelper_CannotDetermineHrefRouteActionOrControllerSpecified
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine an '{4}' for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// Cannot determine an '{4}' attribute for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
         /// </summary>
         internal static string FormatAnchorTagHelper_CannotDetermineHrefRouteActionOrControllerSpecified(object p0, object p1, object p2, object p3, object p4)
         {
@@ -27,19 +27,35 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine an '{8}' for {0}. An {0} with a specified '{8}' must not have attributes starting with '{7}' or an '{1}', '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.
+        /// Cannot override the '{8}' attribute for {0}. An {0} with a specified '{8}' must not have attributes starting with '{7}' or an '{1}', '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.
         /// </summary>
-        internal static string AnchorTagHelper_CannotOverrideSpecifiedHref
+        internal static string AnchorTagHelper_CannotOverrideHref
         {
-            get { return GetString("AnchorTagHelper_CannotOverrideSpecifiedHref"); }
+            get { return GetString("AnchorTagHelper_CannotOverrideHref"); }
         }
 
         /// <summary>
-        /// Cannot determine an '{8}' for {0}. An {0} with a specified '{8}' must not have attributes starting with '{7}' or an '{1}', '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.
+        /// Cannot override the '{8}' attribute for {0}. An {0} with a specified '{8}' must not have attributes starting with '{7}' or an '{1}', '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.
         /// </summary>
-        internal static string FormatAnchorTagHelper_CannotOverrideSpecifiedHref(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7, object p8)
+        internal static string FormatAnchorTagHelper_CannotOverrideHref(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7, object p8)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("AnchorTagHelper_CannotOverrideSpecifiedHref"), p0, p1, p2, p3, p4, p5, p6, p7, p8);
+            return string.Format(CultureInfo.CurrentCulture, GetString("AnchorTagHelper_CannotOverrideHref"), p0, p1, p2, p3, p4, p5, p6, p7, p8);
+        }
+
+        /// <summary>
+        /// Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{4}' or an '{2}' or '{3}' attribute.
+        /// </summary>
+        internal static string FormTagHelper_CannotOverrideAction
+        {
+            get { return GetString("FormTagHelper_CannotOverrideAction"); }
+        }
+
+        /// <summary>
+        /// Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{4}' or an '{2}' or '{3}' attribute.
+        /// </summary>
+        internal static string FormatFormTagHelper_CannotOverrideAction(object p0, object p1, object p2, object p3, object p4)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotOverrideAction"), p0, p1, p2, p3, p4);
         }
 
         /// <summary>
@@ -88,22 +104,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         internal static string FormatInputTagHelper_ValueRequired(object p0, object p1, object p2, object p3)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("InputTagHelper_ValueRequired"), p0, p1, p2, p3);
-        }
-
-        /// <summary>
-        /// Cannot determine an '{1}' for {0}. A {0} with a URL-based '{1}' must not have attributes starting with '{3}' or a '{2}' attribute.
-        /// </summary>
-        internal static string FormTagHelper_CannotDetermineAction
-        {
-            get { return GetString("FormTagHelper_CannotDetermineAction"); }
-        }
-
-        /// <summary>
-        /// Cannot determine an '{1}' for {0}. A {0} with a URL-based '{1}' must not have attributes starting with '{3}' or a '{2}' attribute.
-        /// </summary>
-        internal static string FormatFormTagHelper_CannotDetermineAction(object p0, object p1, object p2, object p3)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotDetermineAction"), p0, p1, p2, p3);
         }
 
         /// <summary>

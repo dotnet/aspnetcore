@@ -16,7 +16,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [ContentBehavior(ContentBehavior.Append)]
     public class FormTagHelper : TagHelper
     {
-        private const string RouteAttributePrefix = "route-";
+        private const string ActionAttributeName = "asp-action";
+        private const string AntiForgeryAttributeName = "asp-anti-forgery";
+        private const string ControllerAttributeName = "asp-controller";
+        private const string RouteAttributePrefix = "asp-route-";
+        private const string HtmlActionAttributeName = "action";
 
         // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
@@ -29,14 +33,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <summary>
         /// The name of the action method.
         /// </summary>
-        /// <remarks>
-        /// If value contains a '/' this <see cref="ITagHelper"/> will do nothing.
-        /// </remarks>
+        [HtmlAttributeName(ActionAttributeName)]
         public string Action { get; set; }
 
         /// <summary>
         /// The name of the controller.
         /// </summary>
+        [HtmlAttributeName(ControllerAttributeName)]
         public string Controller { get; set; }
 
         /// <summary>
@@ -45,41 +48,45 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public string Method { get; set; }
 
         /// <summary>
-        /// Whether the anti-forgery token should be generated. Defaults to <c>true</c> if <see cref="Action"/> is not
-        /// a URL, <c>false</c> otherwise.
+        /// Whether the anti-forgery token should be generated. 
         /// </summary>
-        [HtmlAttributeName("anti-forgery")]
+        /// <value>Defaults to <c>false</c> if user provides an <c>action</c> attribute; <c>true</c> otherwise.</value>
+        [HtmlAttributeName(AntiForgeryAttributeName)]
         public bool? AntiForgery { get; set; }
 
         /// <inheritdoc />
-        /// <remarks>Does nothing if <see cref="Action"/> contains a '/'.</remarks>
+        /// <remarks>At most adds an anti-forgery token if user provides an <c>action</c> attribute.</remarks>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if <c>action</c> attribute is provided and <see cref="Action"/> or <see cref="Controller"/> are
+        /// non-<c>null</c> or if the user provided <c>asp-route-*</c> attributes.
+        /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             bool antiForgeryDefault = true;
-
             var routePrefixedAttributes = output.FindPrefixedAttributes(RouteAttributePrefix);
 
-            // If Action contains a '/' it means the user is attempting to use the FormTagHelper as a normal form.
-            if (Action != null && Action.Contains('/'))
+            // If "action" is already set, it means the user is attempting to use a normal <form>.
+            if (output.Attributes.ContainsKey(HtmlActionAttributeName))
             {
-                if (Controller != null || routePrefixedAttributes.Any())
+                if (Action != null || Controller != null || routePrefixedAttributes.Any())
                 {
-                    // We don't know how to generate a form action since a Controller attribute was also provided.
+                    // User also specified bound attributes we cannot use.
+                    // Reviewers: Should this instead ignore the helper-specific attributes -- only change
+                    // antiForgeryDefault?
                     throw new InvalidOperationException(
-                        Resources.FormatFormTagHelper_CannotDetermineAction(
+                        Resources.FormatFormTagHelper_CannotOverrideAction(
                             "<form>",
-                            nameof(Action).ToLowerInvariant(),
-                            nameof(Controller).ToLowerInvariant(),
+                            HtmlActionAttributeName,
+                            ActionAttributeName,
+                            ControllerAttributeName,
                             RouteAttributePrefix));
                 }
 
-                // User is using the FormTagHelper like a normal <form> tag, anti-forgery default should be false to
-                // not force the anti-forgery token onto the user.
+                // User is using the FormTagHelper like a normal <form> tag. Anti-forgery default should be false to
+                // not force the anti-forgery token on the user.
                 antiForgeryDefault = false;
 
-                // Restore Action, Method and Route HTML attributes if they were provided, user wants non-TagHelper <form>.
-                output.CopyHtmlAttribute(nameof(Action), context);
-
+                // Restore method attribute.
                 if (Method != null)
                 {
                     output.CopyHtmlAttribute(nameof(Method), context);

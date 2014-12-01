@@ -8,11 +8,13 @@ using Microsoft.AspNet.Razor.TagHelpers;
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     /// <summary>
-    /// <see cref="ITagHelper"/> implementation targeting &lt;textarea&gt; elements.
+    /// <see cref="ITagHelper"/> implementation targeting &lt;textarea&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
     [ContentBehavior(ContentBehavior.Replace)]
     public class TextAreaTagHelper : TagHelper
     {
+        private const string ForAttributeName = "asp-for";
+
         // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
         protected internal IHtmlGenerator Generator { get; set; }
@@ -24,10 +26,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <summary>
         /// An expression to be evaluated against the current model.
         /// </summary>
+        [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
 
         /// <inheritdoc />
-        /// <remarks>Does nothing unless user binds "for" attribute in Razor source.</remarks>
+        /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             if (For != null)
