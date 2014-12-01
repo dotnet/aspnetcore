@@ -10,4 +10,11 @@ functions
             return "t" + DateTime.UtcNow.ToString("yyMMddHHmmss");
         }
     }
+    bool IsTeamCity
+    {
+        get
+        {
+            return Environment.GetEnvironmentVariable("TEAMCITY_PROJECT_NAME") != null;
+        }
+    }
   }
