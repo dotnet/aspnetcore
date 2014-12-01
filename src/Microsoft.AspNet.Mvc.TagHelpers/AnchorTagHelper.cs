@@ -93,7 +93,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     routePrefixedAttributes.Any())
                 {
                     // User specified an href and one of the bound attributes; can't determine the href attribute.
-                    // Reviewers: Should this instead ignore the helper-specific attributes?
                     throw new InvalidOperationException(
                         Resources.FormatAnchorTagHelper_CannotOverrideHref(
                             "<a>",

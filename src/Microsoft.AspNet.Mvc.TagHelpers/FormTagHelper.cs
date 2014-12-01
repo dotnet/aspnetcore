@@ -55,7 +55,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public bool? AntiForgery { get; set; }
 
         /// <inheritdoc />
-        /// <remarks>At most adds an anti-forgery token if user provides an <c>action</c> attribute.</remarks>
+        /// <remarks>
+        /// Does nothing if user provides an <c>action</c> attribute and <see cref="AntiForgery"/> is <c>null</c> or
+        /// <c>false</c>.
+        /// </remarks>
         /// <exception cref="InvalidOperationException">
         /// Thrown if <c>action</c> attribute is provided and <see cref="Action"/> or <see cref="Controller"/> are
         /// non-<c>null</c> or if the user provided <c>asp-route-*</c> attributes.
@@ -71,8 +74,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 if (Action != null || Controller != null || routePrefixedAttributes.Any())
                 {
                     // User also specified bound attributes we cannot use.
-                    // Reviewers: Should this instead ignore the helper-specific attributes -- only change
-                    // antiForgeryDefault?
                     throw new InvalidOperationException(
                         Resources.FormatFormTagHelper_CannotOverrideAction(
                             "<form>",

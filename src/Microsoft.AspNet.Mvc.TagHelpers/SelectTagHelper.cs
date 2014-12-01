@@ -72,7 +72,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (For == null)
             {
                 // Regular HTML <select/> element. Just make sure Items wasn't specified.
-                // Reviewers: Should this instead ignore the unused helper-specific attribute?
                 if (Items != null)
                 {
                     var message = Resources.FormatSelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified(

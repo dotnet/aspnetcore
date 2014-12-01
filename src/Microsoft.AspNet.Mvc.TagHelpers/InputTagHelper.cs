@@ -125,7 +125,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (For == null)
             {
                 // Regular HTML <input/> element. Just make sure Format wasn't specified.
-                // Reviewers: Should this instead ignore the unused helper-specific attribute?
                 if (Format != null)
                 {
                     throw new InvalidOperationException(Resources.FormatInputTagHelper_UnableToFormat(
