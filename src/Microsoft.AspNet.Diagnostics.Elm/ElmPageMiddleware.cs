@@ -57,7 +57,6 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         {
             var model = new LogPageModel()
             {
-                // sort so most recent logs are first
                 Activities = _store.GetActivities(),
                 Options = options,
                 Path = _options.Path

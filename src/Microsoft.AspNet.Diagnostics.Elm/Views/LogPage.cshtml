@@ -1,4 +1,5 @@
 ﻿@using System
+@using System.Collections.Generic
 @using System.Globalization
 @using System.Linq
 @using Microsoft.AspNet.Diagnostics.Elm.Views
@@ -38,7 +39,7 @@
     }
 }
 
-@helper Traverse(ScopeNode node, int level)
+@helper Traverse(ScopeNode node, int level, Dictionary<string, int> counts)
 {
     // print start of scope
     @LogRow(new LogInfo()
@@ -55,11 +56,12 @@
         if (node.Messages[messageIndex].Time < node.Children[childIndex].StartTime)
         {
             @LogRow(node.Messages[messageIndex], level)
+            counts[node.Messages[messageIndex].Severity.ToString()]++;
             messageIndex++;
         }
         else
         {
-            @Traverse(node.Children[childIndex], level + 1)
+            @Traverse(node.Children[childIndex], level + 1, counts)
             childIndex++;
         }
     }
@@ -68,13 +70,14 @@
         for (var i = messageIndex; i < node.Messages.Count; i++)
         {
             @LogRow(node.Messages[i], level)
+            counts[node.Messages[i].Severity.ToString()]++;
         }
     }
     else
     {
         for (var i = childIndex; i < node.Children.Count; i++)
         {
-            @Traverse(node.Children[i], level + 1)
+            @Traverse(node.Children[i], level + 1, counts)
         }
     }
     // print end of scope
@@ -92,6 +95,7 @@
 <head>
     <meta charset="utf-8" />
     <title>ASP.NET Logs</title>
+    <script src="//ajax.aspnetcdn.com/ajax/jquery/jquery-2.1.1.min.js"></script>
     <style>
         <%$ include: LogPage.css %>
         <%$ include: Shared.css %>
@@ -125,12 +129,14 @@
         <thead id="requestHeader">
             <tr>
                 <th class="path">Path</th>
+                <th class="method">Method</th>
                 <th class="host">Host</th>
                 <th class="statusCode">Status Code</th>
                 <th class="logs">Logs</th>
             </tr>
         </thead>
         <colgroup>
+            <col />
             <col />
             <col />
             <col />
@@ -145,36 +151,62 @@
                         {
                             var requestPath = Model.Path.Value + "/" + activity.HttpInfo.RequestID;
                             <td><a href="@requestPath" title="@activity.HttpInfo.Path">@activity.HttpInfo.Path</a></td>
+                            <td>@activity.HttpInfo.Method</td>
                             <td>@activity.HttpInfo.Host</td>
                             <td>@activity.HttpInfo.StatusCode</td>
                         }
                         else
                         {
-                            <td colspan="3">@activity.Root.State</td>
+                            <td colspan="4">@activity.Root.State</td>
                         }
                     }
                     <td class="logTd">
                         <table class="logTable">
                             <thead class="logHeader">
-                                <tr>
+                                <tr class="headerRow">
                                     <th class="date">Date</th>
                                     <th class="time">Time</th>
                                     <th class="name">Name</th>
                                     <th class="severity">Severity</th>
                                     <th class="state">State</th>
-                                    <th>Error</th>
+                                    <th>Error<span class="collapse">^</span></th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            @{
+                                var counts = new Dictionary<string, int>();
+                                counts["Critical"] = 0;
+                                counts["Error"] = 0;
+                                counts["Warning"] = 0;                                
+                                counts["Information"] = 0;
+                                counts["Verbose"] = 0;
+                            }
+                            <tbody class="logBody">
                                 @if (activity.Id.Equals(Guid.Empty))
                                 {
                                     // message not within a scope
-                                    @LogRow(activity.Root.Messages.FirstOrDefault(), 0)
+                                    var logInfo = activity.Root.Messages.FirstOrDefault();
+                                    @LogRow(logInfo, 0)
+                                    counts[logInfo.Severity.ToString()] = 1;
                                 }
                                 else
                                 {
-                                    @Traverse(activity.Root, 0)
+                                    @Traverse(activity.Root, 0, counts)
                                 }
+                            </tbody>
+                            <tbody class="summary">
+                                <tr class="logRow">
+                                    <td>@activity.Time.ToString("MM-dd-yyyy HH:mm:ss")</td>
+                                    @foreach (var kvp in counts)
+                                    {
+                                        if (string.Equals("Verbose", kvp.Key)) {
+                                            <td>@kvp.Value @kvp.Key<span class="collapse">v</span></td>
+                                        }
+                                        else
+                                        {
+                                            <td>@kvp.Value @kvp.Key</td>
+                                        }
+                                    }
+                                </tr>
                             </tbody>
                         </table>
                     </td>
@@ -182,5 +214,21 @@
             </tbody>
         }
     </table>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(".logBody").hide();
+            $(".logTable > thead").hide();
+            $(".logTable > thead").click(function () {
+                $(this).closest(".logTable").find("tbody").hide();
+                $(this).closest(".logTable").find(".summary").show();
+                $(this).hide();
+            });
+            $(".logTable > .summary").click(function () {
+                $(this).closest(".logTable").find("tbody").show();
+                $(this).closest(".logTable").find("thead").show();
+                $(this).hide();
+            });
+        });
+    </script>
 </body>
 </html>
