@@ -326,10 +326,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public async Task InvokeAction_ExceptionInAuthorizationFilterHandledByExceptionFilters()
+        public async Task InvokeAction_ExceptionInAuthorizationFilterCannotBeHandledByExceptionFilters()
         {
             // Arrange
-            Exception exception = null;
             var expected = new InvalidCastException();
 
             var exceptionFilter = new Mock<IExceptionFilter>(MockBehavior.Strict);
@@ -337,8 +336,6 @@ namespace Microsoft.AspNet.Mvc
                 .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
                 .Callback<ExceptionContext>(context =>
                 {
-                    exception = context.Exception;
-
                     // Mark as handled
                     context.Result = new EmptyResult();
                 })
@@ -365,10 +362,11 @@ namespace Microsoft.AspNet.Mvc
             });
 
             // Act
-            await invoker.InvokeAsync();
+            var thrown = await Assert.ThrowsAsync<InvalidCastException>(invoker.InvokeAsync);
 
             // Assert
-            exceptionFilter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
+            Assert.Same(expected, thrown);
+            exceptionFilter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Never());
             authorizationFilter1.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()), Times.Once());
         }
 
@@ -1067,7 +1065,7 @@ namespace Microsoft.AspNet.Mvc
             await invoker.InvokeAsync();
 
             // Assert
-            Assert.Equal(exception, context.Exception);
+            Assert.Same(exception, context.Exception);
 
             result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
 
@@ -1109,7 +1107,7 @@ namespace Microsoft.AspNet.Mvc
             await invoker.InvokeAsync();
 
             // Assert
-            Assert.Equal(exception, context.Exception);
+            Assert.Same(exception, context.Exception);
 
             result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
 
@@ -1153,7 +1151,7 @@ namespace Microsoft.AspNet.Mvc
             await invoker.InvokeAsync();
 
             // Assert
-            Assert.Equal(exception, context.Exception);
+            Assert.Same(exception, context.Exception);
 
             resultFilter1.Verify(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()), Times.Once());
             resultFilter1.Verify(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()), Times.Once());
@@ -1195,7 +1193,7 @@ namespace Microsoft.AspNet.Mvc
             await invoker.InvokeAsync();
 
             // Assert
-            Assert.Equal(exception, context.Exception);
+            Assert.Same(exception, context.Exception);
 
             resultFilter1.Verify(
                 f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()),

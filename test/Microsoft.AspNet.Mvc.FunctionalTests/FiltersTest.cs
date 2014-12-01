@@ -457,9 +457,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         // Result Filter throws.
-        // Verifies the Global Exception Filter does not handle it.
+        // Exception Filters don't get a chance to handle this.
         [Fact]
-        public async Task ThrowingResultFilter_NotHandledByGlobalExceptionFilter()
+        public async Task ThrowingFilters_ResultFilter_NotHandledByGlobalExceptionFilter()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
@@ -472,27 +472,39 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         // Action Filter throws.
         // Verifies the Global Exception Filter handles it.
-        [Theory]
-        [InlineData("http://localhost/Home/ThrowingActionFilter")]
-        [InlineData("http://localhost/Home/ThrowingAuthorizationFilter")]
-        public async Task ThrowingFilters_HandledByGlobalExceptionFilter(string url)
+        [Fact]
+        public async Task ThrowingFilters_ActionFilter_HandledByGlobalExceptionFilter()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync(url);
+            var response = await client.GetAsync("http://localhost/Home/ThrowingActionFilter");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("GlobalExceptionFilter.OnException", await response.Content.ReadAsStringAsync());
         }
 
+        // Authorization Filter throws.
+        // Exception Filters don't get a chance to handle this.
+        [Fact]
+        public async Task ThrowingFilters_AuthFilter_NotHandledByGlobalExceptionFilter()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidProgramException>(
+                () => client.GetAsync("http://localhost/Home/ThrowingAuthorizationFilter"));
+        }
+
         // Exception Filter throws.
         // Verifies the thrown exception is ignored.
         [Fact]
-        public async Task ThrowingExceptionFilter_NotHandledByGlobalExceptionFilter()
+        public async Task ThrowingExceptionFilter_ExceptionFilter_NotHandledByGlobalExceptionFilter()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
