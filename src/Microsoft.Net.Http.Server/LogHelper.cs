@@ -34,7 +34,7 @@ namespace Microsoft.Net.Http.Server
         {
             if (factory == null)
             {
-                return null;
+                factory = new LoggerFactory();
             }
 
             return factory.Create(type.FullName);

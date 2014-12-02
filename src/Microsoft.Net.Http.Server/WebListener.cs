@@ -91,11 +91,18 @@ namespace Microsoft.Net.Http.Server
         private long? _requestQueueLength;
 
         public WebListener()
+            : this(new LoggerFactory())
+        {
+        }
+
+        public WebListener(ILoggerFactory factory)
         {
             if (!UnsafeNclNativeMethods.HttpApi.Supported)
             {
                 throw new PlatformNotSupportedException();
             }
+
+            _logger = LogHelper.CreateLogger(factory, typeof(WebListener));
 
             Debug.Assert(UnsafeNclNativeMethods.HttpApi.ApiVersion ==
                 UnsafeNclNativeMethods.HttpApi.HTTP_API_VERSION.Version20, "Invalid Http api version");
@@ -107,12 +114,6 @@ namespace Microsoft.Net.Http.Server
             _timeoutManager = new TimeoutManager(this);
             _authManager = new AuthenticationManager(this);
             _connectionCancellationTokens = new ConcurrentDictionary<ulong, ConnectionCancellation>();
-        }
-
-        public WebListener(ILoggerFactory factory)
-            : this()
-        {
-            _logger = LogHelper.CreateLogger(factory, typeof(WebListener));
         }
 
         internal enum State
