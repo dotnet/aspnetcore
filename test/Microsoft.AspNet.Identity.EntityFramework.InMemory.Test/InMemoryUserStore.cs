@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             {
                 throw new ArgumentNullException("user");
             }
-            await Context.UpdateAsync(user, cancellationToken);
+            Context.Update(user);
             await SaveChanges(cancellationToken);
         }
 
@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             {
                 throw new ArgumentNullException("user");
             }
-            Context.Delete(user);
+            Context.Remove(user);
             await SaveChanges(cancellationToken);
         }
 
