@@ -33,7 +33,9 @@ namespace MusicStore.Models
             builder.Entity<Album>().ManyToOne(a => a.Artist);
             builder.Entity<Album>().ManyToOne(a => a.Genre, g => g.Albums);
             builder.Entity<Order>().OneToMany(o => o.OrderDetails);
-            builder.Entity<Album>().OneToMany(a => a.OrderDetails, od => od.Album);
+            
+            //Deleting an album fails with this relation
+            //builder.Entity<Album>().OneToMany(a => a.OrderDetails, od => od.Album);
 
             base.OnModelCreating(builder);
         }
