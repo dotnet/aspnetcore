@@ -61,7 +61,10 @@ namespace E2ETests
             responseContent = response.Content.ReadAsStringAsync().Result;
 
             //Correlation cookie not getting cleared after successful signin?
-            Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Correlation.Google"));
+            if (!Helpers.RunningOnMono)
+            {
+                Assert.Null(httpClientHandler.CookieContainer.GetCookies(new Uri(ApplicationBaseUrl)).GetCookieWithName(".AspNet.Correlation.Google")); 
+            }
             Assert.Equal(ApplicationBaseUrl + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
             Assert.Contains("AspnetvnextTest@gmail.com", responseContent, StringComparison.OrdinalIgnoreCase);
 

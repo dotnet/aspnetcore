@@ -70,12 +70,7 @@ namespace E2ETests
             ValidateLayoutPage(responseContent);
             Assert.Contains("<title>Log in – MVC Music Store</title>", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<h4>Use a local account to log in.</h4>", responseContent, StringComparison.OrdinalIgnoreCase);
-
-            if (!Helpers.RunningOnMono)
-            {
-                //Bug in Mono HttpClient that it does not automatically change the RequestMessage uri in case of a 302.
-                Assert.Equal<string>(ApplicationBaseUrl + "Account/Login?ReturnUrl=%2FAdmin%2FStoreManager%2F", response.RequestMessage.RequestUri.AbsoluteUri);
-            }
+            Assert.Equal<string>(ApplicationBaseUrl + "Account/Login?ReturnUrl=%2FAdmin%2FStoreManager%2F", response.RequestMessage.RequestUri.AbsoluteUri);
 
             Console.WriteLine("Redirected to login page as expected.");
         }
@@ -307,12 +302,7 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = httpClient.PostAsync("Admin/StoreManager/create", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
-
-            if (!Helpers.RunningOnMono)
-            {
-                //Bug in mono Httpclient - RequestMessage not automatically changed on 302
-                Assert.Equal<string>(ApplicationBaseUrl + "Admin/StoreManager", response.RequestMessage.RequestUri.AbsoluteUri);
-            }
+            Assert.Equal<string>(ApplicationBaseUrl + "Admin/StoreManager", response.RequestMessage.RequestUri.AbsoluteUri);
 
             Assert.Contains(albumName, responseContent);
             Console.WriteLine("Waiting for the SignalR client to receive album created announcement");
@@ -382,11 +372,7 @@ namespace E2ETests
             response = httpClient.PostAsync("Checkout/AddressAndPayment", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains("<h2>Checkout Complete</h2>", responseContent, StringComparison.OrdinalIgnoreCase);
-            if (!Helpers.RunningOnMono)
-            {
-                //Bug in Mono HttpClient that it does not automatically change the RequestMessage uri in case of a 302.
-                Assert.StartsWith(ApplicationBaseUrl + "Checkout/Complete/", response.RequestMessage.RequestUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
-            }
+            Assert.StartsWith(ApplicationBaseUrl + "Checkout/Complete/", response.RequestMessage.RequestUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
         }
 
         private void DeleteAlbum(string albumId, string albumName)

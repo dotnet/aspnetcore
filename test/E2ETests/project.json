@@ -1,5 +1,5 @@
 {
-    "compilationOptions": { "warningsAsErrors": true },
+    "compilationOptions": { "warningsAsErrors": "true" },
     "commands": {
         "test": "Xunit.KRunner"
     },

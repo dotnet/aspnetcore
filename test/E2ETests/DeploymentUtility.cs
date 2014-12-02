@@ -152,11 +152,11 @@ namespace E2ETests
                 throw new Exception("KRE not detected on the machine.");
             }
 
-            var monoPath = Path.Combine(kreBin, "mono");
+            var monoPath = "mono";
             var klrMonoManaged = Path.Combine(kreBin, "klr.mono.managed.dll");
             var applicationHost = Path.Combine(kreBin, "Microsoft.Framework.ApplicationHost");
 
-            Console.WriteLine(string.Format("Executing command: {0} {1} {3} {4}", monoPath, klrMonoManaged, startParameters.ApplicationPath, applicationHost, startParameters.ServerType.ToString()));
+            Console.WriteLine(string.Format("Executing command: {0} {1} {2} {3} {4}", monoPath, klrMonoManaged, startParameters.ApplicationPath, applicationHost, startParameters.ServerType.ToString()));
 
             var startInfo = new ProcessStartInfo
             {
