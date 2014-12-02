@@ -33,7 +33,6 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __PTagHelper = CreateTagHelper<PTagHelper>();
-            __PTagHelper = CreateTagHelper<PTagHelper>();
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
             __InputTagHelper.Type = "text";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
@@ -47,6 +46,7 @@ namespace TestOutput
 
 #line default
 #line hidden
+            __PTagHelper = CreateTagHelper<PTagHelper>();
         }
         #pragma warning restore 1998
     }

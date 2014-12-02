@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             var tagHelperDescriptors = chunk.Descriptors;
 
-            RenderBeginTagHelperScope(chunk.TagName);
+            RenderBeginTagHelperScope(chunk.TagName, chunk.Children);
 
             RenderTagHelpersCreation(chunk);
 
@@ -71,11 +71,15 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             RenderUnboundHTMLAttributes(unboundHTMLAttributes);
 
-            // TODO: Modify code generation to handle all content modes
-            //RenderRunTagHelpers(bufferedBody: false);
-            //RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-            //RenderTagHelperBody(chunk.Children, bufferBody: false);
-            //RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
+            RenderRunTagHelpers();
+
+            RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
+            RenderTagOutput(_tagHelperContext.OutputGeneratePreContentMethodName);
+
+            RenderTagHelperContent();
+
+            RenderTagOutput(_tagHelperContext.OutputGeneratePostContentMethodName);
+            RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
 
             RenderEndTagHelpersScope();
         }
@@ -85,11 +89,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return "__" + descriptor.TypeName.Replace('.', '_');
         }
 
-        private void RenderBeginTagHelperScope(string tagName)
+        private void RenderBeginTagHelperScope(string tagName, IList<Chunk> children)
         {
             // Scopes/execution contexts are a runtime feature.
             if (_designTimeMode)
             {
+                // Render all of the tag helper children inline for IntelliSense.
+                _bodyVisitor.Accept(children);
                 return;
             }
 
@@ -104,6 +110,30 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             _writer.WriteStringLiteral(tagName)
                    .WriteParameterSeparator()
                    .WriteStringLiteral(GenerateUniqueId())
+                   .WriteParameterSeparator();
+
+            // We remove the target writer so TagHelper authors can retrieve content.
+            var oldWriter = _context.TargetWriterName;
+            _context.TargetWriterName = null;
+
+            // Disabling instrumentation inside TagHelper bodies since we never know if it's accurate
+            var oldInstrumentation = _context.Host.EnableInstrumentation;
+            _context.Host.EnableInstrumentation = false;
+
+            using (_writer.BuildAsyncLambda(endLine: false))
+            {
+                // Render all of the tag helper children.
+                _bodyVisitor.Accept(children);
+            }
+
+            _context.Host.EnableInstrumentation = oldInstrumentation;
+
+            _context.TargetWriterName = oldWriter;
+
+            _writer.WriteParameterSeparator()
+                   .Write(_tagHelperContext.StartWritingScopeMethodName)
+                   .WriteParameterSeparator()
+                   .Write(_tagHelperContext.EndWritingScopeMethodName)
                    .WriteEndMethodInvocation();
         }
 
@@ -324,18 +354,74 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             }
         }
 
-        private void RenderTagHelperBody(IList<Chunk> children, bool bufferBody)
+        private void RenderTagHelperContent()
         {
-            // If we want to buffer the body we need to create a writing scope to capture the body content.
-            if (bufferBody)
+            // Rendering output is a runtime feature.
+            if (_designTimeMode)
             {
-                // Render all of the tag helper children in a buffered writing scope.
-                BuildBufferedWritingScope(children);
+                return;
             }
-            else
+
+            _writer.Write("if (")
+                   .Write(ExecutionContextVariableName)
+                   .Write(".")
+                   .Write(_tagHelperContext.ExecutionContextOutputPropertyName)
+                   .Write(".")
+                   .Write(_tagHelperContext.OutputContentSetPropertyName)
+                   .WriteLine(")");
+
+            // At this point in the codegen, TagHelperOutput.Content is set. We need to use this to render the Content 
+            // instead of executing the child content
+            using (_writer.BuildScope())
             {
-                // Render all of the tag helper children.
-                _bodyVisitor.Accept(children);
+                RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName);
+            }
+
+            _writer.Write("else if (")
+                   .Write(ExecutionContextVariableName)
+                   .Write(".")
+                   .Write(_tagHelperContext.ExecutionContextChildContentRetrievedPropertyName)
+                   .WriteLine(")");
+
+            // Render the body of the else if statement, at this point in the codegen the GetChildContentAsync method 
+            // was invoked but the TagHelperOutput's Content was not set. Call into GetChildContentAsync to retrieve
+            // the cached value of the content so we don't execute the child content twice.
+            using (_writer.BuildScope())
+            {
+                CSharpCodeVisitor.RenderPreWriteStart(_writer, _context);
+
+                _writer.WriteInstanceMethodInvocation(ExecutionContextVariableName,
+                                                      _tagHelperContext.ExecutionContextGetChildContentAsyncMethodName,
+                                                      endLine: false);
+
+                _writer.Write(".Result")
+                       .WriteEndMethodInvocation();
+            }
+
+            _writer.WriteLine("else");
+
+            // Render the body of the else statement, at this point in the codegen the GetChildContentAsync method 
+            // was not invoked and the TagHelperOutput's Content was not set. Call into ExecuteChildContentAsync to
+            // to execute and render child content.
+            using (_writer.BuildScope())
+            {
+                if (!string.IsNullOrEmpty(_context.TargetWriterName))
+                {
+                    _writer.WriteMethodInvocation(
+                        _tagHelperContext.StartWritingScopeMethodName,
+                        _context.TargetWriterName);
+                }
+
+                _writer.WriteInstanceMethodInvocation(
+                    ExecutionContextVariableName,
+                    _tagHelperContext.ExecutionContextExecuteChildContentAsyncMethodName,
+                    endLine: false);
+                _writer.WriteLine(".Wait();");
+
+                if (!string.IsNullOrEmpty(_context.TargetWriterName))
+                {
+                    _writer.WriteMethodInvocation(_tagHelperContext.EndWritingScopeMethodName);
+                }
             }
         }
 
@@ -370,7 +456,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                    .WriteEndMethodInvocation();
         }
 
-        private void RenderRunTagHelpers(bool bufferedBody)
+        private void RenderRunTagHelpers()
         {
             // No need to run anything in design time mode.
             if (_designTimeMode)
@@ -384,15 +470,9 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                    .Write(" = ")
                    .WriteStartInstanceMethodInvocation(RunnerVariableName,
                                                        _tagHelperContext.RunnerRunAsyncMethodName);
-            _writer.Write(ExecutionContextVariableName);
 
-            if (bufferedBody)
-            {
-                _writer.WriteParameterSeparator()
-                       .Write(StringValueBufferVariableName);
-            }
-
-            _writer.WriteEndMethodInvocation(endLine: false)
+            _writer.Write(ExecutionContextVariableName)
+                   .WriteEndMethodInvocation(endLine: false)
                    .WriteLine(".Result;");
         }
 

@@ -23,7 +23,9 @@ namespace Microsoft.AspNet.Razor.Generator
             OutputGenerateContentMethodName = "GenerateContent";
             OutputGeneratePostContentMethodName = "GeneratePostContent";
             OutputGenerateEndTagMethodName = "GenerateEndTag";
+            ExecutionContextChildContentRetrievedPropertyName = "ChildContentRetrieved";
             ExecutionContextExecuteChildContentAsyncMethodName = "ExecuteChildContentAsync";
+            ExecutionContextGetChildContentAsyncMethodName = "GetChildContentAsync";
             ExecutionContextAddMethodName = "Add";
             ExecutionContextAddTagHelperAttributeMethodName = "AddTagHelperAttribute";
             ExecutionContextAddHtmlAttributeMethodName = "AddHtmlAttribute";
@@ -89,7 +91,17 @@ namespace Microsoft.AspNet.Razor.Generator
         /// The name of the <see cref="ExecutionContextTypeName"/> method used to get a 
         /// <see cref="System.Threading.Tasks.Task"/> that executes tag helper child content.
         /// </summary>
+        public string ExecutionContextChildContentRetrievedPropertyName { get; set; }
+
+        /// <summary>
+        /// </summary>
         public string ExecutionContextExecuteChildContentAsyncMethodName { get; set; }
+
+        /// <summary>
+        /// The name of the <see cref="ExecutionContextTypeName"/> method used to execute and retrieve tag helper 
+        /// child content.
+        /// </summary>
+        public string ExecutionContextGetChildContentAsyncMethodName { get; set; }
 
         /// <summary>
         /// The name of the <see cref="ExecutionContextTypeName"/> method used to add tag helper attributes.

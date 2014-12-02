@@ -26,7 +26,10 @@ namespace TestOutput
             Instrumentation.BeginContext(27, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test", async() => {
+                WriteLiteral("Body of Tag");
+            }
+            , StartWritingScope, EndWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
 #line 3 "SingleTagHelper.cshtml"
@@ -38,9 +41,20 @@ namespace TestOutput
             __tagHelperExecutionContext.AddHtmlAttribute("class", "Hello World");
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
-            Instrumentation.BeginContext(63, 11, true);
-            WriteLiteral("Body of Tag");
-            Instrumentation.EndContext();
+            WriteLiteral(__tagHelperExecutionContext.Output.GeneratePreContent());
+            if (__tagHelperExecutionContext.Output.ContentSet)
+            {
+                WriteLiteral(__tagHelperExecutionContext.Output.GenerateContent());
+            }
+            else if (__tagHelperExecutionContext.ChildContentRetrieved)
+            {
+                WriteLiteral(__tagHelperExecutionContext.GetChildContentAsync().Result);
+            }
+            else
+            {
+                __tagHelperExecutionContext.ExecuteChildContentAsync().Wait();
+            }
+            WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }
