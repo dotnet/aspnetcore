@@ -22,6 +22,7 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -29,11 +30,10 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-#if !ASPNETCORE50
-using System.Security.Principal;
-#endif
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.Net.Http.Server
 {
@@ -72,7 +72,7 @@ namespace Microsoft.Net.Http.Server
         private ClaimsPrincipal _user;
 
         private bool _isDisposed = false;
-        
+
         internal unsafe Request(RequestContext httpContext, NativeRequestContext memoryBlob)
         {
             // TODO: Verbose log
@@ -147,7 +147,10 @@ namespace Microsoft.Net.Http.Server
 
             // TODO: Verbose log parameters
 
-            // TODO: Verbose log headers
+            if (_requestContext.Logger.IsEnabled(LogLevel.Verbose))
+            {
+                RequestContext.Logger.WriteVerbose(new ReceiveRequestLogContext(this));
+            }
         }
 
         internal SslStatus SslStatus
@@ -508,6 +511,52 @@ namespace Microsoft.Net.Http.Server
             if (_nativeStream == null || _nativeStream == Stream.Null)
             {
                 _nativeStream = new RequestStream(RequestContext);
+            }
+        }
+
+        private class ReceiveRequestLogContext : LoggerStructureBase
+        {
+            private readonly Request _request;
+
+            internal ReceiveRequestLogContext(Request request)
+            {
+                _request = request;
+                Message = "Received Request";
+            }
+
+            public string Method { get { return _request.Method; } }
+            public string PathBase { get { return _request.PathBase; } }
+            public string Path { get { return _request.Path; } }
+            public string Query { get { return _request.QueryString; } }
+            public string Protocol { get { return "HTTP/" + _request.ProtocolVersion.ToString(2); } }
+            public IEnumerable Headers { get { return new HeadersLogStructure(_request.Headers); } }
+
+            public override string Format()
+            {
+                var requestBuilder = new StringBuilder("Received request: ");
+
+                // GET /path?query HTTP/1.1
+                requestBuilder.Append(Method);
+                requestBuilder.Append(" ");
+                requestBuilder.Append(PathBase);
+                requestBuilder.Append(Path);
+                requestBuilder.Append(Query);
+                requestBuilder.Append(" ");
+                requestBuilder.Append(Protocol);
+                requestBuilder.Append("; Headers: { ");
+
+                foreach (var header in _request.Headers)
+                {
+                    foreach (var value in header.Value)
+                    {
+                        requestBuilder.Append(header.Key);
+                        requestBuilder.Append(": ");
+                        requestBuilder.Append(value);
+                        requestBuilder.Append("; ");
+                    }
+                }
+                requestBuilder.Append("}");
+                return requestBuilder.ToString();
             }
         }
     }

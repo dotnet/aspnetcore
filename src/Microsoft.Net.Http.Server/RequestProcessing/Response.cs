@@ -22,14 +22,17 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.Net.Http.Server
 {
@@ -358,9 +361,13 @@ namespace Microsoft.Net.Http.Server
         {
             Debug.Assert(!HeadersSent, "HttpListenerResponse::SendHeaders()|SentHeaders is true.");
 
-            // TODO: Verbose log headers
             _responseState = ResponseState.SentHeaders;
-            string reasonPhrase = GetReasonPhrase(_nativeResponse.Response_V1.StatusCode);
+            var reasonPhrase = GetReasonPhrase(StatusCode);
+
+            if (RequestContext.Logger.IsEnabled(LogLevel.Verbose))
+            {
+                RequestContext.Logger.WriteVerbose(new SendResponseLogContext(this));
+            }
 
             /*
             if (m_BoundaryType==BoundaryType.Raw) {
@@ -835,6 +842,47 @@ namespace Microsoft.Net.Http.Server
             foreach (var actionPair in actions.Reverse())
             {
                 actionPair.Item1(actionPair.Item2);
+            }
+        }
+
+        private class SendResponseLogContext : LoggerStructureBase
+        {
+            private readonly Response _response;
+
+            internal SendResponseLogContext(Response response)
+            {
+                _response = response;
+                Message = "Sending Response";
+            }
+
+            public string Protocol { get { return "HTTP/1.1"; } } // HTTP.SYS only allows 1.1 responses.
+            public string StatusCode { get { return _response.StatusCode.ToString(CultureInfo.InvariantCulture); } }
+            public string ReasonPhrase { get { return _response.ReasonPhrase ?? _response.GetReasonPhrase(_response.StatusCode); } }
+            public IEnumerable Headers { get { return new HeadersLogStructure(_response.Headers); } }
+
+            public override string Format()
+            {
+                // HTTP/1.1 200 OK
+                var responseBuilder = new StringBuilder("Sending Response: ");
+                responseBuilder.Append(Protocol);
+                responseBuilder.Append(" ");
+                responseBuilder.Append(StatusCode);
+                responseBuilder.Append(" ");
+                responseBuilder.Append(ReasonPhrase);
+                responseBuilder.Append("; Headers: { ");
+
+                foreach (var header in _response.Headers)
+                {
+                    foreach (var value in header.Value)
+                    {
+                        responseBuilder.Append(header.Key);
+                        responseBuilder.Append(": ");
+                        responseBuilder.Append(value);
+                        responseBuilder.Append("; ");
+                    }
+                }
+                responseBuilder.Append("}");
+                return responseBuilder.ToString();
             }
         }
     }

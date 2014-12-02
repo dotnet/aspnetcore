@@ -35,7 +35,7 @@ namespace SelfHostServer
             var info = (ServerInformation)app.Server;
             info.Listener.AuthenticationManager.AuthenticationTypes = AuthenticationTypes.AllowAnonymous;
 
-            loggerfactory.AddConsole();
+            loggerfactory.AddConsole(LogLevel.Verbose);
 
             app.Run(async context =>
             {
