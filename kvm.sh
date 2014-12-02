@@ -351,8 +351,9 @@ kvm()
             fi
             echo ""
             
-            local arr=()            
-            local i=0
+            local arr
+	    arr=()
+            local i=1
             local format="%-20s %s\n"
             for _kvm_file in $(find "$KRE_USER_HOME/alias" -name *.alias); do
                 arr[$i]="$(basename $_kvm_file | sed 's/.alias//')/$(cat $_kvm_file)"
