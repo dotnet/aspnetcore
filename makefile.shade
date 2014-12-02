@@ -19,7 +19,6 @@ functions
             "Configuration",
             "Caching",
             "DataCommon",
-            "DataCommon.SQLite",
             "DataProtection",
             "DependencyInjection",
             "Options",
@@ -47,7 +46,7 @@ functions
         };
         
         // Doesn't build on Mono since their contracts don't match
-        string[] excludeReposOnMono = new[] { "DataCommon", "DataCommon.SQLite", "Helios" };
+        string[] excludeReposOnMono = new[] { "DataCommon", "Helios" };
 
         static bool useHttps = UseHttps(BASE_DIR);
         static string gitHubUriPrefix = useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/";
@@ -373,7 +372,6 @@ functions
             {
               "KRuntime",
               "Claims",
-              "DataAnnotations",
               "SqlClient",
               "MusicStore"
             };
