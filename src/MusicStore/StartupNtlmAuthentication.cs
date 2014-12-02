@@ -10,7 +10,6 @@ using Microsoft.AspNet.Server.WebListener;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.Framework.Cache.Memory;
-using Microsoft.AspNet.Identity;
 
 namespace MusicStore
 {
@@ -77,13 +76,6 @@ namespace MusicStore
                         .AddSqlServer()
                         .AddDbContext<MusicStoreContext>();
 
-                // Add Identity services to the services container
-                services.AddIdentity<ApplicationUser, IdentityRole>(Configuration)
-                        .AddEntityFrameworkStores<MusicStoreContext>()
-                        .AddDefaultTokenProviders()
-                        .AddMessageProvider<EmailMessageProvider>()
-                        .AddMessageProvider<SmsMessageProvider>();
-
                 // Add MVC services to the services container
                 services.AddMvc();
 
@@ -119,7 +111,7 @@ namespace MusicStore
             });
 
             //Populates the MusicStore sample data
-            SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
+            SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices, false).Wait();
         }
     }
 }

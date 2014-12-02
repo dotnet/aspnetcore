@@ -17,7 +17,7 @@ namespace MusicStore.Models
         const string defaultAdminUserName = "DefaultAdminUserName";
         const string defaultAdminPassword = "defaultAdminPassword";
 
-        public static async Task InitializeMusicStoreDatabaseAsync(IServiceProvider serviceProvider)
+        public static async Task InitializeMusicStoreDatabaseAsync(IServiceProvider serviceProvider, bool createUsers = true)
         {
             using (var db = serviceProvider.GetService<MusicStoreContext>())
             {
@@ -27,13 +27,19 @@ namespace MusicStore.Models
                     if (await sqlServerDatabase.EnsureCreatedAsync())
                     {
                         await InsertTestData(serviceProvider);
-                        await CreateAdminUser(serviceProvider);
+                        if (createUsers)
+                        {
+                            await CreateAdminUser(serviceProvider);
+                        }
                     }
                 }
                 else
                 {
                     await InsertTestData(serviceProvider);
-                    await CreateAdminUser(serviceProvider);
+                    if (createUsers)
+                    {
+                        await CreateAdminUser(serviceProvider);
+                    }
                 }
             }
         }

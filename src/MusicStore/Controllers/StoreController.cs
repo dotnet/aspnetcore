@@ -1,8 +1,8 @@
-﻿using Microsoft.Framework.Cache.Memory;
-using Microsoft.AspNet.Mvc;
-using MusicStore.Models;
-using System;
+﻿using System;
 using System.Linq;
+using Microsoft.AspNet.Mvc;
+using Microsoft.Framework.Cache.Memory;
+using MusicStore.Models;
 
 namespace MusicStore.Controllers
 {
@@ -33,11 +33,7 @@ namespace MusicStore.Controllers
         public IActionResult Browse(string genre)
         {
             // Retrieve Genre genre and its Associated associated Albums albums from database
-
-            // TODO [EF] Swap to native support for loading related data when available
-            var genreModel = db.Genres.Single(g => g.Name == genre);
-            genreModel.Albums = db.Albums.Where(a => a.GenreId == genreModel.GenreId).ToList();
-
+            var genreModel = db.Genres.Include(g => g.Albums).Where(g => g.Name == genre).FirstOrDefault();
             return View(genreModel);
         }
 
@@ -48,11 +44,7 @@ namespace MusicStore.Controllers
                 //Remove it from cache if not retrieved in last 10 minutes
                 context.SetSlidingExpiration(TimeSpan.FromMinutes(10));
 
-                var albumData = db.Albums.Single(a => a.AlbumId == id);
-
-                // TODO [EF] We don't query related data as yet. We have to populate this until we do automatically.
-                albumData.Genre = db.Genres.Single(g => g.GenreId == albumData.GenreId);
-                albumData.Artist = db.Artists.Single(a => a.ArtistId == albumData.ArtistId);
+                var albumData = db.Albums.Where(a => a.AlbumId == id).Include(a => a.Artist).Include(a => a.Genre).ToList().FirstOrDefault();
                 return albumData;
             });
 

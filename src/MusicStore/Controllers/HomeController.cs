@@ -1,9 +1,9 @@
-﻿using Microsoft.Framework.Cache.Memory;
-using Microsoft.AspNet.Mvc;
-using MusicStore.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Framework.Cache.Memory;
+using Microsoft.AspNet.Mvc;
+using MusicStore.Models;
 
 namespace MusicStore.Controllers
 {
