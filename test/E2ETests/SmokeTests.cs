@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using Xunit;
@@ -84,7 +85,7 @@ namespace E2ETests
                     }
                     catch (AggregateException exception)
                     {
-                        if (exception.InnerException is HttpRequestException)
+                        if (exception.InnerException is HttpRequestException || exception.InnerException is WebException)
                         {
                             Console.WriteLine("Failed to complete the request with error: {0}", exception.ToString());
                             Console.WriteLine("Retrying request..");
