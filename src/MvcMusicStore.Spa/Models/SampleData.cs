@@ -20,7 +20,7 @@ namespace MvcMusicStore.Models
             List<Genre> genres,
             List<Artist> artists)
         {
-            var albums = new List<Album>
+            var albums = new[] 
             {
                 new Album
                 {
@@ -3720,12 +3720,12 @@ namespace MvcMusicStore.Models
                 },
             };
 
-            context.Albums.AddRange(albums);
+            context.Albums.Add(albums);
         }
 
         private static List<Artist> AddArtists(MusicStoreEntities context)
         {
-            var artists = new List<Artist>
+            var artists = new[]
             {
                 new Artist { Name = "65daysofstatic" },
                 new Artist { Name = "Aaron Goldberg" },
@@ -4032,14 +4032,14 @@ namespace MvcMusicStore.Models
                 new Artist { Name = "אריק אינשטיין" }
             };
 
-            context.Artists.AddRange(artists);
+            context.Artists.Add(artists);
 
             return artists;
         }
 
         private static List<Genre> AddGenres(MusicStoreEntities context)
         {
-            var genres = new List<Genre>
+            var genres = new[]
             {
                 new Genre { Name = "Pop" },
                 new Genre { Name = "Rock" },
@@ -4058,7 +4058,7 @@ namespace MvcMusicStore.Models
                 new Genre { Name = "World" }
             };
 
-            context.Genres.AddRange(genres);
+            context.Genres.Add(genres);
 
             return genres;
         }
