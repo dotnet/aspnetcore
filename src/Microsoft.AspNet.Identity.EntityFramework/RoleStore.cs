@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("role");
             }
-            await Context.UpdateAsync(role, cancellationToken);
+            Context.Update(role);
             await SaveChanges(cancellationToken);
         }
 
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("role");
             }
-            Context.Delete(role);
+            Context.Remove(role);
             await SaveChanges(cancellationToken);
         }
 
