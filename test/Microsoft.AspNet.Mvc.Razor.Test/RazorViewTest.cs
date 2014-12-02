@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 #pragma warning restore 1998
 
         [Fact]
-        public async Task RenderAsync_AsPartial_DoesNotBufferOutput()
+        public async Task RenderAsync_AsPartial_BuffersOutput()
         {
             // Arrange
             TextWriter actual = null;
@@ -43,7 +43,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             await view.RenderAsync(viewContext);
 
             // Assert
-            Assert.Same(expected, actual);
+            Assert.NotSame(expected, actual);
+            Assert.IsAssignableFrom<IBufferedTextWriter>(actual);
             Assert.Equal("Hello world", viewContext.Writer.ToString());
         }
 
@@ -105,13 +106,31 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_AsPartial_DoesNotExecuteLayoutOrViewStartPages()
+        public async Task RenderAsync_AsPartial_ExecutesLayout_ButNotViewStartPages()
         {
+            // Arrange
+            var expected = string.Join(Environment.NewLine,
+                                       "layout-content",
+                                       "page-content");
             var page = new TestableRazorPage(v =>
             {
                 v.Layout = LayoutPath;
+                v.Write("page-content");
             });
+
+            var layout = new TestableRazorPage(v =>
+            {
+                v.Write("layout-content" + Environment.NewLine);
+                v.RenderBodyPublic();
+            });
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance(LayoutPath))
+                       .Returns(layout);
+
             var viewEngine = new Mock<IRazorViewEngine>();
+            viewEngine.Setup(v => v.FindPage(It.IsAny<ActionContext>(), LayoutPath))
+                      .Returns(new RazorPageResult(LayoutPath, layout));
+
             var viewStartProvider = CreateViewStartProvider();
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
@@ -124,10 +143,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             await view.RenderAsync(viewContext);
 
             // Assert
-            viewEngine.Verify(v => v.FindPage(It.IsAny<ActionContext>(), It.IsAny<string>()),
-                              Times.Never());
             Mock.Get(viewStartProvider)
                 .Verify(v => v.GetViewStartPages(It.IsAny<string>()), Times.Never());
+            Assert.Equal(expected, viewContext.Writer.ToString());
         }
 
         [Fact]
