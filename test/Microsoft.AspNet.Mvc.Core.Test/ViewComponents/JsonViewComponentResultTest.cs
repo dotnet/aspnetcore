@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc
         public void Execute_Throws_IfNoFormatterCanBeResolved()
         {
             // Arrange
-            var expected = "TODO: No service for type 'Microsoft.AspNet.Mvc.JsonOutputFormatter'" +
+            var expected = "No service for type 'Microsoft.AspNet.Mvc.JsonOutputFormatter'" +
                 " has been registered.";
 
             var view = Mock.Of<IView>();
