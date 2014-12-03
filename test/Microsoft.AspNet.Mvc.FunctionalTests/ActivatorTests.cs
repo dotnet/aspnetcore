@@ -21,11 +21,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
-            var expectedMessage = "TODO: No service for type 'ActivatorWebSite.CannotBeActivatedController+FakeType' " +
+            var expectedMessage = "No service for type 'ActivatorWebSite.CannotBeActivatedController+FakeType' " +
                                    "has been registered.";
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<Exception>(() => client.GetAsync("http://localhost/CannotBeActivated/Index"));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync("http://localhost/CannotBeActivated/Index"));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -158,11 +158,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
-            var expectedMessage = "TODO: No service for type 'ActivatorWebSite.CannotBeActivatedComponent+FakeType' " +
+            var expectedMessage = "No service for type 'ActivatorWebSite.CannotBeActivatedComponent+FakeType' " +
                                    "has been registered.";
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<Exception>(
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => client.GetAsync("http://localhost/View/ConsumeCannotBeActivatedComponent"));
             Assert.Equal(expectedMessage, ex.Message);
         }

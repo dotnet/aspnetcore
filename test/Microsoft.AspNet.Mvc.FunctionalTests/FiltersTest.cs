@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var url = "http://localhost/RandomNumber/GetAuthorizedRandomNumber";
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => client.GetAsync(url));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync(url));
         }
 
         [Fact]
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var url = "http://localhost/RandomNumber/GetHalfOfModifiedRandomNumber?randomNumber=3";
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => client.GetAsync(url));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync(url));
         }
 
         [Fact]
