@@ -6,3 +6,6 @@
 }
 @RenderBody()
 @await RenderSectionAsync("content")
+@{
+    WaitService.NotifyClient();
+}

@@ -8,3 +8,6 @@
 @await Html.PartialAsync("_PartialThatSetsTitle")
 @await RenderSectionAsync("content")
 More content from layout
+@{
+    WaitService.NotifyClient();
+}
