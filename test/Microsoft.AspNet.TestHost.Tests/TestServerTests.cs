@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.TestHost
             var services = new ServiceCollection().BuildServiceProvider();
 
             // Act & Assert
-            Assert.Throws<Exception>(() => TestServer.Create(services, new Startup().Configuration));
+            Assert.Throws<InvalidOperationException>(() => TestServer.Create(services, new Startup().Configuration));
         }
 
         [Fact]

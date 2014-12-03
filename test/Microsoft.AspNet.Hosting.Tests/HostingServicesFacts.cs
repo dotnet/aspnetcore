@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Hosting.Tests
             fallbackServices.AddTransient<IFakeService, FakeService>();
 
             // Act
-            var exp = Assert.Throws<Exception>(() => HostingServices.Create(fallbackServices.BuildServiceProvider()));
+            var exp = Assert.Throws<InvalidOperationException>(() => HostingServices.Create(fallbackServices.BuildServiceProvider()));
 
 
             // Assert
