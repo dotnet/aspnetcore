@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Mvc
             viewComponentContext.ViewContext.HttpContext.RequestServices = serviceProvider;
 
             // Act
-            var ex = Assert.Throws<Exception>(() => result.Execute(viewComponentContext));
+            var ex = Assert.Throws<InvalidOperationException>(() => result.Execute(viewComponentContext));
 
             // Assert
             Assert.Equal(expected, ex.Message);
