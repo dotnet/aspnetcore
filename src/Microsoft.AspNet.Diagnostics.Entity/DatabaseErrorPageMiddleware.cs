@@ -89,10 +89,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                                     var pendingMigrations = migrator.GetPendingMigrations().Select(m => m.GetMigrationId());
 
                                     var pendingModelChanges = true;
-                                    var snapshot = migrator.MigrationAssembly.Model;
+                                    var snapshot = migrator.MigrationAssembly.ModelSnapshot;
                                     if (snapshot != null)
                                     {
-                                        pendingModelChanges = migrator.ModelDiffer.Diff(snapshot, dbContext.Model).Any();
+                                        pendingModelChanges = migrator.ModelDiffer.Diff(snapshot.Model, dbContext.Model).Any();
                                     }
 
                                     if ((!databaseExists && pendingMigrations.Any()) || pendingMigrations.Any() || pendingModelChanges)
