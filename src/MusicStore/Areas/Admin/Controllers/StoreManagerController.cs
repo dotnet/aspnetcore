@@ -138,7 +138,7 @@ namespace MusicStore.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.ChangeTracker.Entry(album).State = EntityState.Modified;
+                db.Entry(album).State = EntityState.Modified;
                 await db.SaveChangesAsync(Context.RequestAborted);
                 //Invalidate the cache entry as it is modified
                 cache.Remove(string.Format("album_{0}", album.AlbumId));

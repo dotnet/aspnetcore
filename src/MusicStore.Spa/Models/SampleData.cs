@@ -86,7 +86,7 @@ namespace MusicStore.Models
             {
                 foreach (var item in entities)
                 {
-                    db.ChangeTracker.Entry(item).State = existingData.Any(g => propertyToMatch(g).Equals(propertyToMatch(item)))
+                    db.Entry(item).State = existingData.Any(g => propertyToMatch(g).Equals(propertyToMatch(item)))
                         ? EntityState.Modified
                         : EntityState.Added;
                 }

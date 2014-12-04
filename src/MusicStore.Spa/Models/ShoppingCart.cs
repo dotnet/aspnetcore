@@ -55,7 +55,7 @@ namespace MusicStore.Models
                 cartItem.Count++;
 
                 // TODO [EF] Remove this line once change detection is available
-                _db.ChangeTracker.Entry(cartItem).State = EntityState.Modified;
+                _db.Entry(cartItem).State = EntityState.Modified;
             }
         }
 
@@ -75,7 +75,7 @@ namespace MusicStore.Models
                     cartItem.Count--;
 
                     // TODO [EF] Remove this line once change detection is available
-                    _db.ChangeTracker.Entry(cartItem).State = EntityState.Modified;
+                    _db.Entry(cartItem).State = EntityState.Modified;
 
                     itemCount = cartItem.Count;
                 }
@@ -95,7 +95,7 @@ namespace MusicStore.Models
             foreach (var cartItem in cartItems)
             {
                 // TODO [EF] Change to DbSet.Remove once querying attaches instances
-                _db.ChangeTracker.Entry(cartItem).State = EntityState.Deleted;
+                _db.Entry(cartItem).State = EntityState.Deleted;
             }
         }
 
