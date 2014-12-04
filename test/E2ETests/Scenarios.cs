@@ -335,6 +335,16 @@ namespace E2ETests
             Assert.Contains("<a href=\"/Admin/StoreManager\">Back to List</a>", responseContent, StringComparison.OrdinalIgnoreCase);
         }
 
+        // This gets the view that non-admin users get to see.
+        private void GetAlbumDetailsFromStore(string albumId, string albumName)
+        {
+            Console.WriteLine("Getting details of album with Id '{0}'", albumId);
+            var response = httpClient.GetAsync(string.Format("Store/Details/{0}", albumId)).Result;
+            ThrowIfResponseStatusNotOk(response);
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+            Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
+        }
+
         private void AddAlbumToCart(string albumId, string albumName)
         {
             Console.WriteLine("Adding album id '{0}' to the cart", albumId);

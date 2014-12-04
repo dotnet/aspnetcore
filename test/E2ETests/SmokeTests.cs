@@ -149,6 +149,9 @@ namespace E2ETests
                 //Get details of the album
                 VerifyAlbumDetails(albumId, albumName);
 
+                //Get the non-admin view of the album.
+                GetAlbumDetailsFromStore(albumId, albumName);
+
                 //Add an album to cart and checkout the same
                 AddAlbumToCart(albumId, albumName);
                 CheckOutCartItems();
