@@ -716,7 +716,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     GenerateAsync a new security stamp for a user, used for SignOutEverywhere functionality
+        ///     Generate a new security stamp for a user, used for SignOutEverywhere functionality
         /// </summary>
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
@@ -1335,6 +1335,52 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("user");
             }
             return await store.GetEmailConfirmedAsync(user, cancellationToken);
+        }
+
+        private static string GetChangeEmailPurpose(string newEmail)
+        {
+            return "ChangeEmail:" + newEmail;
+        }
+
+        /// <summary>
+        ///     Generate a change email token for the user using the UserTokenProvider
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<string> GenerateChangeEmailTokenAsync(TUser user, string newEmail,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            return await GenerateUserTokenAsync(user, Options.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail), cancellationToken);
+        }
+
+        /// <summary>
+        ///     Change a user's email using a change email token
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="token"></param>
+        /// <param name="newPassword"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task<IdentityResult> ChangeEmailAsync(TUser user, string newEmail, string token,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            // Make sure the token is valid and the stamp matches
+            if (!await VerifyUserTokenAsync(user, Options.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail), token, cancellationToken))
+            {
+                return IdentityResult.Failed(Resources.InvalidToken);
+            }
+            var store = GetEmailStore();
+            await store.SetEmailAsync(user, newEmail, cancellationToken);
+            await store.SetEmailConfirmedAsync(user, true, cancellationToken);
+            await UpdateSecurityStampInternal(user, cancellationToken);
+            return await UpdateAsync(user, cancellationToken);
         }
 
         // IUserPhoneNumberStore methods

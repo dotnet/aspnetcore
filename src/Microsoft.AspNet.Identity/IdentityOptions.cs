@@ -29,6 +29,8 @@ namespace Microsoft.AspNet.Identity
 
         public string PasswordResetTokenProvider { get; set; } = Resources.DefaultTokenProvider;
 
+        public string ChangeEmailTokenProvider { get; set; } = Resources.DefaultTokenProvider;
+
         public static string ApplicationCookieAuthenticationType { get; set; } = typeof(IdentityOptions).Namespace + ".Application";
         public static string ExternalCookieAuthenticationType { get; set; } = typeof(IdentityOptions).Namespace + ".External";
         public static string TwoFactorUserIdCookieAuthenticationType { get; set; } = typeof(IdentityOptions).Namespace + ".TwoFactorUserId";

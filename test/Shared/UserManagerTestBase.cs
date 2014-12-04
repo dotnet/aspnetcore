@@ -1225,6 +1225,23 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
+        public async Task ChangePhoneNumberFailsWithWrongPhoneNumber()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            user.PhoneNumber = "123-456-7890";
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            Assert.False(await manager.IsPhoneNumberConfirmedAsync(user));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            var token1 = await manager.GenerateChangePhoneNumberTokenAsync(user, "111-111-1111");
+            IdentityResultAssert.IsFailure(await manager.ChangePhoneNumberAsync(user, "bogus", token1),
+                "Invalid token.");
+            Assert.False(await manager.IsPhoneNumberConfirmedAsync(user));
+            Assert.Equal(await manager.GetPhoneNumberAsync(user), "123-456-7890");
+            Assert.Equal(stamp, user.SecurityStamp);
+        }
+
+        [Fact]
         public async Task CanVerifyPhoneNumber()
         {
             var manager = CreateManager();
@@ -1239,6 +1256,58 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.True(await manager.VerifyChangePhoneNumberTokenAsync(user, token2, num2));
             Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, token2, num1));
             Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, token1, num2));
+        }
+
+        [Fact]
+        public async Task CanChangeEmail()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            user.Email = user.UserName + "@diddly.bop";
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            Assert.False(await manager.IsEmailConfirmedAsync(user));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            string newEmail = user.UserName + "@en.vec";
+            var token1 = await manager.GenerateChangeEmailTokenAsync(user, newEmail);
+            IdentityResultAssert.IsSuccess(await manager.ChangeEmailAsync(user, newEmail, token1));
+            Assert.True(await manager.IsEmailConfirmedAsync(user));
+            Assert.Equal(await manager.GetEmailAsync(user), newEmail);
+            Assert.NotEqual(stamp, user.SecurityStamp);
+        }
+
+        [Fact]
+        public async Task ChangeEmailFailsWithWrongToken()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            user.Email = user.UserName + "@diddly.bop";
+            string oldEmail = user.Email;
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            Assert.False(await manager.IsEmailConfirmedAsync(user));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            IdentityResultAssert.IsFailure(await manager.ChangeEmailAsync(user, "whatevah@foo.barf", "bogus"),
+                "Invalid token.");
+            Assert.False(await manager.IsEmailConfirmedAsync(user));
+            Assert.Equal(await manager.GetEmailAsync(user), oldEmail);
+            Assert.Equal(stamp, user.SecurityStamp);
+        }
+
+        [Fact]
+        public async Task ChangeEmailFailsWithEmail()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            user.Email = user.UserName + "@diddly.bop";
+            string oldEmail = user.Email;
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            Assert.False(await manager.IsEmailConfirmedAsync(user));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            var token1 = await manager.GenerateChangeEmailTokenAsync(user, "forgot@alrea.dy");
+            IdentityResultAssert.IsFailure(await manager.ChangeEmailAsync(user, "oops@foo.barf", token1),
+                "Invalid token.");
+            Assert.False(await manager.IsEmailConfirmedAsync(user));
+            Assert.Equal(await manager.GetEmailAsync(user), oldEmail);
+            Assert.Equal(stamp, user.SecurityStamp);
         }
 
         [Fact]
