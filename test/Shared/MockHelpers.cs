@@ -4,9 +4,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 
@@ -14,33 +11,20 @@ namespace Microsoft.AspNet.Identity.Test
 {
     public static class MockHelpers
     {
-        //public static UserManager<TUser> CreateManager<TUser>(IUserStore<TUser> store) where TUser : class
-        //{
-        //    var services = new ServiceCollection();
-        //    services.Add(OptionsServices.GetDefaultServices());
-        //    services.Add(HostingServices.GetDefaultServices());
-        //    services.AddDefaultIdentity<TUser, IdentityRole>().AddUserStore(store);
-        //    services.ConfigureIdentity(options =>
-        //    {
-        //        options.Password.RequireDigit = false;
-        //        options.Password.RequireLowercase = false;
-        //        options.Password.RequireNonLetterOrDigit = false;
-        //        options.Password.RequireUppercase = false;
-        //        options.User.UserNameValidationRegex = null;
-        //    });
-        //    return services.BuildServiceProvider().GetService<UserManager<TUser>>();
-        //}
-
         public static Mock<UserManager<TUser>> MockUserManager<TUser>() where TUser : class
         {
             var store = new Mock<IUserStore<TUser>>();
             var options = new OptionsManager<IdentityOptions>(null);
+            var userValidators = new List<IUserValidator<TUser>>();
+            userValidators.Add(new UserValidator<TUser>());
+            var pwdValidators = new List<IPasswordValidator<TUser>>();
+            pwdValidators.Add(new PasswordValidator<TUser>());
             return new Mock<UserManager<TUser>>(
                 store.Object,
                 options,
                 new PasswordHasher<TUser>(new PasswordHasherOptionsAccessor()),
-                new UserValidator<TUser>(),
-                new PasswordValidator<TUser>(),
+                userValidators,
+                pwdValidators,
                 new UpperInvariantUserNameNormalizer(),
                 new List<IUserTokenProvider<TUser>>(),
                 new List<IIdentityMessageProvider>());
@@ -49,7 +33,9 @@ namespace Microsoft.AspNet.Identity.Test
         public static Mock<RoleManager<TRole>> MockRoleManager<TRole>() where TRole : class
         {
             var store = new Mock<IRoleStore<TRole>>();
-            return new Mock<RoleManager<TRole>>(store.Object, new RoleValidator<TRole>());
+            var roles = new List<IRoleValidator<TRole>>();
+            roles.Add(new RoleValidator<TRole>());
+            return new Mock<RoleManager<TRole>>(store.Object, roles);
         }
 
         public static UserManager<TUser> TestUserManager<TUser>() where TUser : class
@@ -62,7 +48,9 @@ namespace Microsoft.AspNet.Identity.Test
             var options = new OptionsManager<IdentityOptions>(null);
             var validator = new Mock<UserValidator<TUser>>();
             var userManager = new UserManager<TUser>(store, options, new PasswordHasher<TUser>(new PasswordHasherOptionsAccessor()), 
-                validator.Object, new PasswordValidator<TUser>(), new UpperInvariantUserNameNormalizer(), null, null);
+                null, null, new UpperInvariantUserNameNormalizer(), null, null);
+            userManager.UserValidators.Add(validator.Object);
+            userManager.PasswordValidators.Add(new PasswordValidator<TUser>());
             validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>(), CancellationToken.None))
                 .Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
             return userManager;

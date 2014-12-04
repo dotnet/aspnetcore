@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -32,11 +31,8 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task RoleManagerPublicNullChecks()
         {
-            var provider = new ServiceCollection().BuildServiceProvider();
             Assert.Throws<ArgumentNullException>("store",
-                () => new RoleManager<TestRole>(null, new RoleValidator<TestRole>()));
-            Assert.Throws<ArgumentNullException>("roleValidator",
-                () => new RoleManager<TestRole>(new NotImplementedStore(), null));
+                () => new RoleManager<TestRole>(null, null));
             var manager = CreateRoleManager(new NotImplementedStore());
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.CreateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.UpdateAsync(null));
@@ -60,7 +56,9 @@ namespace Microsoft.AspNet.Identity.Test
 
         private static RoleManager<TestRole> CreateRoleManager(IRoleStore<TestRole> roleStore)
         {
-            return new RoleManager<TestRole>(roleStore, new RoleValidator<TestRole>());
+            var v = new List<IRoleValidator<TestRole>>();
+            v.Add(new RoleValidator<TestRole>());
+            return new RoleManager<TestRole>(roleStore, v);
         }
 
         private class NotImplementedStore : IRoleStore<TestRole>

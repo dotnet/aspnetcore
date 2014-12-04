@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> ValidateAsync(IdentityUser user, string password, UserManager<IdentityUser> manager, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(UserManager<IdentityUser> manager, IdentityUser user, string password, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

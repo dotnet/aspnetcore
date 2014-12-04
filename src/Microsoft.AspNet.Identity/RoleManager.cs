@@ -24,18 +24,21 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="store">The IRoleStore commits changes via the UpdateAsync/CreateAsync methods</param>
         /// <param name="roleValidator"></param>
-        public RoleManager(IRoleStore<TRole> store, IRoleValidator<TRole> roleValidator)
+        public RoleManager(IRoleStore<TRole> store, IEnumerable<IRoleValidator<TRole>> roleValidators)
         {
             if (store == null)
             {
                 throw new ArgumentNullException("store");
             }
-            if (roleValidator == null)
-            {
-                throw new ArgumentNullException("roleValidator");
-            }
-            RoleValidator = roleValidator;
             Store = store;
+
+            if (roleValidators != null)
+            {
+                foreach (var v in roleValidators)
+                {
+                    RoleValidators.Add(v);
+                }
+            }
         }
 
         /// <summary>
@@ -46,7 +49,7 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Used to validate roles before persisting changes
         /// </summary>
-        public IRoleValidator<TRole> RoleValidator { get; set; }
+        public IList<IRoleValidator<TRole>> RoleValidators { get; } = new List<IRoleValidator<TRole>>();
 
         /// <summary>
         ///     Returns an IQueryable of roles if the store is an IQueryableRoleStore
@@ -99,8 +102,16 @@ namespace Microsoft.AspNet.Identity
 
         private async Task<IdentityResult> ValidateRoleInternal(TRole role, CancellationToken cancellationToken)
         {
-            return (RoleValidator == null) ? IdentityResult.Success : 
-                await RoleValidator.ValidateAsync(this, role, cancellationToken);
+            var errors = new List<string>();
+            foreach (var v in RoleValidators)
+            {
+                var result = await v.ValidateAsync(this, role, cancellationToken);
+                if (!result.Succeeded)
+                {
+                    errors.AddRange(result.Errors);
+                }
+            }
+            return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
         }
 
         /// <summary>

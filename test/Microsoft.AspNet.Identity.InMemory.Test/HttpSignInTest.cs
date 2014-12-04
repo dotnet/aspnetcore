@@ -1,18 +1,16 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Identity.Test;
-using Microsoft.AspNet.Security.Cookies;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Moq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Xunit;
 using Microsoft.Framework.Runtime.Infrastructure;
+using Moq;
+using Xunit;
 
 namespace Microsoft.AspNet.Identity.InMemory.Test
 {

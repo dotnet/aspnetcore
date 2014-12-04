@@ -41,8 +41,8 @@ namespace Microsoft.AspNet.Identity
         public UserManager(IUserStore<TUser> store, 
             IOptions<IdentityOptions> optionsAccessor,
             IPasswordHasher<TUser> passwordHasher, 
-            IUserValidator<TUser> userValidator,
-            IPasswordValidator<TUser> passwordValidator, 
+            IEnumerable<IUserValidator<TUser>> userValidators,
+            IEnumerable<IPasswordValidator<TUser>> passwordValidators, 
             IUserNameNormalizer userNameNormalizer,
             IEnumerable<IUserTokenProvider<TUser>> tokenProviders, 
             IEnumerable<IIdentityMessageProvider> msgProviders)
@@ -62,11 +62,21 @@ namespace Microsoft.AspNet.Identity
             Store = store;
             Options = optionsAccessor.Options;
             PasswordHasher = passwordHasher;
-            UserValidator = userValidator;
-            PasswordValidator = passwordValidator;
             UserNameNormalizer = userNameNormalizer;
-            // TODO: Email/Sms/Token services
-
+            if (userValidators != null)
+            {
+                foreach (var v in userValidators)
+                {
+                    UserValidators.Add(v);
+                }
+            }
+            if (passwordValidators != null)
+            {
+                foreach (var v in passwordValidators)
+                {
+                    PasswordValidators.Add(v);
+                }
+            }
             if (tokenProviders != null)
             {
                 foreach (var tokenProvider in tokenProviders)
@@ -114,12 +124,12 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Used to validate users before persisting changes
         /// </summary>
-        public IUserValidator<TUser> UserValidator { get; set; }
+        public IList<IUserValidator<TUser>> UserValidators { get; } = new List<IUserValidator<TUser>>();
 
         /// <summary>
         ///     Used to validate passwords before persisting changes
         /// </summary>
-        public IPasswordValidator<TUser> PasswordValidator { get; set; }
+        public IList<IPasswordValidator<TUser>> PasswordValidators { get; } = new List<IPasswordValidator<TUser>>();
 
         /// <summary>
         ///     Used to normalize user names for uniqueness
@@ -291,9 +301,30 @@ namespace Microsoft.AspNet.Identity
 
         private async Task<IdentityResult> ValidateUserInternal(TUser user, CancellationToken cancellationToken)
         {
-            return (UserValidator == null)
-                ? IdentityResult.Success
-                : await UserValidator.ValidateAsync(this, user, cancellationToken);
+            var errors = new List<string>();
+            foreach (var v in UserValidators)
+            {
+                var result = await v.ValidateAsync(this, user, cancellationToken);
+                if (!result.Succeeded)
+                {
+                    errors.AddRange(result.Errors);
+                }
+            }
+            return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
+        }
+
+        private async Task<IdentityResult> ValidatePasswordInternal(TUser user, string password, CancellationToken cancellationToken)
+        {
+            var errors = new List<string>();
+            foreach (var v in PasswordValidators)
+            {
+                var result = await v.ValidateAsync(this, user, password, cancellationToken);
+                if (!result.Succeeded)
+                {
+                    errors.AddRange(result.Errors);
+                }
+            }
+            return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
         }
 
         /// <summary>
@@ -629,13 +660,10 @@ namespace Microsoft.AspNet.Identity
         internal async Task<IdentityResult> UpdatePasswordInternal(IUserPasswordStore<TUser> passwordStore,
             TUser user, string newPassword, CancellationToken cancellationToken)
         {
-            if (PasswordValidator != null)
+            var validate = await ValidatePasswordInternal(user, newPassword, cancellationToken);
+            if (!validate.Succeeded)
             {
-                var result = await PasswordValidator.ValidateAsync(user, newPassword, this, cancellationToken);
-                if (!result.Succeeded)
-                {
-                    return result;
-                }
+                return validate;
             }
             await
                 passwordStore.SetPasswordHashAsync(user, PasswordHasher.HashPassword(user, newPassword), cancellationToken);

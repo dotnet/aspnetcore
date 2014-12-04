@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<IdentityResult> ValidateAsync(TUser user, string password, UserManager<TUser> manager, 
+        public virtual Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             if (password == null)

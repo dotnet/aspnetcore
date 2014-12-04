@@ -3,8 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -16,7 +14,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var validator = new RoleValidator<TestRole>();
-            var manager = new RoleManager<TestRole>(new NoopRoleStore(), validator);
+            var manager = new RoleManager<TestRole>(new NoopRoleStore(), null);
 
             // Act
             // Assert
@@ -31,7 +29,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var validator = new RoleValidator<TestRole>();
-            var manager = new RoleManager<TestRole>(new NoopRoleStore(), validator);
+            var manager = new RoleManager<TestRole>(new NoopRoleStore(), null);
             var user = new TestRole {Name = input};
 
             // Act

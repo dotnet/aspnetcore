@@ -22,8 +22,8 @@ namespace Microsoft.AspNet.Identity.Test
             public IUserStore<TestUser> StorePublic { get { return Store; } }
 
             public TestManager(IUserStore<TestUser> store, IOptions<IdentityOptions> optionsAccessor,
-                IPasswordHasher<TestUser> passwordHasher, IUserValidator<TestUser> userValidator,
-                IPasswordValidator<TestUser> passwordValidator)
+                IPasswordHasher<TestUser> passwordHasher, IEnumerable<IUserValidator<TestUser>> userValidator,
+                IEnumerable<IPasswordValidator<TestUser>> passwordValidator)
                 : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null, null, null) { }
         }
 
@@ -36,8 +36,8 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddIdentity<TestUser, IdentityRole>();
             var manager = services.BuildServiceProvider().GetRequiredService<TestManager>();
             Assert.NotNull(manager.PasswordHasher);
-            Assert.NotNull(manager.PasswordValidator);
-            Assert.NotNull(manager.UserValidator);
+            Assert.Equal(1, manager.PasswordValidators.Count);
+            Assert.Equal(1, manager.UserValidators.Count);
             Assert.NotNull(manager.StorePublic);
             Assert.NotNull(manager.Options);
         }
@@ -523,7 +523,8 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // TODO: Can switch to Mock eventually
             var manager = MockHelpers.TestUserManager(new EmptyStore());
-            manager.PasswordValidator = new BadPasswordValidator<TestUser>();
+            manager.PasswordValidators.Clear();
+            manager.PasswordValidators.Add(new BadPasswordValidator<TestUser>());
             IdentityResultAssert.IsFailure(await manager.CreateAsync(new TestUser(), "password"),
                 BadPasswordValidator<TestUser>.ErrorMessage);
         }
@@ -534,8 +535,6 @@ namespace Microsoft.AspNet.Identity.Test
             var store = new NotImplementedStore();
             var optionsAccessor = new OptionsManager<IdentityOptions>(null);
             var passwordHasher = new PasswordHasher<TestUser>(new PasswordHasherOptionsAccessor());
-            var userValidator = new UserValidator<TestUser>();
-            var passwordValidator = new PasswordValidator<TestUser>();
 
             Assert.Throws<ArgumentNullException>("store",
                 () => new UserManager<TestUser>(null, null, null, null, null, null, null, null));
@@ -544,7 +543,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Throws<ArgumentNullException>("passwordHasher",
                 () => new UserManager<TestUser>(store, optionsAccessor, null, null, null, null, null, null));
 
-            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null, null, null);
+            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, null, null, null, null, null);
 
             Assert.Throws<ArgumentNullException>("value", () => manager.PasswordHasher = null);
             Assert.Throws<ArgumentNullException>("value", () => manager.Options = null);
@@ -717,7 +716,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             public const string ErrorMessage = "I'm Bad.";
 
-            public Task<IdentityResult> ValidateAsync(TUser user, string password, UserManager<TUser> manager, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
