@@ -8,6 +8,10 @@ col:nth-child(2) {
     background-color: #FAFAFA;
 }
 
+form { 
+    display: inline-block; 
+}
+
 h1 {
     margin-left: 25px;
 }

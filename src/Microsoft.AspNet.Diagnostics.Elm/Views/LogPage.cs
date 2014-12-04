@@ -318,6 +318,10 @@ col:nth-child(2) {
     background-color: #FAFAFA;
 }
 
+form { 
+    display: inline-block; 
+}
+
 h1 {
     margin-left: 25px;
 }
@@ -501,6 +505,9 @@ tr:nth-child(2n) {
             WriteLiteral(@" />
         <input type=""submit"" value=""filter"" />
     </form>
+    <form id=""clear"" method=""post"" action="""">
+        <button type=""submit"" name=""clear"" value=""1"">Clear Logs</button>
+    </form>
 
     <table id=""requestTable"">
         <thead id=""requestHeader"">
@@ -518,13 +525,13 @@ tr:nth-child(2n) {
             <col />
         </colgroup>
 ");
-#line 136 "LogPage.cshtml"
+#line 139 "LogPage.cshtml"
         
 
 #line default
 #line hidden
 
-#line 136 "LogPage.cshtml"
+#line 139 "LogPage.cshtml"
          foreach (var activity in Model.Activities.Reverse())
         {
 
@@ -532,13 +539,13 @@ tr:nth-child(2n) {
 #line hidden
 
             WriteLiteral("            <tbody>\r\n                <tr class=\"requestRow\">\r\n");
-#line 140 "LogPage.cshtml"
+#line 143 "LogPage.cshtml"
                     
 
 #line default
 #line hidden
 
-#line 140 "LogPage.cshtml"
+#line 143 "LogPage.cshtml"
                       
                         if (activity.HttpInfo != null)
                         {
@@ -548,30 +555,30 @@ tr:nth-child(2n) {
 #line hidden
 
             WriteLiteral("                            <td><a");
-            WriteAttribute("href", Tuple.Create(" href=\"", 4400), Tuple.Create("\"", 4419), 
-            Tuple.Create(Tuple.Create("", 4407), Tuple.Create<System.Object, System.Int32>(requestPath, 4407), false));
-            WriteAttribute("title", Tuple.Create(" title=\"", 4420), Tuple.Create("\"", 4451), 
-            Tuple.Create(Tuple.Create("", 4428), Tuple.Create<System.Object, System.Int32>(activity.HttpInfo.Path, 4428), false));
+            WriteAttribute("href", Tuple.Create(" href=\"", 4534), Tuple.Create("\"", 4553), 
+            Tuple.Create(Tuple.Create("", 4541), Tuple.Create<System.Object, System.Int32>(requestPath, 4541), false));
+            WriteAttribute("title", Tuple.Create(" title=\"", 4554), Tuple.Create("\"", 4585), 
+            Tuple.Create(Tuple.Create("", 4562), Tuple.Create<System.Object, System.Int32>(activity.HttpInfo.Path, 4562), false));
             WriteLiteral(">");
-#line 144 "LogPage.cshtml"
+#line 147 "LogPage.cshtml"
                                                                                   Write(activity.HttpInfo.Path);
 
 #line default
 #line hidden
             WriteLiteral("</a></td>\r\n                            <td>");
-#line 145 "LogPage.cshtml"
+#line 148 "LogPage.cshtml"
                            Write(activity.HttpInfo.Host);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                            <td>");
-#line 146 "LogPage.cshtml"
+#line 149 "LogPage.cshtml"
                            Write(activity.HttpInfo.StatusCode);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n");
-#line 147 "LogPage.cshtml"
+#line 150 "LogPage.cshtml"
                         }
                         else
                         {
@@ -580,13 +587,13 @@ tr:nth-child(2n) {
 #line hidden
 
             WriteLiteral("                            <td colspan=\"3\">");
-#line 150 "LogPage.cshtml"
+#line 153 "LogPage.cshtml"
                                        Write(activity.Root.State);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n");
-#line 151 "LogPage.cshtml"
+#line 154 "LogPage.cshtml"
                         }
                     
 
@@ -608,13 +615,13 @@ tr:nth-child(2n) {
                             </thead>
                             <tbody>
 ");
-#line 166 "LogPage.cshtml"
+#line 169 "LogPage.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 166 "LogPage.cshtml"
+#line 169 "LogPage.cshtml"
                                  if (activity.Id.Equals(Guid.Empty))
                                 {
                                     // message not within a scope
@@ -623,12 +630,12 @@ tr:nth-child(2n) {
 #line default
 #line hidden
 
-#line 169 "LogPage.cshtml"
+#line 172 "LogPage.cshtml"
                                Write(LogRow(activity.Root.Messages.FirstOrDefault(), 0));
 
 #line default
 #line hidden
-#line 169 "LogPage.cshtml"
+#line 172 "LogPage.cshtml"
                                                                                        
                                 }
                                 else
@@ -638,12 +645,12 @@ tr:nth-child(2n) {
 #line default
 #line hidden
 
-#line 173 "LogPage.cshtml"
+#line 176 "LogPage.cshtml"
                                Write(Traverse(activity.Root, 0));
 
 #line default
 #line hidden
-#line 173 "LogPage.cshtml"
+#line 176 "LogPage.cshtml"
                                                                
                                 }
 
@@ -652,7 +659,7 @@ tr:nth-child(2n) {
 
             WriteLiteral("                            </tbody>\r\n                        </table>\r\n         " +
 "           </td>\r\n                </tr>\r\n            </tbody>\r\n");
-#line 180 "LogPage.cshtml"
+#line 183 "LogPage.cshtml"
         }
 
 #line default

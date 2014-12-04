@@ -49,6 +49,14 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         }
 
         /// <summary>
+        /// Removes all activity contexts that have been stored.
+        /// </summary>
+        public void Clear()
+        {
+            Activities.Clear();
+        }
+
+        /// <summary>
         /// Returns the total number of logs in all activities in the store
         /// </summary>
         /// <returns>The total log count</returns>

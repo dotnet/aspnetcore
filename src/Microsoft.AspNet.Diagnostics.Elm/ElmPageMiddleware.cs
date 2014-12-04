@@ -36,7 +36,13 @@ namespace Microsoft.AspNet.Diagnostics.Elm
                 return;
             }
 
-            var options = ParseParams(context);
+            var t = await ParseParams(context);
+            var options = t.Item1;
+            var redirect = t.Item2;
+            if (redirect)
+            {
+                return;
+            }
             if (context.Request.Path == _options.Path)
             {
                 RenderMainLogPage(options, context);
@@ -81,27 +87,38 @@ namespace Microsoft.AspNet.Diagnostics.Elm
             await requestPage.ExecuteAsync(context);
         }
 
-        private ViewOptions ParseParams(HttpContext context)
+        private async Task<Tuple<ViewOptions, bool>> ParseParams(HttpContext context)
         {
             var options = new ViewOptions()
             {
                 MinLevel = LogLevel.Verbose,
                 NamePrefix = string.Empty
             };
-            if (context.Request.Query.ContainsKey("level"))
+            var isRedirect = false;
+            var form = await context.Request.GetFormAsync();
+            if (form.ContainsKey("clear"))
             {
-                var minLevel = options.MinLevel;
-                if (Enum.TryParse<LogLevel>(context.Request.Query["level"], out minLevel))
+                _store.Clear();
+                context.Response.Redirect(context.Request.PathBase.Add(_options.Path).ToString());
+                isRedirect = true;
+            }
+            else
+            {
+                if (context.Request.Query.ContainsKey("level"))
                 {
-                    options.MinLevel = minLevel;
+                    var minLevel = options.MinLevel;
+                    if (Enum.TryParse<LogLevel>(context.Request.Query["level"], out minLevel))
+                    {
+                        options.MinLevel = minLevel;
+                    }
+                }
+                if (context.Request.Query.ContainsKey("name"))
+                {
+                    var namePrefix = context.Request.Query.GetValues("name")[0];
+                    options.NamePrefix = namePrefix;
                 }
             }
-            if (context.Request.Query.ContainsKey("name"))
-            {
-                var namePrefix = context.Request.Query.GetValues("name")[0];
-                options.NamePrefix = namePrefix;
-            }
-            return options;
+            return Tuple.Create(options, isRedirect);
         }
     }
 }
