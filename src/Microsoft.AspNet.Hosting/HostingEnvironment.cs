@@ -10,9 +10,8 @@ namespace Microsoft.AspNet.Hosting
     {
         private const string DefaultEnvironmentName = "Development";
 
-        public HostingEnvironment(IApplicationEnvironment appEnv, IEnumerable<IConfigureHostingEnvironment> configures)
+        public HostingEnvironment(IEnumerable<IConfigureHostingEnvironment> configures)
         {
-            WebRoot = HostingUtilities.GetWebRoot(appEnv.ApplicationBasePath);
             EnvironmentName = DefaultEnvironmentName;
             foreach (var configure in configures)
             {
@@ -21,7 +20,5 @@ namespace Microsoft.AspNet.Hosting
         }
 
         public string EnvironmentName { get; set; }
-
-        public string WebRoot { get; set; }
     }
 }

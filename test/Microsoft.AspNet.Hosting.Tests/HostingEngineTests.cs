@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting.Server;
@@ -50,6 +51,15 @@ namespace Microsoft.AspNet.Hosting
             engineStart.Dispose();
 
             Assert.Equal(1, _startInstances[0].DisposeCalls);
+        }
+
+        [Fact]
+        public void WebRootCanBeResolvedFromTheProjectJson()
+        {
+            var services = HostingServices.Create().BuildServiceProvider();
+            var provider = services.GetRequiredService<IWebRootFileSystemProvider>();
+            Assert.Equal(Path.GetFullPath("testroot") + Path.DirectorySeparatorChar, provider.WebRoot);
+            Assert.True(provider.GetFileSystem().GetFileInfo("TextFile.txt").Exists);
         }
 
         public void Initialize(IApplicationBuilder builder)

@@ -8,6 +8,5 @@
     },
     "frameworks": {
         "aspnet50": { }
-    },
-    "webroot": "testroot"
+    }
 }

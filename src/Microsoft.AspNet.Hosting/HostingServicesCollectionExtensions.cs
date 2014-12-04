@@ -35,6 +35,8 @@ namespace Microsoft.Framework.DependencyInjection
 
             services.TryAdd(describer.Instance<IApplicationLifetime>(new ApplicationLifetime()));
 
+            services.TryAdd(describer.Singleton<IWebRootFileSystemProvider, WebRootFileSystemProvider>());
+
             services.AddTypeActivator(configuration);
             // TODO: Do we expect this to be provide by the runtime eventually?
             services.AddLogging(configuration);

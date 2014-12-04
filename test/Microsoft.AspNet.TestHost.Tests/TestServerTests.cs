@@ -53,12 +53,12 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [Fact]
-        public void WebRootCanBeResolvedFromProjectJson()
+        public void WebRootCanBeResolvedWhenNotInTheProjectJson()
         {
             TestServer server = TestServer.Create(app =>
             {
-                var env = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
-                Assert.Equal(Path.GetFullPath("testroot"), env.WebRoot);
+                var provider = app.ApplicationServices.GetRequiredService<IWebRootFileSystemProvider>();
+                Assert.Equal(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar, provider.WebRoot);
             });
         }
 
