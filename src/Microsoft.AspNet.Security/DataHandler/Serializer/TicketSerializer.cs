@@ -1,11 +1,8 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Security.Claims;
 
@@ -13,46 +10,27 @@ namespace Microsoft.AspNet.Security.DataHandler.Serializer
 {
     public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     {
-        private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
         private const int FormatVersion = 2;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Dispose is idempotent")]
         public virtual byte[] Serialize(AuthenticationTicket model)
         {
             using (var memory = new MemoryStream())
             {
-                GZipStream compression;
-                if (IsMono)
+                using (var writer = new BinaryWriter(memory))
                 {
-                    // The other constructor is not currently supported on Mono.
-                    compression = new GZipStream(memory, CompressionMode.Compress);
-                }
-                else
-                {
-                    compression = new GZipStream(memory, CompressionLevel.Optimal);
-                }
-                using (compression)
-                {
-                    using (var writer = new BinaryWriter(compression))
-                    {
-                        Write(writer, model);
-                    }
+                    Write(writer, model);
                 }
                 return memory.ToArray();
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Dispose is idempotent")]
         public virtual AuthenticationTicket Deserialize(byte[] data)
         {
             using (var memory = new MemoryStream(data))
             {
-                using (var compression = new GZipStream(memory, CompressionMode.Decompress))
+                using (var reader = new BinaryReader(memory))
                 {
-                    using (var reader = new BinaryReader(compression))
-                    {
-                        return Read(reader);
-                    }
+                    return Read(reader);
                 }
             }
         }

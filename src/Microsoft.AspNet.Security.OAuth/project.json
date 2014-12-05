@@ -26,7 +26,6 @@
                 "System.Dynamic.Runtime": "4.0.0-beta-*",
                 "System.Globalization": "4.0.10-beta-*",
                 "System.IO": "4.0.10-beta-*",
-                "System.IO.Compression": "4.0.0-beta-*",
                 "System.Linq": "4.0.0-beta-*",
                 "System.Net.Http.WinHttpHandler": "4.0.0-beta-*",
                 "System.ObjectModel": "4.0.10-beta-*",
