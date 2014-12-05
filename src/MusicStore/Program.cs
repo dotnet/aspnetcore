@@ -29,7 +29,6 @@ namespace MusicStore
             config.AddCommandLine(args);
 
             var serviceCollection = HostingServices.Create(_hostServiceProvider);
-            serviceCollection.AddSingleton<IHostingEnvironment, TestHostingEnvironment>();
             var services = serviceCollection.BuildServiceProvider();
 
             var context = new HostingContext()
@@ -53,14 +52,6 @@ namespace MusicStore
                 Console.ReadLine();
             }
             return Task.FromResult(0);
-        }
-
-        private class TestHostingEnvironment : HostingEnvironment
-        {
-            public TestHostingEnvironment(IApplicationEnvironment env, IEnumerable<IConfigureHostingEnvironment> configure) : base(env, configure)
-            {
-                WebRoot = "wwwroot";
-            }
         }
     }
 }
