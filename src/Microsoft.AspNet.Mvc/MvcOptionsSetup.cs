@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.Mvc
             options.ModelBinders.Add(typeof(BinderTypeBasedModelBinder));
             options.ModelBinders.Add(typeof(ServicesModelBinder));
             options.ModelBinders.Add(typeof(BodyModelBinder));
+            options.ModelBinders.Add(new HeaderModelBinder());
             options.ModelBinders.Add(new TypeConverterModelBinder());
             options.ModelBinders.Add(new TypeMatchModelBinder());
             options.ModelBinders.Add(new CancellationTokenModelBinder());
