@@ -13,6 +13,6 @@ namespace Microsoft.AspNet.Hosting
 
         string WebRoot { get; }
 
-        IFileSystem WebRootFileSystem { get; }
+        IFileSystem WebRootFileSystem { get; set; }
     }
 }

@@ -26,6 +26,6 @@ namespace Microsoft.AspNet.Hosting
 
         public string WebRoot { get; private set; }
 
-        public IFileSystem WebRootFileSystem { get; private set; }
+        public IFileSystem WebRootFileSystem { get; set; }
     }
 }
