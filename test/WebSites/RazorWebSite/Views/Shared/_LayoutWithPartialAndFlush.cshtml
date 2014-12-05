@@ -1,8 +1,8 @@
 ﻿@inject WaitService WaitService
 <title>@ViewBag.Title</title>
 @RenderBody()
+@await FlushAsync()
 @{
-    await FlushAsync();
     WaitService.WaitForClient();
 }
 @await Html.PartialAsync("_PartialThatSetsTitle")

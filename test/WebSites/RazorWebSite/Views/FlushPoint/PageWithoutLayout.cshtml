@@ -1,12 +1,12 @@
 ﻿@inject WaitService WaitService
 Initial content
+@await FlushAsync()
 @{
-    await FlushAsync();
     WaitService.WaitForClient();
 }
 Secondary content
+@await FlushAsync()
 @{
-    await FlushAsync();
     WaitService.WaitForClient();
 }
 Final content

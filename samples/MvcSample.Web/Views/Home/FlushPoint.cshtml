@@ -45,8 +45,8 @@
     <strong>Marketing:</strong> <a href="mailto:Marketing@example.com">Marketing@example.com</a>
 </address>
 
+@await FlushAsync()
 @{
-    await FlushAsync();
     await Task.Delay(TimeSpan.FromSeconds(1));
 }
 <div class="row">
