@@ -12,18 +12,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     public class TagHelperDescriptor
     {
         /// <summary>
-        /// Instantiates a new instance of the <see cref="TagHelperDescriptor"/> class.
+        /// Internal for testing.
         /// </summary>
-        /// <param name="tagName">The tag name that the tag helper targets. '*' indicates a catch-all
-        /// <see cref="TagHelperDescriptor"/> which applies to every HTML tag.</param>
-        /// <param name="typeName">The full name of the tag helper class.</param>
-        /// <param name="tagHelperAssemblyName">The name of the assembly containing the tag helper class.</param>
-        /// <param name="contentBehavior">The <see cref="TagHelpers.ContentBehavior"/>
-        /// of the tag helper.</param>
-        public TagHelperDescriptor([NotNull] string tagName,
-                                   [NotNull] string typeName,
-                                   [NotNull] string assemblyName,
-                                   ContentBehavior contentBehavior)
+        internal TagHelperDescriptor([NotNull] string tagName,
+                                     [NotNull] string typeName,
+                                     [NotNull] string assemblyName,
+                                     ContentBehavior contentBehavior)
             : this(tagName,
                    typeName,
                    assemblyName,
