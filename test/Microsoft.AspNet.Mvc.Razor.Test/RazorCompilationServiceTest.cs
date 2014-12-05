@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Moq;
 using Xunit;
 
@@ -48,11 +50,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var generatorResult = new GeneratorResults(
-                    new Block(
-                        new BlockBuilder { Type = BlockType.Comment }),
-                        new RazorError[] { new RazorError("some message", 1, 1, 1, 1) },
-                        new CodeBuilderResult("", new LineMapping[0]),
-                        new CodeTree());
+                    new Block(new BlockBuilder { Type = BlockType.Comment }),
+                    Enumerable.Empty<TagHelperDescriptor>(),
+                    new RazorError[] { new RazorError("some message", 1, 1, 1, 1) },
+                    new CodeBuilderResult("", new LineMapping[0]),
+                    new CodeTree());
             var host = new Mock<IMvcRazorHost>();
             host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
                 .Returns(generatorResult)
@@ -81,11 +83,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Arrange
             var code = "compiled-content";
             var generatorResult = new GeneratorResults(
-                    new Block(
-                        new BlockBuilder { Type = BlockType.Comment }),
-                        new RazorError[0],
-                        new CodeBuilderResult(code, new LineMapping[0]),
-                        new CodeTree());
+                    new Block(new BlockBuilder { Type = BlockType.Comment }),
+                    Enumerable.Empty<TagHelperDescriptor>(),
+                    new RazorError[0],
+                    new CodeBuilderResult(code, new LineMapping[0]),
+                    new CodeTree());
             var host = new Mock<IMvcRazorHost>();
             host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
                 .Returns(generatorResult);
@@ -113,11 +115,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         private static GeneratorResults GetGeneratorResult()
         {
             return new GeneratorResults(
-                    new Block(
-                        new BlockBuilder { Type = BlockType.Comment }),
-                        new RazorError[0],
-                        new CodeBuilderResult("", new LineMapping[0]),
-                        new CodeTree());
+                    new Block(new BlockBuilder { Type = BlockType.Comment }),
+                    Enumerable.Empty<TagHelperDescriptor>(),
+                    new RazorError[0],
+                    new CodeBuilderResult("", new LineMapping[0]),
+                    new CodeTree());
         }
     }
 }
