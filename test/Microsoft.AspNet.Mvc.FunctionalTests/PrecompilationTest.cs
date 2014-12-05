@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var viewsDirectory = Path.Combine(applicationEnvironment.ApplicationBasePath, "Views", "Home");
             var layoutContent = File.ReadAllText(Path.Combine(viewsDirectory, "Layout.cshtml"));
             var indexContent = File.ReadAllText(Path.Combine(viewsDirectory, "Index.cshtml"));
-            var viewstartContent = File.ReadAllText(Path.Combine(viewsDirectory, "_viewstart.cshtml"));
+            var viewstartContent = File.ReadAllText(Path.Combine(viewsDirectory, "_ViewStart.cshtml"));
 
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
                 // Act - 3
                 // Touch the _ViewStart file and verify it causes all files to recompile.
-                await TouchFile(viewsDirectory, "_viewstart.cshtml");
+                await TouchFile(viewsDirectory, "_ViewStart.cshtml");
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 3
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
                 // Act - 5
                 // Touch the _ViewStart file. This time, we'll verify the Non-precompiled -> Non-precompiled workflow.
-                await TouchFile(viewsDirectory, "_viewstart.cshtml");
+                await TouchFile(viewsDirectory, "_ViewStart.cshtml");
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 5
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
                 // Act - 6
                 // Add a new _ViewStart file
-                File.WriteAllText(Path.Combine(viewsDirectory, "..", "_viewstart.cshtml"), string.Empty);
+                File.WriteAllText(Path.Combine(viewsDirectory, "..", "_ViewStart.cshtml"), string.Empty);
                 await Task.Delay(_cacheDelayInterval);
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
                 // Act - 7
                 // Remove new _ViewStart file
-                File.Delete(Path.Combine(viewsDirectory, "..", "_viewstart.cshtml"));
+                File.Delete(Path.Combine(viewsDirectory, "..", "_ViewStart.cshtml"));
                 await Task.Delay(_cacheDelayInterval);
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             {
                 File.WriteAllText(Path.Combine(viewsDirectory, "Layout.cshtml"), layoutContent);
                 File.WriteAllText(Path.Combine(viewsDirectory, "Index.cshtml"), indexContent);
-                File.WriteAllText(Path.Combine(viewsDirectory, "_viewstart.cshtml"), viewstartContent);
+                File.WriteAllText(Path.Combine(viewsDirectory, "_ViewStart.cshtml"), viewstartContent);
             }
         }
 
