@@ -37,8 +37,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Gets (or sets in subclasses) <see cref="IEnumerable{IBinderTypeProviderMetadata}"/> found in collection passed
-        /// to the <see cref="CachedDataAnnotationsMetadataAttributes(IEnumerable{object})"/> constructor, if any.
+        /// Gets (or sets in subclasses) <see cref="IEnumerable{IBinderTypeProviderMetadata}"/> found in collection
+        /// passed to the <see cref="CachedDataAnnotationsMetadataAttributes(IEnumerable{object})"/> constructor,
+        /// if any.
         /// </summary>
         public IEnumerable<IBinderTypeProviderMetadata> BinderTypeProviders { get; set; }
 

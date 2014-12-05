@@ -39,9 +39,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (PrototypeCache.BinderTypeProviders != null)
             {
-                // The need for fallback here is to handle cases where a model binder is specified
-                // on a type and on a parameter to an action.
-                //
                 // We want to respect the value set by the parameter (if any), and use the value specifed
                 // on the type as a fallback.
                 // 

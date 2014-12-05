@@ -54,6 +54,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     { m => m.BinderModelName = null, m => m.BinderModelName, null },
                     { m => m.BinderModelName = "newModelName", m => m.BinderModelName, "newModelName" },
                     { m => m.BinderModelName = string.Empty, m => m.BinderModelName, string.Empty },
+                    { m => m.BinderType = null, m => m.BinderType, null },
+                    { m => m.BinderType = typeof(string), m => m.BinderType, typeof(string) },
                     { m => m.BinderIncludeProperties = null, m => m.BinderIncludeProperties, null },
                     {
                       m => m.BinderIncludeProperties = emptyPropertyList,
@@ -124,6 +126,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(ModelMetadata.DefaultOrder, metadata.Order);
 
             Assert.Null(metadata.BinderModelName);
+            Assert.Null(metadata.BinderType);
             Assert.Null(metadata.BinderMetadata);
             Assert.Null(metadata.BinderIncludeProperties);
             Assert.Null(metadata.BinderExcludeProperties);

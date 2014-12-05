@@ -86,9 +86,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = cache.PropertyBindingInfo.ToArray();
 
             // Assert
+            Assert.Equal(propertyBindingInfos.Length, result.Length);
             for (var index = 0; index < propertyBindingInfos.Length; index++)
             {
                 Assert.Same(propertyBindingInfos[index], result[index]);
+            }
+        }
+
+        [Fact]
+        public void Constructor_FindsBinderTypeProviders()
+        {
+            // Arrange
+            var providers = new[] { new TestBinderTypeProvider(), new TestBinderTypeProvider() };
+
+            // Act
+            var cache = new CachedDataAnnotationsMetadataAttributes(providers);
+            var result = cache.BinderTypeProviders.ToArray();
+
+            // Assert
+            Assert.Equal(providers.Length, result.Length);
+            for (var index = 0; index < providers.Length; index++)
+            {
+                Assert.Same(providers[index], result[index]);
             }
         }
 
@@ -122,6 +141,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Same(displayFormat, result);
+        }
+
+        private class TestBinderTypeProvider : IBinderTypeProviderMetadata
+        {
+            public Type BinderType { get; set; }
         }
     }
 }
