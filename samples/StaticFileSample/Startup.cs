@@ -6,12 +6,11 @@ namespace StaticFilesSample
 {
     public class Startup
     {
-        public void Configuration(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseFileServer(new FileServerOptions()
             {
                 EnableDirectoryBrowsing = true,
-                FileSystem = new PhysicalFileSystem(@"c:\temp")
             });
         }
     }

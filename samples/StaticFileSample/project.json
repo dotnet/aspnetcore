@@ -1,11 +1,16 @@
 {
+    "commands": {
+        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.Urls http://localhost:12345/"
+    },
     "dependencies": {
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*"
     },
     "frameworks": {
         "aspnet50": { },
-        "aspnetcore50": {}
-    }
+        "aspnetcore50": { }
+    },
+    "webroot": "wwwroot"
 }

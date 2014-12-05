@@ -29,10 +29,7 @@ namespace Microsoft.AspNet.StaticFiles
         /// <param name="options">The configuration options for this middleware.</param>
         public DefaultFilesMiddleware([NotNull] RequestDelegate next, [NotNull] IHostingEnvironment hostingEnv, [NotNull] DefaultFilesOptions options)
         {
-            if (options.FileSystem == null)
-            {
-                options.FileSystem = new PhysicalFileSystem(Helpers.ResolveRootPath(hostingEnv.WebRoot, options.RequestPath));
-            }
+            options.ResolveFileSystem(hostingEnv);
 
             _next = next;
             _options = options;

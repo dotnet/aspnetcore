@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Builder
     public static class StaticFileExtensions
     {
         /// <summary>
-        /// Enables static file serving for the current request path from the current directory
+        /// Enables static file serving for the current request path
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
@@ -22,10 +22,10 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Enables static file serving for the given request path from the directory of the same name
+        /// Enables static file serving for the given request path
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="requestPath">The relative request path and physical path.</param>
+        /// <param name="requestPath">The relative request path.</param>
         /// <returns></returns>
         public static IApplicationBuilder UseStaticFiles([NotNull] this IApplicationBuilder builder, [NotNull] string requestPath)
         {

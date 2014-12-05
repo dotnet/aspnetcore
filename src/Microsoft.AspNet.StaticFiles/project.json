@@ -2,7 +2,8 @@
     "version": "1.0.0-*",
     "description": "ASP.NET 5 static files middleware.",
     "dependencies": {
-        "Microsoft.AspNet.FileSystems": "1.0.0-*",
+        "Microsoft.AspNet.FileSystems.Interfaces": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.AspNet.Hosting": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
         "Microsoft.AspNet.HttpFeature": { "version": "1.0.0-*", "type": "build" }

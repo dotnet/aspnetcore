@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Builder
     public static class DirectoryBrowserExtensions
     {
         /// <summary>
-        /// Enable directory browsing on the current path for the current directory
+        /// Enable directory browsing on the current path
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
@@ -22,10 +22,10 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Enables directory browsing for the given request path from the directory of the same name
+        /// Enables directory browsing for the given request path
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="requestPath">The relative request path and physical path.</param>
+        /// <param name="requestPath">The relative request path.</param>
         /// <returns></returns>
         public static IApplicationBuilder UseDirectoryBrowser([NotNull] this IApplicationBuilder builder, [NotNull] string requestPath)
         {

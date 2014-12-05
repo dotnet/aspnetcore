@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.StaticFiles
     public class DirectoryBrowserOptions : SharedOptionsBase<DirectoryBrowserOptions>
     {
         /// <summary>
-        /// Enabled directory browsing in the current physical directory for all request paths
+        /// Enabled directory browsing for all request paths
         /// </summary>
         public DirectoryBrowserOptions()
             : this(new SharedOptions())
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.StaticFiles
         }
 
         /// <summary>
-        /// Enabled directory browsing in the current physical directory for all request paths
+        /// Enabled directory browsing all request paths
         /// </summary>
         /// <param name="sharedOptions"></param>
         public DirectoryBrowserOptions(SharedOptions sharedOptions)

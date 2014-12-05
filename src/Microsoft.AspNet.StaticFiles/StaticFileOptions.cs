@@ -12,14 +12,14 @@ namespace Microsoft.AspNet.StaticFiles
     public class StaticFileOptions : SharedOptionsBase<StaticFileOptions>
     {
         /// <summary>
-        /// Defaults to all request paths in the current physical directory
+        /// Defaults to all request paths
         /// </summary>
         public StaticFileOptions() : this(new SharedOptions())
         {
         }
 
         /// <summary>
-        /// Defaults to all request paths in the current physical directory
+        /// Defaults to all request paths
         /// </summary>
         /// <param name="sharedOptions"></param>
         public StaticFileOptions(SharedOptions sharedOptions) : base(sharedOptions)

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.StaticFiles.Infrastructure
@@ -48,6 +49,18 @@ namespace Microsoft.AspNet.StaticFiles.Infrastructure
         {
             get { return SharedOptions.FileSystem; }
             set { SharedOptions.FileSystem = value; }
+        }
+
+        internal void ResolveFileSystem(IHostingEnvironment hostingEnv)
+        {
+            if (FileSystem == null)
+            {
+                FileSystem = hostingEnv.WebRootFileSystem;
+                if (FileSystem == null)
+                {
+                    throw new InvalidOperationException("Missing FileSystem.");
+                }
+            }
         }
     }
 }

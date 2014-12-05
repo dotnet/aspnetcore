@@ -30,12 +30,6 @@ namespace Microsoft.AspNet.StaticFiles
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
-        [Fact]
-        public void GivenDirDoesntExist_Throw()
-        {
-            Assert.Throws<TargetInvocationException>(() => TestServer.Create(app => app.UseStaticFiles("/ThisDirDoesntExist")));
-        }
-
         [Theory]
         [InlineData("", @".", "/missing.file")]
         [InlineData("/subdir", @".", "/subdir/missing.file")]

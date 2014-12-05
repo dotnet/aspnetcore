@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Builder
         /// Enables all static file middleware (except directory browsing) for the given request path from the directory of the same name
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="requestPath">The relative request path and physical path.</param>
+        /// <param name="requestPath">The relative request path.</param>
         /// <returns></returns>
         public static IApplicationBuilder UseFileServer([NotNull] this IApplicationBuilder builder, [NotNull] string requestPath)
         {

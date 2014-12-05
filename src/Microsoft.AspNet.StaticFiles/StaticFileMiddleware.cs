@@ -30,10 +30,7 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 throw new ArgumentException(Resources.Args_NoContentTypeProvider);
             }
-            if (options.FileSystem == null)
-            {
-                options.FileSystem = new PhysicalFileSystem(Helpers.ResolveRootPath(hostingEnv.WebRoot, options.RequestPath));
-            }
+            options.ResolveFileSystem(hostingEnv);
 
             _next = next;
             _options = options;

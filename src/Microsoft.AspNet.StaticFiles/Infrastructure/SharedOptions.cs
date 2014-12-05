@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.StaticFiles.Infrastructure
         private PathString _requestPath;
 
         /// <summary>
-        /// Defaults to all request paths and the current physical directory.
+        /// Defaults to all request paths.
         /// </summary>
         public SharedOptions()
         {
