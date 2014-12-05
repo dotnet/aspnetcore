@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Framework.Runtime.Roslyn;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -13,13 +13,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         private string _fileFormat;
 
         protected IReadOnlyList<RazorFileInfo> FileInfos { get; private set; }
-        protected CSharpParseOptions Options { get; private set; }
+        protected CompilationSettings CompilationSettings { get; }
 
         public RazorFileInfoCollectionGenerator([NotNull] IReadOnlyList<RazorFileInfo> fileInfos,
-                                                 [NotNull] CSharpParseOptions options)
+                                                [NotNull] CompilationSettings compilationSettings)
         {
             FileInfos = fileInfos;
-            Options = options;
+            CompilationSettings = compilationSettings;
         }
 
         public virtual SyntaxTree GenerateCollection()
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var sourceCode = builder.ToString();
             var syntaxTree = SyntaxTreeGenerator.Generate(sourceCode,
                                                           "__AUTO__GeneratedViewsCollection.cs",
-                                                          Options);
+                                                          CompilationSettings);
 
             return syntaxTree;
         }

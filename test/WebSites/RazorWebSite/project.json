@@ -12,8 +12,16 @@
         "Microsoft.AspNet.StaticFiles": "1.0.0-*"
     },
     "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": { }
+        "aspnet50": {
+            "compilationOptions": {
+                "define": [ "ASPNET50_CUSTOM_DEFINE" ]
+            }
+        },
+        "aspnetcore50": {
+            "compilationOptions": {
+                "define": [ "ASPNETCORE50_CUSTOM_DEFINE" ]
+            }
+        }
     },
     "webroot": "wwwroot"
 }

@@ -11,5 +11,10 @@ namespace PrecompilationWebSite.Controllers
         {
             return View();
         }
+
+        public IActionResult PrecompiledViewsCanConsumeCompilationOptions()
+        {
+            return View("~/Views/ViewsConsumingCompilationOptions/Index");
+        }
     }
 }

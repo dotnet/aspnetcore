@@ -21,6 +21,7 @@ namespace RazorWebSite
                 services.AddMvc(configuration);
                 services.AddTransient<InjectedHelper>();
                 services.AddTransient<TaskReturningService>();
+                services.AddTransient<FrameworkSpecificHelper>();
                 services.Configure<RazorViewEngineOptions>(options =>
                 {
                     var expander = new LanguageViewLocationExpander(

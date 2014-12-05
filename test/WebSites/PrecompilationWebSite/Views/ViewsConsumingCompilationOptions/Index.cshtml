@@ -1,0 +1,9 @@
+@{
+string message =
+#if ASPNET50
+    "Value set inside ASPNET50 " + GetType().Assembly.FullName;
+#elif ASPNETCORE50
+    "Value set inside ASPNETCORE50 " + System.Reflection.IntrospectionExtensions.GetTypeInfo(GetType()).Assembly.FullName;
+#endif
+}
+@message 
