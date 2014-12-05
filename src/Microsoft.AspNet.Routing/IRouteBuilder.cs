@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Routing
 {
     public interface IRouteBuilder
     {
-        IRouter DefaultHandler { get; }
+        IRouter DefaultHandler { get; set; }
 
         IServiceProvider ServiceProvider { get; }
 
