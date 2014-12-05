@@ -111,6 +111,23 @@ namespace Microsoft.AspNet.Hosting.Tests
             Assert.True(ex.Message.Contains("ConfigureBoom or Configure method not found"));
         }
 
+        [Fact]
+        public void StartupClassWithConfigureServicesShouldMakeServiceAvailableInConfigure()
+        {
+            var serviceCollection = HostingServices.Create();
+            var services = serviceCollection.BuildServiceProvider();
+            var manager = services.GetRequiredService<IStartupManager>();
+
+            var app = new ApplicationBuilder(services);
+
+            var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Tests", "WithConfigureServices");
+
+            startup.Invoke(app);
+
+            var foo = app.ApplicationServices.GetRequiredService<StartupWithConfigureServices.IFoo>();
+            Assert.True(foo.Invoked);
+        }
+
         public void ConfigurationMethodCalled(object instance)
         {
             _configurationMethodCalledList.Add(instance);
