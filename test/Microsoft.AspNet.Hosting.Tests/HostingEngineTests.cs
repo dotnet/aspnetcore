@@ -57,9 +57,9 @@ namespace Microsoft.AspNet.Hosting
         public void WebRootCanBeResolvedFromTheProjectJson()
         {
             var services = HostingServices.Create().BuildServiceProvider();
-            var provider = services.GetRequiredService<IWebRootFileSystemProvider>();
-            Assert.Equal(Path.GetFullPath("testroot") + Path.DirectorySeparatorChar, provider.WebRoot);
-            Assert.True(provider.GetFileSystem().GetFileInfo("TextFile.txt").Exists);
+            var env = services.GetRequiredService<IHostingEnvironment>();
+            Assert.Equal(Path.GetFullPath("testroot"), env.WebRoot);
+            Assert.True(env.WebRootFileSystem.GetFileInfo("TextFile.txt").Exists);
         }
 
         public void Initialize(IApplicationBuilder builder)
