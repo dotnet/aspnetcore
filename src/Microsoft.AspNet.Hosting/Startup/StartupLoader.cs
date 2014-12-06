@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Hosting.Startup
 
         private object Invoke(MethodInfo methodInfo, object instance, IApplicationBuilder builder, IServiceCollection services = null)
         {
-            var serviceProvider = builder?.ApplicationServices ?? _services;
+            var serviceProvider = builder.ApplicationServices ?? _services;
             var parameterInfos = methodInfo.GetParameters();
             var parameters = new object[parameterInfos.Length];
             for (var index = 0; index != parameterInfos.Length; ++index)

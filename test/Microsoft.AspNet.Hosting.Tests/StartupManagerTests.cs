@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Hosting.Tests
 
             var startup = manager.LoadStartup("Microsoft.AspNet.Hosting.Tests", "WithServices");
 
-            startup.Invoke(null);
+            startup.Invoke(new ApplicationBuilder(services));
 
             Assert.Equal(2, _configurationMethodCalledList.Count);
         }
