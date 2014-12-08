@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -31,51 +32,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var values = request.Headers.GetCommaSeparatedValues(bindingContext.ModelName);
                 if (values != null)
                 {
-                    bindingContext.Model = ConvertValuesToCollectionType(bindingContext.ModelType, values);
+                    bindingContext.Model = ModelBindingHelper.ConvertValuesToCollectionType(bindingContext.ModelType, values);
                 }
 
                 return Task.FromResult(true);
             }
 
             return Task.FromResult(false);
-        }
-
-        private object ConvertValuesToCollectionType(Type modelType, IList<string> values)
-        {
-            // There's a limited set of collection types we can support here.
-            //
-            // For the simple cases - choose a string[] or List<string> if the destination type supports
-            // it.
-            // 
-            // For more complex cases, if the destination type is a class and implements ICollection<string>
-            // then activate it and add the values.
-            //
-            // Otherwise just give up.
-            if (typeof(List<string>).IsAssignableFrom(modelType))
-            {
-                return new List<string>(values);
-            }
-            else if (typeof(string[]).IsAssignableFrom(modelType))
-            {
-                return values.ToArray();
-            }
-            else if (
-                modelType.GetTypeInfo().IsClass && 
-                !modelType.GetTypeInfo().IsAbstract &&
-                typeof(ICollection<string>).IsAssignableFrom(modelType))
-            {
-                var result = (ICollection<string>)Activator.CreateInstance(modelType);
-                foreach (var value in values)
-                {
-                    result.Add(value);
-                }
-
-                return result;
-            }
-            else
-            {
-                return null;
-            }
         }
     }
 }

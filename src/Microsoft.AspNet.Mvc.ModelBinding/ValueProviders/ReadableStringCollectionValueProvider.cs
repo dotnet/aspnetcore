@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private IReadableStringCollection _values;
 
         /// <summary>
-        /// Creates a NameValuePairsProvider wrapping an existing set of key value pairs.
+        /// Creates a provider for <see cref="IReadableStringCollection"/> wrapping an existing set of key value pairs.
         /// </summary>
         /// <param name="values">The key value pairs to wrap.</param>
         /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
@@ -31,6 +31,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _culture = culture;
         }
 
+        /// <summary>
+        /// Creates a provider for <see cref="IReadableStringCollection"/> wrapping an
+        /// existing set of key value pairs provided by the delegate.
+        /// </summary>
+        /// <param name="values">The delegate that provides the key value pairs to wrap.</param>
+        /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
         public ReadableStringCollectionValueProvider([NotNull] Func<Task<IReadableStringCollection>> valuesFactory,
                                                      CultureInfo culture)
         {
@@ -46,18 +52,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
         public override async Task<bool> ContainsPrefixAsync(string prefix)
         {
             var prefixContainer = await GetPrefixContainerAsync();
             return prefixContainer.ContainsPrefix(prefix);
         }
 
+        /// <inheritdoc />
         public virtual async Task<IDictionary<string, string>> GetKeysFromPrefixAsync([NotNull] string prefix)
         {
             var prefixContainer = await GetPrefixContainerAsync();
             return prefixContainer.GetKeysFromPrefix(prefix);
         }
 
+        /// <inheritdoc />
         public override async Task<ValueProviderResult> GetValueAsync([NotNull] string key)
         {
             var collection = await GetValueCollectionAsync();

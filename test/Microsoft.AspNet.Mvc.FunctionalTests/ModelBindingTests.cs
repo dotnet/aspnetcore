@@ -7,7 +7,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -1326,6 +1325,112 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedContent, body);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_CanBind_SingleFile()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/FileUpload/UploadSingle";
+            var formData = new MultipartFormDataContent("Upload----");
+            formData.Add(new StringContent("Test Content"), "file", "test.txt");
+
+            // Act
+            var response = await client.PostAsync(url, formData);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var fileDetails = JsonConvert.DeserializeObject<FileDetails>(
+                                    await response.Content.ReadAsStringAsync());
+            Assert.Equal("test.txt", fileDetails.Filename);
+            Assert.Equal("Test Content", fileDetails.Content);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_CanBind_MultipleFiles()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/FileUpload/UploadMultiple";
+            var formData = new MultipartFormDataContent("Upload----");
+            formData.Add(new StringContent("Test Content 1"), "files", "test1.txt");
+            formData.Add(new StringContent("Test Content 2"), "files", "test2.txt");
+
+            // Act
+            var response = await client.PostAsync(url, formData);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var fileDetailsArray = JsonConvert.DeserializeObject<FileDetails[]>(
+                                        await response.Content.ReadAsStringAsync());
+            Assert.Equal(2, fileDetailsArray.Length);
+            Assert.Equal("test1.txt", fileDetailsArray[0].Filename);
+            Assert.Equal("Test Content 1", fileDetailsArray[0].Content);
+            Assert.Equal("test2.txt", fileDetailsArray[1].Filename);
+            Assert.Equal("Test Content 2", fileDetailsArray[1].Content);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_CanBind_MultipleListOfFiles()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/FileUpload/UploadMultipleList";
+            var formData = new MultipartFormDataContent("Upload----");
+            formData.Add(new StringContent("Test Content 1"), "filelist1", "test1.txt");
+            formData.Add(new StringContent("Test Content 2"), "filelist1", "test2.txt");
+            formData.Add(new StringContent("Test Content 3"), "filelist2", "test3.txt");
+            formData.Add(new StringContent("Test Content 4"), "filelist2", "test4.txt");
+
+            // Act
+            var response = await client.PostAsync(url, formData);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var fileDetailsLookup = JsonConvert.DeserializeObject<IDictionary<string, IList<FileDetails>>>(
+                                        await response.Content.ReadAsStringAsync());
+            Assert.Equal(2, fileDetailsLookup.Count);
+            var fileDetailsList1 = fileDetailsLookup["filelist1"];
+            var fileDetailsList2 = fileDetailsLookup["filelist2"];
+            Assert.Equal(2, fileDetailsList1.Count);
+            Assert.Equal(2, fileDetailsList2.Count);
+            Assert.Equal("test1.txt", fileDetailsList1[0].Filename);
+            Assert.Equal("Test Content 1", fileDetailsList1[0].Content);
+            Assert.Equal("test2.txt", fileDetailsList1[1].Filename);
+            Assert.Equal("Test Content 2", fileDetailsList1[1].Content);
+            Assert.Equal("test3.txt", fileDetailsList2[0].Filename);
+            Assert.Equal("Test Content 3", fileDetailsList2[0].Content);
+            Assert.Equal("test4.txt", fileDetailsList2[1].Filename);
+            Assert.Equal("Test Content 4", fileDetailsList2[1].Content);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_CanBind_FileInsideModel()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/FileUpload/UploadModelWithFile";
+            var formData = new MultipartFormDataContent("Upload----");
+            formData.Add(new StringContent("Test Book"), "Name");
+            formData.Add(new StringContent("Test Content"), "File", "test.txt");
+
+            // Act
+            var response = await client.PostAsync(url, formData);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var book = JsonConvert.DeserializeObject<KeyValuePair<string, FileDetails>>(
+                                    await response.Content.ReadAsStringAsync());
+            var bookName = book.Key;
+            var fileDetails = book.Value;
+            Assert.Equal("Test Book", bookName);
+            Assert.Equal("test.txt", fileDetails.Filename);
+            Assert.Equal("Test Content", fileDetails.Content);
         }
     }
 }

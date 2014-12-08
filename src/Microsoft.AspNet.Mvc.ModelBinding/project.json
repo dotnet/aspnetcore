@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
     "Microsoft.Net.Http.Headers": "1.0.0-*",

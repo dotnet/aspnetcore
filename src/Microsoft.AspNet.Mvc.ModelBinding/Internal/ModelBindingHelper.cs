@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
@@ -116,6 +118,48 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
                 }
             }
             return false;
+        }
+
+        public static object ConvertValuesToCollectionType<T>(Type modelType, IList<T> values)
+        {
+            // There's a limited set of collection types we can support here.
+            //
+            // For the simple cases - choose a T[] or List<T> if the destination type supports
+            // it.
+            //
+            // For more complex cases, if the destination type is a class and implements ICollection<T>
+            // then activate it and add the values.
+            //
+            // Otherwise just give up.
+            if (typeof(List<T>).IsAssignableFrom(modelType))
+            {
+                return new List<T>(values);
+            }
+            else if (typeof(T[]).IsAssignableFrom(modelType))
+            {
+                return values.ToArray();
+            }
+            else if (
+                modelType.GetTypeInfo().IsClass &&
+                !modelType.GetTypeInfo().IsAbstract &&
+                typeof(ICollection<T>).IsAssignableFrom(modelType))
+            {
+                var result = (ICollection<T>)Activator.CreateInstance(modelType);
+                foreach (var value in values)
+                {
+                    result.Add(value);
+                }
+
+                return result;
+            }
+            else if (typeof(IEnumerable<T>).IsAssignableFrom(modelType))
+            {
+                return values;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

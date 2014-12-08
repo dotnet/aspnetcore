@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -87,6 +90,26 @@ namespace MvcSample.Web
         public ActionResult SaveUser(User user)
         {
             return View("MyView", user);
+        }
+
+        [Activate]
+        public IHostingEnvironment HostingEnvironment { get; set; }
+
+        /// <summary>
+        /// Action that shows multiple file upload.
+        /// </summary>
+        public async Task<ActionResult> PostFile(IList<IFormFile> files)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("MyView");
+            }
+
+            foreach (var f in files)
+            {
+                await f.SaveAsAsync(Path.Combine(HostingEnvironment.WebRoot, "test-file" + files.IndexOf(f)));
+            }
+            return View();
         }
 
         /// <summary>
