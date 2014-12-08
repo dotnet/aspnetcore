@@ -70,9 +70,9 @@ namespace MusicStore.Models
             {
                 foreach (var item in entities)
                 {
-                    db.Entry(item).State = existingData.Any(g => propertyToMatch(g).Equals(propertyToMatch(item)))
+                    db.Entry(item).SetState(existingData.Any(g => propertyToMatch(g).Equals(propertyToMatch(item)))
                         ? EntityState.Modified
-                        : EntityState.Added;
+                        : EntityState.Added);
                 }
 
                 await db.SaveChangesAsync();
