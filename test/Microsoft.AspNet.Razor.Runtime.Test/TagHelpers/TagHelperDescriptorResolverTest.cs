@@ -358,7 +358,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Arrange
             var tagHelperTypeResolver = new TestTagHelperTypeResolver(TestableTagHelpers)
             {
-                OnGetLibraryDefinedTypes = (assemblyName) =>
+                OnGetExportedTypes = (assemblyName) =>
                 {
                     Assert.Equal("MyAssembly", assemblyName.Name);
                 }
@@ -523,7 +523,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 _lookupValues = lookupValues;
             }
 
-            internal override IEnumerable<TypeInfo> GetLibraryDefinedTypes(AssemblyName assemblyName)
+            protected override IEnumerable<TypeInfo> GetExportedTypes(AssemblyName assemblyName)
             {
                 IEnumerable<Type> types;
 
