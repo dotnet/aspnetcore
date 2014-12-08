@@ -204,6 +204,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             contextMock
                 .SetupGet(c => c.Request.Cookies)
                 .Returns(new Mock<IReadableStringCollection>().Object);
+            contextMock
+                .Setup(c => c.Request.GetFormAsync(It.IsAny<System.Threading.CancellationToken>()))
+                .Returns(Task.FromResult(new Mock<IReadableStringCollection>().Object));
 
             return contextMock;
         }
