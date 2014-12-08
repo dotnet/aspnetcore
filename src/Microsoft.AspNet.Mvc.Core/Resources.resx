@@ -412,4 +412,7 @@
   <data name="SerializableError_DefaultError" xml:space="preserve">
     <value>The input was not valid.</value>
   </data>
+  <data name="AsyncResourceFilter_InvalidShortCircuit" xml:space="preserve">
+    <value>If an {0} provides a result value by setting the {1} property of {2} to a non-null value, then it cannot call the next filter by invoking {3}.</value>
+  </data>
 </root>

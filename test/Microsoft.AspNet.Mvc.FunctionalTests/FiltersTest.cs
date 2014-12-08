@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
@@ -22,6 +25,39 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
+            var expected = new string[]
+            {
+                "Controller Override - OnAuthorization",
+                "Global Authorization Filter - OnAuthorization",
+                "On Controller Authorization Filter - OnAuthorization",
+                "Authorize Filter On Action - OnAuthorization",
+                "Controller Override Resource Filter - OnResourceExecuting",
+                "Global Resource Filter - OnResourceExecuting",
+                "Controller Resource Filter - OnResourceExecuting",
+                "Action Resource Filter - OnResourceExecuting",
+                "Controller Override - OnActionExecuting",
+                "Global Action Filter - OnActionExecuting",
+                "On Controller Action Filter - OnActionExecuting",
+                "On Action Action Filter - OnActionExecuting",
+                "Executing Action",
+                "On Action Action Filter - OnActionExecuted",
+                "On Controller Action Filter - OnActionExecuted",
+                "Global Action Filter - OnActionExecuted",
+                "Controller Override - OnActionExecuted",
+                "Controller Override - OnResultExecuting",
+                "Global Result Filter - OnResultExecuted",
+                "On Controller Result Filter - OnResultExecuting",
+                "On Action Result Filter - OnResultExecuting",
+                "On Action Result Filter - OnResultExecuted",
+                "On Controller Result Filter - OnResultExecuted",
+                "Global Result Filter - OnResultExecuted",
+                "Controller Override - OnResultExecuted",
+                "Action Resource Filter - OnResourceExecuted",
+                "Controller Resource Filter - OnResourceExecuted",
+                "Global Resource Filter - OnResourceExecuted",
+                "Controller Override Resource Filter - OnResourceExecuted",
+            };
+
             // Act
             var response = await client.GetAsync("http://localhost/Products/GetPrice/5");
 
@@ -30,30 +66,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var body = await response.Content.ReadAsStringAsync();
 
-            var filters = response.Headers.GetValues("filters");
-            Assert.Equal(
-                "Controller Override - OnAuthorization," +
-                "Global Authorization Filter - OnAuthorization," +
-                "On Controller Authorization Filter - OnAuthorization," +
-                "Authorize Filter On Action - OnAuthorization," +
-                "Controller Override - OnActionExecuting," +
-                "Global Action Filter - OnActionExecuting," +
-                "On Controller Action Filter - OnActionExecuting," +
-                "On Action Action Filter - OnActionExecuting," +
-                "Executing Action," +
-                "On Action Action Filter - OnActionExecuted," +
-                "On Controller Action Filter - OnActionExecuted," +
-                "Global Action Filter - OnActionExecuted," +
-                "Controller Override - OnActionExecuted," +
-                "Controller Override - OnResultExecuting," +
-                "Global Result Filter - OnResultExecuted," +
-                "On Controller Result Filter - OnResultExecuting," +
-                "On Action Result Filter - OnResultExecuting," +
-                "On Action Result Filter - OnResultExecuted," +
-                "On Controller Result Filter - OnResultExecuted," +
-                "Global Result Filter - OnResultExecuted," +
-                "Controller Override - OnResultExecuted",
-                (filters as string[])[0]);
+            var filters = response.Headers.GetValues("filters").Single().Split(',');
+
+            var i = 0;
+            foreach (var filter in filters)
+            {
+                Assert.Equal(filter, expected[i++]);
+            }
+
+            Assert.Equal(expected.Length, filters.Length);
         }
 
         [Fact]
@@ -530,6 +551,51 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Throwing Exception Filter", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ResourceFilter_ChangesInputFormatters_JsonAccepted()
+        {
+            // Arrange
+            var input = "{ sampleInt: 10 }";
+
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Json");
+            request.Content = new StringContent(input, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await client.SendAsync(request);
+       
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("10", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ResourceFilter_ChangesInputFormatters_XmlDenied()
+        {
+            // Arrange
+            var input =
+                "<DummyClass xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\">" +
+                "<SampleInt>10</SampleInt>" +
+                "</DummyClass>";
+
+            // There's nothing that can deserialize the body, so the result contains the default
+            // value.
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Json");
+            request.Content = new StringContent(input, Encoding.UTF8, "application/xml");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("0", await response.Content.ReadAsStringAsync());
         }
     }
 }

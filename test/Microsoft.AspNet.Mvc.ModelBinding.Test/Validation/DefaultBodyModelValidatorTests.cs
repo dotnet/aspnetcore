@@ -336,13 +336,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             object model, Type type, List<Type> excludedTypes = null)
         {
             var modelStateDictionary = new ModelStateDictionary();
-            var provider = new Mock<IModelValidatorProviderProvider>();
-            provider.SetupGet(p => p.ModelValidatorProviders)
-                    .Returns(new IModelValidatorProvider[]
-                    {
-                       new DataAnnotationsModelValidatorProvider(),
-                       new DataMemberModelValidatorProvider()
-                    });
+            var providers = new IModelValidatorProvider[]
+            {
+                new DataAnnotationsModelValidatorProvider(),
+                new DataMemberModelValidatorProvider()
+            };
             var modelMetadataProvider = new EmptyModelMetadataProvider();
             var excludedValidationTypesPredicate =
                 new List<IExcludeTypeValidationFilter>();
@@ -358,7 +356,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             return new ModelValidationContext(
                 modelMetadataProvider,
-                new CompositeModelValidatorProvider(provider.Object),
+                new CompositeModelValidatorProvider(providers),
                 modelStateDictionary,
                 new ModelMetadata(
                     provider: modelMetadataProvider,

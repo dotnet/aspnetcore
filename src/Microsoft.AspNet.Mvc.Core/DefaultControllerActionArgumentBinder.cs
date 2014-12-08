@@ -15,18 +15,17 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class DefaultControllerActionArgumentBinder : IControllerActionArgumentBinder
     {
-        private readonly IActionBindingContextProvider _bindingContextProvider;
+        private readonly IModelMetadataProvider _modelMetadataProvider;
 
-        public DefaultControllerActionArgumentBinder(IActionBindingContextProvider bindingContextProvider)
+        public DefaultControllerActionArgumentBinder(IModelMetadataProvider modelMetadataProvider)
         {
-            _bindingContextProvider = bindingContextProvider;
+            _modelMetadataProvider = modelMetadataProvider;
         }
 
-        public async Task<IDictionary<string, object>> GetActionArgumentsAsync(ActionContext actionContext)
+        public async Task<IDictionary<string, object>> GetActionArgumentsAsync(
+            ActionContext actionContext,
+            ActionBindingContext actionBindingContext)
         {
-            var actionBindingContext = await _bindingContextProvider.GetActionBindingContextAsync(actionContext);
-            var metadataProvider = actionBindingContext.MetadataProvider;
-
             var actionDescriptor = actionContext.ActionDescriptor as ControllerActionDescriptor;
             if (actionDescriptor == null)
             {
@@ -39,7 +38,7 @@ namespace Microsoft.AspNet.Mvc
             var parameterMetadata = new List<ModelMetadata>();
             foreach (var parameter in actionDescriptor.Parameters)
             {
-                var metadata = metadataProvider.GetMetadataForParameter(
+                var metadata = _modelMetadataProvider.GetMetadataForParameter(
                     modelAccessor: null,
                     methodInfo: actionDescriptor.MethodInfo,
                     parameterName: parameter.Name);
@@ -52,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var actionArguments = new Dictionary<string, object>(StringComparer.Ordinal);
-            await PopulateArgumentAsync(actionBindingContext, actionArguments, parameterMetadata);
+            await PopulateArgumentAsync(actionContext, actionBindingContext, actionArguments, parameterMetadata);
             return actionArguments;
         }
 
@@ -71,25 +70,25 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private async Task PopulateArgumentAsync(
-            ActionBindingContext actionBindingContext,
+            ActionContext actionContext,
+            ActionBindingContext bindingContext,
             IDictionary<string, object> arguments,
             IEnumerable<ModelMetadata> parameterMetadata)
         {
             var operationBindingContext = new OperationBindingContext
             {
-                ModelBinder = actionBindingContext.ModelBinder,
-                ValidatorProvider = actionBindingContext.ValidatorProvider,
-                MetadataProvider = actionBindingContext.MetadataProvider,
-                HttpContext = actionBindingContext.ActionContext.HttpContext,
-                ValueProvider = actionBindingContext.ValueProvider,
+                ModelBinder = bindingContext.ModelBinder,
+                ValidatorProvider = bindingContext.ValidatorProvider,
+                MetadataProvider = _modelMetadataProvider,
+                HttpContext = actionContext.HttpContext,
+                ValueProvider = bindingContext.ValueProvider,
             };
 
             foreach (var parameter in parameterMetadata)
             {
                 var parameterType = parameter.ModelType;
-                var modelBindingContext =
-                    GetModelBindingContext(parameter, actionBindingContext, operationBindingContext);
-                if (await actionBindingContext.ModelBinder.BindModelAsync(modelBindingContext))
+                var modelBindingContext = GetModelBindingContext(parameter, actionContext, operationBindingContext);
+                if (await bindingContext.ModelBinder.BindModelAsync(modelBindingContext))
                 {
                     arguments[parameter.PropertyName] = modelBindingContext.Model;
                 }
@@ -98,18 +97,18 @@ namespace Microsoft.AspNet.Mvc
 
         internal static ModelBindingContext GetModelBindingContext(
             ModelMetadata modelMetadata,
-            ActionBindingContext actionBindingContext,
+            ActionContext actionContext,
             OperationBindingContext operationBindingContext)
         {
             var modelBindingContext = new ModelBindingContext
             {
                 ModelName = modelMetadata.BinderModelName ?? modelMetadata.PropertyName,
                 ModelMetadata = modelMetadata,
-                ModelState = actionBindingContext.ActionContext.ModelState,
+                ModelState = actionContext.ModelState,
 
                 // Fallback only if there is no explicit model name set.
                 FallbackToEmptyPrefix = modelMetadata.BinderModelName == null,
-                ValueProvider = actionBindingContext.ValueProvider,
+                ValueProvider = operationBindingContext.ValueProvider,
                 OperationBindingContext = operationBindingContext,
             };
 

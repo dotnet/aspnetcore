@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var modelBinderProvider = instance as IModelBinderProvider;
                 if (modelBinderProvider != null)
                 {
-                    modelBinder = new CompositeModelBinder(modelBinderProvider);
+                    modelBinder = new CompositeModelBinder(modelBinderProvider.ModelBinders);
                 }
                 else
                 {

@@ -3,9 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
@@ -14,21 +15,36 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly ControllerActionDescriptor _descriptor;
         private readonly IControllerFactory _controllerFactory;
-        private readonly IInputFormattersProvider _inputFormattersProvider;
-        private readonly IControllerActionArgumentBinder _actionInvocationProvider;
+        private readonly IControllerActionArgumentBinder _argumentBinder;
 
-        public ControllerActionInvoker([NotNull] ActionContext actionContext,
-                                      [NotNull] INestedProviderManager<FilterProviderContext> filterProvider,
-                                      [NotNull] IControllerFactory controllerFactory,
-                                      [NotNull] ControllerActionDescriptor descriptor,
-                                      [NotNull] IInputFormattersProvider inputFormattersProvider,
-                                      [NotNull] IControllerActionArgumentBinder controllerActionArgumentBinder)
-            : base(actionContext, filterProvider)
+        public ControllerActionInvoker(
+            [NotNull] ActionContext actionContext,
+            [NotNull] INestedProviderManager<FilterProviderContext> filterProvider,
+            [NotNull] IControllerFactory controllerFactory,
+            [NotNull] ControllerActionDescriptor descriptor,
+            [NotNull] IModelMetadataProvider modelMetadataProvider,
+            [NotNull] IInputFormattersProvider inputFormatterProvider,
+            [NotNull] IInputFormatterSelector inputFormatterSelector,
+            [NotNull] IControllerActionArgumentBinder controllerActionArgumentBinder,
+            [NotNull] IModelBinderProvider modelBinderProvider,
+            [NotNull] IModelValidatorProviderProvider modelValidatorProviderProvider,
+            [NotNull] IValueProviderFactoryProvider valueProviderFactoryProvider,
+            [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor)
+            : base(
+                  actionContext, 
+                  filterProvider,
+                  modelMetadataProvider,
+                  inputFormatterProvider,
+                  inputFormatterSelector, 
+                  modelBinderProvider, 
+                  modelValidatorProviderProvider, 
+                  valueProviderFactoryProvider,
+                  actionBindingContextAccessor)
         {
             _descriptor = descriptor;
             _controllerFactory = controllerFactory;
-            _inputFormattersProvider = inputFormattersProvider;
-            _actionInvocationProvider = controllerActionArgumentBinder;
+            _argumentBinder = controllerActionArgumentBinder;
+
             if (descriptor.MethodInfo == null)
             {
                 throw new ArgumentException(
@@ -40,12 +56,13 @@ namespace Microsoft.AspNet.Mvc
 
         public async override Task InvokeAsync()
         {
+            // The binding context is used in activation
+            Debug.Assert(ActionBindingContext != null);
             var controller = _controllerFactory.CreateController(ActionContext);
+
             try
             {
                 ActionContext.Controller = controller;
-                ActionContext.InputFormatters = _inputFormattersProvider.InputFormatters
-                                                                        .ToList();
                 await base.InvokeAsync();
             }
             finally
@@ -68,9 +85,11 @@ namespace Microsoft.AspNet.Mvc
             return actionResult;
         }
 
-        protected override Task<IDictionary<string, object>> GetActionArgumentsAsync(ActionContext context)
+        protected override Task<IDictionary<string, object>> GetActionArgumentsAsync(
+            ActionContext context, 
+            ActionBindingContext bindingContext)
         {
-            return _actionInvocationProvider.GetActionArgumentsAsync(context);
+            return _argumentBinder.GetActionArgumentsAsync(context, bindingContext);
         }
 
         // Marking as internal for Unit Testing purposes.

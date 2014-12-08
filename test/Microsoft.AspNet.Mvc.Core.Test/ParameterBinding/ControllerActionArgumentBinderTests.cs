@@ -52,22 +52,21 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void GetModelBindingContext_ReturnsOnlyIncludedProperties_UsingBindAttributeInclude()
         {
             // Arrange
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
-                                                  Mock.Of<ActionDescriptor>());
+            var actionContext = new ActionContext(
+                new RouteContext(Mock.Of<HttpContext>()),
+                Mock.Of<ActionDescriptor>());
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelMetadata = metadataProvider.GetMetadataForType(
                 modelAccessor: null, modelType: typeof(TypeWithIncludedPropertiesUsingBindAttribute));
 
-            var actionBindingContext = new ActionBindingContext(actionContext,
-                                                          Mock.Of<IModelMetadataProvider>(),
-                                                          Mock.Of<IModelBinder>(),
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
+            var actionBindingContext = new ActionBindingContext();
+
             // Act
             var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
-                modelMetadata, actionBindingContext, Mock.Of<OperationBindingContext>());
+                modelMetadata,
+                actionContext,
+                Mock.Of<OperationBindingContext>());
 
             // Assert
             Assert.True(context.PropertyFilter(context, "IncludedExplicitly1"));
@@ -80,23 +79,21 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var type = typeof(ControllerActionArgumentBinderTests);
             var methodInfo = type.GetMethod("ParameterWithNoBindAttribute");
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
-                                                  Mock.Of<ActionDescriptor>());
+
+            var actionContext = new ActionContext(
+                new RouteContext(Mock.Of<HttpContext>()),
+                Mock.Of<ActionDescriptor>());
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
                                                                          methodInfo: methodInfo,
                                                                          parameterName: "parameter");
 
-            var actionBindingContext = new ActionBindingContext(actionContext,
-                                                          Mock.Of<IModelMetadataProvider>(),
-                                                          Mock.Of<IModelBinder>(),
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
             // Act
             var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
-                modelMetadata, actionBindingContext, Mock.Of<OperationBindingContext>());
+                modelMetadata,
+                actionContext,
+                Mock.Of<OperationBindingContext>());
 
             // Assert
             Assert.Equal("TypePrefix", context.ModelName);
@@ -113,24 +110,21 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var type = typeof(ControllerActionArgumentBinderTests);
             var methodInfo = type.GetMethod(actionMethodName);
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
-                                                  Mock.Of<ActionDescriptor>());
+
+            var actionContext = new ActionContext(
+                new RouteContext(Mock.Of<HttpContext>()),
+                Mock.Of<ActionDescriptor>());
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
                                                                          methodInfo: methodInfo,
                                                                          parameterName: "parameter");
 
-
-            var actionBindingContext = new ActionBindingContext(actionContext,
-                                                          Mock.Of<IModelMetadataProvider>(),
-                                                          Mock.Of<IModelBinder>(),
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
             // Act
             var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
-                modelMetadata, actionBindingContext, Mock.Of<OperationBindingContext>());
+                modelMetadata, 
+                actionContext,
+                Mock.Of<OperationBindingContext>());
 
             // Assert
             Assert.Equal(expectedFallToEmptyPrefix, context.FallbackToEmptyPrefix);
@@ -147,24 +141,21 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var type = typeof(ControllerActionArgumentBinderTests);
             var methodInfo = type.GetMethod(actionMethodName);
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
-                                                  Mock.Of<ActionDescriptor>());
+
+            var actionContext = new ActionContext(
+                new RouteContext(Mock.Of<HttpContext>()),
+                Mock.Of<ActionDescriptor>());
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
                                                                          methodInfo: methodInfo,
                                                                          parameterName: "parameter1");
 
-
-            var actionBindingContext = new ActionBindingContext(actionContext,
-                                                          Mock.Of<IModelMetadataProvider>(),
-                                                          Mock.Of<IModelBinder>(),
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
             // Act
             var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
-                modelMetadata, actionBindingContext, Mock.Of<OperationBindingContext>());
+                modelMetadata,
+                actionContext,
+                Mock.Of<OperationBindingContext>());
 
             // Assert
             Assert.Equal(expectedFallToEmptyPrefix, context.FallbackToEmptyPrefix);
@@ -188,30 +179,33 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                     }
                 }
             };
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(Task.FromResult(result: false));
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
-                                                  actionDescriptor);
-            actionContext.Controller = Mock.Of<object>();
-            var bindingContext = new ActionBindingContext(actionContext,
-                                                          Mock.Of<IModelMetadataProvider>(),
-                                                          binder.Object,
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
-            var inputFormattersProvider = new Mock<IInputFormattersProvider>();
-            inputFormattersProvider.SetupGet(o => o.InputFormatters)
-                                            .Returns(new List<IInputFormatter>());
-            var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
-            actionBindingContextProvider.Setup(p => p.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-                                        .Returns(Task.FromResult(bindingContext));
 
-            var invoker = new DefaultControllerActionArgumentBinder(
-                actionBindingContextProvider.Object);
+            var binder = new Mock<IModelBinder>();
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(Task.FromResult(result: false));
+
+            var actionContext = new ActionContext(
+                new RouteContext(Mock.Of<HttpContext>()),
+                actionDescriptor)
+            {
+                Controller = Mock.Of<object>(),
+            };
+
+            var actionBindingContext = new ActionBindingContext()
+            {
+                ModelBinder = binder.Object,
+            };
+
+            var inputFormattersProvider = new Mock<IInputFormattersProvider>();
+            inputFormattersProvider
+                .SetupGet(o => o.InputFormatters)
+                .Returns(new List<IInputFormatter>());
+
+            var invoker = new DefaultControllerActionArgumentBinder(new DataAnnotationsModelMetadataProvider());
 
             // Act
-            var result = await invoker.GetActionArgumentsAsync(actionContext);
+            var result = await invoker.GetActionArgumentsAsync(actionContext, actionBindingContext);
 
             // Assert
             Assert.Empty(result);
@@ -226,44 +220,47 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             {
                 MethodInfo = method.Method,
                 Parameters = new List<ParameterDescriptor>
-                            {
-                                new ParameterDescriptor
-                                {
-                                    Name = "foo",
-                                    ParameterType = typeof(string),
-                                }
-                            }
+                {
+                    new ParameterDescriptor
+                    {
+                        Name = "foo",
+                        ParameterType = typeof(string),
+                    }
+                },
             };
+
             var value = "Hello world";
-            var binder = new Mock<IModelBinder>();
             var metadataProvider = new EmptyModelMetadataProvider();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
-                  {
-                      context.ModelMetadata = metadataProvider.GetMetadataForType(modelAccessor: null,
-                                                                                  modelType: typeof(string));
-                      context.Model = value;
-                  })
-                  .Returns(Task.FromResult(result: true));
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()),
-                                                  actionDescriptor);
-            actionContext.Controller = Mock.Of<object>();
-            var bindingContext = new ActionBindingContext(actionContext,
-                                                          metadataProvider,
-                                                          binder.Object,
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
 
-            var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
-            actionBindingContextProvider.Setup(p => p.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-                                        .Returns(Task.FromResult(bindingContext));
+            var binder = new Mock<IModelBinder>();
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Callback((ModelBindingContext context) =>
+                {
+                    context.ModelMetadata = metadataProvider.GetMetadataForType(
+                        modelAccessor: null,
+                        modelType: typeof(string));
 
-            var invoker = new DefaultControllerActionArgumentBinder(
-                actionBindingContextProvider.Object);
+                    context.Model = value;
+                })
+                .Returns(Task.FromResult(result: true));
+
+            var actionContext = new ActionContext(
+                new RouteContext(Mock.Of<HttpContext>()),
+                actionDescriptor)
+            {
+                Controller = Mock.Of<object>(),
+            };
+
+            var actionBindingContext = new ActionBindingContext()
+            {
+                ModelBinder = binder.Object,
+            };
+
+            var invoker = new DefaultControllerActionArgumentBinder(metadataProvider);
 
             // Act
-            var result = await invoker.GetActionArgumentsAsync(actionContext);
+            var result = await invoker.GetActionArgumentsAsync(actionContext, actionBindingContext);
 
             // Assert
             Assert.Equal(1, result.Count);
@@ -289,6 +286,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             {
                 return bodyParam;
             }
+        }
+
+        private class Person
+        {
+            public string Name { get; set; }
         }
 
         private class NonValueProviderBinderMetadataAttribute : Attribute, IBinderMetadata

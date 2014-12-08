@@ -711,6 +711,11 @@ namespace Microsoft.AspNet.Mvc.Core
         {
         }
 
+        private class Person
+        {
+            public string Name { get; set; }
+        }
+
         private class TestViewDataDictionary : ViewDataDictionary
         {
             public TestViewDataDictionary(IModelMetadataProvider modelMetadataProvider,

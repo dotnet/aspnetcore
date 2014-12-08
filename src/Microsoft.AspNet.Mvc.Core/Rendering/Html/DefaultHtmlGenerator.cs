@@ -12,6 +12,7 @@ using System.Text;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -19,8 +20,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
     {
         private const string HiddenListItem = @"<li style=""display:none""></li>";
 
-        private readonly IActionBindingContextProvider _actionBindingContextProvider;
         private readonly AntiForgery _antiForgery;
+        private readonly IScopedInstance<ActionBindingContext> _bindingContextAccessor;
         private readonly IModelMetadataProvider _metadataProvider;
         private readonly IUrlHelper _urlHelper;
 
@@ -28,13 +29,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
         /// </summary>
         public DefaultHtmlGenerator(
-            [NotNull] IActionBindingContextProvider actionBindingContextProvider,
             [NotNull] AntiForgery antiForgery,
+            [NotNull] IScopedInstance<ActionBindingContext> bindingContextAccessor,
             [NotNull] IModelMetadataProvider metadataProvider,
             [NotNull] IUrlHelper urlHelper)
         {
-            _actionBindingContextProvider = actionBindingContextProvider;
             _antiForgery = antiForgery;
+            _bindingContextAccessor = bindingContextAccessor;
             _metadataProvider = metadataProvider;
             _urlHelper = urlHelper;
 
@@ -723,12 +724,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
             ModelMetadata metadata,
             string name)
         {
-            var actionBindingContext = _actionBindingContextProvider.GetActionBindingContextAsync(viewContext).Result;
+            var validatorProvider = _bindingContextAccessor.Value.ValidatorProvider;
+            
             metadata = metadata ??
                 ExpressionMetadataProvider.FromStringExpression(name, viewContext.ViewData, _metadataProvider);
 
-            return actionBindingContext
-                .ValidatorProvider
+            return 
+                validatorProvider
                 .GetValidators(metadata)
                 .OfType<IClientModelValidator>()
                 .SelectMany(v => v.GetClientValidationRules(

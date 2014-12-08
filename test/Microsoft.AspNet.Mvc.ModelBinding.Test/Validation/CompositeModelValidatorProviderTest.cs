@@ -22,10 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var provider2 = new Mock<IModelValidatorProvider>();
             provider2.Setup(p => p.GetValidators(It.IsAny<ModelMetadata>()))
                      .Returns(new[] { validator3 });
-            var providerProvider = new Mock<IModelValidatorProviderProvider>();
-            providerProvider.Setup(p => p.ModelValidatorProviders)
-                            .Returns(new[] { provider1.Object, provider2.Object });
-            var compositeModelValidator = new CompositeModelValidatorProvider(providerProvider.Object);
+            var compositeModelValidator = new CompositeModelValidatorProvider(new[] { provider1.Object, provider2.Object });
             var modelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(
                                     modelAccessor: null,
                                     modelType: typeof(string));

@@ -1205,13 +1205,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static ModelBindingContext CreateContext(ModelMetadata metadata)
         {
-            var provider = new Mock<IModelValidatorProviderProvider>();
-            provider.SetupGet(p => p.ModelValidatorProviders)
-                    .Returns(new IModelValidatorProvider[]
-                    {
-                        new DataAnnotationsModelValidatorProvider(),
-                        new DataMemberModelValidatorProvider()
-                    });
+            var providers = new IModelValidatorProvider[]
+            {
+                new DataAnnotationsModelValidatorProvider(),
+                new DataMemberModelValidatorProvider()
+            };
 
             return new ModelBindingContext
             {
@@ -1220,7 +1218,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelName = "theModel",
                 OperationBindingContext = new OperationBindingContext
                 {
-                    ValidatorProvider = new CompositeModelValidatorProvider(provider.Object)
+                    ValidatorProvider = new CompositeModelValidatorProvider(providers)
                 }
             };
         }

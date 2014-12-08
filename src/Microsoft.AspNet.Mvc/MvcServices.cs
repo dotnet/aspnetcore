@@ -77,20 +77,16 @@ namespace Microsoft.AspNet.Mvc
             // Dataflow - ModelBinding, Validation and Formatting
 
             yield return describe.Transient<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
-            yield return describe.Scoped<IActionBindingContextProvider, DefaultActionBindingContextProvider>();
 
             yield return describe.Transient<IInputFormatterSelector, DefaultInputFormatterSelector>();
             yield return describe.Scoped<IInputFormattersProvider, DefaultInputFormattersProvider>();
 
             yield return describe.Transient<IModelBinderProvider, DefaultModelBindersProvider>();
-            yield return describe.Scoped<ICompositeModelBinder, CompositeModelBinder>();
             yield return describe.Transient<IValueProviderFactoryProvider, DefaultValueProviderFactoryProvider>();
-            yield return describe.Scoped<ICompositeValueProviderFactory, CompositeValueProviderFactory>();
             yield return describe.Transient<IOutputFormattersProvider, DefaultOutputFormattersProvider>();
             yield return describe.Instance<JsonOutputFormatter>(new JsonOutputFormatter());
 
             yield return describe.Transient<IModelValidatorProviderProvider, DefaultModelValidatorProviderProvider>();
-            yield return describe.Scoped<ICompositeModelValidatorProvider, CompositeModelValidatorProvider>();
             yield return describe.Transient<IBodyModelValidator, DefaultBodyModelValidator>();
             yield return describe.Transient<IValidationExcludeFiltersProvider,
                 DefaultValidationExcludeFiltersProvider>();

@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc
                 HttpContext = new DefaultHttpContext(),
             };
 
-            ModelBindingContext bindingContext = new ModelBindingContext
+            var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(null, modelType),
                 ModelName = "someName",
@@ -106,7 +106,11 @@ namespace Microsoft.AspNet.Mvc
         {
             var actionContext = CreateActionContext(new DefaultHttpContext());
             var inputFormatterSelector = new Mock<IInputFormatterSelector>();
-            inputFormatterSelector.Setup(o => o.SelectFormatter(It.IsAny<InputFormatterContext>())).Returns(inputFormatter);
+            inputFormatterSelector
+                .Setup(o => o.SelectFormatter(
+                    It.IsAny<IReadOnlyList<IInputFormatter>>(),
+                    It.IsAny<InputFormatterContext>()))
+                .Returns(inputFormatter);
 
             if (validator == null)
             {
@@ -117,14 +121,27 @@ namespace Microsoft.AspNet.Mvc
                 validator = mockValidator.Object;
             }
 
-            var bodyValidationPredicatesProvidwer = new Mock<IValidationExcludeFiltersProvider>();
-            bodyValidationPredicatesProvidwer.SetupGet(o => o.ExcludeFilters)
+            var bodyValidationPredicatesProvider = new Mock<IValidationExcludeFiltersProvider>();
+            bodyValidationPredicatesProvider.SetupGet(o => o.ExcludeFilters)
                                              .Returns(new List<IExcludeTypeValidationFilter>());
 
-            var binder = new BodyModelBinder(actionContext,
-                                             inputFormatterSelector.Object,
-                                             validator,
-                                             bodyValidationPredicatesProvidwer.Object);
+            var bindingContext = new ActionBindingContext()
+            {
+                InputFormatters = new List<IInputFormatter>(),
+            };
+
+            var bindingContextAccessor = new MockScopedInstance<ActionBindingContext>()
+            {
+                Value = bindingContext,
+            };
+
+            var binder = new BodyModelBinder(
+                actionContext,
+                bindingContextAccessor,
+                inputFormatterSelector.Object,
+                validator,
+                bodyValidationPredicatesProvider.Object);
+
             return binder;
         }
 
@@ -145,6 +162,11 @@ namespace Microsoft.AspNet.Mvc
             contextAccessor.SetupGet(c => c.Value)
                            .Returns(actionContext);
             return contextAccessor.Object;
+        }
+
+        private class Person
+        {
+            public string Name { get; set; }
         }
     }
 }

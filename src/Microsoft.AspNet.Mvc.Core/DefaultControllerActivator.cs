@@ -75,6 +75,15 @@ namespace Microsoft.AspNet.Mvc
                             serviceProvider.GetRequiredService<IModelMetadataProvider>(),
                             context.ModelState);
                     }
+                },
+                {
+                    typeof(ActionBindingContext),
+                    (context) =>
+                    {
+                        var serviceProvider = context.HttpContext.RequestServices;
+                        var accessor = serviceProvider.GetRequiredService<IScopedInstance<ActionBindingContext>>();
+                        return accessor.Value;
+                    }
                 }
             };
             return dictionary;

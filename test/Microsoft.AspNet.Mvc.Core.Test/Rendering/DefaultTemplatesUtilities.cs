@@ -12,6 +12,7 @@ using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.OptionsModel;
 using Moq;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -143,6 +144,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
+            var bindingContext = new ActionBindingContext()
+            {
+                ValidatorProvider = new DataAnnotationsModelValidatorProvider(),
+            };
+
+            var bindingContextAccessor = new MockScopedInstance<ActionBindingContext>();
+            bindingContextAccessor.Value = bindingContext;
+
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider
                 .Setup(s => s.GetService(typeof(ICompositeViewEngine)))
@@ -157,21 +166,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             httpContext.RequestServices = serviceProvider.Object;
             if (htmlGenerator == null)
             {
-                var actionBindingContext = new ActionBindingContext(
-                    actionContext,
-                    provider,
-                    Mock.Of<IModelBinder>(),
-                    Mock.Of<IValueProvider>(),
-                    Mock.Of<IInputFormatterSelector>(),
-                    new DataAnnotationsModelValidatorProvider());
-                var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
-                actionBindingContextProvider
-                   .Setup(c => c.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-                   .Returns(Task.FromResult(actionBindingContext));
-
                 htmlGenerator = new DefaultHtmlGenerator(
-                    actionBindingContextProvider.Object,
                     GetAntiForgeryInstance(),
+                    bindingContextAccessor,
                     provider,
                     urlHelper);
             }

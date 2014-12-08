@@ -25,6 +25,7 @@ namespace FiltersWebSite
                     options.Filters.Add(new GlobalActionFilter());
                     options.Filters.Add(new GlobalResultFilter());
                     options.Filters.Add(new GlobalAuthorizationFilter());
+                    options.Filters.Add(new TracingResourceFilter("Global Resource Filter"));
                 });
             });
 

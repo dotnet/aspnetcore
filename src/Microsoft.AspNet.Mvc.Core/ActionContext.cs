@@ -41,12 +41,6 @@ namespace Microsoft.AspNet.Mvc
         public ActionDescriptor ActionDescriptor { get; private set; }
 
         /// <summary>
-        /// Input formatters associated with this context.
-        /// The formatters are populated only after IInputFormattersProvider runs.
-        /// </summary>
-        public IList<IInputFormatter> InputFormatters { get; set; }
-
-        /// <summary>
         /// The controller is available only after the controller factory runs.
         /// </summary>
         public object Controller { get; set; }

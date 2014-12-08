@@ -9,6 +9,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 
@@ -26,6 +27,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public TestableHtmlGenerator(IModelMetadataProvider metadataProvider, IUrlHelper urlHelper)
             : this(
                   metadataProvider,
+                  Mock.Of<IContextAccessor<ActionBindingContext>>(),
                   urlHelper,
                   validationAttributes: new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase))
         {
@@ -33,9 +35,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         public TestableHtmlGenerator(
             IModelMetadataProvider metadataProvider,
+            IContextAccessor<ActionBindingContext> bindingContextAccessor,
             IUrlHelper urlHelper,
             IDictionary<string, object> validationAttributes)
-            : base(Mock.Of<IActionBindingContextProvider>(), GetAntiForgery(), metadataProvider, urlHelper)
+            : base(GetAntiForgery(), bindingContextAccessor, metadataProvider, urlHelper)
         {
             _validationAttributes = validationAttributes;
         }

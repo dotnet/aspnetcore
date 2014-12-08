@@ -18,30 +18,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </remarks>
     public class CompositeModelBinder : ICompositeModelBinder
     {
-        private readonly IModelBinderProvider _modelBindersProvider;
-        private IReadOnlyList<IModelBinder> _binders;
-
         /// <summary>
         /// Initializes a new instance of the CompositeModelBinder class.
         /// </summary>
-        /// <param name="modelBindersProvider">Provides a collection of <see cref="IModelBinder"/> instances.</param>
-        public CompositeModelBinder(IModelBinderProvider modelBindersProvider)
+        /// <param name="modelBinders">A collection of <see cref="IModelBinder"/> instances.</param>
+        public CompositeModelBinder([NotNull] IEnumerable<IModelBinder> modelBinders)
         {
-            _modelBindersProvider = modelBindersProvider;
+            ModelBinders = new List<IModelBinder>(modelBinders);
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<IModelBinder> ModelBinders
-        {
-            get
-            {
-                if (_binders == null)
-                {
-                    _binders = _modelBindersProvider.ModelBinders;
-                }
-                return _binders;
-            }
-        }
+        public IReadOnlyList<IModelBinder> ModelBinders { get; }
 
         public virtual async Task<bool> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {

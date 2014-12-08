@@ -468,10 +468,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         private static IModelBinder GetCompositeBinder(params IModelBinder[] binders)
         {
-            var binderProvider = new Mock<IModelBinderProvider>();
-            binderProvider.SetupGet(p => p.ModelBinders)
-                          .Returns(binders);
-            return new CompositeModelBinder(binderProvider.Object);
+            return new CompositeModelBinder(binders);
         }
 
         public class User

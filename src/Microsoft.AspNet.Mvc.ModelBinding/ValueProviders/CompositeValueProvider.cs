@@ -33,6 +33,33 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
+        /// <summary>
+        /// Creates a new <see cref="CompositeValueProvider"/> from the provided <paramref name="context"/>
+        /// and <paramref name="factories"/>.
+        /// </summary>
+        /// <param name="factories">The set of <see cref="IValueProviderFactory"/> instances.</param>
+        /// <param name="context">The <see cref="ValueProviderFactoryContext"/>.</param>
+        /// <returns>
+        /// A <see cref="CompositeValueProvider"/> containing all <see cref="IValueProvider"/> instances
+        /// created.
+        /// </returns>
+        public static CompositeValueProvider Create(
+            [NotNull] IEnumerable<IValueProviderFactory> factories, 
+            [NotNull] ValueProviderFactoryContext context)
+        {
+            var composite = new CompositeValueProvider();
+            foreach (var valueProvidersFactory in factories)
+            {
+                var valueProvider = valueProvidersFactory.GetValueProvider(context);
+                if (valueProvider != null)
+                {
+                    composite.Add(valueProvider);
+                }
+            }
+
+            return composite;
+        }
+
         /// <inheritdoc />
         public virtual async Task<bool> ContainsPrefixAsync(string prefix)
         {
