@@ -393,7 +393,7 @@ filter List-Parts {
   $delim=""
 
   foreach($alias in $aliases){
-    if($_.Name.Split('\', 2).Contains($alias.Name)){
+    if($_.Name.Split('\', 2) -Contains($alias.Name)){
         $fullAlias += $delim + $alias.Alias
         $delim = ", "
     }
