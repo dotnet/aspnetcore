@@ -138,6 +138,21 @@ var buildTarget = "compile"
         }
     }
 
+#check-update-release
+    @{
+	Parallel.ForEach(GetAllRepos(), repo=>{CloneOrUpdate(repo);});
+
+        Log.Info("************************************* Checking repos for diffs *************************");
+
+	Parallel.ForEach(GetAllRepos(), repo=>{
+		Log.Info("Checking repo: " + repo);
+
+            	GitCommand(repo, "log origin/dev..origin/release");
+	});
+
+        Log.Info("If there are no conflicts in the repos, continue with the 'update-release' target");
+    }
+
 #update-release
     -// Merge dev branch to release
     @{
@@ -150,10 +165,10 @@ var buildTarget = "compile"
                       Path.Combine(repo, "NuGet.config"),
                       overwrite: true);
             GitCommand(repo, "commit -am \"Updating to release NuGet.config\"");
-            GitCommand(repo, "push origin release");
+            GitCommand(repo, "push origin release:release");
             GitCommand(repo, "checkout origin/dev -B dev");
             GitCommand(repo, "merge release -s ours");
-            GitCommand(repo, "push origin dev");
+            GitCommand(repo, "push origin dev:dev");
         }
     }
 
@@ -379,7 +394,6 @@ functions
             var nonDefaultRepos = new[]
             {
               "KRuntime",
-              "Claims",
               "SqlClient",
               "MusicStore"
             };
