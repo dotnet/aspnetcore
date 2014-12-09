@@ -17,7 +17,7 @@ Please log a new issue in the appropriate GitHub repo. Here are some of the most
 * [MVC](https://github.com/aspnet/Mvc)
 * [SignalR-Server](https://github.com/aspnet/SignalR-Server)
 
-The full repo list is [here](https://github.com/aspnet).
+A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Repo-List).
 
 
 ## Other discussions
@@ -52,6 +52,10 @@ Make sure you can build the code. Familiarize yourself with the project workflow
 Before submitting a feature or substantial code contribution please discuss it with the team and ensure it follows the product roadmap. You might also read these two blogs posts on contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza and [Don't "Push" Your Pull Requests](http://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik. Note that all code submissions will be rigorously reviewed and tested by the ASP.NET and Entity Framework teams, and only those that meet an extremely high bar for both quality and design/roadmap appropriateness will be merged into the source.
 
 Here's a few things you should always do when making changes to the code base:
+
+**Engineering guidelines**
+
+The coding, style, and general engineering guidelines are published on the [Engineering guidelines](https://github.com/aspnet/Home/wiki/Engineering-guidelines) page.
 
 **Commit/Pull Request Format**
 

@@ -1,144 +1,141 @@
 # ASP.NET vNext Home
+Latest dev version: [![dev version](http://img.shields.io/myget/aspnetvnext/v/KRE-CLR-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetvnext)<br>
+Latest master version: [![master version](http://img.shields.io/myget/aspnetmaster/v/KRE-CLR-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetmaster)
 
-In the next version of ASP.NET we are working with multiple teams around Microsoft to create a lean, composable .NET stack that provides a familiar and modern framework for web and cloud scenarios.
+The Home repository is the starting point for people to learn about ASP.NET vNext. This repo contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what's coming in ASP.NET vNext.
 
-The Home repository is the starting point for people to learn about ASP.NET vNext, it contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what we are doing.
+ASP.NET vNext is being actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
 
-These products are actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
+The samples provided in this repo are designed to show some of the features of the new framework and to provide a starting point for further exploration. All the component packages are available on NuGet. To try out the latest bits under development switch to the dev branch of the Home repo and use the dev feed in NuGet.config (https://www.myget.org/F/aspnetvnext).
 
-The samples provided are designed to show some of the features of the new framework as well as setting up a sandbox for you to try out some of the new features. The NuGet.config file in the repo points to a MyGet feed (https://www.myget.org/F/aspnetvnext/) that has all the packages being developed. The feed is updated every time a full build succeeds.
+## Contents
 
+* [Minimum Requirements](#minimum-requirements)
+* [Getting Started](#getting-started)
+* [Samples](#samples)
+* [Documentation and Further Learning](#documentation-and-further-learning)
+* [Repos and Projects](#repos-and-projects)
+* [Feedback](#feedback)
 
-# Minimum Requirements
+## Minimum Requirements
 
-These are the current minimum requirements, they do not necesarilly represent our RTM minimum.
+These are the current minimum requirements for the latest preview release. They do not necessarily represent what the final minimum requirements will be.
 
 ### Windows
-* Windows 7 or greater, though Core CLR will only work on Windows 8 today. If using Core CLR you will need to be on Windows 8 or above. At RTM the whole stack will support Windows 7+ and Windows Server 2008 R2+.
+* Windows 7 or Windows Server 2008 R2.
 * .NET 4.5.1 for hosting in IIS
 
-### OSX/Linux
- * Mono >= 3.4.1 - Currently this means compiling Mono from source from https://github.com/mono/mono (Note: See instructions below to install the Homebrew formula that can install the required mono)
- * On Linux, you may need to run `mozroots --import --sync` after installing mono
+### OS X/Linux
+ * Mono 3.4.1 or later (Note: On OS X use the Homebrew formula specified below to install the required version of Mono)
  * bash or zsh and curl
 
-#Getting Started
+## Getting Started
 
-The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager)
+The easiest way to get started with ASP.NET vNext is to try out the latest preview of Visual Studio 2015 Preview. You can find installation instructions and getting started documentation at http://www.asp.net/vnext.
 
-The easiest way to get the KVM on Windows is to run the following command:
-```powershell
-@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
+That said, you can also try out ASP.NET vNext with just a command-prompt and a text editor. The following instructions will walk you through getting your dev environment setup.
+
+### Install the K Version Manager (KVM)
+
+The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager). We use the K Version Manager to install different versions of the ASP.NET vNext runtime and switch between them.
+
+#### Windows
+To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges for Powershell):
+
 ```
-or on OSX:
+@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.ps1'))"
 
-Mono and KVM (K Version manager) required to develop & run next generation ASP.NET applications on OSX is available as a Homebrew formula. To install the necessary development tools: 
+```
 
- * Open a terminal on your MAC
- * Install [Homebrew](http://brew.sh) by running the following command. If you already have Homebrew installed skip this step. 
-```ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"```
- * Run command `brew tap aspnet/k` to tap the aspnet vnext related git repositories. 
- * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.myget.org/f/aspnetvnext/api/v2 feed.
+After the script has run open a new command prompt to start using KVM.
 
-Now you are set for developing next general ASP.NET applications on OSX. A few things to note:
- * If you would like to use a different KRE version for your development, you can install the desired version using KVM. See [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information. 
+#### OS X:
+
+To install KVM and the correct version of Mono on OS X using [Homebrew](http://brew.sh) follow the following steps: 
+
+ * Install [Homebrew](http://brew.sh) if it is not already installed.
+ * Run command `brew tap aspnet/k` to tap the ASP.NET vNext related git repositories. If you had already tapped the repo for previous releases, run `brew untap aspnet/k` to delete the old commands and tap again to get the updated brew scripts.
+ * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.nuget.org/api/v2 feed.
  * Run command `source kvm.sh` on your terminal if your terminal cannot understand kvm. 
 
-or on Linux:
-```
-curl https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.sh | sh && source ~/.kre/kvm/kvm.sh
-```
+#### Linux:
 
-This downloads KVM from this repository and puts it on your machine. Alternatively, you you could clone the repo and get it:
-* Clone the repository
-* On the command line execute
- * ```kvm setup``` on Windows or
- * ```sh kvminstall.sh && source ~/.kre/kvm/kvm.sh``` on OSX/Linux
-
-This command will setup your environment, getting it ready to install a version of the runtime. It adds KVM to your path and puts it in your user profile. Once you have KVM then you need to get a version of the runtime:
-* Execute ```kvm install 0.1-alpha-build-0446```. This command will download the named version of the KRE and put it on your user profile ready to use. You can get the latest version by running ```kvm upgrade``` but 0446 was the last version explicitly tested. see the [KVM page](https://github.com/aspnet/Home/wiki/version-manager) for more information on KVM.
-* Navigate to samples\ConsoleApp
-* Run ```kpm restore```. This downloads the System.Console package so the app can do Console.WriteLine
-* Run ```k run```
-* You should see a message saying "Hello World"
-* Type
- * ```SET KRE_TRACE=1``` on Windows or
- * ```export KRE_TRACE=1``` on OSX/Linux
-* Run ```k run```
-* You should now see compiler output as well as the "Hello World" message
+Installing KVM need `curl`. Do verify if that is installed on the machine. Next install KVM on Linux run the following command:
 
 ```
-:: getting started
-git clone https://github.com/aspnet/Home.git
-cd Home
-kvm setup
-kvm install 0.1-alpha-build-0446 -p
-
-cd samples\ConsoleApp
-kpm restore
-k run
-
-SET KRE_TRACE=1
-k run
+curl -sSL https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.sh | sh && source ~/.kre/kvm/kvm.sh
 ```
 
-# Samples
+Note that on Linux you need to also install [Mono](http://mono-project.com) 3.4.1 or later.
 
-## Sandbox Samples
+### Install the K Runtime Environment (KRE)
 
-These samples, in this repo, are just basic starting points for you to experiment with features. Since there is no File->New Project we thought some simple samples to take the place of scaffolding would be convenient.
+Now that you have KVM setup you can install the latest version of the runtime by running the following command: ```kvm upgrade```
+ 
+This command will download the specified version of the K Runtime Environment (KRE), and put it on your user profile ready to use. You are now ready to start using ASP.NET vNext!
 
-+ [ConsoleApp](https://github.com/aspnet/Home/tree/master/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point.
-+ [HelloWeb](https://github.com/aspnet/Home/tree/master/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
-+ [HelloMvc](https://github.com/aspnet/Home/tree/master/samples/HelloMvc). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
+## Samples
 
-**NOTE: The samples are pinned to a specific version of the packages. If you want to try the latest builds then update the project.json and replace the last part of the version with a '\*', so '0.1-alpha-build-267' becomes '0.1-alpha-\*', and then run ```kpm restore``` to pull down the latest packages**
+The samples in this repo are basic starting points for you to experiment with.
 
-## Feature Samples
-The [Entropy repo](https://github.com/aspnet/Entropy) contains samples of specific features in isolation. Each directory contains just enough code to show an aspect of a feature.
++ [ConsoleApp](https://github.com/aspnet/Home/tree/release/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point.
++ [HelloWeb](https://github.com/aspnet/Home/tree/release/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
++ [HelloMvc](https://github.com/aspnet/Home/tree/release/samples/HelloMvc). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
++ [MVC Music Store](https://github.com/aspnet/MusicStore) and [BugTracker](https://github.com/aspnet/BugTracker) are application samples that are both being ported to ASP.NET vNext. Each of these samples have their own separate repositories that you can look at.
 
-## Application Samples
-[MVC Music Store](https://github.com/aspnet/MusicStore) and [BugTracker](https://github.com/aspnet/BugTracker) application are both being ported. Each of these have their own repository that you can look at.
+### Running the samples
 
-# Running the samples
+1. Clone the Home repository
+2. Change directory to the folder of the sample you want to run
+3. Run ```kpm restore``` to restore the packages required by that sample.
+4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet. 
+5. Run the sample using the appropriate K command:
+    - For the console app run  ```k run```.
+    - For the web apps run ```k web``` on Windows or ```k kestrel``` on Mono.
+6. You should see the output of the console app or a message that says the site is now started.
+7. You can navigate to the web apps in a browser by going to "http://localhost:5001" or "http://localhost:5004" if running on Mono.
 
-## Running HelloWeb
+### Switching to Core CLR
 
-1. Clone the repository
-2. Change directory to Samples\HelloWeb
-3. Run ```kpm restore```
-4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet. The K commands all operate on the app that is in the current directory.
-5. Run ```K web``` to run on WebListener. Or run ```K Kestrel``` to run on Mono. 
-6. You should see build output and a message to show the site is now started
-7. Navigate to "http://localhost:5001" or "http://localhost:5004" in case of Mono
-8. You should see the welcome page
-9. Navigate to "http://localhost:5001/image.jpg" or "http://localhost:5004/image.img" in case of Mono. 
-10. You should see an image served with the static file middleware
+By default when running ASP.NET vNext applications on the Windows platform you are running on the full .NET Framework. You can switch to use the new Cloud Optimized runtime, or Core CLR, using the KVM command.
 
-If you can do all of the above then everything should be working. You can try out the WebFx sample now to see some more of the new stack. You should run ```kpm restore``` before using any sample for the first time.
-
-# Switching to Core CLR
-
-
-By default when running the applications you are running against Desktop CLR (4.5), you can change that using the KVM command.
-
-1. Run ```kvm install 0.1-alpha-build-0446 -svrc50``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The -svrc50 switch tells it to use Core CLR, you can use -svr50 to target desktop again.
-2. Run ```K web``` to run on WebListener. Or run ```K Kestrel``` to run on Mono. 
+1. Run ```kvm upgrade -runtime CoreCLR``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The `-runtime CoreCLR` switch tells it to use Core CLR. You can use `-r CLR` to target desktop again.
+2. Run ```k web``` to run on WebListener. 
 3. The first line of your output should say "Loaded Module: klr.core45.dll" instead of "Loaded Module: klr.net45.dll"
-4. The HelloWeb app should work the same as when running on Desktop CLR.
+4. The HelloWeb app should work the same as when running on the full desktop .NET Framework but now as a fully self-contained app with true side-by-side versioning support.
 
-**NOTE: There are going to be parts of the stack that work on Desktop but do not work on Core CLR. This set should get smaller and smaller as time goes on, but it is entirely likely as you use Core CLR you will hit errors that can't be worked around as the Core CLR surface area just does not exist yet.**
+**NOTE: There are many APIs from the .NET Framework that are not yet available when running on Core CLR. This set should get smaller and smaller as time goes on.**
 
-**NOTE: There is no Core CLR currently on OSX/Linux. There is only a single platform (mono45) and a single architecture (x86).**
+**NOTE: There is no Core CLR currently available on OSX/Linux. There is only a single platform (mono45) and a single architecture (x86).**
 
-#Core CLR Packages
+## Documentation and Further Learning
 
-Currently the BCL is split into some fairly fine grained packages, which was one of the goals of this effort. However, the packages that exist today do not necessarily represent the list of packages that we will end up with. We are still experimenting with what makes sense to be a package and what the experience should be.
+### [Community Standup](http://www.youtube.com/playlist?list=PL0M0zPgJ3HSftTAAHttA3JQU4vOjXFquF)
+The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist. 
 
-# Known Issues
+If you have questions you can also jump online during the next standup and have them answered live.
 
-* Core CLR doesn't currently work on Windows OSes earlier than Windows 8
+### [Wiki Documentation] (https://github.com/aspnet/Home/wiki)
+We have some useful documentation on the wiki of this Repo. This wiki is a central spot for docs from any part of the stack.
 
-# Feedback
+If you see errors, or want some extra content, then feel free to create an issue or send a pull request (see feedback section below).
 
-Check out the [contributing](https://github.com/aspnet/Home/blob/master/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
+### [ASP.NET/vNext](http://www.asp.net/vnext)
+The vNext page on the ASP.NET site has links to some TechEd videos and articles with some good information about vNext.
+
+## Repos and Projects
+
+These are some of the most common repos:
+
+* [DependencyInjection](https://github.com/aspnet/DependencyInjection) - basic dependency injection infrastructure and default implementation
+* [EntityFramework](https://github.com/aspnet/EntityFramework) - data access technology
+* [Identity](https://github.com/aspnet/Identity) - users and membership system
+* [KRuntime](https://github.com/aspnet/KRuntime) - core runtime, project system, loader
+* [MVC](https://github.com/aspnet/Mvc) - MVC framework for web apps and services
+* [SignalR-Server](https://github.com/aspnet/SignalR-Server) - real-time 
+
+A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Repo-List).
+
+## Feedback
+
+Check out the [contributing](https://github.com/aspnet/Home/blob/release/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
