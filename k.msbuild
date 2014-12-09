@@ -84,6 +84,7 @@
                          $(UnsignedPackagesPath)**\EntityFramework.psd1;
                          $(UnsignedPackagesPath)**\EntityFramework.psm1;
                          $(UnsignedPackagesPath)**\EntityFramework*\**\init.ps1;
+                         $(UnsignedPackagesPath)**\EntityFramework*\**\install.ps1;
                          $(UnsignedPackagesPath)**\Kestrel*.dll;
                          $(UnsignedPackagesPath)**\klr*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNet*.dll;
