@@ -574,21 +574,21 @@ tr:nth-child(2n) {
 
 #line 149 "LogPage.cshtml"
                       
+                        var activityPath = Model.Path.Value + "/" + activity.Id;
                         if (activity.HttpInfo != null)
                         {
-                            var requestPath = Model.Path.Value + "/" + activity.HttpInfo.RequestID;
 
 #line default
 #line hidden
 
-            WriteLiteral("                            <td><a");
-            WriteAttribute("href", Tuple.Create(" href=\"", 4901), Tuple.Create("\"", 4920), 
-            Tuple.Create(Tuple.Create("", 4908), Tuple.Create<System.Object, System.Int32>(requestPath, 4908), false));
-            WriteAttribute("title", Tuple.Create(" title=\"", 4921), Tuple.Create("\"", 4952), 
-            Tuple.Create(Tuple.Create("", 4929), Tuple.Create<System.Object, System.Int32>(activity.HttpInfo.Path, 4929), false));
+            WriteLiteral("                        \t<td><a");
+            WriteAttribute("href", Tuple.Create(" href=\"", 4879), Tuple.Create("\"", 4899), 
+            Tuple.Create(Tuple.Create("", 4886), Tuple.Create<System.Object, System.Int32>(activityPath, 4886), false));
+            WriteAttribute("title", Tuple.Create(" title=\"", 4900), Tuple.Create("\"", 4931), 
+            Tuple.Create(Tuple.Create("", 4908), Tuple.Create<System.Object, System.Int32>(activity.HttpInfo.Path, 4908), false));
             WriteLiteral(">");
 #line 153 "LogPage.cshtml"
-                                                                                  Write(activity.HttpInfo.Path);
+                                                                                   Write(activity.HttpInfo.Path);
 
 #line default
 #line hidden
@@ -613,20 +613,37 @@ tr:nth-child(2n) {
             WriteLiteral("</td>\r\n");
 #line 157 "LogPage.cshtml"
                         }
+                        else if (activity.RepresentsScope)
+                        {
+
+#line default
+#line hidden
+
+            WriteLiteral("                            <td colspan=\"4\"><a");
+            WriteAttribute("href", Tuple.Create(" href=\"", 5321), Tuple.Create("\"", 5341), 
+            Tuple.Create(Tuple.Create("", 5328), Tuple.Create<System.Object, System.Int32>(activityPath, 5328), false));
+            WriteAttribute("title", Tuple.Create(" title=\"", 5342), Tuple.Create("\"", 5370), 
+            Tuple.Create(Tuple.Create("", 5350), Tuple.Create<System.Object, System.Int32>(activity.Root.State, 5350), false));
+            WriteLiteral(">");
+#line 160 "LogPage.cshtml"
+                                                                                            Write(activity.Root.State);
+
+#line default
+#line hidden
+            WriteLiteral("</a></td>\r\n");
+#line 161 "LogPage.cshtml"
+                        }
                         else
                         {
 
 #line default
 #line hidden
 
-            WriteLiteral("                            <td colspan=\"4\">");
-#line 160 "LogPage.cshtml"
-                                       Write(activity.Root.State);
-
-#line default
-#line hidden
-            WriteLiteral("</td>\r\n");
-#line 161 "LogPage.cshtml"
+            WriteLiteral("                            <td colspan=\"4\"><a");
+            WriteAttribute("href", Tuple.Create(" href=\"", 5533), Tuple.Create("\"", 5553), 
+            Tuple.Create(Tuple.Create("", 5540), Tuple.Create<System.Object, System.Int32>(activityPath, 5540), false));
+            WriteLiteral(">Non-scope Log</a></td>\r\n");
+#line 165 "LogPage.cshtml"
                         }
                     
 
@@ -647,13 +664,13 @@ tr:nth-child(2n) {
                                 </tr>
                             </thead>
 ");
-#line 175 "LogPage.cshtml"
+#line 179 "LogPage.cshtml"
                             
 
 #line default
 #line hidden
 
-#line 175 "LogPage.cshtml"
+#line 179 "LogPage.cshtml"
                               
                                 var counts = new Dictionary<string, int>();
                                 counts["Critical"] = 0;
@@ -667,14 +684,14 @@ tr:nth-child(2n) {
 #line hidden
 
             WriteLiteral("\r\n                            <tbody class=\"logBody\">\r\n");
-#line 184 "LogPage.cshtml"
+#line 188 "LogPage.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 184 "LogPage.cshtml"
-                                 if (activity.Id.Equals(Guid.Empty))
+#line 188 "LogPage.cshtml"
+                                 if (!activity.RepresentsScope)
                                 {
                                     // message not within a scope
                                     var logInfo = activity.Root.Messages.FirstOrDefault();
@@ -683,12 +700,12 @@ tr:nth-child(2n) {
 #line default
 #line hidden
 
-#line 188 "LogPage.cshtml"
+#line 192 "LogPage.cshtml"
                                Write(LogRow(logInfo, 0));
 
 #line default
 #line hidden
-#line 188 "LogPage.cshtml"
+#line 192 "LogPage.cshtml"
                                                        
                                     counts[logInfo.Severity.ToString()] = 1;
                                 }
@@ -699,12 +716,12 @@ tr:nth-child(2n) {
 #line default
 #line hidden
 
-#line 193 "LogPage.cshtml"
+#line 197 "LogPage.cshtml"
                                Write(Traverse(activity.Root, 0, counts));
 
 #line default
 #line hidden
-#line 193 "LogPage.cshtml"
+#line 197 "LogPage.cshtml"
                                                                        
                                 }
 
@@ -714,19 +731,19 @@ tr:nth-child(2n) {
             WriteLiteral("                            </tbody>\r\n                            <tbody class=\"s" +
 "ummary\">\r\n                                <tr class=\"logRow\">\r\n                 " +
 "                   <td>");
-#line 198 "LogPage.cshtml"
+#line 202 "LogPage.cshtml"
                                    Write(activity.Time.ToString("MM-dd-yyyy HH:mm:ss"));
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n");
-#line 199 "LogPage.cshtml"
+#line 203 "LogPage.cshtml"
                                     
 
 #line default
 #line hidden
 
-#line 199 "LogPage.cshtml"
+#line 203 "LogPage.cshtml"
                                      foreach (var kvp in counts)
                                     {
                                         if (string.Equals("Verbose", kvp.Key)) {
@@ -735,19 +752,19 @@ tr:nth-child(2n) {
 #line hidden
 
             WriteLiteral("                                            <td>");
-#line 202 "LogPage.cshtml"
+#line 206 "LogPage.cshtml"
                                            Write(kvp.Value);
 
 #line default
 #line hidden
             WriteLiteral(" ");
-#line 202 "LogPage.cshtml"
+#line 206 "LogPage.cshtml"
                                                       Write(kvp.Key);
 
 #line default
 #line hidden
             WriteLiteral("<span class=\"collapse\">v</span></td>\r\n");
-#line 203 "LogPage.cshtml"
+#line 207 "LogPage.cshtml"
                                         }
                                         else
                                         {
@@ -756,19 +773,19 @@ tr:nth-child(2n) {
 #line hidden
 
             WriteLiteral("                                            <td>");
-#line 206 "LogPage.cshtml"
+#line 210 "LogPage.cshtml"
                                            Write(kvp.Value);
 
 #line default
 #line hidden
             WriteLiteral(" ");
-#line 206 "LogPage.cshtml"
+#line 210 "LogPage.cshtml"
                                                       Write(kvp.Key);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n");
-#line 207 "LogPage.cshtml"
+#line 211 "LogPage.cshtml"
                                         }
                                     }
 
@@ -778,7 +795,7 @@ tr:nth-child(2n) {
             WriteLiteral("                                </tr>\r\n                            </tbody>\r\n    " +
 "                    </table>\r\n                    </td>\r\n                </tr>\r\n" +
 "            </tbody>\r\n");
-#line 215 "LogPage.cshtml"
+#line 219 "LogPage.cshtml"
         }
 
 #line default

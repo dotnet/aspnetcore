@@ -1,42 +1,42 @@
 namespace Microsoft.AspNet.Diagnostics.Elm.Views
 {
-#line 1 "RequestPage.cshtml"
+#line 1 "DetailsPage.cshtml"
 using System
 
 #line default
 #line hidden
     ;
-#line 2 "RequestPage.cshtml"
+#line 2 "DetailsPage.cshtml"
 using System.Globalization
 
 #line default
 #line hidden
     ;
-#line 3 "RequestPage.cshtml"
+#line 3 "DetailsPage.cshtml"
 using System.Linq
 
 #line default
 #line hidden
     ;
-#line 4 "RequestPage.cshtml"
+#line 4 "DetailsPage.cshtml"
 using Microsoft.AspNet.Diagnostics.Elm
 
 #line default
 #line hidden
     ;
-#line 5 "RequestPage.cshtml"
+#line 5 "DetailsPage.cshtml"
 using Microsoft.AspNet.Diagnostics.Views
 
 #line default
 #line hidden
     ;
-#line 6 "RequestPage.cshtml"
+#line 6 "DetailsPage.cshtml"
 using Microsoft.AspNet.Diagnostics.Elm.Views
 
 #line default
 #line hidden
     ;
-#line 7 "RequestPage.cshtml"
+#line 7 "DetailsPage.cshtml"
 using Microsoft.Framework.Logging
 
 #line default
@@ -44,17 +44,17 @@ using Microsoft.Framework.Logging
     ;
     using System.Threading.Tasks;
 
-    public class RequestPage : Microsoft.AspNet.Diagnostics.Views.BaseView
+    public class DetailsPage : Microsoft.AspNet.Diagnostics.Views.BaseView
     {
 public  HelperResult 
-#line 19 "RequestPage.cshtml"
+#line 19 "DetailsPage.cshtml"
 LogRow(LogInfo log)
 {
 
 #line default
 #line hidden
         return new HelperResult((__razor_helper_writer) => {
-#line 20 "RequestPage.cshtml"
+#line 20 "DetailsPage.cshtml"
  
     if (log.Severity >= Model.Options.MinLevel &&
         (string.IsNullOrEmpty(Model.Options.NamePrefix) || log.Name.StartsWith(Model.Options.NamePrefix, StringComparison.Ordinal)))
@@ -64,13 +64,13 @@ LogRow(LogInfo log)
 #line hidden
 
             WriteLiteralTo(__razor_helper_writer, "        <tr>\r\n            <td>");
-#line 25 "RequestPage.cshtml"
+#line 25 "DetailsPage.cshtml"
 WriteTo(__razor_helper_writer, string.Format("{0:MM/dd/yy}", log.Time));
 
 #line default
 #line hidden
             WriteLiteralTo(__razor_helper_writer, "</td>\r\n            <td>");
-#line 26 "RequestPage.cshtml"
+#line 26 "DetailsPage.cshtml"
 WriteTo(__razor_helper_writer, string.Format("{0:H:mm:ss}", log.Time));
 
 #line default
@@ -79,7 +79,7 @@ WriteTo(__razor_helper_writer, string.Format("{0:H:mm:ss}", log.Time));
             WriteAttributeTo(__razor_helper_writer, "class", Tuple.Create(" class=\"", 768), Tuple.Create("\"", 819), 
             Tuple.Create(Tuple.Create("", 776), Tuple.Create<System.Object, System.Int32>(log.Severity.ToString().ToLowerInvariant(), 776), false));
             WriteLiteralTo(__razor_helper_writer, ">");
-#line 27 "RequestPage.cshtml"
+#line 27 "DetailsPage.cshtml"
                                       WriteTo(__razor_helper_writer, log.Severity);
 
 #line default
@@ -88,7 +88,7 @@ WriteTo(__razor_helper_writer, string.Format("{0:H:mm:ss}", log.Time));
             WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 856), Tuple.Create("\"", 873), 
             Tuple.Create(Tuple.Create("", 864), Tuple.Create<System.Object, System.Int32>(log.Name, 864), false));
             WriteLiteralTo(__razor_helper_writer, ">");
-#line 28 "RequestPage.cshtml"
+#line 28 "DetailsPage.cshtml"
     WriteTo(__razor_helper_writer, log.Name);
 
 #line default
@@ -97,7 +97,7 @@ WriteTo(__razor_helper_writer, string.Format("{0:H:mm:ss}", log.Time));
             WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 906), Tuple.Create("\"", 926), 
             Tuple.Create(Tuple.Create("", 914), Tuple.Create<System.Object, System.Int32>(log.Message, 914), false));
             WriteLiteralTo(__razor_helper_writer, " class=\"logState\" width=\"100px\">");
-#line 29 "RequestPage.cshtml"
+#line 29 "DetailsPage.cshtml"
                                       WriteTo(__razor_helper_writer, log.Message);
 
 #line default
@@ -106,13 +106,13 @@ WriteTo(__razor_helper_writer, string.Format("{0:H:mm:ss}", log.Time));
             WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 993), Tuple.Create("\"", 1015), 
             Tuple.Create(Tuple.Create("", 1001), Tuple.Create<System.Object, System.Int32>(log.Exception, 1001), false));
             WriteLiteralTo(__razor_helper_writer, ">");
-#line 30 "RequestPage.cshtml"
+#line 30 "DetailsPage.cshtml"
          WriteTo(__razor_helper_writer, log.Exception);
 
 #line default
 #line hidden
             WriteLiteralTo(__razor_helper_writer, "</td>\r\n        </tr>\r\n");
-#line 32 "RequestPage.cshtml"
+#line 32 "DetailsPage.cshtml"
     }
 
 #line default
@@ -120,21 +120,21 @@ WriteTo(__razor_helper_writer, string.Format("{0:H:mm:ss}", log.Time));
 
         }
         );
-#line 33 "RequestPage.cshtml"
+#line 33 "DetailsPage.cshtml"
 }
 
 #line default
 #line hidden
 
 public  HelperResult 
-#line 35 "RequestPage.cshtml"
+#line 35 "DetailsPage.cshtml"
 Traverse(ScopeNode node)
 {
 
 #line default
 #line hidden
         return new HelperResult((__razor_helper_writer) => {
-#line 36 "RequestPage.cshtml"
+#line 36 "DetailsPage.cshtml"
  
     var messageIndex = 0;
     var childIndex = 0;
@@ -147,12 +147,12 @@ Traverse(ScopeNode node)
 #line default
 #line hidden
 
-#line 43 "RequestPage.cshtml"
+#line 43 "DetailsPage.cshtml"
 WriteTo(__razor_helper_writer, LogRow(node.Messages[messageIndex]));
 
 #line default
 #line hidden
-#line 43 "RequestPage.cshtml"
+#line 43 "DetailsPage.cshtml"
                                                 
             messageIndex++;
         }
@@ -163,12 +163,12 @@ WriteTo(__razor_helper_writer, LogRow(node.Messages[messageIndex]));
 #line default
 #line hidden
 
-#line 48 "RequestPage.cshtml"
+#line 48 "DetailsPage.cshtml"
 WriteTo(__razor_helper_writer, Traverse(node.Children[childIndex]));
 
 #line default
 #line hidden
-#line 48 "RequestPage.cshtml"
+#line 48 "DetailsPage.cshtml"
                                                 
             childIndex++;
         }
@@ -182,12 +182,12 @@ WriteTo(__razor_helper_writer, Traverse(node.Children[childIndex]));
 #line default
 #line hidden
 
-#line 56 "RequestPage.cshtml"
+#line 56 "DetailsPage.cshtml"
 WriteTo(__razor_helper_writer, LogRow(node.Messages[i]));
 
 #line default
 #line hidden
-#line 56 "RequestPage.cshtml"
+#line 56 "DetailsPage.cshtml"
                                      
         }
     }
@@ -200,12 +200,12 @@ WriteTo(__razor_helper_writer, LogRow(node.Messages[i]));
 #line default
 #line hidden
 
-#line 63 "RequestPage.cshtml"
+#line 63 "DetailsPage.cshtml"
 WriteTo(__razor_helper_writer, Traverse(node.Children[i]));
 
 #line default
 #line hidden
-#line 63 "RequestPage.cshtml"
+#line 63 "DetailsPage.cshtml"
                                        
         }
     }
@@ -215,25 +215,25 @@ WriteTo(__razor_helper_writer, Traverse(node.Children[i]));
 
         }
         );
-#line 66 "RequestPage.cshtml"
+#line 66 "DetailsPage.cshtml"
 }
 
 #line default
 #line hidden
 
-#line 10 "RequestPage.cshtml"
+#line 10 "DetailsPage.cshtml"
 
-    public RequestPage(RequestPageModel model)
+    public DetailsPage(DetailsPageModel model)
     {
         Model = model;
     }
 
-    public RequestPageModel Model { get; set; }
+    public DetailsPageModel Model { get; set; }
 
 #line default
 #line hidden
         #line hidden
-        public RequestPage()
+        public DetailsPage()
         {
         }
 
@@ -350,13 +350,13 @@ td, th {
 <body>
     <h1>ASP.NET Logs</h1>
 ");
-#line 80 "RequestPage.cshtml"
+#line 80 "DetailsPage.cshtml"
     
 
 #line default
 #line hidden
 
-#line 80 "RequestPage.cshtml"
+#line 80 "DetailsPage.cshtml"
       
         var context = Model.Activity?.HttpInfo;
     
@@ -365,13 +365,13 @@ td, th {
 #line hidden
 
             WriteLiteral("\r\n");
-#line 83 "RequestPage.cshtml"
+#line 83 "DetailsPage.cshtml"
     
 
 #line default
 #line hidden
 
-#line 83 "RequestPage.cshtml"
+#line 83 "DetailsPage.cshtml"
      if (context != null)
     {
 
@@ -381,35 +381,35 @@ td, th {
             WriteLiteral("        <h2 id=\"requestHeader\">Request Details</h2>\r\n        <table id=\"requestDe" +
 "tails\">\r\n            <colgroup><col id=\"label\" /><col /></colgroup>\r\n\r\n         " +
 "   <tr>\r\n                <th>Path</th>\r\n                <td>");
-#line 91 "RequestPage.cshtml"
+#line 91 "DetailsPage.cshtml"
                Write(context.Path);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Host</th>\r\n      " +
 "          <td>");
-#line 95 "RequestPage.cshtml"
+#line 95 "DetailsPage.cshtml"
                Write(context.Host);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Content Type</th>" +
 "\r\n                <td>");
-#line 99 "RequestPage.cshtml"
+#line 99 "DetailsPage.cshtml"
                Write(context.ContentType);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Method</th>\r\n    " +
 "            <td>");
-#line 103 "RequestPage.cshtml"
+#line 103 "DetailsPage.cshtml"
                Write(context.Method);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Protocol</th>\r\n  " +
 "              <td>");
-#line 107 "RequestPage.cshtml"
+#line 107 "DetailsPage.cshtml"
                Write(context.Protocol);
 
 #line default
@@ -428,13 +428,13 @@ td, th {
                         </thead>
                         <tbody>
 ");
-#line 120 "RequestPage.cshtml"
+#line 120 "DetailsPage.cshtml"
                             
 
 #line default
 #line hidden
 
-#line 120 "RequestPage.cshtml"
+#line 120 "DetailsPage.cshtml"
                              foreach (var header in context.Headers)
                             {
 
@@ -442,19 +442,19 @@ td, th {
 #line hidden
 
             WriteLiteral("                                <tr>\r\n                                    <td>");
-#line 123 "RequestPage.cshtml"
+#line 123 "DetailsPage.cshtml"
                                    Write(header.Key);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                    <td>");
-#line 124 "RequestPage.cshtml"
+#line 124 "DetailsPage.cshtml"
                                    Write(string.Join(";", header.Value));
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                </tr>\r\n");
-#line 126 "RequestPage.cshtml"
+#line 126 "DetailsPage.cshtml"
                             }
 
 #line default
@@ -463,27 +463,27 @@ td, th {
             WriteLiteral("                        </tbody>\r\n                    </table>\r\n                <" +
 "/td>\r\n            </tr>\r\n            <tr>\r\n                <th>Status Code</th>\r" +
 "\n                <td>");
-#line 133 "RequestPage.cshtml"
+#line 133 "DetailsPage.cshtml"
                Write(context.StatusCode);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>User</th>\r\n      " +
 "          <td>");
-#line 137 "RequestPage.cshtml"
+#line 137 "DetailsPage.cshtml"
                Write(context.User.Identity.Name);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Claims</th>\r\n    " +
 "            <td>\r\n");
-#line 142 "RequestPage.cshtml"
+#line 142 "DetailsPage.cshtml"
                     
 
 #line default
 #line hidden
 
-#line 142 "RequestPage.cshtml"
+#line 142 "DetailsPage.cshtml"
                      if (context.User.Claims.Any())
                     {
 
@@ -499,13 +499,13 @@ td, th {
                             </thead>
                             <tbody>
 ");
-#line 152 "RequestPage.cshtml"
+#line 152 "DetailsPage.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 152 "RequestPage.cshtml"
+#line 152 "DetailsPage.cshtml"
                                  foreach (var claim in context.User.Claims)
                                 {
 
@@ -514,26 +514,26 @@ td, th {
 
             WriteLiteral("                                    <tr>\r\n                                       " +
 " <td>");
-#line 155 "RequestPage.cshtml"
+#line 155 "DetailsPage.cshtml"
                                        Write(claim.Issuer);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                        <td>");
-#line 156 "RequestPage.cshtml"
+#line 156 "DetailsPage.cshtml"
                                        Write(claim.Value);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                    </tr>\r\n");
-#line 158 "RequestPage.cshtml"
+#line 158 "DetailsPage.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                            </tbody>\r\n                        </table>\r\n");
-#line 161 "RequestPage.cshtml"
+#line 161 "DetailsPage.cshtml"
                     }
 
 #line default
@@ -541,27 +541,27 @@ td, th {
 
             WriteLiteral("                </td>\r\n            </tr>\r\n            <tr>\r\n                <th>S" +
 "cheme</th>\r\n                <td>");
-#line 166 "RequestPage.cshtml"
+#line 166 "DetailsPage.cshtml"
                Write(context.Scheme);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Query</th>\r\n     " +
 "           <td>");
-#line 170 "RequestPage.cshtml"
+#line 170 "DetailsPage.cshtml"
                Write(context.Query.Value);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Cookies</th>\r\n   " +
 "             <td>\r\n");
-#line 175 "RequestPage.cshtml"
+#line 175 "DetailsPage.cshtml"
                     
 
 #line default
 #line hidden
 
-#line 175 "RequestPage.cshtml"
+#line 175 "DetailsPage.cshtml"
                      if (context.Cookies.Any())
                     {
 
@@ -577,13 +577,13 @@ td, th {
                             </thead>
                             <tbody>
 ");
-#line 185 "RequestPage.cshtml"
+#line 185 "DetailsPage.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 185 "RequestPage.cshtml"
+#line 185 "DetailsPage.cshtml"
                                  foreach (var cookie in context.Cookies)
                                 {
 
@@ -592,46 +592,46 @@ td, th {
 
             WriteLiteral("                                    <tr>\r\n                                       " +
 " <td>");
-#line 188 "RequestPage.cshtml"
+#line 188 "DetailsPage.cshtml"
                                        Write(cookie.Key);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                        <td>");
-#line 189 "RequestPage.cshtml"
+#line 189 "DetailsPage.cshtml"
                                        Write(string.Join(";", cookie.Value));
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                    </tr>\r\n");
-#line 191 "RequestPage.cshtml"
+#line 191 "DetailsPage.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                            </tbody>\r\n                        </table>\r\n");
-#line 194 "RequestPage.cshtml"
+#line 194 "DetailsPage.cshtml"
                     }
 
 #line default
 #line hidden
 
             WriteLiteral("                </td>\r\n            </tr>\r\n        </table>\r\n");
-#line 198 "RequestPage.cshtml"
+#line 198 "DetailsPage.cshtml"
     }
 
 #line default
 #line hidden
 
             WriteLiteral("    <h2>Logs</h2>\r\n    <form method=\"get\">\r\n        <select name=\"level\">\r\n");
-#line 202 "RequestPage.cshtml"
+#line 202 "DetailsPage.cshtml"
             
 
 #line default
 #line hidden
 
-#line 202 "RequestPage.cshtml"
+#line 202 "DetailsPage.cshtml"
              foreach (var severity in Enum.GetValues(typeof(LogLevel)))
             {
                 var severityInt = (int)severity;
@@ -645,13 +645,13 @@ td, th {
             WriteAttribute("value", Tuple.Create(" value=\"", 6703), Tuple.Create("\"", 6723), 
             Tuple.Create(Tuple.Create("", 6711), Tuple.Create<System.Object, System.Int32>(severityInt, 6711), false));
             WriteLiteral(" selected=\"selected\">");
-#line 207 "RequestPage.cshtml"
+#line 207 "DetailsPage.cshtml"
                                                                 Write(severity);
 
 #line default
 #line hidden
             WriteLiteral("</option>\r\n");
-#line 208 "RequestPage.cshtml"
+#line 208 "DetailsPage.cshtml"
                 }
                 else
                 {
@@ -663,13 +663,13 @@ td, th {
             WriteAttribute("value", Tuple.Create(" value=\"", 6852), Tuple.Create("\"", 6872), 
             Tuple.Create(Tuple.Create("", 6860), Tuple.Create<System.Object, System.Int32>(severityInt, 6860), false));
             WriteLiteral(">");
-#line 211 "RequestPage.cshtml"
+#line 211 "DetailsPage.cshtml"
                                             Write(severity);
 
 #line default
 #line hidden
             WriteLiteral("</option>\r\n");
-#line 212 "RequestPage.cshtml"
+#line 212 "DetailsPage.cshtml"
                 }
             }
 
@@ -694,7 +694,7 @@ td, th {
             </tr>
         </thead>
         ");
-#line 229 "RequestPage.cshtml"
+#line 229 "DetailsPage.cshtml"
    Write(Traverse(Model.Activity.Root));
 
 #line default

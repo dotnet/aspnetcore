@@ -8,12 +8,12 @@
 
 @functions
 {
-    public RequestPage(RequestPageModel model)
+    public DetailsPage(DetailsPageModel model)
     {
         Model = model;
     }
 
-    public RequestPageModel Model { get; set; }
+    public DetailsPageModel Model { get; set; }
 }
 
 @helper LogRow(LogInfo log)
@@ -72,7 +72,7 @@
     <script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-2.1.1.min.js"></script>
     <style>
         <%$ include: Shared.css %>
-        <%$ include: RequestPage.css %>
+        <%$ include: DetailsPage.css %>
     </style>
 </head>
 <body>

@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
             }
             else
             {
-                RenderRequestDetailsPage(options, context);
+                RenderDetailsPage(options, context);
             }
         }
 
@@ -66,24 +66,23 @@ namespace Microsoft.AspNet.Diagnostics.Elm
             await logPage.ExecuteAsync(context);
         }
 
-        private async void RenderRequestDetailsPage(ViewOptions options, HttpContext context)
+        private async void RenderDetailsPage(ViewOptions options, HttpContext context)
         {
             var parts = context.Request.Path.Value.Split('/');
             var id = Guid.Empty;
             if (!Guid.TryParse(parts[parts.Length - 1], out id))
             {
                 context.Response.StatusCode = 400;
-                await context.Response.WriteAsync("Invalid Request Id");
+                await context.Response.WriteAsync("Invalid Id");
                 return;
             }
-            var model = new RequestPageModel()
+            var model = new DetailsPageModel()
             {
-                RequestID = id,
-                Activity = _store.GetActivities().Where(a => a.HttpInfo?.RequestID == id).FirstOrDefault(),
+                Activity = _store.GetActivities().Where(a => a.Id == id).FirstOrDefault(),
                 Options = options
             };
-            var requestPage = new RequestPage(model);
-            await requestPage.ExecuteAsync(context);
+            var detailsPage = new DetailsPage(model);
+            await detailsPage.ExecuteAsync(context);
         }
 
         private async Task<Tuple<ViewOptions, bool>> ParseParams(HttpContext context)

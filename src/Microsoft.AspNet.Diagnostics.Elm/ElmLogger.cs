@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
             else
             {
                 var context = GetNewActivityContext();
-                context.Id = Guid.Empty;  // mark as a non-scope log
+                context.RepresentsScope = false;  // mark as a non-scope log
                 context.Root = new ScopeNode();
                 context.Root.Messages.Add(info);
                 _store.AddActivity(context);
@@ -69,7 +69,8 @@ namespace Microsoft.AspNet.Diagnostics.Elm
             return new ActivityContext()
             {
                 Id = Guid.NewGuid(),
-                Time = DateTimeOffset.UtcNow
+                Time = DateTimeOffset.UtcNow,
+                RepresentsScope = true
             };
         }
 

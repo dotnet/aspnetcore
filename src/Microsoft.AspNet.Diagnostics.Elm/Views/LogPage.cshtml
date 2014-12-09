@@ -147,17 +147,21 @@
             <tbody>
                 <tr class="requestRow">
                     @{
+                        var activityPath = Model.Path.Value + "/" + activity.Id;
                         if (activity.HttpInfo != null)
                         {
-                            var requestPath = Model.Path.Value + "/" + activity.HttpInfo.RequestID;
-                            <td><a href="@requestPath" title="@activity.HttpInfo.Path">@activity.HttpInfo.Path</a></td>
+                        	<td><a href="@activityPath" title="@activity.HttpInfo.Path">@activity.HttpInfo.Path</a></td>
                             <td>@activity.HttpInfo.Method</td>
                             <td>@activity.HttpInfo.Host</td>
                             <td>@activity.HttpInfo.StatusCode</td>
                         }
+                        else if (activity.RepresentsScope)
+                        {
+                            <td colspan="4"><a href="@activityPath" title="@activity.Root.State">@activity.Root.State</a></td>
+                        }
                         else
                         {
-                            <td colspan="4">@activity.Root.State</td>
+                            <td colspan="4"><a href="@activityPath">Non-scope Log</a></td>
                         }
                     }
                     <td class="logTd">
@@ -181,7 +185,7 @@
                                 counts["Verbose"] = 0;
                             }
                             <tbody class="logBody">
-                                @if (activity.Id.Equals(Guid.Empty))
+                                @if (!activity.RepresentsScope)
                                 {
                                     // message not within a scope
                                     var logInfo = activity.Root.Messages.FirstOrDefault();

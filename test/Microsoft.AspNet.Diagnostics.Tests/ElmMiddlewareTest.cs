@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
 
                 // Assert
                 contextMock.VerifyGet(c => c.Request.Query, Times.AtLeastOnce());
-                Assert.True(response.Contains("Invalid Request Id"));
+                Assert.True(response.Contains("Invalid Id"));
             }
         }
 
