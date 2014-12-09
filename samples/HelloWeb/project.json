@@ -9,7 +9,7 @@
     },
     "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5001",
-        "Kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5004"
+        "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5004"
     },
     "frameworks": {
         "aspnet50": {},
