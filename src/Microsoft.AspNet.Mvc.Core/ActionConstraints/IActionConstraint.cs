@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
     /// are candidates for selection, the next stage to run is the lowest value of <see cref="Order"/> for any
     /// constraint of any candidate which is greater than the order of the last stage.
     ///
-    /// Once the stage order is identified, each action has all of it's constraints in that stage executed.
+    /// Once the stage order is identified, each action has all of its constraints in that stage executed.
     /// If any constraint does not match, then that action is not a candidate for selection. If any actions
     /// with constraints in the current state are still candidates, then those are the 'best' actions and this
     /// process will repeat with the next stage on the set of 'best' actions. If after processing the

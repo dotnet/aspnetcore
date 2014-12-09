@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
     public class ViewResult : ActionResult
     {
         /// <summary>
-        /// /// Gets or sets the name of the view to render.
+        /// Gets or sets the name of the view to render.
         /// </summary>
         /// <remarks>
         /// When <c>null</c>, defaults to <see cref="ActionDescriptor.Name"/>.

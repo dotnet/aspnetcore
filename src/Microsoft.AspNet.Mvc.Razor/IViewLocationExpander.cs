@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="context">The <see cref="ViewLocationExpanderContext"/> for the current view location
         /// expansion operation.</param>
-        /// <param name="values">The sequence of view locations to expand.</param>
+        /// <param name="viewLocations">The sequence of view locations to expand.</param>
         /// <returns>A list of expanded view locations.</returns>
         IEnumerable<string> ExpandViewLocations(ViewLocationExpanderContext context,
                                                 IEnumerable<string> viewLocations);
