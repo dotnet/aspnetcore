@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if ASPNET50
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -246,6 +247,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
+        public void Validate_ValidatesIfModelIsNull()
+        {
+            // Arrange
+            var modelMetadata = GetModelMetadata(typeof(ValidateAllPropertiesModel));
+            var node = new ModelValidationNode(modelMetadata, "theKey");
+
+            var context = CreateContext(modelMetadata);
+
+            // Act
+            node.Validate(context);
+
+            // Assert
+            var modelState = Assert.Single(context.ModelState);
+            Assert.Equal("theKey", modelState.Key);
+            Assert.Equal(ModelValidationState.Invalid, modelState.Value.ValidationState);
+
+            var error = Assert.Single(modelState.Value.Errors);
+            Assert.Equal("A value is required but was not present in the request.", error.ErrorMessage);
+        }
+
+        [Fact]
         [ReplaceCulture]
         public void Validate_ValidateAllProperties_AddsValidationErrors()
         {
@@ -319,6 +341,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static ModelMetadata GetModelMetadata(object o)
         {
             return new DataAnnotationsModelMetadataProvider().GetMetadataForType(() => o, o.GetType());
+        }
+
+        private static ModelMetadata GetModelMetadata(Type type)
+        {
+            return new DataAnnotationsModelMetadataProvider().GetMetadataForType(modelAccessor: null, modelType: type);
         }
 
         private static ModelValidationContext CreateContext(ModelMetadata metadata = null)
