@@ -93,6 +93,7 @@
                          $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
                          $(UnsignedPackagesPath)**\StyleCop.KRules*.dll;
                          $(UnsignedPackagesPath)**\System.Data.*.dll;
+                         $(UnsignedPackagesPath)**\SNI.dll;
                          $(UnsignedPackagesPath)**\System.Security.Claims*.dll;
                          $(UnsignedPackagesPath)**\klr*.exe;
                          $(UnsignedPackagesPath)**\CsprojDumper.exe"
