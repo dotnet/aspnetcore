@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentException(
                     Resources.FormatActionDescriptorMustBeBasedOnControllerAction(
                         typeof(ControllerActionDescriptor)),
-                    "actionContext");
+                    nameof(actionContext));
             }
 
             var controller = _typeActivator.CreateInstance(
