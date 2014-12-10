@@ -96,10 +96,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             Assert.Null(result.HeaderValue);
             Assert.Null(result.HeaderValues);
-
-            // This is a bug - the model state error key is wrong here.
+            
             var error = Assert.Single(result.ModelStateErrors);
-            Assert.Equal("transactionId.transactionId", error);
+            Assert.Equal("transactionId", error);
         }
 
         // The action that this test hits will echo back the model-bound values
