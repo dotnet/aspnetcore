@@ -1,11 +1,11 @@
 {
     "dependencies": {
-        "Microsoft.AspNet.Http":  "1.0.0-*",
+        "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*"
     },
-    "frameworks" : {
-        "aspnet50" : { },
-        "aspnetcore50" : { }
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": { }
     }
 }
