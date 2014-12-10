@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.FileSystems;
-using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -58,11 +57,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         public void Delete()
-        {
-            throw new NotSupportedException();
-        }
-
-        public IExpirationTrigger CreateFileChangeTrigger()
         {
             throw new NotSupportedException();
         }

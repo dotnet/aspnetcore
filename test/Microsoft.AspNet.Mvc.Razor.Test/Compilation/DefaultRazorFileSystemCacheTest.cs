@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Expiration.Interfaces;
 using Moq;
 using Xunit;
 
@@ -404,7 +405,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
             }
 
-            public bool TryGetParentPath(string subpath, out string parentPath)
+            public IExpirationTrigger Watch(string filter)
             {
                 throw new NotImplementedException();
             }

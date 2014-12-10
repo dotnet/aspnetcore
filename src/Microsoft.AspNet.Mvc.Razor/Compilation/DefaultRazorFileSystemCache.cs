@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -69,6 +70,12 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 return fileInfo;
             }
+        }
+
+        /// <inheritdoc />
+        public IExpirationTrigger Watch(string filter)
+        {
+            return _fileSystem.Watch(filter);
         }
 
         private class ExpiringFileInfo

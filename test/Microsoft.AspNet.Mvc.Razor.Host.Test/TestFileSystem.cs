@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.FileSystems;
+using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -53,5 +54,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
+        public IExpirationTrigger Watch(string filter)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
