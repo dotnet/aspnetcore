@@ -87,6 +87,8 @@ var buildTarget = "compile"
         }
     }
 
+#verify-all .pull .change-default-build-target .only-compile
+
 #smoke-test-mono .pull .fix-project-json .change-default-build-target .only-compile
 
 #fix-project-json
@@ -236,7 +238,7 @@ var buildTarget = "compile"
         Exec(@"tools\TCDependencyManager\bin\Debug\TCDependencyManager.exe", "", "");
     }
 
-#git-status decription='Show status of repos known by Universe'
+#git-status description='Show status of repos known by Universe'
     @{
         foreach(var repo in repos) 
         {
@@ -244,7 +246,7 @@ var buildTarget = "compile"
         }
     }
 
-#git-clean decription='REMOVE ALL CHANGES to the working directory'
+#git-clean description='REMOVE ALL CHANGES to the working directory'
     @{
         Console.WriteLine("This runs `git clean -xfd` in all non-Universe repos.");
         Console.WriteLine("This should REMOVE ALL CHANGES to the working directory.");
