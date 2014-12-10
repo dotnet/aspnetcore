@@ -29,13 +29,21 @@ namespace MusicStore.Models
             builder.Entity<Artist>().Property(a => a.ArtistId).GenerateValueOnAdd(generateValue: false);
             builder.Entity<Genre>().Property(g => g.GenreId).GenerateValueOnAdd(generateValue: false);
 
-            // TODO: Remove this once convention-based relations work again
-            builder.Entity<Album>().ManyToOne(a => a.Artist);
-            builder.Entity<Album>().ManyToOne(a => a.Genre, g => g.Albums);
-            builder.Entity<Order>().OneToMany(o => o.OrderDetails);
-            
             //Deleting an album fails with this relation
-            //builder.Entity<Album>().OneToMany(a => a.OrderDetails, od => od.Album);
+            builder.Entity<Album>().Ignore(a => a.OrderDetails);
+            builder.Entity<OrderDetail>().Ignore(od => od.Album);
+
+            var orderDetails = builder.Model.GetEntityType(typeof(OrderDetail));
+            var albumNavigation = orderDetails.TryGetNavigation("Album");
+            if (albumNavigation != null)
+            {
+                orderDetails.RemoveNavigation(albumNavigation);
+
+                var album = builder.Model.GetEntityType(typeof(Album));
+                album.RemoveNavigation(album.GetNavigation("OrderDetails"));
+
+                orderDetails.RemoveForeignKey(albumNavigation.ForeignKey);
+            }
 
             base.OnModelCreating(builder);
         }
