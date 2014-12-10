@@ -11,8 +11,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class CompositeViewEngineTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("CompositeViewEngine");
-        private readonly Action<IApplicationBuilder> _app = new CompositeViewEngine.Startup().Configure;
+        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(CompositeViewEngineWebSite));
+        private readonly Action<IApplicationBuilder> _app = new CompositeViewEngineWebSite.Startup().Configure;
 
         [Fact]
         public async Task CompositeViewEngine_FindsPartialViewsAcrossAllEngines()

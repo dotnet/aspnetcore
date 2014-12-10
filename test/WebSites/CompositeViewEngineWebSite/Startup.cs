@@ -5,7 +5,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.DependencyInjection;
 
-namespace ValueProvidersSite
+namespace CompositeViewEngineWebSite
 {
     public class Startup
     {
@@ -16,12 +16,12 @@ namespace ValueProvidersSite
             // Set up application services
             app.UseServices(services =>
             {
-                // Add MVC services to the services container
+                // Add a view engine as the first one in the list.
                 services.AddMvc(configuration)
-                        .Configure<MvcOptions>(options =>
-                        {
-                            options.ValueProviderFactories.Insert(1, new CustomValueProviderFactory());
-                        });
+                    .Configure<MvcOptions>(options =>
+                    {
+                        options.ViewEngines.Insert(0, typeof(TestViewEngine));
+                    });
             });
 
             // Add MVC to the request pipeline

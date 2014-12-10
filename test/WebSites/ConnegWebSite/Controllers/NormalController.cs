@@ -4,7 +4,7 @@
 using Microsoft.AspNet.Mvc;
 using Newtonsoft.Json;
 
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     public class NormalController : Controller
     {

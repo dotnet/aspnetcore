@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     [Produces("application/custom_ProducesContentOnClassController")]
     public class ProducesContentOnClassController : ProducesContentBaseController

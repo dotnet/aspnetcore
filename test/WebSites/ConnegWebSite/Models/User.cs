@@ -3,7 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     [DisplayColumn("Name")]
     public class User

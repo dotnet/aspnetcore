@@ -5,7 +5,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     public class Startup
     {

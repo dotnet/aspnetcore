@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     public class TextPlainController : Controller
     {

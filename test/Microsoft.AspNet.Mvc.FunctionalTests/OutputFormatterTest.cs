@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using ConnegWebsite;
+using ConnegWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class OutputFormatterTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("ConnegWebSite");
+        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(ConnegWebSite));
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Theory]

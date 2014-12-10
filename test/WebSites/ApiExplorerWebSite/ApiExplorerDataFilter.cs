@@ -6,7 +6,7 @@ using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Description;
 
-namespace ApiExplorer
+namespace ApiExplorerWebSite
 {
     /// <summary>
     /// An action filter that looks up and serializes Api Explorer data for the action.

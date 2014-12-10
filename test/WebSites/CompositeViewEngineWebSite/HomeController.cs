@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace CompositeViewEngine
+namespace CompositeViewEngineWebSite
 {
     public class HomeController
     {

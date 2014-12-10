@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace ApiExplorer
+namespace ApiExplorerWebSite
 {
     [Route("ApiExplorerVisbilityEnabledByConvention")]
     public class ApiExplorerVisbilityEnabledByConventionController : Controller

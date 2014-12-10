@@ -7,7 +7,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     public class PlainTextFormatter : OutputFormatter
     {

@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 
-namespace CompositeViewEngine
+namespace CompositeViewEngineWebSite
 {
     public class TestViewEngine : IViewEngine
     {

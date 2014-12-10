@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class ApiExplorerTest
     {
         private readonly IServiceProvider _provider = TestHelper.CreateServices("ApiExplorerWebSite");
-        private readonly Action<IApplicationBuilder> _app = new ApiExplorer.Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new ApiExplorerWebSite.Startup().Configure;
 
         [Fact]
         public async Task ApiExplorer_IsVisible_EnabledWithConvention()
@@ -498,9 +498,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("GetProduct", "ApiExplorer.Product")]
+        [InlineData("GetProduct", "ApiExplorerWebSite.Product")]
         [InlineData("GetInt", "System.Int32")]
-        [InlineData("GetTaskOfProduct", "ApiExplorer.Product")]
+        [InlineData("GetTaskOfProduct", "ApiExplorerWebSite.Product")]
         [InlineData("GetTaskOfInt", "System.Int32")]
         public async Task ApiExplorer_ResponseType_KnownWithoutAttribute(string action, string type)
         {
@@ -521,10 +521,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("GetVoid", "ApiExplorer.Customer")]
-        [InlineData("GetObject", "ApiExplorer.Product")]
+        [InlineData("GetVoid", "ApiExplorerWebSite.Customer")]
+        [InlineData("GetObject", "ApiExplorerWebSite.Product")]
         [InlineData("GetIActionResult", "System.String")]
-        [InlineData("GetProduct", "ApiExplorer.Customer")]
+        [InlineData("GetProduct", "ApiExplorerWebSite.Customer")]
         [InlineData("GetTask", "System.Int32")]
         public async Task ApiExplorer_ResponseType_KnownWithAttribute(string action, string type)
         {
@@ -545,8 +545,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("Controller", "ApiExplorer.Product")]
-        [InlineData("Action", "ApiExplorer.Customer")]
+        [InlineData("Controller", "ApiExplorerWebSite.Product")]
+        [InlineData("Action", "ApiExplorerWebSite.Customer")]
         public async Task ApiExplorer_ResponseType_OverrideOnAction(string action, string type)
         {
             // Arrange

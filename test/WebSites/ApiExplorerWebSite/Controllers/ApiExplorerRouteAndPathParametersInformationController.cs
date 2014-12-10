@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace ApiExplorer
+namespace ApiExplorerWebSite
 {
     [Route("ApiExplorerRouteAndPathParametersInformation")]
     public class ApiExplorerRouteAndPathParametersInformationController

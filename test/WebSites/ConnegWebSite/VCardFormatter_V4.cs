@@ -6,11 +6,11 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using ConnegWebsite.Models;
+using ConnegWebSite.Models;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     /// <summary>
     /// Provides contact information of a person through VCard format.

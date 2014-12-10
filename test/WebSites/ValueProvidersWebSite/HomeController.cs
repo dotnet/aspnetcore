@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace ValueProvidersSite
+namespace ValueProvidersWebSite
 {
     public class HomeController
     {

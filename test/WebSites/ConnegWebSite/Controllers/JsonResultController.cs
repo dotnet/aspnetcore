@@ -4,7 +4,7 @@
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     public class JsonResultController : Controller
     {

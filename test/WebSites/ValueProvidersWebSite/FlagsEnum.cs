@@ -3,7 +3,7 @@
 
 using System;
 
-namespace ValueProvidersSite
+namespace ValueProvidersWebSite
 {
     [Flags]
     public enum FlagsEnum

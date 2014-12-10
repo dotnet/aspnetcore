@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     public class NoProducesContentOnClassController : ProducesContentBaseController
     {

@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
-namespace ValueProvidersSite
+namespace ValueProvidersWebSite
 {
     public class CustomValueProviderFactory : IValueProviderFactory
     {

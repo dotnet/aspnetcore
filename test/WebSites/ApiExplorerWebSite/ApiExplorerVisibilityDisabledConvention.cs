@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 
-namespace ApiExplorer
+namespace ApiExplorerWebSite
 {
     // Disables ApiExplorer for a specific controller type.
     // This is part of the test that validates that ApiExplorer can be configured via

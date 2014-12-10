@@ -5,14 +5,14 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
-using ValueProvidersSite;
+using ValueProvidersWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ValueProviderTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("ValueProvidersSite");
+        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(ValueProvidersWebSite));
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
