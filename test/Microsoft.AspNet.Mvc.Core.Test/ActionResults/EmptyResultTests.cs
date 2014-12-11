@@ -22,8 +22,8 @@ namespace Microsoft.AspNet.Mvc
 
             var context = new ActionContext(httpContext.Object, routeData, actionDescriptor);
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => emptyResult.ExecuteResult(context));
+            // Act & Assert (does not throw)
+            emptyResult.ExecuteResult(context);
         }
     }
 }

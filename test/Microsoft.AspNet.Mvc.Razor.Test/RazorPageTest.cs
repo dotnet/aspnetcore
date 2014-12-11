@@ -522,9 +522,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             await page.ExecuteAsync();
             page.IsLayoutBeingRendered = true;
 
-            // Assert
+            // Assert (does not throw)
             var renderAsyncDelegate = page.SectionWriters["test-section"];
-            await Assert.DoesNotThrowAsync(() => renderAsyncDelegate(TextWriter.Null));
+            await renderAsyncDelegate(TextWriter.Null);
         }
 
         [Fact]

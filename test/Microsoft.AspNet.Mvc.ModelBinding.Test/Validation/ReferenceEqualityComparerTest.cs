@@ -30,7 +30,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var t1 = new TypeThatOverridesEquals();
             var t2 = new TypeThatOverridesEquals();
 
-            Assert.DoesNotThrow(() => ReferenceEqualityComparer.Instance.Equals(t1, t2));
+            // Act & Assert (does not throw)
+            ReferenceEqualityComparer.Instance.Equals(t1, t2);
         }
 
         [Fact]
@@ -58,7 +59,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetHashCode_DoesNotThrowForNull()
         {
             var comparer = ReferenceEqualityComparer.Instance;
-            Assert.DoesNotThrow(() => comparer.GetHashCode(null));
+
+            // Act & Assert (does not throw)
+            comparer.GetHashCode(null);
         }
 
         private class TypeThatOverridesEquals

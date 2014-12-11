@@ -37,8 +37,8 @@ namespace Microsoft.AspNet.Mvc
             services.Setup(o => o.GetService(typeof(MvcMarkerService)))
                 .Returns(expectedOutput);
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => MvcServicesHelper.ThrowIfMvcNotRegistered(services.Object));
+            // Act & Assert (does not throw)
+            MvcServicesHelper.ThrowIfMvcNotRegistered(services.Object);
         }
     }
 }

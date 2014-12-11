@@ -208,9 +208,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 ViewContext = viewContext,
             };
 
-            // Act & Assert
+            // Act & Assert (does not throw)
             // Tag helper would throw an NRE if it used Generator value.
-            await Assert.DoesNotThrowAsync(() => tagHelper.ProcessAsync(tagHelperContext, output));
+            await tagHelper.ProcessAsync(tagHelperContext, output);
         }
 
         [Theory]
@@ -247,9 +247,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Value = value,
             };
 
-            // Act & Assert
+            // Act & Assert (does not throw)
             // Tag helper would throw an NRE if it used ViewContext or Generator values.
-            await Assert.DoesNotThrowAsync(() => tagHelper.ProcessAsync(tagHelperContext, output));
+            await tagHelper.ProcessAsync(tagHelperContext, output);
         }
     }
 }

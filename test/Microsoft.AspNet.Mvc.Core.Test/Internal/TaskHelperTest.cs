@@ -15,8 +15,8 @@ namespace Microsoft.AspNet.Mvc.Internal
             // Arrange
             var task = Task.FromResult(0);
 
-            // Act and Assert
-            Assert.DoesNotThrow(() => TaskHelper.WaitAndThrowIfFaulted(task));
+            // Act and Assert (does not throw)
+            TaskHelper.WaitAndThrowIfFaulted(task);
         }
 
         [Fact]
