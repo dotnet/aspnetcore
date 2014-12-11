@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             : base(original)
         {
             TagName = original.TagName;
+            Descriptors = original.Descriptors;
             Attributes = new Dictionary<string, SyntaxTreeNode>(original.Attributes);
         }
 
@@ -42,6 +43,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         public TagHelperBlockBuilder(string tagName, IEnumerable<TagHelperDescriptor> descriptors, Block startTag)
         {
             TagName = tagName;
+            Descriptors = descriptors;
             CodeGenerator = new TagHelperCodeGenerator(descriptors);
             Type = startTag.Type;
             Attributes = GetTagAttributes(startTag, descriptors);
@@ -66,6 +68,11 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                 Children.Add(child);
             }
         }
+
+        /// <summary>
+        /// <see cref="TagHelperDescriptor"/>s for the HTML element.
+        /// </summary>
+        public IEnumerable<TagHelperDescriptor> Descriptors { get; }
 
         /// <summary>
         /// The HTML attributes.
