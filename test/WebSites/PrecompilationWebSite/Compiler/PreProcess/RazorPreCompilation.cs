@@ -25,16 +25,14 @@ namespace PrecompilationWebSite
         public static IServiceProvider ReplaceProvider(IServiceProvider provider)
         {
             var originalEnvironment = provider.GetService<IApplicationEnvironment>();
-            var newPath = Path.GetFullPath(
-                Path.Combine(
-                    originalEnvironment.ApplicationBasePath,
-                    "..",
-                    "WebSites",
-                    "PrecompilationWebSite"));
+
+            var libraryManager = provider.GetService<ILibraryManager>();
+            var info = libraryManager.GetLibraryInformation("PrecompilationWebSite");
+            var directory = Path.GetDirectoryName(info.Path);
 
             var precompilationApplicationEnvironment = new PrecompilationApplicationEnvironment(
                 originalEnvironment,
-                newPath);
+                directory);
 
             var collection = HostingServices.Create(provider);
             collection.AddInstance<IApplicationEnvironment>(precompilationApplicationEnvironment);
