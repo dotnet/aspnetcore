@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -71,6 +73,80 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(expected, result.Trim());
+        }
+
+        [Fact]
+        public async Task ViewsWithModelMetadataAttributes_CanRenderForm()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
+                "compiler/resources/TagHelpersWebSite.Employee.Create.html");
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Employee/Create");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedContent, responseContent);
+        }
+
+        [Fact]
+        public async Task ViewsWithModelMetadataAttributes_CanRenderPostedValue()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
+                "compiler/resources/TagHelpersWebSite.Employee.Details.AfterCreate.html");
+            var validPostValues = new Dictionary<string, string>
+            {
+                { "FullName", "Boo" },
+                { "Gender", "M" },
+                { "Age", "22" },
+                { "EmployeeId", "0" },
+                { "JoinDate", "2014-12-01" },
+                { "Email", "a@b.com" },
+            };
+            var postContent = new FormUrlEncodedContent(validPostValues);
+
+            // Act
+            var response = await client.PostAsync("http://localhost/Employee/Create", postContent);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedContent, responseContent);
+        }
+
+        [Fact]
+        public async Task ViewsWithModelMetadataAttributes_CanHandleInvalidData()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
+                "compiler/resources/TagHelpersWebSite.Employee.Create.Invalid.html");
+            var validPostValues = new Dictionary<string, string>
+            {
+                { "FullName", "Boo" },
+                { "Gender", "M" },
+                { "Age", "1000" },
+                { "EmployeeId", "0" },
+                { "Email", "a@b.com" },
+                { "Salary", "z" }, 
+            };
+            var postContent = new FormUrlEncodedContent(validPostValues);
+
+            // Act
+            var response = await client.PostAsync("http://localhost/Employee/Create", postContent);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedContent, responseContent);
         }
     }
 }
