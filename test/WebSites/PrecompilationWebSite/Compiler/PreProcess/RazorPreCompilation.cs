@@ -18,10 +18,9 @@ namespace PrecompilationWebSite
         {
         }
 
-        // When running in memory tests the application base path will point to the functional tests
-        // project folder.
-        // We need to replace it to point to the actual precompilation website so that the views can
-        // be found.
+        // We need to construct an IApplicationEnvironment with a base path that that matches this
+        // website, in order to find the razor files. This is needed because we don't have a guarantee that
+        // the base path of the current app is this site (ex: functional tests).
         public static IServiceProvider ReplaceProvider(IServiceProvider provider)
         {
             var originalEnvironment = provider.GetService<IApplicationEnvironment>();
