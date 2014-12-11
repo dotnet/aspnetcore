@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.TestConfiguration;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 
@@ -17,6 +18,11 @@ namespace Microsoft.AspNet.Builder
                 : configurationProvider.Configuration;
 
             return configuration;
+        }
+
+        public static IApplicationBuilder UseErrorReporter(this IApplicationBuilder app)
+        {
+            return app.Use(next => new ErrorReporterMiddleware(next).Invoke);
         }
     }
 }

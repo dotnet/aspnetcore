@@ -30,6 +30,8 @@ namespace ModelBindingWebSite
                 services.AddSingleton<ITestService, TestService>();
             });
 
+            app.UseErrorReporter();
+
             // Add MVC to the request pipeline
             app.UseMvc(routes =>
             {

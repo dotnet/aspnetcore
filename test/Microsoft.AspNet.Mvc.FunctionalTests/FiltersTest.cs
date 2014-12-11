@@ -124,8 +124,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
             var url = "http://localhost/RandomNumber/GetAuthorizedRandomNumber";
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync(url));
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
         }
 
         [Fact]
@@ -152,8 +156,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
             var url = "http://localhost/RandomNumber/GetHalfOfModifiedRandomNumber?randomNumber=3";
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync(url));
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
         }
 
         [Fact]
@@ -465,9 +473,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidProgramException>(
-                () => client.GetAsync("http://localhost/Home/ThrowingResultFilter"));
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/ThrowingResultFilter");
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidProgramException).FullName, exception.ExceptionType);
         }
 
         // Action Filter throws.
@@ -496,9 +507,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidProgramException>(
-                () => client.GetAsync("http://localhost/Home/ThrowingAuthorizationFilter"));
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/ThrowingAuthorizationFilter");
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidProgramException).FullName, exception.ExceptionType);
         }
 
         // Exception Filter throws.

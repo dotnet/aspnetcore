@@ -28,6 +28,8 @@ namespace FiltersWebSite
                 });
             });
 
+            app.UseErrorReporter();
+
             app.UseMvc();
         }
     }

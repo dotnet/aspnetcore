@@ -20,6 +20,8 @@ namespace RoutingWebSite
                 services.AddScoped<TestResponseGenerator>();
             });
 
+            app.UseErrorReporter();
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute("areaRoute",

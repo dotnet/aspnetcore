@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Constraints;
@@ -11,8 +10,6 @@ namespace InlineConstraints
 {
     public class Startup
     {
-        public Action<IRouteBuilder> RouteCollectionProvider { get; set; }
-
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
@@ -21,6 +18,8 @@ namespace InlineConstraints
             {
                 services.AddMvc(configuration);
             });
+
+            app.UseErrorReporter();
 
             app.UseMvc(routes =>
             {

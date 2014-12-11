@@ -42,15 +42,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => client.GetAsync("http://localhost/area-withoutexists/Users")
-                );
+            // Act
+            var response = await client.GetAsync("http://localhost/area-withoutexists/Users");
 
+            // Assert
+            var exception = response.GetServerException();
             Assert.Equal("The view 'Index' was not found." +
-                         " The following locations were searched:\r\n/Areas/Users/Views/Home/Index.cshtml\r\n" +
-                         "/Areas/Users/Views/Shared/Index.cshtml\r\n/Views/Shared/Index.cshtml.",
-                         ex.Message);
+                         " The following locations were searched:__/Areas/Users/Views/Home/Index.cshtml__" +
+                         "/Areas/Users/Views/Shared/Index.cshtml__/Views/Shared/Index.cshtml.",
+                         exception.ExceptionMessage);
         }
 
         [Fact]

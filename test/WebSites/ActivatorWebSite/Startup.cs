@@ -22,6 +22,9 @@ namespace ActivatorWebSite
                 services.AddScoped<ViewService, ViewService>();
             });
 
+            // Used to report exceptions that MVC doesn't handle
+            app.UseErrorReporter();
+
             // Add MVC to the request pipeline
             app.UseMvc(routes =>
             {

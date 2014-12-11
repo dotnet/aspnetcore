@@ -577,8 +577,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var request = new HttpRequestMessage(new HttpMethod("POST"), "http://localhost/api/Admin/Test?name=mario");
 
-            // Act & Assert
-            await Assert.ThrowsAsync<AmbiguousActionException>(async () => await client.SendAsync(request));
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(AmbiguousActionException).FullName, exception.ExceptionType);
         }
 
         [Theory]

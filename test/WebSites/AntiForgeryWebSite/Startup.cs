@@ -17,6 +17,8 @@ namespace AntiForgeryWebSite
                 services.AddMvc(configuration);
             });
 
+            app.UseErrorReporter();
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute("ActionAsMethod", "{controller}/{action}",

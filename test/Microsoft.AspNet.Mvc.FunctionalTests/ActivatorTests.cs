@@ -21,12 +21,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
+
             var expectedMessage = "No service for type 'ActivatorWebSite.CannotBeActivatedController+FakeType' " +
                                    "has been registered.";
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync("http://localhost/CannotBeActivated/Index"));
-            Assert.Equal(expectedMessage, ex.Message);
+            var response = await client.GetAsync("http://localhost/CannotBeActivated/Index");
+
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(expectedMessage, exception.ExceptionMessage);
         }
 
         [Fact]
@@ -162,9 +166,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                                    "has been registered.";
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => client.GetAsync("http://localhost/View/ConsumeCannotBeActivatedComponent"));
-            Assert.Equal(expectedMessage, ex.Message);
+            var response = await client.GetAsync("http://localhost/View/ConsumeCannotBeActivatedComponent");
+
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(expectedMessage, exception.ExceptionMessage);
         }
     }
 }

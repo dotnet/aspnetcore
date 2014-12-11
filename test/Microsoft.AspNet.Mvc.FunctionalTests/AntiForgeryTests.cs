@@ -100,9 +100,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
-            Assert.Equal("The anti-forgery token could not be decrypted.", ex.Message);
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal("The anti-forgery token could not be decrypted.", exception.ExceptionMessage);
         }
 
         [Fact]
@@ -127,9 +130,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
-            Assert.Equal("The anti-forgery token could not be decrypted.", ex.Message);
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal("The anti-forgery token could not be decrypted.", exception.ExceptionMessage);
         }
 
         [Fact]
@@ -162,9 +168,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
-            Assert.Equal("The anti-forgery cookie token and form field token do not match.", ex.Message);
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal("The anti-forgery cookie token and form field token do not match.", exception.ExceptionMessage);
         }
 
         [Fact]
@@ -189,9 +198,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
-            Assert.Equal("The required anti-forgery cookie \"__RequestVerificationToken\" is not present.", ex.Message);
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal("The required anti-forgery cookie \"__RequestVerificationToken\" is not present.", exception.ExceptionMessage);
         }
 
         [Fact]
@@ -214,10 +226,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var exception = response.GetServerException();
             Assert.Equal("The required anti-forgery form field \"__RequestVerificationToken\" is not present.",
-                         ex.Message);
+                         exception.ExceptionMessage);
         }
     }
 }

@@ -50,9 +50,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 "<SampleInt>" + sampleInputInt.ToString() + "</SampleInt></DummyClass>";
             var content = new StringContent(input, Encoding.UTF8, "application/xml");
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await client.PostAsync("http://localhost/Home/Index", content));
+            // Act
+            var response = await client.PostAsync("http://localhost/Home/Index", content);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
         }
     }
 }

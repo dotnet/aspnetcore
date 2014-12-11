@@ -128,12 +128,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-               client.GetAsync("http://localhost/FromAttributes/FromBodyParametersThrows"));
+            // Act
+            var response = await client.GetAsync("http://localhost/FromAttributes/FromBodyParametersThrows");
 
-            Assert.Equal("More than one parameter and/or property is bound to the HTTP request's content.",
-                         ex.Message);
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(
+                "More than one parameter and/or property is bound to the HTTP request's content.",
+                exception.ExceptionMessage);
         }
 
         [Fact]
@@ -143,12 +146,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-               client.GetAsync("http://localhost/FromAttributes/FromBodyParameterAndPropertyThrows"));
+            // Act
+            var response = await client.GetAsync("http://localhost/FromAttributes/FromBodyParameterAndPropertyThrows");
 
-            Assert.Equal("More than one parameter and/or property is bound to the HTTP request's content.",
-                         ex.Message);
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(
+                "More than one parameter and/or property is bound to the HTTP request's content.",
+                exception.ExceptionMessage);
         }
 
         [Fact]
@@ -158,12 +164,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-               client.GetAsync("http://localhost/FromAttributes/FormAndBody_AsParameters_Throws"));
+            // Act
+            var response = await client.GetAsync("http://localhost/FromAttributes/FormAndBody_AsParameters_Throws");
 
-            Assert.Equal("More than one parameter and/or property is bound to the HTTP request's content.",
-                         ex.Message);
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(
+                "More than one parameter and/or property is bound to the HTTP request's content.",
+                exception.ExceptionMessage);
         }
 
         [Fact]
@@ -173,12 +182,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-               client.GetAsync("http://localhost/FromAttributes/FormAndBody_Throws"));
+            // Act
+            var response = await client.GetAsync("http://localhost/FromAttributes/FormAndBody_Throws");
 
-            Assert.Equal("More than one parameter and/or property is bound to the HTTP request's content.",
-                         ex.Message);
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(
+                "More than one parameter and/or property is bound to the HTTP request's content.",
+                exception.ExceptionMessage);
         }
 
         [Fact]
@@ -930,13 +942,18 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
             Expression<Func<User, object>> expression = model => model.Address.Country;
 
+            var expected = string.Format(
+                "The passed expression of expression node type '{0}' is invalid." +
+                " Only simple member access expressions for model properties are supported.",
+                expression.Body.NodeType);
+
             // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                          client.GetAsync("http://localhost/TryUpdateModel/GetUserAsync_WithChainedProperties?id=123"));
-            Assert.Equal(string.Format("The passed expression of expression node type '{0}' is invalid." +
-                                       " Only simple member access expressions for model properties are supported.",
-                                        expression.Body.NodeType),
-                         ex.Message);
+            var response = await client.GetAsync("http://localhost/TryUpdateModel/GetUserAsync_WithChainedProperties?id=123");
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(expected, exception.ExceptionMessage);
         }
 
         [Fact]

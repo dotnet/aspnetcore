@@ -925,11 +925,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var expectedMessage = "The supplied route name 'DuplicateRoute' is ambiguous and matched more than one route.";
 
             // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await client.GetAsync(url));
+            var response = await client.GetAsync(url);
 
             // Assert
-            Assert.Equal(expectedMessage, ex.Message);
+            var exception = response.GetServerException();
+            Assert.Equal(expectedMessage, exception.ExceptionMessage);
         }
 
         [Fact]
