@@ -1,0 +1,20 @@
+﻿@model ModelBindingWebSite.ViewModels.VehicleWithDealerViewModel
+
+<div>
+    <span class="bold">@Model.Dealer.Name</span>
+    <em>@Model.Dealer.Location</em>
+    @Html.HiddenFor(m => m.Dealer.Id)
+</div>
+@Html.ValidationSummary(excludePropertyErrors: true)
+@using (Html.BeginForm())
+{
+    <fieldset>
+        @Html.TextBoxFor(m => m.Vehicle.Vin)
+        @Html.ValidationMessageFor(m => m.Vehicle.Vin)
+    </fieldset>
+
+    <fieldset>
+        @Html.EditorFor(m => m.Vehicle.Year)
+        @Html.ValidationMessageFor(m => m.Vehicle.Year)
+    </fieldset>
+}
