@@ -186,4 +186,5 @@
     <File Name="xunit.execution.dll" Ignore="yes" />
     <File Name="xunit.runner.tdnet.dll" Ignore="yes" />
     <File Name="xunit.runner.utility.dll" Ignore="yes" />
+    <File Name="xunit.runner.kre.dll" Ignore="yes" />
 </Files>
