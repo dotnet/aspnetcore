@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task NullArguments()
         {
-            Assert.Throws<TargetInvocationException>(() => TestServer.Create(app => app.UseDirectoryBrowser(new DirectoryBrowserOptions() { Formatter = null })));
+            Assert.Throws<ArgumentException>(() => TestServer.Create(app => app.UseDirectoryBrowser(new DirectoryBrowserOptions() { Formatter = null })));
 
             // No exception, default provided
             TestServer.Create(app => app.UseDirectoryBrowser(new DirectoryBrowserOptions() { FileSystem = null }));
