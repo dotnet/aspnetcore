@@ -7,10 +7,6 @@
         "aspnet50": {
         },
         "aspnetcore50": {
-            "dependencies": {
-                "System.Runtime.Serialization.Xml": "4.0.0-beta-*",
-                "System.Xml.ReaderWriter": "4.0.10-beta-*"
-            }
         }
     }
 }
