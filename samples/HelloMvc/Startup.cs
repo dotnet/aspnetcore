@@ -18,6 +18,6 @@ namespace HelloMvc
             app.UseMvc();
 
             app.UseWelcomePage();
-        }       
+        }
     }
 }

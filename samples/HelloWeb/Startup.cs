@@ -1,6 +1,6 @@
 using Microsoft.AspNet.Builder;
 
-namespace KWebStartup
+namespace HelloWeb
 {
     public class Startup
     {
