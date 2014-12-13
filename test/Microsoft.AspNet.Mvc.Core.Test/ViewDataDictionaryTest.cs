@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Testing;
 using Moq;
@@ -71,6 +72,73 @@ namespace Microsoft.AspNet.Mvc.Core
             // Assert
             Assert.NotNull(viewData.ModelMetadata);
             metadataProvider.Verify();
+        }
+
+        // When SetModel is called, only GetMetadataForType from MetadataProvider is expected to be called.
+        [Fact]
+        public void SetModelCallsGetMetadataForTypeExactlyOnce()
+        {
+            // Arrange
+            var metadataProvider = new Mock<IModelMetadataProvider>(MockBehavior.Strict);
+            metadataProvider
+                .Setup(m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(object)))
+                .Returns(new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(object)))
+                .Verifiable();
+            metadataProvider
+                .Setup(m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(TestModel)))
+                .Returns(new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(TestModel)))
+                .Verifiable();
+            var modelState = new ModelStateDictionary();
+            var viewData = new TestViewDataDictionary(metadataProvider.Object, modelState);
+            var model = new TestModel();
+
+            // Act
+            viewData.SetModelPublic(model);
+
+            // Assert
+            Assert.NotNull(viewData.ModelMetadata);
+            // Verifies if the GetMetadataForType is called only once.
+            metadataProvider.Verify(
+                m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(object)), Times.Once());
+            // Verifies if GetMetadataForProperties and GetMetadataForProperty is not called.
+            metadataProvider.Verify(
+                m => m.GetMetadataForProperties(It.IsAny<Func<object>>(), typeof(object)), Times.Never());
+            metadataProvider.Verify(
+                m => m.GetMetadataForProperty(
+                    It.IsAny<Func<object>>(), typeof(object), It.IsAny<string>()), Times.Never());
+        }
+
+        public static TheoryData<object> SetModelData
+        {
+            get
+            {
+                var model = new List<TestModel>()
+                {
+                    new TestModel(),
+                    new TestModel()
+                };
+
+                return new TheoryData<object>
+                {
+                    { model.Select(t => t) },
+                    { model.Where(t => t != null) },
+                    { model.SelectMany(t => t.ToString()) },
+                    { model.Take(2) },
+                    { model.TakeWhile(t => t != null) },
+                    { model.Union(model) }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SetModelData))]
+        public void SetModelDoesNotThrowOnEnumerableModel(object model)
+        {
+            // Arrange
+            var vdd = new ViewDataDictionary(new EmptyModelMetadataProvider());
+            
+            // Act & Assert
+            Assert.DoesNotThrow(() => { vdd.Model = model; });
         }
 
         [Fact]

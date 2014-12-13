@@ -94,6 +94,22 @@ ViewWithNestedLayout-Content
         }
 
         [Fact]
+        public async Task RazorView_DoesNotThrow_PartialViewWithEnumerableModel()
+        {
+            // Arrange
+            var expected = "HelloWorld";
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync(
+                "http://localhost/ViewEngine/ViewWithPartialTakingModelFromIEnumerable");
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
+
+        [Fact]
         public async Task RazorView_PassesViewContextBetweenViewAndLayout()
         {
             var expected =
