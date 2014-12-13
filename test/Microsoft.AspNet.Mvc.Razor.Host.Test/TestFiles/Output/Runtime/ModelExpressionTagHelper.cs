@@ -43,7 +43,7 @@ namespace Asp
             BeginContext(120, 2, true);
             WriteLiteral("\r\n");
             EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("inputTest");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("inputTest", "test");
             __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<Microsoft.AspNet.Mvc.Razor.InputTestTagHelper>();
             __tagHelperExecutionContext.Add(__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper);
             __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);

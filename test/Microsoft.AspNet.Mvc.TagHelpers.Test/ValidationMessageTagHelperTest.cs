@@ -33,7 +33,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "id", "myvalidationmessage" },
                     { "for", modelExpression },
-                });
+                },
+                uniqueId: "test");
             var output = new TagHelperOutput(
                 expectedTagName,
                 attributes: new Dictionary<string, string>

@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "selected", selected },
                 { "value", value },
             };
-            var tagHelperContext = new TagHelperContext(contextAttributes);
+            var tagHelperContext = new TagHelperContext(contextAttributes, uniqueId: "test");
             var output = new TagHelperOutput(expectedTagName, originalAttributes, originalContent)
             {
                 SelfClosing = false,
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "selected", selected },
                 { "value", value },
             };
-            var tagHelperContext = new TagHelperContext(contextAttributes);
+            var tagHelperContext = new TagHelperContext(contextAttributes, uniqueId: "test");
             var output = new TagHelperOutput(originalTagName, originalAttributes, originalContent)
             {
                 SelfClosing = false,
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "selected", selected },
                 { "value", value },
             };
-            var tagHelperContext = new TagHelperContext(contextAttributes);
+            var tagHelperContext = new TagHelperContext(contextAttributes, uniqueId: "test");
             var output = new TagHelperOutput(originalTagName, originalAttributes, originalContent)
             {
                 SelfClosing = false,

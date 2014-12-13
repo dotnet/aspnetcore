@@ -32,7 +32,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "asp-controller", "home" },
                     { "method", "post" },
                     { "asp-anti-forgery", true }
-                });
+                },
+                uniqueId: "test");
             var output = new TagHelperOutput(
                 expectedTagName,
                 attributes: new Dictionary<string, string>
@@ -91,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var viewContext = CreateViewContext();
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>());
+                allAttributes: new Dictionary<string, object>(), uniqueId: "test");
             var output = new TagHelperOutput(
                 "form",
                 attributes: new Dictionary<string, string>(),
@@ -132,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var testViewContext = CreateViewContext();
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>());
+                allAttributes: new Dictionary<string, object>(), uniqueId: "test");
             var expectedAttribute = new KeyValuePair<string, string>("asp-ROUTEE-NotRoute", "something");
             var output = new TagHelperOutput(
                 "form",
@@ -193,7 +194,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var viewContext = CreateViewContext();
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>());
+                allAttributes: new Dictionary<string, object>(), uniqueId: "test");
             var output = new TagHelperOutput(
                 "form",
                 attributes: new Dictionary<string, string>(),
@@ -243,7 +244,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new Dictionary<string, object>()
                 {
                     { "METhod", "POST" }
-                });
+                },
+                uniqueId: "test");
 
             // Act
             await formTagHelper.ProcessAsync(context, output);
@@ -284,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                                  { "aCTiON", "my-action" },
                                              },
                                              content: string.Empty);
-            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>());
+            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>(), uniqueId: "test");
 
             // Act
             await formTagHelper.ProcessAsync(context, output);

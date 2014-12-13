@@ -25,7 +25,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 new Dictionary<string, object>(StringComparer.Ordinal)
                 {
                     { attributeName, attributeValue }
-                });
+                },
+                uniqueId: "test");
             var expectedAttribute = new KeyValuePair<string, string>(attributeName, attributeValue);
 
             // Act
@@ -53,7 +54,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 new Dictionary<string, object>(StringComparer.Ordinal)
                 {
                     { attributeName, "world" }
-                });
+                }
+                , uniqueId: "test");
 
             // Act
             tagHelperOutput.CopyHtmlAttribute(attributeName, tagHelperContext);

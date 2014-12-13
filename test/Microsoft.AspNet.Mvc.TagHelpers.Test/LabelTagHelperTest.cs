@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 For = modelExpression,
             };
 
-            var tagHelperContext = new TagHelperContext(allAttributes: new Dictionary<string, object>());
+            var tagHelperContext = new TagHelperContext(allAttributes: new Dictionary<string, object>(), uniqueId: "test");
             var htmlAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var modelExpression = new ModelExpression(nameof(Model.Text), metadata);
             var tagHelper = new LabelTagHelper();
 
-            var tagHelperContext = new TagHelperContext(allAttributes: new Dictionary<string, object>());
+            var tagHelperContext = new TagHelperContext(allAttributes: new Dictionary<string, object>(), uniqueId: "test");
             var output = new TagHelperOutput(expectedTagName, expectedAttributes, expectedContent);
 
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);

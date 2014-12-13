@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 ValidationSummaryValue = "All"
             };
 
-            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
+            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>(), uniqueId: "test");
             var output = new TagHelperOutput(
                 expectedTagName,
                 attributes: new Dictionary<string, string>

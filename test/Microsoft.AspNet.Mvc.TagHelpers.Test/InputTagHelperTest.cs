@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var expectedTagName = "not-input";
 
-            var context = new TagHelperContext(new Dictionary<string, object>());
+            var context = new TagHelperContext(new Dictionary<string, object>(), uniqueId: "test");
             var originalAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var originalTagName = "not-input";
             var expectedContent = originalContent + "<input class=\"form-control\" /><hidden />";
 
-            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>());
+            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>(), uniqueId: "test");
             var originalAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
@@ -217,7 +217,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "something";
             var expectedTagName = "not-input";
 
-            var context = new TagHelperContext(allAttributes: contextAttributes);
+            var context = new TagHelperContext(allAttributes: contextAttributes, uniqueId: "test");
             var originalAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
@@ -294,7 +294,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "something";
             var expectedTagName = "not-input";
 
-            var context = new TagHelperContext(allAttributes: contextAttributes);
+            var context = new TagHelperContext(allAttributes: contextAttributes, uniqueId: "test");
             var originalAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
@@ -368,7 +368,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "something";
             var expectedTagName = "not-input";
 
-            var context = new TagHelperContext(allAttributes: contextAttributes);
+            var context = new TagHelperContext(allAttributes: contextAttributes, uniqueId: "test");
             var originalAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
@@ -457,7 +457,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "something";
             var expectedTagName = "not-input";
 
-            var context = new TagHelperContext(allAttributes: contextAttributes);
+            var context = new TagHelperContext(allAttributes: contextAttributes, uniqueId: "test");
             var originalAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
@@ -515,7 +515,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var expectedTagName = "input";
 
-            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
+            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>(), uniqueId: "test");
             var output = new TagHelperOutput(expectedTagName, expectedAttributes, expectedContent)
             {
                 SelfClosing = false,
@@ -563,7 +563,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedMessage = "Unable to format without a 'asp-for' expression for <input>. 'asp-format' must " +
                 "be null if 'asp-for' is null.";
 
-            var tagHelperContext = new TagHelperContext(contextAttributes);
+            var tagHelperContext = new TagHelperContext(contextAttributes, uniqueId: "test");
             var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
             var tagHelper = new InputTagHelper
             {

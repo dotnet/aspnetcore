@@ -31,7 +31,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "asp-fragment", "hello=world" },
                     { "asp-host", "contoso.com" },
                     { "asp-protocol", "http" }
-                });
+                },
+                uniqueId: "test");
             var output = new TagHelperOutput(
                 expectedTagName,
                 attributes: new Dictionary<string, string>
@@ -84,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>());
+                allAttributes: new Dictionary<string, object>(), uniqueId: "test");
             var output = new TagHelperOutput(
                 "a",
                 attributes: new Dictionary<string, string>(),
@@ -118,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>());
+                allAttributes: new Dictionary<string, object>(), uniqueId: "test");
             var output = new TagHelperOutput(
                 "a",
                 attributes: new Dictionary<string, string>(),

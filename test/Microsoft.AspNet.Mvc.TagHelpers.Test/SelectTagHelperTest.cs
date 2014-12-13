@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
             var modelExpression = new ModelExpression(nameAndId.Name, metadata);
 
-            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
+            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>(), uniqueId: "test");
             var output = new TagHelperOutput(expectedTagName, originalAttributes, expectedContent)
             {
                 SelfClosing = true,
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
             var modelExpression = new ModelExpression(nameAndId.Name, metadata);
 
-            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
+            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>(), uniqueId: "test");
             var output = new TagHelperOutput(expectedTagName, originalAttributes, originalContent)
             {
                 SelfClosing = true,
@@ -312,7 +312,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var propertyName = "Property1";
             var expectedTagName = "select";
 
-            var tagHelperContext = new TagHelperContext(contextAttributes);
+            var tagHelperContext = new TagHelperContext(contextAttributes, uniqueId: "test");
             var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
 
             // TODO: https://github.com/aspnet/Mvc/issues/1253
@@ -376,7 +376,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var propertyName = "Property1";
             var tagName = "select";
 
-            var tagHelperContext = new TagHelperContext(contextAttributes);
+            var tagHelperContext = new TagHelperContext(contextAttributes, uniqueId: "test");
             var output = new TagHelperOutput(tagName, originalAttributes, content);
 
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -440,7 +440,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var expectedTagName = "select";
 
-            var tagHelperContext = new TagHelperContext(contextAttributes);
+            var tagHelperContext = new TagHelperContext(contextAttributes, uniqueId: "test");
             var output = new TagHelperOutput(expectedTagName, originalAttributes, expectedContent)
             {
                 SelfClosing = true,
@@ -471,7 +471,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedTagName = "select";
             var expectedMessage = "Cannot determine body for <select>. 'asp-items' must be null if 'asp-for' is null.";
 
-            var tagHelperContext = new TagHelperContext(contextAttributes);
+            var tagHelperContext = new TagHelperContext(contextAttributes, uniqueId: "test");
             var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
             var tagHelper = new SelectTagHelper
             {
@@ -502,7 +502,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedMessage = "Cannot parse 'multiple' value '" + multiple +
                 "' for <select>. Acceptable values are 'false', 'true' and 'multiple'.";
 
-            var tagHelperContext = new TagHelperContext(contextAttributes);
+            var tagHelperContext = new TagHelperContext(contextAttributes, uniqueId: "test");
             var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
 
             var metadataProvider = new EmptyModelMetadataProvider();
