@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNet.SignalR.Client;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Client;
 using Xunit;
 
 namespace E2ETests
@@ -22,7 +22,7 @@ namespace E2ETests
             Console.WriteLine("Sending an IfNoneMatch header with e-tag");
             httpClient.DefaultRequestHeaders.IfNoneMatch.Add(response.Headers.ETag);
             response = httpClient.GetAsync("favicon.ico").Result;
-            Assert.Equal<HttpStatusCode>(HttpStatusCode.NotModified, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotModified, response.StatusCode);
             httpClient.DefaultRequestHeaders.IfNoneMatch.Clear();
             Console.WriteLine("Successfully received a NotModified status");
 
@@ -35,9 +35,9 @@ namespace E2ETests
         private void VerifyHomePage(HttpResponseMessage response, string responseContent, bool useNtlmAuthentication = false)
         {
             Console.WriteLine("Home page content : {0}", responseContent);
-            Assert.Equal<HttpStatusCode>(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             ValidateLayoutPage(responseContent);
-            Assert.Contains("<a href=\"/Store/Details/", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(PrefixBaseAddress("<a href=\"/{0}/Store/Details/"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<title>Home Page – MVC Music Store</title>", responseContent, StringComparison.OrdinalIgnoreCase);
 
             if (!useNtlmAuthentication)
@@ -52,11 +52,20 @@ namespace E2ETests
             Console.WriteLine("Application initialization successful.");
         }
 
+        private string PrefixBaseAddress(string url)
+        {
+            url = startParameters.ServerType == ServerType.IISNativeModule ?
+                string.Format(url, startParameters.IISApplication.VirtualDirectoryName) :
+                string.Format(url, string.Empty);
+
+            return url.Replace("//", "/").Replace("%2F%2F", "%2F").Replace("%2F/", "%2F");
+        }
+
         private void ValidateLayoutPage(string responseContent)
         {
             Assert.Contains("ASP.NET MVC Music Store", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("<li><a href=\"/\">Home</a></li>", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("<a href=\"/Store\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Store <b class=\"caret\"></b></a>", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(PrefixBaseAddress("<li><a href=\"/{0}\">Home</a></li>"), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(PrefixBaseAddress("<a href=\"/{0}/Store\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Store <b class=\"caret\"></b></a>"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<ul class=\"dropdown-menu\">", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<li class=\"divider\"></li>", responseContent, StringComparison.OrdinalIgnoreCase);
         }
@@ -70,7 +79,7 @@ namespace E2ETests
             ValidateLayoutPage(responseContent);
             Assert.Contains("<title>Log in – MVC Music Store</title>", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<h4>Use a local account to log in.</h4>", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Equal<string>(ApplicationBaseUrl + "Account/Login?ReturnUrl=%2FAdmin%2FStoreManager%2F", response.RequestMessage.RequestUri.AbsoluteUri);
+            Assert.Equal<string>(ApplicationBaseUrl + PrefixBaseAddress("Account/Login?ReturnUrl=%2F{0}%2FAdmin%2FStoreManager%2F"), response.RequestMessage.RequestUri.AbsoluteUri);
 
             Console.WriteLine("Redirected to login page as expected.");
         }
@@ -331,8 +340,8 @@ namespace E2ETests
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("http://myapp/testurl", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains(string.Format("<a href=\"/Admin/StoreManager/Edit?id={0}\">Edit</a>", albumId), responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("<a href=\"/Admin/StoreManager\">Back to List</a>", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(PrefixBaseAddress(string.Format("<a href=\"/{0}/Admin/StoreManager/Edit?id={1}\">Edit</a>", "{0}", albumId)), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(PrefixBaseAddress("<a href=\"/{0}/Admin/StoreManager\">Back to List</a>"), responseContent, StringComparison.OrdinalIgnoreCase);
         }
 
         // This gets the view that non-admin users get to see.
@@ -400,7 +409,7 @@ namespace E2ETests
 
             Console.WriteLine("Verifying if the album '{0}' is deleted from store", albumName);
             response = httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
-            Assert.Equal<HttpStatusCode>(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             Console.WriteLine("Album is successfully deleted from the store.", albumName, albumId);
         }
 

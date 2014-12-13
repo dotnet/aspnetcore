@@ -24,5 +24,9 @@
         public bool PackApplicationBeforeStart { get; set; }
 
         public string PackedApplicationRootPath { get; set; }
+
+        public string KreName { get; set; }
+
+        public IISApplication IISApplication { get; set; }
     }
 }

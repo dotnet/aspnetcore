@@ -8,9 +8,6 @@ using Xunit;
 
 namespace E2ETests
 {
-    /// <summary>
-    /// Summary description for PublishAndRunTests
-    /// </summary>
     public partial class SmokeTests
     {
         [Theory]
@@ -19,17 +16,17 @@ namespace E2ETests
         //https://github.com/aspnet/KRuntime/issues/642
         //[InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/", false)]
         [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/", true)]
-        public void PublishAndRunTests(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool RunTestOnMono = false)
+        public void PublishAndRunTests(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool runTestOnMono = false)
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", serverType, kreFlavor, architecture, applicationBaseUrl);
 
-            if (Helpers.SkipTestOnCurrentConfiguration(RunTestOnMono, architecture))
+            if (Helpers.SkipTestOnCurrentConfiguration(runTestOnMono, architecture, serverType))
             {
                 Assert.True(true);
                 return;
             }
 
-            var startParameters = new StartParameters
+            startParameters = new StartParameters
             {
                 ServerType = serverType,
                 KreFlavor = kreFlavor,

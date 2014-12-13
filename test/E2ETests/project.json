@@ -6,9 +6,10 @@
     "dependencies": {
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
-        "Xunit.KRunner": "1.0.0-*",
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
         "Microsoft.AspNet.SignalR.Client": "2.1.1",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-*"
+        "Microsoft.Web.Administration": "7.0.0",
+        "Xunit.KRunner": "1.0.0-*"
     },
     "frameworks": {
         "aspnet50": {

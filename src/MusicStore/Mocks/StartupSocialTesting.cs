@@ -1,36 +1,43 @@
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.ConfigurationModel;
-using Microsoft.Framework.DependencyInjection;
-using MusicStore.Models;
 using Microsoft.AspNet.Security.Facebook;
 using Microsoft.AspNet.Security.Google;
-using Microsoft.AspNet.Security.Twitter;
 using Microsoft.AspNet.Security.MicrosoftAccount;
+using Microsoft.AspNet.Security.Twitter;
 using Microsoft.Framework.Cache.Memory;
+using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Runtime;
 using MusicStore.Mocks.Common;
 using MusicStore.Mocks.Facebook;
-using MusicStore.Mocks.Twitter;
 using MusicStore.Mocks.Google;
-using Microsoft.Framework.Runtime;
-using System.Threading.Tasks;
 using MusicStore.Mocks.MicrosoftAccount;
+using MusicStore.Mocks.Twitter;
+using MusicStore.Models;
 
 namespace MusicStore
 {
     public class StartupSocialTesting
     {
-        public StartupSocialTesting()
+        public StartupSocialTesting(IApplicationEnvironment appEnvironment)
         {
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
             Configuration = new Configuration()
                         .AddJsonFile("config.json")
                         .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
+
+            // Used to override some configuration parameters that cannot be overridden by environment.
+            if (File.Exists(Path.Combine(appEnvironment.ApplicationBasePath, "configoverride.json")))
+            {
+                ((Configuration)Configuration).AddJsonFile("configoverride.json");
+            }
         }
 
         public IConfiguration Configuration { get; private set; }
@@ -44,7 +51,10 @@ namespace MusicStore
             app.UseServices(services =>
             {
                 //Sql client not available on mono
-                var useInMemoryStore = Type.GetType("Mono.Runtime") != null;
+                string value;
+                var useInMemoryStore = Configuration.TryGet("UseInMemoryStore", out value) && value == "true" ?
+                    true :
+                    Type.GetType("Mono.Runtime") != null;
 
                 // Add EF services to the services container
                 if (useInMemoryStore)
@@ -125,7 +135,7 @@ namespace MusicStore
 
             app.UseFacebookAuthentication();
 
-            app.UseGoogleAuthentication(options => 
+            app.UseGoogleAuthentication(options =>
             {
                 options.ClientId = "[ClientId]";
                 options.ClientSecret = "[ClientSecret]";

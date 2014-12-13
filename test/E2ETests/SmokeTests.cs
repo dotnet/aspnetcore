@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -15,6 +14,7 @@ namespace E2ETests
         private string ApplicationBaseUrl;
         private HttpClient httpClient;
         private HttpClientHandler httpClientHandler;
+        private StartParameters startParameters;
 
         [Theory]
         [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/", false)]
@@ -27,25 +27,23 @@ namespace E2ETests
         [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/", true)]
         [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/", false)]
         [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5004/", false)]
-        //Native module variation requires some more work
-        //[InlineData(ServerType.HeliosNativeModule, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/", false)]
-        public void SmokeTestSuite(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool RunTestOnMono)
+        //[InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5005/", false)]
+        //[InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5005/", false)]
+        public void SmokeTestSuite(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool runTestOnMono)
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", serverType, kreFlavor, architecture, applicationBaseUrl);
 
-            if (Helpers.SkipTestOnCurrentConfiguration(RunTestOnMono, architecture))
+            if (Helpers.SkipTestOnCurrentConfiguration(runTestOnMono, architecture, serverType))
             {
                 Assert.True(true);
                 return;
             }
 
-            var startParameters = new StartParameters
+            startParameters = new StartParameters
             {
                 ServerType = serverType,
                 KreFlavor = kreFlavor,
                 KreArchitecture = architecture,
-                ApplicationHostConfigTemplateContent = (serverType == ServerType.HeliosNativeModule) ? File.ReadAllText("HeliosNativeModuleApplicationHost.config") : null,
-                SiteName = (serverType == ServerType.HeliosNativeModule) ? "MusicStoreNativeModule" : null,
                 EnvironmentName = "SocialTesting"
             };
 
@@ -64,9 +62,14 @@ namespace E2ETests
             try
             {
                 hostProcess = DeploymentUtility.StartApplication(startParameters, musicStoreDbName);
+                if (serverType == ServerType.IISNativeModule)
+                {
+                    // Accomodate the vdir name.
+                    ApplicationBaseUrl += startParameters.IISApplication.VirtualDirectoryName + "/";
+                }
 
                 httpClientHandler = new HttpClientHandler();
-                httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(applicationBaseUrl) };
+                httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(ApplicationBaseUrl) };
 
                 HttpResponseMessage response = null;
                 string responseContent = null;

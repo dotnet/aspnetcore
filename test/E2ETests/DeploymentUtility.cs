@@ -53,37 +53,6 @@ namespace E2ETests
             }
         }
 
-        /// <summary>
-        /// Copy klr.iis\[arch] to bin folder
-        /// </summary>
-        /// <param name="applicationPath"></param>
-        private static void CopyKlrIIsBinFolder(StartParameters startParameters)
-        {
-            if (startParameters.ServerType == ServerType.HeliosNativeModule)
-            {
-                Console.WriteLine(@"Copying klr.iis\x86\* content to [ApplicationFolder]\bin\");
-                var archFolderName = startParameters.KreArchitecture.ToString();
-                var sourcePath = Path.Combine(Environment.CurrentDirectory, "NativeModule", "klr.iis", archFolderName);
-                var targetPath = Path.Combine(startParameters.ApplicationPath, "bin", archFolderName);
-                if (!Directory.Exists(targetPath))
-                {
-                    Directory.CreateDirectory(targetPath);
-                }
-
-                try
-                {
-                    foreach (var sourceFile in Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories))
-                    {
-                        File.Copy(sourceFile, Path.Combine(targetPath, Path.GetFileName(sourceFile)), true);
-                    }
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine("Exception while copying assemblies", exception.Message);
-                }
-            }
-        }
-
         private static string APP_RELATIVE_PATH = Path.Combine("..", "..", "src", "MusicStore");
 
         public static Process StartApplication(StartParameters startParameters, string identityDbName)
@@ -96,8 +65,16 @@ namespace E2ETests
 
             if (!string.IsNullOrWhiteSpace(startParameters.EnvironmentName))
             {
-                //To choose an environment based Startup
-                Environment.SetEnvironmentVariable("KRE_ENV", startParameters.EnvironmentName);
+                if (startParameters.ServerType != ServerType.IISNativeModule)
+                {
+                    // To choose an environment based Startup. 
+                    Environment.SetEnvironmentVariable("KRE_ENV", startParameters.EnvironmentName);
+                }
+                else
+                {
+                    // Cannot override with environment in case of IIS. Pack and write a Microsoft.AspNet.Hosting.ini file.
+                    startParameters.PackApplicationBeforeStart = true;
+                }
             }
 
             Process hostProcess = null;
@@ -109,15 +86,39 @@ namespace E2ETests
             else
             {
                 //Tweak the %PATH% to the point to the right KREFLAVOR
-                Environment.SetEnvironmentVariable("PATH", SwitchPathToKreFlavor(startParameters.KreFlavor, startParameters.KreArchitecture));
+                startParameters.KreName = SwitchPathToKreFlavor(startParameters.KreFlavor, startParameters.KreArchitecture);
 
                 //Reason to do pack here instead of in a common place is use the right KRE to do the packing. Previous line switches to use the right KRE.
                 if (startParameters.PackApplicationBeforeStart)
                 {
-                    KpmPack(startParameters);
+                    if (startParameters.ServerType == ServerType.IISNativeModule)
+                    {
+                        // Pack to IIS root\application folder.
+                        KpmPack(startParameters, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
+
+                        // Drop a Microsoft.AspNet.Hosting.ini with KRE_ENV information.
+                        var iniFile = Path.Combine(startParameters.ApplicationPath, "Microsoft.AspNet.Hosting.ini");
+                        File.WriteAllText(iniFile, string.Format("KRE_ENV={0}", startParameters.EnvironmentName));
+
+                        // Can't use localdb with IIS. Setting an override to use InMemoryStore.
+                        var overrideConfig = Path.Combine(startParameters.ApplicationPath, "..", "approot", "src", "MusicStore", "configoverride.json");
+                        overrideConfig = Path.GetFullPath(overrideConfig);
+                        File.WriteAllText(overrideConfig, "{\"UseInMemoryStore\": \"true\"}");
+
+                        Thread.Sleep(1 * 1000);
+                    }
+                    else
+                    {
+                        KpmPack(startParameters);
+                    }
                 }
 
-                if (startParameters.ServerType == ServerType.Helios || startParameters.ServerType == ServerType.HeliosNativeModule)
+                if (startParameters.ServerType == ServerType.IISNativeModule)
+                {
+                    startParameters.IISApplication = new IISApplication(startParameters);
+                    startParameters.IISApplication.SetupApplication();
+                }
+                else if (startParameters.ServerType == ServerType.Helios)
                 {
                     hostProcess = StartHeliosHost(startParameters);
                 }
@@ -183,22 +184,7 @@ namespace E2ETests
                     startParameters.ApplicationHostConfigTemplateContent.Replace("[ApplicationPhysicalPath]", startParameters.ApplicationPath);
             }
 
-            if (startParameters.ServerType == ServerType.HeliosNativeModule)
-            {
-                startParameters.ApplicationHostConfigTemplateContent =
-                    startParameters.ApplicationHostConfigTemplateContent.
-                    Replace("[KlrBootStrapperDirectory]", Path.Combine(Environment.CurrentDirectory, "NativeModule", "klr.iis.bootstrapper"));
-            }
-
-            if (startParameters.ServerType == ServerType.Helios)
-            {
-                CopyAspNetLoader(startParameters.ApplicationPath);
-            }
-            else
-            {
-                //Native module
-                CopyKlrIIsBinFolder(startParameters);
-            }
+            CopyAspNetLoader(startParameters.ApplicationPath);
 
             if (!string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigTemplateContent))
             {
@@ -268,23 +254,31 @@ namespace E2ETests
             Console.WriteLine();
             Console.WriteLine("Current %PATH% value : {0}", pathValue);
 
-            StringBuilder replaceStr = new StringBuilder();
-            replaceStr.Append("KRE");
-            replaceStr.Append((kreFlavor == KreFlavor.CoreClr) ? "-CoreCLR" : "-CLR");
-            replaceStr.Append((kreArchitecture == KreArchitecture.x86) ? "-x86" : "-amd64");
+            var replaceStr = new StringBuilder().
+                Append("KRE").
+                Append((kreFlavor == KreFlavor.CoreClr) ? "-CoreCLR" : "-CLR").
+                Append((kreArchitecture == KreArchitecture.x86) ? "-x86" : "-amd64").
+                ToString();
 
-            pathValue = Regex.Replace(pathValue, "KRE-(CLR|CoreCLR)-(x86|amd64)", replaceStr.ToString(), RegexOptions.IgnoreCase);
+            pathValue = Regex.Replace(pathValue, "KRE-(CLR|CoreCLR)-(x86|amd64)", replaceStr, RegexOptions.IgnoreCase);
+
+            var startIndex = pathValue.IndexOf(replaceStr); // First instance of this KRE name.
+            var kreName = pathValue.Substring(startIndex, pathValue.IndexOf(';', startIndex) - startIndex);
+            kreName = kreName.Substring(0, kreName.IndexOf('\\')); // Trim the \bin from the path.
+
+            // Tweak the %PATH% to the point to the right KREFLAVOR.
+            Environment.SetEnvironmentVariable("PATH", pathValue);
 
             Console.WriteLine();
-            Console.WriteLine("Setting %PATH% value to : {0}", pathValue);
-            return pathValue;
+            Console.WriteLine("Changing to use KRE : {0}", kreName);
+            return kreName;
         }
 
-        private static void KpmPack(StartParameters startParameters)
+        private static void KpmPack(StartParameters startParameters, string packRoot = null)
         {
-            startParameters.PackedApplicationRootPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            startParameters.PackedApplicationRootPath = Path.Combine(packRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            var parameters = string.Format("pack {0} -o {1}", startParameters.ApplicationPath, startParameters.PackedApplicationRootPath);
+            var parameters = string.Format("pack {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.PackedApplicationRootPath, startParameters.KreName);
             Console.WriteLine(string.Format("Executing command kpm {0}", parameters));
 
             var startInfo = new ProcessStartInfo
@@ -298,7 +292,8 @@ namespace E2ETests
             var hostProcess = Process.Start(startInfo);
             hostProcess.WaitForExit(60 * 1000);
 
-            startParameters.ApplicationPath = (startParameters.ServerType == ServerType.Helios) ?
+            startParameters.ApplicationPath =
+                (startParameters.ServerType == ServerType.Helios || startParameters.ServerType == ServerType.IISNativeModule) ?
                 Path.Combine(startParameters.PackedApplicationRootPath, "wwwroot") :
                 Path.Combine(startParameters.PackedApplicationRootPath, "approot", "src", "MusicStore");
 
@@ -351,7 +346,12 @@ namespace E2ETests
 
         public static void CleanUpApplication(StartParameters startParameters, Process hostProcess, string musicStoreDbName)
         {
-            if (hostProcess != null && !hostProcess.HasExited)
+            if (startParameters.ServerType == ServerType.IISNativeModule)
+            {
+                // Stop & delete the application pool.
+                startParameters.IISApplication.StopAndDeleteAppPool();
+            }
+            else if (hostProcess != null && !hostProcess.HasExited)
             {
                 //Shutdown the host process
                 hostProcess.Kill();

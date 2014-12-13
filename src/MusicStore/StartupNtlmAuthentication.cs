@@ -1,15 +1,15 @@
 using System;
+using System.Security.Claims;
+using System.Security.Principal;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Server.WebListener;
+using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using MusicStore.Models;
 using Microsoft.Net.Http.Server;
-using Microsoft.AspNet.Server.WebListener;
-using System.Security.Claims;
-using System.Security.Principal;
-using Microsoft.Framework.Cache.Memory;
+using MusicStore.Models;
 
 namespace MusicStore
 {
@@ -43,7 +43,6 @@ namespace MusicStore
         {
             //Set up NTLM authentication for WebListener like below. 
             //For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or modify the applicationHost.config to enable NTLM. 
-            //Note: This does not work on CoreCLR yet!
             if ((app.Server as ServerInformation) != null)
             {
                 var serverInformation = (ServerInformation)app.Server;
@@ -55,13 +54,11 @@ namespace MusicStore
                 //Who will get admin access? For demo sake I'm listing the currently logged on user as the application administrator. But this can be changed to suit the needs.
                 var identity = (ClaimsIdentity)context.User.Identity;
 
-#if ASPNET50
-                //no WindowsIdentity yet on CoreCLR
-                if (identity.GetUserName() == Environment.UserDomainName + "\\" + Environment.UserName)
+                if (identity.GetUserName() == Environment.GetEnvironmentVariable("USERDOMAIN") + "\\" + Environment.GetEnvironmentVariable("USERNAME"))
                 {
                     identity.AddClaim(new Claim("ManageStore", "Allowed"));
                 }
-#endif
+
                 await next.Invoke();
             });
 
