@@ -1,0 +1,7 @@
+﻿@inject WaitService WaitService
+Inside partial
+@await FlushAsync()
+@{
+    WaitService.WaitForClient();
+}
+After flush inside partial
