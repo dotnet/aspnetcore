@@ -8,6 +8,7 @@ use namespace='System.Collections.Generic'
 use namespace='System.Net'
 use namespace='System.Linq'
 use namespace='System.Text.RegularExpressions'
+use namespace='System.Threading.Tasks'
 use import="BuildEnv"
 
 functions
@@ -81,10 +82,10 @@ var buildTarget = "compile"
 
 #git-pull target='pull' 
     @{
-        foreach(var repo in repos) 
+        Parallel.ForEach(repos, repo =>
         {
             CloneOrUpdate(repo);
-        }
+        });
     }
 
 #verify-all .pull .change-default-build-target .only-compile
