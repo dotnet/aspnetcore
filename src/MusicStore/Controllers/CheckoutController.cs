@@ -12,7 +12,7 @@ namespace MusicStore.Controllers
     {
         private const string PromoCode = "FREE";
         private readonly MusicStoreContext _dbContext;
-        
+
         public CheckoutController(MusicStoreContext dbContext)
         {
             _dbContext = dbContext;
@@ -57,8 +57,7 @@ namespace MusicStore.Controllers
                     // Save all changes
                     await _dbContext.SaveChangesAsync(Context.RequestAborted);
 
-                    return RedirectToAction("Complete",
-                        new { id = order.OrderId });
+                    return RedirectToAction("Complete", new { id = order.OrderId });
                 }
             }
             catch
@@ -71,10 +70,10 @@ namespace MusicStore.Controllers
         //
         // GET: /Checkout/Complete
 
-        public IActionResult Complete(int id)
+        public async Task<IActionResult> Complete(int id)
         {
             // Validate customer owns this order
-            bool isValid = _dbContext.Orders.Any(
+            bool isValid = await _dbContext.Orders.AnyAsync(
                 o => o.OrderId == id &&
                 o.Username == Context.User.Identity.GetUserName());
 

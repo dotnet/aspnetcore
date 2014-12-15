@@ -148,9 +148,9 @@ namespace MusicStore.Areas.Admin.Controllers
 
         //
         // GET: /StoreManager/RemoveAlbum/5
-        public IActionResult RemoveAlbum(int id)
+        public async Task<IActionResult> RemoveAlbum(int id)
         {
-            var album = _dbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefault();
+            var album = await _dbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefaultAsync();
             return View(album);
         }
 
@@ -159,7 +159,7 @@ namespace MusicStore.Areas.Admin.Controllers
         [HttpPost, ActionName("RemoveAlbum")]
         public async Task<IActionResult> RemoveAlbumConfirmed(int id)
         {
-            var album = _dbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefault();
+            var album = await _dbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefaultAsync();
 
             if (album != null)
             {
@@ -182,9 +182,9 @@ namespace MusicStore.Areas.Admin.Controllers
         // GET: /StoreManager/GetAlbumIdFromName
         // Note: Added for automated testing purpose. Application does not use this.
         [HttpGet]
-        public IActionResult GetAlbumIdFromName(string albumName)
+        public async Task<IActionResult> GetAlbumIdFromName(string albumName)
         {
-            var album = _dbContext.Albums.Where(a => a.Title == albumName).FirstOrDefault();
+            var album = await _dbContext.Albums.Where(a => a.Title == albumName).FirstOrDefaultAsync();
 
             if (album == null)
             {
