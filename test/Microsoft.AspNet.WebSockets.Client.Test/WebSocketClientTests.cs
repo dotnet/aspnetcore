@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -13,235 +12,180 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
 {
     public class WebSocketClientTests
     {
-        private static string ClientAddress = "ws://localhost:8080/";
-        private static string ServerAddress = "http://localhost:8080/";
+        private static string ClientAddress = "ws://localhost:54321/";
 
         [Fact]
         public async Task Connect_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
-
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-                clientSocket.Dispose();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                }
             }
         }
 
         [Fact]
         public async Task NegotiateSubProtocol_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
-
-                WebSocketClient client = new WebSocketClient();
+                Assert.True(context.IsWebSocketRequest);
+                Assert.Equal("alpha, bravo, charlie", context.Request.Headers["Sec-WebSocket-Protocol"]);
+                var webSocket = await context.AcceptWebSocketAsync("Bravo");
+            }))
+            {
+                var client = new WebSocketClient();
                 client.SubProtocols.Add("alpha");
                 client.SubProtocols.Add("bravo");
                 client.SubProtocols.Add("charlie");
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                Assert.Equal("alpha, bravo, charlie", serverContext.Request.Headers["Sec-WebSocket-Protocol"]);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync("Bravo");
-
-                WebSocket clientSocket = await clientConnect;
-                Assert.Equal("Bravo", clientSocket.SubProtocol);
-                clientSocket.Dispose();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    Assert.Equal("Bravo", clientSocket.SubProtocol);
+                }
             }
         }
 
         [Fact]
         public async Task SendEmptyData_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                byte[] orriginalData = new byte[0];
-                await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
-
-                byte[] serverBuffer = new byte[orriginalData.Length];
-                WebSocketReceiveResult result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                var serverBuffer = new byte[0];
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
                 Assert.True(result.EndOfMessage);
-                Assert.Equal(orriginalData.Length, result.Count);
+                Assert.Equal(0, result.Count);
                 Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
-                Assert.Equal(orriginalData, serverBuffer);
-
-                clientSocket.Dispose();
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    var orriginalData = new byte[0];
+                    await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+                }
             }
         }
 
         [Fact]
         public async Task SendShortData_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            var orriginalData = Encoding.UTF8.GetBytes("Hello World");
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                byte[] orriginalData = Encoding.UTF8.GetBytes("Hello World");
-                await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
-
-                byte[] serverBuffer = new byte[orriginalData.Length];
-                WebSocketReceiveResult result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                var serverBuffer = new byte[orriginalData.Length];
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
                 Assert.True(result.EndOfMessage);
                 Assert.Equal(orriginalData.Length, result.Count);
                 Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
                 Assert.Equal(orriginalData, serverBuffer);
-
-                clientSocket.Dispose();
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+                }
             }
         }
 
         [Fact]
         public async Task SendMediumData_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            var orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                byte[] orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
-                await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Text, true, CancellationToken.None);
-
-                byte[] serverBuffer = new byte[orriginalData.Length];
-                WebSocketReceiveResult result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                var serverBuffer = new byte[orriginalData.Length];
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
                 Assert.True(result.EndOfMessage);
                 Assert.Equal(orriginalData.Length, result.Count);
-                Assert.Equal(WebSocketMessageType.Text, result.MessageType);
+                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
                 Assert.Equal(orriginalData, serverBuffer);
-
-                clientSocket.Dispose();
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+                }
             }
         }
 
         [Fact]
         public async Task SendLongData_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null, 0xFFFF, TimeSpan.FromMinutes(100));
-
-                WebSocket clientSocket = await clientConnect;
-
-                byte[] orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
-                await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Text, true, CancellationToken.None);
-
-                byte[] serverBuffer = new byte[orriginalData.Length];
-                WebSocketReceiveResult result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                var serverBuffer = new byte[orriginalData.Length];
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
                 int intermediateCount = result.Count;
                 Assert.False(result.EndOfMessage);
                 Assert.Equal(WebSocketMessageType.Text, result.MessageType);
 
-                result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer, intermediateCount, orriginalData.Length - intermediateCount), CancellationToken.None);
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer, intermediateCount, orriginalData.Length - intermediateCount), CancellationToken.None);
                 intermediateCount += result.Count;
                 Assert.False(result.EndOfMessage);
                 Assert.Equal(WebSocketMessageType.Text, result.MessageType);
 
-                result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer, intermediateCount, orriginalData.Length - intermediateCount), CancellationToken.None);
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer, intermediateCount, orriginalData.Length - intermediateCount), CancellationToken.None);
                 intermediateCount += result.Count;
                 Assert.True(result.EndOfMessage);
                 Assert.Equal(orriginalData.Length, intermediateCount);
                 Assert.Equal(WebSocketMessageType.Text, result.MessageType);
 
                 Assert.Equal(orriginalData, serverBuffer);
-
-                clientSocket.Dispose();
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+                }
             }
         }
 
         [Fact]
         public async Task SendFragmentedData_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            var orriginalData = Encoding.UTF8.GetBytes("Hello World");
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-                WebSocket serverSocket = serverWebSocketContext.WebSocket;
-
-                WebSocket clientSocket = await clientConnect;
-
-                byte[] orriginalData = Encoding.UTF8.GetBytes("Hello World");
-                await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData, 0, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
-                await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData, 2, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
-                await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData, 4, 7), WebSocketMessageType.Binary, true, CancellationToken.None);
-
-                byte[] serverBuffer = new byte[orriginalData.Length];
-                WebSocketReceiveResult result = await serverSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                var serverBuffer = new byte[orriginalData.Length];
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
                 Assert.False(result.EndOfMessage);
                 Assert.Equal(2, result.Count);
                 int totalReceived = result.Count;
                 Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
 
-                result = await serverSocket.ReceiveAsync(
+                result = await webSocket.ReceiveAsync(
                     new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
                 Assert.False(result.EndOfMessage);
                 Assert.Equal(2, result.Count);
                 totalReceived += result.Count;
                 Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
 
-                result = await serverSocket.ReceiveAsync(
+                result = await webSocket.ReceiveAsync(
                     new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
                 Assert.True(result.EndOfMessage);
                 Assert.Equal(7, result.Count);
@@ -249,414 +193,348 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
                 Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
 
                 Assert.Equal(orriginalData, serverBuffer);
-
-                clientSocket.Dispose();
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData, 0, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                    await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData, 2, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                    await clientSocket.SendAsync(new ArraySegment<byte>(orriginalData, 4, 7), WebSocketMessageType.Binary, true, CancellationToken.None);
+                }
             }
         }
 
         [Fact]
         public async Task ReceiveEmptyData_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            var orriginalData = Encoding.UTF8.GetBytes("Hello World");
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                byte[] orriginalData = Encoding.UTF8.GetBytes("Hello World");
-                await serverWebSocketContext.WebSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
-
-                byte[] clientBuffer = new byte[0];
-                WebSocketReceiveResult result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
-                Assert.False(result.EndOfMessage);
-                Assert.Equal(0, result.Count);
-                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
-
-                clientSocket.Dispose();
+                await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    var clientBuffer = new byte[0];
+                    var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
+                    Assert.False(result.EndOfMessage);
+                    Assert.Equal(0, result.Count);
+                    Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+                }
             }
         }
 
         [Fact]
         public async Task ReceiveShortData_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            var orriginalData = Encoding.UTF8.GetBytes("Hello World");
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                byte[] orriginalData = Encoding.UTF8.GetBytes("Hello World");
-                await serverWebSocketContext.WebSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
-
-                byte[] clientBuffer = new byte[orriginalData.Length];
-                WebSocketReceiveResult result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
-                Assert.True(result.EndOfMessage);
-                Assert.Equal(orriginalData.Length, result.Count);
-                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
-                Assert.Equal(orriginalData, clientBuffer);
-
-                clientSocket.Dispose();
+                await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    var clientBuffer = new byte[orriginalData.Length];
+                    var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
+                    Assert.True(result.EndOfMessage);
+                    Assert.Equal(orriginalData.Length, result.Count);
+                    Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+                    Assert.Equal(orriginalData, clientBuffer);
+                }
             }
         }
 
         [Fact]
         public async Task ReceiveMediumData_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            var orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                byte[] orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
-                await serverWebSocketContext.WebSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
-
-                byte[] clientBuffer = new byte[orriginalData.Length];
-                WebSocketReceiveResult result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
-                Assert.True(result.EndOfMessage);
-                Assert.Equal(orriginalData.Length, result.Count);
-                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
-                Assert.Equal(orriginalData, clientBuffer);
-
-                clientSocket.Dispose();
+                await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    var clientBuffer = new byte[orriginalData.Length];
+                    var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
+                    Assert.True(result.EndOfMessage);
+                    Assert.Equal(orriginalData.Length, result.Count);
+                    Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+                    Assert.Equal(orriginalData, clientBuffer);
+                }
             }
         }
 
         [Fact]
         public async Task ReceiveLongDataInSmallBuffer_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                byte[] orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
-                await serverWebSocketContext.WebSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
-
-                byte[] clientBuffer = new byte[orriginalData.Length];
-                WebSocketReceiveResult result;
-                int receivedCount = 0;
-                do
+                await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
                 {
-                    result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer, receivedCount, clientBuffer.Length - receivedCount), CancellationToken.None);
-                    receivedCount += result.Count;
+                    var clientBuffer = new byte[orriginalData.Length];
+                    WebSocketReceiveResult result;
+                    int receivedCount = 0;
+                    do
+                    {
+                        result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer, receivedCount, clientBuffer.Length - receivedCount), CancellationToken.None);
+                        receivedCount += result.Count;
+                        Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+                    }
+                    while (!result.EndOfMessage);
+
+                    Assert.Equal(orriginalData.Length, receivedCount);
                     Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+                    Assert.Equal(orriginalData, clientBuffer);
                 }
-                while (!result.EndOfMessage);
-
-                Assert.Equal(orriginalData.Length, receivedCount);
-                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
-                Assert.Equal(orriginalData, clientBuffer);
-
-                clientSocket.Dispose();
             }
         }
 
         [Fact]
         public async Task ReceiveLongDataInLargeBuffer_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient() { ReceiveBufferSize = 0xFFFFFF };
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                byte[] orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
-                await serverWebSocketContext.WebSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
-
-                byte[] clientBuffer = new byte[orriginalData.Length];
-                WebSocketReceiveResult result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
-                Assert.True(result.EndOfMessage);
-                Assert.Equal(orriginalData.Length, result.Count);
-                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
-                Assert.Equal(orriginalData, clientBuffer);
-
-                clientSocket.Dispose();
+                await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
+            }))
+            {
+                var client = new WebSocketClient() { ReceiveBufferSize = 0xFFFFFF };
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    var clientBuffer = new byte[orriginalData.Length];
+                    var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
+                    Assert.True(result.EndOfMessage);
+                    Assert.Equal(orriginalData.Length, result.Count);
+                    Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+                    Assert.Equal(orriginalData, clientBuffer);
+                }
             }
         }
 
         [Fact]
         public async Task ReceiveFragmentedData_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            var orriginalData = Encoding.UTF8.GetBytes("Hello World");
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+                await webSocket.SendAsync(new ArraySegment<byte>(orriginalData, 0, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                await webSocket.SendAsync(new ArraySegment<byte>(orriginalData, 2, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                await webSocket.SendAsync(new ArraySegment<byte>(orriginalData, 4, 7), WebSocketMessageType.Binary, true, CancellationToken.None);
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    var clientBuffer = new byte[orriginalData.Length];
+                    var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
+                    Assert.False(result.EndOfMessage);
+                    Assert.Equal(2, result.Count);
+                    int totalReceived = result.Count;
+                    Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
 
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-                WebSocket serverSocket = serverWebSocketContext.WebSocket;
+                    result = await clientSocket.ReceiveAsync(
+                        new ArraySegment<byte>(clientBuffer, totalReceived, clientBuffer.Length - totalReceived), CancellationToken.None);
+                    Assert.False(result.EndOfMessage);
+                    Assert.Equal(2, result.Count);
+                    totalReceived += result.Count;
+                    Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
 
-                WebSocket clientSocket = await clientConnect;
+                    result = await clientSocket.ReceiveAsync(
+                        new ArraySegment<byte>(clientBuffer, totalReceived, clientBuffer.Length - totalReceived), CancellationToken.None);
+                    Assert.True(result.EndOfMessage);
+                    Assert.Equal(7, result.Count);
+                    totalReceived += result.Count;
+                    Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
 
-                byte[] orriginalData = Encoding.UTF8.GetBytes("Hello World");
-                await serverSocket.SendAsync(new ArraySegment<byte>(orriginalData, 0, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
-                await serverSocket.SendAsync(new ArraySegment<byte>(orriginalData, 2, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
-                await serverSocket.SendAsync(new ArraySegment<byte>(orriginalData, 4, 7), WebSocketMessageType.Binary, true, CancellationToken.None);
-
-                byte[] serverBuffer = new byte[orriginalData.Length];
-                WebSocketReceiveResult result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
-                Assert.False(result.EndOfMessage);
-                Assert.Equal(2, result.Count);
-                int totalReceived = result.Count;
-                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
-
-                result = await clientSocket.ReceiveAsync(
-                    new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
-                Assert.False(result.EndOfMessage);
-                Assert.Equal(2, result.Count);
-                totalReceived += result.Count;
-                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
-
-                result = await clientSocket.ReceiveAsync(
-                    new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
-                Assert.True(result.EndOfMessage);
-                Assert.Equal(7, result.Count);
-                totalReceived += result.Count;
-                Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
-
-                Assert.Equal(orriginalData, serverBuffer);
-
-                clientSocket.Dispose();
+                    Assert.Equal(orriginalData, clientBuffer);
+                }
             }
         }
 
         [Fact]
         public async Task SendClose_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            string closeDescription = "Test Closed";
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                string closeDescription = "Test Closed";
-                await clientSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
-
-                byte[] serverBuffer = new byte[1024];
-                WebSocketReceiveResult result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                var serverBuffer = new byte[1024];
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
                 Assert.True(result.EndOfMessage);
                 Assert.Equal(0, result.Count);
                 Assert.Equal(WebSocketMessageType.Close, result.MessageType);
                 Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
                 Assert.Equal(closeDescription, result.CloseStatusDescription);
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    await clientSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
 
-                Assert.Equal(WebSocketState.CloseSent, clientSocket.State);
-
-                clientSocket.Dispose();
+                    Assert.Equal(WebSocketState.CloseSent, clientSocket.State);
+                }
             }
         }
 
         [Fact]
         public async Task ReceiveClose_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            string closeDescription = "Test Closed";
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+                await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    var clientBuffer = new byte[1024];
+                    var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
+                    Assert.True(result.EndOfMessage);
+                    Assert.Equal(0, result.Count);
+                    Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+                    Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
+                    Assert.Equal(closeDescription, result.CloseStatusDescription);
 
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                string closeDescription = "Test Closed";
-                await serverWebSocketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
-
-                byte[] serverBuffer = new byte[1024];
-                WebSocketReceiveResult result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
-                Assert.True(result.EndOfMessage);
-                Assert.Equal(0, result.Count);
-                Assert.Equal(WebSocketMessageType.Close, result.MessageType);
-                Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
-                Assert.Equal(closeDescription, result.CloseStatusDescription);
-
-                Assert.Equal(WebSocketState.CloseReceived, clientSocket.State);
-
-                clientSocket.Dispose();
+                    Assert.Equal(WebSocketState.CloseReceived, clientSocket.State);
+                }
             }
         }
 
         [Fact]
         public async Task CloseFromOpen_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            string closeDescription = "Test Closed";
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                string closeDescription = "Test Closed";
-                Task closeTask = clientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
-
-                byte[] serverBuffer = new byte[1024];
-                WebSocketReceiveResult result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                var serverBuffer = new byte[1024];
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
                 Assert.True(result.EndOfMessage);
                 Assert.Equal(0, result.Count);
                 Assert.Equal(WebSocketMessageType.Close, result.MessageType);
                 Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
                 Assert.Equal(closeDescription, result.CloseStatusDescription);
 
-                await serverWebSocketContext.WebSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    await clientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
 
-                await closeTask;
-
-                Assert.Equal(WebSocketState.Closed, clientSocket.State);
-
-                clientSocket.Dispose();
+                    Assert.Equal(WebSocketState.Closed, clientSocket.State);
+                }
             }
         }
 
         [Fact]
         public async Task CloseFromCloseSent_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            string closeDescription = "Test Closed";
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
-
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                string closeDescription = "Test Closed";
-                await clientSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
-                Assert.Equal(WebSocketState.CloseSent, clientSocket.State);
-
-                byte[] serverBuffer = new byte[1024];
-                WebSocketReceiveResult result = await serverWebSocketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                var serverBuffer = new byte[1024];
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
                 Assert.True(result.EndOfMessage);
                 Assert.Equal(0, result.Count);
                 Assert.Equal(WebSocketMessageType.Close, result.MessageType);
                 Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
                 Assert.Equal(closeDescription, result.CloseStatusDescription);
 
-                await serverWebSocketContext.WebSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    await clientSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
+                    Assert.Equal(WebSocketState.CloseSent, clientSocket.State);
 
-                await clientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
-
-                Assert.Equal(WebSocketState.Closed, clientSocket.State);
-
-                clientSocket.Dispose();
+                    await clientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
+                    Assert.Equal(WebSocketState.Closed, clientSocket.State);
+                }
             }
         }
 
         [Fact]
         public async Task CloseFromCloseReceived_Success()
         {
-            using (HttpListener listener = new HttpListener())
+            string closeDescription = "Test Closed";
+            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                listener.Prefixes.Add(ServerAddress);
-                listener.Start();
-                Task<HttpListenerContext> serverAccept = listener.GetContextAsync();
+                Assert.True(context.IsWebSocketRequest);
+                var webSocket = await context.AcceptWebSocketAsync();
 
-                WebSocketClient client = new WebSocketClient();
-                Task<WebSocket> clientConnect = client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None);
+                await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
 
-                HttpListenerContext serverContext = await serverAccept;
-                Assert.True(serverContext.Request.IsWebSocketRequest);
-                HttpListenerWebSocketContext serverWebSocketContext = await serverContext.AcceptWebSocketAsync(null);
-
-                WebSocket clientSocket = await clientConnect;
-
-                string closeDescription = "Test Closed";
-                await serverWebSocketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
-
-                byte[] serverBuffer = new byte[1024];
-                WebSocketReceiveResult result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
+                var serverBuffer = new byte[1024];
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
                 Assert.True(result.EndOfMessage);
                 Assert.Equal(0, result.Count);
                 Assert.Equal(WebSocketMessageType.Close, result.MessageType);
                 Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
                 Assert.Equal(closeDescription, result.CloseStatusDescription);
+            }))
+            {
+                var client = new WebSocketClient();
+                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
+                {
+                    var clientBuffer = new byte[1024];
+                    var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
+                    Assert.True(result.EndOfMessage);
+                    Assert.Equal(0, result.Count);
+                    Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+                    Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
+                    Assert.Equal(closeDescription, result.CloseStatusDescription);
 
-                Assert.Equal(WebSocketState.CloseReceived, clientSocket.State);
+                    Assert.Equal(WebSocketState.CloseReceived, clientSocket.State);
 
-                await clientSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                    await clientSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
 
-                Assert.Equal(WebSocketState.Closed, clientSocket.State);
-
-                clientSocket.Dispose();
+                    Assert.Equal(WebSocketState.Closed, clientSocket.State);
+                }
             }
         }
     }
