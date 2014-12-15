@@ -10,10 +10,10 @@
         "Microsoft.AspNet.Security.Twitter": "1.0.0-*",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "Moq": "4.2.1312.1622",
-        "Xunit.KRunner": "1.0.0-*"
+        "xunit.runner.kre": "1.0.0-*"
     },
     "commands": {
-        "test": "Xunit.KRunner"
+        "test": "xunit.runner.kre"
     },
     "frameworks": {
         "aspnet50": {
