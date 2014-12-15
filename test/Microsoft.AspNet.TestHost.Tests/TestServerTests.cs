@@ -23,8 +23,8 @@ namespace Microsoft.AspNet.TestHost
             // Arrange
             var services = HostingServices.Create().BuildServiceProvider();
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => TestServer.Create(services, app => { }));
+            // Act & Assert (Does not throw)
+            TestServer.Create(services, app => { });
         }
 
         [Fact]
