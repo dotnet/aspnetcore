@@ -1,10 +1,10 @@
 {
     "commands": {
-        "test": "Xunit.KRunner"
+        "test": "xunit.runner.kre"
     },
     "dependencies": {
         "Microsoft.Net.Http.Server": "1.0.0-*",
-        "Xunit.KRunner": "1.0.0-*"
+        "xunit.runner.kre": "1.0.0-*"
     },
     "frameworks": {
         "aspnet50": {
