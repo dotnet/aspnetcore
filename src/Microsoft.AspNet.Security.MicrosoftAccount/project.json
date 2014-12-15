@@ -6,6 +6,11 @@
     },
     "frameworks": {
         "aspnet50": {},
-        "aspnetcore50": {}
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Dynamic.Runtime": "4.0.0-beta-*",
+                "System.ObjectModel": "4.0.0-beta-*"
+            }
+        }
     }
 }
