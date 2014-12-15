@@ -1,7 +1,7 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Xunit.KRunner": "1.0.0-*",
+        "xunit.runner.kre": "1.0.0-*",
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
     },
     "frameworks": {
@@ -15,7 +15,7 @@
         }
     },
     "commands": {
-        "run": "Xunit.KRunner",
-        "test": "Xunit.KRunner"
+        "run": "xunit.runner.kre",
+        "test": "xunit.runner.kre"
     }
 }
