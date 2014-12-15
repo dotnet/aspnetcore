@@ -9,18 +9,18 @@ namespace MusicStore.Mocks.Twitter
     /// </summary>
     public class CustomTwitterStateDataFormat : ISecureDataFormat<RequestToken>
     {
-        private static string lastSavedRequestToken;
+        private static string _lastSavedRequestToken;
 
         public string Protect(RequestToken data)
         {
             data.Token = "valid_oauth_token";
-            lastSavedRequestToken = Serialize(data);
+            _lastSavedRequestToken = Serialize(data);
             return "valid_oauth_token";
         }
 
         public RequestToken Unprotect(string state)
         {
-            return state == "valid_oauth_token" ? DeSerialize(lastSavedRequestToken) : null;
+            return state == "valid_oauth_token" ? DeSerialize(_lastSavedRequestToken) : null;
         }
 
         private string Serialize(RequestToken data)

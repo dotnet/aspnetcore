@@ -1,11 +1,11 @@
 ﻿using System.Linq;
+using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using MusicStore.Models;
-using System.Security.Claims;
 
 namespace MusicStore.Controllers
 {
@@ -338,8 +338,7 @@ namespace MusicStore.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl = null)
         {
-            //https://github.com/aspnet/Identity/issues/216
-            var loginInfo = await SignInManager.GetExternalLoginInfoAsync();
+            var loginInfo = await SignInManager.GetExternalLoginInfoAsync(cancellationToken: Context.RequestAborted);
             if (loginInfo == null)
             {
                 return RedirectToAction("Login");
@@ -381,8 +380,7 @@ namespace MusicStore.Controllers
             if (ModelState.IsValid)
             {
                 // Get the information about the user from the external login provider
-                //https://github.com/aspnet/Identity/issues/216
-                var info = await SignInManager.GetExternalLoginInfoAsync();
+                var info = await SignInManager.GetExternalLoginInfoAsync(cancellationToken: Context.RequestAborted);
                 if (info == null)
                 {
                     return View("ExternalLoginFailure");

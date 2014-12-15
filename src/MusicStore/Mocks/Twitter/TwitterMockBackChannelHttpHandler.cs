@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.WebUtilities;
-using System.Collections.Generic;
-using System.Net;
 
 namespace MusicStore.Mocks.Twitter
 {
@@ -13,7 +13,7 @@ namespace MusicStore.Mocks.Twitter
     /// </summary>
     public class TwitterMockBackChannelHttpHandler : HttpMessageHandler
     {
-        private static bool RequestTokenEndpointInvoked = false;
+        private static bool _requestTokenEndpointInvoked = false;
 
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -25,7 +25,7 @@ namespace MusicStore.Mocks.Twitter
                 var formData = FormHelpers.ParseForm(await request.Content.ReadAsStringAsync());
                 if (formData["oauth_verifier"] == "valid_oauth_verifier")
                 {
-                    if (RequestTokenEndpointInvoked)
+                    if (_requestTokenEndpointInvoked)
                     {
                         var response_Form_data = new List<KeyValuePair<string, string>>()
                             {
@@ -53,7 +53,7 @@ namespace MusicStore.Mocks.Twitter
                     new KeyValuePair<string, string>("oauth_token_secret", "valid_oauth_token_secret")
                 };
 
-                RequestTokenEndpointInvoked = true;
+                _requestTokenEndpointInvoked = true;
                 response.Content = new FormUrlEncodedContent(response_Form_data);
             }
 

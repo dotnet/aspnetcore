@@ -1,7 +1,6 @@
-using Microsoft.AspNet.Identity;
-using MusicStore.Models;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Identity;
 
 namespace MusicStore
 {

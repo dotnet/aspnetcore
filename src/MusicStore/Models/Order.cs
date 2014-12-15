@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNet.Mvc.ModelBinding;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace MusicStore.Models
 {

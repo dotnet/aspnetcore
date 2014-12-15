@@ -43,7 +43,6 @@ namespace E2ETests
                 return true;
             }
 
-            
             //if (serverType == ServerType.IISNativeModule && 
             //    Environment.GetEnvironmentVariable("IIS_NATIVE_MODULE_SETUP") != "true")
             //{

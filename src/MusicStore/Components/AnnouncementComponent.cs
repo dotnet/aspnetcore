@@ -2,26 +2,26 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
-using MusicStore.Models;
 using Microsoft.Framework.Cache.Memory;
+using MusicStore.Models;
 
 namespace MusicStore.Components
 {
     [ViewComponent(Name = "Announcement")]
     public class AnnouncementComponent : ViewComponent
     {
-        private readonly MusicStoreContext db;
-        private readonly IMemoryCache cache;
+        private readonly MusicStoreContext _dbContext;
+        private readonly IMemoryCache _cache;
 
-        public AnnouncementComponent(MusicStoreContext context, IMemoryCache memoryCache)
+        public AnnouncementComponent(MusicStoreContext dbContext, IMemoryCache memoryCache)
         {
-            db = context;
-            cache = memoryCache;
+            _dbContext = dbContext;
+            _cache = memoryCache;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var latestAlbum = await cache.GetOrSet("latestAlbum", async context =>
+            var latestAlbum = await _cache.GetOrSet("latestAlbum", async context =>
             {
                 context.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
                 return await GetLatestAlbum();
@@ -32,15 +32,12 @@ namespace MusicStore.Components
 
         private Task<Album> GetLatestAlbum()
         {
-            var latestAlbum = db.Albums.OrderByDescending(a => a.Created).FirstOrDefault();
-            if ((latestAlbum.Created - DateTime.UtcNow).TotalDays <= 2)
-            {
-                return Task.FromResult(latestAlbum);
-            }
-            else
-            {
-                return Task.FromResult<Album>(null);
-            }
+            var latestAlbum = _dbContext.Albums
+                .OrderByDescending(a => a.Created)
+                .Where(a => (a.Created - DateTime.UtcNow).TotalDays <= 2)
+                .FirstOrDefaultAsync();
+
+            return latestAlbum;
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace System.Net
+﻿namespace System.Net
 {
     public static class Extensions
     {

@@ -1,33 +1,33 @@
-﻿using Microsoft.AspNet.Mvc;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc;
+using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
 using MusicStore.ViewModels;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Framework.DependencyInjection;
 
 namespace MusicStore.Controllers
 {
     public class ShoppingCartController : Controller
     {
-        private readonly MusicStoreContext db;
+        private readonly MusicStoreContext _dbContext;
 
-        public ShoppingCartController(MusicStoreContext context)
+        public ShoppingCartController(MusicStoreContext dbContext)
         {
-            db = context;
+            _dbContext = dbContext;
         }
 
         //
         // GET: /ShoppingCart/
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var cart = ShoppingCart.GetCart(db, Context);
+            var cart = ShoppingCart.GetCart(_dbContext, Context);
 
             // Set up our ViewModel
             var viewModel = new ShoppingCartViewModel
             {
-                CartItems = cart.GetCartItems(),
-                CartTotal = cart.GetTotal()
+                CartItems = await cart.GetCartItems(),
+                CartTotal = await cart.GetTotal()
             };
 
             // Return the view
@@ -40,15 +40,15 @@ namespace MusicStore.Controllers
         public async Task<IActionResult> AddToCart(int id)
         {
             // Retrieve the album from the database
-            var addedAlbum = db.Albums
+            var addedAlbum = _dbContext.Albums
                 .Single(album => album.AlbumId == id);
 
             // Add it to the shopping cart
-            var cart = ShoppingCart.GetCart(db, Context);
+            var cart = ShoppingCart.GetCart(_dbContext, Context);
 
             cart.AddToCart(addedAlbum);
 
-            await db.SaveChangesAsync(Context.RequestAborted);
+            await _dbContext.SaveChangesAsync(Context.RequestAborted);
 
             // Go back to the main store page for more shopping
             return RedirectToAction("Index");
@@ -79,17 +79,18 @@ namespace MusicStore.Controllers
             antiForgery.Validate(Context, new AntiForgeryTokenSet(formToken, cookieToken));
 
             // Retrieve the current user's shopping cart
-            var cart = ShoppingCart.GetCart(db, Context);
+            var cart = ShoppingCart.GetCart(_dbContext, Context);
 
             // Get the name of the album to display confirmation
-            // TODO [EF] Turn into one query once query of related data is enabled
-            int albumId = db.CartItems.Single(item => item.CartItemId == id).AlbumId;
-            string albumName = db.Albums.Single(a => a.AlbumId == albumId).Title;
+            var cartItem = await _dbContext.CartItems
+                .Where(item => item.CartItemId == id)
+                .Include(c => c.Album)
+                .SingleOrDefaultAsync();
 
             // Remove from cart
             int itemCount = cart.RemoveFromCart(id);
 
-            await db.SaveChangesAsync(Context.RequestAborted);
+            await _dbContext.SaveChangesAsync(Context.RequestAborted);
 
             string removed = (itemCount > 0) ? " 1 copy of " : string.Empty;
 
@@ -97,10 +98,10 @@ namespace MusicStore.Controllers
 
             var results = new ShoppingCartRemoveViewModel
             {
-                Message = removed + albumName +
+                Message = removed + cartItem.Album.Title +
                     " has been removed from your shopping cart.",
-                CartTotal = cart.GetTotal(),
-                CartCount = cart.GetCount(),
+                CartTotal = await cart.GetTotal(),
+                CartCount = await cart.GetCount(),
                 ItemCount = itemCount,
                 DeleteId = id
             };

@@ -3,10 +3,10 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
-using Microsoft.Framework.Cache.Memory;
 
 namespace MusicStore
 {

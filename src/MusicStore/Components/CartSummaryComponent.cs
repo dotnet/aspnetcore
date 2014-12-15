@@ -1,18 +1,18 @@
-﻿using Microsoft.AspNet.Mvc;
-using MusicStore.Models;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc;
+using MusicStore.Models;
 
 namespace MusicStore.Components
 {
     [ViewComponent(Name = "CartSummary")]
     public class CartSummaryComponent : ViewComponent
     {
-        private readonly MusicStoreContext db;
+        private readonly MusicStoreContext _dbContext;
 
-        public CartSummaryComponent(MusicStoreContext context)
+        public CartSummaryComponent(MusicStoreContext dbContext)
         {
-            db = context;
+            _dbContext = dbContext;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
@@ -25,15 +25,13 @@ namespace MusicStore.Components
             return View();
         }
 
-        private Task<IOrderedEnumerable<string>> GetCartItems()
+        private async Task<IOrderedEnumerable<string>> GetCartItems()
         {
-            var cart = ShoppingCart.GetCart(db, Context);
+            var cart = ShoppingCart.GetCart(_dbContext, Context);
 
-            var cartItems = cart.GetCartItems()
+            return (await cart.GetCartItems())
                 .Select(a => a.Album.Title)
                 .OrderBy(x => x);
-
-            return Task.FromResult(cartItems);
         }
     }
 }

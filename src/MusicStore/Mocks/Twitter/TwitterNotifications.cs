@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Security.Twitter;
-using MusicStore.Mocks.Common;
-using System.Linq;
+﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Security.Twitter;
+using MusicStore.Mocks.Common;
 
 namespace MusicStore.Mocks.Twitter
 {

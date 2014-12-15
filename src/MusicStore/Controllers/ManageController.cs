@@ -1,10 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
-using System.Linq;
-using Microsoft.AspNet.Http;
 
 namespace MusicStore.Controllers
 {
@@ -89,8 +88,7 @@ namespace MusicStore.Controllers
             }
             var user = await GetCurrentUserAsync();
             // Generate the token and send it
-            //https://github.com/aspnet/Identity/issues/217
-            var code = await UserManager.GenerateChangePhoneNumberTokenAsync(user, model.Number);
+            var code = await UserManager.GenerateChangePhoneNumberTokenAsync(user, model.Number, cancellationToken: Context.RequestAborted);
             var message = new IdentityMessage
             {
                 Destination = model.Number,
@@ -139,8 +137,7 @@ namespace MusicStore.Controllers
             // This code allows you exercise the flow without actually sending codes
             // For production use please register a SMS provider in IdentityConfig and generate a code here.
 #if DEMO
-            //https://github.com/aspnet/Identity/issues/217
-            ViewBag.Code = await UserManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), phoneNumber);
+            ViewBag.Code = await UserManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), phoneNumber, cancellationToken: Context.RequestAborted);
 #endif
             return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
         }
@@ -318,16 +315,17 @@ namespace MusicStore.Controllers
         public async Task<ActionResult> LinkLoginCallback()
         {
             var user = await GetCurrentUserAsync();
-            if(user == null)
+            if (user == null)
             {
                 return View("Error");
             }
-            //https://github.com/aspnet/Identity/issues/216
-            var loginInfo = await SignInManager.GetExternalLoginInfoAsync(User.Identity.GetUserId());
+
+            var loginInfo = await SignInManager.GetExternalLoginInfoAsync(User.Identity.GetUserId(), cancellationToken: Context.RequestAborted);
             if (loginInfo == null)
             {
                 return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
             }
+
             var result = await UserManager.AddLoginAsync(user, loginInfo);
             var message = result.Succeeded ? ManageMessageId.AddLoginSuccess : ManageMessageId.Error;
             return RedirectToAction("ManageLogins", new { Message = message });
@@ -341,17 +339,6 @@ namespace MusicStore.Controllers
             {
                 ModelState.AddModelError("", error);
             }
-        }
-
-        //TODO: No caller - do we need this?
-        private async Task<bool> HasPhoneNumber()
-        {
-            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId(), cancellationToken: Context.RequestAborted);
-            if (user != null)
-            {
-                return user.PhoneNumber != null;
-            }
-            return false;
         }
 
         public enum ManageMessageId
@@ -370,18 +357,7 @@ namespace MusicStore.Controllers
         {
             return await UserManager.FindByIdAsync(Context.User.Identity.GetUserId(), cancellationToken: Context.RequestAborted);
         }
-
-        private IActionResult RedirectToLocal(string returnUrl)
-        {
-            if (Url.IsLocalUrl(returnUrl))
-            {
-                return Redirect(returnUrl);
-            }
-            else
-            {
-                return RedirectToAction("Index", "Home");
-            }
-        }
+        
         #endregion
     }
 }

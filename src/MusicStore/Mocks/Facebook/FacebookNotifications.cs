@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Security.Facebook;
-using Microsoft.AspNet.Security.OAuth;
-using MusicStore.Mocks.Common;
-using System;
+﻿using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Security.Facebook;
+using Microsoft.AspNet.Security.OAuth;
+using MusicStore.Mocks.Common;
 
 namespace MusicStore.Mocks.Facebook
 {

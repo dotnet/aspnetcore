@@ -1,23 +1,22 @@
-﻿using Microsoft.AspNet.Mvc;
-using MusicStore.Models;
-using System;
+﻿using System;
 using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc;
+using MusicStore.Models;
 
 namespace MusicStore.Controllers
 {
     [Authorize]
     public class CheckoutController : Controller
     {
-        private readonly MusicStoreContext db;
-
-        public CheckoutController(MusicStoreContext context)
+        private const string PromoCode = "FREE";
+        private readonly MusicStoreContext _dbContext;
+        
+        public CheckoutController(MusicStoreContext dbContext)
         {
-            db = context;
+            _dbContext = dbContext;
         }
-
-        const string PromoCode = "FREE";
 
         //
         // GET: /Checkout/
@@ -49,14 +48,14 @@ namespace MusicStore.Controllers
                     order.OrderDate = DateTime.Now;
 
                     //Add the Order
-                    await db.Orders.AddAsync(order, Context.RequestAborted);
+                    await _dbContext.Orders.AddAsync(order, Context.RequestAborted);
 
                     //Process the order
-                    var cart = ShoppingCart.GetCart(db, Context);
-                    cart.CreateOrder(order);
+                    var cart = ShoppingCart.GetCart(_dbContext, Context);
+                    await cart.CreateOrder(order);
 
                     // Save all changes
-                    await db.SaveChangesAsync(Context.RequestAborted);
+                    await _dbContext.SaveChangesAsync(Context.RequestAborted);
 
                     return RedirectToAction("Complete",
                         new { id = order.OrderId });
@@ -75,7 +74,7 @@ namespace MusicStore.Controllers
         public IActionResult Complete(int id)
         {
             // Validate customer owns this order
-            bool isValid = db.Orders.Any(
+            bool isValid = _dbContext.Orders.Any(
                 o => o.OrderId == id &&
                 o.Username == Context.User.Identity.GetUserName());
 

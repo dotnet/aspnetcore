@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.Cache.Memory;
 using MusicStore.Models;
@@ -8,21 +9,21 @@ namespace MusicStore.Controllers
 {
     public class StoreController : Controller
     {
-        private readonly MusicStoreContext db;
-        private readonly IMemoryCache cache;
+        private readonly MusicStoreContext _dbContext;
+        private readonly IMemoryCache _cache;
 
         public StoreController(MusicStoreContext context, IMemoryCache memoryCache)
         {
-            db = context;
-            cache = memoryCache;
+            _dbContext = context;
+            _cache = memoryCache;
         }
 
         //
         // GET: /Store/
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var genres = db.Genres.ToList();
+            var genres = await _dbContext.Genres.ToListAsync();
 
             return View(genres);
         }
@@ -30,22 +31,29 @@ namespace MusicStore.Controllers
         //
         // GET: /Store/Browse?genre=Disco
 
-        public IActionResult Browse(string genre)
+        public async Task<IActionResult> Browse(string genre)
         {
             // Retrieve Genre genre and its Associated associated Albums albums from database
-            var genreModel = db.Genres.Include(g => g.Albums).Where(g => g.Name == genre).FirstOrDefault();
+            var genreModel = await _dbContext.Genres
+                .Include(g => g.Albums)
+                .Where(g => g.Name == genre)
+                .FirstOrDefaultAsync();
+
             return View(genreModel);
         }
 
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var album = cache.GetOrSet(string.Format("album_{0}", id), context =>
+            var album = await _cache.GetOrSet(string.Format("album_{0}", id), async context =>
             {
                 //Remove it from cache if not retrieved in last 10 minutes
                 context.SetSlidingExpiration(TimeSpan.FromMinutes(10));
 
-                var albumData = db.Albums.Where(a => a.AlbumId == id).Include(a => a.Artist).Include(a => a.Genre).ToList().FirstOrDefault();
-                return albumData;
+                return await _dbContext.Albums
+                    .Where(a => a.AlbumId == id)
+                    .Include(a => a.Artist)
+                    .Include(a => a.Genre)
+                    .FirstOrDefaultAsync();
             });
 
             return View(album);

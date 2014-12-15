@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 
 namespace MusicStore.Models
 {
-    public partial class ShoppingCart
+    public class ShoppingCart
     {
-        MusicStoreContext _db;
-        string ShoppingCartId { get; set; }
+        private readonly MusicStoreContext _dbContext;
+        private string ShoppingCartId { get; set; }
 
-        public ShoppingCart(MusicStoreContext db)
+        public ShoppingCart(MusicStoreContext dbContext)
         {
-            _db = db;
+            _dbContext = dbContext;
         }
 
         public static ShoppingCart GetCart(MusicStoreContext db, HttpContext context)
@@ -25,7 +26,7 @@ namespace MusicStore.Models
         public void AddToCart(Album album)
         {
             // Get the matching cart and album instances
-            var cartItem = _db.CartItems.SingleOrDefault(
+            var cartItem = _dbContext.CartItems.SingleOrDefault(
                 c => c.CartId == ShoppingCartId
                 && c.AlbumId == album.AlbumId);
 
@@ -40,7 +41,7 @@ namespace MusicStore.Models
                     DateCreated = DateTime.Now
                 };
 
-                _db.CartItems.Add(cartItem);
+                _dbContext.CartItems.Add(cartItem);
             }
             else
             {
@@ -52,7 +53,7 @@ namespace MusicStore.Models
         public int RemoveFromCart(int id)
         {
             // Get the cart
-            var cartItem = _db.CartItems.Single(
+            var cartItem = _dbContext.CartItems.Single(
                 cart => cart.CartId == ShoppingCartId
                 && cart.CartItemId == id);
 
@@ -67,7 +68,7 @@ namespace MusicStore.Models
                 }
                 else
                 {
-                    _db.CartItems.Remove(cartItem);
+                    _dbContext.CartItems.Remove(cartItem);
                 }
             }
 
@@ -76,71 +77,50 @@ namespace MusicStore.Models
 
         public void EmptyCart()
         {
-            var cartItems = _db.CartItems.Where(cart => cart.CartId == ShoppingCartId).ToArray();
-            _db.CartItems.Remove(cartItems);
+            var cartItems = _dbContext.CartItems.Where(cart => cart.CartId == ShoppingCartId).ToArray();
+            _dbContext.CartItems.Remove(cartItems);
         }
 
-        public List<CartItem> GetCartItems()
+        public async Task<List<CartItem>> GetCartItems()
         {
-            var cartItems = _db.CartItems.Where(cart => cart.CartId == ShoppingCartId).ToList();
-            //TODO: Auto population of the related album data not available until EF feature is lighted up.
-            foreach (var cartItem in cartItems)
-            {
-                cartItem.Album = _db.Albums.Single(a => a.AlbumId == cartItem.AlbumId);
-            }
-
-            return cartItems;
+            return await _dbContext.CartItems.
+                Where(cart => cart.CartId == ShoppingCartId).
+                Include(c => c.Album).
+                ToListAsync();
         }
 
-        public int GetCount()
+        public async Task<int> GetCount()
         {
-            int sum = 0;
-            //https://github.com/aspnet/EntityFramework/issues/557
             // Get the count of each item in the cart and sum them up
-            var cartItemCounts = (from cartItems in _db.CartItems
-                                  where cartItems.CartId == ShoppingCartId
-                                  select (int?)cartItems.Count);
-
-            cartItemCounts.ForEachAsync(carItemCount =>
-            {
-                if (carItemCount.HasValue)
-                {
-                    sum += carItemCount.Value;
-                }
-            });
-
-            // Return 0 if all entries are null
-            return sum;
+            return await (from cartItem in _dbContext.CartItems
+                          where cartItem.CartId == ShoppingCartId
+                          select cartItem.Count).SumAsync();
         }
 
-        public decimal GetTotal()
+        public async Task<decimal> GetTotal()
         {
             // Multiply album price by count of that album to get 
             // the current price for each of those albums in the cart
             // sum all album price totals to get the cart total
 
-            // TODO Collapse to a single query once EF supports querying related data
-            decimal total = 0;
-            foreach (var item in _db.CartItems.Where(c => c.CartId == ShoppingCartId))
-            {
-                var album = _db.Albums.Single(a => a.AlbumId == item.AlbumId);
-                total += item.Count * album.Price;
-            }
-
-            return total;
+            // TODO: Use nav prop traversal instead of joins (EF #https://github.com/aspnet/EntityFramework/issues/325)
+            return await (from cartItem in _dbContext.CartItems
+                          join album in _dbContext.Albums on cartItem.AlbumId equals album.AlbumId
+                          where cartItem.CartId == ShoppingCartId
+                          select cartItem.Count * album.Price).SumAsync();
         }
 
-        public int CreateOrder(Order order)
+        public async Task<int> CreateOrder(Order order)
         {
             decimal orderTotal = 0;
 
-            var cartItems = GetCartItems();
+            var cartItems = await GetCartItems();
 
             // Iterate over the items in the cart, adding the order details for each
             foreach (var item in cartItems)
             {
                 //var album = _db.Albums.Find(item.AlbumId);
-                var album = _db.Albums.Single(a => a.AlbumId == item.AlbumId);
+                var album = _dbContext.Albums.Single(a => a.AlbumId == item.AlbumId);
 
                 var orderDetail = new OrderDetail
                 {
@@ -153,7 +133,7 @@ namespace MusicStore.Models
                 // Set the order total of the shopping cart
                 orderTotal += (item.Count * album.Price);
 
-                _db.OrderDetails.Add(orderDetail);
+                _dbContext.OrderDetails.Add(orderDetail);
             }
 
             // Set the order's total to the orderTotal count

@@ -1,20 +1,19 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
-using System.Collections.Generic;
 
 namespace MusicStore.Components
 {
     [ViewComponent(Name = "GenreMenu")]
     public class GenreMenuComponent : ViewComponent
     {
-        private readonly MusicStoreContext db;
+        private readonly MusicStoreContext _dbContext;
 
-        public GenreMenuComponent(MusicStoreContext context)
+        public GenreMenuComponent(MusicStoreContext dbContext)
         {
-            db = context;
+            _dbContext = dbContext;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
@@ -24,10 +23,10 @@ namespace MusicStore.Components
             return View(genres);
         }
 
-        private Task<List<Genre>> GetGenres()
+        private async Task<List<Genre>> GetGenres()
         {
             // TODO [EF] We don't query related data as yet, so the OrderByDescending isn't doing anything
-            //var genres = db.Genres
+            //var genres = _dbContext.Genres
             //.OrderByDescending(
             //    g => g.Albums.Sum(
             //    a => a.OrderDetails.Sum(
@@ -35,8 +34,7 @@ namespace MusicStore.Components
             //.Take(9)
             //.ToList();
 
-            var genres = db.Genres.ToList();
-            return Task.FromResult(genres);
+            return await _dbContext.Genres.Take(9).ToListAsync();
         }
     }
 }
