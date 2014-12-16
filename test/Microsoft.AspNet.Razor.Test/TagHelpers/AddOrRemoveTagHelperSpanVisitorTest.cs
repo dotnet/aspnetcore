@@ -168,8 +168,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     new ParserErrorSink());
             var document = new MarkupBlock(Factory.Markup("Hello World"));
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => addOrRemoveTagHelperSpanVisitor.GetDescriptors(document));
+            // Act
+            var descriptors = addOrRemoveTagHelperSpanVisitor.GetDescriptors(document);
+
+            Assert.Empty(descriptors);
         }
 
         private class TestTagHelperDescriptorResolver : ITagHelperDescriptorResolver
