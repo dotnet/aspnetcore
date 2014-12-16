@@ -5,6 +5,7 @@
     "dependencies": {
         "Microsoft.AspNet.PipelineCore": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+        "Microsoft.AspNet.Testing": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*"
     },
     "frameworks": {

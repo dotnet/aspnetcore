@@ -24,13 +24,15 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
     public class WebSocketTests
     {
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
         public async Task WebSocketTests_SupportKeys_Present()
         {
             string address;
@@ -57,7 +59,8 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
         public async Task WebSocketTests_AfterHeadersSent_Throws()
         {
             bool? upgradeThrew = null;
@@ -86,7 +89,8 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
         public async Task WebSocketAccept_Success()
         {
             ManualResetEvent waitHandle = new ManualResetEvent(false);
@@ -112,7 +116,8 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
         public async Task WebSocketAccept_SendAndReceive_Success()
         {
             byte[] clientBuffer = new byte[] { 0x00, 0x01, 0xFF, 0x00, 0x00 };
