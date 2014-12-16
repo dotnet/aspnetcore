@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Xml;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 
@@ -104,6 +105,21 @@ namespace E2ETests
                         var overrideConfig = Path.Combine(startParameters.ApplicationPath, "..", "approot", "src", "MusicStore", "configoverride.json");
                         overrideConfig = Path.GetFullPath(overrideConfig);
                         File.WriteAllText(overrideConfig, "{\"UseInMemoryStore\": \"true\"}");
+
+                        // Set runAllManagedModulesForAllRequests=true
+                        var webConfig = Path.Combine(startParameters.ApplicationPath, "web.config");
+                        var configuration = new XmlDocument();
+                        configuration.LoadXml(File.ReadAllText(webConfig));
+
+                        // https://github.com/aspnet/Helios/issues/77
+                        var rammfarAttribute = configuration.CreateAttribute("runAllManagedModulesForAllRequests");
+                        rammfarAttribute.Value = "true";
+                        var modulesNode = configuration.CreateElement("modules");
+                        modulesNode.Attributes.Append(rammfarAttribute);
+                        var systemWebServerNode = configuration.CreateElement("system.webServer");
+                        systemWebServerNode.AppendChild(modulesNode);
+                        configuration.SelectSingleNode("//configuration").AppendChild(systemWebServerNode);
+                        configuration.Save(webConfig);
 
                         Thread.Sleep(1 * 1000);
                     }
@@ -349,7 +365,10 @@ namespace E2ETests
             if (startParameters.ServerType == ServerType.IISNativeModule)
             {
                 // Stop & delete the application pool.
-                startParameters.IISApplication.StopAndDeleteAppPool();
+                if (startParameters.IISApplication != null)
+                {
+                    startParameters.IISApplication.StopAndDeleteAppPool();
+                }
             }
             else if (hostProcess != null && !hostProcess.HasExited)
             {

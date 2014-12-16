@@ -27,8 +27,8 @@ namespace E2ETests
         [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/", true)]
         [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/", false)]
         [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5004/", false)]
-        //[InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5005/", false)]
-        //[InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5005/", false)]
+        [InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5005/", false)]
+        [InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5005/", false)]
         public void SmokeTestSuite(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool runTestOnMono)
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", serverType, kreFlavor, architecture, applicationBaseUrl);

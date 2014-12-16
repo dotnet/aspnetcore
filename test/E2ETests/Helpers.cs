@@ -43,16 +43,16 @@ namespace E2ETests
                 return true;
             }
 
-            //if (serverType == ServerType.IISNativeModule && 
-            //    Environment.GetEnvironmentVariable("IIS_NATIVE_MODULE_SETUP") != "true")
-            //{
-            //    // Native module variations require IIS setup. Once native module is setup on IIS, set the value of the environment
-            //    // variable to true to run the native module variation.
-            //    // TODO: Need a better way to detect native module on the machine.
-            //    Console.WriteLine("Skipping Native module test since native module is not installed on IIS.");
-            //    Console.WriteLine("Setup the native module and set the IIS_NATIVE_MODULE_SETUP to true to run the variation.");
-            //    return true;
-            //}
+            if (serverType == ServerType.IISNativeModule &&
+                Environment.GetEnvironmentVariable("IIS_NATIVE_MODULE_SETUP") != "true")
+            {
+                // Native module variations require IIS setup. Once native module is setup on IIS, set the value of the environment
+                // variable to true to run the native module variation.
+                // TODO: Need a better way to detect native module on the machine.
+                Console.WriteLine("Skipping Native module test since native module is not installed on IIS.");
+                Console.WriteLine("Setup the native module and set the IIS_NATIVE_MODULE_SETUP to true to run the variation.");
+                return true;
+            }
 
             return false;
         }
