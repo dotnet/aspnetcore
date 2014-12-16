@@ -278,7 +278,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
                     }
                 }
             }
-            catch (Exception ex) if (!(ex is CryptographicException))
+            catch (Exception ex) when (!(ex is CryptographicException))
             {
                 // Homogenize all exceptions to CryptographicException.
                 throw Error.CryptCommon_GenericError(ex);
@@ -382,7 +382,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
                     }
                 }
             }
-            catch (Exception ex) if (!(ex is CryptographicException))
+            catch (Exception ex) when (!(ex is CryptographicException))
             {
                 // Homogenize all exceptions to CryptographicException.
                 throw Error.CryptCommon_GenericError(ex);

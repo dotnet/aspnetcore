@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
                             pbAdditionalAuthenticatedData: (pbAdditionalAuthenticatedDataArray != null) ? &pbAdditionalAuthenticatedDataArray[additionalAuthenticatedData.Offset] : &dummy,
                             cbAdditionalAuthenticatedData: (uint)additionalAuthenticatedData.Count);
                     }
-                    catch (Exception ex) if (!(ex is CryptographicException))
+                    catch (Exception ex) when (!(ex is CryptographicException))
                     {
                         // Homogenize to CryptographicException.
                         throw Error.CryptCommon_GenericError(ex);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
                             cbPreBuffer: preBufferSize,
                             cbPostBuffer: postBufferSize);
                     }
-                    catch (Exception ex) if (!(ex is CryptographicException))
+                    catch (Exception ex) when (!(ex is CryptographicException))
                     {
                         // Homogenize to CryptographicException.
                         throw Error.CryptCommon_GenericError(ex);
