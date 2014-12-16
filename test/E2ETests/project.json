@@ -1,7 +1,7 @@
 {
     "compilationOptions": { "warningsAsErrors": "true" },
     "commands": {
-        "test": "Xunit.KRunner"
+        "test": "xunit.runner.kre"
     },
     "dependencies": {
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
@@ -9,7 +9,7 @@
         "Microsoft.AspNet.WebUtilities": "1.0.0-*",
         "Microsoft.AspNet.SignalR.Client": "2.1.1",
         "Microsoft.Web.Administration": "7.0.0",
-        "Xunit.KRunner": "1.0.0-*"
+        "xunit.runner.kre": "1.0.0-*"
     },
     "frameworks": {
         "aspnet50": {
