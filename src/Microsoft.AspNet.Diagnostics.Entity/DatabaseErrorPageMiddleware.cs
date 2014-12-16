@@ -66,8 +66,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             {
                 try
                 {
-                    if (_loggerProvider.Logger.LastError.IsErrorLogged
-                        && _loggerProvider.Logger.LastError.Exception == ex)
+                    if (ShouldDisplayErrorPage(_loggerProvider.Logger.LastError, ex, _logger))
                     {
                         using (RequestServicesContainer.EnsureRequestServices(context, _serviceProvider))
                         {
@@ -79,7 +78,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                             }
                             else
                             {
-                                if (dbContext.Database is RelationalDatabase)
+                                if (!(dbContext.Database is RelationalDatabase))
+                                {
+                                    _logger.WriteVerbose(Strings.DatabaseErrorPage_NotRelationalDatabase);
+                                }
+                                else
                                 {
                                     var databaseExists = dbContext.Database.AsRelational().Exists();
 
@@ -114,6 +117,32 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
                 throw;
             }
+        }
+
+        private static bool ShouldDisplayErrorPage(DataStoreErrorLogger.DataStoreErrorLog lastError, Exception exception, ILogger logger)
+        {
+            logger.WriteVerbose(Strings.FormatDatabaseErrorPage_AttemptingToMatchException(exception.GetType()));
+
+            if (!lastError.IsErrorLogged)
+            {
+                logger.WriteVerbose(Strings.DatabaseErrorPage_NoRecordedException);
+                return false;
+            }
+            
+            bool match = false;
+            for (var e = exception; e != null && !match; e = e.InnerException)
+            {
+                match = lastError.Exception == e;
+            }
+
+            if (!match)
+            {
+                logger.WriteVerbose(Strings.DatabaseErrorPage_NoMatch);
+                return false;
+            }
+
+            logger.WriteVerbose(Strings.DatabaseErrorPage_Matched);
+            return true;
         }
     }
 }
