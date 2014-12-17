@@ -10,7 +10,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
-using Microsoft.AspNet.Security.DataProtection;
 
 namespace Microsoft.AspNet.Identity.Test
 {
@@ -60,6 +59,28 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddIdentity().AddPasswordValidator<MyUberThingy>();
             var thingy = services.BuildServiceProvider().GetRequiredService<IPasswordValidator<IdentityUser>>() as MyUberThingy;
             Assert.NotNull(thingy);
+        }
+
+        [Fact]
+        public void CanOverrideUserManager()
+        {
+            var services = new ServiceCollection();
+            services.AddIdentity<TestUser, TestRole>()
+                .AddUserStore<NoopUserStore>()
+                .AddUserManager<MyUserManager>();
+            var myUserManager = services.BuildServiceProvider().GetRequiredService(typeof(UserManager<TestUser>)) as MyUserManager;
+            Assert.NotNull(myUserManager);
+        }
+
+        [Fact]
+        public void CanOverrideRoleManager()
+        {
+            var services = new ServiceCollection();
+            services.AddIdentity<TestUser, TestRole>()
+                    .AddRoleStore<NoopRoleStore>()
+                    .AddRoleManager<MyRoleManager>();
+            var myRoleManager = services.BuildServiceProvider().GetRequiredService<RoleManager<TestRole>>() as MyRoleManager;
+            Assert.NotNull(myRoleManager);
         }
 
         [Fact]
@@ -203,5 +224,29 @@ namespace Microsoft.AspNet.Identity.Test
             }
         }
 
+        private class MyUserManager : UserManager<TestUser>
+        {
+            public MyUserManager(IUserStore<TestUser> store,
+            IOptions<IdentityOptions> optionsAccessor,
+            IPasswordHasher<TestUser> passwordHasher,
+            IEnumerable<IUserValidator<TestUser>> userValidators,
+            IEnumerable<IPasswordValidator<TestUser>> passwordValidators,
+            IUserNameNormalizer userNameNormalizer,
+            IEnumerable<IUserTokenProvider<TestUser>> tokenProviders,
+            IEnumerable<IIdentityMessageProvider> msgProviders) :
+                base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, userNameNormalizer, tokenProviders, msgProviders)
+            {
+
+            }
+        }
+
+        private class MyRoleManager : RoleManager<TestRole>
+        {
+            public MyRoleManager(IRoleStore<TestRole> store,
+                IEnumerable<IRoleValidator<TestRole>> roleValidators) : base(store, roleValidators)
+            {
+
+            }
+        }
     }
 }

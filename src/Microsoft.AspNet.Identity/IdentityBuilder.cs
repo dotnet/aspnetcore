@@ -76,5 +76,15 @@ namespace Microsoft.AspNet.Identity
                 .AddTokenProvider(typeof(PhoneNumberTokenProvider<>).MakeGenericType(UserType))
                 .AddTokenProvider(typeof(EmailTokenProvider<>).MakeGenericType(UserType));
         }
+
+        public IdentityBuilder AddUserManager<TUserManager>() where TUserManager : class
+        {
+            return AddScoped(typeof(UserManager<>).MakeGenericType(UserType), typeof(TUserManager));
+        }
+
+        public IdentityBuilder AddRoleManager<TRoleManager>() where TRoleManager : class
+        {
+            return AddScoped(typeof(RoleManager<>).MakeGenericType(RoleType), typeof(TRoleManager));
+        }
     }
 }
