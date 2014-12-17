@@ -6,13 +6,15 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server
 {
     public class WebSocketTests
     {
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
         public async Task WebSocketAccept_AfterHeadersSent_Throws()
         {
             string address;
@@ -33,7 +35,8 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
         public async Task WebSocketAccept_Success()
         {
             string address;
@@ -50,7 +53,8 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
         public async Task WebSocketAccept_SendAndReceive_Success()
         {
             string address;

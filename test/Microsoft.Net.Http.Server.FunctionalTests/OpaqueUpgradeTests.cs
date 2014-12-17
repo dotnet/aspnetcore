@@ -6,13 +6,15 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server
 {
     public class OpaqueUpgradeTests
     {
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
         public async Task OpaqueUpgrade_AfterHeadersSent_Throws()
         {
             string address;
@@ -34,7 +36,8 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
         public async Task OpaqueUpgrade_GetUpgrade_Success()
         {
             string address;
@@ -55,7 +58,8 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
         // See HTTP_VERB for known verbs
         [InlineData("UNKNOWN", null)]
         [InlineData("INVALID", null)]
@@ -110,7 +114,8 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
         // Http.Sys returns a 411 Length Required if PUT or POST does not specify content-length or chunked.
         [InlineData("POST", "Content-Length: 10")]
         [InlineData("POST", "Transfer-Encoding: chunked")]
