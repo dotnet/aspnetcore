@@ -179,8 +179,9 @@ namespace E2ETests
             {
                 FileName = monoPath,
                 Arguments = string.Format("{0} {1} {2}", klrMonoManaged, applicationHost, startParameters.ServerType.ToString()),
-                UseShellExecute = true,
-                CreateNoWindow = true
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardInput = true
             };
 
             var hostProcess = Process.Start(startInfo);
