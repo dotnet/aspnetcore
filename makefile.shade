@@ -213,6 +213,11 @@ var buildTarget = "compile"
                 Log.Info(string.Format("Build {0} succeeded", repo));
             }
         }
+        
+        if (failed.Any())
+        {
+            throw new Exception("One or more repos failed to build");
+        }
     }
 
 #only-install target='install'
