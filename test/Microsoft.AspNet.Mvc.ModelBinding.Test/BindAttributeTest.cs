@@ -74,18 +74,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 HttpContext = new DefaultHttpContext(),
             };
-
-            var activator = new Mock<ITypeActivator>(MockBehavior.Strict);
-            activator
-                .Setup(a => a.CreateInstance(It.IsAny<IServiceProvider>(), typeof(TestProvider), It.IsAny<object[]>()))
-                .Returns(new TestProvider())
-                .Verifiable();
-
-            var services = new Mock<IServiceProvider>(MockBehavior.Strict);
-            services
-                .Setup(s => s.GetService(typeof(ITypeActivator)))
-                .Returns(activator.Object);
-
+            var services = new Mock<IServiceProvider>();
+            
             context.OperationBindingContext.HttpContext.RequestServices = services.Object;
 
             // Act
@@ -109,17 +99,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 HttpContext = new DefaultHttpContext(),
             };
 
-            var activator = new Mock<ITypeActivator>(MockBehavior.Strict);
-            activator
-                .Setup(a => a.CreateInstance(It.IsAny<IServiceProvider>(), typeof(TestProvider), It.IsAny<object[]>()))
-                .Returns(new TestProvider())
-                .Verifiable();
-
             var services = new Mock<IServiceProvider>(MockBehavior.Strict);
-            services
-                .Setup(s => s.GetService(typeof(ITypeActivator)))
-                .Returns(activator.Object);
-
+            
             context.OperationBindingContext.HttpContext.RequestServices = services.Object;
 
             // Act
@@ -128,11 +109,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             Assert.True(predicate(context, "UserName"));
             Assert.True(predicate(context, "UserName"));
-
-            activator
-                .Verify(
-                    a => a.CreateInstance(It.IsAny<IServiceProvider>(), typeof(TestProvider), It.IsAny<object[]>()),
-                    Times.Once());
         }
 #endif
 

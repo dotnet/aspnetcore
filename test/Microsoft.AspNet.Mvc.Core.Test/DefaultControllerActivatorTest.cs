@@ -17,8 +17,14 @@ namespace Microsoft.AspNet.Mvc
         public void Create_CreatesInstancesOfTypes(Type type)
         {
             // Arrange
-            var activator = new DefaultControllerActivator();
-            var actionContext = new ActionContext(new DefaultHttpContext(),
+            var activator = new DefaultControllerActivator(new DefaultTypeActivatorCache());
+            var serviceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
+
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = serviceProvider.Object
+            };
+            var actionContext = new ActionContext(httpContext,
                                                   new RouteData(),
                                                   new ActionDescriptor());
             // Act
@@ -32,12 +38,13 @@ namespace Microsoft.AspNet.Mvc
         public void Create_TypeActivatesTypesWithServices()
         {
             // Arrange
-            var activator = new DefaultControllerActivator();
+            var activator = new DefaultControllerActivator(new DefaultTypeActivatorCache());
             var serviceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
             var testService = new TestService();
             serviceProvider.Setup(s => s.GetService(typeof(TestService)))
                            .Returns(testService)
                            .Verifiable();
+                           
             var httpContext = new DefaultHttpContext
             {
                 RequestServices = serviceProvider.Object

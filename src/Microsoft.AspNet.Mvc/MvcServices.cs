@@ -37,8 +37,8 @@ namespace Microsoft.AspNet.Mvc
                 typeof(INestedProviderManagerAsync<>),
                 typeof(NestedProviderManagerAsync<>));
             yield return describe.Transient<MvcMarkerService, MvcMarkerService>();
+            yield return describe.Singleton(typeof(ITypeActivatorCache), typeof(DefaultTypeActivatorCache));
             yield return describe.Scoped(typeof(IScopedInstance<>), typeof(ScopedInstance<>));
-
             // Core action discovery, filters and action execution.
 
             // These are consumed only when creating action descriptors, then they can be de-allocated
@@ -49,8 +49,7 @@ namespace Microsoft.AspNet.Mvc
             // This has a cache, so it needs to be a singleton
             yield return describe.Singleton<IControllerFactory, DefaultControllerFactory>();
 
-            // This has a cache, so it needs to be a singleton
-            yield return describe.Singleton<IControllerActivator, DefaultControllerActivator>();
+            yield return describe.Transient<IControllerActivator, DefaultControllerActivator>();
 
             // This accesses per-reqest services
             yield return describe.Transient<IActionInvokerFactory, ActionInvokerFactory>();
@@ -78,9 +77,7 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<INestedProvider<FilterProviderContext>, DefaultFilterProvider>();
 
             yield return describe.Transient<FormatFilter, FormatFilter>();
-
             // Dataflow - ModelBinding, Validation and Formatting
-
             // The DataAnnotationsModelMetadataProvider does significant caching of reflection/attributes
             // and thus needs to be singleton. 
             yield return describe.Singleton<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();

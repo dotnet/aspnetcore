@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -19,17 +18,17 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var service = Mock.Of<ITestService>();
             var viewEngine = Mock.Of<IViewEngine>();
             var type = typeof(TestViewEngine);
-            var typeActivator = new TypeActivator();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(ITestService)))
                            .Returns(service);
+            var typeActivatorCache = new DefaultTypeActivatorCache();
             var options = new MvcOptions();
             options.ViewEngines.Add(viewEngine);
             options.ViewEngines.Add(type);
             var accessor = new Mock<IOptions<MvcOptions>>();
             accessor.SetupGet(a => a.Options)
                     .Returns(options);
-            var provider = new DefaultViewEngineProvider(accessor.Object, typeActivator, serviceProvider.Object);
+            var provider = new DefaultViewEngineProvider(accessor.Object, typeActivatorCache, serviceProvider.Object);
 
             // Act
             var result = provider.ViewEngines;

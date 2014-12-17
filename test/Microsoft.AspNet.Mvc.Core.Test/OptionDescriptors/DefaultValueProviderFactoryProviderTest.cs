@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -19,10 +18,10 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var service = Mock.Of<ITestService>();
             var valueProviderFactory = Mock.Of<IValueProviderFactory>();
             var type = typeof(TestValueProviderFactory);
-            var typeActivator = new TypeActivator();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(ITestService)))
                            .Returns(service);
+            var typeActivatorCache = new DefaultTypeActivatorCache();
             var options = new MvcOptions();
             options.ValueProviderFactories.Add(valueProviderFactory);
             options.ValueProviderFactories.Add(type);
@@ -30,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             accessor.SetupGet(a => a.Options)
                     .Returns(options);
             var provider = new DefaultValueProviderFactoryProvider(accessor.Object,
-                                                                   typeActivator,
+                                                                   typeActivatorCache,
                                                                    serviceProvider.Object);
 
             // Act

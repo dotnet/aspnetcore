@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -22,11 +22,14 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor.SetupGet(o => o.Options)
                            .Returns(options);
-            var activator = new TypeActivator();
+            var typeActivatorCache = new Mock<ITypeActivatorCache>();
+            var service = Mock.Of<ITestService>();
             var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(p => p.GetService(typeof(ITestService)))
+                           .Returns(service);
             var provider = new DefaultValidationExcludeFiltersProvider(optionsAccessor.Object,
-                                                                           activator,
-                                                                           serviceProvider.Object);
+                                                                       typeActivatorCache.Object,
+                                                                       serviceProvider.Object);
 
             // Act
             var filters = provider.ExcludeFilters;
@@ -47,11 +50,14 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor.SetupGet(o => o.Options)
                            .Returns(options);
-            var activator = new TypeActivator();
+            var typeActivatorCache = new Mock<ITypeActivatorCache>();
+            var service = Mock.Of<ITestService>();
             var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(p => p.GetService(typeof(ITestService)))
+                           .Returns(service);
             var provider = new DefaultValidationExcludeFiltersProvider(optionsAccessor.Object,
-                                                                           activator,
-                                                                           serviceProvider.Object);
+                                                                       typeActivatorCache.Object,
+                                                                       serviceProvider.Object);
 
             // Act
             var filters = provider.ExcludeFilters;
@@ -72,11 +78,14 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor.SetupGet(o => o.Options)
                            .Returns(options);
-            var activator = new TypeActivator();
+            var typeActivatorCache = new Mock<ITypeActivatorCache>();
+            var service = Mock.Of<ITestService>();
             var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(p => p.GetService(typeof(ITestService)))
+                           .Returns(service);
             var provider = new DefaultValidationExcludeFiltersProvider(optionsAccessor.Object,
-                                                                           activator,
-                                                                           serviceProvider.Object);
+                                                                       typeActivatorCache.Object,
+                                                                       serviceProvider.Object);
 
             // Act
             var filters = provider.ExcludeFilters;
@@ -98,11 +107,14 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor.SetupGet(o => o.Options)
                            .Returns(options);
-            var activator = new TypeActivator();
+            var service = Mock.Of<ITestService>();
             var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(p => p.GetService(typeof(ITestService)))
+                           .Returns(service);
+            var typeActivatorCache = new Mock<ITypeActivatorCache>();
             var provider = new DefaultValidationExcludeFiltersProvider(optionsAccessor.Object,
-                                                                           activator,
-                                                                           serviceProvider.Object);
+                                                                       typeActivatorCache.Object,
+                                                                       serviceProvider.Object);
 
             // Act
             var filters = provider.ExcludeFilters;
@@ -130,6 +142,10 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         public class UnRelatedType
         {
         }
+    }
+
+    public interface ITestService
+    {
     }
 }
 

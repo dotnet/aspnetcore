@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -19,10 +19,10 @@ namespace Microsoft.AspNet.Mvc.Razor.OptionDescriptors
             var service = Mock.Of<ITestService>();
             var expander = Mock.Of<IViewLocationExpander>();
             var type = typeof(TestViewLocationExpander);
-            var typeActivator = new TypeActivator();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(ITestService)))
                            .Returns(service);
+            var typeActivatorCache = new DefaultTypeActivatorCache();
             var options = new RazorViewEngineOptions();
             options.ViewLocationExpanders.Add(type);
             options.ViewLocationExpanders.Add(expander);
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor.OptionDescriptors
             accessor.SetupGet(a => a.Options)
                     .Returns(options);
             var provider = new DefaultViewLocationExpanderProvider(accessor.Object,
-                                                                   typeActivator,
+                                                                   typeActivatorCache,
                                                                    serviceProvider.Object);
 
             // Act

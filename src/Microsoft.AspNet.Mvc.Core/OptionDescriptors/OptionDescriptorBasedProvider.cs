@@ -15,16 +15,24 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
     public abstract class OptionDescriptorBasedProvider<TOption>
     {
         private readonly IEnumerable<OptionDescriptor<TOption>> _optionDescriptors;
-        private readonly ITypeActivator _typeActivator;
+        private ITypeActivatorCache _typeActivatorCache;
         private readonly IServiceProvider _serviceProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OptionDescriptorBasedProvider{TOption}"/> class.
+        /// </summary>
+        /// <param name="optionDescriptors">An enumerable of <see cref="OptionDescriptor{TOption}"/>.</param>
+        /// <param name="typeActivatorCache">As <see cref="ITypeActivatorCache"/> instance that creates an
+        /// instance of type <typeparamref name="TOption"/>.</param>
+        /// <param name="serviceProvider">A <see cref="IServiceProvider"/> instance that retrieves services from the
+        /// service collection.</param>
         public OptionDescriptorBasedProvider(
             [NotNull] IEnumerable<OptionDescriptor<TOption>> optionDescriptors,
-            [NotNull] ITypeActivator typeActivator,
+            [NotNull] ITypeActivatorCache typeActivatorCache,
             [NotNull] IServiceProvider serviceProvider)
         {
             _optionDescriptors = optionDescriptors;
-            _typeActivator = typeActivator;
+            _typeActivatorCache = typeActivatorCache;
             _serviceProvider = serviceProvider;
         }
 
@@ -41,8 +49,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
                     var instance = descriptor.Instance;
                     if (instance == null)
                     {
-                        instance = (TOption)_typeActivator.CreateInstance(_serviceProvider,
-                                                                          descriptor.OptionType);
+                        instance = _typeActivatorCache.CreateInstance<TOption>(_serviceProvider, descriptor.OptionType);
                     }
 
                     result.Add(instance);

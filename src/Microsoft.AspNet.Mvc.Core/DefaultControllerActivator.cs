@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
@@ -12,17 +11,21 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class DefaultControllerActivator : IControllerActivator
     {
-        private static readonly Func<Type, ObjectFactory> _createControllerFactory =
-            type => ActivatorUtilities.CreateFactory(type, Type.EmptyTypes);
+        private readonly ITypeActivatorCache _typeActivatorCache;
 
-        private readonly ConcurrentDictionary<Type, ObjectFactory> _controllerFactories =
-            new ConcurrentDictionary<Type, ObjectFactory>();
-
+        /// <summary>
+        /// Creates a new <see cref="DefaultControllerActivator"/>.
+        /// </summary>
+        /// <param name="typeActivatorCache">The <see cref="ITypeActivatorCache"/>.</param>
+        public DefaultControllerActivator(ITypeActivatorCache typeActivatorCache)
+        {
+            _typeActivatorCache = typeActivatorCache;
+        }
         /// <inheritdoc />
         public object Create([NotNull] ActionContext actionContext, [NotNull] Type controllerType)
         {
-            var factory = _controllerFactories.GetOrAdd(controllerType, _createControllerFactory);
-            return factory(actionContext.HttpContext.RequestServices, arguments: null);
+            var serviceProvider = actionContext.HttpContext.RequestServices;
+            return _typeActivatorCache.CreateInstance<object>(serviceProvider, controllerType);
         }
     }
 }

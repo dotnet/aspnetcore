@@ -14,20 +14,20 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultViewComponentInvoker : IViewComponentInvoker
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ITypeActivator _activator;
+        private readonly ITypeActivatorCache _typeActivatorCache;
         private readonly TypeInfo _componentType;
         private readonly IViewComponentActivator _viewComponentActivator;
         private readonly object[] _args;
 
         public DefaultViewComponentInvoker(
             [NotNull] IServiceProvider serviceProvider,
-            [NotNull] ITypeActivator activator,
+            [NotNull] ITypeActivatorCache typeActivatorCache,
             [NotNull] IViewComponentActivator viewComponentActivator,
             [NotNull] TypeInfo componentType,
             object[] args)
         {
             _serviceProvider = serviceProvider;
-            _activator = activator;
+            _typeActivatorCache = typeActivatorCache;
             _componentType = componentType;
             _viewComponentActivator = viewComponentActivator;
             _args = args ?? new object[0];
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc
 
         private object CreateComponent([NotNull] ViewContext context)
         {
-            var component = _activator.CreateInstance(_serviceProvider, _componentType.AsType());
+            var component = _typeActivatorCache.CreateInstance<object>(_serviceProvider, _componentType.AsType());
             _viewComponentActivator.Activate(component, context);
             return component;
         }

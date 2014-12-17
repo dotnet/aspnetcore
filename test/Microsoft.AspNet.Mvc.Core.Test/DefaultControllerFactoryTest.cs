@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator());
+            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator());
+            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator());
+            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator());
+            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator());
+            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -208,7 +208,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator());
+            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator());
+            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateController(context));

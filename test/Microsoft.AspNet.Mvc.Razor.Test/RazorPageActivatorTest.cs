@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void Activate_ActivatesAndContextualizesPropertiesOnViews()
         {
             // Arrange
-            var activator = new RazorPageActivator(Mock.Of<ITypeActivator>());
+            var activator = new RazorPageActivator(new EmptyModelMetadataProvider());
             var instance = new TestRazorPage();
 
             var myService = new MyService();
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void Activate_ThrowsIfTheViewDoesNotDeriveFromRazorViewOfT()
         {
             // Arrange
-            var activator = new RazorPageActivator(Mock.Of<ITypeActivator>());
+            var activator = new RazorPageActivator(new EmptyModelMetadataProvider());
             var instance = new DoesNotDeriveFromRazorPageOfT();
 
             var myService = new MyService();
@@ -85,8 +85,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void Activate_InstantiatesNewViewDataDictionaryType_IfTheTypeDoesNotMatch()
         {
             // Arrange
-            var typeActivator = new TypeActivator();
-            var activator = new RazorPageActivator(typeActivator);
+            var activator = new RazorPageActivator(new EmptyModelMetadataProvider());
             var instance = new TestRazorPage();
 
             var myService = new MyService();
@@ -121,8 +120,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void Activate_UsesPassedInViewDataDictionaryInstance_IfPassedInTypeMatches()
         {
             // Arrange
-            var typeActivator = new TypeActivator();
-            var activator = new RazorPageActivator(typeActivator);
+            var activator = new RazorPageActivator(new EmptyModelMetadataProvider());
             var instance = new TestRazorPage();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
@@ -156,8 +154,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void Activate_DeterminesModelTypeFromProperty()
         {
             // Arrange
-            var typeActivator = new TypeActivator();
-            var activator = new RazorPageActivator(typeActivator);
+            var activator = new RazorPageActivator(new EmptyModelMetadataProvider());
             var instance = new DoesNotDeriveFromRazorPageOfTButHasModelProperty();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();

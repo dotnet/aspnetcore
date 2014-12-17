@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="filterType">Type representing an <see cref="IFilter"/>.</param>
         /// <returns>An <see cref="IFilter"/> representing the added type.</returns>
         /// <remarks>
-        /// Filter instances will be created using <see cref="Microsoft.Framework.DependencyInjection.ITypeActivator"/>.
+        /// Filter instances will be created using
+        /// <see cref="Microsoft.Framework.DependencyInjection.ActivatorUtilities"/>.
         /// Use <see cref="AddService(ICollection{IFilter}, Type)"/> to register a service as a filter.
         /// </remarks>
         public static IFilter Add(
@@ -37,7 +38,8 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="order">The order of the added filter.</param>
         /// <returns>An <see cref="IFilter"/> representing the added type.</returns>
         /// <remarks>
-        /// Filter instances will be created using <see cref="Microsoft.Framework.DependencyInjection.ITypeActivator"/>.
+        /// Filter instances will be created using
+        /// <see cref="Microsoft.Framework.DependencyInjection.ActivatorUtilities"/>.
         /// Use <see cref="AddService(ICollection{IFilter}, Type)"/> to register a service as a filter.
         /// </remarks>
         public static IFilter Add(

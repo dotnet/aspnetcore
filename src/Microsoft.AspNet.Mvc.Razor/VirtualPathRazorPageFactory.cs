@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -12,16 +13,13 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class VirtualPathRazorPageFactory : IRazorPageFactory
     {
-        private readonly ITypeActivator _activator;
         private readonly IServiceProvider _serviceProvider;
         private readonly ICompilerCache _compilerCache;
         private IRazorCompilationService _razorcompilationService;
 
-        public VirtualPathRazorPageFactory(ITypeActivator typeActivator,
-                                           IServiceProvider serviceProvider,
+        public VirtualPathRazorPageFactory(IServiceProvider serviceProvider,
                                            ICompilerCache compilerCache)
         {
-            _activator = typeActivator;
             _serviceProvider = serviceProvider;
             _compilerCache = compilerCache;
         }
@@ -60,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return null;
             }
 
-            var page = (IRazorPage)_activator.CreateInstance(_serviceProvider, result.CompilationResult.CompiledType);
+            var page = (IRazorPage)Activator.CreateInstance(result.CompilationResult.CompiledType);
             page.Path = relativePath;
 
             return page;

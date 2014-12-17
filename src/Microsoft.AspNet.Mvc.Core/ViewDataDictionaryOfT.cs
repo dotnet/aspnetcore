@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
         /// For use when creating a <see cref="ViewDataDictionary{TModel}"/> for a new top-level scope.
         /// </remarks>
         /// <inheritdoc />
-        // References may not show up due to ITypeActivator use in RazorPageActivator.
+        // References may not show up due to ActivatorUtilities use in RazorPageActivator.
         public ViewDataDictionary(
             [NotNull] IModelMetadataProvider metadataProvider,
             [NotNull] ModelStateDictionary modelState)
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
         /// </para>
         /// </remarks>
         /// <inheritdoc />
-        // References may not show up due to ITypeActivator use in RazorPageActivator.
+        // References may not show up due to ActivatorUtilities use in RazorPageActivator.
         public ViewDataDictionary([NotNull] ViewDataDictionary source)
             : base(source, declaredModelType: typeof(TModel))
         {

@@ -72,14 +72,11 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private static TestRazorPage CreateTestRazorPage()
         {
-            var typeActivator = new TypeActivator();
-            var activator = new RazorPageActivator(typeActivator);
+            var activator = new RazorPageActivator(new EmptyModelMetadataProvider());
             var serviceProvider = new Mock<IServiceProvider>();
             var myService = new MyService();
             serviceProvider.Setup(mock => mock.GetService(typeof(MyService)))
                            .Returns(myService);
-            serviceProvider.Setup(mock => mock.GetService(typeof(ITypeActivator)))
-                           .Returns(typeActivator);
             serviceProvider.Setup(mock => mock.GetService(typeof(ITagHelperActivator)))
                            .Returns(new DefaultTagHelperActivator());
             var httpContext = new Mock<HttpContext>();

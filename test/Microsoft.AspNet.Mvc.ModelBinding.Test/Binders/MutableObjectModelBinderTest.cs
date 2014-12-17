@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -1572,16 +1571,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private IServiceProvider CreateServices()
         {
             var services = new Mock<IServiceProvider>(MockBehavior.Strict);
-
-            var typeActivator = new Mock<ITypeActivator>(MockBehavior.Strict);
-            typeActivator
-                .Setup(f => f.CreateInstance(It.IsAny<IServiceProvider>(), typeof(ExcludedProvider)))
-                .Returns(new ExcludedProvider());
-
-            services
-                .Setup(s => s.GetService(typeof(ITypeActivator)))
-                .Returns(typeActivator.Object);
-
             return services.Object;
         }
 

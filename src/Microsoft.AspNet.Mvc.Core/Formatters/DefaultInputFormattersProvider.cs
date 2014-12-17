@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.OptionDescriptors
@@ -16,13 +15,14 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         /// Initializes a new instance of the DefaultInputFormattersProvider class.
         /// </summary>
         /// <param name="options">An accessor to the <see cref="MvcOptions"/> configured for this application.</param>
-        /// <param name="typeActivator">An <see cref="ITypeActivator"/> instance used to instantiate types.</param>
+        /// <param name="typeActivatorCache">As <see cref="ITypeActivatorCache"/> instance that creates an instance
+        ///  of type <see cref="IInputFormatter"/>.</param>
         /// <param name="serviceProvider">A <see cref="IServiceProvider"/> instance that retrieves services from the
         /// service collection.</param>
         public DefaultInputFormattersProvider(IOptions<MvcOptions> optionsAccessor,
-                                              ITypeActivator typeActivator,
+                                              ITypeActivatorCache typeActivatorCache,
                                               IServiceProvider serviceProvider)
-            : base(optionsAccessor.Options.InputFormatters, typeActivator, serviceProvider)
+            : base(optionsAccessor.Options.InputFormatters, typeActivatorCache, serviceProvider)
         {
         }
 
