@@ -5,10 +5,10 @@
         "warningsAsErrors": false
     },
     "dependencies": {
-        "K.Roslyn": "1.0.0-*",
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*"
+        "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
+        "Microsoft.CodeAnalysis.CSharp": "1.0.0-beta2-*"
     },
     "frameworks": {
         "aspnet50": {
