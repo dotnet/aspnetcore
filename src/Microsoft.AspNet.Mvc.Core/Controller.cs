@@ -618,6 +618,128 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Creates an <see cref="BadRequestResult"/> that produces a Bad Request (400) response.
+        /// </summary>
+        /// <returns>The created <see cref="BadRequestResult"/> for the response.</returns>
+        [NonAction]
+        public virtual BadRequestResult HttpBadRequest()
+        {
+            return new BadRequestResult();
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="uri">The URI at which the content has been created.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedResult Created([NotNull] string uri, object value)
+        {
+            return new CreatedResult(uri, value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="uri">The URI at which the content has been created.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedResult Created([NotNull] Uri uri, object value)
+        {
+            string location;
+            if (uri.IsAbsoluteUri)
+            {
+                location = uri.AbsoluteUri;
+            }
+            else
+            {
+                location = uri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            }
+            return new CreatedResult(location, value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtActionResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="actionName">The name of the action to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtActionResult CreatedAtAction(string actionName, object value)
+        {
+            return CreatedAtAction(actionName, routeValues: null, value: value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtActionResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="actionName">The name of the action to use for generating the URL.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtActionResult CreatedAtAction(string actionName, object routeValues, object value)
+        {
+            return CreatedAtAction(actionName, controllerName: null,  routeValues: routeValues, value: value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtActionResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="actionName">The name of the action to use for generating the URL.</param>
+        /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtActionResult CreatedAtAction(string actionName,
+                                                             string controllerName,
+                                                             object routeValues,
+                                                             object value)
+        {
+            return new CreatedAtActionResult(actionName, controllerName, routeValues, value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtRouteResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="routeName">The name of the route to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, object value)
+        {
+            return CreatedAtRoute(routeName, routeValues: null, value: value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtRouteResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtRouteResult CreatedAtRoute(object routeValues, object value)
+        {
+            return CreatedAtRoute(routeName: null, routeValues: routeValues, value: value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtRouteResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="routeName">The name of the route to use for generating the URL.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, object routeValues, object value)
+        {
+            return new CreatedAtRouteResult(routeName, routeValues, value);
+        }
+
+        /// <summary>
         /// Called before the action method is invoked.
         /// </summary>
         /// <param name="context">The action executing context.</param>

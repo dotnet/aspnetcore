@@ -374,6 +374,171 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void Created_WithStringParameter_SetsCreatedLocation()
+        {
+            // Arrange
+            var controller = new Controller();
+            var uri = "http://test/url";
+
+            // Act
+            var result = controller.Created(uri, null);
+
+            // Assert
+            Assert.IsType<CreatedResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Same(uri, result.Location);
+        }
+
+        [Fact]
+        public void Created_WithAbsoluteUriParameter_SetsCreatedLocation()
+        {
+            // Arrange
+            var controller = new Controller();
+            var uri = new Uri("http://test/url");
+
+            // Act
+            var result = controller.Created(uri, null);
+
+            // Assert
+            Assert.IsType<CreatedResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(uri.OriginalString, result.Location);
+        }
+
+        [Fact]
+        public void Created_WithRelativeUriParameter_SetsCreatedLocation()
+        {
+            // Arrange
+            var controller = new Controller();
+            var uri = new Uri("/test/url", UriKind.Relative);
+
+            // Act
+            var result = controller.Created(uri, null);
+
+            // Assert
+            Assert.IsType<CreatedResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(uri.OriginalString, result.Location);
+        }
+
+        [Fact]
+        public void CreatedAtAction_WithParameterActionName_SetsResultActionName()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var result = controller.CreatedAtAction("SampleAction", null);
+
+            // Assert
+            Assert.IsType<CreatedAtActionResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal("SampleAction", result.ActionName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("SampleController")]
+        public void CreatedAtAction_WithActionControllerAndNullRouteValue_SetsSameValue(
+            string controllerName)
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var result = controller.CreatedAtAction("SampleAction", controllerName, null, null);
+
+            // Assert
+            Assert.IsType<CreatedAtActionResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal("SampleAction", result.ActionName);
+            Assert.Equal(controllerName, result.ControllerName);
+        }
+
+        [Fact]
+        public void CreatedAtAction_WithActionControllerRouteValues_SetsSameValues()
+        {
+            // Arrange
+            var controller = new Controller();
+            var expected = new Dictionary<string, object>
+                {
+                    { "test", "case" },
+                    { "sample", "route" },
+                };
+
+            // Act
+            var result = controller.CreatedAtAction(
+                "SampleAction",
+                "SampleController",
+                new RouteValueDictionary(expected), null);
+
+            // Assert
+            Assert.IsType<CreatedAtActionResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal("SampleAction", result.ActionName);
+            Assert.Equal("SampleController", result.ControllerName);
+            Assert.Equal(expected, result.RouteValues);
+        }
+
+        [Fact]
+        public void CreatedAtRoute_WithParameterRouteName_SetsResultSameRouteName()
+        {
+            // Arrange
+            var controller = new Controller();
+            var routeName = "SampleRoute";
+
+            // Act
+            var result = controller.CreatedAtRoute(routeName, null);
+
+            // Assert
+            Assert.IsType<CreatedAtRouteResult>(result);
+            Assert.Same(routeName, result.RouteName);
+        }
+
+        [Fact]
+        public void CreatedAtRoute_WithParameterRouteValues_SetsResultSameRouteValues()
+        {
+            // Arrange
+            var controller = new Controller();
+            var expected = new Dictionary<string, object>
+                {
+                    { "test", "case" },
+                    { "sample", "route" },
+                };
+
+            // Act
+            var result = controller.CreatedAtRoute(new RouteValueDictionary(expected), null);
+
+            // Assert
+            Assert.IsType<CreatedAtRouteResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(expected, result.RouteValues);
+        }
+
+        [Fact]
+        public void CreatedAtRoute_WithParameterRouteNameAndValues_SetsResultSameProperties()
+        {
+            // Arrange
+            var controller = new Controller();
+            var routeName = "SampleRoute";
+            var expected = new Dictionary<string, object>
+                {
+                    { "test", "case" },
+                    { "sample", "route" },
+                };
+
+            // Act
+            var result = controller.CreatedAtRoute(routeName, new RouteValueDictionary(expected), null);
+
+            // Assert
+            Assert.IsType<CreatedAtRouteResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Same(routeName, result.RouteName);
+            Assert.Equal(expected, result.RouteValues);
+        }
+
+        [Fact]
         public void File_WithContents()
         {
             // Arrange
@@ -488,6 +653,20 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.IsType<HttpNotFoundResult>(result);
             Assert.Equal(404, result.StatusCode);
+        }
+
+        [Fact]
+        public void BadRequest_SetsStatusCode()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var result = controller.HttpBadRequest();
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
+            Assert.Equal(400, result.StatusCode);
         }
 
         [Theory]

@@ -20,6 +20,11 @@ namespace Microsoft.AspNet.Mvc
 
         public Type DeclaredType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the HTTP status code.
+        /// </summary>
+        public int? StatusCode { get; set; }
+
         public ObjectResult(object value)
         {
             Value = value;
@@ -45,6 +50,12 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
+            if (StatusCode != null)
+            {
+                context.HttpContext.Response.StatusCode = (int)StatusCode;
+            }
+
+            OnFormatting(context);
             await selectedFormatter.WriteAsync(formatterContext);
         }
 
@@ -215,6 +226,13 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return formatters;
+        }
+
+        /// <summary>
+        /// This method is called before the formatter writes to the output stream.
+        /// </summary>
+        protected virtual void OnFormatting([NotNull] ActionContext context)
+        {
         }
     }
 }

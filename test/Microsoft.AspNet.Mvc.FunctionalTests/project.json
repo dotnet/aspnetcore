@@ -3,6 +3,7 @@
         "warningsAsErrors": "true"
     },
     "dependencies": {
+        "ActionResultsWebSite": "1.0.0",
         "ActivatorWebSite": "1.0.0",
         "AddServicesWebSite": "1.0.0",
         "AntiForgeryWebSite": "1.0.0",
@@ -21,7 +22,7 @@
         "RoutingWebSite": "1.0.0",
         "RazorWebSite": "1.0.0",
         "RazorInstrumentationWebsite": "1.0.0",
-        "RazorViewEngineOptionsWebsite":  "1.0.0",
+        "RazorViewEngineOptionsWebsite": "1.0.0",
         "RequestServicesWebSite": "1.0.0",
         "TagHelperSample.Web": "1.0.0",
         "TagHelpersWebSite": "1.0.0",
