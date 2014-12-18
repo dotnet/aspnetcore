@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.TestHost
                 Assert.Equal("example.com", context.Request.Host.Value);
 
                 return Task.FromResult(0);
-            }, new PathString("/A/Path"));
+            }, new PathString("/A/Path/"));
             var httpClient = new HttpClient(handler);
             return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
         }
