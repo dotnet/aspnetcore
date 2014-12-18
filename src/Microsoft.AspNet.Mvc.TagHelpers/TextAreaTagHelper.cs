@@ -10,7 +10,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;textarea&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
-    [ContentBehavior(ContentBehavior.Replace)]
     [HtmlElementName("textarea")]
     public class TextAreaTagHelper : TagHelper
     {

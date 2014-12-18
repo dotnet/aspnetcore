@@ -9,7 +9,6 @@ using Microsoft.AspNet.Razor.TagHelpers;
 namespace ActivatorWebSite.TagHelpers
 {
     [HtmlElementName("body")]
-    [ContentBehavior(ContentBehavior.Prepend)]
     public class TitleTagHelper : TagHelper
     {
         [Activate]
@@ -23,7 +22,7 @@ namespace ActivatorWebSite.TagHelpers
             var builder = new TagBuilder("h2");
             var title = ViewContext.ViewBag.Title;
             builder.InnerHtml = HtmlHelper.Encode(title);
-            output.Content = builder.ToString();
+            output.PreContent = builder.ToString();
         }
     }
 }

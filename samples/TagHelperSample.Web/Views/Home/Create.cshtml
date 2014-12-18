@@ -13,7 +13,7 @@
 <form asp-anti-forgery="false" asp-action="Create">
     <div class="form-horizontal">
         @* validation summary tag helper will target just <div/> elements and append the list of errors *@
-        @* - i.e. this helper, like <select/> helper, has ContentBehavior.Append *@
+        @* - i.e. this helper, like <select/> helper appends content. *@
         @* helper does nothing if model is valid and (client-side validation is disabled or
            asp-validation-summary="ValidationSummary.ModelOnly") *@
         @* don't need a bound attribute to match Html.ValidationSummary()'s headerTag parameter; users wrap message as they wish *@
@@ -48,7 +48,7 @@
         <div class="form-group">
             <label asp-for="YearsEmployeed" class="control-label col-md-2" />
             <div class="col-md-10">
-                @* <select/> tag helper has ContentBehavior.Append -- items render after static options *@
+                @* <select/> items render after static options *@
                 @{ var @object = "multiple"; }
                 <select asp-for="@(Model.YearsEmployeed)" asp-items="@((IEnumerable<SelectListItem>)ViewBag.Items)" size="2" class="form-control" multiple="@(@object)">
                     @* Static use of "selected" attribute may cause HTML errors if in a single-selection <select/> *@

@@ -4,12 +4,11 @@
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
+using System.Threading.Tasks;
 
 namespace ActivatorWebSite.TagHelpers
 {
     [HtmlElementName("div")]
-    [ContentBehavior(ContentBehavior.Modify)]
     public class RepeatContentTagHelper : TagHelper
     {
         public int RepeatContent { get; set; }
@@ -19,14 +18,14 @@ namespace ActivatorWebSite.TagHelpers
         [Activate]
         public IHtmlHelper HtmlHelper { get; set; }
 
-        public override void Process(TagHelperContext context, TagHelperOutput output)
+        public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
+            var content = await context.GetChildContentAsync();
             var repeatContent = HtmlHelper.Encode(Expression.Metadata.Model.ToString());
 
             if (string.IsNullOrEmpty(repeatContent))
             {
-                repeatContent = output.Content;
-                output.Content = string.Empty;
+                repeatContent = content;
             }
 
             for (int i = 0; i < RepeatContent; i++)

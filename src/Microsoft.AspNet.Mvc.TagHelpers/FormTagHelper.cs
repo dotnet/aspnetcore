@@ -6,14 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;form&gt; elements.
     /// </summary>
-    [ContentBehavior(ContentBehavior.Append)]
     public class FormTagHelper : TagHelper
     {
         private const string ActionAttributeName = "asp-action";
@@ -106,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 if (tagBuilder != null)
                 {
                     output.MergeAttributes(tagBuilder);
-                    output.Content += tagBuilder.InnerHtml;
+                    output.PostContent += tagBuilder.InnerHtml;
                     output.SelfClosing = false;
                 }
             }
@@ -116,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 var antiForgeryTagBuilder = Generator.GenerateAntiForgery(ViewContext);
                 if (antiForgeryTagBuilder != null)
                 {
-                    output.Content += antiForgeryTagBuilder.ToString(TagRenderMode.SelfClosing);
+                    output.PostContent += antiForgeryTagBuilder.ToString(TagRenderMode.SelfClosing);
                 }
             }
         }

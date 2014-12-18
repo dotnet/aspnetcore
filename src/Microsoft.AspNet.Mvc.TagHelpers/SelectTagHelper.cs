@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;select&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
-    [ContentBehavior(ContentBehavior.Append)]
     public class SelectTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";
@@ -146,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 if (tagBuilder != null)
                 {
                     output.MergeAttributes(tagBuilder);
-                    output.Content += tagBuilder.InnerHtml;
+                    output.PostContent += tagBuilder.InnerHtml;
                     output.SelfClosing = false;
                 }
 

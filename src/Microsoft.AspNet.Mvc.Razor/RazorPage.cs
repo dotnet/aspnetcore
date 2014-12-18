@@ -156,6 +156,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </remarks>
         public void StartWritingScope()
         {
+            StartWritingScope(new StringWriter());
+        }
+
+        /// <summary>
+        /// Starts a new writing scope with the given <paramref name="writer"/>.
+        /// </summary>
+        /// <remarks>
+        /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will
+        /// be buffered until <see cref="EndWritingScope"/> is called.
+        /// </remarks>
+        public void StartWritingScope(TextWriter writer)
+        {
             // If there isn't a base writer take the ViewContext.Writer
             if (_originalWriter == null)
             {
@@ -164,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // We need to replace the ViewContext's Writer to ensure that all content (including content written
             // from HTML helpers) is redirected.
-            ViewContext.Writer = new StringWriter();
+            ViewContext.Writer = writer;
 
             _writerScopes.Push(ViewContext.Writer);
         }
