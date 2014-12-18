@@ -1,14 +1,76 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     public class TagHelperExecutionContextTest
     {
+        [Fact]
+        public async Task GetChildContentAsync_CachesValue()
+        {
+            // Arrange
+            var writer = new StringWriter();
+            var expectedContent = string.Empty;
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                uniqueId: string.Empty,
+                executeChildContentAsync: () =>
+                {
+                    if (string.IsNullOrEmpty(expectedContent))
+                    {
+                        expectedContent = "Hello from child content: " + Guid.NewGuid().ToString();
+                    }
+
+                    writer.Write(expectedContent);
+
+                    return Task.FromResult(result: true);
+                },
+                startWritingScope: () => { },
+                endWritingScope: () => writer);
+
+            // Act
+            var content1 = await executionContext.GetChildContentAsync();
+            var content2 = await executionContext.GetChildContentAsync();
+
+            // Assert
+            Assert.Same(content1, content2);
+            Assert.Equal(expectedContent, content1);
+            Assert.Equal(expectedContent, content2);
+        }
+
+        [Fact]
+        public async Task ExecuteChildContentAsync_IsNotMemoized()
+        {
+            // Arrange
+            var childContentExecutionCount = 0;
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                uniqueId: string.Empty,
+                executeChildContentAsync: () =>
+                {
+                    childContentExecutionCount++;
+
+                    return Task.FromResult(result: true);
+                },
+                startWritingScope: () => { },
+                endWritingScope: () => new StringWriter());
+
+            // Act
+            await executionContext.ExecuteChildContentAsync();
+            await executionContext.ExecuteChildContentAsync();
+            await executionContext.ExecuteChildContentAsync();
+
+            // Assert
+            Assert.Equal(3, childContentExecutionCount);
+        }
+
         public static TheoryData<string, string> DictionaryCaseTestingData
         {
             get

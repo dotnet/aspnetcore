@@ -20,6 +20,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private string _childContent;
 
         /// <summary>
+        /// Internal for testing purposes only.
+        /// </summary>
+        internal TagHelperExecutionContext(string tagName)
+            : this(tagName,
+                   uniqueId: string.Empty,
+                   executeChildContentAsync: async () => await Task.FromResult(result: true),
+                   startWritingScope: () => { },
+                   endWritingScope: () => new StringWriter())
+        {
+        }
+
+        /// <summary>
         /// Instantiates a new <see cref="TagHelperExecutionContext"/>.
         /// </summary>
         /// <param name="tagName">The HTML tag name in the Razor source.</param>

@@ -24,12 +24,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        // Internal for testing
-        internal TagHelperOutput(string tagName, [NotNull] IDictionary<string, string> attributes)
-            : this(tagName, attributes, string.Empty)
-        {
-        }
-
         /// <summary>
         /// Instantiates a new instance of <see cref="TagHelperOutput"/>.
         /// </summary>
