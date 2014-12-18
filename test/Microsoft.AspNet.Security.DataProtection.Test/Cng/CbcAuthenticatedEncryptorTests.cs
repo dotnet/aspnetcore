@@ -6,13 +6,15 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNet.Security.DataProtection.Cng;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
 {
     public class CbcAuthenticatedEncryptorTests
     {
-        [Fact]
+        [ConditionalFact]
+        [ConditionalRunTestOnlyIfBcryptAvailable]
         public void Encrypt_Decrypt_RoundTrips()
         {
             // Arrange
@@ -32,7 +34,8 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
             Assert.Equal(plaintext, decipheredtext);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [ConditionalRunTestOnlyIfBcryptAvailable]
         public void Encrypt_Decrypt_Tampering_Fails()
         {
             // Arrange
@@ -78,7 +81,8 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
             });
         }
 
-        [Fact]
+        [ConditionalFact]
+        [ConditionalRunTestOnlyIfBcryptAvailable]
         public void Encrypt_KnownKey()
         {
             // Arrange
