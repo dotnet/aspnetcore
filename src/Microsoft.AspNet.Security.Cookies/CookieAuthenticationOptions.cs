@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.Security.Cookies
         {
             AuthenticationType = CookieAuthenticationDefaults.AuthenticationType;
             ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
-            CookiePath = "/";
             ExpireTimeSpan = TimeSpan.FromDays(14);
             SlidingExpiration = true;
             CookieHttpOnly = true;

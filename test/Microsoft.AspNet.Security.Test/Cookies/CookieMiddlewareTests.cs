@@ -137,21 +137,11 @@ namespace Microsoft.AspNet.Security.Cookies
                 options.CookieDomain = "another.com";
                 options.CookieSecure = CookieSecureOption.Always;
                 options.CookieHttpOnly = true;
-            }, SignInAsAlice);
+            }, SignInAsAlice, new Uri("http://example.com/base"));
 
-            Transaction transaction1 = await SendAsync(server1, "http://example.com/testpath");
-
-            TestServer server2 = CreateServer(options =>
-            {
-                options.CookieName = "SecondCookie";
-                options.CookieSecure = CookieSecureOption.Never;
-                options.CookieHttpOnly = false;
-            }, SignInAsAlice);
-
-            Transaction transaction2 = await SendAsync(server2, "http://example.com/testpath");
+            Transaction transaction1 = await SendAsync(server1, "http://example.com/base/testpath");
 
             string setCookie1 = transaction1.SetCookie;
-            string setCookie2 = transaction2.SetCookie;
 
             setCookie1.ShouldContain("TestCookie=");
             setCookie1.ShouldContain(" path=/foo");
@@ -159,7 +149,19 @@ namespace Microsoft.AspNet.Security.Cookies
             setCookie1.ShouldContain(" secure");
             setCookie1.ShouldContain(" HttpOnly");
 
+            TestServer server2 = CreateServer(options =>
+            {
+                options.CookieName = "SecondCookie";
+                options.CookieSecure = CookieSecureOption.Never;
+                options.CookieHttpOnly = false;
+            }, SignInAsAlice, new Uri("http://example.com/base"));
+
+            Transaction transaction2 = await SendAsync(server2, "http://example.com/base/testpath");
+
+            string setCookie2 = transaction2.SetCookie;
+
             setCookie2.ShouldContain("SecondCookie=");
+            setCookie2.ShouldContain(" path=/base");
             setCookie2.ShouldNotContain(" domain=");
             setCookie2.ShouldNotContain(" secure");
             setCookie2.ShouldNotContain(" HttpOnly");
@@ -343,6 +345,25 @@ namespace Microsoft.AspNet.Security.Cookies
             responded.Single().ShouldContain("\"location\"");
         }
 
+        [Fact]
+        public async Task CookieUsesPathBaseByDefault()
+        {
+            var clock = new TestClock();
+            TestServer server = CreateServer(options =>
+            {
+            },
+            context =>
+            {
+                Assert.Equal(new PathString("/base"), context.Request.PathBase);
+                context.Response.SignIn(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")));
+                return Task.FromResult<object>(null);
+            },
+            new Uri("http://example.com/base"));
+
+            Transaction transaction1 = await SendAsync(server, "http://example.com/base/testpath");
+            Assert.True(transaction1.SetCookie.Contains("path=/base"));
+        }
+
         private static string FindClaimValue(Transaction transaction, string claimType)
         {
             XElement claim = transaction.ResponseElement.Elements("claim").SingleOrDefault(elt => elt.Attribute("type").Value == claimType);
@@ -364,9 +385,9 @@ namespace Microsoft.AspNet.Security.Cookies
             return me;
         }
 
-        private static TestServer CreateServer(Action<CookieAuthenticationOptions> configureOptions, Func<HttpContext, Task> testpath = null)
+        private static TestServer CreateServer(Action<CookieAuthenticationOptions> configureOptions, Func<HttpContext, Task> testpath = null, Uri baseAddress = null)
         {
-            return TestServer.Create(app =>
+            var server = TestServer.Create(app =>
             {
                 app.UseServices(services => services.AddDataProtection());
                 app.UseCookieAuthentication(configureOptions);
@@ -406,6 +427,8 @@ namespace Microsoft.AspNet.Security.Cookies
                     }
                 });
             });
+            server.BaseAddress = baseAddress;
+            return server;
         }
 
         private static void Describe(HttpResponse res, AuthenticationResult result)
