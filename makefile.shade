@@ -199,7 +199,13 @@ var buildTarget = "compile"
         {
             try
             {
-                Log.Info(string.Format("Building {0}", repo));
+                var blockName = string.Format("Building {0}", repo);
+                if (IsTeamCity)
+                {
+                    Log.Info(string.Format("##teamcity[blockOpened name='{0}']", FormatForTeamCity(blockName)));
+                }
+                Log.Info(blockName);
+
                 if (IsMono)
                 {
                     Exec("build.sh", buildTarget, repo);
@@ -209,6 +215,11 @@ var buildTarget = "compile"
                     Exec("build.cmd", buildTarget, repo);
                 }
                 Log.Info(string.Format("Build {0} succeeded", repo));
+
+                if (IsTeamCity)
+                {
+                    Log.Info(string.Format("##teamcity[blockClosed name='{0}']", FormatForTeamCity(blockName)));
+                }
             }
             catch(Exception ex)
             {
@@ -216,12 +227,20 @@ var buildTarget = "compile"
                 failed[repo] = ex;
             }
         }
+
         foreach(var repo in repos)
         {
             Exception ex;
             if (failed.TryGetValue(repo, out ex))
             {
                 Log.Warn(string.Format("Build {0} failed: {1}", repo, ex.Message));
+                if (IsTeamCity)
+                {
+                    Log.Warn(string.Format("##teamcity[message text='{0}' errorDetails='{1}' status='ERROR']",
+                                           FormatForTeamCity(ex.Message),
+                                           FormatForTeamCity(ex.StackTrace)));
+                }
+
             }
             else
             {
@@ -435,5 +454,14 @@ functions
                     GitConfig("bugtraq.logregex", @"#(\d+)", repo);
                 }
             }
+        }
+
+        string FormatForTeamCity(string input)
+        {
+            return input.Replace("|", "||")
+                        .Replace("'", "|'")
+                        .Replace("\r", "|r")
+                        .Replace("\n", "|n")
+                        .Replace("]", "|]");
         }
     }
