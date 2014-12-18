@@ -427,8 +427,13 @@ functions
                     Log.Warn(string.Format("Unable to clone repository at '{0}': {1}", repoUrl, ex.Message));
                     return;
                 }
-                GitConfig("bugtraq.url", "http://github.com/aspnet/" + repo + "/issues/%BUGID%", repo);
-                GitConfig("bugtraq.logregex", @"#(\d+)", repo);
+
+                // Configuring Git bug tracking settings hangs from time to time on Win7/2008 when running as part of the CI build
+                if (!IsTeamCity)
+                {
+                    GitConfig("bugtraq.url", "http://github.com/aspnet/" + repo + "/issues/%BUGID%", repo);
+                    GitConfig("bugtraq.logregex", @"#(\d+)", repo);
+                }
             }
         }
     }
