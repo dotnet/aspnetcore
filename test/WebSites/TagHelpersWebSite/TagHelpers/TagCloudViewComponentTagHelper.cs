@@ -14,7 +14,6 @@ namespace MvcSample.Web.Components
 {
     [HtmlElementName("tag-cloud")]
     [ViewComponent(Name = "Tags")]
-    [ContentBehavior(ContentBehavior.Replace)]
     public class TagCloudViewComponentTagHelper : ITagHelper
     {
         private static readonly string[] Tags =

@@ -32,15 +32,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "asp-host", "contoso.com" },
                     { "asp-protocol", "http" }
                 },
-                uniqueId: "test");
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something Else"));
             var output = new TagHelperOutput(
                 expectedTagName,
                 attributes: new Dictionary<string, string>
                 {
                     { "id", "myanchor" },
                     { "asp-route-foo", "bar" },
-                },
-                content: "Something");
+                })
+            {
+                Content = "Something"
+            };
 
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper
@@ -85,11 +88,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(), uniqueId: "test");
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>(),
-                content: string.Empty);
+                attributes: new Dictionary<string, string>())
+            {
+                Content = string.Empty
+            };
 
             var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             generator
@@ -119,11 +126,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(), uniqueId: "test");
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>(),
-                content: string.Empty);
+                attributes: new Dictionary<string, string>())
+                {
+                    Content = string.Empty
+                };
 
             var generator = new Mock<IHtmlGenerator>();
             generator
@@ -166,8 +177,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new Dictionary<string, string>()
                 {
                     { "href", "http://www.contoso.com" }
-                },
-                content: string.Empty);
+                });
             if (propertyName == "asp-route-")
             {
                 output.Attributes.Add("asp-route-foo", "bar");
@@ -202,8 +212,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             typeof(AnchorTagHelper).GetProperty(propertyName).SetValue(anchorTagHelper, "Home");
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>(),
-                content: string.Empty);
+                attributes: new Dictionary<string, string>());
             var expectedErrorMessage = "Cannot determine an 'href' attribute for <a>. An <a> with a specified " +
                 "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
 

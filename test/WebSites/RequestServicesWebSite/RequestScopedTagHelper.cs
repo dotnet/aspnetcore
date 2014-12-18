@@ -7,7 +7,6 @@ using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace RequestServicesWebSite
 {
-    [ContentBehavior(ContentBehavior.Replace)]
     public class RequestScopedTagHelper : TagHelper
     {
         [Activate]

@@ -33,7 +33,10 @@ namespace TagHelpersWebSite.TagHelpers
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            if (MakePretty.HasValue && !MakePretty.Value)
+            // Need to check if output.TagName == null in-case the ConditionTagHelper calls into SuppressOutput and 
+            // therefore sets the TagName to null.
+            if (MakePretty.HasValue && !MakePretty.Value ||
+                output.TagName == null)
             {
                 return;
             }
