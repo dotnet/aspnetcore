@@ -88,7 +88,7 @@ namespace E2ETests
             else
             {
                 //Tweak the %PATH% to the point to the right KREFLAVOR
-                startParameters.KreName = SwitchPathToKreFlavor(startParameters.KreFlavor, startParameters.KreArchitecture);
+                startParameters.Kre = SwitchPathToKreFlavor(startParameters.KreFlavor, startParameters.KreArchitecture);
 
                 //Reason to do pack here instead of in a common place is use the right KRE to do the packing. Previous line switches to use the right KRE.
                 if (startParameters.PackApplicationBeforeStart)
@@ -163,15 +163,6 @@ namespace E2ETests
 
         private static Process StartMonoHost(StartParameters startParameters)
         {
-            if (startParameters.PackApplicationBeforeStart)
-            {
-                KpmPack(startParameters);
-            }
-
-            //Mono does not have a way to pass in a --appbase switch. So it will be an environment variable. 
-            Environment.SetEnvironmentVariable("KRE_APPBASE", startParameters.ApplicationPath);
-            Console.WriteLine("Setting the KRE_APPBASE to {0}", startParameters.ApplicationPath);
-
             var path = Environment.GetEnvironmentVariable("PATH");
             var kreBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Where(c => c.Contains("KRE-Mono")).FirstOrDefault();
 
@@ -179,6 +170,17 @@ namespace E2ETests
             {
                 throw new Exception("KRE not detected on the machine.");
             }
+
+            if (startParameters.PackApplicationBeforeStart)
+            {
+                // We use full path to KRE to pack.
+                startParameters.Kre = kreBin;
+                KpmPack(startParameters);
+            }
+
+            //Mono does not have a way to pass in a --appbase switch. So it will be an environment variable. 
+            Environment.SetEnvironmentVariable("KRE_APPBASE", startParameters.ApplicationPath);
+            Console.WriteLine("Setting the KRE_APPBASE to {0}", startParameters.ApplicationPath);
 
             var monoPath = "mono";
             var klrMonoManaged = Path.Combine(kreBin, "klr.mono.managed.dll");
@@ -306,7 +308,7 @@ namespace E2ETests
         {
             startParameters.PackedApplicationRootPath = Path.Combine(packRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            var parameters = string.Format("pack {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.PackedApplicationRootPath, startParameters.KreName);
+            var parameters = string.Format("pack {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.PackedApplicationRootPath, startParameters.Kre);
             Console.WriteLine(string.Format("Executing command kpm {0}", parameters));
 
             var startInfo = new ProcessStartInfo

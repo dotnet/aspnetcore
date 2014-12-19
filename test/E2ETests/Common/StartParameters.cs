@@ -25,7 +25,7 @@
 
         public string PackedApplicationRootPath { get; set; }
 
-        public string KreName { get; set; }
+        public string Kre { get; set; }
 
         public IISApplication IISApplication { get; set; }
     }
