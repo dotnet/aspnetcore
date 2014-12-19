@@ -25,13 +25,13 @@ This project is part of ASP.NET vNext. You can find samples, documentation and g
 ### To run the sample on Mac/Mono:
 * Follow [Home](https://github.com/aspnet/home) instructions to install mono, kvm on Mac
 * Open a command prompt and cd ```\src\MusicStore\```
-* Execute ``kpm restore```
+* Execute ```kpm restore```
 * Try `k kestrel` to run the application
 **NOTE: On Mono since SQL client is not available the sample uses an InMemoryStore to run the application. So the changes that you make will not be persisted.
 
 ### Run Tests:
 * Open a command prompt and cd ```\test\E2ETests\```
-* Execute ``kpm restore```
+* Execute ```kpm restore```
 * Set KRE_ENV environment variable to "SocialTesting"
 * Run ```k test```
 
