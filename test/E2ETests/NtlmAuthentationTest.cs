@@ -2,25 +2,21 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace E2ETests
 {
     public partial class SmokeTests
     {
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Unix | OperatingSystems.MacOSX)]
         [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/")]
         [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5001/")]
         [InlineData(ServerType.WebListener, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5002/")]
         public void NtlmAuthenticationTest(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", serverType, kreFlavor, architecture, applicationBaseUrl);
-
-            if (Helpers.SkipTestOnCurrentConfiguration(false, architecture, serverType))
-            {
-                Assert.True(true);
-                return;
-            }
 
             startParameters = new StartParameters
             {

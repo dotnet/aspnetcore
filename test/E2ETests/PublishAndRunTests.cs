@@ -4,27 +4,43 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace E2ETests
 {
     public partial class SmokeTests
     {
-        [Theory]
-        [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/", false)]
-        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5002/", false)]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/")]
+        public void Publish_And_Run_Tests_On_X86(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        {
+            Publish_And_Run_Tests(serverType, kreFlavor, architecture, applicationBaseUrl);
+        }
+
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
+        [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/")]
+        public void Publish_And_Run_Tests_On_Mono(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        {
+            Publish_And_Run_Tests(serverType, kreFlavor, architecture, applicationBaseUrl);
+        }
+
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/")]
+        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5002/")]
         //https://github.com/aspnet/KRuntime/issues/642
-        //[InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/", false)]
-        [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/", true)]
-        public void PublishAndRunTests(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool runTestOnMono = false)
+        //[InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/")]
+        public void Publish_And_Run_Tests_On_AMD64(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        {
+            Publish_And_Run_Tests(serverType, kreFlavor, architecture, applicationBaseUrl);
+        }
+
+        private void Publish_And_Run_Tests(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", serverType, kreFlavor, architecture, applicationBaseUrl);
-
-            if (Helpers.SkipTestOnCurrentConfiguration(runTestOnMono, architecture, serverType))
-            {
-                Assert.True(true);
-                return;
-            }
 
             startParameters = new StartParameters
             {

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace E2ETests
@@ -16,28 +17,62 @@ namespace E2ETests
         private HttpClientHandler httpClientHandler;
         private StartParameters startParameters;
 
-        [Theory]
-        [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/", false)]
-        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5002/", false)]
-        [InlineData(ServerType.Kestrel, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5004/", false)]
-        [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/", false)]
-        [InlineData(ServerType.WebListener, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5002/", false)]
-        [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5004/", false)]
-        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5002/", false)]
-        [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/", true)]
-        [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/", false)]
-        [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5004/", false)]
-        [InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5005/", false)]
-        [InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5005/", false)]
-        public void SmokeTestSuite(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl, bool runTestOnMono)
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5002/")]
+        [InlineData(ServerType.Kestrel, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5004/")]
+        [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.WebListener, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5002/")]
+        [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5004/")]
+        public void SmokeTestSuite_OnX86(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        {
+            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+        }
+
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [SkipOn32BitOS]
+        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5002/")]
+        [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/")]
+        [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5004/")]
+        public void SmokeTestSuite_OnAMD64(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        {
+            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+        }
+
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
+        [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/")]
+        public void SmokeTestSuite_OnMono(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        {
+            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+        }
+
+        [ConditionalTheory]
+        [SkipIfNativeModuleNotInstalled]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
+        [InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5005/")]
+        public void SmokeTestSuite_On_NativeModule_X86(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        {
+            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+        }
+
+        [ConditionalTheory]
+        [SkipIfNativeModuleNotInstalled]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
+        [SkipOn32BitOS]
+        [InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5005/")]
+        public void SmokeTestSuite_On_NativeModule_AMD64(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        {
+            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+        }
+
+        private void SmokeTestSuite(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", serverType, kreFlavor, architecture, applicationBaseUrl);
-
-            if (Helpers.SkipTestOnCurrentConfiguration(runTestOnMono, architecture, serverType))
-            {
-                Assert.True(true);
-                return;
-            }
 
             startParameters = new StartParameters
             {

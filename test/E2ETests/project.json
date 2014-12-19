@@ -1,13 +1,14 @@
 {
-    "compilationOptions": { "warningsAsErrors": "true" },
+    "compilationOptions": { "warningsAsErrors": true },
     "commands": {
         "test": "xunit.runner.kre"
     },
     "dependencies": {
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
-        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
         "Microsoft.AspNet.SignalR.Client": "2.1.1",
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Microsoft.Web.Administration": "7.0.0",
         "xunit.runner.kre": "1.0.0-*"
     },

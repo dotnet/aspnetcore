@@ -2,31 +2,30 @@
     "authors": [
         "Microsoft"
     ],
-    "description": "Music store application on K",
+    "description": "Music store application on ASP.NET 5",
     "version": "1.0.0-*",
     "compilationOptions": { "warningsAsErrors": true, "define": [ "DEMO", "TESTING" ] },
     "packExclude": "*.cmd",
     "webroot": "wwwroot",
     "dependencies": {
+        "EntityFramework.SqlServer": "7.0.0-*",
+        "EntityFramework.InMemory": "7.0.0-*", //For Mono
         "Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
-        "Microsoft.AspNet.Mvc": "6.0.0-*",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
         "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
+        "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
         "Microsoft.AspNet.Security.Facebook": "1.0.0-*",
         "Microsoft.AspNet.Security.Google": "1.0.0-*",
         "Microsoft.AspNet.Security.MicrosoftAccount": "1.0.0-*",
         "Microsoft.AspNet.Security.Twitter": "1.0.0-*",
-        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
-        "EntityFramework.SqlServer": "7.0.0-*",
-        /*For Mono*/
-        "EntityFramework.InMemory": "7.0.0-*",
-        "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
-        "Microsoft.Framework.OptionsModel": "1.0.0-*",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.SignalR.Server": "3.0.0-*",
-        "Microsoft.Framework.Cache.Memory": "1.0.0-*"
+        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+        "Microsoft.Framework.Cache.Memory": "1.0.0-*",
+        "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
+        "Microsoft.Framework.OptionsModel": "1.0.0-*"
     },
     "commands": {
         "WebListener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002",
