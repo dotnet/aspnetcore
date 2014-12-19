@@ -49,7 +49,11 @@ namespace E2ETests
         private ApplicationPool CreateAppPool(string appPoolName)
         {
             var applicationPool = _serverManager.ApplicationPools.Add(appPoolName);
-            applicationPool.ManagedRuntimeVersion = NATIVE_MODULE_MANAGED_RUNTIME_VERSION;
+            if (_startParameters.ServerType == ServerType.IISNativeModule)
+            {
+                // Not assigning a runtime version will choose v4.0 default.
+                applicationPool.ManagedRuntimeVersion = NATIVE_MODULE_MANAGED_RUNTIME_VERSION;
+            }
             applicationPool.Enable32BitAppOnWin64 = (_startParameters.KreArchitecture == KreArchitecture.x86);
             return applicationPool;
         }

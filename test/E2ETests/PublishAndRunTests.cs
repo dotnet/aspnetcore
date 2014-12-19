@@ -13,7 +13,7 @@ namespace E2ETests
     {
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.IISExpress, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/")]
         public void Publish_And_Run_Tests_On_X86(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
         {
             Publish_And_Run_Tests(serverType, kreFlavor, architecture, applicationBaseUrl);
@@ -41,7 +41,7 @@ namespace E2ETests
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", serverType, kreFlavor, architecture, applicationBaseUrl);
 
-            startParameters = new StartParameters
+            _startParameters = new StartParameters
             {
                 ServerType = serverType,
                 KreFlavor = kreFlavor,
@@ -52,21 +52,21 @@ namespace E2ETests
             var testStartTime = DateTime.Now;
             var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
-            Console.WriteLine("Pointing MusicStore DB to '{0}'", string.Format(Connection_string_Format, musicStoreDbName));
+            Console.WriteLine("Pointing MusicStore DB to '{0}'", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
 
             //Override the connection strings using environment based configuration
-            Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(Connection_string_Format, musicStoreDbName));
+            Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
 
-            ApplicationBaseUrl = applicationBaseUrl;
+            _applicationBaseUrl = applicationBaseUrl;
             Process hostProcess = null;
             bool testSuccessful = false;
 
             try
             {
-                hostProcess = DeploymentUtility.StartApplication(startParameters, musicStoreDbName);
+                hostProcess = DeploymentUtility.StartApplication(_startParameters, musicStoreDbName);
 
-                httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
-                httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(applicationBaseUrl) };
+                _httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
+                _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(applicationBaseUrl) };
 
                 HttpResponseMessage response = null;
                 string responseContent = null;
@@ -78,7 +78,7 @@ namespace E2ETests
                 {
                     try
                     {
-                        response = httpClient.GetAsync(string.Empty).Result;
+                        response = _httpClient.GetAsync(string.Empty).Result;
                         responseContent = response.Content.ReadAsStringAsync().Result;
                         initializationCompleteTime = DateTime.Now;
                         Console.WriteLine("[Time]: Approximate time taken for application initialization : '{0}' seconds", (initializationCompleteTime - testStartTime).TotalSeconds);
@@ -101,9 +101,9 @@ namespace E2ETests
                 //Static files are served?
                 VerifyStaticContentServed();
 
-                if (serverType != ServerType.Helios)
+                if (serverType != ServerType.IISExpress)
                 {
-                    if (Directory.GetFiles(startParameters.ApplicationPath, "*.cmd", SearchOption.TopDirectoryOnly).Length > 0)
+                    if (Directory.GetFiles(_startParameters.ApplicationPath, "*.cmd", SearchOption.TopDirectoryOnly).Length > 0)
                     {
                         throw new Exception("packExclude parameter values are not honored");
                     }
@@ -121,7 +121,7 @@ namespace E2ETests
                     Console.WriteLine("Some tests failed. Proceeding with cleanup.");
                 }
 
-                DeploymentUtility.CleanUpApplication(startParameters, hostProcess, musicStoreDbName);
+                DeploymentUtility.CleanUpApplication(_startParameters, hostProcess, musicStoreDbName);
             }
         }
     }

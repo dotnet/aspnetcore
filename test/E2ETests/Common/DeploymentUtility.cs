@@ -66,7 +66,8 @@ namespace E2ETests
 
             if (!string.IsNullOrWhiteSpace(startParameters.EnvironmentName))
             {
-                if (startParameters.ServerType != ServerType.IISNativeModule)
+                if (startParameters.ServerType != ServerType.IISNativeModule &&
+                    startParameters.ServerType != ServerType.IIS)
                 {
                     // To choose an environment based Startup. 
                     Environment.SetEnvironmentVariable("KRE_ENV", startParameters.EnvironmentName);
@@ -92,7 +93,8 @@ namespace E2ETests
                 //Reason to do pack here instead of in a common place is use the right KRE to do the packing. Previous line switches to use the right KRE.
                 if (startParameters.PackApplicationBeforeStart)
                 {
-                    if (startParameters.ServerType == ServerType.IISNativeModule)
+                    if (startParameters.ServerType == ServerType.IISNativeModule ||
+                        startParameters.ServerType == ServerType.IIS)
                     {
                         // Pack to IIS root\application folder.
                         KpmPack(startParameters, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
@@ -106,20 +108,23 @@ namespace E2ETests
                         overrideConfig = Path.GetFullPath(overrideConfig);
                         File.WriteAllText(overrideConfig, "{\"UseInMemoryStore\": \"true\"}");
 
-                        // Set runAllManagedModulesForAllRequests=true
-                        var webConfig = Path.Combine(startParameters.ApplicationPath, "web.config");
-                        var configuration = new XmlDocument();
-                        configuration.LoadXml(File.ReadAllText(webConfig));
+                        if (startParameters.ServerType == ServerType.IISNativeModule)
+                        {
+                            // Set runAllManagedModulesForAllRequests=true
+                            var webConfig = Path.Combine(startParameters.ApplicationPath, "web.config");
+                            var configuration = new XmlDocument();
+                            configuration.LoadXml(File.ReadAllText(webConfig));
 
-                        // https://github.com/aspnet/Helios/issues/77
-                        var rammfarAttribute = configuration.CreateAttribute("runAllManagedModulesForAllRequests");
-                        rammfarAttribute.Value = "true";
-                        var modulesNode = configuration.CreateElement("modules");
-                        modulesNode.Attributes.Append(rammfarAttribute);
-                        var systemWebServerNode = configuration.CreateElement("system.webServer");
-                        systemWebServerNode.AppendChild(modulesNode);
-                        configuration.SelectSingleNode("//configuration").AppendChild(systemWebServerNode);
-                        configuration.Save(webConfig);
+                            // https://github.com/aspnet/Helios/issues/77
+                            var rammfarAttribute = configuration.CreateAttribute("runAllManagedModulesForAllRequests");
+                            rammfarAttribute.Value = "true";
+                            var modulesNode = configuration.CreateElement("modules");
+                            modulesNode.Attributes.Append(rammfarAttribute);
+                            var systemWebServerNode = configuration.CreateElement("system.webServer");
+                            systemWebServerNode.AppendChild(modulesNode);
+                            configuration.SelectSingleNode("//configuration").AppendChild(systemWebServerNode);
+                            configuration.Save(webConfig);
+                        }
 
                         Thread.Sleep(1 * 1000);
                     }
@@ -129,12 +134,13 @@ namespace E2ETests
                     }
                 }
 
-                if (startParameters.ServerType == ServerType.IISNativeModule)
+                if (startParameters.ServerType == ServerType.IISNativeModule ||
+                    startParameters.ServerType == ServerType.IIS)
                 {
                     startParameters.IISApplication = new IISApplication(startParameters);
                     startParameters.IISApplication.SetupApplication();
                 }
-                else if (startParameters.ServerType == ServerType.Helios)
+                else if (startParameters.ServerType == ServerType.IISExpress)
                 {
                     hostProcess = StartHeliosHost(startParameters);
                 }
@@ -310,7 +316,9 @@ namespace E2ETests
             hostProcess.WaitForExit(60 * 1000);
 
             startParameters.ApplicationPath =
-                (startParameters.ServerType == ServerType.Helios || startParameters.ServerType == ServerType.IISNativeModule) ?
+                (startParameters.ServerType == ServerType.IISExpress ||
+                startParameters.ServerType == ServerType.IISNativeModule ||
+                startParameters.ServerType == ServerType.IIS) ?
                 Path.Combine(startParameters.PackedApplicationRootPath, "wwwroot") :
                 Path.Combine(startParameters.PackedApplicationRootPath, "approot", "src", "MusicStore");
 
@@ -363,7 +371,8 @@ namespace E2ETests
 
         public static void CleanUpApplication(StartParameters startParameters, Process hostProcess, string musicStoreDbName)
         {
-            if (startParameters.ServerType == ServerType.IISNativeModule)
+            if (startParameters.ServerType == ServerType.IISNativeModule ||
+                startParameters.ServerType == ServerType.IIS)
             {
                 // Stop & delete the application pool.
                 if (startParameters.IISApplication != null)

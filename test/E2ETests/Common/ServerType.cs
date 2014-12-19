@@ -2,7 +2,8 @@
 {
     public enum ServerType
     {
-        Helios,
+        IISExpress,
+        IIS,
         IISNativeModule,
         WebListener,
         Kestrel

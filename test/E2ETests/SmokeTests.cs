@@ -10,19 +10,19 @@ namespace E2ETests
 {
     public partial class SmokeTests
     {
-        private const string Connection_string_Format = "Server=(localdb)\\MSSQLLocalDB;Database={0};Trusted_Connection=True;MultipleActiveResultSets=true";
+        private const string CONNECTION_STRING_FORMAT = "Server=(localdb)\\MSSQLLocalDB;Database={0};Trusted_Connection=True;MultipleActiveResultSets=true";
 
-        private string ApplicationBaseUrl;
-        private HttpClient httpClient;
-        private HttpClientHandler httpClientHandler;
-        private StartParameters startParameters;
+        private string _applicationBaseUrl;
+        private HttpClient _httpClient;
+        private HttpClientHandler _httpClientHandler;
+        private StartParameters _startParameters;
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.Helios, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.IISExpress, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/")]
         [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5002/")]
         [InlineData(ServerType.Kestrel, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5004/")]
-        [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.IISExpress, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/")]
         [InlineData(ServerType.WebListener, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5002/")]
         [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5004/")]
         public void SmokeTestSuite_OnX86(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
@@ -34,7 +34,7 @@ namespace E2ETests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [SkipOn32BitOS]
         [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5002/")]
-        [InlineData(ServerType.Helios, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/")]
+        [InlineData(ServerType.IISExpress, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/")]
         [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5004/")]
         public void SmokeTestSuite_OnAMD64(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
         {
@@ -70,11 +70,20 @@ namespace E2ETests
             SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
         }
 
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Unix)]
+        [InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5005/")]
+        public void SmokeTestSuite_On_IIS_X86(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        {
+            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+        }
+
         private void SmokeTestSuite(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
         {
             Console.WriteLine("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}", serverType, kreFlavor, architecture, applicationBaseUrl);
 
-            startParameters = new StartParameters
+            _startParameters = new StartParameters
             {
                 ServerType = serverType,
                 KreFlavor = kreFlavor,
@@ -85,26 +94,26 @@ namespace E2ETests
             var testStartTime = DateTime.Now;
             var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
-            Console.WriteLine("Pointing MusicStore DB to '{0}'", string.Format(Connection_string_Format, musicStoreDbName));
+            Console.WriteLine("Pointing MusicStore DB to '{0}'", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
 
             //Override the connection strings using environment based configuration
-            Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(Connection_string_Format, musicStoreDbName));
+            Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
 
-            ApplicationBaseUrl = applicationBaseUrl;
+            _applicationBaseUrl = applicationBaseUrl;
             Process hostProcess = null;
             bool testSuccessful = false;
 
             try
             {
-                hostProcess = DeploymentUtility.StartApplication(startParameters, musicStoreDbName);
-                if (serverType == ServerType.IISNativeModule)
+                hostProcess = DeploymentUtility.StartApplication(_startParameters, musicStoreDbName);
+                if (serverType == ServerType.IISNativeModule || serverType == ServerType.IIS)
                 {
                     // Accomodate the vdir name.
-                    ApplicationBaseUrl += startParameters.IISApplication.VirtualDirectoryName + "/";
+                    _applicationBaseUrl += _startParameters.IISApplication.VirtualDirectoryName + "/";
                 }
 
-                httpClientHandler = new HttpClientHandler();
-                httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(ApplicationBaseUrl) };
+                _httpClientHandler = new HttpClientHandler();
+                _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
 
                 HttpResponseMessage response = null;
                 string responseContent = null;
@@ -115,7 +124,7 @@ namespace E2ETests
                 {
                     try
                     {
-                        response = httpClient.GetAsync(string.Empty).Result;
+                        response = _httpClient.GetAsync(string.Empty).Result;
                         responseContent = response.Content.ReadAsStringAsync().Result;
                         initializationCompleteTime = DateTime.Now;
                         Console.WriteLine("[Time]: Approximate time taken for application initialization : '{0}' seconds", (initializationCompleteTime - testStartTime).TotalSeconds);
@@ -224,7 +233,7 @@ namespace E2ETests
                     Console.WriteLine("Some tests failed. Proceeding with cleanup.");
                 }
 
-                DeploymentUtility.CleanUpApplication(startParameters, hostProcess, musicStoreDbName);
+                DeploymentUtility.CleanUpApplication(_startParameters, hostProcess, musicStoreDbName);
             }
         }
     }
