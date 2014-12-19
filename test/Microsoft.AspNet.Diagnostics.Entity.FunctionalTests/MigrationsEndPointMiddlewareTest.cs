@@ -65,7 +65,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             using (var database = SqlServerTestStore.CreateScratch())
             {
-                var options = new DbContextOptions().UseSqlServer(database.ConnectionString);
+                var options = new DbContextOptions();
+                options.UseSqlServer(database.ConnectionString);
                 var path = useCustomPath ? new PathString("/EndPoints/ApplyMyMigrations") : MigrationsEndPointOptions.DefaultPath;
 
                 TestServer server = TestServer.Create(app =>
@@ -183,7 +184,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             using (var database = SqlServerTestStore.CreateScratch())
             {
-                var options = new DbContextOptions().UseSqlServer(database.ConnectionString);
+                var options = new DbContextOptions();
+                options.UseSqlServer(database.ConnectionString);
 
                 TestServer server = TestServer.Create(app =>
                 {

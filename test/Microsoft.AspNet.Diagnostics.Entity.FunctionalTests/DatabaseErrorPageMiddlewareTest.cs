@@ -235,7 +235,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     {
                         services.AddEntityFramework().AddSqlServer();
                         services.AddScoped<BloggingContextWithMigrations>();
-                        services.AddInstance<DbContextOptions>(new DbContextOptions().UseSqlServer(database.ConnectionString));
+
+                        var contextOptions = new DbContextOptions();
+                        contextOptions.UseSqlServer(database.ConnectionString);
+                        services.AddInstance<DbContextOptions>(contextOptions);
                     });
 
                     var options = DatabaseErrorPageOptions.ShowAll;
@@ -268,9 +271,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                         services.AddEntityFramework()
                             .AddSqlServer();
 
-                        services.AddInstance<DbContextOptions>(
-                            new DbContextOptions()
-                                .UseSqlServer(database.ConnectionString));
+                        var options = new DbContextOptions();
+                        options.UseSqlServer(database.ConnectionString);
+
+                        services.AddInstance<DbContextOptions>(options);
                     });
 
                     app.UseDatabaseErrorPage();
@@ -386,9 +390,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                             .AddSqlServer();
 
                         services.AddScoped<TContext>();
-                        services.AddInstance<DbContextOptions>(
-                            new DbContextOptions()
-                                .UseSqlServer(database.ConnectionString));
+
+                        var options = new DbContextOptions();
+                        options.UseSqlServer(database.ConnectionString);
+
+                        services.AddInstance<DbContextOptions>(options);
                     });
 
                     app.UseDatabaseErrorPage();
