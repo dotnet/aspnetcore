@@ -55,17 +55,20 @@ namespace E2ETests
                 applicationPool.ManagedRuntimeVersion = NATIVE_MODULE_MANAGED_RUNTIME_VERSION;
             }
             applicationPool.Enable32BitAppOnWin64 = (_startParameters.KreArchitecture == KreArchitecture.x86);
+            Console.WriteLine("Created {0} application pool '{1}' with runtime version '{2}'.", _startParameters.KreArchitecture, applicationPool.Name, applicationPool.ManagedRuntimeVersion ?? "default");
             return applicationPool;
         }
 
         public void StopAndDeleteAppPool()
         {
+            Console.WriteLine("Stopping application pool '{0}' and deleting application.", _applicationPool.Name);
             _applicationPool.Stop();
             // Remove the application from website.
             _application = Website.Applications.Where(a => a.Path == _application.Path).FirstOrDefault();
             Website.Applications.Remove(_application);
             _serverManager.ApplicationPools.Remove(_serverManager.ApplicationPools[_applicationPool.Name]);
             _serverManager.CommitChanges();
+            Console.WriteLine("Successfully stopped application pool '{0}' and deleted application from IIS.", _applicationPool.Name);
         }
     }
 }

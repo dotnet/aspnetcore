@@ -100,16 +100,19 @@ namespace E2ETests
                         KpmPack(startParameters, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
 
                         // Drop a Microsoft.AspNet.Hosting.ini with KRE_ENV information.
+                        Console.WriteLine("Creating Microsoft.AspNet.Hosting.ini file with KRE_ENV.");
                         var iniFile = Path.Combine(startParameters.ApplicationPath, "Microsoft.AspNet.Hosting.ini");
                         File.WriteAllText(iniFile, string.Format("KRE_ENV={0}", startParameters.EnvironmentName));
 
                         // Can't use localdb with IIS. Setting an override to use InMemoryStore.
+                        Console.WriteLine("Creating configoverride.json file to override default config.");
                         var overrideConfig = Path.Combine(startParameters.ApplicationPath, "..", "approot", "src", "MusicStore", "configoverride.json");
                         overrideConfig = Path.GetFullPath(overrideConfig);
                         File.WriteAllText(overrideConfig, "{\"UseInMemoryStore\": \"true\"}");
 
                         if (startParameters.ServerType == ServerType.IISNativeModule)
                         {
+                            Console.WriteLine("Turning runAllManagedModulesForAllRequests=true in web.config.");
                             // Set runAllManagedModulesForAllRequests=true
                             var webConfig = Path.Combine(startParameters.ApplicationPath, "web.config");
                             var configuration = new XmlDocument();
@@ -125,6 +128,8 @@ namespace E2ETests
                             configuration.SelectSingleNode("//configuration").AppendChild(systemWebServerNode);
                             configuration.Save(webConfig);
                         }
+
+                        Console.WriteLine("Successfully finished IIS application directory setup.");
 
                         Thread.Sleep(1 * 1000);
                     }

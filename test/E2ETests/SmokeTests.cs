@@ -70,10 +70,10 @@ namespace E2ETests
             SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
         }
 
-        [ConditionalTheory]
+        // [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Unix)]
-        [InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5005/")]
+        [InlineData(ServerType.IIS, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5005/")]
         public void SmokeTestSuite_On_IIS_X86(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
         {
             SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
