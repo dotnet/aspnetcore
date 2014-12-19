@@ -120,7 +120,7 @@
                                         <h3>@frame.Function in <code title="@frame.File">@System.IO.Path.GetFileName(frame.File)</code></h3>
                                     }
 
-                                    @if (frame.Line != 0 && frame.ContextCode != null)
+                                    @if (frame.Line != 0 && frame.ContextCode.Any())
                                     {
                                         <div class="source">
                                             @if (frame.PreContextCode != null)
@@ -134,7 +134,11 @@
                                             } 
 
                                             <ol start="@frame.Line" class="highlight">
-                                                <li><span>@frame.ContextCode</span></li></ol>
+                                                @foreach (var line in frame.ContextCode)
+                                                {
+                                                    <li><span>@line</span></li>
+                                                }
+                                            </ol>
 
                                             @if (frame.PostContextCode != null)
                                             {

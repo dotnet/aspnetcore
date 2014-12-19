@@ -379,7 +379,7 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         /// <summary>
-        /// Name
+        /// Version
         /// </summary>
         internal static string RuntimeInfoPage_PackageVersionColumnName
         {
@@ -387,7 +387,7 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         /// <summary>
-        /// Name
+        /// Version
         /// </summary>
         internal static string FormatRuntimeInfoPage_PackageVersionColumnName()
         {
@@ -568,6 +568,22 @@ namespace Microsoft.AspNet.Diagnostics
         internal static string FormatWelcomeTitle()
         {
             return GetString("WelcomeTitle");
+        }
+
+        /// <summary>
+        /// An error occurred during the compilation of a resource required to process this request. Please review the following specific error details and modify your source code appropriately.
+        /// </summary>
+        internal static string ErrorPageHtml_CompilationException
+        {
+            get { return GetString("ErrorPageHtml_CompilationException"); }
+        }
+
+        /// <summary>
+        /// An error occurred during the compilation of a resource required to process this request. Please review the following specific error details and modify your source code appropriately.
+        /// </summary>
+        internal static string FormatErrorPageHtml_CompilationException()
+        {
+            return GetString("ErrorPageHtml_CompilationException");
         }
 
         private static string GetString(string name, params string[] formatterNames)

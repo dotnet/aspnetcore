@@ -76,7 +76,70 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         // Assumes the response headers have not been sent.  If they have, still attempt to write to the body.
-        private async Task DisplayException(HttpContext context, Exception ex)
+        private Task DisplayException(HttpContext context, Exception ex)
+        {
+            var compilationException = ex as ICompilationException;
+            if (compilationException != null)
+            {
+                return DisplayCompilationException(context, ex, compilationException);
+            }
+
+            return DisplayRuntimeException(context, ex);
+        }
+
+        private Task DisplayCompilationException(HttpContext context,
+                                                 Exception ex,
+                                                 ICompilationException compilationException)
+        {
+            var stackFrames = new List<StackFrame>();
+            var model = new CompilationErrorPageModel()
+            {
+                Options = _options,
+                ErrorDetails = new ErrorDetails
+                {
+                    Error = ex,
+                    StackFrames = stackFrames
+                }
+            };
+
+            // For view compilation, the most common case is to stop at the first failing file compiled as part of
+            // rendering a view. Consequently we'll limit ourselves to displaying errors from the first failure.
+            var failedCompilationFile = compilationException.CompilationFailures.FirstOrDefault();
+            if (failedCompilationFile != null)
+            {
+                var fileContent = failedCompilationFile.SourceFileContent
+                                                       .Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+
+                foreach (var item in failedCompilationFile.Messages)
+                {
+                    // Convert 0-based line indexes to 1-based index that the StackFrame expects
+                    var lineIndex = item.StartLine + 1;
+                    var frame = new StackFrame
+                    {
+                        File = failedCompilationFile.SourceFilePath,
+                        Line = lineIndex,
+                        Function = string.Empty
+                    };
+
+                    if (_options.ShowSourceCode)
+                    {
+                        ReadFrameContent(frame, fileContent, lineIndex, item.EndLine + 1);
+                        frame.ErrorDetails = item.Message;
+                    }
+
+                    stackFrames.Add(frame);
+                }
+            }
+
+            var errorPage = new CompilationErrorPage
+            {
+                Model = model
+            };
+
+            return errorPage.ExecuteAsync(context);
+        }
+
+        private Task DisplayRuntimeException(HttpContext context, Exception ex)
         {
             var request = context.Request;
 
@@ -107,7 +170,7 @@ namespace Microsoft.AspNet.Diagnostics
             }*/
 
             var errorPage = new ErrorPage(model);
-            await errorPage.ExecuteAsync(context);
+            return errorPage.ExecuteAsync(context);
         }
 
         private IEnumerable<ErrorDetails> GetErrorDetails(Exception ex, bool showSource)
@@ -160,12 +223,20 @@ namespace Microsoft.AspNet.Diagnostics
             if (showSource && File.Exists(file))
             {
                 IEnumerable<string> code = File.ReadLines(file);
-                frame.PreContextLine = Math.Max(lineNumber - _options.SourceCodeLineCount, 1);
-                frame.PreContextCode = code.Skip(frame.PreContextLine - 1).Take(lineNumber - frame.PreContextLine).ToArray();
-                frame.ContextCode = code.Skip(lineNumber - 1).FirstOrDefault();
-                frame.PostContextCode = code.Skip(lineNumber).Take(_options.SourceCodeLineCount).ToArray();
+                ReadFrameContent(frame, code, lineNumber, lineNumber);
             }
             return frame;
+        }
+
+        private void ReadFrameContent(StackFrame frame,
+                                      IEnumerable<string> code,
+                                      int startLineNumber,
+                                      int endLineNumber)
+        {
+            frame.PreContextLine = Math.Max(startLineNumber - _options.SourceCodeLineCount, 1);
+            frame.PreContextCode = code.Skip(frame.PreContextLine - 1).Take(startLineNumber - frame.PreContextLine).ToArray();
+            frame.ContextCode = code.Skip(startLineNumber - 1).Take(1 + Math.Max(0, endLineNumber - startLineNumber));
+            frame.PostContextCode = code.Skip(startLineNumber).Take(_options.SourceCodeLineCount).ToArray();
         }
 
         internal class Chunk
