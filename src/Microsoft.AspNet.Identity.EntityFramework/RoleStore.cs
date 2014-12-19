@@ -59,11 +59,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
         }
 
-        public virtual Task<TRole> GetRoleAggregate(Expression<Func<TRole, bool>> filter, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return Roles.FirstOrDefaultAsync(filter);
-        }
-
         public async virtual Task CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -163,7 +158,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
             var roleId = ConvertIdFromString(id);
-            return GetRoleAggregate(u => u.Id.Equals(roleId), cancellationToken);
+            return Roles.FirstOrDefaultAsync(u => u.Id.Equals(roleId), cancellationToken);
         }
 
         /// <summary>
@@ -176,7 +171,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return GetRoleAggregate(u => u.Name.ToUpper() == name.ToUpper(), cancellationToken);
+            return Roles.FirstOrDefaultAsync(u => u.Name.ToUpper() == name.ToUpper(), cancellationToken);
         }
 
         private void ThrowIfDisposed()

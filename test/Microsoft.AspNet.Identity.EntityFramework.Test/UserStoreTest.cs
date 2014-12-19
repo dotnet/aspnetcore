@@ -266,18 +266,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [Fact]
-        public async Task EnsureRoleClaimNavigationProperty()
-        {
-            var context = CreateContext();
-            var roleManager = CreateRoleManager(context);
-            var r = new IdentityRole("EnsureRoleClaimNavigationProperty");
-            IdentityResultAssert.IsSuccess(await roleManager.CreateAsync(r));
-            var c = new Claim("a", "b");
-            IdentityResultAssert.IsSuccess(await roleManager.AddClaimAsync(r, c));
-            Assert.NotNull(r.Claims.Single(cl => cl.ClaimValue == c.Value && cl.ClaimType == c.Type));
-        }
-
-        [Fact]
         public async Task AddUserToUnknownRoleFails()
         {
             var manager = CreateManager();
