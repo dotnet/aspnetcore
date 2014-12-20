@@ -46,9 +46,9 @@ namespace Microsoft.AspNet.StaticFiles
             return false;
         }
 
-        internal static bool TryParseHttpDate(string dateString, out DateTime parsedDate)
+        internal static bool TryParseHttpDate(string dateString, out DateTimeOffset parsedDate)
         {
-            return DateTime.TryParseExact(dateString, Constants.HttpDateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate);
+            return DateTimeOffset.TryParseExact(dateString, Constants.HttpDateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate);
         }
 
         internal static string ResolveRootPath(string webRoot, PathString path)

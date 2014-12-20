@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.StaticFiles
         private string _contentType;
         private IFileInfo _fileInfo;
         private long _length;
-        private DateTime _lastModified;
+        private DateTimeOffset _lastModified;
         private string _lastModifiedString;
         private string _etag;
         private string _etagQuoted;
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.StaticFiles
                 _lastModified = new DateTime(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Kind);
                 _lastModifiedString = _lastModified.ToString(Constants.HttpDateFormat, CultureInfo.InvariantCulture);
 
-                long etagHash = _lastModified.ToFileTimeUtc() ^ _length;
+                long etagHash = _lastModified.ToFileTime() ^ _length;
                 _etag = Convert.ToString(etagHash, 16);
                 _etagQuoted = '\"' + _etag + '\"';
             }
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.StaticFiles
         {
             // 14.25 If-Modified-Since
             string ifModifiedSinceString = _request.Headers.Get(Constants.IfModifiedSince);
-            DateTime ifModifiedSince;
+            DateTimeOffset ifModifiedSince;
             if (Helpers.TryParseHttpDate(ifModifiedSinceString, out ifModifiedSince))
             {
                 bool modified = ifModifiedSince < _lastModified;
@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.StaticFiles
 
             // 14.28 If-Unmodified-Since
             string ifUnmodifiedSinceString = _request.Headers.Get(Constants.IfUnmodifiedSince);
-            DateTime ifUnmodifiedSince;
+            DateTimeOffset ifUnmodifiedSince;
             if (Helpers.TryParseHttpDate(ifUnmodifiedSinceString, out ifUnmodifiedSince))
             {
                 bool unmodified = ifUnmodifiedSince >= _lastModified;
@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.StaticFiles
                 // resource, then the server SHOULD process the Range header field as
                 // requested.  If the validator does not match, the server MUST ignore
                 // the Range header field.
-                DateTime ifRangeLastModified;
+                DateTimeOffset ifRangeLastModified;
                 bool ignoreRangeHeader = false;
                 if (Helpers.TryParseHttpDate(ifRangeHeader, out ifRangeLastModified))
                 {
