@@ -33,7 +33,13 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             if (!results.Success)
             {
-                var messages = results.ParserErrors.Select(e => new CompilationMessage(e.Message));
+                var messages = results.ParserErrors
+                                      .Select(parseError =>
+                                        new CompilationMessage(parseError.Message,
+                                                               parseError.Location.CharacterIndex,
+                                                               parseError.Location.LineIndex,
+                                                               parseError.Location.CharacterIndex + parseError.Length,
+                                                               parseError.Location.LineIndex));
                 return CompilationResult.Failed(file.FileInfo, results.GeneratedCode, messages);
             }
 

@@ -105,7 +105,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         private CompilationFailedException CreateCompilationFailedException()
         {
             var fileContent = ReadContent(File);
-            return new CompilationFailedException(FilePath, fileContent, CompiledContent, Messages);
+            var compilationFailure = new CompilationFailure(FilePath, fileContent, CompiledContent, Messages);
+            return new CompilationFailedException(compilationFailure);
         }
 
         private static string ReadContent(IFileInfo file)

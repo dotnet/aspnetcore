@@ -73,7 +73,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Assert
             var ex = Assert.Throws<CompilationFailedException>(() => result.CompiledType);
-            Assert.Equal("some message", Assert.Single(ex.Messages).Message);
+            var failure = Assert.Single(ex.CompilationFailures);
+            var message = Assert.Single(failure.Messages);
+            Assert.Equal("some message", message.Message);
             host.Verify();
         }
 

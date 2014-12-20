@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Compilation for '{0}' failed:
+        /// Error compiling page at '{0}'.
         /// </summary>
         internal static string CompilationFailed
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Compilation for '{0}' failed:
+        /// Error compiling page at '{0}'.
         /// </summary>
         internal static string FormatCompilationFailed(object p0)
         {
