@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         protected virtual string GenerateFile([NotNull] RazorFileInfo fileInfo)
         {
             return string.Format(FileFormat,
-                                 fileInfo.LastModified.ToFileTimeUtc(),
+                                 fileInfo.LastModified.ToFileTime(),
                                  fileInfo.Length,
                                  fileInfo.RelativePath,
                                  fileInfo.FullTypeName,
