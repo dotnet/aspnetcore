@@ -2,32 +2,12 @@
     "version": "1.0.0-*",
     "description": "ASP.NET 5 static files middleware.",
     "dependencies": {
-        "Microsoft.AspNet.FileSystems.Interfaces": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.AspNet.Hosting": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.AspNet.HttpFeature": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.Logging": "1.0.0-*"
+        "Microsoft.AspNet.HttpFeature": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "aspnet50": { },
-        "aspnetcore50": {
-            "dependencies": {
-                "System.Collections": "4.0.10-beta-*",
-                "System.Diagnostics.Contracts": "4.0.0-beta-*",
-                "System.Diagnostics.Debug": "4.0.10-beta-*",
-                "System.Diagnostics.Tools": "4.0.0-beta-*",
-                "System.Globalization": "4.0.10-beta-*",
-                "System.IO": "4.0.10-beta-*",
-                "System.Linq": "4.0.0-beta-*",
-                "System.Reflection": "4.0.10-beta-*",
-                "System.Resources.ResourceManager": "4.0.0-beta-*",
-                "System.Runtime": "4.0.20-beta-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*",
-                "System.Runtime.InteropServices": "4.0.20-beta-*",
-                "System.Text.Encoding": "4.0.10-beta-*",
-                "System.Threading.Tasks": "4.0.10-beta-*"
-            }
-        }
+        "aspnetcore50": { }
     }
 }

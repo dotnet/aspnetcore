@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,10 +19,10 @@ namespace Microsoft.AspNet.StaticFiles
             long? bytesRemaining = length;
             byte[] buffer = new byte[DefaultBufferSize];
 
-            Contract.Assert(source != null);
-            Contract.Assert(destination != null);
-            Contract.Assert(!bytesRemaining.HasValue || bytesRemaining.Value >= 0);
-            Contract.Assert(buffer != null);
+            Debug.Assert(source != null);
+            Debug.Assert(destination != null);
+            Debug.Assert(!bytesRemaining.HasValue || bytesRemaining.Value >= 0);
+            Debug.Assert(buffer != null);
 
             while (true)
             {
