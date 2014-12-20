@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public bool IsDirectory { get; } = false;
 
-        public DateTime LastModified { get; set; }
+        public DateTimeOffset LastModified { get; set; }
 
         public long Length { get; set; }
 
