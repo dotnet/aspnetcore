@@ -129,9 +129,9 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 _length = _fileInfo.Length;
 
-                DateTime last = _fileInfo.LastModified;
+                DateTimeOffset last = _fileInfo.LastModified;
                 // Truncate to the second.
-                _lastModified = new DateTime(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Kind);
+                _lastModified = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Offset);
                 _lastModifiedString = _lastModified.ToString(Constants.HttpDateFormat, CultureInfo.InvariantCulture);
 
                 long etagHash = _lastModified.ToFileTime() ^ _length;
