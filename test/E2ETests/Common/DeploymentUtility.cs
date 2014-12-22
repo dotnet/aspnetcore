@@ -174,7 +174,7 @@ namespace E2ETests
             if (startParameters.PackApplicationBeforeStart)
             {
                 // We use full path to KRE to pack.
-                startParameters.Kre = kreBin;
+                startParameters.Kre = new DirectoryInfo(kreBin).Parent.FullName;
                 KpmPack(startParameters);
             }
 
