@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -134,30 +135,41 @@ namespace Microsoft.AspNet.Routing.Template
 
             while (true)
             {
-                if (context.Current == Separator)
+                if (context.Current == OpenBrace)
                 {
-                    // This is a dangling open-brace, which is not allowed
-                    context.Error = Resources.TemplateRoute_MismatchedParameter;
-                    return false;
-                }
-                else if (context.Current == OpenBrace)
-                {
-                    // If we see a '{' while parsing a parameter name it's invalid. We'll just accept it for now
-                    // and let the validation code for the name find it.
+                    // This is an open brace inside of a parameter, it has to be escaped
+                    if (context.Next())
+                    {
+                        if (context.Current != OpenBrace)
+                        {
+                            // If we see something like "{p1:regex(^\d{3", we will come here.
+                            context.Error = Resources.TemplateRoute_UnescapedBrace;
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // This is a dangling open-brace, which is not allowed
+                        // Example: "{p1:regex(^\d{"
+                        context.Error = Resources.TemplateRoute_MismatchedParameter;
+                        return false;
+                    }
                 }
                 else if (context.Current == CloseBrace)
                 {
+                    // When we encounter Closed brace here, it either means end of the parameter or it is a closed 
+                    // brace in the parameter, in that case it needs to be escaped.
+                    // Example: {p1:regex(([}}])\w+}. First pair is escaped one and last marks end of the parameter
                     if (!context.Next())
                     {
-                        // This is the end of the string - and we have a valid parameter
+                        // This is the end of the string -and we have a valid parameter
                         context.Back();
                         break;
                     }
 
                     if (context.Current == CloseBrace)
                     {
-                        // This is an 'escaped' brace in a parameter name, which is not allowed.
-                        // We'll just accept it for now and let the validation code for the name find it.
+                        // This is an 'escaped' brace in a parameter name
                     }
                     else
                     {
@@ -176,10 +188,11 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             var rawParameter = context.Capture();
+            var decoded = rawParameter.Replace("}}", "}").Replace("{{", "{");
 
             // At this point, we need to parse the raw name for inline constraint,
             // default values and optional parameters.
-            var templatePart = InlineRouteParameterParser.ParseRouteParameter(rawParameter);
+            var templatePart = InlineRouteParameterParser.ParseRouteParameter(decoded);
 
             if (templatePart.IsCatchAll && templatePart.IsOptional)
             {
@@ -272,7 +285,7 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
-            var decoded = encoded.Replace("}}", "}").Replace("{{", "}");
+            var decoded = encoded.Replace("}}", "}").Replace("{{", "{");
             if (IsValidLiteral(context, decoded))
             {
                 segment.Parts.Add(TemplatePart.CreateLiteral(decoded));

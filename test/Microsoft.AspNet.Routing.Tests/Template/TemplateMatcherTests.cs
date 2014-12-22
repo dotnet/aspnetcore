@@ -102,7 +102,26 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Theory]
-        [InlineData("moo/{p1}.{p2?}", "moo/foo.bar", "foo", "bar")]        
+        [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}", "123-456-7890")] // ssn
+        [InlineData(@"{p1:regex(^\w+\@\w+\.\w+)}", "asd@assds.com")] // email
+        [InlineData(@"{p1:regex(([}}])\w+)}", "}sda")] // Not balanced }
+        [InlineData(@"{p1:regex(([{{)])\w+)}", "})sda")] // Not balanced {
+        public void MatchRoute_RegularExpression_Valid(
+            string template,
+            string path)
+        {
+            // Arrange
+            var matcher = CreateMatcher(template);
+
+            // Act
+            var rd = matcher.Match(path);
+
+            // Assert
+            Assert.NotNull(rd);
+        }
+
+        [Theory]
+        [InlineData("moo/{p1}.{p2?}", "moo/foo.bar", "foo", "bar")]
         [InlineData("moo/{p1?}", "moo/foo", "foo", null)]
         [InlineData("moo/{p1?}", "moo", null, null)]
         [InlineData("moo/{p1}.{p2?}", "moo/foo", "foo", null)]
@@ -116,9 +135,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [InlineData("moo/{p1}.{p2?}", "moo/....", "..", ".")]
         [InlineData("moo/{p1}.{p2?}", "moo/.bar", ".bar", null)]
         public void MatchRoute_OptionalParameter_FollowedByPeriod_Valid(
-            string template, 
-            string path, 
-            string p1, 
+            string template,
+            string path,
+            string p1,
             string p2)
         {
             // Arrange
@@ -143,13 +162,14 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo.moo", "foo", "moo", null)]
         [InlineData("moo/{p1}.{p2}.{p3}.{p4?}", "moo/foo.moo.bar", "foo", "moo", "bar")]
         [InlineData("{p1}.{p2?}/{p3}", "foo.moo/bar", "foo", "moo", "bar")]
-        [InlineData("{p1}.{p2?}/{p3}", "foo/bar", "foo", null, "bar")]        
+        [InlineData("{p1}.{p2?}/{p3}", "foo/bar", "foo", null, "bar")]
         [InlineData("{p1}.{p2?}/{p3}", ".foo/bar", ".foo", null, "bar")]
+        [InlineData("{p1}/{p2}/{p3?}", "foo/bar/baz", "foo", "bar", "baz")]
         public void MatchRoute_OptionalParameter_FollowedByPeriod_3Parameters_Valid(
-            string template, 
-            string path, 
-            string p1, 
-            string p2, 
+            string template,
+            string path,
+            string p1,
+            string p2,
             string p3)
         {
             // Arrange
@@ -159,9 +179,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var rd = matcher.Match(path);
 
             // Assert
-            
             Assert.Equal(p1, rd["p1"]);
-            
+
             if (p2 != null)
             {
                 Assert.Equal(p2, rd["p2"]);
@@ -173,9 +192,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             }
         }
 
-        [Theory]        
+        [Theory]
         [InlineData("moo/{p1}.{p2?}", "moo/foo.")]
-        [InlineData("moo/{p1}.{p2?}", "moo/.")]        
+        [InlineData("moo/{p1}.{p2?}", "moo/.")]
         [InlineData("moo/{p1}.{p2}", "foo.")]
         [InlineData("moo/{p1}.{p2}", "foo")]
         [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo.moo.")]
@@ -183,7 +202,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [InlineData("moo/foo.{p2}.{p3?}", "moo/kungfoo.moo.bar")]
         [InlineData("moo/foo.{p2}.{p3?}", "moo/kungfoo.moo")]
         [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo")]
-        [InlineData("{p1}.{p2?}/{p3}", "foo./bar")]        
+        [InlineData("{p1}.{p2?}/{p3}", "foo./bar")]
         [InlineData("moo/.{p2?}", "moo/.")]
         [InlineData("{p1}.{p2}/{p3}", ".foo/bar")]
         public void MatchRoute_OptionalParameter_FollowedByPeriod_Invalid(string template, string path)
@@ -280,7 +299,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Assert
             Assert.Null(rd);
         }
-        
+
         [Fact]
         public void NoMatchLongerUrl()
         {

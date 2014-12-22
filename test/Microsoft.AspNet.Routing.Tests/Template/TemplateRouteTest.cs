@@ -12,6 +12,7 @@ using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Logging;
+using Microsoft.AspNet.WebUtilities;
 using Moq;
 using Xunit;
 
@@ -35,6 +36,28 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             return Tuple.Create(sink, context);
+        }
+
+        [Fact]
+        public void CreateTemplate_InlineConstraint_Regex_Malformed()
+        {
+            // Arrange
+            var template = @"{controller}/{action}/ {p1:regex(abc} ";
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            var expected = "The constraint entry 'p1' - 'regex(abc' on the route " +
+                "'{controller}/{action}/ {p1:regex(abc} ' could not be resolved by the constraint resolver of type " +
+                "'IInlineConstraintResolverProxy'.";
+
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => new TemplateRoute(
+                    mockTarget.Object,
+                    template,
+                    defaults: null,
+                    constraints: null,
+                    dataTokens: null,
+                    inlineConstraintResolver: _inlineConstraintResolver));
+
+            Assert.Equal(expected, exception.Message);
         }
 
         [Fact]
@@ -497,13 +520,55 @@ namespace Microsoft.AspNet.Routing.Template
             // Act
             await route.RouteAsync(context);
 
-            // Assert            
+            // Assert
             Assert.True(context.IsHandled);
             Assert.True(routeValues.ContainsKey("id"));
             Assert.Equal("5", routeValues["id"]);
 
             Assert.True(context.RouteData.Values.ContainsKey("id"));
             Assert.Equal("5", context.RouteData.Values["id"]);
+        }
+
+        [Fact]
+        public async Task RouteAsync_InlineConstraint_Regex()
+        {
+            // Arrange
+            var template = @"{controller}/{action}/{ssn:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}";
+
+            var context = CreateRouteContext("/Home/Index/123-456-7890");
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: null,
+                dataTokens: null,
+                inlineConstraintResolver: _inlineConstraintResolver);
+
+            Assert.NotEmpty(route.Constraints);
+            Assert.IsType<RegexInlineRouteConstraint>(route.Constraints["ssn"]);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert            
+            Assert.True(context.IsHandled);
+            Assert.True(routeValues.ContainsKey("ssn"));
+            Assert.Equal("123-456-7890", routeValues["ssn"]);
+
+            Assert.True(context.RouteData.Values.ContainsKey("ssn"));
+            Assert.Equal("123-456-7890", context.RouteData.Values["ssn"]);
         }
 
         [Fact]
@@ -1782,7 +1847,10 @@ namespace Microsoft.AspNet.Routing.Template
             resolverMock.Setup(o => o.ResolveConstraint("int")).Returns(new IntRouteConstraint());
             resolverMock.Setup(o => o.ResolveConstraint("range(1,20)")).Returns(new RangeRouteConstraint(1, 20));
             resolverMock.Setup(o => o.ResolveConstraint("alpha")).Returns(new AlphaRouteConstraint());
-
+            resolverMock.Setup(o => o.ResolveConstraint(@"regex(^\d{3}-\d{3}-\d{4}$)")).Returns(
+                new RegexInlineRouteConstraint(@"^\d{3}-\d{3}-\d{4}$"));
+            resolverMock.Setup(o => o.ResolveConstraint(@"regex(^\d{1,2}\/\d{1,2}\/\d{4}$)")).Returns(
+                new RegexInlineRouteConstraint(@"^\d{1,2}\/\d{1,2}\/\d{4}$"));
             return resolverMock.Object;
         }
 

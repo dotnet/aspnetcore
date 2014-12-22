@@ -186,4 +186,7 @@
   <data name="RouteConstraintBuilder_CouldNotResolveConstraint" xml:space="preserve">
     <value>The constraint entry '{0}' - '{1}' on the route '{2}' could not be resolved by the constraint resolver of type '{3}'.</value>
   </data>
+  <data name="TemplateRoute_UnescapedBrace" xml:space="preserve">
+    <value>In a route parameter, '{' and '}' must be escaped with '{{' and '}}'</value>
+  </data>
 </root>

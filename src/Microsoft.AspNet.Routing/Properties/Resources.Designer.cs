@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// A path segment that contains more than one section, such as a literal section or a parameter, cannot contain an optional parameter.
+        /// In a path segment that contains more than one section, such as a literal section or a parameter, there can only be one optional parameter. The optional parameter must be the last parameter in the segment and must be preceded by one single period (.).
         /// </summary>
         internal static string TemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator
         {
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// A path segment that contains more than one section, such as a literal section or a parameter, cannot contain an optional parameter.
+        /// In a path segment that contains more than one section, such as a literal section or a parameter, there can only be one optional parameter. The optional parameter must be the last parameter in the segment and must be preceded by one single period (.).
         /// </summary>
         internal static string FormatTemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator()
         {
@@ -347,7 +347,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The constraint entry '{0}' - '{1}' on route '{2}' must have a string value or be of a type which implements '{3}'.
+        /// The constraint entry '{0}' - '{1}' on the route '{2}' must have a string value or be of a type which implements '{3}'.
         /// </summary>
         internal static string RouteConstraintBuilder_ValidationMustBeStringOrCustomConstraint
         {
@@ -355,7 +355,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The constraint entry '{0}' - '{1}' on route '{2}' must have a string value or be of a type which implements '{3}'.
+        /// The constraint entry '{0}' - '{1}' on the route '{2}' must have a string value or be of a type which implements '{3}'.
         /// </summary>
         internal static string FormatRouteConstraintBuilder_ValidationMustBeStringOrCustomConstraint(object p0, object p1, object p2, object p3)
         {
@@ -363,7 +363,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The constraint entry '{0}' - '{1}' on route '{2}' could not be resolved by the constraint resolver of type '{3}'.
+        /// The constraint entry '{0}' - '{1}' on the route '{2}' could not be resolved by the constraint resolver of type '{3}'.
         /// </summary>
         internal static string RouteConstraintBuilder_CouldNotResolveConstraint
         {
@@ -371,11 +371,27 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The constraint entry '{0}' - '{1}' on route '{2}' could not be resolved by the constraint resolver of type '{3}'.
+        /// The constraint entry '{0}' - '{1}' on the route '{2}' could not be resolved by the constraint resolver of type '{3}'.
         /// </summary>
         internal static string FormatRouteConstraintBuilder_CouldNotResolveConstraint(object p0, object p1, object p2, object p3)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("RouteConstraintBuilder_CouldNotResolveConstraint"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// In a route parameter, '{' and '}' must be escaped with '{{' and '}}'
+        /// </summary>
+        internal static string TemplateRoute_UnescapedBrace
+        {
+            get { return GetString("TemplateRoute_UnescapedBrace"); }
+        }
+
+        /// <summary>
+        /// In a route parameter, '{' and '}' must be escaped with '{{' and '}}'
+        /// </summary>
+        internal static string FormatTemplateRoute_UnescapedBrace()
+        {
+            return GetString("TemplateRoute_UnescapedBrace");
         }
 
         private static string GetString(string name, params string[] formatterNames)

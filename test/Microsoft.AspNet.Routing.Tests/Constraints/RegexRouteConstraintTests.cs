@@ -23,6 +23,9 @@ namespace Microsoft.AspNet.Routing.Tests
         [InlineData("Abcd", "abc", true)]   // Extra char
         [InlineData("^Abcd", "abc", true)]  // Extra special char
         [InlineData("Abc", " abc", false)]  // Missing char
+        [InlineData("123-456-2334", @"^\d{3}-\d{3}-\d{4}$", true)] // ssn
+        [InlineData(@"12/4/2013", @"^\d{1,2}\/\d{1,2}\/\d{4}$", true)] // date
+        [InlineData(@"abc@def.com", @"^\w+[\w\.]*\@\w+((-\w+)|(\w*))\.[a-z]{2,3}$", true)] // email
         public void RegexConstraintBuildRegexVerbatimFromInput(string routeValue,
                                                                string constraintValue,
                                                                bool shouldMatch)

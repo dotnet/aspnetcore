@@ -34,6 +34,25 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("12", defaults["id"]);
         }
 
+        [Theory]
+        [InlineData(@"{controller}/{action}/{p1:regex(([}}])\w+)=}}asd}", "}asd")]
+        [InlineData(@"{p1:regex(^\d{{1,2}}\/\d{{1,2}}\/\d{{4}}$)=12/12/1234}", @"12/12/1234")]
+        public void InlineDefaultValueSpecified_WithSpecialCharacters(string template, string value)
+        {
+            // Arrange & Act
+            var routeBuilder = CreateRouteBuilder();
+
+            // Act
+            routeBuilder.MapRoute("mockName",
+                template,
+                defaults: null,
+                constraints: null);
+
+            // Assert
+            var defaults = ((Template.TemplateRoute)routeBuilder.Routes[0]).Defaults;
+            Assert.Equal(value, defaults["p1"]);
+        }
+
         [Fact]
         public void ExplicitDefaultValueSpecified_WithInlineDefaultValue_Throws()
         {

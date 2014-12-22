@@ -256,6 +256,36 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\?)");
         }
 
+        [Fact]
+        public void ParseRouteParameter_ConstraintWithBraces_PatternIsParsedCorrectly()
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter(@"p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)"); // ssn
+
+            // Assert
+            Assert.Equal("p1", templatePart.Name);
+            Assert.Null(templatePart.DefaultValue);
+            Assert.False(templatePart.IsOptional);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"regex(^\d{{3}}-\d{{3}}-\d{{4}}$)");
+        }
+
+        [Fact]
+        public void ParseRouteParameter_ConstraintWithBraces_WithDefaultValue()
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter(@"p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)=123-456-7890"); // ssn
+
+            // Assert
+            Assert.Equal("p1", templatePart.Name);
+            Assert.Equal(templatePart.DefaultValue, "123-456-7890");
+            Assert.False(templatePart.IsOptional);
+
+            Assert.Single(templatePart.InlineConstraints);
+            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"regex(^\d{{3}}-\d{{3}}-\d{{4}}$)");
+        }
+
         [Theory]
         [InlineData("", "")]
         [InlineData("?", "")]
