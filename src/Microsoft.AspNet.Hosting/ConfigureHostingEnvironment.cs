@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Hosting
     internal class ConfigureHostingEnvironment : IConfigureHostingEnvironment
     {
         private IConfiguration _config;
-        private const string EnvironmentKey = "KRE_ENV";
+        private const string EnvironmentKey = "ASPNET_ENV";
 
         public ConfigureHostingEnvironment(IConfiguration config)
         {
