@@ -291,6 +291,7 @@
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Colors.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\RestoreCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\PackageFeed.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\NuGetv2Feed.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Shims\ConsoleColor.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Building\BuildManager.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\AddCommand.cs;
