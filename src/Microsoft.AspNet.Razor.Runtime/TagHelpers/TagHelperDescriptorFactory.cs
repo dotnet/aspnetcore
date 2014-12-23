@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -15,6 +16,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     public static class TagHelperDescriptorFactory
     {
         private const string TagHelperNameEnding = "TagHelper";
+        private const string HtmlCaseRegexReplacement = "-$1$2";
+
+        // This matches the following AFTER the start of the input string (MATCH).
+        // Any letter/number followed by an uppercase letter then lowercase letter: 1(Aa), a(Aa), A(Aa)
+        // Any lowercase letter followed by an uppercase letter: a(A)
+        // Each match is then prefixed by a "-" via the ToHtmlCase method.
+        private static readonly Regex HtmlCaseRegex =
+            new Regex("(?<!^)((?<=[a-zA-Z0-9])[A-Z][a-z])|((?<=[a-z])[A-Z])", RegexOptions.None);
 
         // TODO: Investigate if we should cache TagHelperDescriptors for types:
         // https://github.com/aspnet/Razor/issues/165
@@ -55,7 +64,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     name = name.Substring(0, name.Length - TagHelperNameEnding.Length);
                 }
 
-                return new[] { name };
+                return new[] { ToHtmlCase(name) };
             }
 
             // Remove duplicate tag names.
@@ -75,7 +84,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var attributeNameAttribute = property.GetCustomAttribute<HtmlAttributeNameAttribute>(inherit: false);
             var attributeName = attributeNameAttribute != null ?
                                 attributeNameAttribute.Name :
-                                property.Name;
+                                ToHtmlCase(property.Name);
 
             return new TagHelperAttributeDescriptor(attributeName, property.Name, property.PropertyType.FullName);
         }
@@ -96,6 +105,23 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                    property.GetMethod.IsPublic &&
                    property.SetMethod != null &&
                    property.SetMethod.IsPublic;
+        }
+
+        /// <summary>
+        /// Converts from pascal/camel case to lower kebab-case.
+        /// </summary>
+        /// <example>
+        /// SomeThing => some-thing
+        /// capsONInside => caps-on-inside
+        /// CAPSOnOUTSIDE => caps-on-outside
+        /// ALLCAPS => allcaps
+        /// One1Two2Three3 => one1-two2-three3
+        /// ONE1TWO2THREE3 => one1two2three3
+        /// First_Second_ThirdHi => first_second_third-hi
+        /// </example>
+        private static string ToHtmlCase(string name)
+        {
+            return HtmlCaseRegex.Replace(name, HtmlCaseRegexReplacement).ToLowerInvariant();
         }
     }
 }
