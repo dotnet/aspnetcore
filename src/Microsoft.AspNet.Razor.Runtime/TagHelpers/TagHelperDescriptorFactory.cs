@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private static IEnumerable<string> GetTagNames(Type tagHelperType)
         {
             var typeInfo = tagHelperType.GetTypeInfo();
-            var attributes = typeInfo.GetCustomAttributes<TagNameAttribute>(inherit: false);
+            var attributes = typeInfo.GetCustomAttributes<HtmlElementNameAttribute>(inherit: false);
 
             // If there isn't an attribute specifying the tag name derive it from the name
             if (!attributes.Any())

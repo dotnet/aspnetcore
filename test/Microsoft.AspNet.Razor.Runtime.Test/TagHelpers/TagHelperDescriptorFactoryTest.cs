@@ -372,7 +372,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
         }
 
-        [TagName("p", "div")]
+        [HtmlElementName("p", "div")]
         private class MultiTagTagHelper
         {
             public string ValidAttribute { get; set; }
@@ -382,18 +382,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
         }
 
-        [TagName("p", "p", "div", "div")]
+        [HtmlElementName("p", "p", "div", "div")]
         private class DuplicateTagNameTagHelper
         {
         }
 
-        [TagName("data-condition")]
+        [HtmlElementName("data-condition")]
         private class OverrideNameTagHelper
         {
         }
 
-        [TagName("span")]
-        [TagName("div", "p")]
+        [HtmlElementName("span")]
+        [HtmlElementName("div", "p")]
         private class MultipleAttributeTagHelper
         {
         }
