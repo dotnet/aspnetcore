@@ -84,7 +84,7 @@ namespace MusicStore
             services.AddSingleton<IMemoryCache, MemoryCache>();
         }
 
-        //This method is invoked when KRE_ENV is 'Development' or is not defined
+        //This method is invoked when ASPNET_ENV is 'Development' or is not defined
         //The allowed values are Development,Staging and Production
         public void ConfigureDevelopment(IApplicationBuilder app)
         {
@@ -100,7 +100,7 @@ namespace MusicStore
             Configure(app);
         }
 
-        //This method is invoked when KRE_ENV is 'Staging'
+        //This method is invoked when ASPNET_ENV is 'Staging'
         //The allowed values are Development,Staging and Production
         public void ConfigureStaging(IApplicationBuilder app)
         {
@@ -108,7 +108,7 @@ namespace MusicStore
             Configure(app);
         }
 
-        //This method is invoked when KRE_ENV is 'Production'
+        //This method is invoked when ASPNET_ENV is 'Production'
         //The allowed values are Development,Staging and Production
         public void ConfigureProduction(IApplicationBuilder app)
         {

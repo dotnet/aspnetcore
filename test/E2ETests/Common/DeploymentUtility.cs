@@ -70,7 +70,7 @@ namespace E2ETests
                     startParameters.ServerType != ServerType.IIS)
                 {
                     // To choose an environment based Startup. 
-                    Environment.SetEnvironmentVariable("KRE_ENV", startParameters.EnvironmentName);
+                    Environment.SetEnvironmentVariable("ASPNET_ENV", startParameters.EnvironmentName);
                 }
                 else
                 {
@@ -99,10 +99,10 @@ namespace E2ETests
                         // Pack to IIS root\application folder.
                         KpmPack(startParameters, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
 
-                        // Drop a Microsoft.AspNet.Hosting.ini with KRE_ENV information.
-                        Console.WriteLine("Creating Microsoft.AspNet.Hosting.ini file with KRE_ENV.");
+                        // Drop a Microsoft.AspNet.Hosting.ini with ASPNET_ENV information.
+                        Console.WriteLine("Creating Microsoft.AspNet.Hosting.ini file with ASPNET_ENV.");
                         var iniFile = Path.Combine(startParameters.ApplicationPath, "Microsoft.AspNet.Hosting.ini");
-                        File.WriteAllText(iniFile, string.Format("KRE_ENV={0}", startParameters.EnvironmentName));
+                        File.WriteAllText(iniFile, string.Format("ASPNET_ENV={0}", startParameters.EnvironmentName));
 
                         // Can't use localdb with IIS. Setting an override to use InMemoryStore.
                         Console.WriteLine("Creating configoverride.json file to override default config.");
@@ -157,7 +157,7 @@ namespace E2ETests
 
             //Restore the KRE_DEFAULT_LIB after starting the host process
             Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", backupKreDefaultLibPath);
-            Environment.SetEnvironmentVariable("KRE_ENV", string.Empty);
+            Environment.SetEnvironmentVariable("ASPNET_ENV", string.Empty);
             return hostProcess;
         }
 
