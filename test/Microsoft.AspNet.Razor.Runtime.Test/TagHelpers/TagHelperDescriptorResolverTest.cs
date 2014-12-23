@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             get
             {
-                return new TagHelperDescriptor("Valid_Plain",
+                return new TagHelperDescriptor("valid_plain",
                                                Valid_PlainTagHelperType.FullName,
                                                AssemblyName,
                                                ContentBehavior.None);
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             get
             {
-                return new TagHelperDescriptor("Valid_Inherited",
+                return new TagHelperDescriptor("valid_inherited",
                                                Valid_InheritedTagHelperType.FullName,
                                                AssemblyName,
                                                ContentBehavior.None);
