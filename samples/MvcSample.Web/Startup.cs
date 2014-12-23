@@ -25,10 +25,10 @@ namespace MvcSample.Web
         {
             app.UseFileServer();
 #if ASPNET50
-            // We use Path.Combine here so that it works on platforms other than Windows as well.
+            // Set up configuration sources.
             var configuration = new Configuration()
-                                        .AddJsonFile(Path.Combine("App_Data", "config.json"))
-                                        .AddEnvironmentVariables();
+                    .AddJsonFile("config.json")
+                    .AddEnvironmentVariables();
             string diSystem;
 
             if (configuration.TryGet("DependencyInjection", out diSystem) &&
