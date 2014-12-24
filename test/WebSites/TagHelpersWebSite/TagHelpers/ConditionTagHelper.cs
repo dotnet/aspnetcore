@@ -6,7 +6,7 @@ using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TagName("div", "style", "p")]
+    [HtmlElementName("div", "style", "p")]
     [ContentBehavior(ContentBehavior.Modify)]
     public class ConditionTagHelper : TagHelper
     {

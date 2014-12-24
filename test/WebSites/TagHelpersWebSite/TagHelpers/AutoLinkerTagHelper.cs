@@ -7,7 +7,7 @@ using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TagName("p")]
+    [HtmlElementName("p")]
     [ContentBehavior(ContentBehavior.Modify)]
     public class AutoLinkerTagHelper : TagHelper
     {

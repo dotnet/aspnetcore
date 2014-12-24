@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <see cref="ITagHelper"/> implementation targeting &lt;div&gt; elements with an <c>asp-validation-summary</c>
     /// attribute.
     /// </summary>
-    [TagName("div")]
+    [HtmlElementName("div")]
     [ContentBehavior(ContentBehavior.Append)]
     public class ValidationSummaryTagHelper : TagHelper
     {

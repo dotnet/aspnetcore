@@ -8,7 +8,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TagName("*")]
+    [HtmlElementName("*")]
     public class PrettyTagHelper : TagHelper
     {
         private static readonly Dictionary<string, string> PrettyTagStyles =

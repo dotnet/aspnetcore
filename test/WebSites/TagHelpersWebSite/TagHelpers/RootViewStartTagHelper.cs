@@ -6,7 +6,7 @@ using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TagName("root")]
+    [HtmlElementName("root")]
     [ContentBehavior(ContentBehavior.Replace)]
     public class RootViewStartTagHelper : TagHelper
     {

@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <see cref="ITagHelper"/> implementation targeting &lt;span&gt; elements with an <c>asp-validation-for</c>
     /// attribute.
     /// </summary>
-    [TagName("span")]
+    [HtmlElementName("span")]
     [ContentBehavior(ContentBehavior.Modify)]
     public class ValidationMessageTagHelper : TagHelper
     {
