@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.StaticFiles
             _contentType = null;
             _fileInfo = null;
             _length = 0;
-            _lastModified = new DateTime();
+            _lastModified = new DateTimeOffset();
             _etag = null;
             _etagQuoted = null;
             _lastModifiedString = null;
