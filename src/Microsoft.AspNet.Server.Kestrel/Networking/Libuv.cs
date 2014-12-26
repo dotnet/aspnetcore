@@ -31,6 +31,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             PlatformApis.Apply(this);
 
             var module = LoadLibrary(dllToLoad);
+
+            if (module == IntPtr.Zero)
+            {
+                var message = "Unable to load libuv.";
+                if (!IsWindows && !IsDarwin)
+                {
+                    // *nix box, so libuv needs to be installed
+                    // TODO: fwlink?
+                    message += " Make sure libuv is installed and available as libuv.so.1";
+                }
+                
+                throw new InvalidOperationException(message);
+            }
+
             foreach (var field in GetType().GetTypeInfo().DeclaredFields)
             {
                 var procAddress = GetProcAddress(module, field.Name.TrimStart('_'));
