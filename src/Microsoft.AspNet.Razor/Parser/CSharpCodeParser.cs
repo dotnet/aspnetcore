@@ -37,7 +37,6 @@ namespace Microsoft.AspNet.Razor.Parser
             "namespace",
             "class",
             "layout",
-            "sessionstate"
         };
 
         private Dictionary<string, Action> _directiveParsers = new Dictionary<string, Action>();

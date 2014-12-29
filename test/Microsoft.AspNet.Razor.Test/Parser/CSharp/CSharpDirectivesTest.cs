@@ -248,32 +248,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         }
 
         [Fact]
-        public void SessionStateDirectiveWorks()
-        {
-            ParseBlockTest("@sessionstate InProc",
-                           new DirectiveBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode(SyntaxConstants.CSharp.SessionStateKeyword + " ")
-                                   .Accepts(AcceptedCharacters.None),
-                               Factory.Code("InProc")
-                                      .AsRazorDirectiveAttribute("sessionstate", "InProc")
-                               ));
-        }
-
-        [Fact]
-        public void SessionStateDirectiveParsesInvalidSessionValue()
-        {
-            ParseBlockTest("@sessionstate Blah",
-                           new DirectiveBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode(SyntaxConstants.CSharp.SessionStateKeyword + " ")
-                                   .Accepts(AcceptedCharacters.None),
-                               Factory.Code("Blah")
-                                   .AsRazorDirectiveAttribute("sessionstate", "Blah")
-                               ));
-        }
-
-        [Fact]
         public void FunctionsDirective()
         {
             ParseBlockTest("@functions { foo(); bar(); }",

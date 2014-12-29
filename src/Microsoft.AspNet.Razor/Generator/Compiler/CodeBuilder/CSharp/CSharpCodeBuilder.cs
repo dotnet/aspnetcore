@@ -43,8 +43,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 // Separate the usings and the class
                 writer.WriteLine();
 
-                new CSharpClassAttributeVisitor(writer, Context).Accept(Tree.Chunks);
-
                 using (BuildClassDeclaration(writer))
                 {
                     if (Host.DesignTimeMode)

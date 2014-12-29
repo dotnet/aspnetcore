@@ -25,7 +25,6 @@ namespace Microsoft.AspNet.Razor.Parser
             MapDirectives(SectionDirective, SyntaxConstants.CSharp.SectionKeyword);
             MapDirectives(HelperDirective, SyntaxConstants.CSharp.HelperKeyword);
             MapDirectives(LayoutDirective, SyntaxConstants.CSharp.LayoutKeyword);
-            MapDirectives(SessionStateDirective, SyntaxConstants.CSharp.SessionStateKeyword);
         }
 
         protected virtual void AddTagHelperDirective()
@@ -56,65 +55,6 @@ namespace Microsoft.AspNet.Razor.Parser
             var foundNewline = Optional(CSharpSymbolType.NewLine);
             AddMarkerSymbolIfNecessary();
             Output(SpanKind.MetaCode, foundNewline ? AcceptedCharacters.None : AcceptedCharacters.Any);
-        }
-
-        protected virtual void SessionStateDirective()
-        {
-            AssertDirective(SyntaxConstants.CSharp.SessionStateKeyword);
-            AcceptAndMoveNext();
-
-            SessionStateDirectiveCore();
-        }
-
-        protected void SessionStateDirectiveCore()
-        {
-            SessionStateTypeDirective(RazorResources.ParserEror_SessionDirectiveMissingValue, (key, value) => new RazorDirectiveAttributeCodeGenerator(key, value));
-        }
-
-        protected void SessionStateTypeDirective(string noValueError, Func<string, string, SpanCodeGenerator> createCodeGenerator)
-        {
-            // Set the block type
-            Context.CurrentBlock.Type = BlockType.Directive;
-
-            // Accept whitespace
-            var remainingWs = AcceptSingleWhiteSpaceCharacter();
-
-            if (Span.Symbols.Count > 1)
-            {
-                Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
-            }
-
-            Output(SpanKind.MetaCode);
-
-            if (remainingWs != null)
-            {
-                Accept(remainingWs);
-            }
-            AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
-
-            // Parse a Type Name
-            if (!ValidSessionStateValue())
-            {
-                Context.OnError(CurrentLocation, noValueError);
-            }
-
-            // Pull out the type name
-            var sessionStateValue = String.Concat(
-                Span.Symbols
-                    .Cast<CSharpSymbol>()
-                    .Select(sym => sym.Content)).Trim();
-
-            // Set up code generation
-            Span.CodeGenerator = createCodeGenerator(SyntaxConstants.CSharp.SessionStateKeyword, sessionStateValue);
-
-            // Output the span and finish the block
-            CompleteBlock();
-            Output(SpanKind.Code);
-        }
-
-        protected virtual bool ValidSessionStateValue()
-        {
-            return Optional(CSharpSymbolType.Identifier);
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "Coupling will be reviewed at a later date")]
