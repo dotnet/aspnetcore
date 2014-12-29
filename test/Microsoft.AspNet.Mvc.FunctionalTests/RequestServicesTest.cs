@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
                 var body = (await response.Content.ReadAsStringAsync()).Trim();
 
-                var expected = "<requestscoped>" + requestId + "</requestscoped>";
+                var expected = "<request-scoped>" + requestId + "</request-scoped>";
                 Assert.Equal(expected, body);
             }
         }
