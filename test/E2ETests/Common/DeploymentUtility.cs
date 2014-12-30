@@ -186,12 +186,13 @@ namespace E2ETests
             var klrMonoManaged = Path.Combine(kreBin, "klr.mono.managed.dll");
             var applicationHost = Path.Combine(kreBin, "Microsoft.Framework.ApplicationHost");
 
-            Console.WriteLine(string.Format("Executing command: {0} {1} {2} {3}", monoPath, klrMonoManaged, applicationHost, startParameters.ServerType.ToString()));
+            var commandName = startParameters.ServerType == ServerType.Kestrel ? "kestrel" : string.Empty;
+            Console.WriteLine(string.Format("Executing command: {0} {1} {2} {3}", monoPath, klrMonoManaged, applicationHost, commandName));
 
             var startInfo = new ProcessStartInfo
             {
                 FileName = monoPath,
-                Arguments = string.Format("{0} {1} {2}", klrMonoManaged, applicationHost, startParameters.ServerType.ToString()),
+                Arguments = string.Format("{0} {1} {2}", klrMonoManaged, applicationHost, commandName),
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardInput = true
@@ -250,9 +251,8 @@ namespace E2ETests
 
         private static Process StartSelfHost(StartParameters startParameters, string identityDbName)
         {
-            Console.WriteLine(string.Format("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, startParameters.ServerType.ToString()));
-
             var commandName = startParameters.ServerType == ServerType.WebListener ? "web" : "kestrel";
+            Console.WriteLine(string.Format("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName));
 
             var startInfo = new ProcessStartInfo
             {
