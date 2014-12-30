@@ -37,18 +37,19 @@ namespace MusicStore.Controllers
         {
             if (ModelState.IsValid == true)
             {
-                var signInStatus = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, shouldLockout: false);
-                switch (signInStatus)
+                var result = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, shouldLockout: false);
+                if (result.Succeeded)
                 {
-                    case SignInStatus.Success:
-                        return RedirectToLocal(returnUrl);
-                    case SignInStatus.LockedOut:
-                        ModelState.AddModelError("", "User is locked out, try again later.");
-                        return View(model);
-                    case SignInStatus.Failure:
-                    default:
-                        ModelState.AddModelError("", "Invalid username or password.");
-                        return View(model);
+                    return RedirectToLocal(returnUrl);
+                }
+                if (result.IsLockedOut)
+                {
+                    ModelState.AddModelError("", "User is locked out, try again later.");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Invalid username or password.");
+                    return View(model);
                 }
             }
 
@@ -138,7 +139,7 @@ namespace MusicStore.Controllers
         {
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError("", error);
+                ModelState.AddModelError("", error.Description);
             }
         }
 

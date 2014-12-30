@@ -174,7 +174,7 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = _httpClient.PostAsync("Account/Register", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
-            Assert.Contains(string.Format("Name {0} is already taken.", email), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(string.Format("UserName &#39;{0}&#39; is already taken.", email), responseContent, StringComparison.OrdinalIgnoreCase);
             Console.WriteLine("Identity threw a valid exception that user '{0}' already exists in the system", email);
         }
 
