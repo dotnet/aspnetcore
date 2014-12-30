@@ -11,45 +11,19 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     public class IdentityResult
     {
-        private static readonly IdentityResult _success = new IdentityResult(true);
+        private static readonly IdentityResult _success = new IdentityResult { Succeeded = true };
 
-        /// <summary>
-        ///     Failure constructor that takes error messages
-        /// </summary>
-        /// <param name="errors"></param>
-        public IdentityResult(params string[] errors) : this((IEnumerable<string>)errors)
-        {
-        }
-
-        /// <summary>
-        ///     Failure constructor that takes error messages
-        /// </summary>
-        /// <param name="errors"></param>
-        public IdentityResult(IEnumerable<string> errors)
-        {
-            if (errors == null || !errors.Any())
-            {
-                errors = new[] { Resources.DefaultError };
-            }
-            Succeeded = false;
-            Errors = errors;
-        }
-
-        protected IdentityResult(bool success)
-        {
-            Succeeded = success;
-            Errors = new string[0];
-        }
+        private List<IdentityError> _errors = new List<IdentityError>();
 
         /// <summary>
         ///     True if the operation was successful
         /// </summary>
-        public bool Succeeded { get; private set; }
+        public bool Succeeded { get; protected set; }
 
         /// <summary>
         ///     List of errors
         /// </summary>
-        public IEnumerable<string> Errors { get; private set; }
+        public IEnumerable<IdentityError> Errors { get { return _errors; } }
 
         /// <summary>
         ///     Static success result
@@ -65,9 +39,14 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="errors"></param>
         /// <returns></returns>
-        public static IdentityResult Failed(params string[] errors)
+        public static IdentityResult Failed(params IdentityError[] errors)
         {
-            return new IdentityResult(errors);
+            var result = new IdentityResult { Succeeded = false };
+            if (errors != null)
+            {
+                result._errors.AddRange(errors);
+            }
+            return result;
         }
     }
 }

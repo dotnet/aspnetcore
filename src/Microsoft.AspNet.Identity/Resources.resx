@@ -149,13 +149,13 @@
     <value>Email '{0}' is already taken.</value>
     <comment>error for duplicate emails</comment>
   </data>
-  <data name="DuplicateName" xml:space="preserve">
-    <value>Name {0} is already taken.</value>
+  <data name="DuplicateRoleName" xml:space="preserve">
+    <value>Role Name '{0}' is already taken.</value>
     <comment>error for duplicate usernames</comment>
   </data>
-  <data name="ExternalLoginExists" xml:space="preserve">
-    <value>A user with that external login already exists.</value>
-    <comment>Error when a login already linked</comment>
+  <data name="DuplicateUserName" xml:space="preserve">
+    <value>UserName '{0}' is already taken.</value>
+    <comment>error for duplicate usernames</comment>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
     <value>Email '{0}' is invalid.</value>
@@ -169,17 +169,21 @@
     <value>The iteration count must be a positive integer.</value>
     <comment>Error when the iteration count is &lt; 1.</comment>
   </data>
+  <data name="InvalidRoleName" xml:space="preserve">
+    <value>Role name '{0}' is invalid.</value>
+    <comment>error for invalid role names</comment>
+  </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>Invalid token.</value>
     <comment>Error when a token is not recognized</comment>
   </data>
   <data name="InvalidUserName" xml:space="preserve">
-    <value>User name {0} is invalid, can only contain letters or digits.</value>
+    <value>User name '{0}' is invalid, can only contain letters or digits.</value>
     <comment>usernames can only contain letters or digits</comment>
   </data>
-  <data name="LockoutNotEnabled" xml:space="preserve">
-    <value>Lockout is not enabled for this user.</value>
-    <comment>error when lockout is not enabled</comment>
+  <data name="LoginAlreadyAssociated" xml:space="preserve">
+    <value>A user with this login already exists.</value>
+    <comment>Error when a login already linked</comment>
   </data>
   <data name="NoMessageProvider" xml:space="preserve">
     <value>No IUserMessageProvider named '{0}' is registered.</value>
@@ -193,29 +197,25 @@
     <value>Incorrect password.</value>
     <comment>Error when a password doesn't match</comment>
   </data>
-  <data name="PasswordRequireDigit" xml:space="preserve">
+  <data name="PasswordRequiresDigit" xml:space="preserve">
     <value>Passwords must have at least one digit ('0'-'9').</value>
     <comment>Error when passwords do not have a digit</comment>
   </data>
-  <data name="PasswordRequireLower" xml:space="preserve">
+  <data name="PasswordRequiresLower" xml:space="preserve">
     <value>Passwords must have at least one lowercase ('a'-'z').</value>
     <comment>Error when passwords do not have a lowercase letter</comment>
   </data>
-  <data name="PasswordRequireNonLetterOrDigit" xml:space="preserve">
+  <data name="PasswordRequiresNonLetterAndDigit" xml:space="preserve">
     <value>Passwords must have at least one non letter and non digit character.</value>
     <comment>Error when password does not have enough letter or digit characters</comment>
   </data>
-  <data name="PasswordRequireUpper" xml:space="preserve">
+  <data name="PasswordRequiresUpper" xml:space="preserve">
     <value>Passwords must have at least one uppercase ('A'-'Z').</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
     <value>Passwords must be at least {0} characters.</value>
     <comment>Error message for passwords that are too short</comment>
-  </data>
-  <data name="PropertyTooShort" xml:space="preserve">
-    <value>{0} cannot be null or empty.</value>
-    <comment>error for empty or null usernames</comment>
   </data>
   <data name="RoleNotFound" xml:space="preserve">
     <value>Role {0} does not exist.</value>
@@ -278,15 +278,23 @@
     <comment>error when AddPasswordAsync called when a user already has a password</comment>
   </data>
   <data name="UserAlreadyInRole" xml:space="preserve">
-    <value>User already in role.</value>
+    <value>User already in role '{0}'.</value>
     <comment>Error when a user is already in a role</comment>
+  </data>
+  <data name="UserLockedOut" xml:space="preserve">
+    <value>User is locked out.</value>
+    <comment>Error when a user is locked out</comment>
+  </data>
+  <data name="UserLockoutNotEnabled" xml:space="preserve">
+    <value>Lockout is not enabled for this user.</value>
+    <comment>error when lockout is not enabled</comment>
   </data>
   <data name="UserNameNotFound" xml:space="preserve">
     <value>User {0} does not exist.</value>
     <comment>error when a user does not exist</comment>
   </data>
   <data name="UserNotInRole" xml:space="preserve">
-    <value>User is not in role.</value>
+    <value>User is not in role '{0}'.</value>
     <comment>Error when a user is not in the role</comment>
   </data>
 </root>

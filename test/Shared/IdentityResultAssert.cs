@@ -24,7 +24,16 @@ namespace Microsoft.AspNet.Identity.Test
         {
             Assert.NotNull(result);
             Assert.False(result.Succeeded);
-            Assert.Equal(error, result.Errors.First());
+            Assert.Equal(error, result.Errors.First().Description);
         }
+
+        public static void IsFailure(IdentityResult result, IdentityError error)
+        {
+            Assert.NotNull(result);
+            Assert.False(result.Succeeded);
+            Assert.Equal(error.Description, result.Errors.First().Description);
+            Assert.Equal(error.Code, result.Errors.First().Code);
+        }
+
     }
 }

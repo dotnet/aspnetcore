@@ -226,18 +226,7 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class MyUserManager : UserManager<TestUser>
         {
-            public MyUserManager(IUserStore<TestUser> store,
-            IOptions<IdentityOptions> optionsAccessor,
-            IPasswordHasher<TestUser> passwordHasher,
-            IEnumerable<IUserValidator<TestUser>> userValidators,
-            IEnumerable<IPasswordValidator<TestUser>> passwordValidators,
-            IUserNameNormalizer userNameNormalizer,
-            IEnumerable<IUserTokenProvider<TestUser>> tokenProviders,
-            IEnumerable<IIdentityMessageProvider> msgProviders) :
-                base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, userNameNormalizer, tokenProviders, msgProviders)
-            {
-
-            }
+            public MyUserManager(IUserStore<TestUser> store) :  base(store) { }
         }
 
         private class MyRoleManager : RoleManager<TestRole>

@@ -13,17 +13,15 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var result = new IdentityResult();
             Assert.False(result.Succeeded);
-            Assert.Equal(1, result.Errors.Count());
-            Assert.Equal("An unknown failure has occured.", result.Errors.First());
+            Assert.Equal(0, result.Errors.Count());
         }
 
         [Fact]
-        public void NullErrorListUsesDefaultError()
+        public void NullFailedUsesEmptyErrors()
         {
-            var result = new IdentityResult(null);
+            var result = IdentityResult.Failed();
             Assert.False(result.Succeeded);
-            Assert.Equal(1, result.Errors.Count());
-            Assert.Equal("An unknown failure has occured.", result.Errors.First());
+            Assert.Equal(0, result.Errors.Count());
         }
     }
 }

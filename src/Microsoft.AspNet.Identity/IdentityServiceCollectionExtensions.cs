@@ -59,6 +59,8 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAdd(describe.Transient<IPasswordHasher<TUser>, PasswordHasher<TUser>>());
             services.TryAdd(describe.Transient<IUserNameNormalizer, UpperInvariantUserNameNormalizer>());
             services.TryAdd(describe.Transient<IRoleValidator<TRole>, RoleValidator<TRole>>());
+            // No interface for the error describer so we can add errors without rev'ing the interface
+            services.TryAdd(describe.Transient<IdentityErrorDescriber, IdentityErrorDescriber>());
             services.TryAdd(describe.Scoped<ISecurityStampValidator, SecurityStampValidator<TUser>>());
             services.TryAdd(describe.Scoped<IClaimsIdentityFactory<TUser>, ClaimsIdentityFactory<TUser, TRole>>());
             services.TryAdd(describe.Scoped<UserManager<TUser>, UserManager<TUser>>());

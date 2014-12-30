@@ -37,14 +37,11 @@ namespace Microsoft.AspNet.Identity
         ///     Constructs a PasswordHasher using the specified options
         /// </summary>
         /// <param name="options"></param>
-        public PasswordHasher(IOptions<PasswordHasherOptions> options)
+        public PasswordHasher(IOptions<PasswordHasherOptions> optionsAccessor = null)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            var options = optionsAccessor?.Options ?? new PasswordHasherOptions();
 
-            _compatibilityMode = options.Options.CompatibilityMode;
+            _compatibilityMode = options.CompatibilityMode;
             switch (_compatibilityMode)
             {
                 case PasswordHasherCompatibilityMode.IdentityV2:
@@ -52,7 +49,7 @@ namespace Microsoft.AspNet.Identity
                     break;
 
                 case PasswordHasherCompatibilityMode.IdentityV3:
-                    _iterCount = options.Options.IterationCount;
+                    _iterCount = options.IterationCount;
                     if (_iterCount < 1)
                     {
                         throw new InvalidOperationException(Resources.InvalidPasswordHasherIterationCount);
@@ -63,7 +60,7 @@ namespace Microsoft.AspNet.Identity
                     throw new InvalidOperationException(Resources.InvalidPasswordHasherCompatibilityMode);
             }
           
-            _rng = options.Options.Rng;
+            _rng = options.Rng;
         }
 
         // Compares two byte arrays for equality. The method is specifically written so that the loop is not optimized.

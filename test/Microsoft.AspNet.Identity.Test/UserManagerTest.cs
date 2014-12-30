@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.OptionsModel;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -21,10 +20,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             public IUserStore<TestUser> StorePublic { get { return Store; } }
 
-            public TestManager(IUserStore<TestUser> store, IOptions<IdentityOptions> optionsAccessor,
-                IPasswordHasher<TestUser> passwordHasher, IEnumerable<IUserValidator<TestUser>> userValidator,
-                IEnumerable<IPasswordValidator<TestUser>> passwordValidator)
-                : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null, null, null) { }
+            public TestManager(IUserStore<TestUser> store) : base(store) { }
         }
 
         [Fact]
@@ -36,8 +32,6 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddIdentity<TestUser, IdentityRole>();
             var manager = services.BuildServiceProvider().GetRequiredService<TestManager>();
             Assert.NotNull(manager.PasswordHasher);
-            Assert.Equal(1, manager.PasswordValidators.Count);
-            Assert.Equal(1, manager.UserValidators.Count);
             Assert.NotNull(manager.StorePublic);
             Assert.NotNull(manager.Options);
         }
@@ -66,7 +60,7 @@ namespace Microsoft.AspNet.Identity.Test
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
             store.Setup(s => s.DeleteAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.DeleteAsync(user);
@@ -100,7 +94,7 @@ namespace Microsoft.AspNet.Identity.Test
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser();
             store.Setup(s => s.SetUserNameAsync(user, It.IsAny<string>(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.SetUserNameAsync(user, "foo");
@@ -207,7 +201,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await userManager.AddToRolesAsync(user, roles);
 
             // Assert
-            IdentityResultAssert.IsFailure(result, "User already in role.");
+            IdentityResultAssert.IsFailure(result, IdentityErrorDescriber.Default.UserAlreadyInRole("B"));
             store.VerifyAll();
         }
 
@@ -269,7 +263,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await userManager.RemoveFromRolesAsync(user, roles);
 
             // Assert
-            IdentityResultAssert.IsFailure(result, "User is not in role.");
+            IdentityResultAssert.IsFailure(result, IdentityErrorDescriber.Default.UserNotInRole("B"));
             store.VerifyAll();
         }
 
@@ -284,7 +278,7 @@ namespace Microsoft.AspNet.Identity.Test
                 .Returns(Task.FromResult(0))
                 .Verifiable();
             store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.AddClaimsAsync(user, claims);
@@ -305,7 +299,7 @@ namespace Microsoft.AspNet.Identity.Test
                 .Returns(Task.FromResult(0))
                 .Verifiable();
             store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.AddClaimAsync(user, claim);
@@ -326,7 +320,7 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.ReplaceClaimAsync(user, It.IsAny<Claim>(), It.IsAny<Claim>(), CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.ReplaceClaimAsync(user, claim, newClaim);
@@ -533,17 +527,11 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ManagerPublicNullChecks()
         {
             var store = new NotImplementedStore();
-            var optionsAccessor = new OptionsManager<IdentityOptions>(null);
-            var passwordHasher = new PasswordHasher<TestUser>(new PasswordHasherOptionsAccessor());
 
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>(null, null, null, null, null, null, null, null));
-            Assert.Throws<ArgumentNullException>("optionsAccessor",
-                () => new UserManager<TestUser>(store, null, null, null, null, null, null, null));
-            Assert.Throws<ArgumentNullException>("passwordHasher",
-                () => new UserManager<TestUser>(store, optionsAccessor, null, null, null, null, null, null));
+                () => new UserManager<TestUser>(null));
 
-            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, null, null, null, null, null);
+            var manager = new UserManager<TestUser>(store);
 
             Assert.Throws<ArgumentNullException>("value", () => manager.PasswordHasher = null);
             Assert.Throws<ArgumentNullException>("value", () => manager.Options = null);
@@ -714,7 +702,7 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class BadPasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : class
         {
-            public const string ErrorMessage = "I'm Bad.";
+            public static readonly IdentityError ErrorMessage = new IdentityError { Description = "I'm Bad." };
 
             public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password, CancellationToken cancellationToken = default(CancellationToken))
             {
@@ -1239,5 +1227,51 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
         }
+
+        [Fact]
+        public async Task CanCustomizeUserValidatorErrors()
+        {
+            var services = new ServiceCollection();
+            var store = new Mock<IUserEmailStore<TestUser>>();
+            var describer = new TestErrorDescriber();
+            services.AddInstance<IdentityErrorDescriber>(describer)
+                .AddInstance<IUserStore<TestUser>>(store.Object)
+                .AddIdentity<TestUser, IdentityRole>();
+
+            var manager = services.BuildServiceProvider().GetRequiredService<UserManager<TestUser>>();
+
+            manager.Options.User.RequireUniqueEmail = true;
+            var user = new TestUser() { UserName = "dupeEmail", Email = "dupe@email.com" };
+            var user2 = new TestUser() { UserName = "dupeEmail2", Email = "dupe@email.com" };
+            store.Setup(s => s.FindByEmailAsync(user.Email, CancellationToken.None))
+                .Returns(Task.FromResult(user2))
+                .Verifiable();
+            store.Setup(s => s.GetUserIdAsync(user2, CancellationToken.None))
+                .Returns(Task.FromResult(user2.Id))
+                .Verifiable();
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None))
+                .Returns(Task.FromResult(user.UserName))
+                .Verifiable();
+            store.Setup(s => s.GetEmailAsync(user, CancellationToken.None))
+                .Returns(Task.FromResult(user.Email))
+                .Verifiable();
+
+            Assert.Same(describer, manager.ErrorDescriber);
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(user), describer.DuplicateEmail(user.Email));
+
+            store.VerifyAll();
+        }
+
+        public class TestErrorDescriber : IdentityErrorDescriber
+        {
+            public static string Code = "Error";
+            public static string FormatError = "FormatError {0}";
+
+            public override IdentityError DuplicateEmail(string email)
+            {
+                return new IdentityError { Code = Code, Description = string.Format(FormatError, email) };
+            }
+        }
+
     }
 }

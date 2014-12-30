@@ -24,13 +24,16 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="store">The IRoleStore commits changes via the UpdateAsync/CreateAsync methods</param>
         /// <param name="roleValidator"></param>
-        public RoleManager(IRoleStore<TRole> store, IEnumerable<IRoleValidator<TRole>> roleValidators)
+        public RoleManager(IRoleStore<TRole> store, 
+            IEnumerable<IRoleValidator<TRole>> roleValidators = null,
+            IdentityErrorDescriber errors = null)
         {
             if (store == null)
             {
                 throw new ArgumentNullException("store");
             }
             Store = store;
+            ErrorDescriber = errors ?? new IdentityErrorDescriber();
 
             if (roleValidators != null)
             {
@@ -50,6 +53,11 @@ namespace Microsoft.AspNet.Identity
         ///     Used to validate roles before persisting changes
         /// </summary>
         public IList<IRoleValidator<TRole>> RoleValidators { get; } = new List<IRoleValidator<TRole>>();
+
+        /// <summary>
+        ///     Used to generate public API error messages
+        /// </summary>
+        public IdentityErrorDescriber ErrorDescriber { get; set; }
 
         /// <summary>
         ///     Returns an IQueryable of roles if the store is an IQueryableRoleStore
@@ -102,7 +110,7 @@ namespace Microsoft.AspNet.Identity
 
         private async Task<IdentityResult> ValidateRoleInternal(TRole role, CancellationToken cancellationToken)
         {
-            var errors = new List<string>();
+            var errors = new List<IdentityError>();
             foreach (var v in RoleValidators)
             {
                 var result = await v.ValidateAsync(this, role, cancellationToken);

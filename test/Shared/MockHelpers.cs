@@ -14,20 +14,10 @@ namespace Microsoft.AspNet.Identity.Test
         public static Mock<UserManager<TUser>> MockUserManager<TUser>() where TUser : class
         {
             var store = new Mock<IUserStore<TUser>>();
-            var options = new OptionsManager<IdentityOptions>(null);
-            var userValidators = new List<IUserValidator<TUser>>();
-            userValidators.Add(new UserValidator<TUser>());
-            var pwdValidators = new List<IPasswordValidator<TUser>>();
-            pwdValidators.Add(new PasswordValidator<TUser>());
-            return new Mock<UserManager<TUser>>(
-                store.Object,
-                options,
-                new PasswordHasher<TUser>(new PasswordHasherOptionsAccessor()),
-                userValidators,
-                pwdValidators,
-                new UpperInvariantUserNameNormalizer(),
-                new List<IUserTokenProvider<TUser>>(),
-                new List<IIdentityMessageProvider>());
+            var mgr = new Mock<UserManager<TUser>>(store.Object, null, null, null, null, null, null, null, null);
+            mgr.Object.UserValidators.Add(new UserValidator<TUser>());
+            mgr.Object.PasswordValidators.Add(new PasswordValidator<TUser>());
+            return mgr;
         }
 
         public static Mock<RoleManager<TRole>> MockRoleManager<TRole>() where TRole : class
@@ -35,7 +25,7 @@ namespace Microsoft.AspNet.Identity.Test
             var store = new Mock<IRoleStore<TRole>>();
             var roles = new List<IRoleValidator<TRole>>();
             roles.Add(new RoleValidator<TRole>());
-            return new Mock<RoleManager<TRole>>(store.Object, roles);
+            return new Mock<RoleManager<TRole>>(store.Object, roles, null);
         }
 
         public static UserManager<TUser> TestUserManager<TUser>() where TUser : class
@@ -45,10 +35,8 @@ namespace Microsoft.AspNet.Identity.Test
 
         public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser> store) where TUser : class
         {
-            var options = new OptionsManager<IdentityOptions>(null);
-            var validator = new Mock<UserValidator<TUser>>();
-            var userManager = new UserManager<TUser>(store, options, new PasswordHasher<TUser>(new PasswordHasherOptionsAccessor()), 
-                null, null, new UpperInvariantUserNameNormalizer(), null, null);
+            var validator = new Mock<IUserValidator<TUser>>();
+            var userManager = new UserManager<TUser>(store);
             userManager.UserValidators.Add(validator.Object);
             userManager.PasswordValidators.Add(new PasswordValidator<TUser>());
             validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>(), CancellationToken.None))

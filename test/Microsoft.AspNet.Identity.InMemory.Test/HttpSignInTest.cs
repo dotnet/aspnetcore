@@ -50,10 +50,10 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var signInManager = app.ApplicationServices.GetRequiredService<SignInManager<ApplicationUser>>();
 
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
-            var result = await signInManager.PasswordSignInAsync(user.UserName, password, isPersistent, false);
+            var result = await signInManager.PasswordSignInAsync(user, password, isPersistent, false);
 
             // Assert
-            Assert.Equal(SignInStatus.Success, result);
+            Assert.True(result.Succeeded);
             context.VerifyAll();
             response.VerifyAll();
             contextAccessor.VerifyAll();

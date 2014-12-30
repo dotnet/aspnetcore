@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Security;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Security;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -75,8 +75,6 @@ namespace Microsoft.AspNet.Identity.Test
             var context = new Mock<HttpContext>();
             contextAccessor.Setup(a => a.Value).Returns(context.Object);
             Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<IdentityUser>(userManager, contextAccessor.Object, null, null));
-            var claimsFactory = new Mock<IClaimsIdentityFactory<IdentityUser>>().Object;
-            Assert.Throws<ArgumentNullException>("optionsAccessor", () => new SignInManager<IdentityUser>(userManager, contextAccessor.Object, claimsFactory, null));
         }
 
         //TODO: Mock fails in K (this works fine in net45)
@@ -132,7 +130,8 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
 
             // Assert
-            Assert.Equal(SignInStatus.LockedOut, result);
+            Assert.False(result.Succeeded);
+            Assert.True(result.IsLockedOut);
             manager.VerifyAll();
         }
             
@@ -167,7 +166,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.PasswordSignInAsync(user.UserName, "password", isPersistent, false);
 
             // Assert
-            Assert.Equal(SignInStatus.Success, result);
+            Assert.True(result.Succeeded);
             manager.VerifyAll();
             context.VerifyAll();
             response.VerifyAll();
@@ -203,7 +202,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
 
             // Assert
-            Assert.Equal(SignInStatus.Success, result);
+            Assert.True(result.Succeeded);
             manager.VerifyAll();
             context.VerifyAll();
             response.VerifyAll();
@@ -251,7 +250,8 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
 
             // Assert
-            Assert.Equal(SignInStatus.RequiresVerification, result);
+            Assert.False(result.Succeeded);
+            Assert.True(result.RequiresTwoFactor);
             manager.VerifyAll();
             context.VerifyAll();
             response.VerifyAll();
@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent);
 
             // Assert
-            Assert.Equal(SignInStatus.Success, result);
+            Assert.True(result.Succeeded);
             manager.VerifyAll();
             context.VerifyAll();
             response.VerifyAll();
@@ -382,7 +382,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.TwoFactorSignInAsync(provider, code, isPersistent, rememberClient);
 
             // Assert
-            Assert.Equal(SignInStatus.Success, result);
+            Assert.True(result.Succeeded);
             manager.VerifyAll();
             context.VerifyAll();
             response.VerifyAll();
@@ -466,7 +466,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.PasswordSignInAsync(user.UserName, "password", isPersistent, false);
 
             // Assert
-            Assert.Equal(SignInStatus.Success, result);
+            Assert.True(result.Succeeded);
             manager.VerifyAll();
             context.VerifyAll();
             response.VerifyAll();
@@ -530,7 +530,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
 
             // Assert
-            Assert.Equal(SignInStatus.Failure, result);
+            Assert.False(result.Succeeded);
             manager.VerifyAll();
             context.VerifyAll();
             contextAccessor.VerifyAll();
@@ -556,7 +556,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.PasswordSignInAsync("bogus", "bogus", false, false);
 
             // Assert
-            Assert.Equal(SignInStatus.Failure, result);
+            Assert.False(result.Succeeded);
             manager.VerifyAll();
             context.VerifyAll();
             contextAccessor.VerifyAll();
@@ -592,7 +592,8 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, true);
 
             // Assert
-            Assert.Equal(SignInStatus.LockedOut, result);
+            Assert.False(result.Succeeded);
+            Assert.True(result.IsLockedOut);
             manager.VerifyAll();
         }
 
@@ -631,7 +632,9 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.PasswordSignInAsync(user, "password", false, false);
 
             // Assert
-            Assert.Equal(confirmed ? SignInStatus.Success : SignInStatus.NotAllowed, result);
+
+            Assert.Equal(confirmed, result.Succeeded);
+            Assert.NotEqual(confirmed, result.IsNotAllowed);
             manager.VerifyAll();
             context.VerifyAll();
             response.VerifyAll();
@@ -670,7 +673,8 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await helper.PasswordSignInAsync(user, "password", false, false);
 
             // Assert
-            Assert.Equal(confirmed ? SignInStatus.Success : SignInStatus.NotAllowed, result);
+            Assert.Equal(confirmed, result.Succeeded);
+            Assert.NotEqual(confirmed, result.IsNotAllowed);
             manager.VerifyAll();
             context.VerifyAll();
             response.VerifyAll();

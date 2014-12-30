@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await validator.ValidateAsync(manager, user);
 
             // Assert
-            IdentityResultAssert.IsFailure(result, "Name cannot be null or empty.");
+            IdentityResultAssert.IsFailure(result, IdentityErrorDescriber.Default.InvalidRoleName(input));
         }
     }
 }
