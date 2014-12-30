@@ -14,9 +14,9 @@ This project is part of ASP.NET 5.0. You can find samples, documentation and get
 ## Run on WebListener/Kestrel:
 * Open a command prompt and cd `\src\MusicStore\`.
 * **[WebListener]:**
-	4. Run `k WebListener` (Application started at URL **http://localhost:5002/**).
+	4. Run `k web` (Application started at URL **http://localhost:5002/**).
 * **[Kestrel]:**
-	5. Run `k Kestrel` (Application started at URL **http://localhost:5004/**).
+	5. Run `k kestrel` (Application started at URL **http://localhost:5004/**).
 * **[CustomHost]:**
 	6. Run `k run` (This hosts the app in a console application - Application started at URL **http://localhost:5003/**).
 

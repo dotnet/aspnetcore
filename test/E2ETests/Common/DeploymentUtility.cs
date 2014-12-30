@@ -252,10 +252,12 @@ namespace E2ETests
         {
             Console.WriteLine(string.Format("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, startParameters.ServerType.ToString()));
 
+            var commandName = startParameters.ServerType == ServerType.WebListener ? "web" : "kestrel";
+
             var startInfo = new ProcessStartInfo
             {
                 FileName = "klr.exe",
-                Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, startParameters.ServerType.ToString()),
+                Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName),
                 UseShellExecute = true,
                 CreateNoWindow = true
             };

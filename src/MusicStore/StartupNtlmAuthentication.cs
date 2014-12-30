@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Server.WebListener;
 using Microsoft.Framework.Cache.Memory;
@@ -23,7 +24,7 @@ namespace MusicStore
     /// 1. Set the environment variable named SET ASPNET_ENV=NtlmAuthentication
     /// 2. For selfhost based servers pass in a command line variable named --env with this value. Eg:
     /// "commands": {
-    ///    "WebListener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002 --ASPNET_ENV NtlmAuthentication",
+    ///    "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002 --ASPNET_ENV NtlmAuthentication",
     ///  },
     /// </summary>
     public class StartupNtlmAuthentication
@@ -65,6 +66,8 @@ namespace MusicStore
             //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
             //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
             app.UseErrorPage(ErrorPageOptions.ShowAll);
+
+            app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
 
             app.UseServices(services =>
             {

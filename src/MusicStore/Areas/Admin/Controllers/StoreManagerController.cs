@@ -51,7 +51,7 @@ namespace MusicStore.Areas.Admin.Controllers
         {
             var cacheKey = GetCacheKey(id);
 
-            var album = await _cache.GetOrSet(GetCacheKey(id), async context =>
+            var album = await _cache.GetOrSet(cacheKey, async context =>
             {
                 //Remove it from cache if not retrieved in last 10 minutes.
                 context.SetSlidingExpiration(TimeSpan.FromMinutes(10));

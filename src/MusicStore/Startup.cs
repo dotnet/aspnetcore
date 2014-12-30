@@ -1,6 +1,7 @@
 using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Cache.Memory;
@@ -91,6 +92,8 @@ namespace MusicStore
             //Display custom error page in production when error occurs
             //During development use the ErrorPage middleware to display error information in the browser
             app.UseErrorPage(ErrorPageOptions.ShowAll);
+
+            app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
 
             // Add the runtime information page that can be used by developers
             // to see what packages are used by the application
