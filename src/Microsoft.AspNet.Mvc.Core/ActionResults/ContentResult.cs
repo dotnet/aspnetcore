@@ -4,6 +4,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -19,14 +20,22 @@ namespace Microsoft.AspNet.Mvc
         {
             var response = context.HttpContext.Response;
 
-            if (!string.IsNullOrEmpty(ContentType))
+            MediaTypeHeaderValue contentTypeHeader;
+            if (string.IsNullOrEmpty(ContentType))
             {
-                response.ContentType = ContentType;
+                contentTypeHeader = new MediaTypeHeaderValue("text/plain");
             }
+            else
+            {
+                contentTypeHeader = new MediaTypeHeaderValue(ContentType);
+            }
+
+            contentTypeHeader.Encoding = ContentEncoding ?? Encodings.UTF8EncodingWithoutBOM;
+            response.ContentType = contentTypeHeader.ToString();
 
             if (Content != null)
             {
-                await response.WriteAsync(Content);
+                await response.WriteAsync(Content, contentTypeHeader.Encoding);
             }
         }
     }

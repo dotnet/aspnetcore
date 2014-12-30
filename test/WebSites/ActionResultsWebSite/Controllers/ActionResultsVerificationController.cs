@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using Microsoft.AspNet.Mvc;
 
 namespace ActionResultsWebSite
@@ -59,6 +60,21 @@ namespace ActionResultsWebSite
         {
             var values = new { controller = "ActionResultsVerification", Action = "GetDummy", id = 1 };
             return CreatedAtRoute("custom-route", values, CreateDummy());
+        }
+
+        public IActionResult GetContentResult()
+        {
+            return Content("content");
+        }
+
+        public IActionResult GetContentResultWithContentType()
+        {
+            return Content("content", "application/json");
+        }
+
+        public IActionResult GetContentResultWithContentTypeAndEncoding()
+        {
+            return Content("content", "application/json", Encoding.ASCII);
         }
 
         public DummyClass GetDummy(int id)

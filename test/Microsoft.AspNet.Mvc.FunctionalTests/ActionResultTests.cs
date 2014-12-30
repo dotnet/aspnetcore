@@ -279,5 +279,65 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 responseContent);
             Assert.Equal(sampleStringError, errors["test.SampleString"]);
         }
+
+        [Fact]
+        public async Task ContentResult_WritesContent_SetsDefaultContentTypeAndEncoding()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(
+                            HttpMethod.Post,
+                            "http://localhost/ActionResultsVerification/GetContentResult");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("content", await response.Content.ReadAsStringAsync());
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
+            Assert.Equal("utf-8", response.Content.Headers.ContentType.CharSet);
+        }
+
+        [Fact]
+        public async Task ContentResult_WritesContent_SetsContentTypeWithDefaultEncoding()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(
+                            HttpMethod.Post,
+                            "http://localhost/ActionResultsVerification/GetContentResultWithContentType");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
+            Assert.Equal("utf-8", response.Content.Headers.ContentType.CharSet);
+            Assert.Equal("content", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ContentResult_WritesContent_SetsContentTypeAndEncoding()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(
+                            HttpMethod.Post,
+                            "http://localhost/ActionResultsVerification/GetContentResultWithContentTypeAndEncoding");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
+            Assert.Equal("us-ascii", response.Content.Headers.ContentType.CharSet);
+            Assert.Equal("content", await response.Content.ReadAsStringAsync());
+        }
     }
 }
