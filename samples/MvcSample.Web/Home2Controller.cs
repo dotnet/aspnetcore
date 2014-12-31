@@ -18,8 +18,6 @@ namespace MvcSample.Web.RandomNameSpace
             get; set;
         }
 
-        public ActionContext ActionContext { get; set; }
-
         public string Index()
         {
             return "Hello World: my namespace is " + this.GetType().Namespace;
