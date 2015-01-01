@@ -60,11 +60,11 @@ namespace System.Net.Http.Formatting
 
             if (!String.Equals(stringWithQuality1.Value, stringWithQuality2.Value, StringComparison.OrdinalIgnoreCase))
             {
-                if (String.Equals(stringWithQuality1.Value, "*", StringComparison.OrdinalIgnoreCase))
+                if (String.Equals(stringWithQuality1.Value, "*", StringComparison.Ordinal))
                 {
                     return -1;
                 }
-                else if (String.Equals(stringWithQuality2.Value, "*", StringComparison.OrdinalIgnoreCase))
+                else if (String.Equals(stringWithQuality2.Value, "*", StringComparison.Ordinal))
                 {
                     return 1;
                 }

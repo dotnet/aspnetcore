@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.Mvc
                                                         supportedEncoding =>
                                                             charset.Equals(supportedEncoding.WebName,
                                                                            StringComparison.OrdinalIgnoreCase) ||
-                                                            charset.Equals("*", StringComparison.OrdinalIgnoreCase));
+                                                            charset.Equals("*", StringComparison.Ordinal));
                         if (encoding != null)
                         {
                             return encoding;

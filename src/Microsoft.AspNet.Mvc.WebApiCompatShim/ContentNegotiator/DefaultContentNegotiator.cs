@@ -273,7 +273,7 @@ namespace System.Net.Http.Formatting
                         Encoding encoding = supportedEncodings[i];
                         if (encoding != null && acceptCharset.Quality != FormattingUtilities.NoMatch &&
                             (acceptCharset.Value.Equals(encoding.WebName, StringComparison.OrdinalIgnoreCase) ||
-                            acceptCharset.Value.Equals("*", StringComparison.OrdinalIgnoreCase)))
+                            acceptCharset.Value.Equals("*", StringComparison.Ordinal)))
                         {
                             return encoding;
                         }
