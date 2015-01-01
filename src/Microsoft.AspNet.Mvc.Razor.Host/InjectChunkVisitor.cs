@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                   [NotNull] string activateAttributeName)
             : base(writer, context)
         {
-            _activateAttribute = '[' + activateAttributeName + ']';
+            _activateAttribute = "[" + activateAttributeName + "]";
         }
 
         public List<InjectChunk> InjectChunks
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 var code = string.IsNullOrEmpty(chunk.MemberName) ?
                             chunk.TypeName :
-                            chunk.TypeName + ' ' + chunk.MemberName;
+                            chunk.TypeName + " " + chunk.MemberName;
                 var csharpVisitor = new CSharpCodeVisitor(Writer, Context);
                 csharpVisitor.CreateExpressionCodeMapping(code, chunk);
                 Writer.WriteLine("{ get; private set; }");

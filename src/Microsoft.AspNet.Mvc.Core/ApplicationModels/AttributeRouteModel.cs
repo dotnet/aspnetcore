@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
 
             // Both templates contain some text.
-            return left + '/' + right;
+            return left + "/" + right;
         }
 
         private static bool IsOverridePattern(string template)

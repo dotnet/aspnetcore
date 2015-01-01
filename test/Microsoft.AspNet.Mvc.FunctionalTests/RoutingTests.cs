@@ -1422,7 +1422,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             public override string ToString()
             {
-                return Url + '?' + string.Join("&", Values.Select(kvp => kvp.Key + '=' + kvp.Value));
+                return Url + "?" + string.Join("&", Values.Select(kvp => kvp.Key + "=" + kvp.Value));
             }
 
             public static implicit operator string (LinkBuilder builder)

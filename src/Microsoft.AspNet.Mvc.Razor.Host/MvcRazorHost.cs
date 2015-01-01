@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             _baseType = BaseType;
 
             TagHelperDescriptorResolver = new TagHelperDescriptorResolver();
-            DefaultBaseClass = BaseType + '<' + DefaultModel + '>';
+            DefaultBaseClass = BaseType + "<" + DefaultModel + ">";
             DefaultNamespace = "Asp";
             // Enable instrumentation by default to allow precompiled views to work with BrowserLink.
             EnableInstrumentation = true;
