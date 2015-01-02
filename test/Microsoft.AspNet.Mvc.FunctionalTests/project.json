@@ -16,6 +16,7 @@
         "FiltersWebSite": "1.0.0",
         "FormatterWebSite": "1.0.0",
         "InlineConstraintsWebSite": "1.0.0",
+        "LoggingWebSite": "1.0.0",
         "ModelBindingWebSite": "1.0.0",
         "MvcSample.Web": "1.0.0",
         "PrecompilationWebSite": "1.0.0",
@@ -35,7 +36,8 @@
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
-        "xunit.runner.kre": "1.0.0-*"
+        "xunit.runner.kre": "1.0.0-*",
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*"
     },
     "commands": {
         "test": "xunit.runner.kre"
