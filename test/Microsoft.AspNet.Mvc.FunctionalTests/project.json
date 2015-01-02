@@ -35,6 +35,7 @@
         "WebApiCompatShimWebSite": "1.0.0",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
+        "MvcTagHelpersWebSite": "1.0.0",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
         "xunit.runner.kre": "1.0.0-*",
         "Microsoft.AspNet.WebUtilities": "1.0.0-*"
