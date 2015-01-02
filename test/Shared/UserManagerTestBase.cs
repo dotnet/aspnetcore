@@ -379,6 +379,35 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
+        public async Task RemoveClaimOnlyAffectsUser()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            var user2 = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user2));
+            Claim[] claims = { new Claim("c", "v"), new Claim("c2", "v2"), new Claim("c2", "v3") };
+            foreach (Claim c in claims)
+            {
+                IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user, c));
+                IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user2, c));
+            }
+            var userClaims = await manager.GetClaimsAsync(user);
+            Assert.Equal(3, userClaims.Count);
+            IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(user, claims[0]));
+            userClaims = await manager.GetClaimsAsync(user);
+            Assert.Equal(2, userClaims.Count);
+            IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(user, claims[1]));
+            userClaims = await manager.GetClaimsAsync(user);
+            Assert.Equal(1, userClaims.Count);
+            IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(user, claims[2]));
+            userClaims = await manager.GetClaimsAsync(user);
+            Assert.Equal(0, userClaims.Count);
+            var userClaims2 = await manager.GetClaimsAsync(user2);
+            Assert.Equal(3, userClaims2.Count);
+        }
+
+        [Fact]
         public async Task CanReplaceUserClaim()
         {
             var manager = CreateManager();
@@ -395,6 +424,35 @@ namespace Microsoft.AspNet.Identity.Test
             Claim newClaim = newUserClaims.FirstOrDefault();
             Assert.Equal(claim.Type, newClaim.Type);
             Assert.Equal(claim.Value, newClaim.Value);
+        }
+
+        [Fact]
+        public async Task ReplaceUserClaimOnlyAffectsUser()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            var user2 = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user2));
+            IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user, new Claim("c", "a")));
+            IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user2, new Claim("c", "a")));
+            var userClaims = await manager.GetClaimsAsync(user);
+            Assert.Equal(1, userClaims.Count);
+            var userClaims2 = await manager.GetClaimsAsync(user);
+            Assert.Equal(1, userClaims2.Count);
+            Claim claim = new Claim("c", "b");
+            Claim oldClaim = userClaims.FirstOrDefault();
+            IdentityResultAssert.IsSuccess(await manager.ReplaceClaimAsync(user, oldClaim, claim));
+            var newUserClaims = await manager.GetClaimsAsync(user);
+            Assert.Equal(1, newUserClaims.Count);
+            Claim newClaim = newUserClaims.FirstOrDefault();
+            Assert.Equal(claim.Type, newClaim.Type);
+            Assert.Equal(claim.Value, newClaim.Value);
+            userClaims2 = await manager.GetClaimsAsync(user2);
+            Assert.Equal(1, userClaims2.Count);
+            Claim oldClaim2 = userClaims2.FirstOrDefault();
+            Assert.Equal("c", oldClaim2.Type);
+            Assert.Equal("a", oldClaim2.Value);
         }
 
         [Fact]

@@ -437,7 +437,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("newClaim");
             }
 
-            var matchedClaims = await UserClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync(cancellationToken);
+            var matchedClaims = await UserClaims.Where(uc => uc.UserId.Equals(user.Id) && uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync(cancellationToken);
             foreach (var matchedClaim in matchedClaims)
             {
                 matchedClaim.ClaimValue = newClaim.Value;
@@ -458,7 +458,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
             foreach (var claim in claims)
             {
-                var matchedClaims = await UserClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync(cancellationToken);
+                var matchedClaims = await UserClaims.Where(uc => uc.UserId.Equals(user.Id) && uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync(cancellationToken);
                 foreach (var c in matchedClaims)
                 {
                     UserClaims.Remove(c);
