@@ -1,1 +1,0 @@
-﻿# Mock code added only for testing purposes. Not to be used for production deployments.

@@ -4,11 +4,11 @@
 {
         if (input.Length <= length)
         {
-    @input
+                @input
         }
         else
         {
-    @input.Substring(0, length)<text>...</text>
+                @input.Substring(0, length)<text>...</text>
         }
 }
 
@@ -40,25 +40,25 @@
 
     @foreach (var item in Model)
     {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Genre.Name)
-        </td>
-        <td>
-            @Truncate(item.Artist.Name, 25)
-        </td>
-        <td>
-            @Truncate(item.Title, 25)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Price)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id = item.AlbumId }) |
-            @Html.ActionLink("Details", "Details", new { id = item.AlbumId }) |
-            @Html.ActionLink("Delete", "RemoveAlbum", new { id = item.AlbumId })
-        </td>
-    </tr>
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Genre.Name)
+            </td>
+            <td>
+                @Truncate(item.Artist.Name, 25)
+            </td>
+            <td>
+                @Truncate(item.Title, 25)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.AlbumId }) |
+                @Html.ActionLink("Details", "Details", new { id = item.AlbumId }) |
+                @Html.ActionLink("Delete", "RemoveAlbum", new { id = item.AlbumId })
+            </td>
+        </tr>
     }
 
 </table>

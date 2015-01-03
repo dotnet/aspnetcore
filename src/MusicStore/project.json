@@ -5,11 +5,12 @@
     "description": "Music store application on ASP.NET 5",
     "version": "1.0.0-*",
     "compilationOptions": { "warningsAsErrors": true, "define": [ "DEMO", "TESTING" ] },
+    "code": [ "**/*.cs", "../../test/E2ETests/compiler/shared/**/*.cs" ], // Code from ../../test/E2ETests/compiler/shared folder is for testing only.
     "packExclude": "*.cmd",
     "webroot": "wwwroot",
     "dependencies": {
         "EntityFramework.SqlServer": "7.0.0-*",
-        "EntityFramework.InMemory": "7.0.0-*", //For Mono
+        "EntityFramework.InMemory": "7.0.0-*", // For Mono.
         "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
         "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
