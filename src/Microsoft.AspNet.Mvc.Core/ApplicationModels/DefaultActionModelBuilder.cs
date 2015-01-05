@@ -254,8 +254,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         {
             var actionModel = new ActionModel(methodInfo, attributes);
 
-            actionModel.ActionConstraints.AddRange(attributes.OfType<IActionConstraintMetadata>());
-            actionModel.Filters.AddRange(attributes.OfType<IFilter>());
+            AddRange(actionModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
+            AddRange(actionModel.Filters, attributes.OfType<IFilter>());
 
             var actionName = attributes.OfType<ActionNameAttribute>().FirstOrDefault();
             if (actionName?.Name != null)
@@ -280,13 +280,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
 
             var httpMethods = attributes.OfType<IActionHttpMethodProvider>();
-            actionModel.HttpMethods.AddRange(
+            AddRange(actionModel.HttpMethods,
                 httpMethods
                     .Where(a => a.HttpMethods != null)
                     .SelectMany(a => a.HttpMethods)
                     .Distinct());
 
-            actionModel.RouteConstraints.AddRange(attributes.OfType<IRouteConstraintProvider>());
+            AddRange(actionModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
 
             var routeTemplateProvider =
                 attributes
@@ -328,6 +328,14 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 routeTemplateProvider.Template == null &&
                 routeTemplateProvider.Order == null &&
                 routeTemplateProvider.Name == null;
+        }
+
+        private static void AddRange<T>(IList<T> list, IEnumerable<T> items)
+        {
+            foreach (var item in items)
+            {
+                list.Add(item);
+            }
         }
     }
 }

@@ -61,7 +61,10 @@ namespace Microsoft.AspNet.Mvc
         public ApplicationModel BuildModel()
         {
             var applicationModel = new ApplicationModel();
-            applicationModel.Filters.AddRange(_globalFilters);
+            foreach (var filter in _globalFilters)
+            {
+                applicationModel.Filters.Add(filter);
+            }
 
             var assemblies = _assemblyProvider.CandidateAssemblies;
             var types = assemblies.SelectMany(a => a.DefinedTypes);

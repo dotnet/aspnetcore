@@ -576,7 +576,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             // Assert
             var action = Assert.Single(actions);
-            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
             Assert.Equal("Products", action.AttributeRouteModel.Template);
         }
 
@@ -595,10 +595,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Equal(2, actions.Count());
 
             var action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products");
-            Assert.Equal(new string[] { "GET", "POST" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET", "POST" }, action.HttpMethods);
 
             action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "v2/Products");
-            Assert.Equal(new string[] { "GET", "POST" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET", "POST" }, action.HttpMethods);
         }
 
         [Fact]
@@ -616,13 +616,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Equal(3, actions.Count());
 
             var action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products");
-            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
 
             action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "v2/Products");
-            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
 
             action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products/Buy");
-            Assert.Equal(new string[] { "POST" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "POST" }, action.HttpMethods);
         }
 
         [Fact]
@@ -640,10 +640,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Equal(2, actions.Count());
 
             var action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "Products");
-            Assert.Equal(new string[] { "POST" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "POST" }, action.HttpMethods);
 
             action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == null);
-            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
         }
 
         private class AccessibleActionModelBuilder : DefaultActionModelBuilder

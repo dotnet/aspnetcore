@@ -57,7 +57,10 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 }
             }
 
-            controller.Actions.AddRange(newActions);
+            foreach (var action in newActions)
+            {
+                controller.Actions.Add(action);
+            }
         }
 
         private bool IsActionAttributeRouted(ActionModel action)

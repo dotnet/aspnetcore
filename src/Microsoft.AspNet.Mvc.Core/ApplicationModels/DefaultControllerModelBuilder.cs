@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Description;
@@ -120,11 +121,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                     typeInfo.Name.Substring(0, typeInfo.Name.Length - "Controller".Length) :
                     typeInfo.Name;
 
-            controllerModel.ActionConstraints.AddRange(attributes.OfType<IActionConstraintMetadata>());
-            controllerModel.Filters.AddRange(attributes.OfType<IFilter>());
-            controllerModel.RouteConstraints.AddRange(attributes.OfType<IRouteConstraintProvider>());
+            AddRange(controllerModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
+            AddRange(controllerModel.Filters, attributes.OfType<IFilter>());
+            AddRange(controllerModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
 
-            controllerModel.AttributeRoutes.AddRange(
+            AddRange(
+                controllerModel.AttributeRoutes,
                 attributes.OfType<IRouteTemplateProvider>().Select(rtp => new AttributeRouteModel(rtp)));
 
             var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
@@ -140,6 +142,14 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
 
             return controllerModel;
+        }
+
+        private static void AddRange<T>(IList<T> list, IEnumerable<T> items)
+        {
+            foreach (var item in items)
+            {
+                list.Add(item);
+            }
         }
     }
 }

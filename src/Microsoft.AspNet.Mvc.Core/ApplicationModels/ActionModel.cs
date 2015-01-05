@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
         }
 
-        public List<IActionConstraintMetadata> ActionConstraints { get; private set; }
+        public IList<IActionConstraintMetadata> ActionConstraints { get; private set; }
 
         public MethodInfo ActionMethod { get; }
 
@@ -69,12 +69,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public ControllerModel Controller { get; set; }
 
-        public List<IFilter> Filters { get; private set; }
+        public IList<IFilter> Filters { get; private set; }
 
-        public List<string> HttpMethods { get; private set; }
+        public IList<string> HttpMethods { get; private set; }
 
-        public List<ParameterModel> Parameters { get; private set; }
+        public IList<ParameterModel> Parameters { get; private set; }
 
-        public List<IRouteConstraintProvider> RouteConstraints { get; private set; }
+        public IList<IRouteConstraintProvider> RouteConstraints { get; private set; }
     }
 }

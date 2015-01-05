@@ -55,19 +55,19 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The parameters of the action as <see cref="ParameterModelValues"/>. 
         /// See <see cref="ActionModel.Parameters"/>.
         /// </summary>
-        public List<ParameterModelValues> Parameters { get; }
+        public IList<ParameterModelValues> Parameters { get; }
 
         /// <summary>
         /// The filters of the action as <see cref="FilterValues"/>. 
         /// See <see cref="ActionModel.Filters"/>.
         /// </summary>
-        public List<FilterValues> Filters { get; }
+        public IList<FilterValues> Filters { get; }
         
         /// <summary>
         /// The route constraints on the controller as <see cref="RouteConstraintProviderValues"/>.
         /// See <see cref="ControllerModel.RouteConstraints"/>.
         /// </summary>
-        public List<RouteConstraintProviderValues> RouteConstraints { get; set; }
+        public IList<RouteConstraintProviderValues> RouteConstraints { get; set; }
 
         /// <summary>
         /// The attribute route model of the action as <see cref="AttributeRouteModelValues"/>.
@@ -78,13 +78,13 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// <summary>
         /// The http methods this action supports. See <see cref="ActionModel.HttpMethods"/>.
         /// </summary>
-        public List<string> HttpMethods { get; }
+        public IList<string> HttpMethods { get; }
 
         /// <summary>
         /// The action constraints of the action as <see cref="ActionConstraintValues"/>.
         /// See <see cref="ActionModel.ActionConstraints"/>.
         /// </summary>
-        public List<ActionConstraintValues> ActionConstraints { get; }
+        public IList<ActionConstraintValues> ActionConstraints { get; }
 
         public override string Format()
         {
