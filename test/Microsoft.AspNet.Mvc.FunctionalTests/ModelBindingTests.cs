@@ -1196,6 +1196,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(trackingId, actual.LastUpdatedTrackingId);
         }
 
+#if ASPNET50
         [Fact]
         public async Task UpdateVehicle_WithXml_BindsBodyServicesAndHeaders()
         {
@@ -1231,6 +1232,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(postedContent.InspectedDates, actual.InspectedDates);
             Assert.Equal(trackingId, actual.LastUpdatedTrackingId);
         }
+#endif
 
         // Simulates a browser based client that does a Ajax post for partial page updates.
         [Fact]
