@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
@@ -104,16 +105,16 @@ namespace System.Web.Http
             // Arrange
             var controller = new ConcreteApiController();
 
-            var uri = new Uri("http://contoso.com");
+            var uri = new Uri("http://contoso.com/");
             var product = new Product();
 
             // Act
             var result = controller.Created(uri, product);
 
             // Assert
-            var created = Assert.IsType<CreatedNegotiatedContentResult<Product>>(result);
-            Assert.Same(product, created.Content);
-            Assert.Same(uri, created.Location);
+            var created = Assert.IsType<CreatedResult>(result);
+            Assert.Same(product, created.Value);
+            Assert.Equal(uri.OriginalString, created.Location);
         }
 
         [Theory]
@@ -131,9 +132,9 @@ namespace System.Web.Http
             var result = controller.Created(uri, product);
 
             // Assert
-            var created = Assert.IsType<CreatedNegotiatedContentResult<Product>>(result);
-            Assert.Same(product, created.Content);
-            Assert.Equal(uri, created.Location.OriginalString);
+            var created = Assert.IsType<CreatedResult>(result);
+            Assert.Same(product, created.Value);
+            Assert.Equal(uri, created.Location);
         }
 
         [Fact]
@@ -148,8 +149,8 @@ namespace System.Web.Http
             var result = controller.CreatedAtRoute("api_route", new { controller = "Products" }, product);
 
             // Assert
-            var created = Assert.IsType<CreatedAtRouteNegotiatedContentResult<Product>>(result);
-            Assert.Same(product, created.Content);
+            var created = Assert.IsType<CreatedAtRouteResult>(result);
+            Assert.Same(product, created.Value);
             Assert.Equal("api_route", created.RouteName);
             Assert.Equal("Products", created.RouteValues["controller"]);
         }
@@ -167,11 +168,11 @@ namespace System.Web.Http
             var result = controller.CreatedAtRoute("api_route", values, product);
 
             // Assert
-            var created = Assert.IsType<CreatedAtRouteNegotiatedContentResult<Product>>(result);
-            Assert.Same(product, created.Content);
+            var created = Assert.IsType<CreatedAtRouteResult>(result);
+            Assert.Same(product, created.Value);
             Assert.Equal("api_route", created.RouteName);
             Assert.Equal("Products", created.RouteValues["controller"]);
-            Assert.Same(values, created.RouteValues);
+            Assert.Equal<KeyValuePair<string, object>>(values, created.RouteValues);
         }
 
         [Fact]
@@ -200,7 +201,7 @@ namespace System.Web.Http
 
             // Assert
             var contentResult = Assert.IsType<NegotiatedContentResult<Product>>(result);
-            Assert.Equal(HttpStatusCode.Found, contentResult.StatusCode);
+            Assert.Equal((int)HttpStatusCode.Found, contentResult.StatusCode);
             Assert.Equal(content, contentResult.Value);
         }
 

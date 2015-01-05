@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Security.Principal;
@@ -10,7 +9,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
-using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 
@@ -146,54 +144,54 @@ namespace System.Web.Http
         }
 
         /// <summary>
-        /// Creates a <see cref="CreatedNegotiatedContentResult{T}"/> (201 Created) with the specified values.
+        /// Creates a <see cref="CreatedResult"/> (201 Created) with the specified values.
         /// </summary>
-        /// <typeparam name="T">The type of content in the entity body.</typeparam>
         /// <param name="location">
         /// The location at which the content has been created. Must be a relative or absolute URL.
         /// </param>
-        /// <param name="content">The content value to negotiate and format in the entity body.</param>
-        /// <returns>A <see cref="CreatedNegotiatedContentResult{T}"/> with the specified values.</returns>
+        /// <param name="content">The content value to format in the entity body.</param>
+        /// <returns>A <see cref="CreatedResult"/> with the specified values.</returns>
         [NonAction]
-        public virtual CreatedNegotiatedContentResult<T> Created<T>([NotNull] string location, [NotNull] T content)
+        public virtual CreatedResult Created([NotNull] string location, object content)
         {
-            return Created<T>(new Uri(location, UriKind.RelativeOrAbsolute), content);
+            return new CreatedResult(location, content);
         }
 
         /// <summary>
-        /// Creates a <see cref="CreatedNegotiatedContentResult{T}"/> (201 Created) with the specified values.
+        /// Creates a <see cref="CreatedResult"/> (201 Created) with the specified values.
         /// </summary>
-        /// <typeparam name="T">The type of content in the entity body.</typeparam>
         /// <param name="location">The location at which the content has been created.</param>
-        /// <param name="content">The content value to negotiate and format in the entity body.</param>
-        /// <returns>A <see cref="CreatedNegotiatedContentResult{T}"/> with the specified values.</returns>
+        /// <param name="content">The content value to format in the entity body.</param>
+        /// <returns>A <see cref="CreatedResult"/> with the specified values.</returns>
         [NonAction]
-        public virtual CreatedNegotiatedContentResult<T> Created<T>([NotNull] Uri location, [NotNull] T content)
+        public virtual CreatedResult Created([NotNull] Uri uri, object content)
         {
-            return new CreatedNegotiatedContentResult<T>(location, content);
+            string location;
+            if (uri.IsAbsoluteUri)
+            {
+                location = uri.AbsoluteUri;
+            }
+            else
+            {
+                location = uri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            }
+            return Created(location, content);
         }
 
         /// <summary>
-        /// Creates a <see cref="CreatedAtRouteNegotiatedContentResult{T}"/> (201 Created) with the specified values.
+        /// Creates a <see cref="CreatedAtRouteResult"/> (201 Created) with the specified values.
         /// </summary>
-        /// <typeparam name="T">The type of content in the entity body.</typeparam>
         /// <param name="routeName">The name of the route to use for generating the URL.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
-        /// <param name="content">The content value to negotiate and format in the entity body.</param>
-        /// <returns>A <see cref="CreatedAtRouteNegotiatedContentResult{T}"/> with the specified values.</returns>
+        /// <param name="content">The content value to format in the entity body.</param>
+        /// <returns>A <see cref="CreatedAtRouteResult"/> with the specified values.</returns>
         [NonAction]
-        public virtual CreatedAtRouteNegotiatedContentResult<T> CreatedAtRoute<T>(
+        public virtual CreatedAtRouteResult CreatedAtRoute(
             [NotNull] string routeName,
             object routeValues,
-            [NotNull] T content)
+            object content)
         {
-            var values = routeValues as IDictionary<string, object>;
-            if (values == null)
-            {
-                values = new RouteValueDictionary(routeValues);
-            }
-
-            return new CreatedAtRouteNegotiatedContentResult<T>(routeName, values, content);
+            return new CreatedAtRouteResult(routeName, routeValues, content);
         }
 
         /// <summary

@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Assert.Equal("/ActionResultsVerification/GetDummy/1", response.Headers.Location.OriginalString);
+            Assert.Equal("http://localhost/ActionResultsVerification/GetDummy/1", response.Headers.Location.OriginalString);
             Assert.Equal("{\"SampleInt\":10,\"SampleString\":\"Foo\"}", await response.Content.ReadAsStringAsync());
         }
 
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Assert.Equal("/ActionResultsVerification/GetDummy/1", response.Headers.Location.OriginalString);
+            Assert.Equal("http://localhost/ActionResultsVerification/GetDummy/1", response.Headers.Location.OriginalString);
             Assert.Equal("{\"SampleInt\":10,\"SampleString\":\"Foo\"}", await response.Content.ReadAsStringAsync());
         }
 
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Assert.Equal("/foo/ActionResultsVerification/GetDummy/1", response.Headers.Location.OriginalString);
+            Assert.Equal("http://localhost/foo/ActionResultsVerification/GetDummy/1", response.Headers.Location.OriginalString);
             Assert.Equal("{\"SampleInt\":10,\"SampleString\":\"Foo\"}", await response.Content.ReadAsStringAsync());
         }
     }

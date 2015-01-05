@@ -56,9 +56,15 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         protected override void OnFormatting([NotNull] ActionContext context)
         {
+            var request = context.HttpContext.Request;
             var urlHelper = UrlHelper ?? context.HttpContext.RequestServices.GetRequiredService<IUrlHelper>();
 
-            var url = urlHelper.Action(ActionName, ControllerName, RouteValues);
+            var url = urlHelper.Action(
+                ActionName, 
+                ControllerName, 
+                RouteValues, 
+                request.Scheme, 
+                request.Host.ToUriComponent());
 
             if (string.IsNullOrEmpty(url))
             {
