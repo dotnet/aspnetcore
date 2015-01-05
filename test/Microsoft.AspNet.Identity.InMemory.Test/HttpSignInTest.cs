@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Identity.InMemory.Test
 {
-    public class ApplicationUser : IdentityUser { }
+    public class ApplicationUser : InMemoryUser { }
 
     public class HttpSignInTest
     {

@@ -10,6 +10,30 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity.InMemory
 {
+    public class InMemoryUser : IdentityUser
+    {
+        public InMemoryUser() { }
+
+        public InMemoryUser(string userName) : base(userName) { }
+
+
+        /// <summary>
+        ///     Roles for the user
+        /// </summary>
+        public virtual ICollection<IdentityUserRole> Roles { get; } = new List<IdentityUserRole>();
+
+        /// <summary>
+        ///     Claims for the user
+        /// </summary>
+        public virtual ICollection<IdentityUserClaim> Claims { get; } = new List<IdentityUserClaim>();
+
+        /// <summary>
+        ///     Associated logins for the user
+        /// </summary>
+        public virtual ICollection<IdentityUserLogin> Logins { get; } = new List<IdentityUserLogin>();
+
+    }
+
     public class InMemoryUserStore<TUser> :
         IUserLoginStore<TUser>,
         IUserRoleStore<TUser>,
@@ -21,7 +45,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         IUserPhoneNumberStore<TUser>,
         IQueryableUserStore<TUser>,
         IUserTwoFactorStore<TUser>
-        where TUser : IdentityUser
+        where TUser : InMemoryUser
     {
         private readonly Dictionary<string, TUser> _logins = new Dictionary<string, TUser>();
 
@@ -42,7 +66,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             foreach (var claim in claims)
             {
-                user.Claims.Add(new IdentityUserClaim<string> { ClaimType = claim.Type, ClaimValue = claim.Value, UserId = user.Id });
+                user.Claims.Add(new IdentityUserClaim { ClaimType = claim.Type, ClaimValue = claim.Value, UserId = user.Id });
             }
             return Task.FromResult(0);
         }
@@ -149,7 +173,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         public virtual Task AddLoginAsync(TUser user, UserLoginInfo login,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            user.Logins.Add(new IdentityUserLogin<string>
+            user.Logins.Add(new IdentityUserLogin
             {
                 UserId = user.Id,
                 ProviderKey = login.ProviderKey,
@@ -292,7 +316,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         // RoleId == roleName for InMemory
         public Task AddToRoleAsync(TUser user, string role, CancellationToken cancellationToken = default(CancellationToken))
         {
-            user.Roles.Add(new IdentityUserRole<string> { RoleId = role, UserId = user.Id });
+            user.Roles.Add(new IdentityUserRole { RoleId = role, UserId = user.Id });
             return Task.FromResult(0);
         }
 

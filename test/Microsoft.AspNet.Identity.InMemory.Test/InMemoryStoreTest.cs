@@ -6,7 +6,7 @@ using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity.InMemory.Test
 {
-    public class InMemoryStoreTest : UserManagerTestBase<IdentityUser, IdentityRole>
+    public class InMemoryStoreTest : UserManagerTestBase<InMemoryUser, IdentityRole>
     {
         protected override object CreateTestContext()
         {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IUserStore<IdentityUser>, InMemoryUserStore<IdentityUser>>();
+            services.AddSingleton<IUserStore<InMemoryUser>, InMemoryUserStore<InMemoryUser>>();
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
