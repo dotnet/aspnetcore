@@ -10,8 +10,6 @@ namespace Microsoft.AspNet.Mvc
     {
         public string Name { get; set; }
 
-        public bool IsOptional { get; set; }
-
         public Type ParameterType { get; set; }
 
         public IBinderMetadata BinderMetadata { get; set; }

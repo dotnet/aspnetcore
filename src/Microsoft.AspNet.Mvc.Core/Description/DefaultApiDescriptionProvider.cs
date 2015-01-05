@@ -263,7 +263,6 @@ namespace Microsoft.AspNet.Mvc.Description
         {
             var resourceParameter = new ApiParameterDescription
             {
-                IsOptional = parameter.IsOptional,
                 Name = parameter.Name,
                 ParameterDescriptor = parameter,
                 Type = parameter.ParameterType,
@@ -288,7 +287,7 @@ namespace Microsoft.AspNet.Mvc.Description
             var resourceParameter = new ApiParameterDescription
             {
                 Source = ApiParameterSource.Path,
-                IsOptional = parameter.IsOptional && IsOptionalParameter(templateParameter),
+                IsOptional = IsOptionalParameter(templateParameter),
                 Name = parameter.Name,
                 ParameterDescriptor = parameter,
                 Constraints = GetConstraints(_constraintResolver, templateParameter.InlineConstraints),

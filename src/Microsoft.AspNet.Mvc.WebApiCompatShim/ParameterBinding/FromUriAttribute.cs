@@ -12,10 +12,13 @@ namespace System.Web.Http
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
     public class FromUriAttribute :
         Attribute,
+        IOptionalBinderMetadata,
         IQueryValueProviderMetadata,
         IRouteDataValueProviderMetadata,
         IModelNameProvider
     {
+        public bool IsOptional { get; set; }
+
         /// <inheritdoc />
         public string Name { get; set; }
     }

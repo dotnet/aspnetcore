@@ -165,9 +165,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMetadata = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute() { IsOptional = true },
                     Name = "quantity",
-                    IsOptional = true,
                     ParameterType = typeof(int),
                 },
             };
@@ -307,9 +306,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMetadata = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute() { IsOptional = true },
                     Name = "quantity",
-                    IsOptional = true,
                     ParameterType = typeof(int),
                 },
             };
@@ -430,8 +428,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMetadata = new FromUriAttribute(),
-                    IsOptional = true,
+                    BinderMetadata = new FromUriAttribute() { IsOptional = true },
                     Name = "quantity",
                     ParameterType = typeof(int),
                 },

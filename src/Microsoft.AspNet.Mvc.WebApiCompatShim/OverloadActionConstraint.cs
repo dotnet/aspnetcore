@@ -93,9 +93,17 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 // We only consider parameters that are bound from the URL.
                 if ((parameter.BinderMetadata is IRouteDataValueProviderMetadata ||
                     parameter.BinderMetadata is IQueryValueProviderMetadata) &&
-                    !parameter.IsOptional &&
                     ValueProviderResult.CanConvertFromString(parameter.ParameterType))
                 {
+                    var optionalMetadata = parameter.BinderMetadata as IOptionalBinderMetadata;
+                    if (optionalMetadata == null || optionalMetadata.IsOptional)
+                    {
+                        // Optional parameters are ignored in overloading. If a parameter doesn't specify that it's
+                        // required then treat it as optional (MVC default). WebAPI parameters will all by-default
+                        // specify themselves as required unless they have a default value.
+                        continue;
+                    }
+
                     var nameProvider = parameter.BinderMetadata as IModelNameProvider;
                     var prefix = nameProvider?.Name ?? parameter.Name;
 

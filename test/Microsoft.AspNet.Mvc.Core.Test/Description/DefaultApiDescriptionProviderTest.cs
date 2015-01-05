@@ -121,7 +121,6 @@ namespace Microsoft.AspNet.Mvc.Description
                 new ParameterDescriptor()
                 {
                     Name = "id",
-                    IsOptional = true,
                     ParameterType = typeof(int),
                 },
                 new ParameterDescriptor()
@@ -141,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
             Assert.NotNull(id.ModelMetadata);
-            Assert.True(id.IsOptional);
+            Assert.False(id.IsOptional);
             Assert.Same(action.Parameters[0], id.ParameterDescriptor);
             Assert.Equal(ApiParameterSource.Query, id.Source);
             Assert.Equal(typeof(int), id.Type);
@@ -224,7 +223,6 @@ namespace Microsoft.AspNet.Mvc.Description
             var parameterDescriptor = new ParameterDescriptor
             {
                 Name = "id",
-                IsOptional = true,
                 ParameterType = typeof(int),
             };
             action.Parameters = new List<ParameterDescriptor> { parameterDescriptor };
@@ -280,7 +278,6 @@ namespace Microsoft.AspNet.Mvc.Description
             {
                 BinderMetadata = new FromBodyAttribute(),
                 Name = "id",
-                IsOptional = false,
                 ParameterType = typeof(int),
             };
             action.Parameters = new List<ParameterDescriptor> { parameterDescriptor };
@@ -317,15 +314,11 @@ namespace Microsoft.AspNet.Mvc.Description
         }
 
         [Theory]
-        [InlineData("api/products/{id}", false, false)]
-        [InlineData("api/products/{id}", true, false)]
-        [InlineData("api/products/{id?}", false, false)]
-        [InlineData("api/products/{id?}", true, true)]
-        [InlineData("api/products/{id=5}", false, false)]
-        [InlineData("api/products/{id=5}", true, true)]
-        public void GetApiDescription_ParameterFromPathAndDescriptor_IsOptionalOnly_IfBothAreOptional(
+        [InlineData("api/products/{id}", false)]
+        [InlineData("api/products/{id?}", true)]
+        [InlineData("api/products/{id=5}", true)]
+        public void GetApiDescription_ParameterFromPathAndDescriptor_IsOptionalIfRouteParameterIsOptional(
             string template,
-            bool isDescriptorParameterOptional,
             bool expectedOptional)
         {
             // Arrange
@@ -335,7 +328,6 @@ namespace Microsoft.AspNet.Mvc.Description
             var parameterDescriptor = new ParameterDescriptor
             {
                 Name = "id",
-                IsOptional = isDescriptorParameterOptional,
                 ParameterType = typeof(int),
             };
             action.Parameters = new List<ParameterDescriptor> { parameterDescriptor };

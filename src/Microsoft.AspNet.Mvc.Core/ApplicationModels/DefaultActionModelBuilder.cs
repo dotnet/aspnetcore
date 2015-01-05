@@ -317,7 +317,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             parameterModel.BinderMetadata = attributes.OfType<IBinderMetadata>().FirstOrDefault();
 
             parameterModel.ParameterName = parameterInfo.Name;
-            parameterModel.IsOptional = parameterInfo.HasDefaultValue;
 
             return parameterModel;
         }

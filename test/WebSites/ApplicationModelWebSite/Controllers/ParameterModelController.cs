@@ -4,25 +4,31 @@
 using System;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace ApplicationModelWebSite
 {
-    // This controller uses an reflected model attribute to change a parameter to optional.
+    // This controller uses an reflected model attribute to change a parameter's binder metadata.
+    //
+    // This could be accomplished by simply making an attribute that implements IBinderMetadata, but
+    // this is part of a test for IParameterModelConvention.
     public class ParameterModelController : Controller
     {
-        public string GetParameterIsOptional([Optional] int? id)
+        public string GetParameterMetadata([Cool] int? id)
         {
-            var actionDescriptor = (ControllerActionDescriptor)ActionContext.ActionDescriptor;
-
-            return actionDescriptor.Parameters[0].IsOptional.ToString();
+            return ActionContext.ActionDescriptor.Parameters[0].BinderMetadata.GetType().Name;
         }
 
-        private class OptionalAttribute : Attribute, IParameterModelConvention
+        private class CoolAttribute : Attribute, IParameterModelConvention
         {
             public void Apply(ParameterModel model)
             {
-                model.IsOptional = true;
+                model.BinderMetadata = new CoolMetadata();
             }
+        }
+
+        private class CoolMetadata : IBinderMetadata
+        {
         }
     }
 }

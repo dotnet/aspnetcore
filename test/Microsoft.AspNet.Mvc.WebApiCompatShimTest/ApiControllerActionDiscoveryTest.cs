@@ -277,7 +277,8 @@ namespace System.Web.Http
             foreach (var action in actions)
             {
                 var parameter = Assert.Single(action.Parameters);
-                Assert.IsType<FromUriAttribute>(parameter.BinderMetadata);
+                var metadata = Assert.IsType<FromUriAttribute>(parameter.BinderMetadata);
+                Assert.False(metadata.IsOptional);
             }
         }
 
@@ -332,6 +333,36 @@ namespace System.Web.Http
             {
                 var parameter = Assert.Single(action.Parameters);
                 Assert.IsType<ModelBinderAttribute>(parameter.BinderMetadata);
+            }
+        }
+
+        [Theory]
+        [InlineData(nameof(TestControllers.EventsController.GetWithId))]
+        [InlineData(nameof(TestControllers.EventsController.GetWithEmployee))]
+        public void GetActions_Parameters_ImplicitOptional(string name)
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var context = new ActionDescriptorProviderContext();
+            provider.Invoke(context);
+
+            var results = context.Results.Cast<ControllerActionDescriptor>();
+
+            // Assert
+            var controllerType = typeof(TestControllers.EventsController).GetTypeInfo();
+            var actions = results
+                .Where(ad => ad.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.Name == name)
+                .ToArray();
+
+            Assert.NotEmpty(actions);
+            foreach (var action in actions)
+            {
+                var parameter = Assert.Single(action.Parameters);
+                var metadata = Assert.IsType<FromUriAttribute>(parameter.BinderMetadata);
+                Assert.True(metadata.IsOptional);
             }
         }
 
@@ -454,6 +485,19 @@ namespace System.Web.Http.TestControllers
 
     public class Employee
     {
+    }
+
+    public class EventsController : ApiController
+    {
+        public IActionResult GetWithId(int id = 0)
+        {
+            return null;
+        }
+
+        public IActionResult GetWithEmployee([FromUri] Employee e = null)
+        {
+            return null;
+        }
     }
 }
 #endif

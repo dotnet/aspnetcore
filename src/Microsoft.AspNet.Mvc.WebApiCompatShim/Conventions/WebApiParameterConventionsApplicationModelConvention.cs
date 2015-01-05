@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Web.Http;
 using Microsoft.AspNet.Mvc.ApplicationModels;
@@ -45,6 +46,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                     {
                         // Complex types are by-default from the body.
                         parameter.BinderMetadata = new FromBodyAttribute();
+                    }
+
+                    // If the parameter has a default value, we want to consider it as optional parameter by default.
+                    var optionalMetadata = parameter.BinderMetadata as FromUriAttribute;
+                    if (parameter.ParameterInfo.HasDefaultValue && optionalMetadata != null)
+                    {
+                        optionalMetadata.IsOptional = true;
                     }
                 }
             }

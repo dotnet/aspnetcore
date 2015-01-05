@@ -275,7 +275,6 @@ namespace Microsoft.AspNet.Mvc
             var parameterDescriptor = new ParameterDescriptor()
             {
                 BinderMetadata = parameter.BinderMetadata,
-                IsOptional = parameter.IsOptional,
                 Name = parameter.ParameterName,
                 ParameterType = parameter.ParameterInfo.ParameterType,
             };

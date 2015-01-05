@@ -324,7 +324,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("RangeRouteConstraint", Assert.Single(month.ConstraintTypes));
 
             var day = Assert.Single(description.ParameterDescriptions, p => p.Name == "day");
-            Assert.False(day.IsOptional);
+            Assert.True(day.IsOptional);
             Assert.Equal("Path", day.Source);
             Assert.Equal("IntRouteConstraint", Assert.Single(day.ConstraintTypes));
 
