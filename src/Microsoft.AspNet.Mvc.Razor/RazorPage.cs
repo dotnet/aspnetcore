@@ -548,8 +548,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <returns>A<see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
         /// completion returns a <see cref="HtmlString.Empty"/>.</returns>
-        /// <remarks>The value returned is a token value that allows FlushAsync to succeed. However the
-        /// value does not represent the rendered content.</remarks>
+        /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
+        /// section. However the value does not represent the rendered content.</remarks>
         public async Task<HtmlString> FlushAsync()
         {
             // If there are active writing scopes then we should throw. Cannot flush content that has the potential to
