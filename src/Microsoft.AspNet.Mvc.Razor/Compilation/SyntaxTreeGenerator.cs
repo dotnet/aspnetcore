@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             return new CSharpParseOptions(
                languageVersion: compilationSettings.LanguageVersion,
-               preprocessorSymbols: compilationSettings.Defines.AsImmutable());
+               preprocessorSymbols: compilationSettings.Defines);
         }
     }
 }
