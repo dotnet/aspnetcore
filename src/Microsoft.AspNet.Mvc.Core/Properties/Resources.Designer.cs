@@ -1546,6 +1546,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("AsyncResourceFilter_InvalidShortCircuit"), p0, p1, p2, p3);
         }
 
+        /// <summary>
+        /// If the '{0}' property is not set to true, '{1}' property must be specified.
+        /// </summary>
+        internal static string ResponseCache_SpecifyDuration
+        {
+            get { return GetString("ResponseCache_SpecifyDuration"); }
+        }
+
+        /// <summary>
+        /// If the '{0}' property is not set to true, '{1}' property must be specified.
+        /// </summary>
+        internal static string FormatResponseCache_SpecifyDuration(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ResponseCache_SpecifyDuration"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

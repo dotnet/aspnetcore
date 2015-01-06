@@ -27,6 +27,7 @@
         "RazorInstrumentationWebsite": "1.0.0",
         "RazorViewEngineOptionsWebsite": "1.0.0",
         "RequestServicesWebSite": "1.0.0",
+        "ResponseCacheWebSite": "1.0.0",
         "TagHelperSample.Web": "1.0.0",
         "TagHelpersWebSite": "1.0.0",
         "UrlHelperWebSite": "1.0.0",
