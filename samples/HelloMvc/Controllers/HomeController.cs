@@ -7,10 +7,10 @@ namespace MvcSample.Web
     {
         public IActionResult Index()
         {
-            return View(User());
+            return View(CreateUser());
         }
 
-        public User User()
+        public User CreateUser()
         {
             User user = new User()
             {
