@@ -28,7 +28,7 @@ if test ! -d packages/KoreBuild; then
 fi
 
 if ! type k > /dev/null 2>&1; then
-    source setup/kvm.sh
+    source packages/KoreBuild/build/kvm.sh
 fi
 
 if ! type k > /dev/null 2>&1; then
