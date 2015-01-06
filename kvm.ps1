@@ -31,7 +31,7 @@ $userKrePath = $env:USERPROFILE + "\.kre"
 $userKrePackages = $userKrePath + "\packages"
 $globalKrePath = $env:ProgramFiles + "\KRE"
 $globalKrePackages = $globalKrePath + "\packages"
-$feed = $env:KRE_NUGET_API_URL
+$feed = $env:KRE_FEED
 
 # In some environments, like Azure Websites, the Write-* cmdlets don't work
 $useHostOutputMethods = $true
@@ -49,7 +49,7 @@ $scriptPath = $myInvocation.MyCommand.Definition
 
 function Kvm-Help {
 @"
-K Runtime Environment Version Manager - Build 10031
+K Runtime Environment Version Manager - Build 10050
 
 USAGE: kvm <command> [options]
 
@@ -146,23 +146,13 @@ function Kvm-Global-Setup {
   [Environment]::SetEnvironmentVariable("KRE_HOME", $machineKreHome, [System.EnvironmentVariableTarget]::Machine)
 }
 
-function Kvm-Global-Upgrade {
-  $Persistent = $true
-  $Alias="default"
-  $versionOrAlias = Kvm-Find-Latest $selectedRuntime $selectedArch
-  If (Needs-Elevation) {
-    $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' install '$versionOrAlias' -global $(Requested-Switches) -wait"
-    Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
-    Kvm-Set-Global-Process-Path $versionOrAlias
-    break
-  }
-  Kvm-Install $versionOrAlias $true
-}
-
 function Kvm-Upgrade {
+param(
+  [boolean] $isGlobal
+)
   $Persistent = $true
   $Alias="default"
-  Kvm-Install "latest" $false
+  Kvm-Install "latest" $isGlobal
 }
 
 function Add-Proxy-If-Specified {
@@ -194,7 +184,6 @@ param(
   $url = "$feed/GetUpdates()?packageIds=%27KRE-$platform-$architecture%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
 
   $wc = New-Object System.Net.WebClient
-  $wc.Credentials = new-object System.Net.NetworkCredential("aspnetreadonly", "4d8a2d9c-7b80-4162-9978-47e918c9658c")
   Add-Proxy-If-Specified($wc)
   [xml]$xml = $wc.DownloadString($url)
 
@@ -241,7 +230,6 @@ param(
   }
 
   $wc = New-Object System.Net.WebClient
-  $wc.Credentials = new-object System.Net.NetworkCredential("aspnetreadonly", "4d8a2d9c-7b80-4162-9978-47e918c9658c")
   Add-Proxy-If-Specified($wc)
   $wc.DownloadFile($url, $tempKreFile)
 
@@ -373,7 +361,7 @@ param(
     }
     else {
       Console-Write "Compiling native images for $kreFullName to improve startup performance..."
-      Start-Process "K" -ArgumentList "crossgen" -Wait
+      Start-Process "k-crossgen" -Wait
       Console-Write "Finished native image compilation."
     }
   }
@@ -716,7 +704,7 @@ function Requested-Switches() {
   return $arguments
 }
 
-function Validate-And-Santitise-Switches()
+function Validate-And-Santitize-Switches()
 {
   if ($Svr50 -and $Runtime) {throw "You cannot select both the -runtime switch and the -svr50 runtimes"}
   if ($Svrc50 -and $Runtime) {throw "You cannot select both the -runtime switch and the -svrc50 runtimes"}
@@ -797,11 +785,11 @@ param(
 
 $exitCode = 0
 try {
-  Validate-And-Santitise-Switches
+  Validate-And-Santitize-Switches
   if ($Global) {
     switch -wildcard ($Command + " " + $Args.Count) {
       "setup 0"           {Kvm-Global-Setup}
-      "upgrade 0"         {Kvm-Global-Upgrade}
+      "upgrade 0"         {Kvm-Upgrade $true}
       "install 1"         {Kvm-Install $Args[0] $true}
       "use 1"             {Kvm-Global-Use $Args[0]}
       default             {throw "Unknown command, or global switch not supported"};
@@ -809,7 +797,7 @@ try {
   } else {
     switch -wildcard ($Command + " " + $Args.Count) {
       "setup 0"           {Kvm-Global-Setup}
-      "upgrade 0"         {Kvm-Upgrade}
+      "upgrade 0"         {Kvm-Upgrade $false}
       "install 1"         {Kvm-Install $Args[0] $false}
       "list 0"            {Kvm-List}
       "use 1"             {Kvm-Use $Args[0]}
