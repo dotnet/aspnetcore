@@ -7,10 +7,15 @@ using Microsoft.AspNet.Identity;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Startup extensions
+    /// Identity extensions for <see cref="IApplicationBuilder"/>.
     /// </summary>
     public static class BuilderExtensions
     {
+        /// <summary>
+        /// Enables the ASP.NET identity for the current application.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
+        /// <returns>The <see cref="IApplicationBuilder"/> instance this method extends.</returns>
         public static IApplicationBuilder UseIdentity(this IApplicationBuilder app)
         {
             if (app == null)
