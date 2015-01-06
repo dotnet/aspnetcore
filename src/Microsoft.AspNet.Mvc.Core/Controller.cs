@@ -628,6 +628,26 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Creates an <see cref="BadRequestObjectResult"/> that produces a Bad Request (400) response.
+        /// </summary>
+        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual BadRequestObjectResult HttpBadRequest(object error)
+        {
+            return new BadRequestObjectResult(error);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="BadRequestObjectResult"/> that produces a Bad Request (400) response.
+        /// </summary>
+        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual BadRequestObjectResult HttpBadRequest([NotNull] ModelStateDictionary modelState)
+        {
+            return new BadRequestObjectResult(modelState);
+        }
+
+        /// <summary>
         /// Creates a <see cref="CreatedResult"/> object that produces a Created (201) response.
         /// </summary>
         /// <param name="uri">The URI at which the content has been created.</param>

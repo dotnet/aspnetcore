@@ -669,6 +669,38 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(400, result.StatusCode);
         }
 
+        [Fact]
+        public void BadRequest_SetsStatusCodeAndValue_Object()
+        {
+            // Arrange
+            var controller = new Controller();
+            var obj = new object();
+
+            // Act
+            var result = controller.HttpBadRequest(obj);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, result.StatusCode);
+            Assert.Equal(obj, result.Value);
+        }
+
+        [Fact]
+        public void BadRequest_SetsStatusCodeAndValue_ModelState()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var result = controller.HttpBadRequest(new ModelStateDictionary());
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, result.StatusCode);
+            var errors = Assert.IsType<SerializableError>(result.Value);
+            Assert.Equal(0, errors.Count);
+        }
+
         [Theory]
         [MemberData(nameof(PublicNormalMethodsFromController))]
         public void NonActionAttribute_IsOnEveryPublicNormalMethodFromController(MethodInfo method)

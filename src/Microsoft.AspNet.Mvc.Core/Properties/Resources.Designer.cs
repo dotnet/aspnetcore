@@ -1514,6 +1514,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AmbiguousTypeMatch_Item"), p0, p1);
         }
 
+        /// <summary>
+        /// The input was not valid.
+        /// </summary>
+        internal static string SerializableError_DefaultError
+        {
+            get { return GetString("SerializableError_DefaultError"); }
+        }
+
+        /// <summary>
+        /// The input was not valid.
+        /// </summary>
+        internal static string FormatSerializableError_DefaultError()
+        {
+            return GetString("SerializableError_DefaultError");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
