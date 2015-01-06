@@ -7,10 +7,10 @@ projectFile=''
     Required. Path to the project.json to build.
 
 configuration=''
-    Optional. The configuration to build in. Defaults to 'debug'.
+    Optional. The configuration to build in. Defaults to 'Debug'.
 */}
 
-default configuration = 'debug'
+default configuration = 'Debug'
 default build_options='${E("KPM_build_options")}'
 var projectFolder='${Path.GetDirectoryName(projectFile)}'
 var projectName='${Path.GetFileName(projectFolder)}'

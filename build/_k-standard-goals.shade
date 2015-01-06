@@ -22,7 +22,7 @@ default Configuration='${E("Configuration")}'
   }
   if (string.IsNullOrEmpty(Configuration))
   {
-    Configuration = "debug";
+    Configuration = "Debug";
     E("Configuration", Configuration);
   }
 }
