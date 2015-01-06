@@ -6,15 +6,16 @@ using System.Security.Claims;
 namespace System.Security.Principal
 {
     /// <summary>
-    ///     Extensions making it easier to get the user name/user id claims off of an identity
+    /// Claims related extensions for <see cref="IIdentity"/>.
     /// </summary>
     public static class ClaimsIdentityExtensions
     {
         /// <summary>
-        ///     Return the user name using the UserNameClaimType
+        /// Returns the Name claim value if present otherwise returns null.
         /// </summary>
-        /// <param name="identity"></param>
-        /// <returns></returns>
+        /// <param name="identity">The <see cref="IIdentity"/> instance this method extends.</param>
+        /// <returns>The Name claim value, or null if the claim is not present.</returns>
+        /// <remarks>The name claim is identified by <see cref="ClaimsIdentity.DefaultNameClaimType"/>.</remarks>
         public static string GetUserName(this IIdentity identity)
         {
             if (identity == null)
@@ -26,10 +27,11 @@ namespace System.Security.Principal
         }
 
         /// <summary>
-        ///     Return the user id using the UserIdClaimType
+        /// Returns the User ID claim value if present otherwise returns null.
         /// </summary>
-        /// <param name="identity"></param>
-        /// <returns></returns>
+        /// <param name="identity">The <see cref="IIdentity"/> instance this method extends.</param>
+        /// <returns>The User ID claim value, or null if the claim is not present.</returns>
+        /// <remarks>The name claim is identified by <see cref="ClaimTypes.NameIdentifier"/>.</remarks>
         public static string GetUserId(this IIdentity identity)
         {
             if (identity == null)
@@ -41,11 +43,11 @@ namespace System.Security.Principal
         }
 
         /// <summary>
-        ///     Return the claim value for the first claim with the specified type if it exists, null otherwise
+        /// Returns the value for the first claim of the specified type otherwise null the claim is not present.
         /// </summary>
-        /// <param name="identity"></param>
-        /// <param name="claimType"></param>
-        /// <returns></returns>
+        /// <param name="identity">The <see cref="IIdentity"/> instance this method extends.</param>
+        /// <param name="claimType">The claim type whose first value should be returned.</param>
+        /// <returns>The value of the first instance of the specifed claim type, or null if the claim is not present.</returns>
         public static string FindFirstValue(this ClaimsIdentity identity, string claimType)
         {
             if (identity == null)
