@@ -11,11 +11,6 @@ namespace Microsoft.AspNet.Identity
     public class ClaimsIdentityOptions
     {
         /// <summary>
-        /// The ClaimType used for the identity security stamp.
-        /// </summary>
-        public static readonly string DefaultSecurityStampClaimType = "AspNet.Identity.SecurityStamp";
-
-        /// <summary>
         /// Gets the ClaimType used for a Role claim.
         /// </summary>
         /// <remarks>
@@ -45,6 +40,6 @@ namespace Microsoft.AspNet.Identity
         /// <remarks>
         /// This defaults to "AspNet.Identity.SecurityStamp".
         /// </remarks>
-        public string SecurityStampClaimType { get; set; } = DefaultSecurityStampClaimType;
+        public string SecurityStampClaimType { get; set; } = "AspNet.Identity.SecurityStamp";
     }
 }
