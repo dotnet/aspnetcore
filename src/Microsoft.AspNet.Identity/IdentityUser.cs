@@ -53,6 +53,11 @@ namespace Microsoft.AspNet.Identity
         public virtual string SecurityStamp { get; set; }
 
         /// <summary>
+        /// A random value that should change whenever a user is persisted to the store
+        /// </summary>
+        public virtual string ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
         ///     PhoneNumber for the user
         /// </summary>
         public virtual string PhoneNumber { get; set; }

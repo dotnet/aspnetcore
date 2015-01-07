@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.Identity
             = new ResourceManager("Microsoft.AspNet.Identity.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Optimistic concurrency failure, object has been modified.
+        /// </summary>
+        internal static string ConcurrencyFailure
+        {
+            get { return GetString("ConcurrencyFailure"); }
+        }
+
+        /// <summary>
+        /// Optimistic concurrency failure, object has been modified.
+        /// </summary>
+        internal static string FormatConcurrencyFailure()
+        {
+            return GetString("ConcurrencyFailure");
+        }
+
+        /// <summary>
         /// Your security code is: {0}
         /// </summary>
         internal static string DefaultEmailTokenProviderBodyFormat
@@ -408,22 +424,6 @@ namespace Microsoft.AspNet.Identity
         internal static string FormatPasswordTooShort(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("PasswordTooShort"), p0);
-        }
-
-        /// <summary>
-        /// {0} cannot be null or empty.
-        /// </summary>
-        internal static string PropertyTooShort
-        {
-            get { return GetString("PropertyTooShort"); }
-        }
-
-        /// <summary>
-        /// {0} cannot be null or empty.
-        /// </summary>
-        internal static string FormatPropertyTooShort(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyTooShort"), p0);
         }
 
         /// <summary>

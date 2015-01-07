@@ -113,22 +113,22 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class MyUberThingy : IUserValidator<IdentityUser>, IPasswordValidator<IdentityUser>, IRoleValidator<IdentityRole>, IUserStore<IdentityUser>, IRoleStore<IdentityRole>
         {
-            public Task CreateAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> CreateAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task CreateAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> CreateAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task DeleteAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> DeleteAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task DeleteAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> DeleteAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -188,12 +188,12 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task UpdateAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> UpdateAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task UpdateAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> UpdateAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

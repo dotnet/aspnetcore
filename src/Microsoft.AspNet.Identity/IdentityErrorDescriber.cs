@@ -15,6 +15,15 @@ namespace Microsoft.AspNet.Identity
                 Description = Resources.DefaultError
             };
         }
+        public virtual IdentityError ConcurrencyFailure()
+        {
+            return new IdentityError
+            {
+                Code = nameof(ConcurrencyFailure),
+                Description = Resources.ConcurrencyFailure
+            };
+        }
+
 
         public virtual IdentityError PasswordMismatch()
         {

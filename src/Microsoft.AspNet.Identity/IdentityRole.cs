@@ -65,5 +65,10 @@ namespace Microsoft.AspNet.Identity
         ///     Role name
         /// </summary>
         public virtual string Name { get; set; }
+
+        /// <summary>
+        /// A random value that should change whenever a role is persisted to the store
+        /// </summary>
+        public virtual string ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
     }
 }

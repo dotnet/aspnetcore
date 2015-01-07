@@ -15,20 +15,20 @@ namespace Microsoft.AspNet.Identity.InMemory
     {
         private readonly Dictionary<string, TRole> _roles = new Dictionary<string, TRole>();
 
-        public Task CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             _roles[role.Id] = role;
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
-        public Task DeleteAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> DeleteAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (role == null || !_roles.ContainsKey(role.Id))
             {
                 throw new InvalidOperationException("Unknown role");
             }
             _roles.Remove(role.Id);
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
         public Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
@@ -47,10 +47,10 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(0);
         }
 
-        public Task UpdateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> UpdateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             _roles[role.Id] = role;
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
         public Task<TRole> FindByIdAsync(string roleId, CancellationToken cancellationToken = default(CancellationToken))

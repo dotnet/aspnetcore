@@ -7,7 +7,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -142,8 +141,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return result;
             }
-            await Store.CreateAsync(role, cancellationToken);
-            return IdentityResult.Success;
+            return await Store.CreateAsync(role, cancellationToken);
         }
 
         /// <summary>
@@ -166,8 +164,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return result;
             }
-            await Store.UpdateAsync(role, cancellationToken);
-            return IdentityResult.Success;
+            return await Store.UpdateAsync(role, cancellationToken);
         }
 
         /// <summary>
@@ -184,9 +181,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("role");
             }
-
-            await Store.DeleteAsync(role, cancellationToken);
-            return IdentityResult.Success;
+            return await Store.DeleteAsync(role, cancellationToken);
         }
 
         /// <summary>

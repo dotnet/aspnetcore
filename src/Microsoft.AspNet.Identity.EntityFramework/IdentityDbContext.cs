@@ -30,12 +30,14 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 {
                     b.Key(u => u.Id);
                     b.ForRelational().Table("AspNetUsers");
+                    b.Property(u => u.ConcurrencyStamp).ConcurrencyToken();
                 });
 
             builder.Entity<TRole>(b =>
                 {
                     b.Key(r => r.Id);
                     b.ForRelational().Table("AspNetRoles");
+                    b.Property(r => r.ConcurrencyStamp).ConcurrencyToken();
                 });
 
             builder.Entity<IdentityUserClaim<TKey>>(b =>

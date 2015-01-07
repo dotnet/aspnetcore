@@ -63,17 +63,17 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class NotImplementedStore : IRoleStore<TestRole>
         {
-            public Task CreateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> CreateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task UpdateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> UpdateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task DeleteAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> DeleteAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

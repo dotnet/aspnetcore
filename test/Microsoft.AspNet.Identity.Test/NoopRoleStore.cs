@@ -8,14 +8,14 @@ namespace Microsoft.AspNet.Identity.Test
 {
     public class NoopRoleStore : IRoleStore<TestRole>
     {
-        public Task CreateAsync(TestRole user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> CreateAsync(TestRole user, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
-        public Task UpdateAsync(TestRole user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> UpdateAsync(TestRole user, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
         public Task<string> GetRoleNameAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
@@ -42,9 +42,9 @@ namespace Microsoft.AspNet.Identity.Test
         {
         }
 
-        public Task DeleteAsync(TestRole user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> DeleteAsync(TestRole user, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
         public Task<string> GetRoleIdAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))

@@ -9,20 +9,21 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Update;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
     public class RoleStore<TRole> : RoleStore<TRole, DbContext, string>
         where TRole : IdentityRole
     {
-        public RoleStore(DbContext context) : base(context) { }
+        public RoleStore(DbContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
     public class RoleStore<TRole, TContext> : RoleStore<TRole, TContext, string>
         where TRole : IdentityRole
         where TContext : DbContext
     {
-        public RoleStore(TContext context) : base(context) { }
+        public RoleStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
     public class RoleStore<TRole, TContext, TKey> :
@@ -32,19 +33,25 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         where TKey : IEquatable<TKey>
         where TContext : DbContext
     {
-        public RoleStore(TContext context)
+        public RoleStore(TContext context, IdentityErrorDescriber describer = null)
         {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
             }
             Context = context;
+            ErrorDescriber = describer ?? new IdentityErrorDescriber();
         }
 
         private bool _disposed;
 
 
         public TContext Context { get; private set; }
+
+        /// <summary>
+        ///     Used to generate public API error messages
+        /// </summary>
+        public IdentityErrorDescriber ErrorDescriber { get; set; }
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync
@@ -59,7 +66,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
         }
 
-        public async virtual Task CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -69,9 +76,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
             await Context.AddAsync(role, cancellationToken);
             await SaveChanges(cancellationToken);
+            return IdentityResult.Success;
         }
 
-        public async virtual Task UpdateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> UpdateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -79,11 +87,21 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("role");
             }
+            Context.Attach(role);
+            role.ConcurrencyStamp = Guid.NewGuid().ToString();
             Context.Update(role);
-            await SaveChanges(cancellationToken);
+            try
+            {
+                await SaveChanges(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
+            }
+            return IdentityResult.Success;
         }
 
-        public async virtual Task DeleteAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> DeleteAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -92,7 +110,15 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("role");
             }
             Context.Remove(role);
-            await SaveChanges(cancellationToken);
+            try
+            {
+                await SaveChanges(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
+            }
+            return IdentityResult.Success;
         }
 
         public Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))

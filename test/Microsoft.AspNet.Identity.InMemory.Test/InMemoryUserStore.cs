@@ -209,16 +209,16 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(0);
         }
 
-        public Task CreateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             _users[user.Id] = user;
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
-        public Task UpdateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> UpdateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             _users[user.Id] = user;
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
         public Task<TUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
@@ -241,14 +241,14 @@ namespace Microsoft.AspNet.Identity.InMemory
                     Users.FirstOrDefault(u => String.Equals(u.UserName, userName, StringComparison.OrdinalIgnoreCase)));
         }
 
-        public Task DeleteAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> DeleteAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (user == null || !_users.ContainsKey(user.Id))
             {
                 throw new InvalidOperationException("Unknown user");
             }
             _users.Remove(user.Id);
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
         public Task SetPasswordHashAsync(TUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken))

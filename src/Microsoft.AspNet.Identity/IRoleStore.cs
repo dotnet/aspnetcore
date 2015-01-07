@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="role"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IdentityResult> CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Update a role
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="role"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task UpdateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IdentityResult> UpdateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     DeleteAsync a role
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="role"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task DeleteAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IdentityResult> DeleteAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         ///     Returns a role's id
