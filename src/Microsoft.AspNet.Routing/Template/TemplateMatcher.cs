@@ -169,15 +169,61 @@ namespace Microsoft.AspNet.Routing.Template
                                          IReadOnlyDictionary<string, object> defaults,
                                          RouteValueDictionary values)
         {
+            var indexOfLastSegment = routeSegment.Parts.Count - 1;
+
+            // We match the request to the template starting at the rightmost parameter
+            // If the last segment of template is optional, then request can match the 
+            // template with or without the last parameter. So we start with regular matching,
+            // but if it doesn't match, we start with next to last parameter. Example:
+            // Template: {p1}/{p2}.{p3?}. If the request is foo/bar.moo it will match right away
+            // giving p3 value of moo. But if the request is foo/bar, we start matching from the
+            // rightmost giving p3 the value of bar, then we end up not matching the segment.
+            // In this case we start again from p2 to match the request and we succeed giving
+            // the value bar to p2
+            if (routeSegment.Parts[indexOfLastSegment].IsOptional &&
+                routeSegment.Parts[indexOfLastSegment - 1].IsOptionalSeperator)            
+            {
+                if (MatchComplexSegmentCore(routeSegment, requestSegment, Defaults, values, indexOfLastSegment))
+                {
+                    return true;
+                }
+                else
+                {
+                    if (requestSegment.EndsWith(routeSegment.Parts[indexOfLastSegment - 1].Text))
+                    {
+                        return false;
+                    }
+
+                    return MatchComplexSegmentCore(
+                        routeSegment,
+                        requestSegment,
+                        Defaults,
+                        values,
+                        indexOfLastSegment - 2);
+                }
+            }
+            else
+            {
+                return MatchComplexSegmentCore(routeSegment, requestSegment, Defaults, values, indexOfLastSegment);
+            }
+        }
+
+        private bool MatchComplexSegmentCore(TemplateSegment routeSegment,
+                                         string requestSegment,
+                                         IReadOnlyDictionary<string, object> defaults,
+                                         RouteValueDictionary values,
+                                         int indexOfLastSegmentUsed)
+        {
             Debug.Assert(routeSegment != null);
             Debug.Assert(routeSegment.Parts.Count > 1);
 
             // Find last literal segment and get its last index in the string
             var lastIndex = requestSegment.Length;
-            var indexOfLastSegmentUsed = routeSegment.Parts.Count - 1;
-
+            
             TemplatePart parameterNeedsValue = null; // Keeps track of a parameter segment that is pending a value
             TemplatePart lastLiteral = null; // Keeps track of the left-most literal we've encountered
+
+            var outValues = new RouteValueDictionary();
 
             while (indexOfLastSegmentUsed >= 0)
             {
@@ -187,7 +233,7 @@ namespace Microsoft.AspNet.Routing.Template
                 if (part.IsParameter)
                 {
                     // Hold on to the parameter so that we can fill it in when we locate the next literal
-                    parameterNeedsValue = part;
+                    parameterNeedsValue = part;                    
                 }
                 else
                 {
@@ -209,10 +255,10 @@ namespace Microsoft.AspNet.Routing.Template
                     var indexOfLiteral = requestSegment.LastIndexOf(part.Text,
                                                                     startIndex,
                                                                     StringComparison.OrdinalIgnoreCase);
-                    if (indexOfLiteral == -1)
+                    if (indexOfLiteral == -1) 
                     {
                         // If we couldn't find this literal index, this segment cannot match
-                        return false;
+                        return false;          
                     }
 
                     // If the first subsegment is a literal, it must match at the right-most extent of the request URI.
@@ -271,13 +317,14 @@ namespace Microsoft.AspNet.Routing.Template
                     {
                         // If we're here that means we have a segment that contains multiple sub-segments.
                         // For these segments all parameters must have non-empty values. If the parameter
-                        // has an empty value it's not a match.
+                        // has an empty value it's not a match.                        
                         return false;
+                        
                     }
                     else
                     {
                         // If there's a value in the segment for this parameter, use the subsegment value
-                        values.Add(parameterNeedsValue.Name, parameterValueString);
+                        outValues.Add(parameterNeedsValue.Name, parameterValueString);
                     }
 
                     parameterNeedsValue = null;
@@ -294,7 +341,17 @@ namespace Microsoft.AspNet.Routing.Template
             // the route "Foo" to the request URI "somethingFoo". Thus we have to check that we parsed the *entire*
             // request URI in order for it to be a match.
             // This check is related to the check we do earlier in this function for LiteralSubsegments.
-            return (lastIndex == 0) || routeSegment.Parts[0].IsParameter;
+            if (lastIndex == 0 || routeSegment.Parts[0].IsParameter)
+            {
+                foreach (var item in outValues)
+                {
+                    values.Add(item.Key, item.Value);
+                }
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

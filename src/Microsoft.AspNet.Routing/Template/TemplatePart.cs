@@ -40,6 +40,7 @@ namespace Microsoft.AspNet.Routing.Template
         public bool IsLiteral { get; private set; }
         public bool IsParameter { get; private set; }
         public bool IsOptional { get; private set; }
+        public bool IsOptionalSeperator { get; set; }
         public string Name { get; private set; }
         public string Text { get; private set; }
         public object DefaultValue { get; private set; }

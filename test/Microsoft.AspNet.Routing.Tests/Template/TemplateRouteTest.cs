@@ -223,83 +223,7 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.NotSame(originalDataTokens, context.RouteData.DataTokens);
             Assert.NotSame(route.DataTokens, context.RouteData.DataTokens);
         }
-
-        [Fact]
-        public async Task RouteAsync_InlineConstrait_OptionalParameter()
-        {
-            // Arrange
-            var template = "{controller}/{action}/{id:int?}";
-
-            var context = CreateRouteContext("/Home/Index/5");
-
-            IDictionary<string, object> routeValues = null;
-            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
-            mockTarget
-                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(ctx =>
-                {
-                    routeValues = ctx.RouteData.Values;
-                    ctx.IsHandled = true;
-                })
-                .Returns(Task.FromResult(true));
-
-            var route = new TemplateRoute(
-                mockTarget.Object,
-                template,
-                defaults: null,
-                constraints: null,
-                dataTokens: null,
-                inlineConstraintResolver: _inlineConstraintResolver);
-
-            // Act
-            await route.RouteAsync(context);
-
-            // Assert
-            Assert.NotNull(routeValues);
-            Assert.True(routeValues.ContainsKey("id"));
-            Assert.Equal("5", routeValues["id"]);
-
-            Assert.True(context.RouteData.Values.ContainsKey("id"));
-            Assert.Equal("5", context.RouteData.Values["id"]);
-        }
-
-        [Fact]
-        public async Task RouteAsync_InlineConstrait_OptionalParameter_NotPresent()
-        {
-            // Arrange
-            var template = "{controller}/{action}/{id:int?}";
-
-            var context = CreateRouteContext("/Home/Index");
-
-            IDictionary<string, object> routeValues = null;
-            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
-            mockTarget
-                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(ctx =>
-                {
-                    routeValues = ctx.RouteData.Values;
-                    ctx.IsHandled = true;
-                })
-                .Returns(Task.FromResult(true));
-
-            var route = new TemplateRoute(
-                mockTarget.Object,
-                template,
-                defaults: null,
-                constraints: null,
-                dataTokens: null,
-                inlineConstraintResolver: _inlineConstraintResolver);
-
-            // Act
-            await route.RouteAsync(context);
-
-            // Assert
-            Assert.NotNull(routeValues);
-            Assert.False(routeValues.ContainsKey("id"));
-
-            Assert.False(context.RouteData.Values.ContainsKey("id"));
-        }
-
+        
         [Fact]
         public async Task RouteAsync_MergesExistingRouteData_PassedToConstraint()
         {
@@ -862,6 +786,73 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Null(context.RouteData.Values["1controller"]);
         }
 
+        [Fact]
+        public async Task Match_Success_OptionalParameter_ValueProvided()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}.{format?}", new { action = "Index" });
+            var context = CreateRouteContext("/Home/Create.xml");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.True(context.IsHandled);
+            Assert.Equal(3, context.RouteData.Values.Count);
+            Assert.Equal("Home", context.RouteData.Values["controller"]);
+            Assert.Equal("Create", context.RouteData.Values["action"]);
+            Assert.Equal("xml", context.RouteData.Values["format"]);
+        }
+
+        [Fact]
+        public async Task Match_Success_OptionalParameter_ValueNotProvided()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}.{format?}", new { action = "Index" });
+            var context = CreateRouteContext("/Home/Create");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.True(context.IsHandled);
+            Assert.Equal(2, context.RouteData.Values.Count);
+            Assert.Equal("Home", context.RouteData.Values["controller"]);
+            Assert.Equal("Create", context.RouteData.Values["action"]);
+        }
+
+        [Fact]
+        public async Task Match_Success_OptionalParameter_DefaultValue()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}.{format?}", new { action = "Index", format = "xml" });
+            var context = CreateRouteContext("/Home/Create");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.True(context.IsHandled);
+            Assert.Equal(3, context.RouteData.Values.Count);
+            Assert.Equal("Home", context.RouteData.Values["controller"]);
+            Assert.Equal("Create", context.RouteData.Values["action"]);
+            Assert.Equal("xml", context.RouteData.Values["format"]);
+        }
+
+        [Fact]
+        public async Task Match_Success_OptionalParameter_EndsWithDot()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}.{format?}", new { action = "Index" });
+            var context = CreateRouteContext("/Home/Create.");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.False(context.IsHandled);
+        }
+
         private static RouteContext CreateRouteContext(string requestPath, ILoggerFactory factory = null)
         {
             if (factory == null)
@@ -1070,7 +1061,9 @@ namespace Microsoft.AspNet.Routing.Template
                 .Returns<string>(null);
 
             var route = CreateRoute(target.Object, "{controller}/{action}");
-            var context = CreateVirtualPathContext(new { action = "Store" }, new { Controller = "Home", action = "Blog" });
+            var context = CreateVirtualPathContext(
+                new { action = "Store" }, 
+                new { Controller = "Home", action = "Blog" });
 
             var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store" });
 
@@ -1094,9 +1087,11 @@ namespace Microsoft.AspNet.Routing.Template
                 .Returns<string>(null);
 
             var route = CreateRoute(target.Object, "Admin/{controller}/{action}", new { area = "Admin" });
-            var context = CreateVirtualPathContext(new { action = "Store" }, new { Controller = "Home", action = "Blog" });
+            var context = CreateVirtualPathContext(
+                new { action = "Store" }, new { Controller = "Home", action = "Blog" });
 
-            var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store", area = "Admin" });
+            var expectedValues = new RouteValueDictionary(
+                new { controller = "Home", action = "Store", area = "Admin" });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -1118,7 +1113,8 @@ namespace Microsoft.AspNet.Routing.Template
                 .Returns<string>(null);
 
             var route = CreateRoute(target.Object, "{controller}/{action}");
-            var context = CreateVirtualPathContext(new { action = "Store", id = 5 }, new { Controller = "Home", action = "Blog" });
+            var context = CreateVirtualPathContext(
+                new { action = "Store", id = 5 }, new { Controller = "Home", action = "Blog" });
 
             var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store" });
 
@@ -1352,7 +1348,166 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal("Home/Index/products", path);
         }
 
-        
+        [Fact]
+        public void GetVirtualPath_OptionalParameter_ParameterPresentInValues()
+        {
+            // Arrange            
+            var route = CreateRoute(
+                template: "{controller}/{action}/{name}.{format?}",
+                defaults: null,
+                accept: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", name = "products", format = "xml"});
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/products.xml", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_OptionalParameter_ParameterNotPresentInValues()
+        {
+            // Arrange            
+            var route = CreateRoute(
+                template: "{controller}/{action}/{name}.{format?}",
+                defaults: null,
+                accept: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", name = "products"});
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/products", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_OptionalParameter_ParameterPresentInValuesAndDefaults()
+        {
+            // Arrange            
+            var route = CreateRoute(
+                template: "{controller}/{action}/{name}.{format?}",
+                defaults: new { format = "json" },
+                accept: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", name = "products" , format = "xml"});
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/products.xml", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_OptionalParameter_ParameterNotPresentInValues_PresentInDefaults()
+        {
+            // Arrange            
+            var route = CreateRoute(
+                template: "{controller}/{action}/{name}.{format?}",
+                defaults: new { format = "json" },
+                accept: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", name = "products"});
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/products", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_OptionalParameter_ParameterNotPresentInTemplate_PresentInValues()
+        {
+            // Arrange            
+            var route = CreateRoute(
+                template: "{controller}/{action}/{name}",
+                defaults: null,
+                accept: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", name = "products", format = "json" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/products?format=json", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_OptionalParameter_FollowedByDotAfterSlash_ParameterPresent()
+        {
+            // Arrange            
+            var route = CreateRoute(
+                template: "{controller}/{action}/.{name?}",
+                defaults: null,
+                accept: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", name = "products"});
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/.products", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_OptionalParameter_FollowedByDotAfterSlash_ParameterNotPresent()
+        {
+            // Arrange            
+            var route = CreateRoute(
+                template: "{controller}/{action}/.{name?}",
+                defaults: null,
+                accept: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home"});
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_OptionalParameter_InSimpleSegment()
+        {
+            // Arrange            
+            var route = CreateRoute(
+                template: "{controller}/{action}/{name?}",
+                defaults: null,
+                accept: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home"});
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index", path);
+        }
+
         private static VirtualPathContext CreateVirtualPathContext(object values)
         {
             return CreateVirtualPathContext(new RouteValueDictionary(values), null);
@@ -1363,7 +1518,9 @@ namespace Microsoft.AspNet.Routing.Template
             return CreateVirtualPathContext(new RouteValueDictionary(values), new RouteValueDictionary(ambientValues));
         }
 
-        private static VirtualPathContext CreateVirtualPathContext(IDictionary<string, object> values, IDictionary<string, object> ambientValues)
+        private static VirtualPathContext CreateVirtualPathContext(
+            IDictionary<string, object> values, 
+            IDictionary<string, object> ambientValues)
         {
             var context = new Mock<HttpContext>(MockBehavior.Strict);
             context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
