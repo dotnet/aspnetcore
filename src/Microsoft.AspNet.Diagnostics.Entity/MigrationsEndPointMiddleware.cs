@@ -8,7 +8,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Entity.Utilities;
 using Microsoft.AspNet.Http;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Migrations.Infrastructure;
+using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
 using Microsoft.Framework.DependencyInjection;
 using System.Net;
 using Microsoft.Framework.Logging;
