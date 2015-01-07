@@ -43,7 +43,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             return syntaxTree;
         }
 
-
         protected virtual string GenerateFile([NotNull] RazorFileInfo fileInfo)
         {
             return string.Format(FileFormat,

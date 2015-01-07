@@ -119,8 +119,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     }
 
                     var type = assembly.GetExportedTypes()
-                                       .First(t => t.Name.
-                                          StartsWith(_classPrefix, StringComparison.Ordinal));
+                                       .First(t => t.Name.StartsWith(_classPrefix, StringComparison.Ordinal));
 
                     return UncachedCompilationResult.Successful(type, compilationContent);
                 }

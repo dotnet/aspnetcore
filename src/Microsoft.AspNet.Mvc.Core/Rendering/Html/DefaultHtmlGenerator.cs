@@ -432,7 +432,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             if (defaultValue != null)
             {
-                selectList = UpdateSelectListItemsWithDefaultValue(selectList, defaultValue, allowMultiple, out selectedValues);
+                selectList =
+                    UpdateSelectListItemsWithDefaultValue(selectList, defaultValue, allowMultiple, out selectedValues);
             }
             else
             {
@@ -606,7 +607,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Only the style of the span is changed according to the errors if message is null or empty.
             // Otherwise the content and style is handled by the client-side validation.
-            var className = (modelError != null) ? HtmlHelper.ValidationMessageCssClassName : HtmlHelper.ValidationMessageValidCssClassName;
+            var className = (modelError != null) ?
+                HtmlHelper.ValidationMessageCssClassName :
+                HtmlHelper.ValidationMessageValidCssClassName;
             tagBuilder.AddCssClass(className);
 
             if (!string.IsNullOrEmpty(message))

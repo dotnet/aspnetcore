@@ -12,7 +12,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// <summary>
     /// Represents a <see cref="IValueProvider"/> whose values come from a collection of <see cref="IValueProvider"/>s.
     /// </summary>
-    public class CompositeValueProvider : Collection<IValueProvider>, IEnumerableValueProvider, IMetadataAwareValueProvider
+    public class CompositeValueProvider
+        : Collection<IValueProvider>, IEnumerableValueProvider, IMetadataAwareValueProvider
     {
         /// <summary>
         /// Initializes a new instance of <see cref="CompositeValueProvider"/>.

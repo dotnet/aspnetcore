@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNet.FileSystems;
-using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Expiration.Interfaces;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

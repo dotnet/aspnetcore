@@ -87,7 +87,8 @@ namespace Microsoft.AspNet.Mvc
             foreach (var parameter in parameterMetadata)
             {
                 var parameterType = parameter.ModelType;
-                var modelBindingContext = GetModelBindingContext(parameter, actionBindingContext, operationBindingContext);
+                var modelBindingContext =
+                    GetModelBindingContext(parameter, actionBindingContext, operationBindingContext);
                 if (await actionBindingContext.ModelBinder.BindModelAsync(modelBindingContext))
                 {
                     arguments[parameter.PropertyName] = modelBindingContext.Model;

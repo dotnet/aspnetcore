@@ -233,7 +233,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                  typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0] == methodInfo);
         }
 
-
         /// <summary>
         /// Creates an <see cref="ActionModel"/> for the given <see cref="MethodInfo"/>.
         /// </summary>

@@ -44,7 +44,7 @@ namespace ModelBindingWebSite.Controllers
         }
 
         // User_FromForm has a FromForm property.
-        public User_FromForm MultipleFromFormParameterAndProperty(User_FromForm user, 
+        public User_FromForm MultipleFromFormParameterAndProperty(User_FromForm user,
                                                                   [FromForm] Address defaultAddress)
         {
             user.HomeAddress = defaultAddress;

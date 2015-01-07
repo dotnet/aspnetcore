@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     var propertyModelName = ModelBindingHelper.CreatePropertyModelName(bindingContext.ModelName,
                                                                                        propertyMetadata.PropertyName);
 
-                    var propertyBindingContext = new ModelBindingContext(bindingContext, 
+                    var propertyBindingContext = new ModelBindingContext(bindingContext,
                                                                          propertyModelName,
                                                                          propertyMetadata);
 

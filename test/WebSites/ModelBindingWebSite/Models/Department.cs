@@ -5,7 +5,7 @@ namespace ModelBindingWebSite
 {
     public class Department
     {
-        // A single property marked with a binder metadata attribute makes it a binder metadata poco. 
+        // A single property marked with a binder metadata attribute makes it a binder metadata poco.
         [FromTest]
         public string Name { get; set; }
     }

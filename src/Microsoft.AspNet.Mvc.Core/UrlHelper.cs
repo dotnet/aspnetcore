@@ -22,7 +22,8 @@ namespace Microsoft.AspNet.Mvc
         private readonly IActionSelector _actionSelector;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UrlHelper"/> class using the specified action context and action selector.
+        /// Initializes a new instance of the <see cref="UrlHelper"/> class using the specified action context and
+        /// action selector.
         /// </summary>
         /// <param name="contextAccessor">The <see cref="IContextAccessor{TContext}"/> to access the action context
         /// of the current request.</param>

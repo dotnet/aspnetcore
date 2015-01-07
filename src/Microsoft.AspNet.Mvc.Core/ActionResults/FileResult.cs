@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 builder.Append('%');
 
-                int i = b;
+                var i = b;
                 AddHexDigitToStringBuilder(i >> 4, builder);
                 AddHexDigitToStringBuilder(i % 16, builder);
             }

@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var complexModelDtoMetadata =
                 bindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(() => originalDto,
                                                                                    typeof(ComplexModelDto));
-            var dtoBindingContext = 
+            var dtoBindingContext =
                 new ModelBindingContext(bindingContext, bindingContext.ModelName, complexModelDtoMetadata);
 
             await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(dtoBindingContext);

@@ -41,7 +41,8 @@ namespace System.Web.Http
         }
 
         /// <summary>
-        /// Gets model state after the model binding process. This ModelState will be empty before model binding happens.
+        /// Gets model state after the model binding process. This ModelState will be empty before model binding
+        /// happens.
         /// </summary>
         public ModelStateDictionary ModelState
         {

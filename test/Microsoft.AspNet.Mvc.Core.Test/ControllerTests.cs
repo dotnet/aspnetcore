@@ -994,17 +994,16 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             binder.Verify();
         }
-       
+
         [Fact]
         public async Task TryUpdateModel_PredicateOverload_UsesPassedArguments()
         {
             // Arrange
             var modelName = "mymodel";
 
-            Func<ModelBindingContext, string, bool> includePredicate = 
-                (context, propertyName) => 
-                                string.Equals(propertyName, "include1", StringComparison.OrdinalIgnoreCase) || 
-                                string.Equals(propertyName, "include2", StringComparison.OrdinalIgnoreCase);
+            Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) =>
+                string.Equals(propertyName, "include1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(propertyName, "include2", StringComparison.OrdinalIgnoreCase);
 
             var binder = new Mock<IModelBinder>();
             var valueProvider = Mock.Of<IValueProvider>();

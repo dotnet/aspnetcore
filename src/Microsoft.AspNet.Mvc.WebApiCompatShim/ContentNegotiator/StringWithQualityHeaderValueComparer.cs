@@ -31,10 +31,10 @@ namespace System.Net.Http.Formatting
         }
 
         /// <summary>
-        /// Compares two <see cref="StringWithQualityHeaderValue"/> based on their quality value (a.k.a their "q-value").
-        /// Values with identical q-values are considered equal (i.e the result is 0) with the exception of wild-card
-        /// values (i.e. a value of "*") which are considered less than non-wild-card values. This allows to sort
-        /// a sequence of <see cref="StringWithQualityHeaderValue"/> following their q-values ending up with any
+        /// Compares two <see cref="StringWithQualityHeaderValue"/> based on their quality value (a.k.a their
+        /// "q-value"). Values with identical q-values are considered equal (i.e the result is 0) with the exception of
+        /// wild-card values (i.e. a value of "*") which are considered less than non-wild-card values. This allows to
+        /// sort a sequence of <see cref="StringWithQualityHeaderValue"/> following their q-values ending up with any
         /// wild-cards at the end.
         /// </summary>
         /// <param name="stringWithQuality1">The first value to compare.</param>
@@ -46,9 +46,9 @@ namespace System.Net.Http.Formatting
             Debug.Assert(stringWithQuality1 != null);
             Debug.Assert(stringWithQuality2 != null);
 
-            double quality1 = stringWithQuality1.Quality ?? FormattingUtilities.Match;
-            double quality2 = stringWithQuality2.Quality ?? FormattingUtilities.Match;
-            double qualityDifference = quality1 - quality2;
+            var quality1 = stringWithQuality1.Quality ?? FormattingUtilities.Match;
+            var quality2 = stringWithQuality2.Quality ?? FormattingUtilities.Match;
+            var qualityDifference = quality1 - quality2;
             if (qualityDifference < 0)
             {
                 return -1;
@@ -58,7 +58,7 @@ namespace System.Net.Http.Formatting
                 return 1;
             }
 
-            if (!String.Equals(stringWithQuality1.Value, stringWithQuality2.Value, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(stringWithQuality1.Value, stringWithQuality2.Value, StringComparison.OrdinalIgnoreCase))
             {
                 if (String.Equals(stringWithQuality1.Value, "*", StringComparison.Ordinal))
                 {

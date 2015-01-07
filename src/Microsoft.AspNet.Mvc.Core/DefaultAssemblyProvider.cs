@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultAssemblyProvider : IAssemblyProvider
     {
         /// <summary>
-        /// Gets the set of assembly names that are used as root for discovery of 
+        /// Gets the set of assembly names that are used as root for discovery of
         /// MVC controllers, view components and views.
         /// </summary>
         protected virtual HashSet<string> ReferenceAssemblies { get; } = new HashSet<string>(StringComparer.Ordinal)
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// Returns a list of libraries that references the assemblies in <see cref="ReferenceAssemblies"/>.
-        /// By default it returns all assemblies that reference any of the primary MVC assemblies 
+        /// By default it returns all assemblies that reference any of the primary MVC assemblies
         /// while ignoring MVC assemblies.
         /// </summary>
         /// <returns>A set of <see cref="ILibraryInformation"/>.</returns>

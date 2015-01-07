@@ -16,8 +16,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         where TBinderMetadata : IValueProviderMetadata
     {
         private readonly CultureInfo _culture;
-        private PrefixContainer _prefixContainer;
         private readonly Func<Task<IReadableStringCollection>> _valuesFactory;
+        private PrefixContainer _prefixContainer;
         private IReadableStringCollection _values;
 
         /// <summary>

@@ -45,7 +45,6 @@ namespace Microsoft.AspNet.Mvc.Description
             get { return DefaultOrder.DefaultFrameworkSortOrder; }
         }
 
-
         /// <inheritdoc />
         public void Invoke(ApiDescriptionProviderContext context, Action callNext)
         {
@@ -157,7 +156,8 @@ namespace Microsoft.AspNet.Mvc.Description
                 // Process parameters that only appear on the path template if any.
                 foreach (var templateParameter in templateParameters)
                 {
-                    var parameterDescription = GetParameter(parameterDescriptor: null, templateParameter: templateParameter);
+                    var parameterDescription =
+                        GetParameter(parameterDescriptor: null, templateParameter: templateParameter);
                     apiDescription.ParameterDescriptions.Add(parameterDescription);
                 }
             }

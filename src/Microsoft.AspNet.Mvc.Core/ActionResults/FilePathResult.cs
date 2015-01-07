@@ -119,7 +119,6 @@ namespace Microsoft.AspNet.Mvc
             throw new FileNotFoundException(message, path);
         }
 
-        // Internal for unit testing purposes only
         /// <summary>
         /// Creates a normalized representation of the given <paramref name="path"/>. The default
         /// implementation doesn't support files with '\' in the file name and treats the '\' as
@@ -128,6 +127,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="path">The path to normalize.</param>
         /// <returns>The normalized path.</returns>
+        // Internal for unit testing purposes only
         protected internal virtual string NormalizePath([NotNull] string path)
         {
             // Unix systems support '\' as part of the file name. So '\' is not
@@ -153,13 +153,13 @@ namespace Microsoft.AspNet.Mvc
             return path.Replace('\\', '/');
         }
 
-        // Internal for unit testing purposes only
         /// <summary>
         /// Determines if the provided path is absolute or relative. The default implementation considers
         /// paths starting with '/' to be relative.
         /// </summary>
         /// <param name="path">The path to examine.</param>
         /// <returns>True if the path is absolute.</returns>
+        // Internal for unit testing purposes only
         protected internal virtual bool IsPathRooted([NotNull] string path)
         {
             // We consider paths to be rooted if they start with '<<VolumeLetter>>:' and do

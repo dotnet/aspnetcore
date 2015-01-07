@@ -33,8 +33,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                          IRazorPageActivator pageActivator,
                          IViewStartProvider viewStartProvider,
                          IRazorPage razorPage,
-                         bool isPartial
-            )
+                         bool isPartial)
         {
             _viewEngine = viewEngine;
             _pageActivator = pageActivator;
@@ -52,7 +51,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Gets a value that determines if the view is executed as a partial.
         /// </summary>
         public bool IsPartial { get; }
-
 
         private bool EnableInstrumentation
         {
@@ -97,8 +95,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                                 bool executeViewStart)
         {
             var razorTextWriter = new RazorTextWriter(context.Writer, context.Writer.Encoding);
-            TextWriter writer = razorTextWriter;
-            IBufferedTextWriter bufferedWriter = razorTextWriter;
+            var writer = (TextWriter)razorTextWriter;
+            var bufferedWriter = (IBufferedTextWriter)razorTextWriter;
 
             if (EnableInstrumentation)
             {

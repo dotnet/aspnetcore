@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc
             if (formatter == null)
             {
                 var unsupportedContentType = Resources.FormatUnsupportedContentType(
-                                                    bindingContext.OperationBindingContext.HttpContext.Request.ContentType);
+                    bindingContext.OperationBindingContext.HttpContext.Request.ContentType);
                 bindingContext.ModelState.AddModelError(bindingContext.ModelName, unsupportedContentType);
 
                 // Should always return true so that the model binding process ends here.

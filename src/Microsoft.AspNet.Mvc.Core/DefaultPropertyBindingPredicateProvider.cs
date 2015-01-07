@@ -17,7 +17,8 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultPropertyBindingPredicateProvider<TModel> : IPropertyBindingPredicateProvider
         where TModel : class
     {
-        private static readonly Func<ModelBindingContext, string, bool> _defaultFilter = (context, propertyName) => true;
+        private static readonly Func<ModelBindingContext, string, bool> _defaultFilter =
+            (context, propertyName) => true;
 
         /// <summary>
         /// The prefix which is used while generating the property filter.
@@ -57,7 +58,8 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private Func<ModelBindingContext, string, bool> GetPredicateFromExpression(IEnumerable<Expression<Func<TModel, object>>> includeExpressions)
+        private Func<ModelBindingContext, string, bool> GetPredicateFromExpression(
+            IEnumerable<Expression<Func<TModel, object>>> includeExpressions)
         {
             var expression = ModelBindingHelper.GetIncludePredicateExpression(Prefix, includeExpressions.ToArray());
             return expression.Compile();

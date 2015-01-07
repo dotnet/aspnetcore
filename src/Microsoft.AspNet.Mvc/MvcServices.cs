@@ -26,19 +26,19 @@ namespace Microsoft.AspNet.Mvc
         {
             var describe = new ServiceDescriber(configuration);
 
-            //
             // Options and core services.
-            //
+
             yield return describe.Transient<IConfigureOptions<MvcOptions>, MvcOptionsSetup>();
             yield return describe.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>();
             yield return describe.Transient<IAssemblyProvider, DefaultAssemblyProvider>();
             yield return describe.Transient(typeof(INestedProviderManager<>), typeof(NestedProviderManager<>));
-            yield return describe.Transient(typeof(INestedProviderManagerAsync<>), typeof(NestedProviderManagerAsync<>));
+            yield return describe.Transient(
+                typeof(INestedProviderManagerAsync<>),
+                typeof(NestedProviderManagerAsync<>));
             yield return describe.Transient<MvcMarkerService, MvcMarkerService>();
 
-            //
             // Core action discovery, filters and action execution.
-            //
+
             // These are consumed only when creating action descriptors, then they can be de-allocated
             yield return describe.Transient<IControllerModelBuilder, DefaultControllerModelBuilder>();
             yield return describe.Transient<IActionModelBuilder, DefaultActionModelBuilder>();
@@ -74,9 +74,8 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<INestedProvider<FilterProviderContext>, DefaultFilterProvider>();
 
-            //
             // Dataflow - ModelBinding, Validation and Formatting
-            //
+
             yield return describe.Transient<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
             yield return describe.Scoped<IActionBindingContextProvider, DefaultActionBindingContextProvider>();
 
@@ -93,11 +92,10 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IModelValidatorProviderProvider, DefaultModelValidatorProviderProvider>();
             yield return describe.Scoped<ICompositeModelValidatorProvider, CompositeModelValidatorProvider>();
             yield return describe.Transient<IBodyModelValidator, DefaultBodyModelValidator>();
-            yield return describe.Transient<IValidationExcludeFiltersProvider, DefaultValidationExcludeFiltersProvider>();
+            yield return describe.Transient<IValidationExcludeFiltersProvider,
+                DefaultValidationExcludeFiltersProvider>();
 
-            //
             // Razor, Views and runtime compilation
-            //
 
             // The provider is inexpensive to initialize and provides ViewEngines that may require request
             // specific services.
@@ -135,9 +133,7 @@ namespace Microsoft.AspNet.Mvc
             // Virtual path view factory needs to stay scoped so views can get get scoped services.
             yield return describe.Scoped<IRazorPageFactory, VirtualPathRazorPageFactory>();
 
-            //
             // View and rendering helpers
-            //
 
             yield return describe.Transient<IHtmlHelper, HtmlHelper>();
             yield return describe.Transient(typeof(IHtmlHelper<>), typeof(HtmlHelper<>));
@@ -157,9 +153,7 @@ namespace Microsoft.AspNet.Mvc
                 DefaultViewComponentInvokerProvider>();
             yield return describe.Transient<IViewComponentHelper, DefaultViewComponentHelper>();
 
-            //
             // Security and Authorization
-            //
 
             yield return describe.Transient<IAuthorizationService, DefaultAuthorizationService>();
             yield return describe.Singleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
@@ -167,9 +161,7 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Singleton<IAntiForgeryAdditionalDataProvider,
                 DefaultAntiForgeryAdditionalDataProvider>();
 
-            //
             // Api Description
-            //
 
             yield return describe.Singleton<IApiDescriptionGroupCollectionProvider,
                 ApiDescriptionGroupCollectionProvider>();

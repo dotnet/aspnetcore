@@ -22,13 +22,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // A factory for validators based on ValidationAttribute.
         internal delegate IModelValidator DataAnnotationsModelValidationFactory(ValidationAttribute attribute);
 
-        // A factory for validators based on IValidatableObject
-        private delegate IModelValidator DataAnnotationsValidatableObjectAdapterFactory();
-
-        private static bool _addImplicitRequiredAttributeForValueTypes = true;
-        private readonly Dictionary<Type, DataAnnotationsModelValidationFactory> _attributeFactories =
-            BuildAttributeFactoriesDictionary();
-
         // Factories for validation attributes
         private static readonly DataAnnotationsModelValidationFactory _defaultAttributeFactory =
             (attribute) => new DataAnnotationsModelValidator(attribute);
@@ -36,6 +29,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // Factories for IValidatableObject models
         private static readonly DataAnnotationsValidatableObjectAdapterFactory _defaultValidatableFactory =
             () => new ValidatableObjectAdapter();
+
+        private static bool _addImplicitRequiredAttributeForValueTypes = true;
+        private readonly Dictionary<Type, DataAnnotationsModelValidationFactory> _attributeFactories =
+            BuildAttributeFactoriesDictionary();
+
+        // A factory for validators based on IValidatableObject
+        private delegate IModelValidator DataAnnotationsValidatableObjectAdapterFactory();
 
         internal Dictionary<Type, DataAnnotationsModelValidationFactory> AttributeFactories
         {

@@ -65,7 +65,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets a flag that indicates if the file is precompiled.
         /// </summary>
-        public bool IsPreCompiled { get { return Hash != null; } }
+        public bool IsPreCompiled
+        {
+            get
+            {
+                return Hash != null;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="CompilerCacheEntry"/> for the nearest ViewStart that the compiled type

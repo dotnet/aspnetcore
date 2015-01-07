@@ -32,7 +32,8 @@ namespace Microsoft.AspNet.Mvc.Logging
         public Type ActionConstraintMetadataType { get; }
 
         /// <summary>
-        /// The constraint order if this is an <see cref="IActionConstraint"/>. See <see cref="IActionConstraint.Order"/>.
+        /// The constraint order if this is an <see cref="IActionConstraint"/>. See
+        /// <see cref="IActionConstraint.Order"/>.
         /// </summary>
         public int Order { get; }
 

@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Mvc
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                       .Returns(ViewEngineResult.NotFound(
-                          "Components/Object/some-view", 
+                          "Components/Object/some-view",
                           new[] { "view-location1", "view-location2" }))
                       .Verifiable();
 

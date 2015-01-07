@@ -15,8 +15,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Parses the <see cref="ICompilerOptions"/> for the current executing application and returns a
         /// <see cref="CompilationSettings"/> used for Roslyn compilation.
         /// </summary>
-        /// <param name="compilerOptionsProvider">A <see cref="ICompilerOptionsProvider"/> that reads compiler options.</param>
-        /// <param name="applicationEnvironment">The <see cref="IApplicationEnvironment"/> for the executing application.</param>
+        /// <param name="compilerOptionsProvider">
+        /// A <see cref="ICompilerOptionsProvider"/> that reads compiler options.
+        /// </param>
+        /// <param name="applicationEnvironment">
+        /// The <see cref="IApplicationEnvironment"/> for the executing application.
+        /// </param>
         /// <returns>The <see cref="CompilationSettings"/> for the current application.</returns>
         public static CompilationSettings GetCompilationSettings(
             [NotNull] this ICompilerOptionsProvider compilerOptionsProvider,

@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// file system.
         /// </param>
         public CompilerCache(IAssemblyProvider provider, IRazorFileSystemCache fileSystem)
-            : this (GetFileInfos(provider.CandidateAssemblies), fileSystem)
+            : this(GetFileInfos(provider.CandidateAssemblies), fileSystem)
         {
         }
 

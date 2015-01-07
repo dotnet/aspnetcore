@@ -24,9 +24,9 @@ namespace Microsoft.AspNet.Mvc.Razor
     public interface IViewLocationExpander
     {
         /// <summary>
-        /// Invoked by a <see cref="RazorViewEngine"/> to determine the values that would be consumed by this instance of
-        /// <see cref="IViewLocationExpander"/>. The calculated values are used to determine if the view location has
-        /// changed since the last time it was located.
+        /// Invoked by a <see cref="RazorViewEngine"/> to determine the values that would be consumed by this instance
+        /// of <see cref="IViewLocationExpander"/>. The calculated values are used to determine if the view location
+        /// has changed since the last time it was located.
         /// </summary>
         /// <param name="context">The <see cref="ViewLocationExpanderContext"/> for the current view location
         /// expansion operation.</param>

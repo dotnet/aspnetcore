@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Logging;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {

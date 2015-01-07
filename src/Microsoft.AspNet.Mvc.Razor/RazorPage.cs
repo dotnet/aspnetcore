@@ -122,12 +122,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 if (_tagHelperActivator == null)
                 {
-                    _tagHelperActivator = ViewContext.HttpContext.RequestServices.GetRequiredService<ITagHelperActivator>();
+                    _tagHelperActivator =
+                        ViewContext.HttpContext.RequestServices.GetRequiredService<ITagHelperActivator>();
                 }
 
                 return _tagHelperActivator;
             }
         }
+
         /// <summary>
         /// Creates and activates a <see cref="ITagHelper"/>.
         /// </summary>

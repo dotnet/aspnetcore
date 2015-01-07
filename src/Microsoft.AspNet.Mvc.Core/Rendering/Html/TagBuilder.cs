@@ -237,8 +237,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     case '-':
                     case '_':
                     case ':':
-                        // Note '.' is valid according to the HTML 4.01 specification. Disallowed here to avoid confusion
-                        // with CSS class selectors or when using jQuery.
+                        // Note '.' is valid according to the HTML 4.01 specification. Disallowed here to avoid
+                        // confusion with CSS class selectors or when using jQuery.
                         return true;
 
                     default:

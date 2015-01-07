@@ -25,7 +25,8 @@ namespace Microsoft.AspNet.Mvc.Logging
             AttributeRouteInfo = new AttributeRouteInfoValues(inner.AttributeRouteInfo);
             RouteValueDefaults = inner.RouteValueDefaults.ToDictionary(i => i.Key, i => i.Value.ToString());
             ActionConstraints = inner.ActionConstraints?.Select(a => new ActionConstraintValues(a))?.ToList();
-            HttpMethods = inner.ActionConstraints?.OfType<HttpMethodConstraint>().SelectMany(c => c.HttpMethods).ToList();
+            HttpMethods =
+                inner.ActionConstraints?.OfType<HttpMethodConstraint>().SelectMany(c => c.HttpMethods).ToList();
             Properties = inner.Properties.ToDictionary(i => i.Key.ToString(), i => i.Value.GetType());
             var controllerActionDescriptor = inner as ControllerActionDescriptor;
             if (controllerActionDescriptor != null)

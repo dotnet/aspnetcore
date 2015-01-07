@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            bool antiForgeryDefault = true;
+            var antiForgeryDefault = true;
             var routePrefixedAttributes = output.FindPrefixedAttributes(RouteAttributePrefix);
 
             // If "action" is already set, it means the user is attempting to use a normal <form>.

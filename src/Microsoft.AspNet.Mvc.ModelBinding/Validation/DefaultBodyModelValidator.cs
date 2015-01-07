@@ -56,7 +56,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // We don't need to recursively traverse the graph for types that shouldn't be validated
             var modelType = metadata.Model.GetType();
-            if (IsTypeExcludedFromValidation(validationContext.ModelValidationContext.ExcludeFromValidationFilters, modelType))
+            if (IsTypeExcludedFromValidation(
+                validationContext.ModelValidationContext.ExcludeFromValidationFilters,
+                modelType))
             {
                 return ShallowValidate(metadata, validationContext, validators);
             }

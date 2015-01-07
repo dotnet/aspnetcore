@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var rawValueArray = RawValueToObjectArray(rawValue);
             foreach (var rawValueElement in rawValueArray)
             {
-                var innerModelMetadata = 
+                var innerModelMetadata =
                     bindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(null, typeof(TElement));
                 var innerBindingContext = new ModelBindingContext(bindingContext,
                                                                   bindingContext.ModelName,
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             foreach (var indexName in indexNames)
             {
                 var fullChildName = ModelBindingHelper.CreateIndexModelName(bindingContext.ModelName, indexName);
-                var childModelMetadata = 
+                var childModelMetadata =
                     bindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(null, typeof(TElement));
                 var childBindingContext = new ModelBindingContext(bindingContext, fullChildName, childModelMetadata);
 

@@ -11,12 +11,13 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         public static Diagnostic ToDiagnostics([NotNull] this RazorError error, [NotNull] string filePath)
         {
-            var descriptor = new DiagnosticDescriptor(id: "Razor",
-                                                      title: "Razor parsing error",
-                                                      messageFormat: error.Message.Replace("{", "{{").Replace("}", "}}"),
-                                                      category: "Razor.Parser",
-                                                      defaultSeverity: DiagnosticSeverity.Error,
-                                                      isEnabledByDefault: true);
+            var descriptor = new DiagnosticDescriptor(
+                id: "Razor",
+                title: "Razor parsing error",
+                messageFormat: error.Message.Replace("{", "{{").Replace("}", "}}"),
+                category: "Razor.Parser",
+                defaultSeverity: DiagnosticSeverity.Error,
+                isEnabledByDefault: true);
 
             var textSpan = new TextSpan(error.Location.AbsoluteIndex, error.Length);
             var linePositionStart = new LinePosition(error.Location.LineIndex, error.Location.CharacterIndex);
