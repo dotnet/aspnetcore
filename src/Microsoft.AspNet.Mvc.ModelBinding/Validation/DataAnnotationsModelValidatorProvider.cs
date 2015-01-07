@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         protected override IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata,
-                                                                      IEnumerable<Attribute> attributes)
+                                                                      IEnumerable<object> attributes)
         {
             var results = new List<IModelValidator>();
 

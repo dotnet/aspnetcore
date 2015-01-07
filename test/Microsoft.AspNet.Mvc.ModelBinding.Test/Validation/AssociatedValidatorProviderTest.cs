@@ -91,12 +91,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public abstract class TestableAssociatedValidatorProvider : AssociatedValidatorProvider
         {
-            protected override IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata, IEnumerable<Attribute> attributes)
+            protected override IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata, IEnumerable<object> attributes)
             {
                 return AbstractGetValidators(metadata, attributes);
             }
 
-            public abstract IEnumerable<IModelValidator> AbstractGetValidators(ModelMetadata metadata, IEnumerable<Attribute> attributes);
+            public abstract IEnumerable<IModelValidator> AbstractGetValidators(ModelMetadata metadata, IEnumerable<object> attributes);
         }
     }
 }
