@@ -13,6 +13,7 @@ using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Security;
+using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
@@ -137,6 +138,9 @@ namespace Microsoft.AspNet.Mvc
 
             // Only want one ITagHelperActivator so it can cache Type activation information. Types won't conflict.
             yield return describe.Singleton<ITagHelperActivator, DefaultTagHelperActivator>();
+
+            // Consumed by the Cache tag helper to cache results across the lifetime of the application.
+            yield return describe.Singleton<IMemoryCache, MemoryCache>();
 
             // DefaultHtmlGenerator is pretty much stateless but depends on Scoped services such as IUrlHelper and
             // IActionBindingContextProvider. Therefore it too is scoped.
