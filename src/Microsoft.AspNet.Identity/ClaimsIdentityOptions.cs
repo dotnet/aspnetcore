@@ -5,28 +5,46 @@ using System.Security.Claims;
 
 namespace Microsoft.AspNet.Identity
 {
+    /// <summary>
+    /// Options for ClaimType names.
+    /// </summary>
     public class ClaimsIdentityOptions
     {
+        /// <summary>
+        /// The ClaimType used for the identity security stamp.
+        /// </summary>
         public static readonly string DefaultSecurityStampClaimType = "AspNet.Identity.SecurityStamp";
 
         /// <summary>
-        ///     Claim type used for role claims
+        /// Gets the ClaimType used for a Role claim.
         /// </summary>
+        /// <remarks>
+        /// This defaults to <see cref="ClaimTypes.Role"/>.
+        /// </remarks>
         public string RoleClaimType { get; set; } = ClaimTypes.Role;
 
         /// <summary>
-        ///     Claim type used for the user name
+        /// Gets the ClaimType used for the user name claim.
         /// </summary>
+        /// <remarks>
+        /// This defaults to <see cref="ClaimTypes.Name"/>.
+        /// </remarks>
         public string UserNameClaimType { get; set; } = ClaimTypes.Name;
 
         /// <summary>
-        ///     Claim type used for the user id
+        /// Gets the ClaimType used for the user identifier claim.
         /// </summary>
+        /// <remarks>
+        /// This defaults to <see cref="ClaimTypes.NameIdentifier"/>.
+        /// </remarks>
         public string UserIdClaimType { get; set; } = ClaimTypes.NameIdentifier;
 
         /// <summary>
-        ///     Claim type used for the user security stamp
+        /// Gets the ClaimType used for the security stamp claim..
         /// </summary>
+        /// <remarks>
+        /// This defaults to "AspNet.Identity.SecurityStamp".
+        /// </remarks>
         public string SecurityStampClaimType { get; set; } = DefaultSecurityStampClaimType;
     }
 }
