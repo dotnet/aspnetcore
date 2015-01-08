@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 var culture = GetCultureInfo(request);
                 return new ReadableStringCollectionValueProvider<IFormDataValueProviderMetadata>(
-                    () => request.GetFormAsync(),
+                    async () => await request.ReadFormAsync(),
                     culture);
             }
 

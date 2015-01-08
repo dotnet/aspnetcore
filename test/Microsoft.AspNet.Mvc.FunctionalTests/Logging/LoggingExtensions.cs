@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             var queryString = QueryHelpers.ParseQuery(query);
 
-            return queryString[key];
+            return queryString[key].FirstOrDefault();
         }
     }
 }

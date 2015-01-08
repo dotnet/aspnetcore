@@ -48,9 +48,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
         private static ValueProviderFactoryContext CreateContext(string contentType)
         {
-            var collection = Mock.Of<IReadableStringCollection>();
+            var collection = Mock.Of<IFormCollection>();
             var request = new Mock<HttpRequest>();
-            request.Setup(f => f.GetFormAsync(CancellationToken.None)).Returns(Task.FromResult(collection));
+            request.Setup(f => f.ReadFormAsync(CancellationToken.None)).Returns(Task.FromResult(collection));
             request.SetupGet(r => r.ContentType).Returns(contentType);
 
             var context = new Mock<HttpContext>();

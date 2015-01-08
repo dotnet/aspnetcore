@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.WebUtilities.Collections;
+using Microsoft.AspNet.PipelineCore.Collections;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test

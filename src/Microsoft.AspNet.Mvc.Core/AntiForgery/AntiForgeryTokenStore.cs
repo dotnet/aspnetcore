@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc
 
         public async Task<AntiForgeryToken> GetFormTokenAsync(HttpContext httpContext)
         {
-            var form = await httpContext.Request.GetFormAsync();
+            var form = await httpContext.Request.ReadFormAsync();
             var value = form[_config.FormFieldName];
             if (string.IsNullOrEmpty(value))
             {
