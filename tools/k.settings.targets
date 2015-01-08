@@ -27,6 +27,8 @@
         <CodeSignScriptsPath>$(SignedOutputPath)Scripts\</CodeSignScriptsPath>
         <CodeSignVerificationPath>$(SignedOutputPath)Verification\</CodeSignVerificationPath>
         <SignedBinariesPath>$(SignedOutputPath)</SignedBinariesPath>
+
+        <KvmRootDrop Condition="'$(KvmRootDrop)' == ''">\\projectk-tc\drops\kvm\dev\</KvmRootDrop>
     </PropertyGroup>
 
     <PropertyGroup>
