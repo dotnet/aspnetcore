@@ -12,15 +12,16 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private string _fileFormat;
 
-        protected IReadOnlyList<RazorFileInfo> FileInfos { get; private set; }
-        protected CompilationSettings CompilationSettings { get; }
-
-        public RazorFileInfoCollectionGenerator([NotNull] IReadOnlyList<RazorFileInfo> fileInfos,
+        public RazorFileInfoCollectionGenerator([NotNull] IEnumerable<RazorFileInfo> fileInfos,
                                                 [NotNull] CompilationSettings compilationSettings)
         {
             FileInfos = fileInfos;
             CompilationSettings = compilationSettings;
         }
+
+        protected IEnumerable<RazorFileInfo> FileInfos { get; }
+
+        protected CompilationSettings CompilationSettings { get; }
 
         public virtual SyntaxTree GenerateCollection()
         {

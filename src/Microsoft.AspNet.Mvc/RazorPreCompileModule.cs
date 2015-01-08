@@ -9,6 +9,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.DependencyInjection.ServiceLookup;
@@ -19,10 +20,15 @@ namespace Microsoft.AspNet.Mvc
     public abstract class RazorPreCompileModule : ICompileModule
     {
         private readonly IServiceProvider _appServices;
+        private readonly IMemoryCache _memoryCache;
 
         public RazorPreCompileModule(IServiceProvider services)
         {
             _appServices = services;
+            // When ListenForMemoryPressure is true, the MemoryCache evicts items at every gen2 collection.
+            // In DTH, gen2 happens frequently enough to make it undesirable for caching precompilation results. We'll
+            // disable listening for memory pressure for the MemoryCache instance used by precompilation.
+            _memoryCache = new MemoryCache(new MemoryCacheOptions { ListenForMemoryPressure = false });
         }
 
         protected virtual string FileExtension { get; } = ".cshtml";
@@ -39,7 +45,7 @@ namespace Microsoft.AspNet.Mvc
             sc.AddMvc();
 
             var serviceProvider = BuildFallbackServiceProvider(sc, _appServices);
-            var viewCompiler = new RazorPreCompiler(serviceProvider, compilationSettings);
+            var viewCompiler = new RazorPreCompiler(serviceProvider, _memoryCache, compilationSettings);
             viewCompiler.CompileViews(context);
         }
 
