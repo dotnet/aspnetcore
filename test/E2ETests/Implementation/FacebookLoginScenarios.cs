@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Net;
-using Xunit;
+using System.Net.Http;
+using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.WebUtilities;
+using Xunit;
 
 namespace E2ETests
 {
@@ -28,7 +29,7 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = _httpClient.PostAsync("Account/ExternalLogin", content).Result;
             Assert.Equal<string>("https://www.facebook.com/v2.2/dialog/oauth", response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
-            var queryItems = QueryHelpers.ParseQuery(response.Headers.Location.Query);
+            var queryItems = new ReadableStringCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
             Assert.Equal<string>("code", queryItems["response_type"]);
             Assert.Equal<string>("[AppId]", queryItems["client_id"]);
             Assert.Equal<string>(_applicationBaseUrl + "signin-facebook", queryItems["redirect_uri"]);

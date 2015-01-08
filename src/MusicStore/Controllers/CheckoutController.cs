@@ -33,7 +33,7 @@ namespace MusicStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddressAndPayment(Order order)
         {
-            var formCollection = await Context.Request.GetFormAsync();
+            var formCollection = await Context.Request.ReadFormAsync();
 
             try
             {

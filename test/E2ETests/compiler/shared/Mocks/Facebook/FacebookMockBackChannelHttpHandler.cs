@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.WebUtilities;
 using MusicStore.Mocks.Common;
 
@@ -14,7 +15,7 @@ namespace MusicStore.Mocks.Facebook
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var response = new HttpResponseMessage();
-            var queryParameters = QueryHelpers.ParseQuery(request.RequestUri.Query);
+            var queryParameters = new ReadableStringCollection(QueryHelpers.ParseQuery(request.RequestUri.Query));
 
             if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.2/oauth/access_token"))
             {

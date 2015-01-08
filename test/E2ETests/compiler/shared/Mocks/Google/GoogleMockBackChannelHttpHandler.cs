@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.WebUtilities;
 
 namespace MusicStore.Mocks.Google
@@ -17,7 +18,7 @@ namespace MusicStore.Mocks.Google
 
             if (request.RequestUri.AbsoluteUri.StartsWith("https://accounts.google.com/o/oauth2/token"))
             {
-                var formData = FormHelpers.ParseForm(await request.Content.ReadAsStringAsync());
+                var formData = new FormCollection(await FormReader.ReadFormAsync(await request.Content.ReadAsStreamAsync()));
                 if (formData["grant_type"] == "authorization_code")
                 {
                     if (formData["code"] == "ValidCode")

@@ -59,7 +59,7 @@ namespace MusicStore.Controllers
         [HttpPost]
         public async Task<IActionResult> RemoveFromCart(int id)
         {
-            var formParameters = await Context.Request.GetFormAsync();
+            var formParameters = await Context.Request.ReadFormAsync();
             var requestVerification = formParameters["RequestVerificationToken"];
             string cookieToken = null;
             string formToken = null;
