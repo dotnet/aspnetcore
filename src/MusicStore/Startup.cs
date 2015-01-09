@@ -7,6 +7,8 @@ using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Console;
 using MusicStore.Models;
 
 namespace MusicStore
@@ -87,8 +89,10 @@ namespace MusicStore
 
         //This method is invoked when ASPNET_ENV is 'Development' or is not defined
         //The allowed values are Development,Staging and Production
-        public void ConfigureDevelopment(IApplicationBuilder app)
+        public void ConfigureDevelopment(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddConsole();
+
             //Display custom error page in production when error occurs
             //During development use the ErrorPage middleware to display error information in the browser
             app.UseErrorPage(ErrorPageOptions.ShowAll);
@@ -105,17 +109,23 @@ namespace MusicStore
 
         //This method is invoked when ASPNET_ENV is 'Staging'
         //The allowed values are Development,Staging and Production
-        public void ConfigureStaging(IApplicationBuilder app)
+        public void ConfigureStaging(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddConsole();
+
             app.UseErrorHandler("/Home/Error");
+
             Configure(app);
         }
 
         //This method is invoked when ASPNET_ENV is 'Production'
         //The allowed values are Development,Staging and Production
-        public void ConfigureProduction(IApplicationBuilder app)
+        public void ConfigureProduction(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddConsole();
+
             app.UseErrorHandler("/Home/Error");
+
             Configure(app);
         }
 
@@ -136,20 +146,20 @@ namespace MusicStore
 
             app.UseTwitterAuthentication();
 
-            //The MicrosoftAccount service has restrictions that prevent the use of http://localhost:5001/ for test applications.
-            //As such, here is how to change this sample to uses http://ktesting.com:5001/ instead.
+            // The MicrosoftAccount service has restrictions that prevent the use of http://localhost:5001/ for test applications.
+            // As such, here is how to change this sample to uses http://ktesting.com:5001/ instead.
 
-            //Edit the Project.json file and replace http://localhost:5001/ with http://ktesting.com:5001/.
+            // Edit the Project.json file and replace http://localhost:5001/ with http://ktesting.com:5001/.
 
-            //From an admin command console first enter:
+            // From an admin command console first enter:
             // notepad C:\Windows\System32\drivers\etc\hosts
-            //and add this to the file, save, and exit (and reboot?):
+            // and add this to the file, save, and exit (and reboot?):
             // 127.0.0.1 ktesting.com
 
-            //Then you can choose to run the app as admin (see below) or add the following ACL as admin:
-            // netsh http add urlacl url=http://ktesting:12345/ user=[domain\user]
+            // Then you can choose to run the app as admin (see below) or add the following ACL as admin:
+            // netsh http add urlacl url=http://ktesting:5001/ user=[domain\user]
 
-            //The sample app can then be run via:
+            // The sample app can then be run via:
             // k web
             app.UseMicrosoftAccountAuthentication();
 

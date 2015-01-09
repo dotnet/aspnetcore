@@ -9,6 +9,8 @@ using Microsoft.AspNet.Server.WebListener;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Console;
 using Microsoft.Net.Http.Server;
 using MusicStore.Models;
 
@@ -40,8 +42,10 @@ namespace MusicStore
 
         public IConfiguration Configuration { get; private set; }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddConsole();
+
             //Set up NTLM authentication for WebListener like below. 
             //For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or modify the applicationHost.config to enable NTLM. 
             if ((app.Server as ServerInformation) != null)

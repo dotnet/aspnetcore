@@ -14,6 +14,8 @@ using Microsoft.AspNet.Security.Twitter;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Console;
 using Microsoft.Framework.Runtime;
 using MusicStore.Mocks.Common;
 using MusicStore.Mocks.Facebook;
@@ -43,8 +45,10 @@ namespace MusicStore
 
         public IConfiguration Configuration { get; private set; }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddConsole();
+
             //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
             //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
             app.UseErrorPage(ErrorPageOptions.ShowAll);
