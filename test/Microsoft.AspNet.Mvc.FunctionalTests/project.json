@@ -3,6 +3,7 @@
         "warningsAsErrors": "true"
     },
     "dependencies": {
+        "ActionConstraintsWebSite": "1.0.0",
         "ActionResultsWebSite": "1.0.0",
         "ActivatorWebSite": "1.0.0",
         "AddServicesWebSite": "1.0.0",
