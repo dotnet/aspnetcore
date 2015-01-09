@@ -75,7 +75,7 @@ namespace E2ETests
                     }
                 }
 
-                VerifyHomePage(response, responseContent);
+                VerifyHomePage(response, responseContent, true);
 
                 //Check if the user name appears in the page
                 Assert.Contains(string.Format("{0}\\{1}", Environment.UserDomainName, Environment.UserName), responseContent, StringComparison.OrdinalIgnoreCase);
