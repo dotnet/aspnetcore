@@ -4,14 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Headers;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.StaticFiles.Infrastructure;
 using Microsoft.Framework.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.StaticFiles
 {
@@ -31,16 +33,17 @@ namespace Microsoft.AspNet.StaticFiles
         private IFileInfo _fileInfo;
         private long _length;
         private DateTimeOffset _lastModified;
-        private string _lastModifiedString;
-        private string _etag;
-        private string _etagQuoted;
+        private EntityTagHeaderValue _etag;
+
+        private RequestHeaders _requestHeaders;
+        private ResponseHeaders _responseHeaders;
 
         private PreconditionState _ifMatchState;
         private PreconditionState _ifNoneMatchState;
         private PreconditionState _ifModifiedSinceState;
         private PreconditionState _ifUnmodifiedSinceState;
 
-        private IList<Tuple<long, long>> _ranges;
+        private IList<RangeItemHeaderValue> _ranges;
 
         public StaticFileContext(HttpContext context, StaticFileOptions options, PathString matchUrl, ILogger logger)
         {
@@ -50,6 +53,8 @@ namespace Microsoft.AspNet.StaticFiles
             _request = context.Request;
             _response = context.Response;
             _logger = logger;
+            _requestHeaders = _request.GetTypedHeaders();
+            _responseHeaders = _response.GetTypedHeaders();
 
             _method = null;
             _isGet = false;
@@ -60,8 +65,6 @@ namespace Microsoft.AspNet.StaticFiles
             _length = 0;
             _lastModified = new DateTimeOffset();
             _etag = null;
-            _etagQuoted = null;
-            _lastModifiedString = null;
             _ifMatchState = PreconditionState.Unspecified;
             _ifNoneMatchState = PreconditionState.Unspecified;
             _ifModifiedSinceState = PreconditionState.Unspecified;
@@ -86,7 +89,7 @@ namespace Microsoft.AspNet.StaticFiles
         {
             get { return _ranges != null; }
         }
-        
+
         public string SubPath
         {
             get { return _subPath.Value; }
@@ -132,11 +135,9 @@ namespace Microsoft.AspNet.StaticFiles
                 DateTimeOffset last = _fileInfo.LastModified;
                 // Truncate to the second.
                 _lastModified = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Offset);
-                _lastModifiedString = _lastModified.ToString(Constants.HttpDateFormat, CultureInfo.InvariantCulture);
 
                 long etagHash = _lastModified.ToFileTime() ^ _length;
-                _etag = Convert.ToString(etagHash, 16);
-                _etagQuoted = '\"' + _etag + '\"';
+                _etag = new EntityTagHeaderValue('\"' + Convert.ToString(etagHash, 16) + '\"');
             }
             return _fileInfo.Exists;
         }
@@ -153,14 +154,13 @@ namespace Microsoft.AspNet.StaticFiles
         private void ComputeIfMatch()
         {
             // 14.24 If-Match
-            IList<string> ifMatch = _request.Headers.GetCommaSeparatedValues(Constants.IfMatch); // Removes quotes
-            if (ifMatch != null)
+            var ifMatch = _requestHeaders.IfMatch;
+            if (ifMatch != null && ifMatch.Any())
             {
                 _ifMatchState = PreconditionState.PreconditionFailed;
-                foreach (var segment in ifMatch)
+                foreach (var etag in ifMatch)
                 {
-                    if (segment.Equals("*", StringComparison.Ordinal)
-                        || segment.Equals(_etag, StringComparison.Ordinal))
+                    if (etag.Equals(EntityTagHeaderValue.Any) || etag.Equals(_etag))
                     {
                         _ifMatchState = PreconditionState.ShouldProcess;
                         break;
@@ -169,14 +169,13 @@ namespace Microsoft.AspNet.StaticFiles
             }
 
             // 14.26 If-None-Match
-            IList<string> ifNoneMatch = _request.Headers.GetCommaSeparatedValues(Constants.IfNoneMatch);
-            if (ifNoneMatch != null)
+            var ifNoneMatch = _requestHeaders.IfNoneMatch;
+            if (ifNoneMatch != null && ifNoneMatch.Any())
             {
                 _ifNoneMatchState = PreconditionState.ShouldProcess;
-                foreach (var segment in ifNoneMatch)
+                foreach (var etag in ifNoneMatch)
                 {
-                    if (segment.Equals("*", StringComparison.Ordinal)
-                        || segment.Equals(_etag, StringComparison.Ordinal))
+                    if (etag.Equals(EntityTagHeaderValue.Any) || etag.Equals(_etag))
                     {
                         _ifNoneMatchState = PreconditionState.NotModified;
                         break;
@@ -188,18 +187,16 @@ namespace Microsoft.AspNet.StaticFiles
         private void ComputeIfModifiedSince()
         {
             // 14.25 If-Modified-Since
-            string ifModifiedSinceString = _request.Headers.Get(Constants.IfModifiedSince);
-            DateTimeOffset ifModifiedSince;
-            if (Helpers.TryParseHttpDate(ifModifiedSinceString, out ifModifiedSince))
+            var ifModifiedSince = _requestHeaders.IfModifiedSince;
+            if (ifModifiedSince.HasValue)
             {
                 bool modified = ifModifiedSince < _lastModified;
                 _ifModifiedSinceState = modified ? PreconditionState.ShouldProcess : PreconditionState.NotModified;
             }
 
             // 14.28 If-Unmodified-Since
-            string ifUnmodifiedSinceString = _request.Headers.Get(Constants.IfUnmodifiedSince);
-            DateTimeOffset ifUnmodifiedSince;
-            if (Helpers.TryParseHttpDate(ifUnmodifiedSinceString, out ifUnmodifiedSince))
+            var ifUnmodifiedSince = _requestHeaders.IfUnmodifiedSince;
+            if (ifUnmodifiedSince.HasValue)
             {
                 bool unmodified = ifUnmodifiedSince >= _lastModified;
                 _ifUnmodifiedSinceState = unmodified ? PreconditionState.ShouldProcess : PreconditionState.PreconditionFailed;
@@ -218,44 +215,41 @@ namespace Microsoft.AspNet.StaticFiles
                 return;
             }
 
-            string rangeHeader = _request.Headers.Get(Constants.Range);
-            IList<Tuple<long?, long?>> ranges;
-            if (!RangeHelpers.TryParseRanges(rangeHeader, out ranges))
+            var rangeHeader = _requestHeaders.Range;
+            if (rangeHeader == null)
             {
                 return;
             }
 
-            if (ranges.Count > 1)
+            if (rangeHeader.Ranges.Count > 1)
             {
-                // multiple range headers not yet supported
-                _logger.WriteWarning("Multiple range headers not yet supported, {0} ranges in header", ranges.Count.ToString());
+                // The spec allows for multiple ranges but we choose not to support them because the client may request
+                // very strange ranges (e.g. each byte separately, overlapping ranges, etc.) that could negatively
+                // impact the server. Ignore the header and serve the response normally.
+                _logger.WriteWarning("Multiple ranges are not allowed: '{0}'", rangeHeader.ToString());
                 return;
             }
 
             // 14.27 If-Range
-            string ifRangeHeader = _request.Headers.Get(Constants.IfRange);
-            if (!string.IsNullOrWhiteSpace(ifRangeHeader))
+            var ifRangeHeader = _requestHeaders.IfRange;
+            if (ifRangeHeader != null)
             {
                 // If the validator given in the If-Range header field matches the
                 // current validator for the selected representation of the target
                 // resource, then the server SHOULD process the Range header field as
                 // requested.  If the validator does not match, the server MUST ignore
                 // the Range header field.
-                DateTimeOffset ifRangeLastModified;
                 bool ignoreRangeHeader = false;
-                if (Helpers.TryParseHttpDate(ifRangeHeader, out ifRangeLastModified))
+                if (ifRangeHeader.LastModified.HasValue)
                 {
-                    if (_lastModified > ifRangeLastModified)
+                    if (_lastModified > ifRangeHeader.LastModified)
                     {
                         ignoreRangeHeader = true;
                     }
                 }
-                else
+                else if (ifRangeHeader.EntityTag != null && !_etag.Equals(ifRangeHeader.EntityTag))
                 {
-                    if (!_etagQuoted.Equals(ifRangeHeader))
-                    {
-                        ignoreRangeHeader = true;
-                    }
+                    ignoreRangeHeader = true;
                 }
                 if (ignoreRangeHeader)
                 {
@@ -263,7 +257,7 @@ namespace Microsoft.AspNet.StaticFiles
                 }
             }
 
-            _ranges = RangeHelpers.NormalizeRanges(ranges, _length);
+            _ranges = RangeHelpers.NormalizeRanges(rangeHeader.Ranges, _length);
         }
 
         public void ApplyResponseHeaders(int statusCode)
@@ -277,8 +271,9 @@ namespace Microsoft.AspNet.StaticFiles
                 {
                     _response.ContentType = _contentType;
                 }
-                _response.Headers.Set(Constants.LastModified, _lastModifiedString);
-                _response.Headers.Set(Constants.ETag, _etagQuoted);
+                _responseHeaders.LastModified = _lastModified;
+                _responseHeaders.ETag = _etag;
+                _responseHeaders.Headers[HeaderNames.AcceptRanges] = "bytes";
             }
             if (statusCode == Constants.Status200Ok)
             {
@@ -361,7 +356,7 @@ namespace Microsoft.AspNet.StaticFiles
                 // 14.16 Content-Range - A server sending a response with status code 416 (Requested range not satisfiable)
                 // SHOULD include a Content-Range field with a byte-range-resp-spec of "*". The instance-length specifies
                 // the current length of the selected resource.  e.g. */length
-                _response.Headers[Constants.ContentRange] = "bytes */" + _length.ToString(CultureInfo.InvariantCulture);
+                _responseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
                 ApplyResponseHeaders(Constants.Status416RangeNotSatisfiable);
                 _logger.WriteWarning("Range not satisfiable for {0}", SubPath);
                 return;
@@ -371,7 +366,7 @@ namespace Microsoft.AspNet.StaticFiles
             Debug.Assert(_ranges.Count == 1);
 
             long start, length;
-            _response.Headers[Constants.ContentRange] = ComputeContentRange(_ranges[0], out start, out length);
+            _responseHeaders.ContentRange = ComputeContentRange(_ranges[0], out start, out length);
             _response.ContentLength = length;
             ApplyResponseHeaders(Constants.Status206PartialContent);
 
@@ -381,7 +376,7 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 if (_logger.IsEnabled(LogLevel.Verbose))
                 {
-                    _logger.WriteVerbose(string.Format("Sending {0} of file {1}", _response.Headers[Constants.ContentRange], physicalPath));
+                    _logger.WriteVerbose(string.Format("Sending {0} of file {1}", _response.Headers[HeaderNames.ContentRange], physicalPath));
                 }
                 await sendFile.SendFileAsync(physicalPath, start, length, _context.RequestAborted);
                 return;
@@ -393,7 +388,7 @@ namespace Microsoft.AspNet.StaticFiles
                 readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
                 if (_logger.IsEnabled(LogLevel.Verbose))
                 {
-                    _logger.WriteVerbose(string.Format("Copying {0} of file {1} to the response body", _response.Headers[Constants.ContentRange], SubPath));
+                    _logger.WriteVerbose(string.Format("Copying {0} of file {1} to the response body", _response.Headers[HeaderNames.ContentRange], SubPath));
                 }
                 await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.RequestAborted);
             }
@@ -404,12 +399,12 @@ namespace Microsoft.AspNet.StaticFiles
         }
 
         // Note: This assumes ranges have been normalized to absolute byte offsets.
-        private string ComputeContentRange(Tuple<long, long> range, out long start, out long length)
+        private ContentRangeHeaderValue ComputeContentRange(RangeItemHeaderValue range, out long start, out long length)
         {
-            start = range.Item1;
-            long end = range.Item2;
+            start = range.From.Value;
+            long end = range.To.Value;
             length = end - start + 1;
-            return string.Format(CultureInfo.InvariantCulture, "bytes {0}-{1}/{2}", start, end, _length);
+            return new ContentRangeHeaderValue(start, end, _length);
         }
     }
 }

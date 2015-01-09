@@ -18,6 +18,8 @@ namespace Microsoft.AspNet.StaticFiles
     /// </summary>
     public class HtmlDirectoryFormatter : IDirectoryFormatter
     {
+        private const string TextHtmlUtf8 = "text/html; charset=utf-8";
+
         /// <summary>
         /// Generates an HTML view for a directory.
         /// </summary>
@@ -32,7 +34,7 @@ namespace Microsoft.AspNet.StaticFiles
                 throw new ArgumentNullException("contents");
             }
 
-            context.Response.ContentType = Constants.TextHtmlUtf8;
+            context.Response.ContentType = TextHtmlUtf8;
 
             if (Helpers.IsHeadMethod(context.Request.Method))
             {

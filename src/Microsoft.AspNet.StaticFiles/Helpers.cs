@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
-using System.IO;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -44,16 +42,6 @@ namespace Microsoft.AspNet.StaticFiles
                 return true;
             }
             return false;
-        }
-
-        internal static bool TryParseHttpDate(string dateString, out DateTimeOffset parsedDate)
-        {
-            return DateTimeOffset.TryParseExact(dateString, Constants.HttpDateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate);
-        }
-
-        internal static string ResolveRootPath(string webRoot, PathString path)
-        {
-            return Path.GetFullPath(Path.Combine(webRoot, path.Value ?? string.Empty));
         }
     }
 }

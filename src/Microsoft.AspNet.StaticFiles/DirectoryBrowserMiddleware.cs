@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.StaticFiles
 {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.StaticFiles
                 if (!Helpers.PathEndsInSlash(context.Request.Path))
                 {
                     context.Response.StatusCode = 301;
-                    context.Response.Headers[Constants.Location] = context.Request.PathBase + context.Request.Path + "/" + context.Request.QueryString;
+                    context.Response.Headers[HeaderNames.Location] = context.Request.PathBase + context.Request.Path + "/" + context.Request.QueryString;
                     return Constants.CompletedTask;
                 }
 

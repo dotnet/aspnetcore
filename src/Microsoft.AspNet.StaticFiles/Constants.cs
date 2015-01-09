@@ -11,21 +11,6 @@ namespace Microsoft.AspNet.StaticFiles
         internal const string SendFileVersionKey = "sendfile.Version";
         internal const string SendFileVersion = "1.0";
 
-        internal const string Location = "Location";
-        internal const string IfMatch = "If-Match";
-        internal const string IfNoneMatch = "If-None-Match";
-        internal const string IfModifiedSince = "If-Modified-Since";
-        internal const string IfUnmodifiedSince = "If-Unmodified-Since";
-        internal const string IfRange = "If-Range";
-        internal const string Range = "Range";
-        internal const string ContentRange = "Content-Range";
-        internal const string LastModified = "Last-Modified";
-        internal const string ETag = "ETag";
-
-        internal const string HttpDateFormat = "r";
-
-        internal const string TextHtmlUtf8 = "text/html; charset=utf-8";
-
         internal const int Status200Ok = 200;
         internal const int Status206PartialContent = 206;
         internal const int Status304NotModified = 304;
