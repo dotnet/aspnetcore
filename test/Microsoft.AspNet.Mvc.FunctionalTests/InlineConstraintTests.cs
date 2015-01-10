@@ -592,16 +592,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                         ""
                     };
 
-                // Attribute Route, manId:int:min(10)? constraint
-                yield return new object[] 
-                    {
-                        "InlineConstraints_Products",
-                        "GetProductByManufacturerId",
-                        "manId",
-                        "1",
-                        ""
-                    };
-
                 // Attribute Route, dateTime:datetime constraint
                 yield return new object[] 
                     {

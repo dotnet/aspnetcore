@@ -105,7 +105,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         [Theory]
         [InlineData(10000)]
         [InlineData(11000)]
-        [InlineData(10000)] // expected failure: same time and length
         public void GetOrAdd_UsesFilesFromCache_IfTimestampDiffers_ButContentAndLengthAreTheSame(long fileTimeUTC)
         {
             // Arrange
