@@ -1,0 +1,20 @@
+﻿@using MvcTagHelpersWebSite.Models
+@model IEnumerable<Product>
+
+@addtaghelper "Microsoft.AspNet.Mvc.TagHelpers"
+
+<html>
+<head>
+    <meta charset="utf-8" />
+</head>
+<body>
+    @using (@Html.BeginForm("Index", "MvcTagHelper_Product", FormMethod.Post))
+    {
+        @foreach (var product in Model)
+        {
+            @await Html.PartialAsync("_ProductPartial", product)
+        }
+        <input type="submit" />
+    }
+</body>
+</html>

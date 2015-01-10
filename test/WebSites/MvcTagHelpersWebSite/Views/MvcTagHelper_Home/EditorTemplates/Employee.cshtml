@@ -1,0 +1,35 @@
+﻿@model MvcTagHelpersWebSite.Models.Employee
+
+@addtaghelper "Microsoft.AspNet.Mvc.TagHelpers"
+
+<div>
+    @Html.LabelFor(m => m.Number)
+    @Html.TextBoxFor(m => m.Number, htmlAttributes: new { disabled = "disabled", @readonly= "readonly" })
+    <input asp-for="Number" type="number" class="form-control" />
+</div>
+<div>
+    <label asp-for="Name" class="employee" />
+    @Html.TextAreaFor(m => m.Name)
+</div>
+<div>
+    <label asp-for="PhoneNumber" class="employee" />
+    <input asp-for="PhoneNumber" type="tel" />
+</div>
+<div>
+    @{
+        var genders = new SelectList(new string[] { "Male", "Female" });
+    }
+    <label asp-for="Gender" class="employee" />
+    <select asp-for="Gender" asp-items="genders" />
+</div>
+<div>
+    <label asp-for="Remote" class="employee" />
+    @Html.CheckBoxFor(m=>m.Remote)
+</div>
+<div>
+    <label asp-for="OfficeNumber" class="employee" />
+    @{
+        var offices = new SelectList(new string[] {"1001","1002"});
+    }
+    @Html.DropDownListFor(m => m.OfficeNumber, offices)
+</div>

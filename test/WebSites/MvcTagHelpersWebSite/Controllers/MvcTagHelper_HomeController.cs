@@ -12,27 +12,37 @@ namespace MvcTagHelpersWebSite.Controllers
 {
     public class MvcTagHelper_HomeController : Controller
     {
+        private readonly List<Product> _products = new List<Product>();
+
+        public MvcTagHelper_HomeController()
+        {
+            _products.Add(new Product
+            {
+                ProductName = "Product_0",
+                Number = 0,
+                HomePage = new Uri("http://www.contoso.com")
+            });
+            _products.Add(new Product
+            {
+                ProductName = "Product_1",
+                Number = 1,
+            });
+            _products.Add(new Product
+            {
+                ProductName = "Product_2",
+                Number = 2,
+                Description = "Product_2 desription"
+            });
+        }
+
         public IActionResult Order()
         {
-            var products = new List<Product>();
-            products = new List<Product>();
+            ViewBag.Items = new SelectList(_products, "Number", "ProductName", 2);
 
-            for (int i = 7; i < 13; ++i)
-            {
-                products.Add(new Product()
-                {
-                    ProductName = "Product_" + i,
-                    Number = i,
-                    PartNumbers = Enumerable.Range(1, 3).Select(n => string.Format("{0}-{1}", i, n))
-                });
-            }
-
-            ViewBag.Items = new SelectList(products, "Number", "ProductName", 9);
-
-            var order = new Order()
+            var order = new Order
             {
                 Shipping = "UPSP",
-                Customer = new Customer()
+                Customer = new Customer
                 {
                     Key = "KeyA",
                     Number = 1,
@@ -48,7 +58,7 @@ namespace MvcTagHelpersWebSite.Controllers
 
         public IActionResult Product()
         {
-            var product = new Product()
+            var product = new Product
             {
                 HomePage = new System.Uri("http://www.contoso.com"),
                 Description = "Type the product description"
@@ -69,6 +79,62 @@ namespace MvcTagHelpersWebSite.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        public IActionResult ProductList()
+        {
+            return View(_products);
+        }
+
+        public IActionResult EmployeeList()
+        {
+            var employees = new List<Employee>();
+
+            employees.Add(new Employee
+            {
+                Name = "EmployeeName_0",
+                Number = 0,
+                Address = "Employee_0 address"
+            });
+            employees.Add(new Employee
+            {
+                Name = "EmployeeName_1",
+                Number = 1,
+                OfficeNumber = "1002",
+                Gender = Gender.Female
+            });
+            employees.Add(new Employee
+            {
+                Name = "EmployeeName_2",
+                Number = 2,
+                Remote = true
+            });
+
+            return View(employees);
+        }
+
+        public IActionResult CreateWarehouse()
+        {
+            ViewBag.Items = new SelectList(_products, "Number", "ProductName", 9);
+
+            return View();
+        }
+
+        public IActionResult EditWarehouse()
+        {
+            var warehouse = new Warehouse
+            {
+                City = "City_1",
+                Employee = new Employee
+                {
+                    Name = "EmployeeName_1",
+                    Number = 1,
+                    Address = "Address_1",
+                    PhoneNumber = "PhoneNumber_1",
+                    Gender = Gender.Female
+                }
+            };
+            return View(warehouse);
         }
     }
 }

@@ -1,0 +1,20 @@
+﻿@model MvcTagHelpersWebSite.Models.Product
+
+@addtaghelper "Microsoft.AspNet.Mvc.TagHelpers"
+
+<div>
+    <label asp-for="HomePage" class="product" />
+    <input asp-for="HomePage" type="url" size="50" />
+</div>
+<div>
+    <label asp-for="Number" class="product" />
+    <input asp-for="Number" type="number"/>
+</div>
+<div>
+    <label asp-for="ProductName" class="product" />
+    <input asp-for="ProductName" type="text"/>
+</div>
+<div>
+    <label asp-for="Description" class="product" />
+    <textarea asp-for="Description" rows="4" cols="50" class="product" />
+</div>

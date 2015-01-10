@@ -3,9 +3,21 @@
 
 namespace MvcTagHelpersWebSite.Models
 {
-    public class Customer : Person
+    public class Employee : Person
     {
-        public string Key
+        public string Address
+        {
+            get;
+            set;
+        }
+
+        public string OfficeNumber
+        {
+            get;
+            set;
+        }
+
+        public bool Remote
         {
             get;
             set;

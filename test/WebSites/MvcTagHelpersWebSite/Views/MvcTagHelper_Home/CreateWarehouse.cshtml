@@ -1,0 +1,27 @@
+﻿@model MvcTagHelpersWebSite.Models.Warehouse
+
+@addtaghelper "Microsoft.AspNet.Mvc.TagHelpers"
+
+@{
+    ViewBag.Title = "Warehouse - Product";
+}
+
+<html>
+<body>
+    @using (Html.BeginForm("CreateWarehouse", "MvcTagHelper_Home"))
+    {
+        <div>
+            <label asp-for="City" class="warehouse" />
+            <input asp-for="City" type="text" size="50" />
+            <span asp-validation-for="City" />
+        </div>
+        <div>
+            <label asp-for="Product" class="warehouse" />
+            <select asp-for="Product" asp-items="(IEnumerable<SelectListItem>)ViewBag.Items" />
+            <span asp-validation-for="Product" />
+        </div>
+        <div asp-validation-summary="All" class="warehouse" />
+        <input type="submit" />
+    }
+</body>
+</html>

@@ -26,6 +26,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("Order", "/MvcTagHelper_Order/Submit")]
         [InlineData("Product", null)]
         [InlineData("Customer", "/Customer/MvcTagHelper_Customer")]
+        // Testing InputTagHelpers invoked in the partial views 
+        [InlineData("ProductList", null)] 
+        // Testing MvcTagHelpers invoked in the editor templates with the HTML helpers
+        [InlineData("EmployeeList", null)] 
+        // Testing SelectTagHelper with Html.BeginForm 
+        [InlineData("CreateWarehouse", null)] 
+        // Testing the HTML helpers with FormTagHelper
+        [InlineData("EditWarehouse", null)] 
         public async Task MvcTagHelpers_GeneratesExpectedResults(string action, string antiForgeryPath)
         {
             // Arrange
