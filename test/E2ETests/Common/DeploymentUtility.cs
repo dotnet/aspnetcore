@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 
@@ -56,7 +57,7 @@ namespace E2ETests
 
         private static string APP_RELATIVE_PATH = Path.Combine("..", "..", "src", "MusicStore");
 
-        public static Process StartApplication(StartParameters startParameters, string identityDbName)
+        public static Process StartApplication(StartParameters startParameters, string identityDbName, ILogger logger)
         {
             startParameters.ApplicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
 
@@ -83,12 +84,12 @@ namespace E2ETests
 
             if (startParameters.KreFlavor == KreFlavor.Mono)
             {
-                hostProcess = StartMonoHost(startParameters);
+                hostProcess = StartMonoHost(startParameters, logger);
             }
             else
             {
                 //Tweak the %PATH% to the point to the right KREFLAVOR
-                startParameters.Kre = SwitchPathToKreFlavor(startParameters.KreFlavor, startParameters.KreArchitecture);
+                startParameters.Kre = SwitchPathToKreFlavor(startParameters.KreFlavor, startParameters.KreArchitecture, logger);
 
                 //Reason to do pack here instead of in a common place is use the right KRE to do the packing. Previous line switches to use the right KRE.
                 if (startParameters.PackApplicationBeforeStart)
@@ -97,22 +98,22 @@ namespace E2ETests
                         startParameters.ServerType == ServerType.IIS)
                     {
                         // Pack to IIS root\application folder.
-                        KpmPack(startParameters, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
+                        KpmPack(startParameters, logger, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
 
                         // Drop a Microsoft.AspNet.Hosting.ini with ASPNET_ENV information.
-                        Console.WriteLine("Creating Microsoft.AspNet.Hosting.ini file with ASPNET_ENV.");
+                        logger.WriteInformation("Creating Microsoft.AspNet.Hosting.ini file with ASPNET_ENV.");
                         var iniFile = Path.Combine(startParameters.ApplicationPath, "Microsoft.AspNet.Hosting.ini");
                         File.WriteAllText(iniFile, string.Format("ASPNET_ENV={0}", startParameters.EnvironmentName));
 
                         // Can't use localdb with IIS. Setting an override to use InMemoryStore.
-                        Console.WriteLine("Creating configoverride.json file to override default config.");
+                        logger.WriteInformation("Creating configoverride.json file to override default config.");
                         var overrideConfig = Path.Combine(startParameters.ApplicationPath, "..", "approot", "src", "MusicStore", "configoverride.json");
                         overrideConfig = Path.GetFullPath(overrideConfig);
                         File.WriteAllText(overrideConfig, "{\"UseInMemoryStore\": \"true\"}");
 
                         if (startParameters.ServerType == ServerType.IISNativeModule)
                         {
-                            Console.WriteLine("Turning runAllManagedModulesForAllRequests=true in web.config.");
+                            logger.WriteInformation("Turning runAllManagedModulesForAllRequests=true in web.config.");
                             // Set runAllManagedModulesForAllRequests=true
                             var webConfig = Path.Combine(startParameters.ApplicationPath, "web.config");
                             var configuration = new XmlDocument();
@@ -129,29 +130,29 @@ namespace E2ETests
                             configuration.Save(webConfig);
                         }
 
-                        Console.WriteLine("Successfully finished IIS application directory setup.");
+                        logger.WriteInformation("Successfully finished IIS application directory setup.");
 
                         Thread.Sleep(1 * 1000);
                     }
                     else
                     {
-                        KpmPack(startParameters);
+                        KpmPack(startParameters, logger);
                     }
                 }
 
                 if (startParameters.ServerType == ServerType.IISNativeModule ||
                     startParameters.ServerType == ServerType.IIS)
                 {
-                    startParameters.IISApplication = new IISApplication(startParameters);
+                    startParameters.IISApplication = new IISApplication(startParameters, logger);
                     startParameters.IISApplication.SetupApplication();
                 }
                 else if (startParameters.ServerType == ServerType.IISExpress)
                 {
-                    hostProcess = StartHeliosHost(startParameters);
+                    hostProcess = StartHeliosHost(startParameters, logger);
                 }
                 else
                 {
-                    hostProcess = StartSelfHost(startParameters, identityDbName);
+                    hostProcess = StartSelfHost(startParameters, identityDbName, logger);
                 }
             }
 
@@ -161,7 +162,7 @@ namespace E2ETests
             return hostProcess;
         }
 
-        private static Process StartMonoHost(StartParameters startParameters)
+        private static Process StartMonoHost(StartParameters startParameters, ILogger logger)
         {
             var path = Environment.GetEnvironmentVariable("PATH");
             var kreBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Where(c => c.Contains("KRE-Mono")).FirstOrDefault();
@@ -175,19 +176,19 @@ namespace E2ETests
             {
                 // We use full path to KRE to pack.
                 startParameters.Kre = new DirectoryInfo(kreBin).Parent.FullName;
-                KpmPack(startParameters);
+                KpmPack(startParameters, logger);
             }
 
             //Mono does not have a way to pass in a --appbase switch. So it will be an environment variable. 
             Environment.SetEnvironmentVariable("KRE_APPBASE", startParameters.ApplicationPath);
-            Console.WriteLine("Setting the KRE_APPBASE to {0}", startParameters.ApplicationPath);
+            logger.WriteInformation("Setting the KRE_APPBASE to {0}", startParameters.ApplicationPath);
 
             var monoPath = "mono";
             var klrMonoManaged = Path.Combine(kreBin, "klr.mono.managed.dll");
             var applicationHost = Path.Combine(kreBin, "Microsoft.Framework.ApplicationHost");
 
             var commandName = startParameters.ServerType == ServerType.Kestrel ? "kestrel" : string.Empty;
-            Console.WriteLine(string.Format("Executing command: {0} {1} {2} {3}", monoPath, klrMonoManaged, applicationHost, commandName));
+            logger.WriteInformation(string.Format("Executing command: {0} {1} {2} {3}", monoPath, klrMonoManaged, applicationHost, commandName));
 
             var startInfo = new ProcessStartInfo
             {
@@ -199,7 +200,7 @@ namespace E2ETests
             };
 
             var hostProcess = Process.Start(startInfo);
-            Console.WriteLine("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
+            logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id.ToString());
             Thread.Sleep(5 * 1000);
 
             //Clear the appbase so that it does not create issues with successive runs
@@ -207,7 +208,7 @@ namespace E2ETests
             return hostProcess;
         }
 
-        private static Process StartHeliosHost(StartParameters startParameters)
+        private static Process StartHeliosHost(StartParameters startParameters, ILogger logger)
         {
             if (!string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigTemplateContent))
             {
@@ -233,7 +234,7 @@ namespace E2ETests
 
             var iisExpressPath = GetIISExpressPath(startParameters.KreArchitecture);
 
-            Console.WriteLine("Executing command : {0} {1}", iisExpressPath, parameters);
+            logger.WriteInformation("Executing command : {0} {1}", iisExpressPath, parameters);
 
             var startInfo = new ProcessStartInfo
             {
@@ -244,15 +245,15 @@ namespace E2ETests
             };
 
             var hostProcess = Process.Start(startInfo);
-            Console.WriteLine("Started iisexpress. Process Id : {0}", hostProcess.Id);
+            logger.WriteInformation("Started iisexpress. Process Id : {0}", hostProcess.Id.ToString());
 
             return hostProcess;
         }
 
-        private static Process StartSelfHost(StartParameters startParameters, string identityDbName)
+        private static Process StartSelfHost(StartParameters startParameters, string identityDbName, ILogger logger)
         {
             var commandName = startParameters.ServerType == ServerType.WebListener ? "web" : "kestrel";
-            Console.WriteLine(string.Format("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName));
+            logger.WriteInformation("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName);
 
             var startInfo = new ProcessStartInfo
             {
@@ -268,23 +269,23 @@ namespace E2ETests
 
             try
             {
-                Console.WriteLine("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
+                logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id.ToString());
             }
             catch (Win32Exception win32Exception)
             {
-                Console.WriteLine("Cannot access 64 bit modules from a 32 bit process. Failed with following message : {0}", win32Exception.Message);
+                logger.WriteWarning("Cannot access 64 bit modules from a 32 bit process. Failed with following message.", win32Exception);
             }
 
-            WaitTillDbCreated(identityDbName);
+            WaitTillDbCreated(identityDbName, logger);
 
             return hostProcess;
         }
 
-        private static string SwitchPathToKreFlavor(KreFlavor kreFlavor, KreArchitecture kreArchitecture)
+        private static string SwitchPathToKreFlavor(KreFlavor kreFlavor, KreArchitecture kreArchitecture, ILogger logger)
         {
             var pathValue = Environment.GetEnvironmentVariable("PATH");
-            Console.WriteLine();
-            Console.WriteLine("Current %PATH% value : {0}", pathValue);
+            logger.WriteInformation(string.Empty);
+            logger.WriteInformation("Current %PATH% value : {0}", pathValue);
 
             var replaceStr = new StringBuilder().
                 Append("KRE").
@@ -301,17 +302,17 @@ namespace E2ETests
             // Tweak the %PATH% to the point to the right KREFLAVOR.
             Environment.SetEnvironmentVariable("PATH", pathValue);
 
-            Console.WriteLine();
-            Console.WriteLine("Changing to use KRE : {0}", kreName);
+            logger.WriteInformation(string.Empty);
+            logger.WriteInformation("Changing to use KRE : {0}", kreName);
             return kreName;
         }
 
-        private static void KpmPack(StartParameters startParameters, string packRoot = null)
+        private static void KpmPack(StartParameters startParameters, ILogger logger, string packRoot = null)
         {
             startParameters.PackedApplicationRootPath = Path.Combine(packRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
             var parameters = string.Format("pack {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.PackedApplicationRootPath, startParameters.Kre);
-            Console.WriteLine(string.Format("Executing command kpm {0}", parameters));
+            logger.WriteInformation("Executing command kpm {0}", parameters);
 
             var startInfo = new ProcessStartInfo
             {
@@ -331,22 +332,22 @@ namespace E2ETests
                 Path.Combine(startParameters.PackedApplicationRootPath, "wwwroot") :
                 Path.Combine(startParameters.PackedApplicationRootPath, "approot", "src", "MusicStore");
 
-            Console.WriteLine("kpm pack finished with exit code : {0}", hostProcess.ExitCode);
+            logger.WriteInformation("kpm pack finished with exit code : {0}", hostProcess.ExitCode.ToString());
         }
 
         //In case of self-host application activation happens immediately unlike iis where activation happens on first request.
         //So in self-host case, we need a way to block the first request until the application is initialized. In MusicStore application's case, 
         //identity DB creation is pretty much the last step of application setup. So waiting on this event will help us wait efficiently.
-        private static void WaitTillDbCreated(string identityDbName)
+        private static void WaitTillDbCreated(string identityDbName, ILogger logger)
         {
             var identityDBFullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), identityDbName + ".mdf");
             if (File.Exists(identityDBFullPath))
             {
-                Console.WriteLine("Database file '{0}' exists. Proceeding with the tests.", identityDBFullPath);
+                logger.WriteWarning("Database file '{0}' exists. Proceeding with the tests.", identityDBFullPath);
                 return;
             }
 
-            Console.WriteLine("Watching for the DB file '{0}'", identityDBFullPath);
+            logger.WriteInformation("Watching for the DB file '{0}'", identityDBFullPath);
             var dbWatch = new FileSystemWatcher(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), identityDbName + ".mdf");
             dbWatch.EnableRaisingEvents = true;
 
@@ -360,17 +361,17 @@ namespace E2ETests
                     {
                         //This event is fired immediately after the localdb file is created. Give it a while to finish populating data and start the application.
                         Thread.Sleep(5 * 1000);
-                        Console.WriteLine("Database file created '{0}'. Proceeding with the tests.", identityDBFullPath);
+                        logger.WriteInformation("Database file created '{0}'. Proceeding with the tests.", identityDBFullPath);
                     }
                     else
                     {
-                        Console.WriteLine("Database file '{0}' not created", identityDBFullPath);
+                        logger.WriteWarning("Database file '{0}' not created", identityDBFullPath);
                     }
                 }
             }
             catch (Exception exception)
             {
-                Console.WriteLine("Received this exception while watching for Database file {0}", exception);
+                logger.WriteWarning("Received this exception while watching for Database file", exception);
             }
             finally
             {
@@ -378,7 +379,7 @@ namespace E2ETests
             }
         }
 
-        public static void CleanUpApplication(StartParameters startParameters, Process hostProcess, string musicStoreDbName)
+        public static void CleanUpApplication(StartParameters startParameters, Process hostProcess, string musicStoreDbName, ILogger logger)
         {
             if (startParameters.ServerType == ServerType.IISNativeModule ||
                 startParameters.ServerType == ServerType.IIS)
@@ -396,22 +397,22 @@ namespace E2ETests
                 hostProcess.WaitForExit(5 * 1000);
                 if (!hostProcess.HasExited)
                 {
-                    Console.WriteLine("Unable to terminate the host process with process Id '{0}", hostProcess.Id);
+                    logger.WriteWarning("Unable to terminate the host process with process Id '{0}", hostProcess.Id.ToString());
                 }
                 else
                 {
-                    Console.WriteLine("Successfully terminated host process with process Id '{0}'", hostProcess.Id);
+                    logger.WriteInformation("Successfully terminated host process with process Id '{0}'", hostProcess.Id.ToString());
                 }
             }
             else
             {
-                Console.WriteLine("Host process already exited or never started successfully.");
+                logger.WriteWarning("Host process already exited or never started successfully.");
             }
 
             if (!Helpers.RunningOnMono)
             {
                 //Mono uses InMemoryStore
-                DbUtils.DropDatabase(musicStoreDbName);
+                DbUtils.DropDatabase(musicStoreDbName, logger);
             }
 
             if (!string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigLocation))
@@ -426,7 +427,7 @@ namespace E2ETests
                     catch (Exception exception)
                     {
                         //Ignore delete failures - just write a log
-                        Console.WriteLine("Failed to delete '{0}'. Exception : {1}", startParameters.ApplicationHostConfigLocation, exception.Message);
+                        logger.WriteWarning("Failed to delete '{0}'. Exception : {1}", startParameters.ApplicationHostConfigLocation, exception.Message);
                     }
                 }
             }
@@ -440,7 +441,7 @@ namespace E2ETests
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine("Failed to delete directory '{0}'. Exception message: {1}", startParameters.PackedApplicationRootPath, exception.Message);
+                    logger.WriteWarning("Failed to delete directory.", exception);
                 }
             }
         }

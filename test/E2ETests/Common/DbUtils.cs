@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.SqlClient;
+using Microsoft.Framework.Logging;
 
 namespace E2ETests
 {
@@ -8,11 +9,11 @@ namespace E2ETests
     /// </summary>
     public class DbUtils
     {
-        public static void DropDatabase(string databaseName)
+        public static void DropDatabase(string databaseName, ILogger logger)
         {
             try
             {
-                Console.WriteLine("Trying to drop database '{0}'", databaseName);
+                logger.WriteInformation("Trying to drop database '{0}'", databaseName);
                 using (var conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True;"))
                 {
                     conn.Open();
@@ -25,13 +26,13 @@ namespace E2ETests
                                           END", databaseName);
                     cmd.ExecuteNonQuery();
 
-                    Console.WriteLine("Successfully dropped database {0}", databaseName);
+                    logger.WriteInformation("Successfully dropped database {0}", databaseName);
                 }
             }
             catch (Exception exception)
             {
                 //Ignore if there is failure in cleanup.
-                Console.WriteLine("Error occured while dropping database {0}. Exception : {1}", databaseName, exception);
+                logger.WriteWarning("Error occured while dropping database {0}. Exception : {1}", databaseName, exception.ToString());
             }
         }
     }

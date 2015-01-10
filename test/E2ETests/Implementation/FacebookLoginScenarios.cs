@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Framework.Logging;
 using Xunit;
 
 namespace E2ETests
@@ -18,7 +19,7 @@ namespace E2ETests
             var response = _httpClient.GetAsync("Account/Login").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
-            Console.WriteLine("Signing in with Facebook account");
+            _logger.WriteInformation("Signing in with Facebook account");
             var formParameters = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("provider", "Facebook"),
@@ -84,14 +85,14 @@ namespace E2ETests
             //Verify cookie sent
             Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
             Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
-            Console.WriteLine("Successfully signed in with user '{0}'", "AspnetvnextTest@test.com");
+            _logger.WriteInformation("Successfully signed in with user '{0}'", "AspnetvnextTest@test.com");
 
-            Console.WriteLine("Verifying if the middleware notifications were fired");
+            _logger.WriteInformation("Verifying if the middleware notifications were fired");
             //Check for a non existing item
             response = _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123")).Result;
             //This action requires admin permissions. If notifications are fired this permission is granted
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            Console.WriteLine("Middleware notifications were fired successfully");
+            _logger.WriteInformation("Middleware notifications were fired successfully");
         }
     }
 }
