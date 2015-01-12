@@ -25,15 +25,11 @@ namespace Microsoft.AspNet.Identity
         /// <param name="options">The configured <see cref="DataProtectionTokenProviderOptions"/>.</param>
         public DataProtectorTokenProvider(IDataProtectionProvider dataProtectionProvider, IOptions<DataProtectionTokenProviderOptions> options)
         {
-            if (options == null || options.Options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
             if (dataProtectionProvider == null)
             {
                 throw new ArgumentNullException(nameof(dataProtectionProvider));
             }
-            Options = options.Options;
+            Options = options?.Options ?? new DataProtectionTokenProviderOptions();
             // Use the Name as the purpose which should usually be distinct from others
             Protector = dataProtectionProvider.CreateProtector(Name ?? "DataProtectorTokenProvider"); 
         }
@@ -44,7 +40,7 @@ namespace Microsoft.AspNet.Identity
         /// <value>
         /// The <see cref="DataProtectionTokenProviderOptions"/> for this instance.
         /// </value>
-        public DataProtectionTokenProviderOptions Options { get; private set; }
+        protected DataProtectionTokenProviderOptions Options { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="IDataProtector"/> for this instance.
@@ -52,7 +48,7 @@ namespace Microsoft.AspNet.Identity
         /// <value>
         /// The <see cref="IDataProtector"/> for this instance.
         /// </value>
-        public IDataProtector Protector { get; private set; }
+        protected IDataProtector Protector { get; private set; }
 
         /// <summary>
         /// Gets the name of this instance.

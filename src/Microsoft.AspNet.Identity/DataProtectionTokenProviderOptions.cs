@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Identity
         /// <value>
         /// The name of the <see cref="DataProtectorTokenProvider{TUser}"/>.
         /// </value>
-        public string Name { get; set; } = "DataProtection";
+        public string Name { get; set; } = "DataProtectorTokenProvider";
 
         /// <summary>
         /// Gets or sets the amount of time a generated token remains valid.
