@@ -83,11 +83,10 @@ namespace Microsoft.AspNet.Mvc
             setup.Configure(mvcOptions);
 
             // Assert
-            Assert.Equal(4, mvcOptions.OutputFormatters.Count);
+            Assert.Equal(3, mvcOptions.OutputFormatters.Count);
             Assert.IsType<HttpNoContentOutputFormatter>(mvcOptions.OutputFormatters[0].Instance);
             Assert.IsType<TextPlainFormatter>(mvcOptions.OutputFormatters[1].Instance);
             Assert.IsType<JsonOutputFormatter>(mvcOptions.OutputFormatters[2].Instance);
-            Assert.IsType<XmlDataContractSerializerOutputFormatter>(mvcOptions.OutputFormatters[3].Instance);
         }
 
         [Fact]
@@ -101,9 +100,8 @@ namespace Microsoft.AspNet.Mvc
             setup.Configure(mvcOptions);
 
             // Assert
-            Assert.Equal(2, mvcOptions.InputFormatters.Count);
+            Assert.Equal(1, mvcOptions.InputFormatters.Count);
             Assert.IsType<JsonInputFormatter>(mvcOptions.InputFormatters[0].Instance);
-            Assert.IsType<XmlDataContractSerializerInputFormatter>(mvcOptions.InputFormatters[1].Instance);
         }
 
         [Fact]
@@ -120,6 +118,20 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(2, mvcOptions.ModelValidatorProviders.Count);
             Assert.IsType<DataAnnotationsModelValidatorProvider>(mvcOptions.ModelValidatorProviders[0].Instance);
             Assert.IsType<DataMemberModelValidatorProvider>(mvcOptions.ModelValidatorProviders[1].Instance);
+        }
+
+        [Fact]
+        public void Setup_IgnoresAcceptHeaderHavingWildCardMediaAndSubMediaTypes()
+        {
+            // Arrange
+            var mvcOptions = new MvcOptions();
+            var setup = new MvcOptionsSetup();
+
+            // Act
+            setup.Configure(mvcOptions);
+
+            // Assert
+            Assert.False(mvcOptions.RespectBrowserAcceptHeader);
         }
 
         [Fact]

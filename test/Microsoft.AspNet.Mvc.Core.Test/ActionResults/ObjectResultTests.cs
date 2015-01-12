@@ -72,6 +72,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             httpResponse.SetupGet(r => r.Body).Returns(stream);
 
             var actionContext = CreateMockActionContext(httpResponse.Object, acceptHeader);
+
             var result = new ObjectResult(input);
 
             // Set the content type property explicitly.
@@ -467,10 +468,148 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             Assert.Equal(tempStream.ToArray(), ((MemoryStream)actionContext.HttpContext.Response.Body).ToArray());
         }
 
-        private static ActionContext CreateMockActionContext(HttpResponse response = null,
+        [Theory]
+        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "application/json; charset=utf-8")] //Chrome
+        [InlineData("text/html, application/xhtml+xml, */*",
+            "application/json; charset=utf-8")] //IE
+        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "application/json; charset=utf-8")] //Firefox
+        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "application/json; charset=utf-8")] //Safari
+        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "application/json; charset=utf-8")] //Opera
+        [InlineData("*/*", @"application/json; charset=utf-8")]
+        [InlineData("text/html,*/*;q=0.8,application/xml;q=0.9",
+            "application/json; charset=utf-8")]
+        public async Task ObjectResult_SelectDefaultFormatter_OnAllMediaRangeAcceptHeaderMediaType(
+            string acceptHeader,
+            string expectedResponseContentType)
+        {
+            // Arrange
+            var objectResult = new ObjectResult(new Person() { Name = "John" });
+            var outputFormatters = new IOutputFormatter[] {
+                new HttpNoContentOutputFormatter(),
+                new TextPlainFormatter(),
+                new JsonOutputFormatter(),
+                new XmlDataContractSerializerOutputFormatter(XmlSerializerOutputFormatter.GetDefaultXmlWriterSettings())
+            };
+            var response = GetMockHttpResponse();
+
+            var actionContext = CreateMockActionContext(
+                                    outputFormatters,
+                                    response.Object,
+                                    requestAcceptHeader: acceptHeader);
+
+            // Act
+            await objectResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            response.VerifySet(resp => resp.ContentType = expectedResponseContentType);
+        }
+
+        [Theory]
+        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "application/xml; charset=utf-8")] //Chrome
+        [InlineData("text/html, application/xhtml+xml, */*",
+            "application/json; charset=utf-8")] //IE
+        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "application/xml; charset=utf-8")] //Firefox
+        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "application/xml; charset=utf-8")] //Safari
+        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "application/xml; charset=utf-8")] //Opera
+        [InlineData("*/*",
+            "application/json; charset=utf-8")]
+        [InlineData("text/html,*/*;q=0.8,application/xml;q=0.9",
+            "application/xml; charset=utf-8")]
+        public async Task ObjectResult_PerformsContentNegotiation_OnAllMediaRangeAcceptHeaderMediaType(
+            string acceptHeader,
+            string expectedResponseContentType)
+        {
+            // Arrange
+            var objectResult = new ObjectResult(new Person() { Name = "John" });
+            var outputFormatters = new IOutputFormatter[] {
+                new HttpNoContentOutputFormatter(),
+                new TextPlainFormatter(),
+                new JsonOutputFormatter(),
+                new XmlDataContractSerializerOutputFormatter(XmlSerializerOutputFormatter.GetDefaultXmlWriterSettings())
+            };
+            var response = GetMockHttpResponse();
+
+            var actionContext = CreateMockActionContext(
+                                    outputFormatters,
+                                    response.Object,
+                                    requestAcceptHeader: acceptHeader,
+                                    respectBrowserAcceptHeader: true);
+
+            // Act
+            await objectResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            response.VerifySet(resp => resp.ContentType = expectedResponseContentType);
+        }
+
+        [Theory]
+        [InlineData("application/xml;q=0.9,text/plain;q=0.5", "application/xml; charset=utf-8", false)]
+        [InlineData("application/xml;q=0.9,*/*;q=0.5", "application/json; charset=utf-8", false)]
+        [InlineData("application/xml;q=0.9,text/plain;q=0.5", "application/xml; charset=utf-8", true)]
+        [InlineData("application/xml;q=0.9,*/*;q=0.5", "application/xml; charset=utf-8", true)]
+        public async Task ObjectResult_WildcardAcceptMediaType_AndExplicitResponseContentType(
+            string acceptHeader,
+            string expectedResponseContentType,
+            bool respectBrowserAcceptHeader)
+        {
+            // Arrange
+            var objectResult = new ObjectResult(new Person() { Name = "John" });
+            objectResult.ContentTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
+            objectResult.ContentTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
+            var outputFormatters = new IOutputFormatter[] {
+                new HttpNoContentOutputFormatter(),
+                new TextPlainFormatter(),
+                new JsonOutputFormatter(),
+                new XmlDataContractSerializerOutputFormatter(XmlSerializerOutputFormatter.GetDefaultXmlWriterSettings())
+            };
+            var response = GetMockHttpResponse();
+
+            var actionContext = CreateMockActionContext(
+                                    outputFormatters,
+                                    response.Object,
+                                    acceptHeader,
+                                    respectBrowserAcceptHeader: respectBrowserAcceptHeader);
+
+            // Act
+            await objectResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            response.VerifySet(resp => resp.ContentType = expectedResponseContentType);
+        }
+
+        private static ActionContext CreateMockActionContext(
+                                                             HttpResponse response = null,
                                                              string requestAcceptHeader = "application/*",
                                                              string requestContentType = "application/json",
-                                                             string requestAcceptCharsetHeader = "")
+                                                             string requestAcceptCharsetHeader = "",
+                                                             bool respectBrowserAcceptHeader = false)
+        {
+            var formatters = new IOutputFormatter[] { new TextPlainFormatter(), new JsonOutputFormatter() };
+
+            return CreateMockActionContext(
+                                            formatters,
+                                            response: response,
+                                            requestAcceptHeader: requestAcceptHeader,
+                                            requestContentType: requestContentType,
+                                            requestAcceptCharsetHeader: requestAcceptCharsetHeader,
+                                            respectBrowserAcceptHeader: respectBrowserAcceptHeader);
+        }
+
+        private static ActionContext CreateMockActionContext(
+                                                             IEnumerable<IOutputFormatter> outputFormatters,
+                                                             HttpResponse response = null,
+                                                             string requestAcceptHeader = "application/*",
+                                                             string requestContentType = "application/json",
+                                                             string requestAcceptCharsetHeader = "",
+                                                             bool respectBrowserAcceptHeader = false)
         {
             var httpContext = new Mock<HttpContext>();
             if (response != null)
@@ -490,7 +629,17 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             httpContext.Setup(o => o.Request).Returns(request);
             httpContext.Setup(o => o.RequestServices).Returns(GetServiceProvider());
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
-                       .Returns(new TestOutputFormatterProvider());
+                       .Returns(new TestOutputFormatterProvider(outputFormatters));
+
+            var options = new Mock<IOptions<MvcOptions>>();
+            options.SetupGet(o => o.Options)
+                       .Returns(new MvcOptions()
+                       {
+                           RespectBrowserAcceptHeader = respectBrowserAcceptHeader
+                       });
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
+                       .Returns(options.Object);
+
             return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
         }
 
@@ -551,17 +700,25 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
 
         private class TestOutputFormatterProvider : IOutputFormattersProvider
         {
+            private readonly IEnumerable<IOutputFormatter> _formatters;
+
+            public TestOutputFormatterProvider(IEnumerable<IOutputFormatter> formatters)
+            {
+                _formatters = formatters;
+            }
+
             public IReadOnlyList<IOutputFormatter> OutputFormatters
             {
                 get
                 {
-                    return new List<IOutputFormatter>()
-                        {
-                            new TextPlainFormatter(),
-                            new JsonOutputFormatter()
-                        };
+                    return _formatters.ToList();
                 }
             }
+        }
+
+        public class Person
+        {
+            public string Name { get; set; }
         }
     }
 }

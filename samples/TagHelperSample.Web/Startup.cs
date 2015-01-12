@@ -14,10 +14,15 @@ namespace TagHelperSample.Web
             app.UseServices(services =>
             {
                 services.AddMvc();
-
+                
                 // Setup services with a test AssemblyProvider so that only the sample's assemblies are loaded. This
                 // prevents loading controllers from other assemblies when the sample is used in functional tests.
                 services.AddTransient<IAssemblyProvider, TestAssemblyProvider<Startup>>();
+
+                services.Configure<MvcOptions>(options =>
+                {
+                    options.AddXmlDataContractSerializerFormatter();
+                });
             });
             app.UseMvc();
         }

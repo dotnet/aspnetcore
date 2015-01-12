@@ -13,6 +13,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
@@ -1956,6 +1957,12 @@ namespace Microsoft.AspNet.Mvc
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
                        .Returns(mockFormattersProvider.Object);
             httpResponse.Body = new MemoryStream();
+
+            var options = new Mock<IOptions<MvcOptions>>();
+            options.SetupGet(o => o.Options)
+                       .Returns(new MvcOptions());
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
+                       .Returns(options.Object);
 
             var actionContext = new ActionContext(
                 httpContext: httpContext.Object,

@@ -10,6 +10,7 @@ using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
@@ -92,6 +93,12 @@ namespace Microsoft.AspNet.Mvc
             var services = new Mock<IServiceProvider>();
             services.Setup(p => p.GetService(typeof(IOutputFormattersProvider))).Returns(new TestOutputFormatterProvider());
             httpContext.RequestServices = services.Object;
+            var options = new Mock<IOptions<MvcOptions>>();
+            options.SetupGet(o => o.Options)
+                       .Returns(new MvcOptions());
+            services.Setup(p => p.GetService(typeof(IOptions<MvcOptions>)))
+                       .Returns(options.Object);
+
             return httpContext;
         }
 

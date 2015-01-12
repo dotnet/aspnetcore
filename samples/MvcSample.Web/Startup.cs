@@ -50,6 +50,8 @@ namespace MvcSample.Web
                     services.Configure<MvcOptions>(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
+
+                        options.AddXmlDataContractSerializerFormatter();
                     });
                     services.Configure<RazorViewEngineOptions>(options =>
                     {
@@ -90,6 +92,7 @@ namespace MvcSample.Web
                     services.Configure<MvcOptions>(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
+                        options.AddXmlDataContractSerializerFormatter();
                     });
                 });
             }

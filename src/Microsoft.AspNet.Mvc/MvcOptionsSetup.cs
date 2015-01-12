@@ -44,12 +44,9 @@ namespace Microsoft.AspNet.Mvc
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
             options.OutputFormatters.Add(new TextPlainFormatter());
             options.OutputFormatters.Add(new JsonOutputFormatter());
-            options.OutputFormatters.Add(
-                new XmlDataContractSerializerOutputFormatter(XmlOutputFormatter.GetDefaultXmlWriterSettings()));
 
             // Set up default input formatters.
             options.InputFormatters.Add(new JsonInputFormatter());
-            options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());

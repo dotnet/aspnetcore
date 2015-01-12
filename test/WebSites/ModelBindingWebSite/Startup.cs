@@ -23,6 +23,8 @@ namespace ModelBindingWebSite
                         {
                             m.MaxModelValidationErrors = 8;
                             m.ModelBinders.Insert(0, typeof(TestMetadataAwareBinder));
+
+                            m.AddXmlDataContractSerializerFormatter();
                         });
 
                 services.AddSingleton<ICalculator, DefaultCalculator>();

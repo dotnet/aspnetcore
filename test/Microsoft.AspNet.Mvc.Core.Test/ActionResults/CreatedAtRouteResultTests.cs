@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
@@ -97,6 +98,11 @@ namespace Microsoft.AspNet.Mvc
 
             httpContext.Setup(o => o.Request)
                        .Returns(request);
+            var options = new Mock<IOptions<MvcOptions>>();
+            options.SetupGet(o => o.Options)
+                       .Returns(new MvcOptions());
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
+                       .Returns(options.Object);
             httpContext.Setup(o => o.Response)
                        .Returns(response);
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))

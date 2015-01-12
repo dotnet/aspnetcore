@@ -24,6 +24,8 @@ namespace FormatterWebSite
                 {
                     options.ValidationExcludeFilters.Add(typeof(Developer));
                     options.ValidationExcludeFilters.Add(typeof(Supplier));
+
+                    options.AddXmlDataContractSerializerFormatter();
                 });
             });
 

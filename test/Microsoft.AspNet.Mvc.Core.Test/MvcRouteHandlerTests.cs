@@ -279,11 +279,11 @@ namespace Microsoft.AspNet.Mvc
 
             if (optionsAccessor == null)
             {
-                var mockOptionsAccessor = new Mock<IOptions<MvcOptions>>();
-                mockOptionsAccessor.SetupGet(o => o.Options)
+                var options = new Mock<IOptions<MvcOptions>>();
+                options.SetupGet(o => o.Options)
                                    .Returns(new MvcOptions());
 
-                optionsAccessor = mockOptionsAccessor.Object;
+                optionsAccessor = options.Object;
             }
 
             var httpContext = new Mock<HttpContext>();
