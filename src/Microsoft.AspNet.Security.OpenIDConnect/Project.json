@@ -1,0 +1,48 @@
+{
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+        "Microsoft.AspNet.Security": "1.0.0-*",
+        "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+        "Microsoft.Framework.Logging": "1.0.0-*",
+        "Newtonsoft.Json": "6.0.4",
+        "Microsoft.IdentityModel.Protocol.Extensions": "2.0.0.0-beta1-*",
+        "System.IdentityModel.Tokens": "5.0.0.0-beta1-*"
+    },
+    "frameworks": {
+        "aspnet50": {
+            "frameworkAssemblies": {
+                "System.Net.Http": "",
+                "System.Net.Http.WebRequest": ""
+            }
+        },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Collections": "4.0.10-beta-*",
+                "System.ComponentModel": "4.0.0-beta-*",
+                "System.Console": "4.0.0-beta-*",
+                "System.Diagnostics.Debug": "4.0.10-beta-*",
+                "System.Diagnostics.Tools": "4.0.0-beta-*",
+                "System.Dynamic.Runtime": "4.0.0-beta-*",
+                "System.Globalization": "4.0.10-beta-*",
+                "System.IO": "4.0.10-beta-*",
+                "System.IO.Compression": "4.0.0-beta-*",
+                "System.Linq": "4.0.0-beta-*",
+                "System.Net.Http.WinHttpHandler": "4.0.0-beta-*",
+                "System.ObjectModel": "4.0.10-beta-*",
+                "System.Reflection": "4.0.10-beta-*",
+                "System.Resources.ResourceManager": "4.0.0-beta-*",
+                "System.Runtime": "4.0.20-beta-*",
+                "System.Runtime.Extensions": "4.0.10-beta-*",
+                "System.Runtime.InteropServices": "4.0.20-beta-*",
+                "System.Security.Claims": "4.0.0-beta-*",
+                "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",
+                "System.Security.Principal": "4.0.0-beta-*",
+                "System.Threading": "4.0.0-beta-*",
+                "System.Threading.Tasks": "4.0.10-beta-*",
+                "System.Net.Http": "4.0.0-*"
+            }
+        }
+    }
+}

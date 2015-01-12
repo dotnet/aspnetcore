@@ -7,6 +7,8 @@
         "Microsoft.AspNet.Security.Facebook": "1.0.0-*",
         "Microsoft.AspNet.Security.Google": "1.0.0-*",
         "Microsoft.AspNet.Security.MicrosoftAccount": "1.0.0-*",
+        "Microsoft.AspNet.Security.OAuthBearer": "1.0.0-*",
+        "Microsoft.AspNet.Security.OpenIdConnect": "1.0.0-*",
         "Microsoft.AspNet.Security.Twitter": "1.0.0-*",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "Moq": "4.2.1312.1622",
@@ -18,7 +20,8 @@
     "frameworks": {
         "aspnet50": {
             "dependencies": {
-                "Shouldly": "1.1.1.1"
+                "Shouldly": "1.1.1.1",
+                "System.Security.Claims": "1.0.0-*"
             }
         }
     }
