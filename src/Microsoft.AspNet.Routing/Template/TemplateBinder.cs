@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNet.Http.Extensions;
 
 namespace Microsoft.AspNet.Routing.Template
 {
