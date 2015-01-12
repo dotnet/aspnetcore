@@ -416,6 +416,34 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
+        public async Task CheckPasswordWillRehashPasswordWhenNeeded()
+        {
+            // Setup
+            var store = new Mock<IUserPasswordStore<TestUser>>();
+            var hasher = new Mock<IPasswordHasher<TestUser>>();
+            var user = new TestUser { UserName = "Foo" };
+            var pwd = "password";
+            var hashed = "hashed";
+            var rehashed = "rehashed";
+            
+            store.Setup(s => s.GetPasswordHashAsync(user, CancellationToken.None))
+                .ReturnsAsync(hashed)
+                .Verifiable();
+            hasher.Setup(s => s.VerifyHashedPassword(user, hashed, pwd)).Returns(PasswordVerificationResult.SuccessRehashNeeded).Verifiable();
+            hasher.Setup(s => s.HashPassword(user, pwd)).Returns(rehashed).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
+            userManager.PasswordHasher = hasher.Object;
+
+            // Act
+            var result = await userManager.CheckPasswordAsync(user, pwd);
+
+            // Assert
+            Assert.True(result);
+            store.VerifyAll();
+            hasher.VerifyAll();
+        }
+
+        [Fact]
         public async Task RemoveClaimsCallsStore()
         {
             // Setup
