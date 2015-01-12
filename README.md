@@ -1,10 +1,10 @@
-# ASP.NET vNext Home
+# ASP.NET 5 Home
 Latest dev version: [![dev version](http://img.shields.io/myget/aspnetvnext/v/KRE-CLR-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetvnext)<br>
 Latest master version: [![master version](http://img.shields.io/myget/aspnetmaster/v/KRE-CLR-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetmaster)
 
-The Home repository is the starting point for people to learn about ASP.NET vNext. This repo contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what's coming in ASP.NET vNext.
+The Home repository is the starting point for people to learn about ASP.NET 5. This repo contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what's coming in ASP.NET 5.
 
-ASP.NET vNext is being actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
+ASP.NET 5 is being actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
 
 The samples provided in this repo are designed to show some of the features of the new framework and to provide a starting point for further exploration. All the component packages are available on Nuget. To try out the latest bits under development switch to the dev branch of the Home repo and use the dev feed in Nuget.config (https://www.myget.org/F/aspnetvnext).
 
@@ -31,13 +31,13 @@ These are the current minimum requirements for the latest preview release. They 
 
 ## Getting Started
 
-The easiest way to get started with ASP.NET vNext is to try out the latest preview of Visual Studio 2015 Preview. You can find installation instructions and getting started documentation at http://www.asp.net/vnext.
+The easiest way to get started with ASP.NET 5 is to try out the latest preview of Visual Studio 2015 Preview. You can find installation instructions and getting started documentation at http://www.asp.net/vnext.
 
-That said, you can also try out ASP.NET vNext with just a command-prompt and a text editor. The following instructions will walk you through getting your dev environment setup.
+That said, you can also try out ASP.NET 5 with just a command-prompt and a text editor. The following instructions will walk you through getting your dev environment setup.
 
 ### Install the K Version Manager (KVM)
 
-The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager). You use the K Version Manager to install different versions of the ASP.NET vNext runtime and switch between them.
+The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager). You use the K Version Manager to install different versions of the ASP.NET 5 runtime and switch between them.
 
 #### Windows
 To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges):
@@ -54,7 +54,7 @@ After the script has run open a new command prompt to start using KVM.
 To install KVM and the correct version of Mono on OS X using [Homebrew](http://brew.sh) follow the following steps: 
 
  * Install [Homebrew](http://brew.sh) if it is not already installed.
- * Run command `brew tap aspnet/k` to tap the ASP.NET vNext related git repositories. If you had already tapped the repo for previous releases, run `brew untap aspnet/k` to delete the old commands and tap again to get the updated brew scripts.
+ * Run command `brew tap aspnet/k` to tap the ASP.NET 5 related git repositories. If you had already tapped the repo for previous releases, run `brew untap aspnet/k` to delete the old commands and tap again to get the updated brew scripts.
  * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.nuget.org/api/v2 feed.
  * Run command `source kvm.sh` on your terminal if your terminal cannot understand kvm. 
 
@@ -72,7 +72,7 @@ Note that on Linux you need to also install [Mono](http://mono-project.com) 3.4.
 
 Now that you have KVM setup you can install the latest version of the runtime by running the following command: ```kvm upgrade```
  
-This command will download the specified version of the K Runtime Environment (KRE), and put it on your user profile ready to use. You are now ready to start using ASP.NET vNext!
+This command will download the specified version of the K Runtime Environment (KRE), and put it on your user profile ready to use. You are now ready to start using ASP.NET 5!
 
 ## Samples
 
@@ -81,7 +81,7 @@ The samples in this repo are basic starting points for you to experiment with.
 + [ConsoleApp](https://github.com/aspnet/Home/tree/master/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point.
 + [HelloWeb](https://github.com/aspnet/Home/tree/master/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
 + [HelloMvc](https://github.com/aspnet/Home/tree/master/samples/HelloMvc). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
-+ [MVC Music Store](https://github.com/aspnet/MusicStore) and [BugTracker](https://github.com/aspnet/BugTracker) are application samples that are both being ported to ASP.NET vNext. Each of these samples have their own separate repositories that you can look at.
++ [MVC Music Store](https://github.com/aspnet/MusicStore) and [BugTracker](https://github.com/aspnet/BugTracker) are application samples that are both being ported to ASP.NET 5. Each of these samples have their own separate repositories that you can look at.
 
 ### Running the samples
 
@@ -97,7 +97,7 @@ The samples in this repo are basic starting points for you to experiment with.
 
 ### Switching to Core CLR
 
-By default when running ASP.NET vNext applications on the Windows platform you are running on the full .NET Framework. You can switch to use the new Cloud Optimized runtime, or Core CLR, using the KVM command.
+By default when running ASP.NET 5 applications on the Windows platform you are running on the full .NET Framework. You can switch to use the new Cloud Optimized runtime, or Core CLR, using the KVM command.
 
 1. Run ```kvm upgrade -runtime CoreCLR``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The `-runtime CoreCLR` switch tells it to use Core CLR. You can use `-r CLR` to target desktop again.
 2. Run ```k web``` to run on WebListener. 
@@ -120,8 +120,8 @@ We have some useful documentation on the wiki of this Repo. This wiki is a centr
 
 If you see errors, or want some extra content, then feel free to create an issue or send a pull request (see feedback section below).
 
-### [ASP.NET/vNext](http://www.asp.net/vnext)
-The vNext page on the ASP.NET site has links to some TechEd videos and articles with some good information about vNext.
+### [ASP.NET/5](http://www.asp.net/vnext)
+The 5 page on the ASP.NET site has links to some TechEd videos and articles with some good information about ASP.NET 5.
 
 ## Repos and Projects
 
