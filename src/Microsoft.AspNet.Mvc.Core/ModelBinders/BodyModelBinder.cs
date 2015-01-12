@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
         private readonly IBodyModelValidator _bodyModelValidator;
         private readonly IValidationExcludeFiltersProvider _bodyValidationExcludeFiltersProvider;
 
-        public BodyModelBinder([NotNull] IContextAccessor<ActionContext> context,
+        public BodyModelBinder([NotNull] IScopedInstance<ActionContext> context,
                                [NotNull] IInputFormatterSelector selector,
                                [NotNull] IBodyModelValidator bodyModelValidator,
                                [NotNull] IValidationExcludeFiltersProvider bodyValidationExcludeFiltersProvider)

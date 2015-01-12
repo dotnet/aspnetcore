@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             mockHttpContext
                 .Setup(o => o.Request.Cookies)
                 .Returns(requestCookies.Object);
-            var contextAccessor = new ContextAccessor<AntiForgeryContext>();
+            var contextAccessor = new ScopedInstance<AntiForgeryContext>();
             mockHttpContext.SetupGet(o => o.RequestServices)
                            .Returns(GetServiceProvider(contextAccessor));
             var config = new AntiForgeryOptions()
@@ -60,13 +60,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             mockHttpContext
                 .Setup(o => o.Request.Cookies)
                 .Returns(requestCookies.Object);
-            var contextAccessor = new ContextAccessor<AntiForgeryContext>();
+            var contextAccessor = new ScopedInstance<AntiForgeryContext>();
             mockHttpContext.SetupGet(o => o.RequestServices)
                            .Returns(GetServiceProvider(contextAccessor));
 
             // add a cookie explicitly.
             var cookie = new AntiForgeryToken();
-            contextAccessor.SetValue(new AntiForgeryContext() { CookieToken = cookie });
+            contextAccessor.Value = new AntiForgeryContext() { CookieToken = cookie };
             var config = new AntiForgeryOptions()
             {
                 CookieName = _cookieName
@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(o => o.Response.Cookies)
                            .Returns(cookies);
-            var contextAccessor = new ContextAccessor<AntiForgeryContext>();
+            var contextAccessor = new ScopedInstance<AntiForgeryContext>();
             mockHttpContext.SetupGet(o => o.RequestServices)
                            .Returns(GetServiceProvider(contextAccessor));
 
@@ -317,17 +317,17 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             mockHttpContext.Setup(o => o.Request)
                            .Returns(request.Object);
 
-            var contextAccessor = new ContextAccessor<AntiForgeryContext>();
+            var contextAccessor = new ScopedInstance<AntiForgeryContext>();
             mockHttpContext.SetupGet(o => o.RequestServices)
                            .Returns(GetServiceProvider(contextAccessor));
 
             return mockHttpContext.Object;
         }
 
-        private static IServiceProvider GetServiceProvider(IContextAccessor<AntiForgeryContext> contextAccessor)
+        private static IServiceProvider GetServiceProvider(IScopedInstance<AntiForgeryContext> contextAccessor)
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IContextAccessor<AntiForgeryContext>>(contextAccessor);
+            serviceCollection.AddInstance<IScopedInstance<AntiForgeryContext>>(contextAccessor);
             return serviceCollection.BuildServiceProvider();
         }
 

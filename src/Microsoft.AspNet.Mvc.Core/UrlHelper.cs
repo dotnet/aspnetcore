@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="actionSelector">The <see cref="IActionSelector"/> to be used for verifying the correctness of
         /// supplied parameters for a route.
         /// </param>
-        public UrlHelper(IContextAccessor<ActionContext> contextAccessor, IActionSelector actionSelector)
+        public UrlHelper(IScopedInstance<ActionContext> contextAccessor, IActionSelector actionSelector)
         {
             _httpContext = contextAccessor.Value.HttpContext;
             _router = contextAccessor.Value.RouteData.Routers[0];

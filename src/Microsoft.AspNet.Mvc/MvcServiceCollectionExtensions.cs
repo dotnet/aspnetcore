@@ -22,7 +22,7 @@ namespace Microsoft.Framework.DependencyInjection
             services.AddOptions(configuration);
             services.AddDataProtection(configuration);
             services.AddRouting(configuration);
-            services.AddContextAccessor(configuration);
+            services.AddScopedInstance(configuration);
             services.Configure<RouteOptions>(routeOptions =>
                                                     routeOptions.ConstraintMap
                                                          .Add("exists",
