@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public TestableHtmlGenerator(IModelMetadataProvider metadataProvider, IUrlHelper urlHelper)
             : this(
                   metadataProvider,
-                  Mock.Of<IContextAccessor<ActionBindingContext>>(),
+                  Mock.Of<IScopedInstance<ActionBindingContext>>(),
                   urlHelper,
                   validationAttributes: new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase))
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         public TestableHtmlGenerator(
             IModelMetadataProvider metadataProvider,
-            IContextAccessor<ActionBindingContext> bindingContextAccessor,
+            IScopedInstance<ActionBindingContext> bindingContextAccessor,
             IUrlHelper urlHelper,
             IDictionary<string, object> validationAttributes)
             : base(GetAntiForgery(), bindingContextAccessor, metadataProvider, urlHelper)
