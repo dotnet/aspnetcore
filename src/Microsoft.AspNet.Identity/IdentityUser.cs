@@ -36,6 +36,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         public virtual string Email { get; set; }
 
+        public virtual string NormalizedEmail { get; set; }
+
         /// <summary>
         ///     True if the email is confirmed, default is false
         /// </summary>

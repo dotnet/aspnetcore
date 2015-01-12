@@ -108,6 +108,18 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(user.Email);
         }
 
+        public Task<string> GetNormalizedEmailAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(user.NormalizedEmail);
+        }
+
+        public Task SetNormalizedEmailAsync(TUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            user.NormalizedEmail = normalizedEmail;
+            return Task.FromResult(0);
+        }
+
+
         public Task<bool> GetEmailConfirmedAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(user.EmailConfirmed);
@@ -123,7 +135,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             return
                 Task.FromResult(
-                    Users.FirstOrDefault(u => String.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase)));
+                    Users.FirstOrDefault(u => u.NormalizedEmail == email));
         }
 
         public Task<DateTimeOffset?> GetLockoutEndDateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
@@ -262,7 +274,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             return
                 Task.FromResult(
-                    Users.FirstOrDefault(u => String.Equals(u.UserName, userName, StringComparison.OrdinalIgnoreCase)));
+                    Users.FirstOrDefault(u => u.NormalizedUserName == userName));
         }
 
         public Task<IdentityResult> DeleteAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))

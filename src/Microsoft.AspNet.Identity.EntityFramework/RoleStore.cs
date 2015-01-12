@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -188,16 +187,39 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         }
 
         /// <summary>
-        ///     Find a role by name
+        ///     Find a role by normalized name
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="normalizedName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TRole> FindByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TRole> FindByNameAsync(string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return Roles.FirstOrDefaultAsync(u => u.Name.ToUpper() == name.ToUpper(), cancellationToken);
+            return Roles.FirstOrDefaultAsync(r => r.NormalizedName == normalizedName, cancellationToken);
+        }
+
+        public virtual Task<string> GetNormalizedRoleNameAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
+            return Task.FromResult(role.NormalizedName);
+        }
+
+        public virtual Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
+            role.NormalizedName = normalizedName;
+            return Task.FromResult(0);
         }
 
         private void ThrowIfDisposed()

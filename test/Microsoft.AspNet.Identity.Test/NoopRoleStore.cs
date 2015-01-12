@@ -51,5 +51,15 @@ namespace Microsoft.AspNet.Identity.Test
         {
             return Task.FromResult<string>(null);
         }
+
+        public Task<string> GetNormalizedRoleNameAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult<string>(null);
+        }
+
+        public Task SetNormalizedRoleNameAsync(TestRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(0);
+        }
     }
 }

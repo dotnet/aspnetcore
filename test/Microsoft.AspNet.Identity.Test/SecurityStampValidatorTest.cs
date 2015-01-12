@@ -5,6 +5,7 @@ using System;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.Identity.Test
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
             var httpContext = new Mock<HttpContext>();
-            var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
+            var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.Value).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object);
@@ -78,7 +79,7 @@ namespace Microsoft.AspNet.Identity.Test
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
             var httpContext = new Mock<HttpContext>();
-            var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
+            var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.Value).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object);
@@ -112,7 +113,7 @@ namespace Microsoft.AspNet.Identity.Test
             var identityOptions = new IdentityOptions { SecurityStampValidationInterval = TimeSpan.Zero };
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
-            var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
+            var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.Value).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object);
@@ -146,7 +147,7 @@ namespace Microsoft.AspNet.Identity.Test
             var identityOptions = new IdentityOptions { SecurityStampValidationInterval = TimeSpan.FromDays(1) };
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
-            var contextAccessor = new Mock<IContextAccessor<HttpContext>>();
+            var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.Value).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object);

@@ -97,6 +97,17 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(0);
         }
 
+        public Task<string> GetNormalizedRoleNameAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(role.NormalizedName);
+        }
+
+        public Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            role.NormalizedName = normalizedName;
+            return Task.FromResult(0);
+        }
+
         public IQueryable<TRole> Roles
         {
             get { return _roles.Values.AsQueryable(); }

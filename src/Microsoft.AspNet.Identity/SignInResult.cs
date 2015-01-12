@@ -78,7 +78,5 @@ namespace Microsoft.AspNet.Identity
         {
             get { return _twoFactorRequired; }
         }
-
-
     }
 }

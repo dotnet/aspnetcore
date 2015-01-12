@@ -51,9 +51,28 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Returns the user associated with this email
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="normalizedEmail"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TUser> FindByEmailAsync(string email, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Returns the normalized email
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<string> GetNormalizedEmailAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        ///     Set the normalized email
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="normalizedEmail"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task SetNormalizedEmailAsync(TUser user, string normalizedEmail,
+            CancellationToken cancellationToken = default(CancellationToken));
+
     }
 }

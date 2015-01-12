@@ -20,21 +20,17 @@ namespace Microsoft.AspNet.Identity.Test
             return mgr;
         }
 
-        public static Mock<RoleManager<TRole>> MockRoleManager<TRole>() where TRole : class
+        public static Mock<RoleManager<TRole>> MockRoleManager<TRole>(IRoleStore<TRole> store = null) where TRole : class
         {
-            var store = new Mock<IRoleStore<TRole>>();
+            store = store ?? new Mock<IRoleStore<TRole>>().Object;
             var roles = new List<IRoleValidator<TRole>>();
             roles.Add(new RoleValidator<TRole>());
-            return new Mock<RoleManager<TRole>>(store.Object, roles, null);
+            return new Mock<RoleManager<TRole>>(store, roles, null, null);
         }
 
-        public static UserManager<TUser> TestUserManager<TUser>() where TUser : class
+        public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser> store = null) where TUser : class
         {
-            return TestUserManager(new Mock<IUserStore<TUser>>().Object);
-        }
-
-        public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser> store) where TUser : class
-        {
+            store = store ?? new Mock<IUserStore<TUser>>().Object;
             var validator = new Mock<IUserValidator<TUser>>();
             var userManager = new UserManager<TUser>(store);
             userManager.UserValidators.Add(validator.Object);
@@ -43,5 +39,14 @@ namespace Microsoft.AspNet.Identity.Test
                 .Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
             return userManager;
         }
+
+        public static RoleManager<TRole> TestRoleManager<TRole>(IRoleStore<TRole> store = null) where TRole : class
+        {
+            store = store ?? new Mock<IRoleStore<TRole>>().Object;
+            var roles = new List<IRoleValidator<TRole>>();
+            roles.Add(new RoleValidator<TRole>());
+            return new RoleManager<TRole>(store, roles);
+        }
+
     }
 }

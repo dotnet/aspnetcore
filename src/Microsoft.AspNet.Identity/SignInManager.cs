@@ -8,9 +8,9 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Identity
     public class SignInManager<TUser> where TUser : class
     {
         public SignInManager(UserManager<TUser> userManager, 
-            IContextAccessor<HttpContext> contextAccessor, 
+            IHttpContextAccessor contextAccessor, 
             IClaimsIdentityFactory<TUser> claimsFactory, 
             IOptions<IdentityOptions> optionsAccessor = null)
         {

@@ -43,6 +43,29 @@ namespace Microsoft.AspNet.Identity.Test
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
             store.Setup(s => s.CreateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
+            store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+
+            // Act
+            var result = await userManager.CreateAsync(user);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CreateCallsUpdateEmailStore()
+        {
+            // Setup
+            var store = new Mock<IUserEmailStore<TestUser>>();
+            var user = new TestUser { UserName = "Foo", Email = "Foo@foo.com" };
+            store.Setup(s => s.CreateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
+            store.Setup(s => s.GetEmailAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.Email)).Verifiable();
+            store.Setup(s => s.SetNormalizedEmailAsync(user, user.Email.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
 
             // Act
@@ -76,6 +99,29 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
+            store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
+
+            // Act
+            var result = await userManager.UpdateAsync(user);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task UpdateWillUpdateNormalizedEmail()
+        {
+            // Setup
+            var store = new Mock<IUserEmailStore<TestUser>>();
+            var user = new TestUser { UserName = "Foo", Email = "email" };
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
+            store.Setup(s => s.GetEmailAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.Email)).Verifiable();
+            store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.SetNormalizedEmailAsync(user, user.Email.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
             var userManager = MockHelpers.TestUserManager(store.Object);
 
@@ -93,7 +139,9 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser();
-            store.Setup(s => s.SetUserNameAsync(user, It.IsAny<string>(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.SetUserNameAsync(user, "foo", CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult("foo")).Verifiable();
+            store.Setup(s => s.SetNormalizedUserNameAsync(user, "FOO", CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
             var userManager = MockHelpers.TestUserManager(store.Object);
 
@@ -146,11 +194,46 @@ namespace Microsoft.AspNet.Identity.Test
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser {UserName="Foo"};
             store.Setup(s => s.FindByNameAsync(user.UserName, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
-            userManager.UserNameNormalizer = null;
+            var userManager = MockHelpers.TestUserManager(store.Object);
+            userManager.KeyNormalizer = null;
 
             // Act
             var result = await userManager.FindByNameAsync(user.UserName);
+
+            // Assert
+            Assert.Equal(user, result);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task FindByEmailCallsStoreWithNormalizedEmail()
+        {
+            // Setup
+            var store = new Mock<IUserEmailStore<TestUser>>();
+            var user = new TestUser { Email = "Foo" };
+            store.Setup(s => s.FindByEmailAsync(user.Email.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
+
+            // Act
+            var result = await userManager.FindByEmailAsync(user.Email);
+
+            // Assert
+            Assert.Equal(user, result);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CanFindByEmailCallsStoreWithoutNormalizedEmail()
+        {
+            // Setup
+            var store = new Mock<IUserEmailStore<TestUser>>();
+            var user = new TestUser { Email = "Foo" };
+            store.Setup(s => s.FindByEmailAsync(user.Email, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
+            userManager.KeyNormalizer = null;
+
+            // Act
+            var result = await userManager.FindByEmailAsync(user.Email);
 
             // Assert
             Assert.Equal(user, result);
@@ -961,6 +1044,16 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 return Task.FromResult<IList<TestUser>>(new List<TestUser>());
             }
+
+            public Task<string> GetNormalizedEmailAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult("");
+            }
+
+            public Task SetNormalizedEmailAsync(TestUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult(0);
+            }
         }
 
         private class NoOpTokenProvider : IUserTokenProvider<TestUser>
@@ -1228,6 +1321,16 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 throw new NotImplementedException();
             }
+
+            public Task<string> GetNormalizedEmailAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetNormalizedEmailAsync(TestUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
         }
 
         [Fact]
@@ -1245,7 +1348,7 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Options.User.RequireUniqueEmail = true;
             var user = new TestUser() { UserName = "dupeEmail", Email = "dupe@email.com" };
             var user2 = new TestUser() { UserName = "dupeEmail2", Email = "dupe@email.com" };
-            store.Setup(s => s.FindByEmailAsync(user.Email, CancellationToken.None))
+            store.Setup(s => s.FindByEmailAsync("DUPE@EMAIL.COM", CancellationToken.None))
                 .Returns(Task.FromResult(user2))
                 .Verifiable();
             store.Setup(s => s.GetUserIdAsync(user2, CancellationToken.None))

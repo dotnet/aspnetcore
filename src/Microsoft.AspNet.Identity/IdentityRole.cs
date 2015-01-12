@@ -65,6 +65,7 @@ namespace Microsoft.AspNet.Identity
         ///     Role name
         /// </summary>
         public virtual string Name { get; set; }
+        public virtual string NormalizedName { get; set; }
 
         /// <summary>
         /// A random value that should change whenever a role is persisted to the store

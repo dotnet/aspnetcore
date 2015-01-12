@@ -148,6 +148,11 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
+            public Task<string> GetNormalizedRoleNameAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<string> GetNormalizedUserNameAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
@@ -169,6 +174,11 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public Task<string> GetUserNameAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetNormalizedRoleNameAsync(IdentityRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

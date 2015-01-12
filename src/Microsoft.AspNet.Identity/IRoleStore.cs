@@ -64,6 +64,26 @@ namespace Microsoft.AspNet.Identity
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
+        /// Get a role's normalized name
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<string> GetNormalizedRoleNameAsync(TRole role, 
+            CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Set a role's normalized name
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="normalizedName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, 
+            CancellationToken cancellationToken = default(CancellationToken));
+
+
+        /// <summary>
         ///     Finds a role by id
         /// </summary>
         /// <param name="roleId"></param>
@@ -72,11 +92,11 @@ namespace Microsoft.AspNet.Identity
         Task<TRole> FindByIdAsync(string roleId, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        ///     Find a role by name
+        ///     Find a role by normalized name
         /// </summary>
-        /// <param name="roleName"></param>
+        /// <param name="normalizedRoleName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TRole> FindByNameAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TRole> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

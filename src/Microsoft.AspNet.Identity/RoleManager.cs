@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="roleValidator"></param>
         public RoleManager(IRoleStore<TRole> store, 
             IEnumerable<IRoleValidator<TRole>> roleValidators = null,
+            ILookupNormalizer keyNormalizer = null,
             IdentityErrorDescriber errors = null)
         {
             if (store == null)
@@ -32,6 +33,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("store");
             }
             Store = store;
+            KeyNormalizer = keyNormalizer ?? new UpperInvariantLookupNormalizer();
             ErrorDescriber = errors ?? new IdentityErrorDescriber();
 
             if (roleValidators != null)
@@ -57,6 +59,11 @@ namespace Microsoft.AspNet.Identity
         ///     Used to generate public API error messages
         /// </summary>
         public IdentityErrorDescriber ErrorDescriber { get; set; }
+
+        /// <summary>
+        ///     Used to normalize user names, role names, emails for uniqueness
+        /// </summary>
+        public ILookupNormalizer KeyNormalizer { get; set; }
 
         /// <summary>
         ///     Returns an IQueryable of roles if the store is an IQueryableRoleStore
@@ -141,8 +148,23 @@ namespace Microsoft.AspNet.Identity
             {
                 return result;
             }
+            await UpdateNormalizedRoleNameAsync(role, cancellationToken);
             return await Store.CreateAsync(role, cancellationToken);
         }
+
+        /// <summary>
+        /// Update the user's normalized user name
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task UpdateNormalizedRoleNameAsync(TRole role,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var name = await GetRoleNameAsync(role, cancellationToken);
+            await Store.SetNormalizedRoleNameAsync(role, NormalizeKey(name), cancellationToken);
+        }
+
 
         /// <summary>
         ///     UpdateAsync an existing role
@@ -164,6 +186,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return result;
             }
+            await UpdateNormalizedRoleNameAsync(role, cancellationToken);
             return await Store.UpdateAsync(role, cancellationToken);
         }
 
@@ -199,8 +222,19 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("roleName");
             }
 
-            return await FindByNameAsync(roleName, cancellationToken) != null;
+            return await FindByNameAsync(NormalizeKey(roleName), cancellationToken) != null;
         }
+
+        /// <summary>
+        /// Normalize a key (role name) for uniqueness comparisons
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public virtual string NormalizeKey(string key)
+        {
+            return (KeyNormalizer == null) ? key : KeyNormalizer.Normalize(key);
+        }
+
 
         /// <summary>
         ///     FindByLoginAsync a role by id
@@ -240,6 +274,7 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
             await Store.SetRoleNameAsync(role, name, cancellationToken);
+            await UpdateNormalizedRoleNameAsync(role, cancellationToken);
             return IdentityResult.Success;
         }
 
@@ -271,7 +306,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("roleName");
             }
 
-            return await Store.FindByNameAsync(roleName, cancellationToken);
+            return await Store.FindByNameAsync(NormalizeKey(roleName), cancellationToken);
         }
 
         // IRoleClaimStore methods

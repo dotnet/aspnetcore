@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
-
         public virtual IdentityError PasswordMismatch()
         {
             return new IdentityError

@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return AutoSaveChanges ? Context.SaveChangesAsync(cancellationToken) : Task.FromResult(0);
         }
 
-        public Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(ConvertIdToString(user.Id));
         }
 
-        public Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(user.UserName);
         }
 
-        public Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(0);
         }
 
-        public Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(user.NormalizedUserName);
         }
 
-        public Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -420,7 +420,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         private DbSet<IdentityUserRole<TKey>> UserRoles { get { return Context.Set<IdentityUserRole<TKey>>(); } }
         private DbSet<IdentityUserLogin<TKey>> UserLogins { get { return Context.Set<IdentityUserLogin<TKey>>(); } }
 
-        public async Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -431,7 +431,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return await UserClaims.Where(uc => uc.UserId.Equals(user.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToListAsync(cancellationToken);
         }
 
-        public async Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -448,7 +448,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
         }
 
-        public async Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -472,7 +472,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
         }
 
-        public async Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -633,19 +633,40 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(user.Email);
         }
 
+        public virtual Task<string> GetNormalizedEmailAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            return Task.FromResult(user.NormalizedEmail);
+        }
+
+        public virtual Task SetNormalizedEmailAsync(TUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            user.NormalizedEmail = normalizedEmail;
+            return Task.FromResult(0);
+        }
+
         /// <summary>
         ///     Find an user by email
         /// </summary>
         /// <param name="email"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TUser> FindByEmailAsync(string email, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
-            // todo: ToUpper blows up with Null Ref
-            //return Users.FirstOrDefaultAsync(u => u.Email.ToUpper() == email.ToUpper(), cancellationToken);
+            return Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken);
         }
 
         /// <summary>
@@ -925,7 +946,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         /// <param name="claim"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -940,7 +961,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                         && userclaims.ClaimType == claim.Type
                         select user;
 
-            return (IList<TUser>)await query.ToListAsync(cancellationToken);
+            return await query.ToListAsync(cancellationToken);
         }
 
         /// <summary>
@@ -949,7 +970,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         /// <param name="roleName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -967,7 +988,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                             where userrole.RoleId.Equals(role.Id)
                             select user;
 
-                return (IList<TUser>) await query.ToListAsync(cancellationToken);
+                return await query.ToListAsync(cancellationToken);
             }
             return new List<TUser>();
         }

@@ -1016,10 +1016,10 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.False(await manager.RoleExistsAsync(role.Name));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             Assert.True(await manager.RoleExistsAsync(role.Name));
-            role.Name = "Changed";
+            IdentityResultAssert.IsSuccess(await manager.SetRoleNameAsync(role, "Changed"));
             IdentityResultAssert.IsSuccess(await manager.UpdateAsync(role));
             Assert.False(await manager.RoleExistsAsync("update"));
-            Assert.Equal(role, await manager.FindByNameAsync(role.Name));
+            Assert.Equal(role, await manager.FindByNameAsync("Changed"));
         }
 
         [Fact]

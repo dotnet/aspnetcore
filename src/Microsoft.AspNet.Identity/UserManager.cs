@@ -30,20 +30,23 @@ namespace Microsoft.AspNet.Identity
         private IdentityOptions _options;
 
         /// <summary>
-        ///     Constructor which takes a service provider and user store
+        ///     Constructor
         /// </summary>
         /// <param name="store"></param>
         /// <param name="optionsAccessor"></param>
         /// <param name="passwordHasher"></param>
-        /// <param name="userValidator"></param>
-        /// <param name="passwordValidator"></param>
-        /// <param name="claimsIdentityFactory"></param>
+        /// <param name="userValidators"></param>
+        /// <param name="passwordValidators"></param>
+        /// <param name="keyNormalizer"></param>
+        /// <param name="errors"></param>
+        /// <param name="tokenProviders"></param>
+        /// <param name="msgProviders"></param>
         public UserManager(IUserStore<TUser> store, 
             IOptions<IdentityOptions> optionsAccessor = null,
             IPasswordHasher<TUser> passwordHasher = null, 
             IEnumerable<IUserValidator<TUser>> userValidators = null,
             IEnumerable<IPasswordValidator<TUser>> passwordValidators = null, 
-            IUserNameNormalizer userNameNormalizer = null,
+            ILookupNormalizer keyNormalizer = null,
             IdentityErrorDescriber errors = null,
             IEnumerable<IUserTokenProvider<TUser>> tokenProviders = null, 
             IEnumerable<IIdentityMessageProvider> msgProviders = null)
@@ -55,7 +58,7 @@ namespace Microsoft.AspNet.Identity
             Store = store;
             Options = optionsAccessor?.Options ?? new IdentityOptions();
             PasswordHasher = passwordHasher ?? new PasswordHasher<TUser>();
-            UserNameNormalizer = userNameNormalizer ?? new UpperInvariantUserNameNormalizer();
+            KeyNormalizer = keyNormalizer ?? new UpperInvariantLookupNormalizer();
             ErrorDescriber = errors ?? new IdentityErrorDescriber();
             if (userValidators != null)
             {
@@ -126,9 +129,9 @@ namespace Microsoft.AspNet.Identity
         public IList<IPasswordValidator<TUser>> PasswordValidators { get; } = new List<IPasswordValidator<TUser>>();
 
         /// <summary>
-        ///     Used to normalize user names for uniqueness
+        ///     Used to normalize user names and emails for uniqueness
         /// </summary>
-        public IUserNameNormalizer UserNameNormalizer { get; set; }
+        public ILookupNormalizer KeyNormalizer { get; set; }
 
         /// <summary>
         ///     Used to generate public API error messages
@@ -353,6 +356,7 @@ namespace Microsoft.AspNet.Identity
                 await GetUserLockoutStore().SetLockoutEnabledAsync(user, true, cancellationToken);
             }
             await UpdateNormalizedUserNameAsync(user, cancellationToken);
+            await UpdateNormalizedEmailAsync(user, cancellationToken);
             return await Store.CreateAsync(user, cancellationToken);
         }
 
@@ -376,6 +380,7 @@ namespace Microsoft.AspNet.Identity
                 return result;
             }
             await UpdateNormalizedUserNameAsync(user, cancellationToken);
+            await UpdateNormalizedEmailAsync(user, cancellationToken);
             return await Store.UpdateAsync(user, cancellationToken);
         }
 
@@ -423,7 +428,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("userName");
             }
-            userName = NormalizeUserName(userName);
+            userName = NormalizeKey(userName);
             return Store.FindByNameAsync(userName, cancellationToken);
         }
 
@@ -467,13 +472,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Normalize a user name for uniqueness comparisons
+        /// Normalize a key (user name, email) for uniqueness comparisons
         /// </summary>
         /// <param name="userName"></param>
         /// <returns></returns>
-        public virtual string NormalizeUserName(string userName)
+        public virtual string NormalizeKey(string key)
         {
-            return (UserNameNormalizer == null) ? userName : UserNameNormalizer.Normalize(userName);
+            return (KeyNormalizer == null) ? key : KeyNormalizer.Normalize(key);
         }
 
         /// <summary>
@@ -485,8 +490,8 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task UpdateNormalizedUserNameAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            var userName = await GetUserNameAsync(user, cancellationToken);
-            await Store.SetNormalizedUserNameAsync(user, NormalizeUserName(userName), cancellationToken);
+            var normalizedName = NormalizeKey(await GetUserNameAsync(user, cancellationToken));
+            await Store.SetNormalizedUserNameAsync(user, normalizedName, cancellationToken);
         }
 
         /// <summary>
@@ -1215,10 +1220,10 @@ namespace Microsoft.AspNet.Identity
         }
 
         // IUserEmailStore methods
-        internal IUserEmailStore<TUser> GetEmailStore()
+        internal IUserEmailStore<TUser> GetEmailStore(bool throwOnFail = true)
         {
             var cast = Store as IUserEmailStore<TUser>;
-            if (cast == null)
+            if (throwOnFail && cast == null)
             {
                 throw new NotSupportedException(Resources.StoreNotIUserEmailStore);
             }
@@ -1281,8 +1286,26 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("email");
             }
-            return store.FindByEmailAsync(email, cancellationToken);
+            return store.FindByEmailAsync(NormalizeKey(email), cancellationToken);
         }
+
+        /// <summary>
+        /// Update the user's normalized email
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task UpdateNormalizedEmailAsync(TUser user,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var store = GetEmailStore(throwOnFail: false);
+            if (store != null)
+            {
+                var email = await GetEmailAsync(user, cancellationToken);
+                await store.SetNormalizedEmailAsync(user, NormalizeKey(email), cancellationToken);
+            }
+        }
+
 
         /// <summary>
         ///     Get the confirmation token for the user

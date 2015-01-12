@@ -6,22 +6,22 @@ using System;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    /// Normalizes user names via ToUpperInvariant()
+    /// Normalizes via ToUpperInvariant()
     /// </summary>
-    public class UpperInvariantUserNameNormalizer : IUserNameNormalizer
+    public class UpperInvariantLookupNormalizer : ILookupNormalizer
     {
         /// <summary>
-        /// Normalizes user names via ToUpperInvariant()
+        /// Normalizes via ToUpperInvariant()
         /// </summary>
-        /// <param name="userName"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public string Normalize(string userName)
+        public string Normalize(string key)
         {
-            if (userName == null)
+            if (key == null)
             {
                 return null;
             }
-            return userName.Normalize().ToUpperInvariant();
+            return key.Normalize().ToUpperInvariant();
         }
     }
 }
