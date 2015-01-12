@@ -61,7 +61,7 @@ $scriptPath = $myInvocation.MyCommand.Definition
 
 function Kvm-Help {
 @"
-K Runtime Environment Version Manager - Build 10058
+K Runtime Environment Version Manager - Build 10066
 
 USAGE: kvm <command> [options]
 
@@ -71,10 +71,10 @@ kvm upgrade [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR] [-g|-Global] [-f|-Force] [-
   add KRE bin to user PATH environment variable
   -g|-Global        install to machine-wide location
   -f|-Force         upgrade even if latest is already installed
-  -Proxy <ADDRESS>  use given address as proxy when accessing remote server
+  -Proxy <ADDRESS>  use given address as proxy when accessing remote server (e.g. http://username:password@proxyserver:8080/). Alternatively set proxy using http_proxy environment variable.
   -NoNative         Do not generate native images (Effective only for CoreCLR flavors)
 
-kvm install <semver>|<alias>|<nupkg>|latest [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR] [-a|-Alias <alias>] [-g|-Global] [-f|-Force] [-NoNative]
+kvm install <semver>|<alias>|<nupkg>|latest [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR] [-a|-Alias <alias>] [-g|-Global] [-f|-Force] [-Proxy <ADDRESS>] [-NoNative]
   <semver>|<alias>  install requested KRE from feed
   <nupkg>           install requested KRE from package on local filesystem
   latest            install latest KRE from feed
@@ -83,6 +83,7 @@ kvm install <semver>|<alias>|<nupkg>|latest [-X86][-Amd64] [-r|-Runtime CLR|Core
   -a|-Alias <alias> set alias <alias> for requested KRE on install
   -g|-Global        install to machine-wide location
   -f|-Force         install even if specified version is already installed
+  -Proxy <ADDRESS>  use given address as proxy when accessing remote server (e.g. http://username:password@proxyserver:8080/). Alternatively set proxy using http_proxy environment variable.
   -NoNative         Do not generate native images (Effective only for CoreCLR flavors)
 
 kvm use <semver>|<alias>|<package>|none [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR] [-p|-Persistent] [-g|-Global]
@@ -311,7 +312,7 @@ param(
     if (Needs-Elevation) {
       $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' install '$versionOrAlias' -global $(Requested-Switches) -wait"
       Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
-      Kvm-Set-Global-Process-Path $versionOrAlias
+      Kvm-Use $kreFullName
       break
     }
     $packageFolder = $globalKrePackages
@@ -447,11 +448,11 @@ param(
   If (Needs-Elevation) {
     $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' use '$versionOrAlias' -global $(Requested-Switches) -wait"
     Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
-    Kvm-Set-Global-Process-Path $versionOrAlias
+    Kvm-Use $versionOrAlias
     break
   }
 
-  Kvm-Set-Global-Process-Path "$versionOrAlias"
+  Kvm-Use "$versionOrAlias"
 
   if ($versionOrAlias -eq "none") {
     if ($Persistent) {
@@ -475,27 +476,6 @@ param(
     $machinePath = Change-Path $machinePath $kreBin ($globalKrePackages, $userKrePackages)
     [Environment]::SetEnvironmentVariable("Path", $machinePath, [System.EnvironmentVariableTarget]::Machine)
   }
-}
-
-function Kvm-Set-Global-Process-Path {
-param(
-  [string] $versionOrAlias
-)
-  if ($versionOrAlias -eq "none") {
-    Console-Write "Removing KRE from process PATH"
-    Set-Path (Change-Path $env:Path "" ($globalKrePackages, $userKrePackages))
-    return
-  }
-
-  $kreFullName = Requested-VersionOrAlias $versionOrAlias
-  $kreBin = Locate-KreBinFromFullName $kreFullName
-  if ($kreBin -eq $null) {
-    Console-Write "Cannot find $kreFullName, do you need to run 'kvm install $versionOrAlias'?"
-    return
-  }
-
-  Console-Write "Adding $kreBin to process PATH"
-  Set-Path (Change-Path $env:Path $kreBin ($globalKrePackages, $userKrePackages))
 }
 
 function Kvm-Use {
