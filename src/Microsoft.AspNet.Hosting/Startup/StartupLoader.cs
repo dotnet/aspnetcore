@@ -9,7 +9,6 @@ using System.Reflection;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Hosting.Startup
 {
@@ -153,8 +152,6 @@ namespace Microsoft.AspNet.Hosting.Startup
                 if (servicesMethod != null)
                 {
                     var services = HostingServices.Create(builder.ApplicationServices);
-                    // TODO: remove this once IHttpContextAccessor service is added
-                    services.AddContextAccessor();
                     if (servicesMethod.ReturnType == typeof(IServiceProvider))
                     {
                         // IServiceProvider ConfigureServices(IServiceCollection)

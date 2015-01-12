@@ -48,10 +48,6 @@ namespace Microsoft.AspNet.Builder
             // Import services from hosting/KRE as fallback
             var serviceCollection = HostingServices.Create(builder.ApplicationServices);
 
-            // TODO: remove this once IHttpContextAccessor service is added
-            serviceCollection.AddContextAccessor();
-
-            // REVIEW: serviceCollection has the merged services, manifests are lost after this
             builder.ApplicationServices = configureServices(serviceCollection);
 
             return builder.UseMiddleware<ContainerMiddleware>();

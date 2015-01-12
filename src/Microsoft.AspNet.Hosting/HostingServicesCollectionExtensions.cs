@@ -38,11 +38,8 @@ namespace Microsoft.Framework.DependencyInjection
             services.AddTypeActivator(configuration);
             // TODO: Do we expect this to be provide by the runtime eventually?
             services.AddLogging(configuration);
-            // REVIEW: okay to use existing hosting environment/httpcontext if specified?
             services.TryAdd(describer.Singleton<IHostingEnvironment, HostingEnvironment>());
-
-            // TODO: Remove this once we have IHttpContextAccessor
-            services.AddContextAccessor(configuration);
+            services.TryAdd(describer.Scoped<IHttpContextAccessor, HttpContextAccessor>());
 
             // REVIEW: don't try add because we pull out IEnumerable<IConfigureHostingEnvironment>?
             services.AddInstance<IConfigureHostingEnvironment>(new ConfigureHostingEnvironment(configuration));

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 
@@ -12,7 +13,7 @@ namespace Microsoft.AspNet.RequestContainer
         public RequestServicesContainer(
             HttpContext context,
             IServiceScopeFactory scopeFactory,
-            IContextAccessor<HttpContext> appContextAccessor,
+            IHttpContextAccessor appContextAccessor,
             IServiceProvider appServiceProvider)
         {
             if (scopeFactory == null)
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.RequestContainer
 
             // Begin the scope
             Scope = scopeFactory.CreateScope();
-            ScopeContextAccessor = Scope.ServiceProvider.GetRequiredService<IContextAccessor<HttpContext>>();
+            ScopeContextAccessor = Scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
 
             Context.ApplicationServices = appServiceProvider;
             Context.RequestServices = Scope.ServiceProvider;
@@ -51,8 +52,9 @@ namespace Microsoft.AspNet.RequestContainer
         private HttpContext PriorAppHttpContext { get; set; }
         private HttpContext PriorScopeHttpContext { get; set; }
         private IServiceScope Scope { get; set; }
-        private IContextAccessor<HttpContext> ScopeContextAccessor { get; set; }
-        private IContextAccessor<HttpContext> AppContextAccessor { get; set; }
+        private IHttpContextAccessor ScopeContextAccessor { get; set; }
+        private IHttpContextAccessor AppContextAccessor { get; set; }
+
 
         // CONSIDER: this could be an extension method on HttpContext instead
         public static RequestServicesContainer EnsureRequestServices(HttpContext httpContext, IServiceProvider services)
@@ -64,7 +66,6 @@ namespace Microsoft.AspNet.RequestContainer
             }
 
             var serviceProvider = httpContext.ApplicationServices ?? services;
-
             if (serviceProvider == null)
             {
                 throw new InvalidOperationException("TODO: services and httpContext.ApplicationServices are both null!");
@@ -72,10 +73,10 @@ namespace Microsoft.AspNet.RequestContainer
 
             // Matches constructor of RequestContainer
             var rootServiceProvider = serviceProvider.GetRequiredService<IServiceProvider>();
-            var rootHttpContextAccessor = serviceProvider.GetRequiredService<IContextAccessor<HttpContext>>();
+            var rootHttpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
             var rootServiceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
-            rootHttpContextAccessor.SetContextSource(ContainerMiddleware.AccessRootHttpContext, ContainerMiddleware.ExchangeRootHttpContext);
+            rootHttpContextAccessor.IsRootContext = true;
 
             // Pre Scope setup
             var priorApplicationServices = serviceProvider;
@@ -90,14 +91,14 @@ namespace Microsoft.AspNet.RequestContainer
             {
                 appServiceProvider = priorApplicationServices;
                 appServiceScopeFactory = priorApplicationServices.GetRequiredService<IServiceScopeFactory>();
-                appHttpContextAccessor = priorApplicationServices.GetRequiredService<IContextAccessor<HttpContext>>();
+                appHttpContextAccessor = priorApplicationServices.GetRequiredService<IHttpContextAccessor>();
             }
 
             // Creates the scope and does the service swaps
             return new RequestServicesContainer(httpContext, appServiceScopeFactory, appHttpContextAccessor, appServiceProvider);
         }
 
-        #region IDisposable Support
+#region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -137,8 +138,6 @@ namespace Microsoft.AspNet.RequestContainer
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
         }
-        #endregion
-
+#endregion
     }
-
 }
