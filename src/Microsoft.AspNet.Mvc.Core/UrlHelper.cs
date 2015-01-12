@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
         /// Initializes a new instance of the <see cref="UrlHelper"/> class using the specified action context and
         /// action selector.
         /// </summary>
-        /// <param name="contextAccessor">The <see cref="IContextAccessor{TContext}"/> to access the action context
+        /// <param name="contextAccessor">The <see cref="IScopedInstance{TContext}"/> to access the action context
         /// of the current request.</param>
         /// <param name="actionSelector">The <see cref="IActionSelector"/> to be used for verifying the correctness of
         /// supplied parameters for a route.
