@@ -4,7 +4,7 @@
             Vin: 8chars
         </li>
         <li>
-            Inspected Dates: 11/1/2008 12:00:00 AM -07:00
+            Inspected Dates: 01/11/2008 00:00:00 -07:00
         </li>
     </ul>
 </div>

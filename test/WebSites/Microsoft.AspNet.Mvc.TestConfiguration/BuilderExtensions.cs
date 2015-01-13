@@ -12,6 +12,9 @@ namespace Microsoft.AspNet.Builder
     {
         public static Configuration GetTestConfiguration(this IApplicationBuilder app)
         {
+            // Unconditionally place CultureReplacerMiddleware as early as possible in the pipeline.
+            app.UseMiddleware<CultureReplacerMiddleware>();
+
             var configurationProvider = app.ApplicationServices.GetService<ITestConfigurationProvider>();
             var configuration = configurationProvider == null
                 ? new Configuration()
@@ -22,7 +25,7 @@ namespace Microsoft.AspNet.Builder
 
         public static IApplicationBuilder UseErrorReporter(this IApplicationBuilder app)
         {
-            return app.Use(next => new ErrorReporterMiddleware(next).Invoke);
+            return app.UseMiddleware<ErrorReporterMiddleware>();
         }
     }
 }
