@@ -57,6 +57,8 @@ Here's a few things you should always do when making changes to the code base:
 
 The coding, style, and general engineering guidelines are published on the [Engineering guidelines](https://github.com/aspnet/Home/wiki/Engineering-guidelines) page.
 
+Pull requests should normally be submitted to the repo's `dev` branch because that's where daily development takes place.
+
 **Commit/Pull Request Format**
 
 ```
