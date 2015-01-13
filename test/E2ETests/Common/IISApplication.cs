@@ -59,7 +59,7 @@ namespace E2ETests
             }
             applicationPool.Enable32BitAppOnWin64 = (_startParameters.KreArchitecture == KreArchitecture.x86);
             _logger.WriteInformation("Created {0} application pool '{1}' with runtime version '{2}'.",
-                _startParameters.KreArchitecture.ToString(), applicationPool.Name,
+                _startParameters.KreArchitecture, applicationPool.Name,
                 applicationPool.ManagedRuntimeVersion ?? "default");
             return applicationPool;
         }

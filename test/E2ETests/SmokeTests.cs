@@ -92,7 +92,7 @@ namespace E2ETests
             using (_logger.BeginScope("SmokeTestSuite"))
             {
                 _logger.WriteInformation("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}",
-                    serverType.ToString(), kreFlavor.ToString(), architecture.ToString(), applicationBaseUrl);
+                    serverType, kreFlavor, architecture, applicationBaseUrl);
 
                 _startParameters = new StartParameters
                 {
@@ -139,7 +139,7 @@ namespace E2ETests
                     }, logger: _logger);
 
                     _logger.WriteInformation("[Time]: Approximate time taken for application initialization : '{0}' seconds",
-                                (initializationCompleteTime - testStartTime).TotalSeconds.ToString());
+                                (initializationCompleteTime - testStartTime).TotalSeconds);
 
                     VerifyHomePage(response, responseContent);
 
@@ -222,8 +222,8 @@ namespace E2ETests
                     LoginWithMicrosoftAccount();
 
                     var testCompletionTime = DateTime.Now;
-                    _logger.WriteInformation("[Time]: All tests completed in '{0}' seconds", (testCompletionTime - initializationCompleteTime).TotalSeconds.ToString());
-                    _logger.WriteInformation("[Time]: Total time taken for this test variation '{0}' seconds", (testCompletionTime - testStartTime).TotalSeconds.ToString());
+                    _logger.WriteInformation("[Time]: All tests completed in '{0}' seconds", (testCompletionTime - initializationCompleteTime).TotalSeconds);
+                    _logger.WriteInformation("[Time]: Total time taken for this test variation '{0}' seconds", (testCompletionTime - testStartTime).TotalSeconds);
                     testSuccessful = true;
                 }
                 finally

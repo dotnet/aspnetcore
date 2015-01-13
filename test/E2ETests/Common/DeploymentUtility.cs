@@ -200,7 +200,7 @@ namespace E2ETests
             };
 
             var hostProcess = Process.Start(startInfo);
-            logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id.ToString());
+            logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
             Thread.Sleep(5 * 1000);
 
             //Clear the appbase so that it does not create issues with successive runs
@@ -245,7 +245,7 @@ namespace E2ETests
             };
 
             var hostProcess = Process.Start(startInfo);
-            logger.WriteInformation("Started iisexpress. Process Id : {0}", hostProcess.Id.ToString());
+            logger.WriteInformation("Started iisexpress. Process Id : {0}", hostProcess.Id);
 
             return hostProcess;
         }
@@ -269,7 +269,7 @@ namespace E2ETests
 
             try
             {
-                logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id.ToString());
+                logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
             }
             catch (Win32Exception win32Exception)
             {
@@ -332,7 +332,7 @@ namespace E2ETests
                 Path.Combine(startParameters.PackedApplicationRootPath, "wwwroot") :
                 Path.Combine(startParameters.PackedApplicationRootPath, "approot", "src", "MusicStore");
 
-            logger.WriteInformation("kpm pack finished with exit code : {0}", hostProcess.ExitCode.ToString());
+            logger.WriteInformation("kpm pack finished with exit code : {0}", hostProcess.ExitCode);
         }
 
         //In case of self-host application activation happens immediately unlike iis where activation happens on first request.
@@ -397,11 +397,11 @@ namespace E2ETests
                 hostProcess.WaitForExit(5 * 1000);
                 if (!hostProcess.HasExited)
                 {
-                    logger.WriteWarning("Unable to terminate the host process with process Id '{0}", hostProcess.Id.ToString());
+                    logger.WriteWarning("Unable to terminate the host process with process Id '{0}", hostProcess.Id);
                 }
                 else
                 {
-                    logger.WriteInformation("Successfully terminated host process with process Id '{0}'", hostProcess.Id.ToString());
+                    logger.WriteInformation("Successfully terminated host process with process Id '{0}'", hostProcess.Id);
                 }
             }
             else
