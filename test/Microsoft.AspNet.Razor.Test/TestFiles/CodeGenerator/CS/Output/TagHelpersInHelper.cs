@@ -89,7 +89,9 @@ Write(DateTime.Now);
 #line hidden
 
         #line hidden
+        #pragma warning disable 0414
         private System.IO.TextWriter __tagHelperStringValueBuffer = null;
+        #pragma warning restore 0414
         private TagHelperExecutionContext __tagHelperExecutionContext = null;
         private TagHelperRunner __tagHelperRunner = new TagHelperRunner();
         private TagHelperScopeManager __tagHelperScopeManager = new TagHelperScopeManager();
