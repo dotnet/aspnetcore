@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Net.Http;
-using System.Threading;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Logging;
 using Xunit;
@@ -58,27 +56,15 @@ namespace E2ETests
                     var initializationCompleteTime = DateTime.MinValue;
 
                     //Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                    for (int retryCount = 0; retryCount < 3; retryCount++)
+                    Helpers.Retry(() =>
                     {
-                        try
-                        {
-                            response = _httpClient.GetAsync(string.Empty).Result;
-                            responseContent = response.Content.ReadAsStringAsync().Result;
-                            initializationCompleteTime = DateTime.Now;
-                            _logger.WriteInformation("[Time]: Approximate time taken for application initialization : '{0}' seconds",
+                        response = _httpClient.GetAsync(string.Empty).Result;
+                        responseContent = response.Content.ReadAsStringAsync().Result;
+                        initializationCompleteTime = DateTime.Now;
+                    }, logger: _logger);
+
+                    _logger.WriteInformation("[Time]: Approximate time taken for application initialization : '{0}' seconds",
                                 (initializationCompleteTime - testStartTime).TotalSeconds.ToString());
-                            break; //Went through successfully
-                        }
-                        catch (AggregateException exception)
-                        {
-                            if (exception.InnerException is HttpRequestException || exception.InnerException is WebException)
-                            {
-                                _logger.WriteWarning("Failed to complete the request.", exception);
-                                _logger.WriteWarning("Retrying request..");
-                                Thread.Sleep(1 * 1000); //Wait for a second before retry
-                            }
-                        }
-                    }
 
                     VerifyHomePage(response, responseContent, true);
 
