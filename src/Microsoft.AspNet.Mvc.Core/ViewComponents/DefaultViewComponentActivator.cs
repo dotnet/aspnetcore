@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultViewComponentActivator : IViewComponentActivator
     {
         private readonly Func<Type, PropertyActivator<ViewContext>[]> _getPropertiesToActivate;
-        private readonly IReadOnlyDictionary<Type, Func<ViewContext, object>> _valueAccessorLookup;
+        private readonly IDictionary<Type, Func<ViewContext, object>> _valueAccessorLookup;
         private readonly ConcurrentDictionary<Type, PropertyActivator<ViewContext>[]> _injectActions;
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public void Activate([NotNull] object viewComponent, [NotNull] ViewContext context)
+        public virtual void Activate([NotNull] object viewComponent, [NotNull] ViewContext context)
         {
             var propertiesToActivate = _injectActions.GetOrAdd(viewComponent.GetType(),
                                                                _getPropertiesToActivate);
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc
         /// Creates a lookup dictionary for the values to be activated.
         /// </summary>
         /// <returns>Returns a readonly dictionary of the values corresponding to the types.</returns>
-        protected virtual IReadOnlyDictionary<Type, Func<ViewContext, object>> CreateValueAccessorLookup()
+        protected virtual IDictionary<Type, Func<ViewContext, object>> CreateValueAccessorLookup()
         {
             return new Dictionary<Type, Func<ViewContext, object>>
             {
