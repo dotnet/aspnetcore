@@ -1979,9 +1979,7 @@ namespace Microsoft.AspNet.Mvc
                 filterProvider.Object,
                 controllerFactory,
                 actionDescriptor,
-                new EmptyModelMetadataProvider(),
                 inputFormattersProvider.Object,
-                new DefaultInputFormatterSelector(),
                 Mock.Of<IControllerActionArgumentBinder>(),
                 new MockModelBinderProvider(),
                 new MockModelValidatorProviderProvider(),
@@ -2015,7 +2013,6 @@ namespace Microsoft.AspNet.Mvc
             };
 
             var binder = new Mock<IModelBinder>();
-            var metadataProvider = new EmptyModelMetadataProvider();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Returns(Task.FromResult(result: false));
             var context = new Mock<HttpContext>();
@@ -2037,10 +2034,8 @@ namespace Microsoft.AspNet.Mvc
                 Mock.Of<INestedProviderManager<FilterProviderContext>>(),
                 controllerFactory.Object,
                 actionDescriptor,
-                metadataProvider,
                 inputFormattersProvider.Object,
-                new DefaultInputFormatterSelector(),
-                new DefaultControllerActionArgumentBinder(metadataProvider),
+                new DefaultControllerActionArgumentBinder(new EmptyModelMetadataProvider()),
                 new MockModelBinderProvider() { ModelBinders = new List<IModelBinder>() { binder.Object } },
                 new MockModelValidatorProviderProvider(),
                 new MockValueProviderFactoryProvider(),
@@ -2103,9 +2098,7 @@ namespace Microsoft.AspNet.Mvc
                 INestedProviderManager<FilterProviderContext> filterProvider,
                 Mock<IControllerFactory> controllerFactoryMock,
                 ControllerActionDescriptor descriptor,
-                IModelMetadataProvider modelMetadataProvider,
                 IInputFormattersProvider inputFormattersProvider,
-                IInputFormatterSelector inputFormatterSelector,
                 IControllerActionArgumentBinder controllerActionArgumentBinder,
                 IModelBinderProvider modelBinderProvider,
                 IModelValidatorProviderProvider modelValidatorProviderProvider,
@@ -2116,9 +2109,7 @@ namespace Microsoft.AspNet.Mvc
                       filterProvider,
                       controllerFactoryMock.Object,
                       descriptor,
-                      modelMetadataProvider,
                       inputFormattersProvider,
-                      inputFormatterSelector,
                       controllerActionArgumentBinder,
                       modelBinderProvider,
                       modelValidatorProviderProvider,

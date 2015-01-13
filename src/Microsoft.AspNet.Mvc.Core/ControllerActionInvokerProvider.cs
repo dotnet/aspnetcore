@@ -13,9 +13,7 @@ namespace Microsoft.AspNet.Mvc
         private readonly IControllerFactory _controllerFactory;
         private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
         private readonly IInputFormattersProvider _inputFormattersProvider;
-        private readonly IInputFormatterSelector _inputFormatterSelector;
         private readonly IModelBinderProvider _modelBinderProvider;
-        private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IModelValidatorProviderProvider _modelValidationProviderProvider;
         private readonly IValueProviderFactoryProvider _valueProviderFactoryProvider;
         private readonly IScopedInstance<ActionBindingContext> _actionBindingContextAccessor;
@@ -25,8 +23,6 @@ namespace Microsoft.AspNet.Mvc
             IInputFormattersProvider inputFormattersProvider,
             INestedProviderManager<FilterProviderContext> filterProvider,
             IControllerActionArgumentBinder argumentBinder,
-            IModelMetadataProvider modelMetadataProvider,
-            IInputFormatterSelector inputFormatterSelector,
             IModelBinderProvider modelBinderProvider,
             IModelValidatorProviderProvider modelValidationProviderProvider,
             IValueProviderFactoryProvider valueProviderFactoryProvider,
@@ -36,9 +32,7 @@ namespace Microsoft.AspNet.Mvc
             _inputFormattersProvider = inputFormattersProvider;
             _filterProvider = filterProvider;
             _argumentBinder = argumentBinder;
-            _modelMetadataProvider = modelMetadataProvider;
             _modelBinderProvider = modelBinderProvider;
-            _inputFormatterSelector = inputFormatterSelector;
             _modelValidationProviderProvider = modelValidationProviderProvider;
             _valueProviderFactoryProvider = valueProviderFactoryProvider;
             _actionBindingContextAccessor = actionBindingContextAccessor;
@@ -60,9 +54,7 @@ namespace Microsoft.AspNet.Mvc
                                     _filterProvider,
                                     _controllerFactory,
                                     actionDescriptor,
-                                    _modelMetadataProvider,
                                     _inputFormattersProvider,
-                                    _inputFormatterSelector,
                                     _argumentBinder,
                                     _modelBinderProvider,
                                     _modelValidationProviderProvider,

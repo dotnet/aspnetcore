@@ -15,10 +15,8 @@ namespace Microsoft.AspNet.Mvc
 {
     public abstract class FilterActionInvoker : IActionInvoker
     {
-        private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
         private readonly IInputFormattersProvider _inputFormatterProvider;
-        private readonly IInputFormatterSelector _inputFormatterSelector;
         private readonly IModelBinderProvider _modelBinderProvider;
         private readonly IModelValidatorProviderProvider _modelValidatorProviderProvider;
         private readonly IValueProviderFactoryProvider _valueProviderFactoryProvider;
@@ -43,9 +41,7 @@ namespace Microsoft.AspNet.Mvc
         public FilterActionInvoker(
             [NotNull] ActionContext actionContext,
             [NotNull] INestedProviderManager<FilterProviderContext> filterProvider,
-            [NotNull] IModelMetadataProvider modelMetadataProvider,
             [NotNull] IInputFormattersProvider inputFormatterProvider,
-            [NotNull] IInputFormatterSelector inputFormatterSelector,
             [NotNull] IModelBinderProvider modelBinderProvider,
             [NotNull] IModelValidatorProviderProvider modelValidatorProviderProvider,
             [NotNull] IValueProviderFactoryProvider valueProviderFactoryProvider,
@@ -54,9 +50,7 @@ namespace Microsoft.AspNet.Mvc
             ActionContext = actionContext;
 
             _filterProvider = filterProvider;
-            _modelMetadataProvider = modelMetadataProvider;
             _inputFormatterProvider = inputFormatterProvider;
-            _inputFormatterSelector = inputFormatterSelector;
             _modelBinderProvider = modelBinderProvider;
             _modelValidatorProviderProvider = modelValidatorProviderProvider;
             _valueProviderFactoryProvider = valueProviderFactoryProvider;
