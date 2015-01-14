@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 builder.AppendFormat(@"
       <tr class=""directory"">
-        <td class=""name""><a href=""{0}/"">{0}/</a></td>
+        <td class=""name""><a href=""./{0}/"">{0}/</a></td>
         <td></td>
         <td class=""modified"">{1}</td>
       </tr>",
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 builder.AppendFormat(@"
       <tr class=""file"">
-        <td class=""name""><a href=""{0}"">{0}</a></td>
+        <td class=""name""><a href=""./{0}"">{0}</a></td>
         <td class=""length"">{1}</td>
         <td class=""modified"">{2}</td>
       </tr>",
