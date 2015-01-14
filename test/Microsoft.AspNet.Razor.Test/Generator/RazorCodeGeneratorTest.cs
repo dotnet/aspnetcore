@@ -181,17 +181,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
                 if (expectedDesignTimePragmas != null)
                 {
-                    Assert.True(results.DesignTimeLineMappings != null && results.DesignTimeLineMappings.Count > 0);
+                    Assert.True(results.DesignTimeLineMappings != null); // Guard
+                    for (var i = 0; i < expectedDesignTimePragmas.Count && i < results.DesignTimeLineMappings.Count; i++)
+                    {
+                        Assert.Equal(expectedDesignTimePragmas[i], results.DesignTimeLineMappings[i]);
+                    }
 
                     Assert.Equal(expectedDesignTimePragmas.Count, results.DesignTimeLineMappings.Count);
-
-                    for (var i = 0; i < expectedDesignTimePragmas.Count; i++)
-                    {
-                        if (!expectedDesignTimePragmas[i].Equals(results.DesignTimeLineMappings[i]))
-                        {
-                            Assert.True(false, String.Format("Line mapping {0} is not equivalent.", i));
-                        }
-                    }
                 }
             }
         }

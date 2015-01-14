@@ -18,5 +18,8 @@
                 "System.Reflection.TypeExtensions": "4.0.0-beta-*"
             }
         }
+    },
+    "compilationOptions": {
+        "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ]
     }
 }
