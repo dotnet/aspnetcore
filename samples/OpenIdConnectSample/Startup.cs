@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.AspNet.Security.OpenIdConnect;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security;
+using Microsoft.AspNet.Security.Cookies;
+using Microsoft.AspNet.Security.OpenIdConnect;
+using Microsoft.Framework.DependencyInjection;
 
 namespace OpenIdConnectSample
 {
@@ -16,14 +17,13 @@ namespace OpenIdConnectSample
                 services.AddDataProtection();
                 services.Configure<ExternalAuthenticationOptions>(options =>
                 {
-                    options.SignInAsAuthenticationType = OpenIdConnectAuthenticationDefaults.AuthenticationType;
+                    options.SignInAsAuthenticationType = CookieAuthenticationDefaults.AuthenticationType;
                 });
 
             });
 
             app.UseCookieAuthentication(options =>
             {
-                options.AuthenticationType = OpenIdConnectAuthenticationDefaults.AuthenticationType;
             });
 
             app.UseOpenIdConnectAuthentication(options =>
@@ -31,8 +31,6 @@ namespace OpenIdConnectSample
                     options.ClientId = "fe78e0b4-6fe7-47e6-812c-fb75cee266a4";
                     options.Authority = "https://login.windows.net/cyrano.onmicrosoft.com";
                     options.RedirectUri = "http://localhost:42023";
-                    options.SignInAsAuthenticationType = OpenIdConnectAuthenticationDefaults.AuthenticationType;
-                    options.AuthenticationType = OpenIdConnectAuthenticationDefaults.AuthenticationType;
                 });
 
             app.Run(async context =>

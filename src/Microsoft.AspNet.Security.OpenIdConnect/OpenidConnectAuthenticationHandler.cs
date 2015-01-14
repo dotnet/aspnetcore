@@ -1,11 +1,11 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Globalization;
 using System.IdentityModel.Tokens;
 using System.IO;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
             }
 
             // order for redirect_uri
-            // 1. challenge.Properties.RedirectUri  
+            // 1. challenge.Properties.RedirectUri
             // 2. CurrentUri
             AuthenticationProperties properties = new AuthenticationProperties(ChallengeContext.Properties);
             if (string.IsNullOrEmpty(properties.RedirectUri))
@@ -224,7 +224,6 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                 return null;
             }
 
-            ExceptionDispatchInfo authFailedEx = null;
             try
             {
                 var messageReceivedNotification = new MessageReceivedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
@@ -410,16 +409,10 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
             }
             catch (Exception exception)
             {
-                // We can't await inside a catch block, capture and handle outside.
-                authFailedEx = ExceptionDispatchInfo.Capture(exception);
-            }
-
-            if (authFailedEx != null)
-            {
-                _logger.WriteError("Exception occurred while processing message", authFailedEx.SourceException);
+                _logger.WriteError("Exception occurred while processing message", exception);
 
                 // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the notification.
-                if (Options.RefreshOnIssuerKeyNotFound && authFailedEx.SourceException.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
+                if (Options.RefreshOnIssuerKeyNotFound && exception.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
                 {
                     Options.ConfigurationManager.RequestRefresh();
                 }
@@ -427,7 +420,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                 var authenticationFailedNotification = new AuthenticationFailedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
                 {
                     ProtocolMessage = openIdConnectMessage,
-                    Exception = authFailedEx.SourceException
+                    Exception = exception
                 };
 
                 await Options.Notifications.AuthenticationFailed(authenticationFailedNotification);
@@ -441,10 +434,8 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                     return null;
                 }
 
-                authFailedEx.Throw();
+                throw;
             }
-
-            return null;
         }
 
         /// <summary>

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -38,7 +37,6 @@ namespace Microsoft.AspNet.Security.OAuthBearer
         /// <returns></returns>
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
         {
-            ExceptionDispatchInfo authFailedEx = null;
             string token = null;
             try
             {
@@ -144,16 +142,10 @@ namespace Microsoft.AspNet.Security.OAuthBearer
             }
             catch (Exception ex)
             {
-                // We can't await inside a catch block, capture and handle outside.
-                authFailedEx = ExceptionDispatchInfo.Capture(ex);
-            }
-
-            if (authFailedEx != null)
-            {
-                _logger.WriteError("Exception occurred while processing message", authFailedEx.SourceException);
+                _logger.WriteError("Exception occurred while processing message", ex);
 
                 // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the notification.
-                if (Options.RefreshOnIssuerKeyNotFound && authFailedEx.SourceException.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
+                if (Options.RefreshOnIssuerKeyNotFound && ex.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
                 {
                     Options.ConfigurationManager.RequestRefresh();
                 }
@@ -162,7 +154,7 @@ namespace Microsoft.AspNet.Security.OAuthBearer
                     new AuthenticationFailedNotification<HttpContext, OAuthBearerAuthenticationOptions>(Context, Options)
                     {
                         ProtocolMessage = Context,
-                        Exception = authFailedEx.SourceException
+                        Exception = ex
                     };
 
                 await Options.Notifications.AuthenticationFailed(authenticationFailedNotification);
@@ -176,10 +168,8 @@ namespace Microsoft.AspNet.Security.OAuthBearer
                     return null;
                 }
 
-                authFailedEx.Throw();
+                throw;
             }
-
-            return null;
         }
 
         protected override void ApplyResponseChallenge()
@@ -189,6 +179,11 @@ namespace Microsoft.AspNet.Security.OAuthBearer
 
         protected override async Task ApplyResponseChallengeAsync()
         {
+            if ((Response.StatusCode != 401) || (ChallengeContext == null))
+            {
+                return;
+            }
+
             await Options.Notifications.ApplyChallenge(new AuthenticationChallengeNotification<OAuthBearerAuthenticationOptions>(Context, Options));
         }
 
