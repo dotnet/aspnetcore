@@ -3,6 +3,7 @@
 
 #if !ASPNETCORE50
 using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Utils;
 using Moq;
@@ -23,7 +24,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
                 "TestClass",
                 "TestNamespace",
                 "Foo.cs",
-                shouldGenerateLinePragmas: false);
+                shouldGenerateLinePragmas: false,
+                errorSink: new ParserErrorSink());
             codeBuilderContext.CodeTreeBuilder.AddUsingChunk("FakeNamespace1", syntaxTreeNode.Object);
             codeBuilderContext.CodeTreeBuilder.AddUsingChunk("FakeNamespace2.SubNamespace", syntaxTreeNode.Object);
             var codeBuilder = language.CreateCodeBuilder(codeBuilderContext);

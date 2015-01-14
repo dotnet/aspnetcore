@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             // Return the new result
-            return new ParserResults(syntaxTree, descriptors, errorSink.Errors.ToList());
+            return new ParserResults(syntaxTree, descriptors, errorSink);
         }
 
         /// <summary>

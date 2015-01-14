@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 
@@ -15,15 +17,18 @@ namespace Microsoft.AspNet.Razor
         /// <summary>
         /// Instantiates a new <see cref="ParserResults"/> instance.
         /// </summary>
-        /// <param name="document">The Razor syntax tree.</param>
-        /// <param name="tagHelperDescriptors"><see cref="TagHelperDescriptor"/>s that apply to the current Razor 
-        /// document.</param>
-        /// <param name="parserErrors"><see cref="RazorError"/>s encountered when parsing the current Razor
-        /// document.</param>
+        /// <param name="document">The <see cref="Block"/> for the syntax tree.</param>
+        /// <param name="tagHelperDescriptors">
+        /// The <see cref="TagHelperDescriptor"/>s that apply to the current Razor document.
+        /// </param>
+        /// <param name="errorSink">
+        /// The <see cref="ParserErrorSink"/> used to collect <see cref="RazorError"/>s encountered when parsing the
+        /// current Razor document.
+        /// </param>
         public ParserResults([NotNull] Block document,
                              [NotNull] IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
-                             [NotNull] IList<RazorError> parserErrors)
-            : this(parserErrors == null || parserErrors.Count == 0, document, tagHelperDescriptors, parserErrors)
+                             [NotNull] ParserErrorSink errorSink)
+            : this(!errorSink.Errors.Any(), document, tagHelperDescriptors, errorSink)
         {
         }
 
@@ -31,40 +36,50 @@ namespace Microsoft.AspNet.Razor
         /// Instantiates a new <see cref="ParserResults"/> instance.
         /// </summary>
         /// <param name="success"><c>true</c> if parsing was successful, <c>false</c> otherwise.</param>
-        /// <param name="document">The Razor syntax tree.</param>
-        /// <param name="tagHelperDescriptors"><see cref="TagHelperDescriptor"/>s that apply to the current Razor 
-        /// document.</param>
-        /// <param name="errors"><see cref="RazorError"/>s encountered when parsing the current Razor
-        /// document.</param>
+        /// <param name="document">The <see cref="Block"/> for the syntax tree.</param>
+        /// <param name="tagHelperDescriptors">
+        /// The <see cref="TagHelperDescriptor"/>s that apply to the current Razor document.
+        /// </param>
+        /// <param name="errorSink">
+        /// The <see cref="ParserErrorSink"/> used to collect <see cref="RazorError"/>s encountered when parsing the
+        /// current Razor document.
+        /// </param>
         protected ParserResults(bool success,
                                 [NotNull] Block document,
                                 [NotNull] IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
-                                [NotNull] IList<RazorError> errors)
+                                [NotNull] ParserErrorSink errorSink)
         {
             Success = success;
             Document = document;
             TagHelperDescriptors = tagHelperDescriptors;
-            ParserErrors = errors ?? new List<RazorError>();
+            ErrorSink = errorSink;
+            ParserErrors = errorSink.Errors;
         }
 
         /// <summary>
-        /// Indicates if parsing was successful (no errors)
+        /// Indicates if parsing was successful (no errors).
         /// </summary>
-        public bool Success { get; private set; }
+        /// <value><c>true</c> if parsing was successful, <c>false</c> otherwise.</value>
+        public bool Success { get; }
 
         /// <summary>
-        /// The root node in the document's syntax tree
+        /// The root node in the document's syntax tree.
         /// </summary>
-        public Block Document { get; private set; }
+        public Block Document { get; }
+
+        /// <summary>
+        /// Used to aggregate <see cref="RazorError"/>s.
+        /// </summary>
+        public ParserErrorSink ErrorSink { get; }
 
         /// <summary>
         /// The list of errors which occurred during parsing.
         /// </summary>
-        public IList<RazorError> ParserErrors { get; private set; }
+        public IEnumerable<RazorError> ParserErrors { get; }
 
         /// <summary>
         /// The <see cref="TagHelperDescriptor"/>s found for the current Razor document.
         /// </summary>
-        public IEnumerable<TagHelperDescriptor> TagHelperDescriptors { get; private set; }
+        public IEnumerable<TagHelperDescriptor> TagHelperDescriptors { get; }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
 
@@ -161,7 +162,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     "MyClass",
                     "MyNamespace",
                     string.Empty,
-                    shouldGenerateLinePragmas: true));
+                    shouldGenerateLinePragmas: true),
+                new ParserErrorSink());
         }
 
         private class TrackingUniqueIdsTagHelperCodeRenderer : CSharpTagHelperCodeRenderer
