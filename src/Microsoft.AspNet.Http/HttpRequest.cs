@@ -94,30 +94,6 @@ namespace Microsoft.AspNet.Http
         public abstract string ContentType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Cache-Control header.
-        /// </summary>
-        /// <returns>The Cache-Control header.</returns>
-        // (TODO header conventions?) public abstract string CacheControl { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Media-Type header.
-        /// </summary>
-        /// <returns>The Media-Type header.</returns>
-        // (TODO header conventions?) public abstract string MediaType { get; set; }
-
-        /// <summary>
-        /// Gets or set the Accept header.
-        /// </summary>
-        /// <returns>The Accept header.</returns>
-        public abstract string Accept { get; set; }
-
-        /// <summary>
-        /// Gets or set the Accept-Charset header.
-        /// </summary>
-        /// <returns>The Accept-Charset header.</returns>
-        public abstract string AcceptCharset { get; set; }
-
-        /// <summary>
         /// Gets or set the owin.RequestBody Stream.
         /// </summary>
         /// <returns>The owin.RequestBody Stream.</returns>

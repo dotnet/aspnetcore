@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.PipelineCore
 {
@@ -28,6 +29,16 @@ namespace Microsoft.AspNet.PipelineCore
             _request = request;
         }
 
+        private MediaTypeHeaderValue ContentType
+        {
+            get
+            {
+                MediaTypeHeaderValue mt;
+                MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
+                return mt;
+            }
+        }
+
         public bool HasFormContentType
         {
             get
@@ -38,7 +49,8 @@ namespace Microsoft.AspNet.PipelineCore
                     return true;
                 }
 
-                return HasApplicationFormContentType() || HasMultipartFormContentType();
+                var conentType = ContentType;
+                return HasApplicationFormContentType(conentType) || HasMultipartFormContentType(conentType);
             }
         }
 
@@ -82,23 +94,25 @@ namespace Microsoft.AspNet.PipelineCore
             // Some of these code paths use StreamReader which does not support cancellation tokens.
             using (cancellationToken.Register(_request.HttpContext.Abort))
             {
+                var contentType = ContentType;
                 // Check the content-type
-                if (HasApplicationFormContentType())
+                if (HasApplicationFormContentType(contentType))
                 {
-                    // TODO: Read the charset from the content-type header after we get strongly typed headers
-                    formFields = await FormReader.ReadFormAsync(_request.Body, cancellationToken);
+                    var encoding = FilterEncoding(contentType.Encoding);
+                    formFields = await FormReader.ReadFormAsync(_request.Body, encoding, cancellationToken);
                 }
-                else if (HasMultipartFormContentType())
+                else if (HasMultipartFormContentType(contentType))
                 {
                     var formAccumulator = new KeyValueAccumulator<string, string>(StringComparer.OrdinalIgnoreCase);
 
-                    var boundary = GetBoundary(_request.ContentType);
+                    var boundary = GetBoundary(contentType);
                     var multipartReader = new MultipartReader(boundary, _request.Body);
                     var section = await multipartReader.ReadNextSectionAsync(cancellationToken);
                     while (section != null)
                     {
                         var headers = new HeaderDictionary(section.Headers);
-                        var contentDisposition = headers["Content-Disposition"];
+                        ContentDispositionHeaderValue contentDisposition;
+                        ContentDispositionHeaderValue.TryParse(headers.Get(HeaderNames.ContentDisposition), out contentDisposition);
                         if (HasFileContentDisposition(contentDisposition))
                         {
                             // Find the end
@@ -116,12 +130,11 @@ namespace Microsoft.AspNet.PipelineCore
                             //
                             // value
 
-                            // TODO: Strongly typed headers will take care of this
-                            var offset = contentDisposition.IndexOf("name=") + "name=".Length;
-                            var key = contentDisposition.Substring(offset + 1, contentDisposition.Length - offset - 2); // Remove quotes
-
-                            // TODO: Read the charset from the content-disposition header after we get strongly typed headers
-                            using (var reader = new StreamReader(section.Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true))
+                            var key = HeaderUtilities.RemoveQuotes(contentDisposition.Name);
+                            MediaTypeHeaderValue mediaType;
+                            MediaTypeHeaderValue.TryParse(headers.Get(HeaderNames.ContentType), out mediaType);
+                            var encoding = FilterEncoding(mediaType?.Encoding);
+                            using (var reader = new StreamReader(section.Body, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true))
                             {
                                 var value = await reader.ReadToEndAsync();
                                 formAccumulator.Append(key, value);
@@ -129,7 +142,7 @@ namespace Microsoft.AspNet.PipelineCore
                         }
                         else
                         {
-                            System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + contentDisposition);
+                            System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + headers.Get(HeaderNames.ContentDisposition));
                         }
 
                         section = await multipartReader.ReadNextSectionAsync(cancellationToken);
@@ -143,48 +156,50 @@ namespace Microsoft.AspNet.PipelineCore
             return Form;
         }
 
-        private bool HasApplicationFormContentType()
+        private Encoding FilterEncoding(Encoding encoding)
         {
-            // TODO: Strongly typed headers will take care of this for us
-            // Content-Type: application/x-www-form-urlencoded; charset=utf-8
-            var contentType = _request.ContentType;
-            return !string.IsNullOrEmpty(contentType) && contentType.IndexOf("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-
-        private bool HasMultipartFormContentType()
-        {
-            // TODO: Strongly typed headers will take care of this for us
-            // Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq
-            var contentType = _request.ContentType;
-            return !string.IsNullOrEmpty(contentType) && contentType.IndexOf("multipart/form-data", StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-
-        private bool HasFormDataContentDisposition(string contentDisposition)
-        {
-            // TODO: Strongly typed headers will take care of this for us
-            // Content-Disposition: form-data; name="key";
-            return !string.IsNullOrEmpty(contentDisposition) && contentDisposition.Contains("form-data") && !contentDisposition.Contains("filename=");
-        }
-
-        private bool HasFileContentDisposition(string contentDisposition)
-        {
-            // TODO: Strongly typed headers will take care of this for us
-            // Content-Disposition: form-data; name="myfile1"; filename="Misc 002.jpg"
-            return !string.IsNullOrEmpty(contentDisposition) && contentDisposition.Contains("form-data") && contentDisposition.Contains("filename=");
-        }
-
-        // Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq
-        private static string GetBoundary(string contentType)
-        {
-            // TODO: Strongly typed headers will take care of this for us
-            // TODO: Limit the length of boundary we accept. The spec says ~70 chars.
-            var elements = contentType.Split(' ');
-            var element = elements.Where(entry => entry.StartsWith("boundary=")).First();
-            var boundary = element.Substring("boundary=".Length);
-            // Remove quotes
-            if (boundary.Length >= 2 && boundary[0] == '"' && boundary[boundary.Length - 1] == '"')
+            // UTF-7 is insecure and should not be honored. UTF-8 will succeed for most cases.
+            if (encoding == null || Encoding.UTF7.Equals(encoding))
             {
-                boundary = boundary.Substring(1, boundary.Length - 2);
+                return Encoding.UTF8;
+            }
+            return encoding;
+        }
+
+        private bool HasApplicationFormContentType(MediaTypeHeaderValue contentType)
+        {
+            // Content-Type: application/x-www-form-urlencoded; charset=utf-8
+            return contentType != null && contentType.MediaType.Equals("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool HasMultipartFormContentType(MediaTypeHeaderValue contentType)
+        {
+            // Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq
+            return contentType != null && contentType.MediaType.Equals("multipart/form-data", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool HasFormDataContentDisposition(ContentDispositionHeaderValue contentDisposition)
+        {
+            // Content-Disposition: form-data; name="key";
+            return contentDisposition != null && contentDisposition.DispositionType.Equals("form-data")
+                && string.IsNullOrEmpty(contentDisposition.FileName) && string.IsNullOrEmpty(contentDisposition.FileNameStar);
+        }
+
+        private bool HasFileContentDisposition(ContentDispositionHeaderValue contentDisposition)
+        {
+            // Content-Disposition: form-data; name="myfile1"; filename="Misc 002.jpg"
+            return contentDisposition != null && contentDisposition.DispositionType.Equals("form-data")
+                && (!string.IsNullOrEmpty(contentDisposition.FileName) || !string.IsNullOrEmpty(contentDisposition.FileNameStar));
+        }
+
+        // Content-Type: multipart/form-data; boundary="----WebKitFormBoundarymx2fSWqWSd0OxQqq"
+        // TODO: Limit the length of boundary we accept. The spec says ~70 chars.
+        private static string GetBoundary(MediaTypeHeaderValue contentType)
+        {
+            var boundary = HeaderUtilities.RemoveQuotes(contentType.Boundary);
+            if (string.IsNullOrWhiteSpace(boundary))
+            {
+                throw new InvalidOperationException("Missing content-type boundary.");
             }
             return boundary;
         }

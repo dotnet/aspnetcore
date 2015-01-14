@@ -294,7 +294,7 @@ namespace Microsoft.AspNet.Owin
         public bool ContainsKey(Type key)
         {
             // Does this type implement the requested interface?
-            if (key.GetTypeInfo().IsAssignableFrom(this.GetType().GetTypeInfo()))
+            if (key.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
             {
                 // Check for conditional features
                 if (key == typeof(IHttpSendFileFeature))

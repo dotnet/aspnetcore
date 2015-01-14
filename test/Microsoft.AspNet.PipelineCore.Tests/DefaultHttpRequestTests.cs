@@ -60,26 +60,6 @@ namespace Microsoft.AspNet.PipelineCore.Tests
         }
 
         [Fact]
-        public void GetAcceptHeader_ReturnsNullIfHeaderDoesNotExist()
-        {
-            // Arrange
-            var request = GetRequestWithAcceptHeader(acceptHeader: null);
-
-            // Act and Assert
-            Assert.Null(request.Accept);
-        }
-
-        [Fact]
-        public void GetAcceptCharsetHeader_ReturnsNullIfHeaderDoesNotExist()
-        {
-            // Arrange
-            var request = GetRequestWithAcceptCharsetHeader(acceptCharset: null);
-
-            // Act and Assert
-            Assert.Null(request.AcceptCharset);
-        }
-
-        [Fact]
         public void Host_GetsHostFromHeaders()
         {
             // Arrange

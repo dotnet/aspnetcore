@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Http.Extensions.Tests
     {
     }
 
-    public class TestMiddleware 
+    public class TestMiddleware
     {
         RequestDelegate _next;
 
@@ -133,9 +133,10 @@ namespace Microsoft.AspNet.Http.Extensions.Tests
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, ITestService testService)
+        public Task Invoke(HttpContext context, ITestService testService)
         {
             context.Items[typeof(ITestService)] = testService;
+            return Task.FromResult(0);
         }
     }
 }

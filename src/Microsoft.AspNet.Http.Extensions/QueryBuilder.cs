@@ -5,9 +5,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.WebUtilities
+namespace Microsoft.AspNet.Http.Extensions
 {
     // The IEnumerable interface is required for the collection initialization syntax: new QueryBuilder() { { "key", "value" } };
     public class QueryBuilder : IEnumerable<KeyValuePair<string, string>>

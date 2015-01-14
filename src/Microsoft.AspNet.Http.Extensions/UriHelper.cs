@@ -1,7 +1,9 @@
-﻿using System;
-using Microsoft.AspNet.Http;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNet.WebUtilities
+using System;
+
+namespace Microsoft.AspNet.Http.Extensions
 {
     /// <summary>
     /// A helper class for constructing encoded Uris for use in headers and other Uris.
@@ -44,6 +46,11 @@ namespace Microsoft.AspNet.WebUtilities
 
         public FragmentString Fragment { get; set; }
 
+        public bool IsFullUri
+        {
+            get { return !string.IsNullOrEmpty(Scheme) && Host.HasValue; }
+        }
+
         // Always returns at least '/'
         public string GetPartialUri()
         {
@@ -65,6 +72,11 @@ namespace Microsoft.AspNet.WebUtilities
 
             string path = (PathBase.HasValue || Path.HasValue) ? (PathBase + Path).ToString() : "/";
             return Scheme + "://" + Host + path + Query + Fragment;
+        }
+
+        public override string ToString()
+        {
+            return IsFullUri ? GetFullUri() : GetPartialUri();
         }
 
         public static string Create(PathString pathBase,

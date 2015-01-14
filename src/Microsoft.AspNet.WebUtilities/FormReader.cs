@@ -26,10 +26,9 @@ namespace Microsoft.AspNet.WebUtilities
             _reader = new StringReader(data);
         }
 
-        // TODO: Encoding
-        public FormReader([NotNull] Stream stream)
+        public FormReader([NotNull] Stream stream, [NotNull] Encoding encoding)
         {
-            _reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024 * 2, leaveOpen: true);
+            _reader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 1024 * 2, leaveOpen: true);
         }
 
         // Format: key1=value1&key2=value2
@@ -168,11 +167,21 @@ namespace Microsoft.AspNet.WebUtilities
         /// <summary>
         /// Parses an HTTP form body.
         /// </summary>
-        /// <param name="text">The HTTP form body to parse.</param>
+        /// <param name="stream">The HTTP form body to parse.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
-        public static async Task<IDictionary<string, string[]>> ReadFormAsync(Stream stream, CancellationToken cancellationToken = new CancellationToken())
+        public static Task<IDictionary<string, string[]>> ReadFormAsync(Stream stream, CancellationToken cancellationToken = new CancellationToken())
         {
-            var reader = new FormReader(stream);
+            return ReadFormAsync(stream, Encoding.UTF8, cancellationToken);
+        }
+
+        /// <summary>
+        /// Parses an HTTP form body.
+        /// </summary>
+        /// <param name="stream">The HTTP form body to parse.</param>
+        /// <returns>The collection containing the parsed HTTP form body.</returns>
+        public static async Task<IDictionary<string, string[]>> ReadFormAsync(Stream stream, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var reader = new FormReader(stream, encoding);
 
             var accumulator = new KeyValueAccumulator<string, string>(StringComparer.OrdinalIgnoreCase);
             var pair = await reader.ReadNextPairAsync(cancellationToken);

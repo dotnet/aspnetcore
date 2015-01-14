@@ -150,18 +150,6 @@ namespace Microsoft.AspNet.PipelineCore
             set { Headers[Constants.Headers.ContentType] = value; }
         }
 
-        public override string Accept
-        {
-            get { return Headers[Constants.Headers.Accept]; }
-            set { Headers[Constants.Headers.Accept] = value; }
-        }
-
-        public override string AcceptCharset
-        {
-            get { return Headers[Constants.Headers.AcceptCharset]; }
-            set { Headers[Constants.Headers.AcceptCharset] = value; }
-        }
-
         public override bool HasFormContentType
         {
             get { return FormFeature.HasFormContentType; }

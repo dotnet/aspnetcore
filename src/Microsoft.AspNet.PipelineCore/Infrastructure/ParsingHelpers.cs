@@ -518,25 +518,6 @@ namespace Microsoft.AspNet.PipelineCore.Infrastructure
             request.HttpContext.Items[key] = value;
         }
 
-        internal static IDictionary<string, string> GetCookies(HttpRequest request)
-        {
-            var cookies = GetItem<IDictionary<string, string>>(request, "Microsoft.Owin.Cookies#dictionary");
-            if (cookies == null)
-            {
-                cookies = new Dictionary<string, string>(StringComparer.Ordinal);
-                SetItem(request, "Microsoft.Owin.Cookies#dictionary", cookies);
-            }
-
-            string text = GetHeader(request.Headers, "Cookie");
-            if (GetItem<string>(request, "Microsoft.Owin.Cookies#text") != text)
-            {
-                cookies.Clear();
-                ParseDelimited(text, SemicolonAndComma, AddCookieCallback, cookies);
-                SetItem(request, "Microsoft.Owin.Cookies#text", text);
-            }
-            return cookies;
-        }
-
         internal static void ParseCookies(string cookiesHeader, IDictionary<string, string> cookiesCollection)
         {
             ParseDelimited(cookiesHeader, SemicolonAndComma, AddCookieCallback, cookiesCollection);

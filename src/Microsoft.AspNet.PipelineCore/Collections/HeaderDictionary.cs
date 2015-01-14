@@ -16,6 +16,10 @@ namespace Microsoft.AspNet.PipelineCore.Collections
     /// </summary>
     public class HeaderDictionary : IHeaderDictionary
     {
+        public HeaderDictionary() : this(new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase))
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Microsoft.Owin.HeaderDictionary" /> class.
         /// </summary>

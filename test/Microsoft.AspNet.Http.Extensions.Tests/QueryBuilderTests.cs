@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNet.WebUtilities
+namespace Microsoft.AspNet.Http.Extensions
 {
     public class QueryBuilderTests
     {
