@@ -29,7 +29,7 @@ namespace System.Net.Http.Formatting
         /// <returns><c>true</c> if this is a subset of <paramref name="mediaType2"/>; false otherwise.</returns>
         public static bool IsSubsetOf(this MediaTypeHeaderValue mediaType1, MediaTypeHeaderValue mediaType2)
         {
-            MediaTypeHeaderValueRange mediaType2Range;
+            MediaTypeFormatterMatchRanking mediaType2Range;
             return IsSubsetOf(mediaType1, mediaType2, out mediaType2Range);
         }
 
@@ -52,36 +52,40 @@ namespace System.Net.Http.Formatting
         public static bool IsSubsetOf(
             this MediaTypeHeaderValue mediaType1,
             MediaTypeHeaderValue mediaType2,
-            out MediaTypeHeaderValueRange mediaType2Range)
+            out MediaTypeFormatterMatchRanking mediaType2Range)
         {
             // Performance-sensitive
             Debug.Assert(mediaType1 != null);
 
             if (mediaType2 == null)
             {
-                mediaType2Range = MediaTypeHeaderValueRange.None;
+                mediaType2Range = MediaTypeFormatterMatchRanking.None;
                 return false;
             }
 
             var parsedMediaType1 = new ParsedMediaTypeHeaderValue(mediaType1);
             var parsedMediaType2 = new ParsedMediaTypeHeaderValue(mediaType2);
-            mediaType2Range = parsedMediaType2.IsAllMediaRange ? MediaTypeHeaderValueRange.AllMediaRange :
-                parsedMediaType2.IsSubtypeMediaRange ? MediaTypeHeaderValueRange.SubtypeMediaRange :
-                MediaTypeHeaderValueRange.None;
+            mediaType2Range = parsedMediaType2.IsAllMediaRange ? MediaTypeFormatterMatchRanking.MatchOnRequestAcceptHeaderAllMediaRange :
+                parsedMediaType2.IsSubtypeMediaRange ? MediaTypeFormatterMatchRanking.MatchOnRequestAcceptHeaderSubtypeMediaRange :
+                MediaTypeFormatterMatchRanking.None;
 
             if (!parsedMediaType1.TypesEqual(ref parsedMediaType2))
             {
-                if (mediaType2Range != MediaTypeHeaderValueRange.AllMediaRange)
+                if (mediaType2Range != MediaTypeFormatterMatchRanking.MatchOnRequestAcceptHeaderAllMediaRange)
                 {
                     return false;
                 }
             }
             else if (!parsedMediaType1.SubTypesEqual(ref parsedMediaType2))
             {
-                if (mediaType2Range != MediaTypeHeaderValueRange.SubtypeMediaRange)
+                if (mediaType2Range != MediaTypeFormatterMatchRanking.MatchOnRequestAcceptHeaderSubtypeMediaRange)
                 {
                     return false;
                 }
+            }
+            else
+            {
+                mediaType2Range = MediaTypeFormatterMatchRanking.MatchOnRequestAcceptHeaderLiteral;
             }
 
             // So far we either have a full match or a subset match. Now check that all of

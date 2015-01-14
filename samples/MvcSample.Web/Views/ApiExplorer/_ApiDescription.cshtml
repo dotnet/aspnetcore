@@ -32,7 +32,7 @@
         <ul>
             @foreach (var response in Model.SupportedResponseFormats)
             {
-                <li>@response.MediaType.RawValue - @response.Formatter.GetType().Name</li>
+                <li>@response.MediaType.ToString() - @response.Formatter.GetType().Name</li>
             }
         </ul>
     }

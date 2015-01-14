@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
@@ -1941,7 +1942,8 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var httpContext = new Mock<HttpContext>(MockBehavior.Loose);
-            var httpResponse = new Mock<HttpResponse>(MockBehavior.Loose);
+            var httpRequest = new DefaultHttpContext().Request;
+            var httpResponse = new DefaultHttpContext().Response;
             var mockFormattersProvider = new Mock<IOutputFormattersProvider>();
             mockFormattersProvider.SetupGet(o => o.OutputFormatters)
                                   .Returns(
@@ -1949,12 +1951,11 @@ namespace Microsoft.AspNet.Mvc
                                         {
                                             new JsonOutputFormatter()
                                         });
-            httpContext.SetupGet(o => o.Request.Accept)
-                       .Returns("");
-            httpContext.SetupGet(c => c.Response).Returns(httpResponse.Object);
+            httpContext.SetupGet(c => c.Request).Returns(httpRequest);
+            httpContext.SetupGet(c => c.Response).Returns(httpResponse);
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
                        .Returns(mockFormattersProvider.Object);
-            httpResponse.SetupGet(r => r.Body).Returns(new MemoryStream());
+            httpResponse.Body = new MemoryStream();
 
             var actionContext = new ActionContext(
                 httpContext: httpContext.Object,

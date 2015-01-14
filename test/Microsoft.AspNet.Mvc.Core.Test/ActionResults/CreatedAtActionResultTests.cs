@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
@@ -21,8 +22,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var expectedUrl = "testAction";
-            var response = GetMockedHttpResponseObject();
-            var httpContext = GetHttpContext(response);
+            var httpContext = GetHttpContext();
             var actionContext = GetActionContext(httpContext);
             var urlHelper = GetMockUrlHelper(expectedUrl);
 
@@ -37,16 +37,15 @@ namespace Microsoft.AspNet.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            Assert.Equal(201, response.StatusCode);
-            Assert.Equal(expectedUrl, response.Headers["Location"]);
+            Assert.Equal(201, httpContext.Response.StatusCode);
+            Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
         }
 
         [Fact]
         public async Task CreatedAtActionResult_ThrowsOnNullUrl()
         {
             // Arrange
-            var response = GetMockedHttpResponseObject();
-            var httpContext = GetHttpContext(response);
+            var httpContext = GetHttpContext();
             var actionContext = GetActionContext(httpContext);
             var urlHelper = GetMockUrlHelper(returnValue: null);
 
@@ -60,7 +59,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Act & Assert
             await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-                async () => await result.ExecuteResultAsync(actionContext), 
+                async () => await result.ExecuteResultAsync(actionContext),
             "No route matches the supplied values.");
         }
 
@@ -85,18 +84,15 @@ namespace Microsoft.AspNet.Mvc
                                     new ActionDescriptor());
         }
 
-        private static HttpContext GetHttpContext(HttpResponse response)
+        private static HttpContext GetHttpContext()
         {
-            var httpContext = new Mock<HttpContext>();
-
-            httpContext.Setup(o => o.Response)
-                       .Returns(response);
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
-                       .Returns(new TestOutputFormatterProvider());
-            httpContext.Setup(o => o.Request.PathBase)
-                       .Returns(new PathString(""));
-
-            return httpContext.Object;
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.PathBase = new PathString("");
+            httpContext.Response.Body = new MemoryStream();
+            var services = new Mock<IServiceProvider>();
+            services.Setup(p => p.GetService(typeof(IOutputFormattersProvider))).Returns(new TestOutputFormatterProvider());
+            httpContext.RequestServices = services.Object;
+            return httpContext;
         }
 
         private static IUrlHelper GetMockUrlHelper(string returnValue)

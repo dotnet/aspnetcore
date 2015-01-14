@@ -7,7 +7,8 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
+using Microsoft.AspNet.PipelineCore.Collections;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -281,7 +282,7 @@ namespace Microsoft.AspNet.Mvc.Core
             // Assert
             if (expectedOutput != null)
             {
-                Assert.Equal(expectedOutput, Assert.Single(result).RawValue);
+                Assert.Equal(expectedOutput, Assert.Single(result).ToString());
             }
             else
             {
@@ -303,10 +304,10 @@ namespace Microsoft.AspNet.Mvc.Core
         private static ActionContext GetActionContext(string contentType)
         {
             var request = new Mock<HttpRequest>();
-            var headers = new Mock<IHeaderDictionary>();
+            var headers = new HeaderDictionary(new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase));
+            headers["Accept-Charset"] = MediaTypeHeaderValue.Parse(contentType).Charset;
             request.Setup(r => r.ContentType).Returns(contentType);
-            request.SetupGet(r => r.Headers).Returns(headers.Object);
-            request.SetupGet(f => f.AcceptCharset).Returns(contentType.Split('=')[1]);
+            request.SetupGet(r => r.Headers).Returns(headers);
             var response = new Mock<HttpResponse>();
             response.SetupGet(f => f.Body).Returns(new MemoryStream());
             var httpContext = new Mock<HttpContext>();

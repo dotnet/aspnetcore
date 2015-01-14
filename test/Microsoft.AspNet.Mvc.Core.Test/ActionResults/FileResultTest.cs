@@ -6,7 +6,9 @@ using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -30,13 +32,8 @@ namespace Microsoft.AspNet.Mvc
             // See comment in FileResult.cs detailing how the FileDownloadName should be encoded.
 
             // Arrange
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupSet(c => c.Response.ContentType = "application/my-type").Verifiable();
-            httpContext
-                .Setup(c => c.Response.Headers.Set("Content-Disposition", @"attachment; filename=""some\\file"""))
-                .Verifiable();
-
-            var actionContext = CreateActionContext(httpContext.Object);
+            var httpContext = new DefaultHttpContext();
+            var actionContext = CreateActionContext(httpContext);
 
             var result = new EmptyFileResult("application/my-type")
             {
@@ -48,22 +45,17 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.True(result.WasWriteFileCalled);
-            httpContext.Verify();
+
+            Assert.Equal("application/my-type", httpContext.Response.Headers["Content-Type"]);
+            Assert.Equal(@"attachment; filename=""some\\file""; filename*=UTF-8''some%5Cfile", httpContext.Response.Headers["Content-Disposition"]);
         }
 
         [Fact]
         public async Task ContentDispositionHeader_IsEncodedCorrectly_ForUnicodeCharacters()
         {
             // Arrange
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupSet(c => c.Response.ContentType = "application/my-type").Verifiable();
-            httpContext
-                .Setup(c => c.Response.Headers.Set(
-                    "Content-Disposition",
-                    @"attachment; filename*=UTF-8''ABCXYZabcxyz012789!%40%23$%25%5E&%2A%28%29-%3D_+.:~%CE%94"))
-                .Verifiable();
-
-            var actionContext = CreateActionContext(httpContext.Object);
+            var httpContext = new DefaultHttpContext();
+            var actionContext = CreateActionContext(httpContext);
 
             var result = new EmptyFileResult("application/my-type")
             {
@@ -75,7 +67,9 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.True(result.WasWriteFileCalled);
-            httpContext.Verify();
+            Assert.Equal("application/my-type", httpContext.Response.Headers["Content-Type"]);
+            Assert.Equal(@"attachment; filename=""ABCXYZabcxyz012789!@#$%^&*()-=_+.:~_""; filename*=UTF-8''ABCXYZabcxyz012789!%40#$%25^&%2A%28%29-%3D_+.%3A~%CE%94",
+                httpContext.Response.Headers["Content-Disposition"]);
         }
 
         [Fact]
@@ -102,13 +96,8 @@ namespace Microsoft.AspNet.Mvc
         public async Task ExecuteResultAsync_SetsContentDisposition_IfSpecified()
         {
             // Arrange
-            var httpContext = new Mock<HttpContext>(MockBehavior.Strict);
-            httpContext.SetupSet(c => c.Response.ContentType = "application/my-type").Verifiable();
-            httpContext
-                .Setup(c => c.Response.Headers.Set("Content-Disposition", "attachment; filename=filename.ext"))
-                .Verifiable();
-
-            var actionContext = CreateActionContext(httpContext.Object);
+            var httpContext = new DefaultHttpContext();
+            var actionContext = CreateActionContext(httpContext);
 
             var result = new EmptyFileResult("application/my-type")
             {
@@ -120,7 +109,8 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.True(result.WasWriteFileCalled);
-            httpContext.Verify();
+            Assert.Equal("application/my-type", httpContext.Response.ContentType);
+            Assert.Equal("attachment; filename=filename.ext; filename*=UTF-8''filename.ext", httpContext.Response.Headers["Content-Disposition"]);
         }
 
         public static TheoryData<string, string> ContentDispositionData
@@ -130,49 +120,54 @@ namespace Microsoft.AspNet.Mvc
                 return new TheoryData<string, string>
                 {
                     // Non quoted values
-                    { "09aAzZ", "attachment; filename=09aAzZ" },
-                    { "a.b", "attachment; filename=a.b" },
-                    { "#", "attachment; filename=#" },
-                    { "-", "attachment; filename=-" },
-                    { "_", "attachment; filename=_" },
+                    { "09aAzZ", "attachment; filename=09aAzZ; filename*=UTF-8''09aAzZ" },
+                    { "a.b", "attachment; filename=a.b; filename*=UTF-8''a.b" },
+                    { "#", "attachment; filename=#; filename*=UTF-8''#" },
+                    { "-", "attachment; filename=-; filename*=UTF-8''-" },
+                    { "_", "attachment; filename=_; filename*=UTF-8''_" },
+                    { "~", "attachment; filename=~; filename*=UTF-8''~" },
+                    { "$", "attachment; filename=$; filename*=UTF-8''$" },
+                    { "&", "attachment; filename=&; filename*=UTF-8''&" },
+                    { "+", "attachment; filename=+; filename*=UTF-8''+" },
+                    { "!", "attachment; filename=!; filename*=UTF-8''!" },
+                    { "#", "attachment; filename=#; filename*=UTF-8''#" },
+                    { "^", "attachment; filename=^; filename*=UTF-8''^" },
+                    { "`", "attachment; filename=`; filename*=UTF-8''`" },
+                    { "|", "attachment; filename=|; filename*=UTF-8''|" },
 
                     // Values that need to be quoted
-                    { ": :", "attachment; filename=\": :\"" },
-                    { "~", "attachment; filename=~" },
-                    { "$", "attachment; filename=$" },
-                    { "&", "attachment; filename=&" },
-                    { "+", "attachment; filename=+" },
-                    { "(", "attachment; filename=\"(\"" },
-                    { ")", "attachment; filename=\")\"" },
-                    { "<", "attachment; filename=\"<\"" },
-                    { ">", "attachment; filename=\">\"" },
-                    { "@", "attachment; filename=\"@\"" },
-                    { ",", "attachment; filename=\",\"" },
-                    { ";", "attachment; filename=\";\"" },
-                    { ":", "attachment; filename=\":\"" },
-                    { "/", "attachment; filename=\"/\"" },
-                    { "[", "attachment; filename=\"[\"" },
-                    { "]", "attachment; filename=\"]\"" },
-                    { "?", "attachment; filename=\"?\"" },
-                    { "=", "attachment; filename=\"=\"" },
-                    { "{", "attachment; filename=\"{\"" },
-                    { "}", "attachment; filename=\"}\"" },
-                    { " ", "attachment; filename=\" \"" },
-                    { "a\tb", "attachment; filename=\"a\tb\"" },
-                    { "a b", "attachment; filename=\"a b\"" },
+                    { ": :", "attachment; filename=\": :\"; filename*=UTF-8''%3A%20%3A" },
+                    { "(", "attachment; filename=\"(\"; filename*=UTF-8''%28" },
+                    { ")", "attachment; filename=\")\"; filename*=UTF-8''%29" },
+                    { "<", "attachment; filename=\"<\"; filename*=UTF-8''%3C" },
+                    { ">", "attachment; filename=\">\"; filename*=UTF-8''%3E" },
+                    { "@", "attachment; filename=\"@\"; filename*=UTF-8''%40" },
+                    { ",", "attachment; filename=\",\"; filename*=UTF-8''%2C" },
+                    { ";", "attachment; filename=\";\"; filename*=UTF-8''%3B" },
+                    { ":", "attachment; filename=\":\"; filename*=UTF-8''%3A" },
+                    { "/", "attachment; filename=\"/\"; filename*=UTF-8''%2F" },
+                    { "[", "attachment; filename=\"[\"; filename*=UTF-8''%5B" },
+                    { "]", "attachment; filename=\"]\"; filename*=UTF-8''%5D" },
+                    { "?", "attachment; filename=\"?\"; filename*=UTF-8''%3F" },
+                    { "=", "attachment; filename=\"=\"; filename*=UTF-8''%3D" },
+                    { "{", "attachment; filename=\"{\"; filename*=UTF-8''%7B" },
+                    { "}", "attachment; filename=\"}\"; filename*=UTF-8''%7D" },
+                    { " ", "attachment; filename=\" \"; filename*=UTF-8''%20" },
+                    { "a\tb", "attachment; filename=\"a\tb\"; filename*=UTF-8''a%09b" },
+                    { "a b", "attachment; filename=\"a b\"; filename*=UTF-8''a%20b" },
 
                     // Values that need to be escaped
-                    { "\"", "attachment; filename=\"\\\"\"" },
-                    { "\\", "attachment; filename=\"\\\\\"" },
+                    { "\"", "attachment; filename=\"\\\"\"; filename*=UTF-8''%22" },
+                    { "\\", "attachment; filename=\"\\\\\"; filename*=UTF-8''%5C" },
 
                     // Values that need to be specially encoded (Base64, see rfc2047)
-                    { "a\nb", "attachment; filename=\"=?utf-8?B?YQpi?=\"" },
+                    { "a\nb", "attachment; filename=\"a\nb\"; filename*=UTF-8''a%0Ab" },
 
                     // Values with non unicode characters
-                    { "résumé.txt", "attachment; filename*=UTF-8''r%C3%A9sum%C3%A9.txt" },
-                    { "Δ", "attachment; filename*=UTF-8''%CE%94" },
-                    { "Δ\t", "attachment; filename*=UTF-8''%CE%94%09" },
-                    { "ABCXYZabcxyz012789!@#$%^&*()-=_+.:~Δ", @"attachment; filename*=UTF-8''ABCXYZabcxyz012789!%40%23$%25%5E&%2A%28%29-%3D_+.:~%CE%94" },
+                    { "résumé.txt", "attachment; filename=r_sum_.txt; filename*=UTF-8''r%C3%A9sum%C3%A9.txt" },
+                    { "Δ", "attachment; filename=_; filename*=UTF-8''%CE%94" },
+                    { "Δ\t", "attachment; filename=\"_\t\"; filename*=UTF-8''%CE%94%09" },
+                    { "ABCXYZabcxyz012789!@#$%^&*()-=_+.:~Δ", @"attachment; filename=""ABCXYZabcxyz012789!@#$%^&*()-=_+.:~_""; filename*=UTF-8''ABCXYZabcxyz012789!%40#$%25^&%2A%28%29-%3D_+.%3A~%CE%94" },
                 };
             }
         }
@@ -190,10 +185,10 @@ namespace Microsoft.AspNet.Mvc
                         continue;
                     }
 
-                    data.Add(char.ConvertFromUtf32(i), "attachment; filename=\"" + char.ConvertFromUtf32(i) + "\"");
+                    data.Add(char.ConvertFromUtf32(i), "attachment; filename=\"" + char.ConvertFromUtf32(i) + "\"; filename*=UTF-8''%" + i.ToString("X2"));
                 }
 
-                data.Add(char.ConvertFromUtf32(127), "attachment; filename=\"" + char.ConvertFromUtf32(127) + "\"");
+                data.Add(char.ConvertFromUtf32(127), "attachment; filename=\"" + char.ConvertFromUtf32(127) + "\"; filename*=UTF-8''%7F");
 
                 return data;
             }
@@ -205,7 +200,9 @@ namespace Microsoft.AspNet.Mvc
         public void GetHeaderValue_Produces_Correct_ContentDisposition(string input, string expectedOutput)
         {
             // Arrange & Act
-            var actual = FileResult.ContentDispositionUtil.GetHeaderValue(input);
+            var cd = new ContentDispositionHeaderValue("attachment");
+            cd.SetHttpFileName(input);
+            var actual = cd.ToString();
 
             // Assert
             Assert.Equal(expectedOutput, actual);

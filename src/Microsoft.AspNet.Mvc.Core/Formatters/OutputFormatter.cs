@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -102,7 +103,7 @@ namespace Microsoft.AspNet.Mvc
         public virtual Encoding SelectCharacterEncoding([NotNull] OutputFormatterContext context)
         {
             var request = context.ActionContext.HttpContext.Request;
-            var encoding = MatchAcceptCharacterEncoding(request.AcceptCharset);
+            var encoding = MatchAcceptCharacterEncoding(request.GetTypedHeaders().AcceptCharset);
             if (encoding == null)
             {
                 // Match based on request acceptHeader.
@@ -190,7 +191,7 @@ namespace Microsoft.AspNet.Mvc
 
             context.SelectedContentType = context.SelectedContentType ?? selectedMediaType;
             var response = context.ActionContext.HttpContext.Response;
-            response.ContentType = selectedMediaType.RawValue;
+            response.ContentType = selectedMediaType.ToString();
         }
 
         /// <summary>
@@ -200,16 +201,13 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A task which can write the response body.</returns>
         public abstract Task WriteResponseBodyAsync([NotNull] OutputFormatterContext context);
 
-        private Encoding MatchAcceptCharacterEncoding(string acceptCharsetHeader)
+        private Encoding MatchAcceptCharacterEncoding(IList<StringWithQualityHeaderValue> acceptCharsetHeaders)
         {
-            var acceptCharsetHeaders = HeaderParsingHelpers
-                                                .GetAcceptCharsetHeaders(acceptCharsetHeader);
-
             if (acceptCharsetHeaders != null && acceptCharsetHeaders.Count > 0)
             {
                 var sortedAcceptCharsetHeaders = acceptCharsetHeaders
                                                     .Where(acceptCharset =>
-                                                                acceptCharset.Quality != HttpHeaderUtilitites.NoMatch)
+                                                                acceptCharset.Quality != HeaderQuality.NoMatch)
                                                     .OrderByDescending(
                                                         m => m, StringWithQualityHeaderValueComparer.QualityComparer);
 

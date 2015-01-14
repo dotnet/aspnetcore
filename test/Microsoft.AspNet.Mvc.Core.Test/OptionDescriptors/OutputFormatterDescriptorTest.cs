@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
+using Microsoft.Net.Http.Headers;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Testing;
 using Xunit;

@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(expected, written);
-            Assert.Equal("application/json;charset=utf-8", context.Response.ContentType);
+            Assert.Equal("application/json; charset=utf-8", context.Response.ContentType);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(expected, written);
-            Assert.Equal("application/json;charset=utf-8", context.Response.ContentType);
+            Assert.Equal("application/json; charset=utf-8", context.Response.ContentType);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc
             };
 
             var context = GetHttpContext(optionsFormatters);
-            context.Request.Accept = "text/json";
+            context.Request.Headers["Accept"] = "text/json";
 
             var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());
 
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(expected, written);
-            Assert.Equal("text/json;charset=utf-8", context.Response.ContentType);
+            Assert.Equal("text/json; charset=utf-8", context.Response.ContentType);
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(expected, written);
-            Assert.Equal("application/json;charset=utf-8", context.Response.ContentType);
+            Assert.Equal("application/json; charset=utf-8", context.Response.ContentType);
         }
 
         [Fact]
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(expected, written);
-            Assert.Equal("application/hal+json;charset=utf-8", context.Response.ContentType);
+            Assert.Equal("application/hal+json; charset=utf-8", context.Response.ContentType);
         }
 
         // If no formatter in options can match the given content-types, then use the one registered
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(expected, written);
-            Assert.Equal("application/json;charset=utf-8", context.Response.ContentType);
+            Assert.Equal("application/json; charset=utf-8", context.Response.ContentType);
         }
 
         private HttpContext GetHttpContext(

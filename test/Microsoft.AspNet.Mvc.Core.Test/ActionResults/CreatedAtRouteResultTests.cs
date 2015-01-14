@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.PipelineCore.Collections;
+using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Moq;
@@ -41,8 +41,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var expectedUrl = "testAction";
-            var response = GetMockedHttpResponseObject();
-            var httpContext = GetHttpContext(response);
+            var httpContext = GetHttpContext();
             var actionContext = GetActionContext(httpContext);
             var urlHelper = GetMockUrlHelper(expectedUrl);
 
@@ -52,16 +51,15 @@ namespace Microsoft.AspNet.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            Assert.Equal(201, response.StatusCode);
-            Assert.Equal(expectedUrl, response.Headers["Location"]);
+            Assert.Equal(201, httpContext.Response.StatusCode);
+            Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
         }
 
         [Fact]
         public async Task CreatedAtRouteResult_ThrowsOnNullUrl()
         {
             // Arrange
-            var response = GetMockedHttpResponseObject();
-            var httpContext = GetHttpContext(response);
+            var httpContext = GetHttpContext();
             var actionContext = GetActionContext(httpContext);
             var urlHelper = GetMockUrlHelper(returnValue: null);
 
@@ -78,17 +76,6 @@ namespace Microsoft.AspNet.Mvc
             "No route matches the supplied values.");
         }
 
-        private static HttpResponse GetMockedHttpResponseObject()
-        {
-            var stream = new MemoryStream();
-            var httpResponse = new Mock<HttpResponse>();
-            httpResponse.SetupProperty(o => o.StatusCode);
-            httpResponse.Setup(o => o.Headers).Returns(
-                new HeaderDictionary(new Dictionary<string, string[]>()));
-            httpResponse.SetupGet(o => o.Body).Returns(stream);
-            return httpResponse.Object;
-        }
-
         private static ActionContext GetActionContext(HttpContext httpContext)
         {
             var routeData = new RouteData();
@@ -99,16 +86,21 @@ namespace Microsoft.AspNet.Mvc
                                     new ActionDescriptor());
         }
 
-        private static HttpContext GetHttpContext(HttpResponse response)
+        private static HttpContext GetHttpContext()
         {
             var httpContext = new Mock<HttpContext>();
+            var realContext = new DefaultHttpContext();
+            var request = realContext.Request;
+            request.PathBase = new PathString("");
+            var response = realContext.Response;
+            response.Body = new MemoryStream();
 
+            httpContext.Setup(o => o.Request)
+                       .Returns(request);
             httpContext.Setup(o => o.Response)
                        .Returns(response);
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
                        .Returns(new TestOutputFormatterProvider());
-            httpContext.Setup(o => o.Request.PathBase)
-                       .Returns(new PathString(""));
 
             return httpContext.Object;
         }

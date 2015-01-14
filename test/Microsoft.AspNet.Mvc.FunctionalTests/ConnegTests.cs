@@ -105,8 +105,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("ContactInfoUsingV3Format", "text/vcard; charset=utf-8; version=v3.0", "BEGIN:VCARD#FN:John Williams#END:VCARD#")]
-        [InlineData("ContactInfoUsingV4Format", "text/vcard; charset=utf-8; version=v4.0", "BEGIN:VCARD#FN:John Williams#GENDER:M#END:VCARD#")]
+        [InlineData("ContactInfoUsingV3Format", "text/vcard; version=v3.0; charset=utf-8", "BEGIN:VCARD#FN:John Williams#END:VCARD#")]
+        [InlineData("ContactInfoUsingV4Format", "text/vcard; version=v4.0; charset=utf-8", "BEGIN:VCARD#FN:John Williams#GENDER:M#END:VCARD#")]
         public async Task ProducesAttribute_WithMediaTypeHavingParameters_IsCaseInsensitiveMatch(
                                                                                             string action,
                                                                                             string expectedMediaType,

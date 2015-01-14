@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -62,10 +63,9 @@ namespace Microsoft.AspNet.Mvc
         public virtual IOutputFormatter SelectFormatter(OutputFormatterContext formatterContext,
                                                        IEnumerable<IOutputFormatter> formatters)
         {
-            var incomingAcceptHeader = HeaderParsingHelpers.GetAcceptHeaders(
-                                                formatterContext.ActionContext.HttpContext.Request.Accept);
-            var sortedAcceptHeaders = SortMediaTypeWithQualityHeaderValues(incomingAcceptHeader)
-                                        .Where(header => header.Quality != HttpHeaderUtilitites.NoMatch)
+            var incomingAcceptHeader = formatterContext.ActionContext.HttpContext.Request.GetTypedHeaders().Accept;
+            var sortedAcceptHeaders = SortMediaTypeHeaderValues(incomingAcceptHeader)
+                                        .Where(header => header.Quality != HeaderQuality.NoMatch)
                                         .ToArray();
 
             IOutputFormatter selectedFormatter = null;
@@ -194,19 +194,19 @@ namespace Microsoft.AspNet.Mvc
             return selectedFormatter;
         }
 
-        private static MediaTypeWithQualityHeaderValue[] SortMediaTypeWithQualityHeaderValues
-                                                    (IEnumerable<MediaTypeWithQualityHeaderValue> headerValues)
+        private static MediaTypeHeaderValue[] SortMediaTypeHeaderValues
+                                                    (IEnumerable<MediaTypeHeaderValue> headerValues)
         {
             if (headerValues == null)
             {
-                return new MediaTypeWithQualityHeaderValue[] { };
+                return new MediaTypeHeaderValue[] { };
             }
 
             // Use OrderBy() instead of Array.Sort() as it performs fewer comparisons. In this case the comparisons
             // are quite expensive so OrderBy() performs better.
             return headerValues.OrderByDescending(headerValue =>
                                                     headerValue,
-                                                    MediaTypeWithQualityHeaderValueComparer.QualityComparer)
+                                                    MediaTypeHeaderValueComparer.QualityComparer)
                                .ToArray();
         }
 

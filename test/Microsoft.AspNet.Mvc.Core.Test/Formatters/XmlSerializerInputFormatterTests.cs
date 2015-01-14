@@ -71,10 +71,10 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.True(formatter.SupportedMediaTypes
-                                 .Select(content => content.RawValue)
+                                 .Select(content => content.ToString())
                                  .Contains("application/xml"));
             Assert.True(formatter.SupportedMediaTypes
-                                 .Select(content => content.RawValue)
+                                 .Select(content => content.ToString())
                                  .Contains("text/xml"));
         }
 
