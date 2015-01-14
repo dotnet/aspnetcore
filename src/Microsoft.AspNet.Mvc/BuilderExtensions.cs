@@ -37,11 +37,13 @@ namespace Microsoft.AspNet.Builder
                 ServiceProvider = app.ApplicationServices
             };
 
-            routes.Routes.Add(AttributeRouting.CreateAttributeMegaRoute(
+            configureRoutes(routes);
+
+            // Adding the attribute route comes after running the user-code because
+            // we want to respect any changes to the DefaultHandler.
+            routes.Routes.Insert(0, AttributeRouting.CreateAttributeMegaRoute(
                 routes.DefaultHandler,
                 app.ApplicationServices));
-
-            configureRoutes(routes);
 
             return app.UseRouter(routes.Build());
         }
