@@ -88,11 +88,12 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             public override void RenderAttributeValue([NotNull] TagHelperAttributeDescriptor attributeInfo,
                                                       [NotNull] CSharpCodeWriter writer,
                                                       [NotNull] CodeBuilderContext context,
-                                                      [NotNull] Action<CSharpCodeWriter> renderAttributeValue)
+                                                      [NotNull] Action<CSharpCodeWriter> renderAttributeValue,
+                                                      bool complexValue)
             {
                 writer.Write("**From custom attribute code renderer**: ");
 
-                base.RenderAttributeValue(attributeInfo, writer, context, renderAttributeValue);
+                base.RenderAttributeValue(attributeInfo, writer, context, renderAttributeValue, complexValue);
             }
         }
 

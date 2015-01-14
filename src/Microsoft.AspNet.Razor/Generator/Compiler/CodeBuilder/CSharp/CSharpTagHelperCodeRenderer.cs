@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
@@ -230,47 +230,66 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                                                       tagHelperVariableName,
                                                       attributeDescriptor.PropertyName);
 
-                    _writer.WriteStartAssignment(valueAccessor);
-
                     // If we haven't recorded this attribute value before then we need to record its value.
                     if (!attributeValueRecorded)
                     {
                         // We only need to create attribute values once per HTML element (not once per tag helper).
-                        // We're saving the value accessor so we can retrieve it later if there are more tag helpers that
-                        // need the value.
+                        // We're saving the value accessor so we can retrieve it later if there are more tag
+                        // helpers that need the value.
                         htmlAttributeValues.Add(attributeDescriptor.Name, valueAccessor);
 
                         if (bufferableAttribute)
                         {
-                            // If the attribute is bufferable but has a plain text value that means the value
-                            // is a string which needs to be surrounded in quotes.
+                            _writer.WriteStartAssignment(valueAccessor);
+
                             if (isPlainTextValue)
                             {
+                                // If the attribute is bufferable but has a plain text value that means the value
+                                // is a string which needs to be surrounded in quotes.
                                 RenderQuotedAttributeValue(textValue, attributeDescriptor);
                             }
                             else
                             {
-                                // The value contains more than plain text. e.g. someAttribute="Time: @DateTime.Now"
+                                // The value contains more than plain text e.g.
+                                // stringAttribute ="Time: @DateTime.Now"
                                 RenderBufferedAttributeValue(attributeDescriptor);
                             }
+
+                            _writer.WriteLine(";");
                         }
                         else
                         {
-                            // TODO: Make complex types in non-bufferable attributes work in
-                            // https://github.com/aspnet/Razor/issues/129
-                            if (!isPlainTextValue)
+                            // Write out simple assignment for non-string property value. Try to keep the whole
+                            // statement together and the #line pragma correct to make debugging possible.
+                            using (var lineMapper = new CSharpLineMappingWriter(
+                                _writer,
+                                attributeValueChunk.Association.Start,
+                                _context.SourceFile))
                             {
+                                // Place the assignment LHS to align RHS with original attribute value's indentation.
+                                // Unfortunately originalIndent is incorrect if original line contains tabs. Unable to
+                                // use a CSharpPaddingBuilder because the Association has no Previous node; lost the
+                                // original Span sequence when the parse tree was rewritten.
+                                var originalIndent = attributeValueChunk.Start.CharacterIndex;
+                                var generatedLength = valueAccessor.Length + " = ".Length;
+                                var newIndent = originalIndent - generatedLength;
+                                if (newIndent > 0)
+                                {
+                                    _writer.Indent(newIndent);
+                                }
+
+                                _writer.WriteStartAssignment(valueAccessor);
+                                lineMapper.MarkLineMappingStart();
+
+                                // Write out bare expression for this attribute value. Property is not a string.
+                                // So quoting or buffering are not helpful.
+                                RenderRawAttributeValue(attributeValueChunk, attributeDescriptor, isPlainTextValue);
+
+                                // End the assignment to the attribute.
+                                lineMapper.MarkLineMappingEnd();
                                 _writer.WriteLine(";");
-                                return;
                             }
-
-                            // We aren't a bufferable attribute which means we have no Razor code in our value.
-                            // Therefore we can just use the "textValue" as the attribute value.
-                            RenderRawAttributeValue(textValue, attributeValueChunk.Start, attributeDescriptor);
                         }
-
-                        // End the assignment to the attribute.
-                        _writer.WriteLine(";");
 
                         // Execution contexts are a runtime feature.
                         if (_designTimeMode)
@@ -279,20 +298,23 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                         }
 
                         // We need to inform the context of the attribute value.
-                        _writer.WriteStartInstanceMethodInvocation(
-                            ExecutionContextVariableName,
-                            _tagHelperContext.ExecutionContextAddTagHelperAttributeMethodName);
-
-                        _writer.WriteStringLiteral(attributeDescriptor.Name)
-                               .WriteParameterSeparator()
-                               .Write(valueAccessor)
-                               .WriteEndMethodInvocation();
+                        _writer
+                            .WriteStartInstanceMethodInvocation(
+                                ExecutionContextVariableName,
+                                _tagHelperContext.ExecutionContextAddTagHelperAttributeMethodName)
+                            .WriteStringLiteral(attributeDescriptor.Name)
+                            .WriteParameterSeparator()
+                            .Write(valueAccessor)
+                            .WriteEndMethodInvocation();
                     }
                     else
                     {
-                        // The attribute value has already been recorded, lets retrieve it from the stored value accessors.
-                        _writer.Write(htmlAttributeValues[attributeDescriptor.Name])
-                               .WriteLine(";");
+                        // The attribute value has already been recorded, lets retrieve it from the stored value
+                        // accessors.
+                        _writer
+                            .WriteStartAssignment(valueAccessor)
+                            .Write(htmlAttributeValues[attributeDescriptor.Name])
+                            .WriteLine(";");
                     }
                 }
             }
@@ -414,34 +436,30 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         private void RenderBufferedAttributeValue(TagHelperAttributeDescriptor attributeDescriptor)
         {
+            // Pass complexValue: false because variable.ToString() replaces any original complexity in the expression.
             RenderAttributeValue(
                 attributeDescriptor,
                 valueRenderer: (writer) =>
                 {
                     RenderBufferedAttributeValueAccessor(writer);
-                });
+                },
+                complexValue: false);
         }
 
-        private void RenderRawAttributeValue(string value,
-                                             SourceLocation documentLocation,
-                                             TagHelperAttributeDescriptor attributeDescriptor)
+        private void RenderRawAttributeValue(
+            Chunk attributeValueChunk,
+            TagHelperAttributeDescriptor attributeDescriptor,
+            bool isPlainTextValue)
         {
             RenderAttributeValue(
                 attributeDescriptor,
                 valueRenderer: (writer) =>
                 {
-                    if (_context.Host.DesignTimeMode)
-                    {
-                        using (new CSharpLineMappingWriter(writer, documentLocation, value.Length))
-                        {
-                            writer.Write(value);
-                        }
-                    }
-                    else
-                    {
-                        writer.Write(value);
-                    }
-                });
+                    var visitor =
+                        new CSharpTagHelperAttributeValueVisitor(writer, _context, attributeDescriptor.TypeName);
+                    visitor.Accept(attributeValueChunk);
+                },
+                complexValue: !isPlainTextValue);
         }
 
         private void RenderQuotedAttributeValue(string value, TagHelperAttributeDescriptor attributeDescriptor)
@@ -451,7 +469,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 valueRenderer: (writer) =>
                 {
                     writer.WriteStringLiteral(value);
-                });
+                },
+                complexValue: false);
         }
 
         private void BuildBufferedWritingScope(Chunk htmlAttributeChunk)
@@ -502,9 +521,15 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         }
 
         private void RenderAttributeValue(TagHelperAttributeDescriptor attributeDescriptor,
-                                          Action<CSharpCodeWriter> valueRenderer)
+                                          Action<CSharpCodeWriter> valueRenderer,
+                                          bool complexValue)
         {
-            AttributeValueCodeRenderer.RenderAttributeValue(attributeDescriptor, _writer, _context, valueRenderer);
+            AttributeValueCodeRenderer.RenderAttributeValue(
+                attributeDescriptor,
+                _writer,
+                _context,
+                valueRenderer,
+                complexValue);
         }
 
         private void RenderBufferedAttributeValueAccessor(CSharpCodeWriter writer)

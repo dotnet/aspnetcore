@@ -70,7 +70,11 @@ namespace TestOutput
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
             __tagHelperExecutionContext.Add(__InputTagHelper2);
             __InputTagHelper2.Type = __InputTagHelper.Type;
+#line 7 "BasicTagHelpers.cshtml"
             __InputTagHelper2.Checked = true;
+
+#line default
+#line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());

@@ -66,6 +66,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
                 attributes[attribute.Key] = new ChunkBlock
                 {
+                    Association = first?.Association,
                     Children = chunks,
                     Start = first == null ? SourceLocation.Zero : first.Start
                 };

@@ -29,7 +29,11 @@ namespace TestOutput
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test");
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
-            __PTagHelper.Age = 1337;
+#line 3 "SingleTagHelper.cshtml"
+         __PTagHelper.Age = 1337;
+
+#line default
+#line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __PTagHelper.Age);
             __tagHelperExecutionContext.AddHtmlAttribute("class", "Hello World");
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;

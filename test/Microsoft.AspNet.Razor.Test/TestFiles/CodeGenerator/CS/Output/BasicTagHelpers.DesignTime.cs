@@ -42,7 +42,11 @@ namespace TestOutput
             __InputTagHelper.Type = "checkbox";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
             __InputTagHelper2.Type = __InputTagHelper.Type;
+#line 7 "BasicTagHelpers.cshtml"
             __InputTagHelper2.Checked = true;
+
+#line default
+#line hidden
         }
         #pragma warning restore 1998
     }
