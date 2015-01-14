@@ -18,7 +18,9 @@ namespace Asp
     >
     {
         #line hidden
+        #pragma warning disable 0414
         private System.IO.TextWriter __tagHelperStringValueBuffer = null;
+        #pragma warning restore 0414
         private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext = null;
         private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperRunner();
         private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperScopeManager __tagHelperScopeManager = new Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperScopeManager();
