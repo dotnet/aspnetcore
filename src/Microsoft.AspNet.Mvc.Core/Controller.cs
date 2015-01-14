@@ -1030,6 +1030,57 @@ namespace Microsoft.AspNet.Mvc
                 predicate);
         }
 
+        /// <summary>
+        /// Validates the specified <paramref name="model"/> instance.
+        /// </summary>
+        /// <param name="model">The model to validate.</param>
+        /// <returns><c>true</c> if the <see cref="ModelState"/> is valid; <c>false</c> otherwise. </returns>
+        [NonAction]
+        public virtual bool TryValidateModel([NotNull] object model)
+        {
+            return TryValidateModel(model, prefix: null);
+        }
+
+        /// <summary>
+        /// Validates the specified <paramref name="model"/> instance.
+        /// </summary>
+        /// <param name="model">The model to validate.</param>
+        /// <param name="prefix">The key to use when looking up information in <see cref="ModelState"/>.
+        /// </param>
+        /// <returns><c>true</c> if the <see cref="ModelState"/> is valid;<c>false</c> otherwise. </returns>
+        [NonAction]
+        public virtual bool TryValidateModel([NotNull] object model, string prefix)
+        {
+            if (BindingContext == null)
+            {
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(BindingContext),
+                    typeof(Controller).FullName);
+                throw new InvalidOperationException(message);
+            }
+
+            var modelMetadata = MetadataProvider.GetMetadataForType(
+               modelAccessor: () => model,
+               modelType: model.GetType());
+
+            var validationContext = new ModelValidationContext(
+                MetadataProvider,
+                BindingContext.ValidatorProvider,
+                ModelState,
+                modelMetadata,
+                containerMetadata: null);
+
+            var modelName = prefix ?? string.Empty;
+
+            var validationNode = new ModelValidationNode(modelMetadata, modelName)
+            {
+                ValidateAllProperties = true
+            };
+            validationNode.Validate(validationContext);
+
+            return ModelState.IsValid;
+        }
+
         public void Dispose()
         {
             Dispose(disposing: true);

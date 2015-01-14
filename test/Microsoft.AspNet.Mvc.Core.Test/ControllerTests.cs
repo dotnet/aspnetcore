@@ -1237,6 +1237,101 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.True(controller.DisposeCalled);
         }
 
+        [Fact]
+        public void TryValidateModelWithValidModel_ReturnsTrue()
+        {
+            // Arrange
+            var binder = new Mock<IModelBinder>();
+            var controller = GetController(binder.Object, provider: null);
+            controller.BindingContext.ValidatorProvider = Mock.Of<IModelValidatorProvider>();
+            var model = new TryValidateModelModel();
+
+            // Act
+            var result = controller.TryValidateModel(model);
+
+            // Assert
+            Assert.True(result);
+            Assert.True(controller.ModelState.IsValid);
+        }
+
+        [Fact]
+        public void TryValidateModelWithInvalidModelWithPrefix_ReturnsFalse()
+        {
+            // Arrange
+            var model = new TryValidateModelModel();
+            var validationResult = new []
+            {
+                new ModelValidationResult(string.Empty, "Out of range!")
+            };
+
+            var validator1 = new Mock<IModelValidator>();
+
+            validator1.Setup(v => v.Validate(It.IsAny<ModelValidationContext>()))
+               .Returns(validationResult);
+
+            var provider = new Mock<IModelValidatorProvider>();
+            provider.Setup(v => v.GetValidators(It.IsAny<ModelMetadata>()))
+                .Returns(new[] { validator1.Object });
+
+            var binder = new Mock<IModelBinder>();
+            var controller = GetController(binder.Object, provider: null);
+            controller.BindingContext.ValidatorProvider = provider.Object;
+            
+            // Act
+            var result = controller.TryValidateModel(model, "Prefix");
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(1, controller.ModelState.Count);
+            var error = Assert.Single(controller.ModelState["Prefix.IntegerProperty"].Errors);
+            Assert.Equal("Out of range!", error.ErrorMessage);
+        }
+
+        [Fact]
+        public void TryValidateModelWithInvalidModelNoPrefix_ReturnsFalse()
+        {
+            // Arrange
+            var model = new TryValidateModelModel();
+            var validationResult = new[]
+            {
+                new ModelValidationResult(string.Empty, "Out of range!")
+            };
+
+            var validator1 = new Mock<IModelValidator>();
+
+            validator1.Setup(v => v.Validate(It.IsAny<ModelValidationContext>()))
+               .Returns(validationResult);
+
+            var provider = new Mock<IModelValidatorProvider>();
+            provider.Setup(v => v.GetValidators(It.IsAny<ModelMetadata>()))
+                .Returns(new[] { validator1.Object });
+
+            var binder = new Mock<IModelBinder>();
+            var controller = GetController(binder.Object, provider: null);
+            controller.BindingContext.ValidatorProvider = provider.Object;
+
+            // Act
+            var result = controller.TryValidateModel(model);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(1, controller.ModelState.Count);
+            var error = Assert.Single(controller.ModelState["IntegerProperty"].Errors);
+            Assert.Equal("Out of range!", error.ErrorMessage);
+        }
+
+        [Fact]
+        public void TryValidateModelEmptyBindingContextThrowsException()
+        {
+            // Arrange
+            var controller = new Controller();
+            var model = new TryValidateModelModel();
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => controller.TryValidateModel(model));
+            Assert.Equal("The 'BindingContext' property of 'Microsoft.AspNet.Mvc.Controller' must not be null.", exception.Message);
+        }
+
         private static Controller GetController(IModelBinder binder, IValueProvider provider)
         {
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
@@ -1285,6 +1380,11 @@ namespace Microsoft.AspNet.Mvc.Test
             public string Street { get; set; }
             public string City { get; set; }
             public int Zip { get; set; }
+        }
+
+        private class TryValidateModelModel
+        {
+            public int IntegerProperty { get; set; }
         }
 
         private class DisposableController : Controller
