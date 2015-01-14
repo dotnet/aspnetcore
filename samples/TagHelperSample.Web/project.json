@@ -9,6 +9,7 @@
     "dependencies": {
         "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
+        "Microsoft.AspNet.Mvc.Xml": "6.0.0-*",
         "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",

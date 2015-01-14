@@ -16,7 +16,6 @@
     "aspnet50": {
       "frameworkAssemblies": {
         "System.ComponentModel.DataAnnotations": "",
-        "System.Xml": "",
         "System.Runtime.Serialization": ""
       }
     },
@@ -26,9 +25,7 @@
         "System.ComponentModel.Annotations": "4.0.10-beta-*",
         "System.ComponentModel.TypeConverter": "4.0.0-beta-*",
         "System.Reflection.TypeExtensions": "4.0.0-beta-*",
-        "System.Runtime.Serialization.Primitives": "4.0.0-beta-*",
-        "System.Runtime.Serialization.Xml": "4.0.10-beta-*",
-        "System.Xml.XmlSerializer": "4.0.10-beta-*"
+        "System.Runtime.Serialization.Primitives": "4.0.0-beta-*"
       }
     }
   }

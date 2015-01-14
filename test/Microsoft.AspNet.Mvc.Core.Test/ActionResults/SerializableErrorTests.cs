@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Xml;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -86,61 +87,6 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(0, serializableError.Count);
-        }
-
-        [Fact]
-        public void GetSchema_Returns_Null()
-        {
-            // Arrange
-            var modelState = new ModelStateDictionary();
-            // To make modelState invalid.
-            modelState.AddModelError("key1", "Test Error 1");
-            var serializableError = new SerializableError(modelState);
-
-            // Act & Assert
-            Assert.Null(serializableError.GetSchema());
-        }
-
-        [Fact]
-        public void WriteXml_WritesValidXml()
-        {
-            // Arrange
-            var modelState = new ModelStateDictionary();
-            modelState.AddModelError("key1", "Test Error 1");
-            modelState.AddModelError("key1", "Test Error 2");
-            modelState.AddModelError("key2", "Test Error 3");
-            var serializableError = new SerializableError(modelState);
-            var outputStream = new MemoryStream();
-
-            // Act
-            using (var xmlWriter = XmlWriter.Create(outputStream))
-            {
-                var dataContractSerializer = new DataContractSerializer(typeof(SerializableError));
-                dataContractSerializer.WriteObject(xmlWriter, serializableError);
-            }
-            outputStream.Position = 0;
-            var res = new StreamReader(outputStream, Encoding.UTF8).ReadToEnd();
-
-            // Assert
-            Assert.Equal("<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<Error><key1>Test Error 1 Test Error 2</key1><key2>Test Error 3</key2></Error>", res);
-        }
-
-        [Fact]
-        public void ReadXml_ReadsSerializableErrorXml()
-        {
-            // Arrange
-            var serializableErrorXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<Error><key1>Test Error 1 Test Error 2</key1><key2>Test Error 3</key2></Error>";
-            var serializer = new DataContractSerializer(typeof(SerializableError));
-
-            // Act
-            var errors = (SerializableError)serializer.ReadObject(
-                new MemoryStream(Encoding.UTF8.GetBytes(serializableErrorXml)));
-
-            // Assert
-            Assert.Equal("Test Error 1 Test Error 2", errors["key1"]);
-            Assert.Equal("Test Error 3", errors["key2"]);
         }
     }
 }

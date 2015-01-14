@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNet.Mvc.Xml;
 using Moq;
 using Xunit;
 
@@ -242,7 +243,7 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
             Assert.True(outputFormatterContext.ActionContext.HttpContext.Response.Body.CanRead);
         }
-
+        
         public static IEnumerable<object[]> TypesForCanWriteResult
         {
             get

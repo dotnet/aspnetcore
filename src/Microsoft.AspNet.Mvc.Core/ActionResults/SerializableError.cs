@@ -4,9 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
-using System.Xml.Schema;
-using System.Xml.Serialization;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
@@ -16,8 +13,7 @@ namespace Microsoft.AspNet.Mvc
     /// Defines a serializable container for storing ModelState information.
     /// This information is stored as key/value pairs.
     /// </summary>
-    [XmlRoot("Error")]
-    public sealed class SerializableError : Dictionary<string, object>, IXmlSerializable
+    public sealed class SerializableError : Dictionary<string, object>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SerializableError"/> class.
@@ -53,51 +49,6 @@ namespace Microsoft.AspNet.Mvc
 
                     Add(key, errorMessages);
                 }
-            }
-        }
-
-        // <inheritdoc />
-        public XmlSchema GetSchema()
-        {
-            return null;
-        }
-
-        // <inheritdoc />
-        public void ReadXml(XmlReader reader)
-        {
-            if (reader.IsEmptyElement)
-            {
-                reader.Read();
-                return;
-            }
-
-            reader.ReadStartElement();
-            while (reader.NodeType != XmlNodeType.EndElement)
-            {
-                var key = XmlConvert.DecodeName(reader.LocalName);
-                var value = reader.ReadInnerXml();
-
-                Add(key, value);
-                reader.MoveToContent();
-            }
-
-            reader.ReadEndElement();
-        }
-
-        // <inheritdoc />
-        public void WriteXml(XmlWriter writer)
-        {
-            foreach (var keyValuePair in this)
-            {
-                var key = keyValuePair.Key;
-                var value = keyValuePair.Value;
-                writer.WriteStartElement(XmlConvert.EncodeLocalName(key));
-                if (value != null)
-                {
-                    writer.WriteValue(value);
-                }
-
-                writer.WriteEndElement();
             }
         }
     }

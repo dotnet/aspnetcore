@@ -4,6 +4,7 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Mvc" : "6.0.0-*",
+    "Microsoft.AspNet.Mvc.Xml" : "6.0.0-*",
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "Moq": "4.2.1312.1622",
     "xunit.runner.kre": "1.0.0-*"

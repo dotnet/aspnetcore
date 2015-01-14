@@ -249,38 +249,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task SerializableError_ReadTheReturnedXml()
-        {
-            // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
-
-            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                "<DummyClass xmlns=\"http://schemas.datacontract.org/2004/07/ActionResultsWebSite\">" +
-                "<SampleInt>20</SampleInt><SampleString>foo</SampleString></DummyClass>";
-
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Home/Index");
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
-            request.Content = new StringContent(input, Encoding.UTF8, "application/xml");
-
-            // Act
-            var response = await client.SendAsync(request);
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            // Deserializing Xml content
-            var serializer = new XmlSerializer(typeof(SerializableError));
-            var errors = (SerializableError)serializer.Deserialize(
-                new MemoryStream(Encoding.UTF8.GetBytes(responseContent)));
-
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal(
-                "<Error><test.SampleString>" + sampleStringError + "</test.SampleString></Error>",
-                responseContent);
-            Assert.Equal(sampleStringError, errors["test.SampleString"]);
-        }
-
-        [Fact]
         public async Task ContentResult_WritesContent_SetsDefaultContentTypeAndEncoding()
         {
             // Arrange

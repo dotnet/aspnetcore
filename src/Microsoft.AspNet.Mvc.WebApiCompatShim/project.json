@@ -13,12 +13,16 @@
     "frameworks": {
         "aspnet50": {
             "frameworkAssemblies": {
-                "System.Net.Http": "4.0.0.0"
+                "System.Net.Http": "",
+                "System.Xml": "",
+                "System.Runtime.Serialization": ""
             }
         },
         "aspnetcore50": {
             "dependencies": {
-                "System.Net.Http": "4.0.0-beta-*"
+                "System.Net.Http": "4.0.0-beta-*",
+                "System.Xml.XmlSerializer": "4.0.0-beta-*",
+                "System.Runtime.Serialization.Xml": "4.0.10-beta-*"
             }
         }
     }

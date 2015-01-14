@@ -14,8 +14,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class XmlSerializerInputFormatterTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("XmlSerializerWebSite");
-        private readonly Action<IApplicationBuilder> _app = new XmlSerializerWebSite.Startup().Configure;
+        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(XmlFormattersWebSite));
+        private readonly Action<IApplicationBuilder> _app = new XmlFormattersWebSite.Startup().Configure;
 
         [Fact]
         public async Task CheckIfXmlSerializerInputFormatterIsCalled()
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass><SampleInt>"
                 + sampleInputInt.ToString() + "</SampleInt></DummyClass>";
-            var content = new StringContent(input, Encoding.UTF8, "application/xml");
+            var content = new StringContent(input, Encoding.UTF8, "application/xml-xmlser");
 
             // Act
             var response = await client.PostAsync("http://localhost/Home/Index", content);
@@ -46,9 +46,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClas xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
-                "i:type=\"DerivedDummyClass\" xmlns=\"http://schemas.datacontract.org/2004/07/XmlSerializerWebSite\">" +
+                "i:type=\"DerivedDummyClass\" xmlns=\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite\">" +
                 "<SampleInt>" + sampleInputInt.ToString() + "</SampleInt></DummyClass>";
-            var content = new StringContent(input, Encoding.UTF8, "application/xml");
+            var content = new StringContent(input, Encoding.UTF8, "application/xml-xmlser");
 
             // Act
             var response = await client.PostAsync("http://localhost/Home/Index", content);

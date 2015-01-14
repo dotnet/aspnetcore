@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace XmlSerializerWebSite
+namespace XmlFormattersWebSite
 {
     public class HomeController : Controller
     {

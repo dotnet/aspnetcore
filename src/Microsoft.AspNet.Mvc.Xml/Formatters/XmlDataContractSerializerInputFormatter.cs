@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Xml
 {
     /// <summary>
     /// This class handles deserialization of input XML data
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>The <see cref="XmlObjectSerializer"/> used during deserialization.</returns>
         protected virtual XmlObjectSerializer CreateDataContractSerializer(Type type)
         {
-            return new DataContractSerializer(type);
+            return new DataContractSerializer(SerializableErrorWrapper.CreateSerializableType(type));
         }
 
         private object GetDefaultValueForType(Type modelType)
@@ -127,7 +127,9 @@ namespace Microsoft.AspNet.Mvc
             using (var xmlReader = CreateXmlReader(new DelegatingStream(request.Body)))
             {
                 var xmlSerializer = CreateDataContractSerializer(type);
-                return Task.FromResult(xmlSerializer.ReadObject(xmlReader));
+                var deserializedObject = xmlSerializer.ReadObject(xmlReader);
+                deserializedObject = SerializableErrorWrapper.UnwrapSerializableErrorObject(type, deserializedObject);
+                return Task.FromResult(deserializedObject);
             }
         }
     }
