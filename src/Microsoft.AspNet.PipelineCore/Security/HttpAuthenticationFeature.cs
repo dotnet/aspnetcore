@@ -4,7 +4,7 @@
 using System.Security.Claims;
 using Microsoft.AspNet.HttpFeature.Security;
 
-namespace Microsoft.AspNet.PipelineCore.Security
+namespace Microsoft.AspNet.Http.Core.Security
 {
     public class HttpAuthenticationFeature : IHttpAuthenticationFeature
     {

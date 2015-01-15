@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     public interface IFormFeature
     {

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.HttpFeature.Security;
 
-namespace Microsoft.AspNet.PipelineCore.Security
+namespace Microsoft.AspNet.Http.Core.Security
 {
     public class AuthenticateContext : IAuthenticateContext
     {

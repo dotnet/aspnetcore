@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.HttpFeature.Security;
-using Microsoft.AspNet.PipelineCore.Security;
+using Microsoft.AspNet.Http.Core.Security;
 
 namespace Microsoft.AspNet.Owin
 {

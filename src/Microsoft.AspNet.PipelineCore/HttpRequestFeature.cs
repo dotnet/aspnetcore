@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.HttpFeature;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
-    public class DefaultHttpRequestFeature : IHttpRequestFeature
+    public class HttpRequestFeature : IHttpRequestFeature
     {
-        public DefaultHttpRequestFeature()
+        public HttpRequestFeature()
         {
             Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
             Body = Stream.Null;

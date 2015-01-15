@@ -6,7 +6,7 @@ using Microsoft.AspNet.HttpFeature;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.PipelineCore.Tests
+namespace Microsoft.AspNet.Http.Core.Tests
 {
     public class QueryFeatureTests
     {

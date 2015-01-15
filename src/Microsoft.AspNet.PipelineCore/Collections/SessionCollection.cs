@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpFeature;
 
-namespace Microsoft.AspNet.PipelineCore.Collections
+namespace Microsoft.AspNet.Http.Core.Collections
 {
     public class SessionCollection : ISessionCollection
     {

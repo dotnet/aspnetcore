@@ -6,7 +6,7 @@ using Xunit;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

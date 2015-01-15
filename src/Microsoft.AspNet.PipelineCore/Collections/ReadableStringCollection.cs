@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.PipelineCore.Collections
+namespace Microsoft.AspNet.Http.Core.Collections
 {
     /// <summary>
     /// Accessors for query, forms, etc.

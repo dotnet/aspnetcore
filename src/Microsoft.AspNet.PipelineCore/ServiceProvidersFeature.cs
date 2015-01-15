@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     public class ServiceProvidersFeature : IServiceProvidersFeature
     {

@@ -5,9 +5,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.PipelineCore.Infrastructure;
+using Microsoft.AspNet.Http.Core.Infrastructure;
 
-namespace Microsoft.AspNet.PipelineCore.Collections
+namespace Microsoft.AspNet.Http.Core.Collections
 {
     public class RequestCookiesCollection : IReadableStringCollection
     {

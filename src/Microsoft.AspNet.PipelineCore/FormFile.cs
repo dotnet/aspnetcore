@@ -4,7 +4,7 @@
 using System.IO;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     public class FormFile : IFormFile
     {

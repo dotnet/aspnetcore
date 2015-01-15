@@ -4,7 +4,7 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
 using Xunit;
 
 namespace Microsoft.AspNet.Http.Extensions

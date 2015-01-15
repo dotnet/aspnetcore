@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     /// <summary>
     /// A Stream that wraps another stream starting at a certain offset and reading for the given length.

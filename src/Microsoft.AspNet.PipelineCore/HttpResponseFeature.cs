@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.HttpFeature;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
-    public class DefaultHttpResponseFeature : IHttpResponseFeature
+    public class HttpResponseFeature : IHttpResponseFeature
     {
-	    public DefaultHttpResponseFeature()
+	    public HttpResponseFeature()
 	    {
             StatusCode = 200;
             Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);

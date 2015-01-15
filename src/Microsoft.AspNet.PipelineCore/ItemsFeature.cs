@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     public class ItemsFeature : IItemsFeature
     {

@@ -6,7 +6,7 @@ using System.IO;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.WebUtilities;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     public static class BufferingHelper
     {

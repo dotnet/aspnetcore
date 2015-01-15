@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.PipelineCore.Collections
+namespace Microsoft.AspNet.Http.Core.Collections
 {
     public class FormFileCollection : List<IFormFile>, IFormFileCollection
     {

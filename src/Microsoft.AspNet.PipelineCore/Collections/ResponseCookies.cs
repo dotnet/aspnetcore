@@ -8,7 +8,7 @@ using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Infrastructure;
 
-namespace Microsoft.AspNet.PipelineCore.Collections
+namespace Microsoft.AspNet.Http.Core.Collections
 {
     /// <summary>
     /// A wrapper for the response Set-Cookie header

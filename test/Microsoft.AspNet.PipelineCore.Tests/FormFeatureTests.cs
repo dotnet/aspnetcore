@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.WebUtilities;
 using Xunit;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     public class FormFeatureTests
     {

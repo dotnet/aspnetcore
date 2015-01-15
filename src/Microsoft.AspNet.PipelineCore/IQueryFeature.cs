@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     public interface IQueryFeature
     {

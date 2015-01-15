@@ -4,7 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     public class ItemsDictionary : IDictionary<object, object>
     {

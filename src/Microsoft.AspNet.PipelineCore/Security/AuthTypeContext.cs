@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.HttpFeature.Security;
 
-namespace Microsoft.AspNet.PipelineCore.Security
+namespace Microsoft.AspNet.Http.Core.Security
 {
     public class AuthTypeContext : IAuthTypeContext
     {

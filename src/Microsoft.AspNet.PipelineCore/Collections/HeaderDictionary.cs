@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.PipelineCore.Infrastructure;
+using Microsoft.AspNet.Http.Core.Infrastructure;
 
-namespace Microsoft.AspNet.PipelineCore.Collections
+namespace Microsoft.AspNet.Http.Core.Collections
 {
     /// <summary>
     /// Represents a wrapper for owin.RequestHeaders and owin.ResponseHeaders.

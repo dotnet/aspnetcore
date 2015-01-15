@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.PipelineCore.Collections;
+using Microsoft.AspNet.Http.Core.Collections;
 using Xunit;
 
-namespace Microsoft.AspNet.PipelineCore.Tests
+namespace Microsoft.AspNet.Http.Core.Tests
 {
     public class HeaderDictionaryTests
     {

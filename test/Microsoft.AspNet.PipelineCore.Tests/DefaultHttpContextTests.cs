@@ -12,7 +12,7 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.HttpFeature;
 using Xunit;
 
-namespace Microsoft.AspNet.PipelineCore.Tests
+namespace Microsoft.AspNet.Http.Core.Tests
 {
     public class DefaultHttpContextTests
     {

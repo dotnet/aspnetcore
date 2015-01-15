@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.HttpFeature;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     public class WebSocketAcceptContext : IWebSocketAcceptContext
     {

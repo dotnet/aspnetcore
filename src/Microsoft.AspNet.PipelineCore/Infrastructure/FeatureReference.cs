@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.FeatureModel;
 
-namespace Microsoft.AspNet.PipelineCore.Infrastructure
+namespace Microsoft.AspNet.Http.Core.Infrastructure
 {
     internal struct FeatureReference<T>
     {

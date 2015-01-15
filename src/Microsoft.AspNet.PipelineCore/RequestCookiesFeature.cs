@@ -7,10 +7,10 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.PipelineCore.Collections;
-using Microsoft.AspNet.PipelineCore.Infrastructure;
+using Microsoft.AspNet.Http.Core.Collections;
+using Microsoft.AspNet.Http.Core.Infrastructure;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     public class RequestCookiesFeature : IRequestCookiesFeature
     {

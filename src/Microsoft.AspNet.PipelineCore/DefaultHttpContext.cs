@@ -14,11 +14,11 @@ using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.AspNet.HttpFeature.Security;
-using Microsoft.AspNet.PipelineCore.Collections;
-using Microsoft.AspNet.PipelineCore.Infrastructure;
-using Microsoft.AspNet.PipelineCore.Security;
+using Microsoft.AspNet.Http.Core.Collections;
+using Microsoft.AspNet.Http.Core.Infrastructure;
+using Microsoft.AspNet.Http.Core.Security;
 
-namespace Microsoft.AspNet.PipelineCore
+namespace Microsoft.AspNet.Http.Core
 {
     public class DefaultHttpContext : HttpContext
     {
@@ -38,8 +38,8 @@ namespace Microsoft.AspNet.PipelineCore
         public DefaultHttpContext()
             : this(new FeatureCollection())
         {
-            SetFeature<IHttpRequestFeature>(new DefaultHttpRequestFeature());
-            SetFeature<IHttpResponseFeature>(new DefaultHttpResponseFeature());
+            SetFeature<IHttpRequestFeature>(new HttpRequestFeature());
+            SetFeature<IHttpResponseFeature>(new HttpResponseFeature());
         }
 
         public DefaultHttpContext(IFeatureCollection features)
