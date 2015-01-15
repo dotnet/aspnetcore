@@ -21,8 +21,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.PipelineCore;
 using Microsoft.Net.Http.Server;
 using Xunit;
 
