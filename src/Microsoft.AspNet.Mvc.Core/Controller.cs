@@ -16,7 +16,7 @@ using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class Controller : IActionFilter, IAsyncActionFilter, IOrderedFilter, IDisposable
+    public class Controller : IActionFilter, IAsyncActionFilter, IDisposable
     {
         private DynamicViewData _viewBag;
         private ViewDataDictionary _viewData;
@@ -134,15 +134,6 @@ namespace Microsoft.AspNet.Mvc
                 }
 
                 return _viewBag;
-            }
-        }
-
-        int IOrderedFilter.Order
-        {
-            get
-            {
-                // Controller-filter methods run farthest the action by default.
-                return int.MinValue;
             }
         }
 

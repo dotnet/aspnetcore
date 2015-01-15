@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Description;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Framework.Logging;
@@ -139,6 +140,21 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             if (apiGroupName != null)
             {
                 controllerModel.ApiExplorer.GroupName = apiGroupName.GroupName;
+            }
+
+            // Controllers can implement action filter and result filter interfaces. We add
+            // a special delegating filter implementation to the pipeline to handle it.
+            //
+            // This is needed because filters are instantiated before the controller.
+            if (typeof(IAsyncActionFilter).GetTypeInfo().IsAssignableFrom(typeInfo) ||
+                typeof(IActionFilter).GetTypeInfo().IsAssignableFrom(typeInfo))
+            {
+                controllerModel.Filters.Add(new ControllerActionFilter());
+            }
+            if (typeof(IAsyncResultFilter).GetTypeInfo().IsAssignableFrom(typeInfo) ||
+                typeof(IResultFilter).GetTypeInfo().IsAssignableFrom(typeInfo))
+            {
+                controllerModel.Filters.Add(new ControllerResultFilter());
             }
 
             return controllerModel;

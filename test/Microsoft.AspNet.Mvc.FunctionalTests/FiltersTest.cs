@@ -18,6 +18,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly IServiceProvider _services = TestHelper.CreateServices("FiltersWebSite");
         private readonly Action<IApplicationBuilder> _app = new FiltersWebSite.Startup().Configure;
 
+        // A controller can only be an action filter and result filter, so we don't have entries
+        // for the other filter types implemented by the controller.
         [Fact]
         public async Task ListAllFilters()
         {
@@ -27,11 +29,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var expected = new string[]
             {
-                "Controller Override - OnAuthorization",
                 "Global Authorization Filter - OnAuthorization",
                 "On Controller Authorization Filter - OnAuthorization",
                 "Authorize Filter On Action - OnAuthorization",
-                "Controller Override Resource Filter - OnResourceExecuting",
                 "Global Resource Filter - OnResourceExecuting",
                 "Controller Resource Filter - OnResourceExecuting",
                 "Action Resource Filter - OnResourceExecuting",
@@ -55,7 +55,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 "Action Resource Filter - OnResourceExecuted",
                 "Controller Resource Filter - OnResourceExecuted",
                 "Global Resource Filter - OnResourceExecuted",
-                "Controller Override Resource Filter - OnResourceExecuted",
             };
 
             // Act
@@ -336,7 +335,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("GlobalExceptionFilter.OnException", await response.Content.ReadAsStringAsync());
         }
 
-        // Controller Override, Action, Controller, and a Global Exception filters are present.
+        // Action, Controller, and a Global Exception filters are present.
         // Verifies they are executed in the above mentioned order.
         [Fact]
         public async Task ExceptionFilter_Scope()
@@ -351,7 +350,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(
-                "OnException implemented in Controller, " +
                 "GlobalExceptionFilter.OnException, " +
                 "ControllerExceptionFilter.OnException, " +
                 "Action Exception Filter",

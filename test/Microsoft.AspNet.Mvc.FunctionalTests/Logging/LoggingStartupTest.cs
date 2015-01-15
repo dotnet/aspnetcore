@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using LoggingWebSite;
 using LoggingWebSite.Controllers;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
@@ -79,10 +80,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Empty(controller.ApiExplorer.IsVisible);
             Assert.Empty(controller.ApiExplorer.GroupName.ToString());
             Assert.Empty(controller.Attributes);
-            Assert.Empty(controller.Filters);
             Assert.Empty(controller.ActionConstraints);
             Assert.Empty(controller.RouteConstraints);
             Assert.Empty(controller.AttributeRoutes);
+
+            var filter = Assert.Single(controller.Filters);
+            Assert.Equal(typeof(ControllerActionFilter).AssemblyQualifiedName, (string)filter.FilterMetadataType);
         }
 
         [Fact]
@@ -96,7 +99,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             dynamic action = logs.First().State;
             Assert.Equal("Index", action.Name.ToString());
             Assert.Empty(action.Parameters);
-            Assert.Empty(action.FilterDescriptors);
             Assert.Equal("action", action.RouteConstraints[0].RouteKey.ToString());
             Assert.Equal("controller", action.RouteConstraints[1].RouteKey.ToString());
             Assert.Empty(action.RouteValueDefaults);
@@ -104,6 +106,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Empty(action.HttpMethods.ToString());
             Assert.Empty(action.Properties);
             Assert.Equal("Home", action.ControllerName.ToString());
+
+            var filter = Assert.Single(action.FilterDescriptors).Filter;
+            Assert.Equal(typeof(ControllerActionFilter).AssemblyQualifiedName, (string)filter.FilterMetadataType);
         }
 
         private async Task<IEnumerable<LogInfoDto>> GetLogsByDataTypeAsync<T>()
