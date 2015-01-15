@@ -50,21 +50,16 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public async override Task InvokeAsync()
+        protected override object CreateInstance()
         {
             // The binding context is used in activation
             Debug.Assert(ActionBindingContext != null);
-            var controller = _controllerFactory.CreateController(ActionContext);
+            return _controllerFactory.CreateController(ActionContext);
+        }
 
-            try
-            {
-                ActionContext.Controller = controller;
-                await base.InvokeAsync();
-            }
-            finally
-            {
-                _controllerFactory.ReleaseController(ActionContext.Controller);
-            }
+        protected override void ReleaseInstance(object instance)
+        {
+            _controllerFactory.ReleaseController(instance);
         }
 
         protected override async Task<IActionResult> InvokeActionAsync(ActionExecutingContext actionExecutingContext)
@@ -72,7 +67,7 @@ namespace Microsoft.AspNet.Mvc
             var actionMethodInfo = _descriptor.MethodInfo;
             var actionReturnValue = await ControllerActionExecutor.ExecuteAsync(
                 actionMethodInfo,
-                ActionContext.Controller,
+                actionExecutingContext.Controller,
                 actionExecutingContext.ActionArguments);
 
             var actionResult = CreateActionResult(

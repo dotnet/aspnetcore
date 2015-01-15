@@ -37,7 +37,6 @@ namespace Microsoft.AspNet.Mvc
                 _serviceProvider,
                 actionDescriptor.ControllerTypeInfo.AsType());
 
-            actionContext.Controller = controller;
             _controllerActivator.Activate(controller, actionContext);
 
             return controller;

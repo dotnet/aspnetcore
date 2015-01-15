@@ -15,13 +15,17 @@ namespace Microsoft.AspNet.Mvc
         public ResultExecutedContext(
             [NotNull] ActionContext actionContext,
             [NotNull] IList<IFilter> filters,
-            [NotNull] IActionResult result)
+            [NotNull] IActionResult result,
+            object controller)
             : base(actionContext, filters)
         {
             Result = result;
+            Controller = controller;
         }
 
         public virtual bool Canceled { get; set; }
+
+        public virtual object Controller { get; }
 
         public virtual Exception Exception
         {

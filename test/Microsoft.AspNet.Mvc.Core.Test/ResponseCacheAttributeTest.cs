@@ -236,7 +236,8 @@ namespace Microsoft.AspNet.Mvc
             return new ActionExecutingContext(
                 new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
                 filters ?? new List<IFilter>(),
-                new Dictionary<string, object>());
+                new Dictionary<string, object>(),
+                new object());
         }
     }
 }

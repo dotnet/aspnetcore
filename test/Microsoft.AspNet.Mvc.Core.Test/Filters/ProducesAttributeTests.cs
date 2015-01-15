@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
         private static ResultExecutedContext CreateResultExecutedContext(ResultExecutingContext context)
         {
-            return new ResultExecutedContext(context, context.Filters, context.Result);
+            return new ResultExecutedContext(context, context.Filters, context.Result, context.Controller);
         }
 
         private static ResultExecutingContext CreateResultExecutingContext(IFilter filter)
@@ -70,7 +70,8 @@ namespace Microsoft.AspNet.Mvc.Test
             return new ResultExecutingContext(
                 CreateActionContext(),
                 new IFilter[] { filter, },
-                new ObjectResult("Some Value"));
+                new ObjectResult("Some Value"),
+                controller: new object());
         }
 
         private static ActionContext CreateActionContext()

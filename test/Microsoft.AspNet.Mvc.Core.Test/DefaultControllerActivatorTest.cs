@@ -29,10 +29,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                        .Returns(services);
             var routeContext = new RouteContext(httpContext.Object);
             var controller = new TestController();
-            var context = new ActionContext(routeContext, new ActionDescriptor())
-            {
-                Controller = controller
-            };
+            var context = new ActionContext(routeContext, new ActionDescriptor());
             var activator = new DefaultControllerActivator();
 
             // Act
@@ -55,10 +52,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                        .Returns(services);
             var routeContext = new RouteContext(httpContext.Object);
             var controller = new TestController();
-            var context = new ActionContext(routeContext, new ActionDescriptor())
-            {
-                Controller = controller
-            };
+            var context = new ActionContext(routeContext, new ActionDescriptor());
             var activator = new DefaultControllerActivator();
 
             // Act
@@ -83,10 +77,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var routeContext = new RouteContext(httpContext.Object);
 
             var controller = new TestController();
-            var context = new ActionContext(routeContext, new ActionDescriptor())
-            {
-                Controller = controller
-            };
+            var context = new ActionContext(routeContext, new ActionDescriptor());
 
             var activator = new DefaultControllerActivator();
 
@@ -109,10 +100,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                        .Returns(services);
             var routeContext = new RouteContext(httpContext.Object);
             var controller = new TestController();
-            var context = new ActionContext(routeContext, new ActionDescriptor())
-            {
-                Controller = controller
-            };
+            var context = new ActionContext(routeContext, new ActionDescriptor());
             var activator = new DefaultControllerActivator();
 
             // Act
@@ -135,10 +123,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                        .Returns(services);
             var routeContext = new RouteContext(httpContext.Object);
             var controller = new TestController();
-            var context = new ActionContext(routeContext, new ActionDescriptor())
-            {
-                Controller = controller
-            };
+            var context = new ActionContext(routeContext, new ActionDescriptor());
             var activator = new DefaultControllerActivator();
 
             // Act

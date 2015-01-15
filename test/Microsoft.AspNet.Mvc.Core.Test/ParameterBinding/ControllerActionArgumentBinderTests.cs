@@ -190,12 +190,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 })
                 .Returns(Task.FromResult(result: false));
 
-            var actionContext = new ActionContext(
-                new RouteContext(Mock.Of<HttpContext>()),
-                actionDescriptor)
-            {
-                Controller = Mock.Of<object>(),
-            };
+            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()), actionDescriptor);
 
             var actionBindingContext = new ActionBindingContext()
             {
@@ -243,12 +238,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 })
                 .Returns(Task.FromResult(result: true));
 
-            var actionContext = new ActionContext(
-                new RouteContext(Mock.Of<HttpContext>()),
-                actionDescriptor)
-            {
-                Controller = Mock.Of<object>(),
-            };
+            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()), actionDescriptor);
 
             var actionBindingContext = new ActionBindingContext()
             {
@@ -303,12 +293,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 })
                 .Returns(Task.FromResult(result: true));
 
-            var actionContext = new ActionContext(
-                new RouteContext(Mock.Of<HttpContext>()),
-                actionDescriptor)
-            {
-                Controller = Mock.Of<object>(),
-            };
+            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()), actionDescriptor);
 
             var actionBindingContext = new ActionBindingContext()
             {

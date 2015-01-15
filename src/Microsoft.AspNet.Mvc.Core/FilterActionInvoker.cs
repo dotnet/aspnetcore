@@ -55,8 +55,6 @@ namespace Microsoft.AspNet.Mvc
             _modelValidatorProviderProvider = modelValidatorProviderProvider;
             _valueProviderFactoryProvider = valueProviderFactoryProvider;
             _actionBindingContextAccessor = actionBindingContextAccessor;
-
-            ActionBindingContext = new ActionBindingContext();
         }
 
         protected ActionContext ActionContext { get; private set; }
@@ -72,6 +70,21 @@ namespace Microsoft.AspNet.Mvc
                 _actionBindingContextAccessor.Value = value;
             }
         }
+
+        protected object Instance { get; private set; }
+
+        /// <summary>
+        /// Called to create an instance of an object which will act as the reciever of the action invocation.
+        /// </summary>
+        /// <returns>The constructed instance or <c>null</c>.</returns>
+        protected abstract object CreateInstance();
+
+        /// <summary>
+        /// Called to create an instance of an object which will act as the reciever of the action invocation.
+        /// </summary>
+        /// <param name="instance">The instance to release.</param>
+        /// <remarks>This method will not be called if <see cref="CreateInstance"/> returns <c>null</c>.</remarks>
+        protected abstract void ReleaseInstance(object instance);
 
         protected abstract Task<IActionResult> InvokeActionAsync(ActionExecutingContext actionExecutingContext);
 
@@ -95,7 +108,20 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
-            await InvokeAllResourceFiltersAsync();
+            try
+            {
+                await InvokeAllResourceFiltersAsync();
+            }
+            finally
+            {
+                // Release the instance after all filters have run. We don't need to surround
+                // Authorizations filters because the instance will be created much later than
+                // that.
+                if (Instance != null)
+                {
+                    ReleaseInstance(Instance);
+                }
+            }
 
             // We've reached the end of resource filters. If there's an unhandled exception on the context then
             // it should be thrown and middleware has a chance to handle it.
@@ -207,7 +233,7 @@ namespace Microsoft.AspNet.Mvc
                 if (item.FilterAsync != null)
                 {
                     await item.FilterAsync.OnResourceExecutionAsync(
-                        _resourceExecutingContext, 
+                        _resourceExecutingContext,
                         InvokeResourceFilterAsync);
 
                     if (_resourceExecutedContext == null)
@@ -384,23 +410,30 @@ namespace Microsoft.AspNet.Mvc
 
             Debug.Assert(_resourceExecutingContext != null);
 
-            Debug.Assert(ActionBindingContext != null);
+            ActionBindingContext = new ActionBindingContext();
             ActionBindingContext.InputFormatters = _resourceExecutingContext.InputFormatters;
             ActionBindingContext.ModelBinder = new CompositeModelBinder(_resourceExecutingContext.ModelBinders);
             ActionBindingContext.ValidatorProvider = new CompositeModelValidatorProvider(
                 _resourceExecutingContext.ValidatorProviders);
 
             var valueProviderFactoryContext = new ValueProviderFactoryContext(
-                ActionContext.HttpContext, 
+                ActionContext.HttpContext,
                 ActionContext.RouteData.Values);
 
             ActionBindingContext.ValueProvider = CompositeValueProvider.Create(
                 _resourceExecutingContext.ValueProviderFactories,
                 valueProviderFactoryContext);
 
+            Instance = CreateInstance();
+
             var arguments = await GetActionArgumentsAsync(ActionContext, ActionBindingContext);
 
-            _actionExecutingContext = new ActionExecutingContext(ActionContext, _filters, arguments);
+            _actionExecutingContext = new ActionExecutingContext(
+                ActionContext,
+                _filters,
+                arguments,
+                Instance);
+
             await InvokeActionFilterAsync();
         }
 
@@ -429,7 +462,10 @@ namespace Microsoft.AspNet.Mvc
                     if (_actionExecutedContext == null)
                     {
                         // If we get here then the filter didn't call 'next' indicating a short circuit
-                        _actionExecutedContext = new ActionExecutedContext(_actionExecutingContext, _filters)
+                        _actionExecutedContext = new ActionExecutedContext(
+                            _actionExecutingContext,
+                            _filters,
+                            Instance)
                         {
                             Canceled = true,
                             Result = _actionExecutingContext.Result,
@@ -443,7 +479,10 @@ namespace Microsoft.AspNet.Mvc
                     if (_actionExecutingContext.Result != null)
                     {
                         // Short-circuited by setting a result.
-                        _actionExecutedContext = new ActionExecutedContext(_actionExecutingContext, _filters)
+                        _actionExecutedContext = new ActionExecutedContext(
+                            _actionExecutingContext,
+                            _filters,
+                            Instance)
                         {
                             Canceled = true,
                             Result = _actionExecutingContext.Result,
@@ -457,7 +496,10 @@ namespace Microsoft.AspNet.Mvc
                 else
                 {
                     // All action filters have run, execute the action method.
-                    _actionExecutedContext = new ActionExecutedContext(_actionExecutingContext, _filters)
+                    _actionExecutedContext = new ActionExecutedContext(
+                        _actionExecutingContext,
+                        _filters,
+                        Instance)
                     {
                         Result = await InvokeActionAsync(_actionExecutingContext),
                     };
@@ -466,7 +508,10 @@ namespace Microsoft.AspNet.Mvc
             catch (Exception exception)
             {
                 // Exceptions thrown by the action method OR filters bubble back up through ActionExcecutedContext.
-                _actionExecutedContext = new ActionExecutedContext(_actionExecutingContext, _filters)
+                _actionExecutedContext = new ActionExecutedContext(
+                    _actionExecutingContext,
+                    _filters,
+                    Instance)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception)
                 };
@@ -478,7 +523,7 @@ namespace Microsoft.AspNet.Mvc
         {
             _cursor.SetStage(FilterStage.ResultFilters);
 
-            _resultExecutingContext = new ResultExecutingContext(ActionContext, _filters, result);
+            _resultExecutingContext = new ResultExecutingContext(ActionContext, _filters, result, Instance);
             await InvokeResultFilterAsync();
 
             Debug.Assert(_resultExecutingContext != null);
@@ -525,7 +570,8 @@ namespace Microsoft.AspNet.Mvc
                         _resultExecutedContext = new ResultExecutedContext(
                             _resultExecutingContext,
                             _filters,
-                            _resultExecutingContext.Result)
+                            _resultExecutingContext.Result,
+                            Instance)
                         {
                             Canceled = true,
                         };
@@ -536,7 +582,8 @@ namespace Microsoft.AspNet.Mvc
                         _resultExecutedContext = new ResultExecutedContext(
                             _resultExecutingContext,
                             _filters,
-                            _resultExecutingContext.Result)
+                            _resultExecutingContext.Result,
+                            Instance)
                         {
                             Canceled = true,
                         };
@@ -552,7 +599,8 @@ namespace Microsoft.AspNet.Mvc
                         _resultExecutedContext = new ResultExecutedContext(
                             _resultExecutingContext,
                             _filters,
-                            _resultExecutingContext.Result)
+                            _resultExecutingContext.Result,
+                            Instance)
                         {
                             Canceled = true,
                         };
@@ -570,7 +618,8 @@ namespace Microsoft.AspNet.Mvc
                     _resultExecutedContext = new ResultExecutedContext(
                         _resultExecutingContext,
                         _filters,
-                        _resultExecutingContext.Result);
+                        _resultExecutingContext.Result,
+                        Instance);
                 }
             }
             catch (Exception exception)
@@ -578,7 +627,8 @@ namespace Microsoft.AspNet.Mvc
                 _resultExecutedContext = new ResultExecutedContext(
                     _resultExecutingContext,
                     _filters,
-                    _resultExecutingContext.Result)
+                    _resultExecutingContext.Result,
+                    Instance)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception)
                 };
