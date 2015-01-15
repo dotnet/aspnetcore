@@ -1,12 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.HttpFeature.Security;
-using Microsoft.AspNet.PipelineCore.Security;
 
 namespace Microsoft.AspNet.Security
 {

@@ -4,7 +4,7 @@
     "dependencies": {
         "Microsoft.AspNet.RequestContainer": "1.0.0-*",
         "Microsoft.AspNet.HttpFeature": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+        "Microsoft.AspNet.Http.Core": "1.0.0-*",
         "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*"
     },
