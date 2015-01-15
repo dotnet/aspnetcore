@@ -33,10 +33,10 @@ default Configuration='${E("Configuration")}'
 #target-dir-clean target='clean'
   directory delete="${TARGET_DIR}"
 
-#build-clean target='clean'
+#build-clean target='clean' if='Directory.Exists("src")'
   k-clean each='var projectFile in Files.Include("src/**/project.json")'
 
-#build-compile target='compile'
+#build-compile target='compile' if='Directory.Exists("src")'
   k-build each='var projectFile in Files.Include("src/**/project.json")' configuration='${Configuration}'
   @{
     foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
@@ -45,7 +45,7 @@ default Configuration='${E("Configuration")}'
     }
   }
 
-#native-compile target='compile' if='!IsMono'
+#native-compile target='compile' if='!IsMono && Directory.Exists(Path.Combine(BASE_DIR, "src"))'
   var programFilesX86 = '${Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}'
   var msbuild = '${Path.Combine(programFilesX86, "MSBuild", "12.0", "Bin", "MSBuild.exe")}'
   var nativeProjects ='${Files.Include(Path.Combine(BASE_DIR, "src", "**", "*.vcxproj"))}'
@@ -124,7 +124,7 @@ default Configuration='${E("Configuration")}'
     E("KPM_restore_options"," --quiet");
   }
 
-#stylecop
+#stylecop if='Directory.Exists("src")'
   stylecop-setup
   stylecop-run each='var projectFile in Files.Include("src/**/project.json")'
 
