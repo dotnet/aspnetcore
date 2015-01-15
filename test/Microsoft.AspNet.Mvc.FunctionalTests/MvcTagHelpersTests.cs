@@ -33,7 +33,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         // Testing SelectTagHelper with Html.BeginForm 
         [InlineData("CreateWarehouse", null)] 
         // Testing the HTML helpers with FormTagHelper
-        [InlineData("EditWarehouse", null)] 
+        [InlineData("EditWarehouse", null)]
+        // Testing the EnvironmentTagHelper
+        [InlineData("Environment", null)]
         public async Task MvcTagHelpers_GeneratesExpectedResults(string action, string antiForgeryPath)
         {
             // Arrange

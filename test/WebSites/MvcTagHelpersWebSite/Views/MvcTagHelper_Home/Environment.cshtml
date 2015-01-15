@@ -1,0 +1,49 @@
+﻿@addtaghelper "Microsoft.AspNet.Mvc.TagHelpers"
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Environment</title>
+</head>
+<body>
+
+    <h2>Environment Tag Helper Test</h2>
+
+    <ul>
+        <environment names="Development">
+            <li>This will show</li>
+        </environment>
+        <environment names="development">
+            <li>This will show</li>
+        </environment>
+        <environment names="Development,  Production">
+            <li>This will show</li>
+        </environment>
+        <environment names="Production, Development">
+            <li>This will show</li>
+        </environment>
+        <environment names="Local,Development, Production">
+            <li>This will show</li>
+        </environment>
+        <environment names="Development,">
+            <li>This will show</li>
+        </environment>
+        <environment>
+            <li>This will show</li>
+        </environment>
+        <environment names="">
+            <li>This will show</li>
+        </environment>
+        <environment names=" ">
+            <li>This will show</li>
+        </environment>
+        <environment names="Production">
+            <li>FAIL: This should NOT show</li>
+        </environment>
+        <environment names="Staging,Production">
+            <li>FAIL: This should NOT show</li>
+        </environment>
+    </ul>
+</body>
+</html>

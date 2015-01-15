@@ -2,6 +2,10 @@
 @using TagHelperSample.Web.Models
 @model IList<User>
 
+<environment names="development">
+    Hello, you're in Development
+</environment>
+
 <h2>Index</h2>
 @if (Model != null && Model.Count() != 0)
 {

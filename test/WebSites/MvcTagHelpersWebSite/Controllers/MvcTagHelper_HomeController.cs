@@ -136,5 +136,10 @@ namespace MvcTagHelpersWebSite.Controllers
             };
             return View(warehouse);
         }
+
+        public IActionResult Environment()
+        {
+            return View();
+        }
     }
 }
