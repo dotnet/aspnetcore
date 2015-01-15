@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 
@@ -13,7 +12,6 @@ namespace Microsoft.AspNet.RequestContainer
         public RequestServicesContainer(
             HttpContext context,
             IServiceScopeFactory scopeFactory,
-            IHttpContextAccessor appContextAccessor,
             IServiceProvider appServiceProvider)
         {
             if (scopeFactory == null)
@@ -24,12 +22,6 @@ namespace Microsoft.AspNet.RequestContainer
             {
                 throw new ArgumentNullException(nameof(context));
             }
-            if (appContextAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(appContextAccessor));
-            }
-
-            AppContextAccessor = appContextAccessor;
 
             Context = context;
             PriorAppServices = context.ApplicationServices;
@@ -37,23 +29,15 @@ namespace Microsoft.AspNet.RequestContainer
 
             // Begin the scope
             Scope = scopeFactory.CreateScope();
-            ScopeContextAccessor = Scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
 
             Context.ApplicationServices = appServiceProvider;
             Context.RequestServices = Scope.ServiceProvider;
-
-            PriorAppHttpContext = AppContextAccessor.SetValue(context);
-            PriorScopeHttpContext = ScopeContextAccessor.SetValue(context);
         }
 
         private HttpContext Context { get; set; }
         private IServiceProvider PriorAppServices { get; set; }
         private IServiceProvider PriorRequestServices { get; set; }
-        private HttpContext PriorAppHttpContext { get; set; }
-        private HttpContext PriorScopeHttpContext { get; set; }
         private IServiceScope Scope { get; set; }
-        private IHttpContextAccessor ScopeContextAccessor { get; set; }
-        private IHttpContextAccessor AppContextAccessor { get; set; }
 
 
         // CONSIDER: this could be an extension method on HttpContext instead
@@ -73,10 +57,7 @@ namespace Microsoft.AspNet.RequestContainer
 
             // Matches constructor of RequestContainer
             var rootServiceProvider = serviceProvider.GetRequiredService<IServiceProvider>();
-            var rootHttpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
             var rootServiceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-
-            rootHttpContextAccessor.IsRootContext = true;
 
             // Pre Scope setup
             var priorApplicationServices = serviceProvider;
@@ -84,18 +65,16 @@ namespace Microsoft.AspNet.RequestContainer
 
             var appServiceProvider = rootServiceProvider;
             var appServiceScopeFactory = rootServiceScopeFactory;
-            var appHttpContextAccessor = rootHttpContextAccessor;
 
             if (priorApplicationServices != null &&
                 priorApplicationServices != appServiceProvider)
             {
                 appServiceProvider = priorApplicationServices;
                 appServiceScopeFactory = priorApplicationServices.GetRequiredService<IServiceScopeFactory>();
-                appHttpContextAccessor = priorApplicationServices.GetRequiredService<IHttpContextAccessor>();
             }
 
             // Creates the scope and does the service swaps
-            return new RequestServicesContainer(httpContext, appServiceScopeFactory, appHttpContextAccessor, appServiceProvider);
+            return new RequestServicesContainer(httpContext, appServiceScopeFactory, appServiceProvider);
         }
 
 #region IDisposable Support
@@ -107,9 +86,6 @@ namespace Microsoft.AspNet.RequestContainer
             {
                 if (disposing)
                 {
-                    ScopeContextAccessor.SetValue(PriorScopeHttpContext);
-                    AppContextAccessor.SetValue(PriorAppHttpContext);
-
                     Context.RequestServices = PriorRequestServices;
                     Context.ApplicationServices = PriorAppServices;
                 }
@@ -123,10 +99,6 @@ namespace Microsoft.AspNet.RequestContainer
                 Context = null;
                 PriorAppServices = null;
                 PriorRequestServices = null;
-                ScopeContextAccessor = null;
-                AppContextAccessor = null;
-                PriorAppHttpContext = null;
-                PriorScopeHttpContext = null;
 
                 disposedValue = true;
             }

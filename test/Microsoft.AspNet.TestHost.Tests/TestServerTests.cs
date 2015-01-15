@@ -38,6 +38,23 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [Fact]
+        public async Task CanAccessHttpContext()
+        {
+            var services = new ServiceCollection().BuildServiceProvider();
+            TestServer server = TestServer.Create(app =>
+            {
+                app.Run(context =>
+                {
+                    var accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
+                    return context.Response.WriteAsync("HasContext:"+(accessor.Value != null));
+                });
+            });
+
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("HasContext:True", result);
+        }
+
+        [Fact]
         public async Task CreateInvokesApp()
         {
             TestServer server = TestServer.Create(app =>

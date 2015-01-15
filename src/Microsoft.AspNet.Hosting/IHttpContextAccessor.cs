@@ -7,9 +7,6 @@ namespace Microsoft.AspNet.Hosting
 {
     public interface IHttpContextAccessor
     {
-        bool IsRootContext { get; set; }
-        HttpContext Value { get; }
-
-        HttpContext SetValue(HttpContext value);
+        HttpContext Value { get; set; }
     }
 }

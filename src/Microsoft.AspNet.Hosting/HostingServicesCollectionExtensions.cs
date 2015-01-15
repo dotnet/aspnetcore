@@ -39,7 +39,7 @@ namespace Microsoft.Framework.DependencyInjection
             // TODO: Do we expect this to be provide by the runtime eventually?
             services.AddLogging(configuration);
             services.TryAdd(describer.Singleton<IHostingEnvironment, HostingEnvironment>());
-            services.TryAdd(describer.Scoped<IHttpContextAccessor, HttpContextAccessor>());
+            services.TryAdd(describer.Singleton<IHttpContextAccessor, HttpContextAccessor>());
 
             // REVIEW: don't try add because we pull out IEnumerable<IConfigureHostingEnvironment>?
             services.AddInstance<IConfigureHostingEnvironment>(new ConfigureHostingEnvironment(configuration));

@@ -16,17 +16,20 @@ namespace Microsoft.AspNet.Hosting
         private readonly IStartupManager _startupManager;
         private readonly IApplicationBuilderFactory _builderFactory;
         private readonly IHttpContextFactory _httpContextFactory;
+        private readonly IHttpContextAccessor _contextAccessor;
 
         public HostingEngine(
             IServerManager serverManager,
             IStartupManager startupManager,
             IApplicationBuilderFactory builderFactory,
-            IHttpContextFactory httpContextFactory)
+            IHttpContextFactory httpContextFactory,
+            IHttpContextAccessor contextAccessor)
         {
             _serverManager = serverManager;
             _startupManager = startupManager;
             _builderFactory = builderFactory;
             _httpContextFactory = httpContextFactory;
+            _contextAccessor = contextAccessor;
         }
 
         public IDisposable Start(HostingContext context)
@@ -37,7 +40,7 @@ namespace Microsoft.AspNet.Hosting
             EnsureApplicationDelegate(context);
 
             var applicationLifetime = (ApplicationLifetime)context.Services.GetRequiredService<IApplicationLifetime>();
-            var pipeline = new PipelineInstance(_httpContextFactory, context.ApplicationDelegate);
+            var pipeline = new PipelineInstance(_httpContextFactory, context.ApplicationDelegate, _contextAccessor);
             var server = context.ServerFactory.Start(context.Server, pipeline.Invoke);
            
             return new Disposable(() =>
