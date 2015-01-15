@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.PipelineCore.Collections;
 using Microsoft.AspNet.Security.OAuth;

@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.AspNet.WebUtilities;
