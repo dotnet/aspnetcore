@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public Task<bool> ContainsPrefixAsync(string prefix)
         {
-            return Task.FromResult(PrefixContainer.IsPrefixMatch(Name, prefix));
+            return Task.FromResult(PrefixContainer.IsPrefixMatch(prefix, Name));
         }
 
         public Task<ValueProviderResult> GetValueAsync(string key)
