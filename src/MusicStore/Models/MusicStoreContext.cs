@@ -33,18 +33,6 @@ namespace MusicStore.Models
             builder.Entity<Album>().Ignore(a => a.OrderDetails);
             builder.Entity<OrderDetail>().Ignore(od => od.Album);
 
-            var orderDetails = builder.Model.GetEntityType(typeof(OrderDetail));
-            var albumNavigation = orderDetails.TryGetNavigation("Album");
-            if (albumNavigation != null)
-            {
-                orderDetails.RemoveNavigation(albumNavigation);
-
-                var album = builder.Model.GetEntityType(typeof(Album));
-                album.RemoveNavigation(album.GetNavigation("OrderDetails"));
-
-                orderDetails.RemoveForeignKey(albumNavigation.ForeignKey);
-            }
-
             base.OnModelCreating(builder);
         }
     }

@@ -39,12 +39,6 @@ namespace MusicStore.Models
             builder.Entity<Album>().Property(a => a.ArtistId).GenerateValueOnAdd(generateValue: false);
             builder.Entity<Genre>().Property(g => g.GenreId).GenerateValueOnAdd(generateValue: false);
 
-            // TODO: Remove this once convention-based relations work again
-            builder.Entity<Album>().ManyToOne(a => a.Artist);
-            builder.Entity<Album>().ManyToOne(a => a.Genre, g => g.Albums);
-            builder.Entity<Order>().OneToMany(o => o.OrderDetails);
-            builder.Entity<Album>().OneToMany(a => a.OrderDetails, od => od.Album);
-
             base.OnModelCreating(builder);
         }
     }
