@@ -1238,65 +1238,6 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.True(controller.DisposeCalled);
         }
 
-        [Fact]
-        public void ControllerExpose_ViewEngine()
-        {
-            // Arrange
-            var controller = new Controller();
-
-            var viewEngine = Mock.Of<ICompositeViewEngine>();
-
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider
-                .Setup(s => s.GetService(It.Is<Type>(t => t == typeof(ICompositeViewEngine))))
-                .Returns(viewEngine);
-
-            var httpContext = new Mock<HttpContext>();
-            httpContext
-                .Setup(c => c.RequestServices)
-                .Returns(serviceProvider.Object);
-
-            controller.ActionContext = new ActionContext(httpContext.Object,
-                                                  Mock.Of<RouteData>(),
-                                                  new ActionDescriptor());
-
-            // Act
-            var innerViewEngine = controller.ViewEngine;
-
-            // Assert
-            Assert.Same(viewEngine, innerViewEngine);
-        }
-
-        [Fact]
-        public void ControllerView_UsesControllerViewEngine()
-        {
-            // Arrange
-            var controller = new Controller();
-
-            var viewEngine = Mock.Of<ICompositeViewEngine>();
-
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider
-                .Setup(s => s.GetService(It.Is<Type>(t => t == typeof(ICompositeViewEngine))))
-                .Returns(viewEngine);
-
-            var httpContext = new Mock<HttpContext>();
-            httpContext
-                .Setup(c => c.RequestServices)
-                .Returns(serviceProvider.Object);
-
-            controller.ActionContext = new ActionContext(httpContext.Object,
-                                                  Mock.Of<RouteData>(),
-                                                  new ActionDescriptor());
-
-            // Act
-            var unsused = controller.ViewEngine;
-            var result = controller.View();
-
-            // Assert
-            Assert.Same(viewEngine, result.ViewEngine);
-        }
-
         private static Controller GetController(IModelBinder binder, IValueProvider provider)
         {
             var metadataProvider = new DataAnnotationsModelMetadataProvider();

@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.Mvc
     public class Controller : IActionFilter, IAsyncActionFilter, IOrderedFilter, IDisposable
     {
         private DynamicViewData _viewBag;
-        private IViewEngine _viewEngine;
 
         public IServiceProvider Resolver
         {
@@ -58,25 +57,6 @@ namespace Microsoft.AspNet.Mvc
             get
             {
                 return ActionContext?.RouteData;
-            }
-        }
-
-        public IViewEngine ViewEngine
-        {
-            get
-            {
-                if (_viewEngine == null)
-                {
-                    _viewEngine =
-                        ActionContext?.HttpContext?.RequestServices.GetRequiredService<ICompositeViewEngine>();
-                }
-
-                return _viewEngine;
-            }
-
-            set
-            {
-                _viewEngine = value;
             }
         }
 
@@ -186,7 +166,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewName = viewName,
                 ViewData = ViewData,
-                ViewEngine = _viewEngine,
             };
         }
 
@@ -284,17 +263,9 @@ namespace Microsoft.AspNet.Mvc
             var result = new ContentResult
             {
                 Content = content,
+                ContentEncoding = contentEncoding,
+                ContentType = contentType
             };
-
-            if (contentType != null)
-            {
-                result.ContentType = contentType;
-            }
-
-            if (contentEncoding != null)
-            {
-                result.ContentEncoding = contentEncoding;
-            }
 
             return result;
         }
