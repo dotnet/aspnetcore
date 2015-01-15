@@ -263,7 +263,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (bindingContext.Model == null)
             {
-                bindingContext.ModelMetadata.Model = CreateModel(bindingContext);
+                bindingContext.Model = CreateModel(bindingContext);
             }
         }
 

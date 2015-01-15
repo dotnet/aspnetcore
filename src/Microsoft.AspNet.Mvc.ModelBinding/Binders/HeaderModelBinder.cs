@@ -22,7 +22,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (bindingContext.ModelType == typeof(string))
             {
                 var value = request.Headers.Get(bindingContext.ModelName);
-                bindingContext.Model = value;
+                if (value != null)
+                {
+                    bindingContext.Model = value;
+                }
 
                 return Task.FromResult(true);
             }

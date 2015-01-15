@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Only perform validation at the root of the object graph. ValidationNode will recursively walk the graph.
             // Ignore ComplexModelDto since it essentially wraps the primary object.
-            if (IsBindingAtRootOfObjectGraph(newBindingContext))
+            if (newBindingContext.IsModelSet && IsBindingAtRootOfObjectGraph(newBindingContext))
             {
                 // run validation and return the model
                 // If we fell back to an empty prefix above and are dealing with simple types,
@@ -79,7 +79,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             bindingContext.OperationBindingContext.BodyBindingState =
                 newBindingContext.OperationBindingContext.BodyBindingState;
-            bindingContext.Model = newBindingContext.Model;
+
+            if (newBindingContext.IsModelSet)
+            {
+                bindingContext.Model = newBindingContext.Model;
+            }
+
             return true;
         }
 
@@ -115,6 +120,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var newBindingContext = new ModelBindingContext
             {
+                IsModelSet = oldBindingContext.IsModelSet,
                 ModelMetadata = oldBindingContext.ModelMetadata,
                 ModelName = modelName,
                 ModelState = oldBindingContext.ModelState,

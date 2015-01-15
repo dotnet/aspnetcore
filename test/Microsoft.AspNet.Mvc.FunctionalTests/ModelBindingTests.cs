@@ -1112,7 +1112,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var modelStateErrors = JsonConvert.DeserializeObject<IDictionary<string, IEnumerable<string>>>(body);
 
-            Assert.Equal(3, modelStateErrors.Count);
+            Assert.Equal(2, modelStateErrors.Count);
             Assert.Equal(new[] {
                     "The field Year must be between 1980 and 2034.",
                     "Year is invalid"
@@ -1120,9 +1120,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var vinError = Assert.Single(modelStateErrors["model.Vin"]);
             Assert.Equal("The Vin field is required.", vinError);
-
-            var trackingIdError = Assert.Single(modelStateErrors["X-TrackingId"]);
-            Assert.Equal("A value is required but was not present in the request.", trackingIdError);
         }
 
         [Fact]

@@ -71,10 +71,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             set
             {
+                IsModelSet = true;
+
                 EnsureModelMetadata();
                 ModelMetadata.Model = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not the <see cref="Model"/> value has been set.
+        /// 
+        /// This property can be used to distinguish between a model binder which does not find a value and
+        /// the case where a model binder sets the <c>null</c> value.
+        /// </summary>
+        public bool IsModelSet { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata for the model associated with this context.
