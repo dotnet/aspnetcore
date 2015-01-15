@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using Microsoft.AspNet.PipelineCore.Collections;
+using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Logging;
 using Xunit;

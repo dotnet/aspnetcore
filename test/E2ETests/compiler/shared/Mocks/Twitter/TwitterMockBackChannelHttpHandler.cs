@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.PipelineCore.Collections;
+using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.WebUtilities;
 
 namespace MusicStore.Mocks.Twitter
