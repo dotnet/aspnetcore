@@ -43,14 +43,14 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<IdentityUserClaim<TKey>>(b =>
                 {
                     b.Key(uc => uc.Id);
-                    b.ManyToOne<TUser>().ForeignKey(uc => uc.UserId);
+                    b.HasOne<TUser>().WithMany().ForeignKey(uc => uc.UserId);
                     b.ForRelational().Table("AspNetUserClaims");
                 });
 
             builder.Entity<IdentityRoleClaim<TKey>>(b =>
                 {
                     b.Key(rc => rc.Id);
-                    b.ManyToOne<TRole>().ForeignKey(rc => rc.RoleId);
+                    b.HasOne<TRole>().WithMany().ForeignKey(rc => rc.RoleId);
                     b.ForRelational().Table("AspNetRoleClaims");
                 });
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<IdentityUserLogin<TKey>>(b =>
                 {
                     b.Key(l => new { l.LoginProvider, l.ProviderKey });
-                    b.ManyToOne<TUser>().ForeignKey(uc => uc.UserId);
+                    b.HasOne<TUser>().WithMany().ForeignKey(uc => uc.UserId);
                     b.ForRelational().Table("AspNetUserLogins");
                 });
         }
