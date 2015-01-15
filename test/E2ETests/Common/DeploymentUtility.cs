@@ -201,7 +201,7 @@ namespace E2ETests
 
             var hostProcess = Process.Start(startInfo);
             logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
-            Thread.Sleep(15 * 1000);
+            Thread.Sleep(25 * 1000);
 
             //Clear the appbase so that it does not create issues with successive runs
             Environment.SetEnvironmentVariable("KRE_APPBASE", string.Empty);
