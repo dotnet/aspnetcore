@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.TestHost;
 using Xunit;
 

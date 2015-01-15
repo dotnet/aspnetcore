@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.Framework.Expiration.Interfaces;
 using Microsoft.Framework.Logging;
 using Xunit;

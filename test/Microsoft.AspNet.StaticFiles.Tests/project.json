@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+        "Microsoft.AspNet.Http.Core": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "xunit.runner.kre": "1.0.0-*"
