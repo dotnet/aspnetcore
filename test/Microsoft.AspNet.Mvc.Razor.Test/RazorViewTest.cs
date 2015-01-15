@@ -5,9 +5,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.PageExecutionInstrumentation;
-using Microsoft.AspNet.PipelineCore;
 using Moq;
 using Xunit;
 

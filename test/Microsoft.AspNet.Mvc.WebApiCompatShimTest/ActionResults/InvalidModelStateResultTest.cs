@@ -5,9 +5,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;

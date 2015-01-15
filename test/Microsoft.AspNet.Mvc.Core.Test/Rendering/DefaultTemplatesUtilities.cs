@@ -6,13 +6,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.OptionsModel;
 using Moq;
-using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {

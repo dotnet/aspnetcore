@@ -4,14 +4,13 @@
 #if !ASPNETCORE50
 
 using System;
-using System.Linq;
 using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
-using Microsoft.AspNet.PipelineCore;
 using Moq;
 using Moq.Protected;
 using Xunit;
