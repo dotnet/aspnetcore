@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
 
@@ -31,14 +32,16 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                             rootNamespace: string.Empty,
                                                             sourceFile: string.Empty,
                                                             shouldGenerateLinePragmas: true);
-            var context = new CodeBuilderContext(generatorContext);
+            var errorSink = new ParserErrorSink();
+            var context = new CodeBuilderContext(generatorContext, errorSink);
 
             // Act
             renderer.RenderAttributeValue(attributeDescriptor, writer, context,
             (codeWriter) =>
             {
                 codeWriter.Write("MyValue");
-            });
+            },
+            complexValue: false);
 
             // Assert
             Assert.Equal(expectedValue, writer.GenerateCode());

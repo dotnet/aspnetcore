@@ -55,9 +55,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 BuildLineMapping(documentAbsoluteIndex: 139,
                                  documentLineIndex: 4,
                                  documentCharacterIndex: 17,
-                                 generatedAbsoluteIndex: 2058,
-                                 generatedLineIndex: 52,
-                                 generatedCharacterIndex: 107,
+                                 generatedAbsoluteIndex: 2105,
+                                 generatedLineIndex: 53,
+                                 generatedCharacterIndex: 95,
                                  contentLength: 3)
             };
 

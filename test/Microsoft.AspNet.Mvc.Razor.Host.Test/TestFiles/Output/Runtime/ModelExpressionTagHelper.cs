@@ -48,7 +48,11 @@ namespace Asp
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", "test");
             __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<Microsoft.AspNet.Mvc.Razor.InputTestTagHelper>();
             __tagHelperExecutionContext.Add(__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper);
-            __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
+#line 5 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
+__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
+
+#line default
+#line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For);
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());

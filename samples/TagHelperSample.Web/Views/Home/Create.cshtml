@@ -48,7 +48,8 @@
             <label asp-for="YearsEmployeed" class="control-label col-md-2" />
             <div class="col-md-10">
                 @* <select/> tag helper has ContentBehavior.Append -- items render after static options *@
-                <select asp-for="YearsEmployeed" asp-items="(IEnumerable<SelectListItem>)ViewBag.Items" size="2" class="form-control">
+                @{ var @object = "multiple"; }
+                <select asp-for="@(Model.YearsEmployeed)" asp-items="@((IEnumerable<SelectListItem>)ViewBag.Items)" size="2" class="form-control" multiple="@(@object)">
                     @* Static use of "selected" attribute may cause HTML errors if in a single-selection <select/> *@
                     @* - @NTaylorMullen thinks <option/> tag helper could tell <select/> helper not to select anything from "items" *@
                     @* - wouldn't help if user selected one static <option/> and expression indicated another, especially one earlier in the <select/> *@

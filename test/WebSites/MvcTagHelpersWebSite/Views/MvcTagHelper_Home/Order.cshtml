@@ -29,7 +29,8 @@
         </div>
         <div>
             <label asp-for="Products" class="order" />
-            <select asp-for="Products" asp-items="(IEnumerable<SelectListItem>)ViewBag.Items" multiple="multiple" />
+            @{ var @object = "multiple"; }
+            <select asp-for="@Model.Products" asp-items="@((IEnumerable<SelectListItem>)ViewBag.Items)" multiple="@(@object)" />
         </div>
         <div>
             <label asp-for="OrderDate" class="order" />
