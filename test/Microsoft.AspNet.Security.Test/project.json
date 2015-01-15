@@ -20,8 +20,7 @@
     "frameworks": {
         "aspnet50": {
             "dependencies": {
-                "Shouldly": "1.1.1.1",
-                "System.Security.Claims": "1.0.0-*"
+                "Shouldly": "1.1.1.1"
             }
         }
     }
