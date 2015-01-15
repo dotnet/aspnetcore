@@ -4,7 +4,7 @@
     "dependencies": {
         "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.FeatureModel": "1.0.0-*",
-        "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+        "Microsoft.AspNet.Http.Core": "1.0.0-*",
         "Microsoft.AspNet.HttpFeature": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
