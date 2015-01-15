@@ -18,7 +18,7 @@ namespace MusicStore
 {
     /// <summary>
     /// To make runtime to load an environment based startup class, specify the environment by the following ways: 
-    /// 1. Drop a Microsoft.AspNet.Hosting.ini file in the application folder
+    /// 1. Drop a Microsoft.AspNet.Hosting.ini file in the wwwroot folder
     /// 2. Add a setting in the ini file named 'ASPNET_ENV' with value of the format 'Startup[EnvironmentName]'. For example: To load a Startup class named
     /// 'StartupNtlmAuthentication' the value of the env should be 'NtlmAuthentication' (eg. ASPNET_ENV=NtlmAuthentication). Runtime adds a 'Startup' prefix to this and loads 'StartupNtlmAuthentication'. 
     /// If no environment name is specified the default startup class loaded is 'Startup'. 

@@ -29,3 +29,6 @@ This project is part of ASP.NET 5.0. You can find samples, documentation and get
 
 ###NTLM authentication
 More information at src/MusicStore/StartupNtlmAuthentication.cs.
+
+###OpenIdConnect authentication
+More information at src/MusicStore/StartupOpenIdConnect.cs.

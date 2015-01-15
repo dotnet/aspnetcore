@@ -2,9 +2,11 @@
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
 
 namespace MusicStore.Controllers
@@ -431,6 +433,15 @@ namespace MusicStore.Controllers
         public IActionResult LogOff()
         {
             SignInManager.SignOut();
+
+            // TODO: Currently SignInManager.SignOut does not sign out OpenIdc and does not have a way to pass in a specific
+            // AuthType to sign out.
+            var appEnv = Context.RequestServices.GetService<IHostingEnvironment>();
+            if (appEnv.EnvironmentName == "OpenIdConnect")
+            {
+                Response.SignOut("OpenIdConnect");
+            }
+
             return RedirectToAction("Index", "Home");
         }
 
