@@ -12,7 +12,8 @@ namespace Microsoft.AspNet.Http
     /// </summary>
     public static class FormFileExtensions
     {
-        private static int DefaultBufferSize = 81920;
+        // Stream.CopyTo method uses 80KB as the default buffer size.
+        private static int DefaultBufferSize = 80 * 1024;
 
         /// <summary>
         /// Saves the contents of an uploaded file.
