@@ -144,4 +144,7 @@
   <data name="TagHelpers_NoProvidedMetadata" xml:space="preserve">
     <value>The {2} was unable to provide metadata about '{1}' expression value '{3}' for {0}.</value>
   </data>
+  <data name="InvalidEnumArgument" xml:space="preserve">
+    <value>The value of argument '{0}' ({1}) is invalid for Enum type '{2}'.</value>
+  </data>
 </root>

@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
@@ -17,6 +18,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     public class ValidationSummaryTagHelperTest
     {
+        public void Concstructor_IntializesProperties_AsExpected()
+        {
+            // Arrange & Act
+            var validationSummaryTagHelper = new ValidationSummaryTagHelper();
+
+            // Assert
+            Assert.Null(validationSummaryTagHelper.Generator);
+            Assert.Null(validationSummaryTagHelper.ViewContext);
+            Assert.Equal(ValidationSummary.None, validationSummaryTagHelper.ValidationSummary);
+        }
+
         [Fact]
         public async Task ProcessAsync_GeneratesExpectedOutput()
         {
@@ -25,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var validationSummaryTagHelper = new ValidationSummaryTagHelper
             {
-                ValidationSummaryValue = "All"
+                ValidationSummary = ValidationSummary.All,
             };
 
             var tagHelperContext = new TagHelperContext(new Dictionary<string, object>(), uniqueId: "test");
@@ -57,13 +69,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedTagName, output.TagName);
         }
 
-        [Fact]
-        public async Task ProcessAsync_CallsIntoGenerateValidationSummaryWithExpectedParameters()
+        [Theory]
+        [InlineData(ValidationSummary.All, false)]
+        [InlineData(ValidationSummary.ModelOnly, true)]
+        public async Task ProcessAsync_CallsIntoGenerateValidationSummaryWithExpectedParameters(
+            ValidationSummary validationSummary,
+            bool expectedExcludePropertyErrors)
         {
             // Arrange
             var validationSummaryTagHelper = new ValidationSummaryTagHelper
             {
-                ValidationSummaryValue = "ModelOnly",
+                ValidationSummary = validationSummary,
             };
             var output = new TagHelperOutput(
                 "div",
@@ -72,7 +88,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedViewContext = CreateViewContext();
             var generator = new Mock<IHtmlGenerator>();
             generator
-                .Setup(mock => mock.GenerateValidationSummary(expectedViewContext, true, null, null, null))
+                .Setup(mock => mock.GenerateValidationSummary(
+                    expectedViewContext,
+                    expectedExcludePropertyErrors,
+                    null,   // message
+                    null,   // headerTag
+                    null))  // htmlAttributes
                 .Returns(new TagBuilder("div"))
                 .Verifiable();
             validationSummaryTagHelper.ViewContext = expectedViewContext;
@@ -93,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var validationSummaryTagHelper = new ValidationSummaryTagHelper
             {
-                ValidationSummaryValue = "ModelOnly"
+                ValidationSummary = ValidationSummary.ModelOnly,
             };
             var output = new TagHelperOutput(
                 "div",
@@ -136,15 +157,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("Content of validation summaryNew HTML", output.Content);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData(null)]
-        public async Task ProcessAsync_DoesNothingIfNullOrEmptyValidationSummaryValue(string validationSummaryValue)
+        [Fact]
+        public async Task ProcessAsync_DoesNothingIfValidationSummaryNone()
         {
             // Arrange
             var validationSummaryTagHelper = new ValidationSummaryTagHelper
             {
-                ValidationSummaryValue = validationSummaryValue
+                ValidationSummary = ValidationSummary.None,
             };
             var output = new TagHelperOutput(
                 "div",
@@ -166,16 +185,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData("All")]
-        [InlineData("all")]
-        [InlineData("ModelOnly")]
-        [InlineData("modelonly")]
-        public async Task ProcessAsync_GeneratesValidationSummaryWhenNotNone_IgnoresCase(string validationSummary)
+        [InlineData(ValidationSummary.All)]
+        [InlineData(ValidationSummary.ModelOnly)]
+        public async Task ProcessAsync_GeneratesValidationSummaryWhenNotNone(ValidationSummary validationSummary)
         {
             // Arrange
             var validationSummaryTagHelper = new ValidationSummaryTagHelper
             {
-                ValidationSummaryValue = validationSummary
+                ValidationSummary = validationSummary,
             };
             var output = new TagHelperOutput(
                 "div",
@@ -211,56 +228,24 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData("None")]
-        [InlineData("none")]
-        public async Task ProcessAsync_DoesNotGenerateValidationSummaryWhenNone_IgnoresCase(string validationSummary)
+        [InlineData((ValidationSummary)(-1))]
+        [InlineData((ValidationSummary)23)]
+        [InlineData(ValidationSummary.All | ValidationSummary.ModelOnly)]
+        [ReplaceCulture]
+        public void ValidationSummaryProperty_ThrowsWhenSetToInvalidValidationSummaryValue(
+            ValidationSummary validationSummary)
         {
             // Arrange
-            var validationSummaryTagHelper = new ValidationSummaryTagHelper
-            {
-                ValidationSummaryValue = validationSummary
-            };
-            var output = new TagHelperOutput(
-                "div",
-                attributes: new Dictionary<string, string>(),
-                content: "Content of validation message");
-            var tagBuilder = new TagBuilder("span2")
-            {
-                InnerHtml = "New HTML"
-            };
+            var validationSummaryTagHelper = new ValidationSummaryTagHelper();
+            var expectedMessage = string.Format(
+                @"The value of argument 'value' ({0}) is invalid for Enum type 'Microsoft.AspNet.Mvc.ValidationSummary'.
+Parameter name: value",
+                validationSummary);
 
-            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
-
-            // Act
-            await validationSummaryTagHelper.ProcessAsync(context: null, output: output);
-
-            // Assert
-            Assert.Equal("div", output.TagName);
-            Assert.Empty(output.Attributes);
-            Assert.Equal("Content of validation message", output.Content);
-        }
-
-        [Fact]
-        public async Task ProcessAsync_ThrowsWhenInvalidValidationSummaryValue()
-        {
-            // Arrange
-            var validationSummaryTagHelper = new ValidationSummaryTagHelper
-            {
-                ValidationSummaryValue = "Hello World"
-            };
-            var output = new TagHelperOutput(
-                "div",
-                attributes: new Dictionary<string, string>(),
-                content: "Content of validation message");
-            var expectedViewContext = CreateViewContext();
-            var expectedMessage = "Cannot parse 'asp-validation-summary' value 'Hello World' for <div>. Acceptable " +
-                                  "values are 'All', 'ModelOnly' and 'None'.";
-
-            // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => validationSummaryTagHelper.ProcessAsync(context: null, output: output));
-
-            // Assert
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(
+                "value",
+                () => { validationSummaryTagHelper.ValidationSummary = validationSummary; });
             Assert.Equal(expectedMessage, ex.Message);
         }
 
