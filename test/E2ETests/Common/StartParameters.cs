@@ -21,9 +21,9 @@
 
         public string ApplicationPath { get; set; }
 
-        public bool PackApplicationBeforeStart { get; set; }
+        public bool BundleApplicationBeforeStart { get; set; }
 
-        public string PackedApplicationRootPath { get; set; }
+        public string BundledApplicationRootPath { get; set; }
 
         public string Dotnet { get; set; }
 

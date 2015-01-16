@@ -6,7 +6,7 @@
     "node_modules",
     "grunt"
   ],
-  "packExclude": [
+  "bundleExclude": [
     "bower.json",
     "package.json",
     "gruntfile.js",
