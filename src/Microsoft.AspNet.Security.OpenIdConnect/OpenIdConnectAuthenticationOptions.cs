@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
         /// recommends adding a nonce to a request as a mitigation against replay attacks when requesting id_tokens.
         /// By default the runtime uses cookies with unique names generated from a hash of the nonce.
         /// </summary>
-        public INonceCache NoneCache { get; set; }
+        public INonceCache NonceCache { get; set; }
 
         /// <summary>
         /// Gets or sets the discovery endpoint for obtaining metadata
@@ -181,7 +181,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
         public OpenIdConnectAuthenticationNotifications Notifications { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="OpenIdConnectProtocolValidator"/> that is used ensure the 'id_token' received
+        /// Gets or sets the <see cref="OpenIdConnectProtocolValidator"/> that is used to ensure that the 'id_token' received
         /// is valid per: http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation 
         /// </summary>
         /// <exception cref="ArgumentNullException">if 'value' is null.</exception>
@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
 
         /// <summary>
         /// Gets or sets the type used to secure strings used by the middleware.
-         // </summary>
+        /// </summary>
         public ISecureDataFormat<string> StringDataFormat
         {
             get

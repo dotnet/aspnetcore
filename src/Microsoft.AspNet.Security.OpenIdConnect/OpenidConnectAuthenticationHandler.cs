@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                 // Set End_Session_Endpoint in order:
                 // 1. properties.Redirect
                 // 2. Options.Wreply
-                AuthenticationProperties properties = new AuthenticationProperties(); // TODO signout.Properties;
+                AuthenticationProperties properties = new AuthenticationProperties();
                 if (properties != null && !string.IsNullOrEmpty(properties.RedirectUri))
                 {
                     openIdConnectMessage.PostLogoutRedirectUri = properties.RedirectUri;
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
         }
 
         /// <summary>
-        /// Responds to a 401 Challenge sends an OpenIdConnect message to the 'identity authority' to obtain an identity.
+        /// Responds to a 401 Challenge. Sends an OpenIdConnect message to the 'identity authority' to obtain an identity.
         /// </summary>
         /// <returns></returns>
         protected override async Task ApplyResponseChallengeAsync()
@@ -158,9 +158,9 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
             if (Options.ProtocolValidator.RequireNonce)
             {
                 openIdConnectMessage.Nonce = Options.ProtocolValidator.GenerateNonce();
-                if (Options.NoneCache != null)
+                if (Options.NonceCache != null)
                 {
-                    Options.NoneCache.AddNonce(openIdConnectMessage.Nonce);
+                    Options.NonceCache.AddNonce(openIdConnectMessage.Nonce);
                 }
                 else
                 {
@@ -215,7 +215,6 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                 IFormCollection form = await Request.ReadFormAsync();
                 Request.Body.Seek(0, SeekOrigin.Begin);
 
-                // TODO: a delegate on OpenIdConnectAuthenticationOptions would allow for users to hook their own custom message.
                 openIdConnectMessage = new OpenIdConnectMessage(form);
             }
 
@@ -466,7 +465,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
         /// </summary>
         /// <param name="nonceExpectedValue">the nonce that was found in the jwt token.</param>
         /// <returns>'nonceExpectedValue' if a cookie is found that matches, null otherwise.</returns>
-        /// <remarks>Examins <see cref="HttpRequest.Cookies.Keys"/> that start with the prefix: 'OpenIdConnectAuthenticationDefaults.Nonce'. 
+        /// <remarks>Examine <see cref="HttpRequest.Cookies.Keys"/> that start with the prefix: 'OpenIdConnectAuthenticationDefaults.Nonce'. 
         /// <see cref="OpenIdConnectAuthenticationOptions.StringDataFormat.Unprotect"/> is used to obtain the actual 'nonce'. If the nonce is found, then <see cref="HttpResponse.Cookies.Delete"/> is called.</remarks>
         private string RetrieveNonce(string nonceExpectedValue)
         {
