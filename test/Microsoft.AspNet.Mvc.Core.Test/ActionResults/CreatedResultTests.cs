@@ -45,6 +45,24 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(location, httpContext.Response.Headers["Location"]);
         }
 
+        [Fact]
+        public async Task CreatedResult_OverwritesLocationHeader()
+        {
+            // Arrange
+            var location = "/test/";
+            var httpContext = GetHttpContext();
+            var actionContext = GetActionContext(httpContext);
+            httpContext.Response.Headers.Set("Location", "/different/location/");
+            var result = new CreatedResult(location, "testInput");
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(201, httpContext.Response.StatusCode);
+            Assert.Equal(location, httpContext.Response.Headers["Location"]);
+        }
+
         private static ActionContext GetActionContext(HttpContext httpContext)
         {
             var routeData = new RouteData();

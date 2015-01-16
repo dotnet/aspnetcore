@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException(Resources.NoRoutesMatched);
             }
 
-            context.HttpContext.Response.Headers.Add("Location", new string[] { url });
+            context.HttpContext.Response.Headers.Set("Location", url);
         }
     }
 }

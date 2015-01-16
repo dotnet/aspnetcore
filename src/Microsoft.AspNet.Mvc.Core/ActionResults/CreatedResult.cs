@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         protected override void OnFormatting([NotNull] ActionContext context)
         {
-            context.HttpContext.Response.Headers.Add("Location", new string[] { Location });
+            context.HttpContext.Response.Headers.Set("Location", Location);
         }
     }
 }
