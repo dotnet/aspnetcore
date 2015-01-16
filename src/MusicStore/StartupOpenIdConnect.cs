@@ -78,7 +78,7 @@ namespace MusicStore
             // Configure Auth
             services.Configure<AuthorizationOptions>(options =>
             {
-                options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("Allowed").Build());
+                options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("ManageStore", "Allowed").Build());
             });
         }
 
