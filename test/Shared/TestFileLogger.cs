@@ -18,9 +18,12 @@ namespace Microsoft.AspNet.Identity.Test
             var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "IdentityTests");
             Directory.CreateDirectory(directory);
             FileName = Path.Combine(directory, (name + DateTime.Now.Ticks + "log.txt"));
-            if (!File.Exists(FileName))
+            lock (FileLock)
             {
-                File.Create(FileName).Close();
+                if (!File.Exists(FileName))
+                {
+                    File.Create(FileName).Close();
+                } 
             }
         }
 

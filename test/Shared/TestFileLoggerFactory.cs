@@ -27,7 +27,14 @@ namespace Microsoft.AspNet.Identity.Test
         {
             if (!_loggers.ContainsKey(name))
             {
-                _loggers.Add(name, new TestFileLogger(name));
+                try
+                {
+                    _loggers.Add(name, new TestFileLogger(name));
+                }
+                catch (ArgumentException ex)
+                {
+                    // Silently skip if there is already a logger with that key
+                }
             }
 
             return _loggers[name];
