@@ -6,12 +6,27 @@ using Microsoft.AspNet.Mvc;
 namespace FiltersWebSite
 {
     [AuthorizeUser]
+    [Authorize("RequireBasic")]
     public class AuthorizeUserController : Controller
     {
-        [Authorize("Permission", "CanViewPage")]
+        [Authorize("CanViewPage")]
         public string ReturnHelloWorldOnlyForAuthorizedUser()
         {
             return "Hello World!";
         }
+
+        [Authorize("Impossible")]
+        [AllowAnonymous]
+        public string AlwaysCanCallAllowAnonymous()
+        {
+            return "Hello World!";
+        }
+
+        [Authorize("Impossible")]
+        public string Impossible()
+        {
+            return "Hello World!";
+        }
+
     }
 }

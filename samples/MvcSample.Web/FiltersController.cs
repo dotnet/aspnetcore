@@ -50,14 +50,14 @@ namespace MvcSample.Web
             return new ChallengeResult();
         }
 
-        [Authorize("Permission", "CanViewPage")]
+        [Authorize("CanViewPage")]
         public ActionResult NotGrantedClaim(int age = 20, string userName = "SampleUser")
         {
             return Index(age, userName);
         }
 
         [FakeUser]
-        [Authorize("Permission", "CanViewPage", "CanViewAnything")]
+        [Authorize("CanViewAnything")]
         public ActionResult AllGranted(int age = 20, string userName = "SampleUser")
         {
             return Index(age, userName);

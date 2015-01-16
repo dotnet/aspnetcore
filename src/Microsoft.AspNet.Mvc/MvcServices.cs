@@ -151,7 +151,6 @@ namespace Microsoft.AspNet.Mvc
 
             // Security and Authorization
 
-            yield return describe.Transient<IAuthorizationService, DefaultAuthorizationService>();
             yield return describe.Singleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
             yield return describe.Singleton<AntiForgery, AntiForgery>();
             yield return describe.Singleton<IAntiForgeryAdditionalDataProvider,

@@ -3,10 +3,12 @@
 
 using System;
 using System.IO;
+using System.Security.Claims;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Security;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using MvcSample.Web.Filters;
@@ -38,6 +40,19 @@ namespace MvcSample.Web
 
                 app.UseServices(services =>
                 {
+                    services.ConfigureAuthorization(auth =>
+                    {
+                        auth.AddPolicy("CanViewPage", 
+                            new AuthorizationPolicyBuilder()
+                                .RequiresClaim("Permission", "CanViewPage", "CanViewAnything").Build());
+                        auth.AddPolicy("CanViewAnything", 
+                            new AuthorizationPolicyBuilder()
+                                .RequiresClaim("Permission", "CanViewAnything").Build());
+                        // This policy basically requires that the auth type is present
+                        var basicPolicy = new AuthorizationPolicyBuilder("Basic").RequiresClaim(ClaimTypes.NameIdentifier);
+                        auth.AddPolicy("RequireBasic", basicPolicy.Build());
+                    });
+
                     services.AddMvc();
                     services.AddSingleton<PassThroughAttribute>();
                     services.AddSingleton<UserNameService>();

@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Security;
@@ -14,67 +11,72 @@ namespace Microsoft.AspNet.Mvc
 {
     public class AuthorizeAttribute : AuthorizationFilterAttribute
     {
-        protected Claim[] _claims;
+        private string _roles;
+        private string[] _rolesSplit;
 
-        public AuthorizeAttribute()
+        public AuthorizeAttribute() { }
+
+        public AuthorizeAttribute(string policy)
         {
-            _claims = new Claim[0];
+            Policy = policy;
         }
 
-        public AuthorizeAttribute([NotNull]IEnumerable<Claim> claims)
-        {
-            _claims = claims.ToArray();
-        }
+        public string Policy { get; set; }
 
-        public AuthorizeAttribute(string claimType, string claimValue)
+        public string Roles
         {
-            _claims = new[] { new Claim(claimType, claimValue) };
-        }
-
-        public AuthorizeAttribute(string claimType, string claimValue, params string[] otherClaimValues)
-            : this(claimType, claimValue)
-        {
-            if (otherClaimValues.Length > 0)
+            get { return _roles; }
+            set
             {
-                _claims = _claims.Concat(otherClaimValues.Select(claim => new Claim(claimType, claim))).ToArray();
+                _roles = value;
+                if (string.IsNullOrWhiteSpace(_roles))
+                {
+                    _rolesSplit = null;
+                }
+                else
+                {
+                    _rolesSplit = _roles.Split(',');
+                }
             }
         }
 
         public override async Task OnAuthorizationAsync([NotNull] AuthorizationContext context)
         {
             var httpContext = context.HttpContext;
-            var user = httpContext.User;
 
-            // when no claims are specified, we just need to ensure the user is authenticated
-            if (_claims.Length == 0)
+            // Allow Anonymous skips all authorization
+            if (HasAllowAnonymous(context))
             {
-                var userIsAnonymous =
-                    user == null ||
-                    user.Identity == null ||
-                    !user.Identity.IsAuthenticated;
+                return;
+            }
 
-                if (userIsAnonymous && !HasAllowAnonymous(context))
+            var authService = httpContext.RequestServices.GetRequiredService<IAuthorizationService>();
+
+            // Build a policy for the requested roles if specified
+            if (_rolesSplit != null)
+            {
+                var rolesPolicy = new AuthorizationPolicyBuilder();
+                rolesPolicy.RequiresRole(_rolesSplit);
+                if (!await authService.AuthorizeAsync(rolesPolicy.Build(), httpContext, context))
                 {
                     Fail(context);
+                    return;
                 }
             }
-            else
+
+            var authorized = (Policy == null)
+                // [Authorize] with no policy just requires any authenticated user
+                ? await authService.AuthorizeAsync(BuildAnyAuthorizedUserPolicy(), httpContext, context)
+                : await authService.AuthorizeAsync(Policy, httpContext, context);
+            if (!authorized)
             {
-                var authorizationService = httpContext.RequestServices.GetRequiredService<IAuthorizationService>();
-
-                if (authorizationService == null)
-                {
-                    throw new InvalidOperationException(
-                        Resources.AuthorizeAttribute_AuthorizationServiceMustBeDefined);
-                }
-
-                var authorized = await authorizationService.AuthorizeAsync(_claims, user);
-
-                if (!authorized)
-                {
-                    Fail(context);
-                }
+                Fail(context);
             }
+        }
+
+        private static AuthorizationPolicy BuildAnyAuthorizedUserPolicy()
+        {
+            return new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
         }
 
         public sealed override void OnAuthorization([NotNull] AuthorizationContext context)

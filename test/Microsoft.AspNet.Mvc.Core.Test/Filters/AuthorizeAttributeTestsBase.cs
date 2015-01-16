@@ -21,8 +21,17 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                     new Claim[] {
                         new Claim("Permission", "CanViewPage"),
                         new Claim(ClaimTypes.Role, "Administrator"),
+                        new Claim(ClaimTypes.Role, "User"),
                         new Claim(ClaimTypes.NameIdentifier, "John")},
                         "Basic"));
+
+            validUser.AddIdentity(
+                new ClaimsIdentity(
+                    new Claim[] {
+                        new Claim("Permission", "CupBearer"),
+                        new Claim(ClaimTypes.Role, "Token"),
+                        new Claim(ClaimTypes.NameIdentifier, "John Bear")},
+                        "Bearer"));
 
             // ServiceProvider
             var serviceCollection = new ServiceCollection();
