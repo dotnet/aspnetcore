@@ -3,17 +3,16 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace FormatterWebSite
+namespace ValidationWebSite
 {
-    public class AdminValidator : ValidationAttribute
+    public class CompanyNameAttribute : ValidationAttribute
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            var admin = (Administrator)value;
-            
-            if (admin.AdminAccessCode != 1)
+            var valueString = value as string;
+            if (string.IsNullOrEmpty(valueString))
             {
-                return new ValidationResult ("AdminAccessCode property does not have the right value");
+                return new ValidationResult("CompanyName cannot be null or empty.");
             }
 
             return null;
