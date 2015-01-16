@@ -67,6 +67,22 @@ namespace Microsoft.AspNet.Security.OAuthBearer
         }
 
         [Fact]
+        public async Task NoHeaderReceived()
+        {
+            var server = CreateServer(options => { });
+            var response = await SendAsync(server, "http://example.com/oauth");
+            response.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task HeaderWithoutBearerReceived()
+        {
+            var server = CreateServer(options => { });
+            var response = await SendAsync(server, "http://example.com/oauth","Token");
+            response.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        [Fact]
         public async Task CustomTokenReceived()
         {
             var server = CreateServer(options =>

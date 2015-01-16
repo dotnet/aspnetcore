@@ -60,6 +60,13 @@ namespace Microsoft.AspNet.Security.OAuthBearer
                 }
 
                 string authorization = Request.Headers.Get("Authorization");
+
+                // If no authorization header found, nothing to process further
+                if (String.IsNullOrEmpty(authorization))
+                {
+                    return null;
+                }
+
                 if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                 {
                      token = authorization.Substring("Bearer ".Length).Trim();
