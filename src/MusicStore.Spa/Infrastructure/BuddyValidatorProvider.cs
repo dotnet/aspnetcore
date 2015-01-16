@@ -8,7 +8,7 @@ namespace MusicStore.Spa.Infrastructure
 {
     public class BuddyValidatorProvider : DataAnnotationsModelValidatorProvider
     {
-        protected override IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata, IEnumerable<Attribute> attributes)
+        protected override IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata, IEnumerable<object> attributes)
         {
             var buddyType = BuddyTypeAttribute.GetBuddyType(metadata.ContainerType ?? metadata.ModelType);
 
