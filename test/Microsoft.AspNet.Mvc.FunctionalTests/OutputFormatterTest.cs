@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("ReturnTaskOfObject_StringValue")]
         [InlineData("ReturnString")]
         [InlineData("ReturnObject_StringValue")]
-        public async Task TextPlainFormatter_ForStringValues_GetsSelectedReturnsTextPlainContentType(string actionName)
+        public async Task StringOutputFormatter_ForStringValues_GetsSelectedReturnsTextPlainContentType(string actionName)
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);

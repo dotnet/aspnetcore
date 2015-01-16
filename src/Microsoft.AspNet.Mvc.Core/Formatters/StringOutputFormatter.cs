@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -10,9 +10,9 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Always writes a string value to the response, regardless of requested content type.
     /// </summary>
-    public class TextPlainFormatter : OutputFormatter
+    public class StringOutputFormatter : OutputFormatter
     {
-        public TextPlainFormatter()
+        public StringOutputFormatter()
         {
             SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(Encodings.UTF16EncodingLittleEndian);
@@ -39,19 +39,14 @@ namespace Microsoft.AspNet.Mvc
         public override async Task WriteResponseBodyAsync(OutputFormatterContext context)
         {
             var valueAsString = (string)context.Object;
-            if (valueAsString == null)
+            if (string.IsNullOrEmpty(valueAsString))
             {
-                // if the value is null don't write anything.
                 return;
             }
 
             var response = context.ActionContext.HttpContext.Response;
 
-            using (var delegatingStream = new DelegatingStream(response.Body))
-            using (var writer = new StreamWriter(delegatingStream, context.SelectedEncoding, 1024, leaveOpen: true))
-            {
-                await writer.WriteAsync(valueAsString);
-            }
+            await response.WriteAsync(valueAsString, context.SelectedEncoding);
         }
     }
 }

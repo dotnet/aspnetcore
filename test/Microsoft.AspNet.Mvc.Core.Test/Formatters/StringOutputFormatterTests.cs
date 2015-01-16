@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
         public void CanWriteResult_ReturnsTrueForStringTypes(object value, bool useDeclaredTypeAsString, bool expectedCanWriteResult)
         {
             // Arrange
-            var formatter = new TextPlainFormatter();
+            var formatter = new StringOutputFormatter();
             var typeToUse = useDeclaredTypeAsString ? typeof(string) : typeof(object);
             var formatterContext = new OutputFormatterContext()
             {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc
             var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(o => o.Response).Returns(response.Object);
 
-            var formatter = new TextPlainFormatter();
+            var formatter = new StringOutputFormatter();
             var formatterContext = new OutputFormatterContext()
             {
                 Object = null,

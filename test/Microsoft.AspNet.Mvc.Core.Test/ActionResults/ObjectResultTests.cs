@@ -490,7 +490,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var objectResult = new ObjectResult(new Person() { Name = "John" });
             var outputFormatters = new IOutputFormatter[] {
                 new HttpNoContentOutputFormatter(),
-                new TextPlainFormatter(),
+                new StringOutputFormatter(),
                 new JsonOutputFormatter(),
                 new XmlDataContractSerializerOutputFormatter(XmlSerializerOutputFormatter.GetDefaultXmlWriterSettings())
             };
@@ -531,7 +531,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var objectResult = new ObjectResult(new Person() { Name = "John" });
             var outputFormatters = new IOutputFormatter[] {
                 new HttpNoContentOutputFormatter(),
-                new TextPlainFormatter(),
+                new StringOutputFormatter(),
                 new JsonOutputFormatter(),
                 new XmlDataContractSerializerOutputFormatter(XmlSerializerOutputFormatter.GetDefaultXmlWriterSettings())
             };
@@ -566,7 +566,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             objectResult.ContentTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
             var outputFormatters = new IOutputFormatter[] {
                 new HttpNoContentOutputFormatter(),
-                new TextPlainFormatter(),
+                new StringOutputFormatter(),
                 new JsonOutputFormatter(),
                 new XmlDataContractSerializerOutputFormatter(XmlSerializerOutputFormatter.GetDefaultXmlWriterSettings())
             };
@@ -592,7 +592,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
                                                              string requestAcceptCharsetHeader = "",
                                                              bool respectBrowserAcceptHeader = false)
         {
-            var formatters = new IOutputFormatter[] { new TextPlainFormatter(), new JsonOutputFormatter() };
+            var formatters = new IOutputFormatter[] { new StringOutputFormatter(), new JsonOutputFormatter() };
 
             return CreateMockActionContext(
                                             formatters,

@@ -16,7 +16,10 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class RazorViewTest
     {
         private const string LayoutPath = "~/Shared/_Layout.cshtml";
+
+#pragma warning disable 1998
         private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = async writer => { };
+#pragma warning restore 1998
 
         [Fact]
         public async Task RenderAsync_AsPartial_DoesNotBufferOutput()
