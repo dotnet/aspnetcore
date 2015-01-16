@@ -20,5 +20,5 @@
 </div>
 
 <footer>
-Tracked by 
+Tracked by default-tracking-id
 </footer>

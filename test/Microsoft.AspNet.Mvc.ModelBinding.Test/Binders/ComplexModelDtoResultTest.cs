@@ -14,10 +14,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var validationNode = GetValidationNode();
 
             // Act
-            var result = new ComplexModelDtoResult("some string", validationNode);
+            var result = new ComplexModelDtoResult(
+                "some string", 
+                isModelBound: true, 
+                validationNode: validationNode);
 
             // Assert
             Assert.Equal("some string", result.Model);
+            Assert.True(result.IsModelBound);
             Assert.Equal(validationNode, result.ValidationNode);
         }
 

@@ -183,7 +183,65 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Callback<ModelBindingContext>(c =>
+                {
+                    // This value won't go into the arguments, because we return false.
+                    c.Model = "Hello";
+                })
                 .Returns(Task.FromResult(result: false));
+
+            var actionContext = new ActionContext(
+                new RouteContext(Mock.Of<HttpContext>()),
+                actionDescriptor)
+            {
+                Controller = Mock.Of<object>(),
+            };
+
+            var actionBindingContext = new ActionBindingContext()
+            {
+                ModelBinder = binder.Object,
+            };
+
+            var inputFormattersProvider = new Mock<IInputFormattersProvider>();
+            inputFormattersProvider
+                .SetupGet(o => o.InputFormatters)
+                .Returns(new List<IInputFormatter>());
+
+            var invoker = new DefaultControllerActionArgumentBinder(new DataAnnotationsModelMetadataProvider());
+
+            // Act
+            var result = await invoker.GetActionArgumentsAsync(actionContext, actionBindingContext);
+
+            // Assert
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetActionArgumentsAsync_DoesNotAddActionArguments_IfBinderDoesNotSetModel()
+        {
+            // Arrange
+            Func<object, int> method = foo => 1;
+            var actionDescriptor = new ControllerActionDescriptor
+            {
+                MethodInfo = method.Method,
+                Parameters = new List<ParameterDescriptor>
+                {
+                    new ParameterDescriptor
+                    {
+                        Name = "foo",
+                        ParameterType = typeof(object),
+                    }
+                }
+            };
+
+            var binder = new Mock<IModelBinder>();
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Callback<ModelBindingContext>(c =>
+                {
+                    Assert.False(c.IsModelSet);
+                })
+                .Returns(Task.FromResult(result: true));
 
             var actionContext = new ActionContext(
                 new RouteContext(Mock.Of<HttpContext>()),

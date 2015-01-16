@@ -5,15 +5,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public sealed class ComplexModelDtoResult
     {
-        public ComplexModelDtoResult(object model,
-                                    [NotNull] ModelValidationNode validationNode)
+        public static ComplexModelDtoResult FromBindingContext([NotNull] ModelBindingContext context)
+        {
+            return new ComplexModelDtoResult(context.Model, context.IsModelSet, context.ValidationNode);
+        }
+
+        public ComplexModelDtoResult(
+            object model,
+            bool isModelBound,
+            [NotNull] ModelValidationNode validationNode)
         {
             Model = model;
+            IsModelBound = isModelBound;
             ValidationNode = validationNode;
         }
 
-        public object Model { get; private set; }
+        public bool IsModelBound { get; }
 
-        public ModelValidationNode ValidationNode { get; private set; }
+        public object Model { get; set; }
+
+        public ModelValidationNode ValidationNode { get; set; }
     }
 }

@@ -88,7 +88,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 var parameterType = parameter.ModelType;
                 var modelBindingContext = GetModelBindingContext(parameter, actionContext, operationBindingContext);
-                if (await bindingContext.ModelBinder.BindModelAsync(modelBindingContext))
+                if (await bindingContext.ModelBinder.BindModelAsync(modelBindingContext) &&
+                    modelBindingContext.IsModelSet)
                 {
                     arguments[parameter.PropertyName] = modelBindingContext.Model;
                 }
