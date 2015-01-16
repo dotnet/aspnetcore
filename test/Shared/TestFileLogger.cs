@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Identity.Test
     {
         public string FileName { get; set; }
 
-        public object FileLock { get; private set; } = new object();
+        public static object FileLock { get; private set; } = new object();
 
         public TestFileLogger(string name)
         {
