@@ -39,6 +39,6 @@ namespace ConnegWebSite
         {
             // should be written using the content defined at derived class's class.
             return "ProducesContentOnClassController";
-        }
+        }        
     }
 }

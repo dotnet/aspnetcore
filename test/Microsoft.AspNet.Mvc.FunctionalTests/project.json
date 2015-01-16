@@ -44,7 +44,8 @@
         "MvcTagHelpersWebSite": "1.0.0",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
         "xunit.runner.kre": "1.0.0-*",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-*"
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+"FormatFilterWebSite": "1.0.0-*"
     },
     "commands": {
         "test": "xunit.runner.kre"

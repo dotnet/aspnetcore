@@ -405,5 +405,35 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
         }
+
+        [Fact]
+        public async Task ProducesAttribute_And_FormatFilterAttribute_Conflicting()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json");
+
+            // Act
+            var response = await client.GetAsync("http://localhost/FormatFilter/MethodWithFormatFilter.json");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ProducesAttribute_And_FormatFilterAttribute_Collaborating()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();            
+
+            // Act
+            var response = await client.GetAsync("http://localhost/FormatFilter/MethodWithFormatFilter");
+
+            // Assert
+            var type = response.Content.Headers.ContentType;
+            var body = await response.Content.ReadAsStringAsync();
+        }
     }
 }

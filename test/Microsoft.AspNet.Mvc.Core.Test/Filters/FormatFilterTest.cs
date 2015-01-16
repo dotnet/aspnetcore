@@ -1,223 +1,348 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core.Filters;
-using Microsoft.AspNet.PipelineCore;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
 #if ASPNET50
 using Moq;
-using Microsoft.Framework.OptionsModel;
-using Microsoft.AspNet.Http;
+using System.Net;
 #endif
 
-namespace Microsoft.AspNet.Mvc.Core.Test
+namespace Microsoft.AspNet.Mvc
 {
-    public enum FormatPlace
-    {
-        RouteData,
-        QueryData,
-        RouteAndQueryData
-    }
-
     public class FormatFilterTests
     {
+        public enum FormatSource
+        {
+            RouteData,
+            QueryData,
+            RouteAndQueryData
+        }
+
+#if ASPNET50
         [Theory]
-        [InlineData("json", FormatPlace.RouteData, "application/json")]
-        [InlineData("json", FormatPlace.QueryData, "application/json")]
-        [InlineData("json", FormatPlace.RouteAndQueryData, "application/json")]
-        public void FormatFilter_ContextContainsFormat_DefaultFormat(string format, 
-            FormatPlace place, 
+        [InlineData("json", FormatSource.RouteData, "application/json")]
+        [InlineData("json", FormatSource.QueryData, "application/json")]
+        [InlineData("json", FormatSource.RouteAndQueryData, "application/json")]
+        public void FormatFilter_ContextContainsFormat_DefaultFormat(
+            string format, 
+            FormatSource place, 
             string contentType)
         {
             // Arrange  
-            var mediaType = MediaTypeHeaderValue.Parse(contentType);
-            var context = CreateResultExecutingContext(format, place);
-            var filter = new FormatFilter();
+            var mediaType = MediaTypeHeaderValue.Parse("application/json");
+            var resultExecutingContext = CreateResultExecutingContext(
+                format, 
+                FormatSource.RouteData);            
+            var resourceExecutingContext = CreateResourceExecutingContext(
+                new IFilter[] { }, 
+                format, 
+                FormatSource.RouteData);
+            var filter = new FormatFilterAttribute();
 
             // Act
-            filter.OnResultExecuting(context);
+            filter.OnResourceExecuting(resourceExecutingContext);
+
+            // Assert
+            Assert.Null(resourceExecutingContext.Result);
+
+            // Act
+            filter.OnResultExecuting(resultExecutingContext);
             
             // Assert
-            var objectResult = context.Result as ObjectResult;
+            var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
             Assert.Equal(1, objectResult.ContentTypes.Count);
-            ValidateMediaType(mediaType, objectResult.ContentTypes[0]);
+            AssertMediaTypesEqual(mediaType, objectResult.ContentTypes[0]);
+        }
+
+        [Fact]
+        public void FormatFilter_ContextContainsFormat_InRouteAndQueryData()
+        {
+            // Arrange  
+            var mediaType = MediaTypeHeaderValue.Parse("application/json");
+
+            var httpContext = CreateMockHttpContext();
+
+            // Routedata contains json
+            var data = new RouteData();
+            data.Values.Add("format", "json");
+
+            // Query contains xml
+            httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(true);
+            httpContext.Setup(c => c.Request.Query.Get("format")).Returns("xml");
+            var ac = new ActionContext(httpContext.Object, data, new ActionDescriptor());
+
+            var resultExecutingContext = new ResultExecutingContext(
+                ac, 
+                new IFilter[] { }, 
+                new ObjectResult("Hello!"),
+                controller: new object());
+            
+            var resourceExecutingContext = new ResourceExecutingContext(
+                ac,
+                new IFilter[] { });
+
+            var filter = new FormatFilterAttribute();
+
+            // Act
+            filter.OnResourceExecuting(resourceExecutingContext);
+            filter.OnResultExecuting(resultExecutingContext);
+
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
+            Assert.Equal(1, objectResult.ContentTypes.Count);
+            AssertMediaTypesEqual(mediaType, objectResult.ContentTypes[0]);
         }
 
         [Theory]
-        [InlineData("foo", FormatPlace.RouteData, "application/foo")]
-        [InlineData("foo", FormatPlace.QueryData, "application/foo")]
-        [InlineData("foo", FormatPlace.RouteAndQueryData, "application/foo")]
+        [InlineData("foo", FormatSource.RouteData, "application/foo")]
+        [InlineData("foo", FormatSource.QueryData, "application/foo")]
+        [InlineData("foo", FormatSource.RouteAndQueryData, "application/foo")]
         public void FormatFilter_ContextContainsFormat_Custom(
             string format, 
-            FormatPlace place, 
+            FormatSource place, 
             string contentType)
         {
             // Arrange  
             var mediaType = MediaTypeHeaderValue.Parse(contentType);
-            var context = CreateResultExecutingContext(format, place);
-            var options = (IOptions<MvcOptions>)context.HttpContext.RequestServices.GetService(
-                                                                                    typeof(IOptions<MvcOptions>));
-            options.Options.AddFormatMapping(format, MediaTypeHeaderValue.Parse(contentType));
-            var filter = new FormatFilter();
+            var resultExecutingContext = CreateResultExecutingContext(format, place);
+            var resourceExecutingContext = CreateResourceExecutingContext(new IFilter[] { }, format, place);
+            var options = resultExecutingContext.HttpContext.RequestServices.GetService<IOptions<MvcOptions>>();
+            options.Options.FormatterMappings.SetFormatMapping(format, MediaTypeHeaderValue.Parse(contentType));
+            
+            var filter = new FormatFilterAttribute();
 
             // Act
-            filter.OnResultExecuting(context);
-
+            filter.OnResourceExecuting(resourceExecutingContext);
+            filter.OnResultExecuting(resultExecutingContext);
+            
             // Assert
-            var objectResult = context.Result as ObjectResult;
+            var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
             Assert.Equal(1, objectResult.ContentTypes.Count);
-            ValidateMediaType(mediaType, objectResult.ContentTypes[0]);
+            AssertMediaTypesEqual(mediaType, objectResult.ContentTypes[0]);
         }
 
         [Theory]
-        [InlineData("foo", FormatPlace.RouteData, "application/foo")]
-        public void FormatFilter_ContextContainsFormat_NonExisting(
+        [InlineData("foo", FormatSource.RouteData, "application/foo")]
+        [InlineData("foo", FormatSource.QueryData, "application/foo")]
+        public void FormatFilter_ContextContainsNonExistingFormat(
             string format,
-            FormatPlace place,
+            FormatSource place,
             string contentType)
         {
             // Arrange  
             var mediaType = MediaTypeHeaderValue.Parse(contentType);
             var resourceExecutingContext = CreateResourceExecutingContext(new IFilter[] { }, format, place);          
-            var filter = new FormatFilter();
+            var filter = new FormatFilterAttribute();
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
 
             // Assert
             var actionResult = resourceExecutingContext.Result;
-            Assert.True(actionResult is HttpNotFoundResult);
+            Assert.IsType<HttpNotFoundResult>(actionResult);
         }
 
         [Fact]
         public void FormatFilter_ContextDoesntContainFormat()
         {
-            // Arrange              
+            // Arrange
             var resourceExecutingContext = CreateResourceExecutingContext(new IFilter[] { });
-            var filter = new FormatFilter();
+            var filter = new FormatFilterAttribute();
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
 
             // Assert
-            var result = resourceExecutingContext.Result as IActionResult;
-            Assert.False(result is HttpNotFoundResult);
+            Assert.Null(resourceExecutingContext.Result);
         }
 
         [Theory]
-        [InlineData("json", FormatPlace.RouteData, "application/json")]
-        [InlineData("json", FormatPlace.QueryData, "application/json")]
+        [InlineData("json", FormatSource.RouteData, "application/json")]
+        [InlineData("json", FormatSource.QueryData, "application/json")]
         public void FormatFilter_ContextContainsFormat_ContainsProducesFilter_Matching(
             string format, 
-            FormatPlace place, 
+            FormatSource place, 
             string contentType)
         {
             // Arrange
             var produces = new ProducesAttribute(contentType, new string[] { "application/foo", "text/bar" });
             var context = CreateResourceExecutingContext(new IFilter[] { produces }, format, place);
-            var filter = new FormatFilter();
+            var filter = new FormatFilterAttribute();
 
             // Act
             filter.OnResourceExecuting(context);
 
-            // Assert
-            var result = context.Result as IActionResult;
-            Assert.False(result is HttpNotFoundResult);
+            // Assert            
+            Assert.Null(context.Result);
+        }
+
+        [Fact]
+        public void FormatFilter_ContextContainsFormat_ContainsProducesFilter_WildCardMatching()
+        {
+            // Arrange
+            var produces = new ProducesAttribute(
+                "application/baz", 
+                new string[] { "application/foo", "text/bar" });
+            var context = CreateResourceExecutingContext(new IFilter[] { produces }, "star", FormatSource.RouteData);
+            var options = context.HttpContext.RequestServices.GetService<IOptions<MvcOptions>>();
+            options.Options.FormatterMappings.SetFormatMapping("star", MediaTypeHeaderValue.Parse("application/*"));
+
+            var filter = new FormatFilterAttribute();
+
+            // Act
+            filter.OnResourceExecuting(context);
+
+            // Assert            
+            Assert.Null(context.Result);
         }
 
         [Theory]
-        [InlineData("json", FormatPlace.RouteData, "application/json")]
-        [InlineData("json", FormatPlace.QueryData, "application/json")]
+        [InlineData("json", FormatSource.RouteData, "application/json")]
+        [InlineData("json", FormatSource.QueryData, "application/json")]
         public void FormatFilter_ContextContainsFormat_ContainsProducesFilter_Conflicting(
             string format,
-            FormatPlace place,
+            FormatSource place,
             string contentType)
         {
             // Arrange
             var mediaType = MediaTypeHeaderValue.Parse(contentType);
             var produces = new ProducesAttribute("application/xml", new string[] { "application/foo", "text/bar" });
             var context = CreateResourceExecutingContext(new IFilter[] { produces }, format, place);
-            var filter = new FormatFilter();
+            var filter = new FormatFilterAttribute();
 
             // Act
             filter.OnResourceExecuting(context);
 
             // Assert
-            var result = context.Result as IActionResult;
-            Assert.True(result is HttpNotFoundResult);
+            var result = Assert.IsType<HttpNotFoundResult>(context.Result);
+        }
+
+        [Theory]
+        [InlineData("", FormatSource.RouteData)]
+        [InlineData(null, FormatSource.QueryData)]
+        [InlineData("", FormatSource.RouteData)]
+        [InlineData(null, FormatSource.QueryData)]
+        public void FormatFilter_ContextContainsFormat_Invalid(
+            string format,
+            FormatSource place)
+        {
+            // Arrange            
+            var resourceExecutingContext = CreateResourceExecutingContext(
+                new IFilter[] { }, 
+                format, 
+                FormatSource.RouteData);
+            var filter = new FormatFilterAttribute();
+
+            // Act
+            filter.OnResourceExecuting(resourceExecutingContext);
+
+            // Assert
+            Assert.Null(resourceExecutingContext.Result);
+        }
+
+        [Theory]
+        [InlineData("json", FormatSource.RouteData, "application/json")]
+        [InlineData("json", FormatSource.QueryData, "application/json")]
+        [InlineData("", FormatSource.RouteAndQueryData, null)]
+        [InlineData(null, FormatSource.RouteAndQueryData, null)]
+        public void FormatFilter_GetContentTypeForRequest(
+            string format,
+            FormatSource place,
+            string contentType)
+        {
+            // Arrange            
+            var resourceExecutingContext = CreateResourceExecutingContext(
+                new IFilter[] { },
+                format,
+                FormatSource.RouteData);
+            var filter = new FormatFilterAttribute();
+            var returnContentType = filter.GetContentTypeForCurrentRequest(resourceExecutingContext);
+
+
+            MediaTypeHeaderValue mediaType = null;
+            if (returnContentType != null)
+            {
+                mediaType = MediaTypeHeaderValue.Parse("application/json");
+            }
+
+            Assert.Equal(mediaType, returnContentType);
         }
 
         private static ResourceExecutingContext CreateResourceExecutingContext(
             IFilter[] filters,
             string format = null, 
-            FormatPlace? place = null)
+            FormatSource? place = null)
         {
-            if(format == null || place == null)
+            if (format == null || place == null)
             {
                 var context = new ResourceExecutingContext(
                     CreateActionContext(),
                     filters);
-                context.Result = new HttpStatusCodeResult(200);
                 return context;
             }
 
             var context1 = new ResourceExecutingContext(
                 CreateActionContext(format, place),
                 filters);
-            context1.Result = new HttpStatusCodeResult(200);
             return context1;
         }
 
         private static ResultExecutingContext CreateResultExecutingContext(
             string format = null,
-            FormatPlace? place = null)
+            FormatSource? place = null)
         {
-            if (format == null || place == null)
+            if (format == null && place == null)
             {
                 return new ResultExecutingContext(
                     new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
                     new IFilter[] { },
-                    new ObjectResult("Some Value"));
+                    new ObjectResult("Some Value"),
+                    controller: new object());
             }
 
             return new ResultExecutingContext(
                 CreateActionContext(format, place),
                 new IFilter[] { },
-                new ObjectResult("Some Value"));
+                new ObjectResult("Some Value"),
+                controller: new object());
         }
 
-        private static ActionContext CreateActionContext(string format = null, FormatPlace? place = null)
+        private static ActionContext CreateActionContext(string format = null, FormatSource? place = null)
         {
             var httpContext = CreateMockHttpContext();
+            var data = new RouteData();
 
-            if (place == FormatPlace.RouteData || place == FormatPlace.RouteAndQueryData)
-            {
-                var data = new RouteData();
+            if (place == FormatSource.RouteData || place == FormatSource.RouteAndQueryData)
+            {                
                 data.Values.Add("format", format);
-                httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(false);
-                return new ActionContext(httpContext.Object, data, new ActionDescriptor());
+                httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(false);                
             }
 
-            if (place == FormatPlace.QueryData || place == FormatPlace.RouteAndQueryData)
+            if (place == FormatSource.QueryData || place == FormatSource.RouteAndQueryData)
             {
                 httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(true);
-                httpContext.Setup(c => c.Request.Query.Get("format")).Returns(format);
-                return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+                httpContext.Setup(c => c.Request.Query.Get("format")).Returns(format);                
             }
-            else if(place == null && format == null)
+            else if (place == null && format == null)
             {
-                httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(false);
-                return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+                httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(false);                
             }
 
-            return null;
+            return new ActionContext(httpContext.Object, data, new ActionDescriptor());
         }
 
         private static Mock<HttpContext> CreateMockHttpContext()
         {
-            MvcOptions options = new MvcOptions();
+            var options = new MvcOptions();
             MvcOptionsSetup.ConfigureMvc(options);
             var mvcOptions = new Mock<IOptions<MvcOptions>>();
             mvcOptions.Setup(o => o.Options).Returns(options);
@@ -236,7 +361,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             return httpContext;
         }
 
-        private static void ValidateMediaType(MediaTypeHeaderValue expectedMediaType, MediaTypeHeaderValue actualMediaType)
+        private static void AssertMediaTypesEqual(
+            MediaTypeHeaderValue expectedMediaType, 
+            MediaTypeHeaderValue actualMediaType)
         {
             Assert.Equal(expectedMediaType.MediaType, actualMediaType.MediaType);
             Assert.Equal(expectedMediaType.SubType, actualMediaType.SubType);
@@ -249,5 +376,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 Assert.Equal(item.Value, NameValueHeaderValue.Find(actualMediaType.Parameters, item.Name).Value);
             }
         }
+#endif
     }
 }

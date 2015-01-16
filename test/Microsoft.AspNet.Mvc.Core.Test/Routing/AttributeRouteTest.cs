@@ -245,6 +245,119 @@ namespace Microsoft.AspNet.Mvc.Routing
             }
         }
 
+        [Theory]        
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo.bar", "foo", "bar", null)]
+        [InlineData("moo/{p1?}", "/moo/foo", "foo", null, null)]
+        [InlineData("moo/{p1?}", "/moo", null, null, null)]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo", "foo", null, null)]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo..bar", "foo.", "bar", null)]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo.moo.bar", "foo.moo", "bar", null)]
+        [InlineData("moo/{p1}.{p2}", "/moo/foo.bar", "foo", "bar", null)]
+        [InlineData("moo/foo.{p1}.{p2?}", "/moo/foo.moo.bar", "moo", "bar", null)]
+        [InlineData("moo/foo.{p1}.{p2?}", "/moo/foo.moo", "moo", null, null)]
+        [InlineData("moo/.{p2?}", "/moo/.foo", null, "foo", null)]        
+        [InlineData("moo/{p1}.{p2?}", "/moo/....", "..", ".", null)]
+        [InlineData("moo/{p1}.{p2?}", "/moo/.bar", ".bar", null, null)]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "/moo/foo.moo.bar", "foo", "moo", "bar")]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "/moo/foo.moo", "foo", "moo", null)]
+        [InlineData("moo/{p1}.{p2}.{p3}.{p4?}", "/moo/foo.moo.bar", "foo", "moo", "bar")]
+        [InlineData("{p1}.{p2?}/{p3}", "/foo.moo/bar", "foo", "moo", "bar")]
+        [InlineData("{p1}.{p2?}/{p3}", "/foo/bar", "foo", null, "bar")]
+        [InlineData("{p1}.{p2?}/{p3}", "/.foo/bar", ".foo", null, "bar")]
+        public async Task AttributeRoute_WithOptionalCompositeParameter_Valid(
+            string template, 
+            string request, 
+            string p1,
+            string p2,
+            string p3)
+        {
+            // Arrange
+            var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
+
+            // We need to force the creation of a closure in order to avoid an issue with Moq and Roslyn.
+            var numberOfCalls = 0;
+            Action<RouteContext> callBack = ctx => { ctx.IsHandled = true; numberOfCalls++; };
+
+            var next = new Mock<IRouter>();
+            next.Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                            .Callback(callBack)
+                            .Returns(Task.FromResult(true))
+                            .Verifiable();
+
+            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
+
+            // We setup the route entries in reverse order of precedence to ensure that when we
+            // try to route the request, the route with a higher precedence gets tried first.
+            var matchingRoutes = new[] { firstRoute };
+            var linkGenerationEntries = Enumerable.Empty<AttributeRouteLinkGenerationEntry>();
+            var route = new AttributeRoute(next.Object, matchingRoutes, linkGenerationEntries, NullLoggerFactory.Instance);
+            var context = CreateRouteContext(request);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert            
+            Assert.True(context.IsHandled);
+            if (p1 != null)
+            {
+                Assert.Equal(p1, context.RouteData.Values["p1"]);
+            }
+            if (p2 != null)
+            {
+                Assert.Equal(p2, context.RouteData.Values["p2"]);
+            }
+            if (p3 != null)
+            {
+                Assert.Equal(p3, context.RouteData.Values["p3"]);
+            }
+        }
+
+        [Theory]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo.")]
+        [InlineData("moo/{p1}.{p2?}", "/moo/.")]
+        [InlineData("moo/{p1}.{p2}", "/foo.")]
+        [InlineData("moo/{p1}.{p2}", "/foo")]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "/moo/foo.moo.")]
+        [InlineData("moo/foo.{p2}.{p3?}", "/moo/bar.foo.moo")]
+        [InlineData("moo/foo.{p2}.{p3?}", "/moo/kungfoo.moo.bar")]
+        [InlineData("moo/foo.{p2}.{p3?}", "/moo/kungfoo.moo")]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "/moo/foo")]
+        [InlineData("{p1}.{p2?}/{p3}", "/foo./bar")]
+        [InlineData("moo/.{p2?}", "/moo/.")]
+        [InlineData("{p1}.{p2}/{p3}", "/.foo/bar")]
+        public async Task AttributeRoute_WithOptionalCompositeParameter_Invalid(
+            string template,
+            string request)
+        {
+            // Arrange
+            var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
+
+            // We need to force the creation of a closure in order to avoid an issue with Moq and Roslyn.
+            var numberOfCalls = 0;
+            Action<RouteContext> callBack = ctx => { ctx.IsHandled = true; numberOfCalls++; };
+
+            var next = new Mock<IRouter>();
+            next.Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                            .Callback(callBack)
+                            .Returns(Task.FromResult(true))
+                            .Verifiable();
+
+            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
+
+            // We setup the route entries in reverse order of precedence to ensure that when we
+            // try to route the request, the route with a higher precedence gets tried first.
+            var matchingRoutes = new[] { firstRoute };
+            var linkGenerationEntries = Enumerable.Empty<AttributeRouteLinkGenerationEntry>();
+            var route = new AttributeRoute(next.Object, matchingRoutes, linkGenerationEntries, NullLoggerFactory.Instance);
+            var context = CreateRouteContext(request);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert            
+            Assert.False(context.IsHandled);            
+        }
+
         [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
         [InlineData("template/5", "template/{parameter}")]
@@ -1194,6 +1307,96 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.Equal("Store", path);
+        }
+
+        public static IEnumerable<object[]> OptionalParamValues
+        {
+            get
+            {
+                return new object[][]
+                {
+                    // defaults
+                    // ambient values
+                    // values
+                    new object[]
+                    {
+                        "Test/{val1}/{val2}.{val3?}",                        
+                        new {val1 = "someval1", val2 = "someval2", val3 = "someval3a"},
+                        new {val3 = "someval3v"},
+                        "Test/someval1/someval2.someval3v",
+                    },
+                    new object[]
+                    {
+                        "Test/{val1}/{val2}.{val3?}",
+                        new {val3 = "someval3a"},
+                        new {val1 = "someval1", val2 = "someval2", val3 = "someval3v" },
+                        "Test/someval1/someval2.someval3v",
+                    },
+                    new object[]
+                    {
+                        "Test/{val1}/{val2}.{val3?}",
+                        null,
+                        new {val1 = "someval1", val2 = "someval2" },
+                        "Test/someval1/someval2",
+                    },                    
+                    new object[]
+                    {
+                        "Test/{val1}.{val2}.{val3}.{val4?}",
+                        new {val1 = "someval1", val2 = "someval2" },                        
+                        new {val4 = "someval4", val3 = "someval3" },
+                        "Test/someval1.someval2.someval3.someval4",
+                    },
+                    new object[]
+                    {
+                        "Test/{val1}.{val2}.{val3}.{val4?}",
+                        new {val1 = "someval1", val2 = "someval2" },                        
+                        new {val3 = "someval3" },
+                        "Test/someval1.someval2.someval3",
+                    },
+                    new object[]
+                    {
+                        "Test/.{val2?}",
+                        null,
+                        new {val2 = "someval2" },
+                        "Test/.someval2",
+                    },
+                    new object[]
+                    {
+                        "Test/.{val2?}",
+                        null,
+                        null,
+                        "Test/",
+                    },
+                    new object[]
+                    {
+                        "Test/{val1}.{val2}",
+                        new {val1 = "someval1", val2 = "someval2" },
+                        new {val3 = "someval3" },
+                        "Test/someval1.someval2?val3=someval3",
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData("OptionalParamValues")]
+        public void AttributeRoute_GenerateLink_Match_WithOptionalParameters(
+            string template,
+            object ambientValues,
+            object values,
+            string expected)
+        {
+            // Arrange
+            var entry = CreateGenerationEntry(template, null);
+            var route = CreateAttributeRoute(entry);
+
+            var context = CreateVirtualPathContext(values, ambientValues);
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal(expected, path);
         }
 
         [Fact]

@@ -13,9 +13,7 @@
     "Microsoft.AspNet.Routing": "1.0.0-*",
     "Microsoft.AspNet.Security": "1.0.0-*",
     "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
-    "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" },
-"Microsoft.Net.Http": "2.2.13.0",
-"Microsoft.Net.Http.Server": "1.0.0.0-rc1-11332"
+    "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
   },
   "frameworks": {
     "aspnet50": {},

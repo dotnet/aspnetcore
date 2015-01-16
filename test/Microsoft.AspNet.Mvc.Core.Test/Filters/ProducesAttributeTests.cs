@@ -9,6 +9,10 @@ using Microsoft.AspNet.Routing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
+#if ASPNET50
+using Moq;
+#endif
+
 namespace Microsoft.AspNet.Mvc.Test
 {
     public class ProducesAttributeTests
@@ -20,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var mediaType1 = MediaTypeHeaderValue.Parse("application/json");
             var mediaType2 = MediaTypeHeaderValue.Parse("text/json;charset=utf-8");
             var producesContentAttribute = new ProducesAttribute("application/json", "text/json;charset=utf-8");
-            var resultExecutingContext = CreateResultExecutingContext(producesContentAttribute);
+            var resultExecutingContext = CreateResultExecutingContext(new IFilter[] { producesContentAttribute });
             var next = new ResultExecutionDelegate(
                             () => Task.FromResult(CreateResultExecutedContext(resultExecutingContext)));
 
@@ -33,6 +37,33 @@ namespace Microsoft.AspNet.Mvc.Test
             ValidateMediaType(mediaType1, objectResult.ContentTypes[0]);
             ValidateMediaType(mediaType2, objectResult.ContentTypes[1]);
         }
+        
+        [Fact]
+        public async Task ProducesContentAttribute_FormatFilterAttribute()
+        {
+            // Arrange
+            var mediaType1 = MediaTypeHeaderValue.Parse("application/xml");
+            var mediaType2 = MediaTypeHeaderValue.Parse("application/json");
+            var producesContentAttribute = new ProducesAttribute("application/xml");
+
+            var formatFilter = new Mock<IFormatFilter>();
+            formatFilter.Setup(f => f.GetContentTypeForCurrentRequest(It.IsAny<FilterContext>()))
+                .Returns(mediaType2);
+
+            var filters = new IFilter[] { producesContentAttribute, formatFilter.Object };
+            var resultExecutingContext = CreateResultExecutingContext(filters);
+
+            var next = new ResultExecutionDelegate(
+                            () => Task.FromResult(CreateResultExecutedContext(resultExecutingContext)));
+
+            // Act
+            await producesContentAttribute.OnResultExecutionAsync(resultExecutingContext, next);
+
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
+            Assert.Equal(0, objectResult.ContentTypes.Count);
+        }
+
 
         [Theory]
         [InlineData("", "")]
@@ -95,13 +126,12 @@ namespace Microsoft.AspNet.Mvc.Test
             return new ResultExecutedContext(context, context.Filters, context.Result, context.Controller);
         }
 
-        private static ResultExecutingContext CreateResultExecutingContext(IFilter filter)
+        private static ResultExecutingContext CreateResultExecutingContext(IFilter[] filters)
         {
             return new ResultExecutingContext(
                 CreateActionContext(),
-                new IFilter[] { filter, },
-                new ObjectResult("Some Value"),
-                controller: new object());
+                filters,
+                new ObjectResult("Some Value"));
         }
 
         private static ActionContext CreateActionContext()

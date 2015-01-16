@@ -37,6 +37,6 @@ namespace ConnegWebSite
         public virtual string ReturnClassNameContentTypeOnDerivedAction()
         {
             return "ProducesContentBaseController";
-        }
+        }        
     }
 }

@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.Mvc
     {
         private AntiForgeryOptions _antiForgeryOptions = new AntiForgeryOptions();
         private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
-        //private OutputFormatterOptions _outputFormatterOptions = new OutputFormatterOptions();
 
         public MvcOptions()
         {
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
             OutputFormatters = new List<OutputFormatterDescriptor>();
             InputFormatters = new List<InputFormatterDescriptor>();
             Filters = new List<IFilter>();
-            OutputFormatterOptions = new OutputFormatterOptions();
+            FormatterMappings = new FormatterMappings();
         }
 
         /// <summary>
@@ -55,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public OutputFormatterOptions OutputFormatterOptions { get; }
+        public FormatterMappings FormatterMappings { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IFilter"/> which are used to construct filters that
@@ -68,16 +67,6 @@ namespace Microsoft.AspNet.Mvc
         /// a list of <see cref="IOutputFormatter"/> by <see cref="IOutputFormattersProvider"/>.
         /// </summary>
         public List<OutputFormatterDescriptor> OutputFormatters { get; private set; }
-
-        /// <summary>
-        /// Sets the mapping for output format specified in URL (extension) and content type
-        /// </summary>
-        /// <param name="format">URL extension for output format</param>
-        /// <param name="contentType">Content type mapping to the format</param>
-        public void AddFormatMapping(string format, MediaTypeHeaderValue contentType)
-        {
-            OutputFormatterOptions.AddFormatMapping(format, contentType);
-        }
 
         /// <summary>
         /// Gets a list of the <see cref="InputFormatterDescriptor" /> which are used to construct
