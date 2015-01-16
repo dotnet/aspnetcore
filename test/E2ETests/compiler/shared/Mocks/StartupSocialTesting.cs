@@ -7,6 +7,7 @@ using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Security;
 using Microsoft.AspNet.Security.Facebook;
 using Microsoft.AspNet.Security.Google;
 using Microsoft.AspNet.Security.MicrosoftAccount;
@@ -109,6 +110,12 @@ namespace MusicStore
 
                 //Add InMemoryCache
                 services.AddSingleton<IMemoryCache, MemoryCache>();
+
+                // Configure Auth
+                services.Configure<AuthorizationOptions>(options =>
+                {
+                    options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("Allowed").Build());
+                });
             });
 
             //To gracefully shutdown the server - Not for production scenarios
