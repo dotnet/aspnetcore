@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -130,8 +131,25 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var references = new List<MetadataReference>();
 
-            var export = _libraryManager.GetAllExports(_environment.ApplicationName);
+            // Get the MetadataReference for the executing application. If it's a Roslyn reference,
+            // we can copy the references created when compiling the application to the Razor page being compiled.
+            // This avoids performing expensive calls to MetadataReference.CreateFromImage.
+            var libraryExport = _libraryManager.GetLibraryExport(_environment.ApplicationName);
+            if (libraryExport?.MetadataReferences != null && libraryExport.MetadataReferences.Count > 0)
+            {
+                Debug.Assert(libraryExport.MetadataReferences.Count == 1,
+                             "Expected 1 MetadataReferences, found " + libraryExport.MetadataReferences.Count);
+                var roslynReference = libraryExport.MetadataReferences[0] as IRoslynMetadataReference;
+                var compilationReference = roslynReference?.MetadataReference as CompilationReference;
+                if (compilationReference != null)
+                {
+                    references.AddRange(compilationReference.Compilation.References);
+                    references.Add(roslynReference.MetadataReference);
+                    return references;
+                }
+            }
 
+            var export = _libraryManager.GetAllExports(_environment.ApplicationName);
             foreach (var metadataReference in export.MetadataReferences)
             {
                 // Taken from https://github.com/aspnet/KRuntime/blob/757ba9bfdf80bd6277e715d6375969a7f44370ee/src/...
