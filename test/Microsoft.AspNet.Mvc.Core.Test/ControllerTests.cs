@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Reflection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 #if ASPNET50
