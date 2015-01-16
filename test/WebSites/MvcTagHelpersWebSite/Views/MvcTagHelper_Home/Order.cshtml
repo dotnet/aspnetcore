@@ -72,8 +72,7 @@
         </div>
         <div>
             <label asp-for="Customer.Gender" class="order" />
-            <input asp-for="Customer.Gender" type="radio" value="Male" /> Male
-            <input asp-for="Customer.Gender" type="radio" value="Female" /> Female
+            @Html.EditorFor(model => model.Customer.Gender)
             <span asp-validation-for="Customer.Gender" />
         </div>
         <div asp-validation-summary="All" class="order" />

@@ -21,13 +21,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="metadata">
         /// Metadata about the <see cref="System.Linq.Expressions.Expression"/> of interest.
         /// </param>
-        public ModelExpression(string name, [NotNull] ModelMetadata metadata)
+        public ModelExpression([NotNull] string name, [NotNull] ModelMetadata metadata)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(name));
-            }
-
             Name = name;
             Metadata = metadata;
         }

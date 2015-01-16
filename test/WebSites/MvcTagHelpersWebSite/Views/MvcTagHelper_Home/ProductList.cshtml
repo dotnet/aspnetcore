@@ -10,9 +10,18 @@
 <body>
     @using (@Html.BeginForm("Index", "MvcTagHelper_Product", FormMethod.Post))
     {
-        @foreach (var product in Model)
+        var index = 0;
+        var fieldPrefix = ViewData.TemplateInfo.HtmlFieldPrefix;
+        foreach (var model in Model)
         {
-            @await Html.PartialAsync("_ProductPartial", product)
+            @* Update HtmlFieldPrefix so generated for, id and name attribute values are correct. *@
+            ViewData.TemplateInfo.HtmlFieldPrefix = fieldPrefix + string.Format("[{0}]", index++);
+            <div>
+                <label asp-for="@(model.HomePage)" class="product" />
+                <input asp-for="@(model.HomePage)" type="url" size="50" disabled="disabled" readonly="readonly" />
+            </div>
+            @await Html.PartialAsync("_ProductPartial", model)
+            ViewData.TemplateInfo.HtmlFieldPrefix = fieldPrefix;
         }
         <input type="submit" />
     }

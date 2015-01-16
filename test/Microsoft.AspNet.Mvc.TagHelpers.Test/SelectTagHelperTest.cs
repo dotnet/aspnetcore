@@ -315,24 +315,24 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelperContext = new TagHelperContext(contextAttributes, uniqueId: "test");
             var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
 
-            // TODO: https://github.com/aspnet/Mvc/issues/1253
-            // In real (model => model) scenario, ModelExpression should have name "" and
-            // TemplateInfo.HtmlFieldPrefix should be "Property1" but empty ModelExpression name is not currently
-            // supported, see also #1408.
             var metadataProvider = new EmptyModelMetadataProvider();
             string model = null;
             var metadata = metadataProvider.GetMetadataForType(() => model, typeof(string));
-            var modelExpression = new ModelExpression(propertyName, metadata);
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator.Object, metadataProvider);
+
+            // Simulate a (model => model) scenario. E.g. the calling helper may appear in a low-level template.
+            var modelExpression = new ModelExpression(string.Empty, metadata);
+            viewContext.ViewData.TemplateInfo.HtmlFieldPrefix = propertyName;
+
             ICollection<string> selectedValues = new string[0];
             htmlGenerator
                 .Setup(real => real.GenerateSelect(
                     viewContext,
                     metadata,
                     null,         // optionLabel
-                    propertyName, // name
+                    string.Empty, // name
                     expectedItems,
                     expectedAllowMultiple,
                     null,         // htmlAttributes

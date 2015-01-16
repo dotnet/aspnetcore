@@ -58,7 +58,15 @@ namespace Microsoft.AspNet.Mvc.Razor
                                  generatedAbsoluteIndex: 2105,
                                  generatedLineIndex: 53,
                                  generatedCharacterIndex: 95,
-                                 contentLength: 3)
+                                 contentLength: 3),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 166,
+                    documentLineIndex: 5,
+                    documentCharacterIndex: 18,
+                    generatedAbsoluteIndex: 2418,
+                    generatedLineIndex: 59,
+                    generatedCharacterIndex: 87,
+                    contentLength: 5),
             };
 
             // Act and Assert

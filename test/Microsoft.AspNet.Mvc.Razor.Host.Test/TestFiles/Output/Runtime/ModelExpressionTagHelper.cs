@@ -1,4 +1,4 @@
-﻿#pragma checksum "TestFiles/Input/ModelExpressionTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "5de24be79bca2d0ce7e180eab7b197442352f137"
+﻿#pragma checksum "TestFiles/Input/ModelExpressionTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "f068e0ad45f53d090f04213f542f87fb2cf750d2"
 namespace Asp
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -50,6 +50,22 @@ namespace Asp
             __tagHelperExecutionContext.Add(__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper);
 #line 5 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
 __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
+
+#line default
+#line hidden
+            __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For);
+            __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
+            WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
+            WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
+            __tagHelperExecutionContext = __tagHelperScopeManager.End();
+            BeginContext(146, 2, true);
+            WriteLiteral("\r\n");
+            EndContext();
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", "test");
+            __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<Microsoft.AspNet.Mvc.Razor.InputTestTagHelper>();
+            __tagHelperExecutionContext.Add(__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper);
+#line 6 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
+__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => Model);
 
 #line default
 #line hidden
