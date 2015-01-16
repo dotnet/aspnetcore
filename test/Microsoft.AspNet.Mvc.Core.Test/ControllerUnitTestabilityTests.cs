@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Mvc
 
         [Theory]
         [InlineData("/Created_1", "<html>CreatedBody</html>")]
-        [InlineData(null, null)]
+        [InlineData("/Created_2", null)]
         public void ControllerCreated_InvokedInUnitTests(string uri, string content)
         {
             // Arrange
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc
 
         [Theory]
         [InlineData("<html>CreatedBody</html>", "text/html", "Created.html")]
-        [InlineData(null, null, null)]
+        [InlineData("<html>CreatedBody</html>", null, null)]
         public void ControllerFileContent_InvokedInUnitTests(string content, string contentType, string fileName)
         {
             // Arrange
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Mvc
 
         [Theory]
         [InlineData("<html>CreatedBody</html>", "text/html", "Created.html")]
-        [InlineData(null, null, null)]
+        [InlineData("<html>CreatedBody</html>", null, null)]
         public void ControllerFileStream_InvokedInUnitTests(string content, string contentType, string fileName)
         {
             // Arrange
@@ -485,14 +485,13 @@ namespace Microsoft.AspNet.Mvc
 
             public IActionResult FileContent_Action(string content, string contentType, string fileName)
             {
-                var contentArray = string.IsNullOrEmpty(content) ? null : Encoding.UTF8.GetBytes(content);
+                var contentArray = Encoding.UTF8.GetBytes(content);
                 return File(contentArray, contentType, fileName);
             }
 
             public IActionResult FileStream_Action(string content, string contentType, string fileName)
             {
-                var memoryStream = string.IsNullOrEmpty(content) ? null :
-                                                       new MemoryStream(Encoding.UTF8.GetBytes(content));
+                var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
                 return File(memoryStream, contentType, fileName);
             }
 

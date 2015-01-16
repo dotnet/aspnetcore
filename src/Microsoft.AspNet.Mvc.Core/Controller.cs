@@ -398,8 +398,10 @@ namespace Microsoft.AspNet.Mvc
         public virtual RedirectToActionResult RedirectToAction(string actionName, string controllerName,
                                         object routeValues)
         {
-            return new RedirectToActionResult(Url, actionName, controllerName,
-                                                TypeHelper.ObjectToDictionary(routeValues));
+            return new RedirectToActionResult(actionName, controllerName, TypeHelper.ObjectToDictionary(routeValues))
+            {
+                UrlHelper = Url,
+            };
         }
 
         /// <summary>
@@ -453,8 +455,14 @@ namespace Microsoft.AspNet.Mvc
         public virtual RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName,
                                         object routeValues)
         {
-            return new RedirectToActionResult(Url, actionName, controllerName,
-                                                TypeHelper.ObjectToDictionary(routeValues), permanent: true);
+            return new RedirectToActionResult(
+                actionName,
+                controllerName,
+                TypeHelper.ObjectToDictionary(routeValues),
+                permanent: true)
+            {
+                UrlHelper = Url,
+            };
         }
 
         /// <summary>
@@ -489,7 +497,10 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual RedirectToRouteResult RedirectToRoute(string routeName, object routeValues)
         {
-            return new RedirectToRouteResult(Url, routeName, routeValues);
+            return new RedirectToRouteResult(routeName, routeValues)
+            {
+                UrlHelper = Url,
+            };
         }
 
         /// <summary>
@@ -526,7 +537,10 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual RedirectToRouteResult RedirectToRoutePermanent(string routeName, object routeValues)
         {
-            return new RedirectToRouteResult(Url, routeName, routeValues, permanent: true);
+            return new RedirectToRouteResult(routeName, routeValues, permanent: true)
+            {
+                UrlHelper = Url,
+            };
         }
 
         /// <summary>

@@ -15,7 +15,7 @@ using Microsoft.Framework.DependencyInjection;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Represents an <see cref="ActionResult"/> that when executed will
+    /// An <see cref="ActionResult"/> that when executed will
     /// write a file from disk to the response using mechanisms provided
     /// by the host.
     /// </summary>
@@ -23,16 +23,17 @@ namespace Microsoft.AspNet.Mvc
     {
         private const int DefaultBufferSize = 0x1000;
 
+        private string _fileName;
+
         /// <summary>
         /// Creates a new <see cref="FilePathResult"/> instance with
-        /// the provided <paramref name="fileName"/> and the
-        /// provided <paramref name="contentType"/>.
+        /// the provided <paramref name="fileName"/>
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be an absolute
         /// path. Relative and virtual paths are not supported.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FilePathResult([NotNull] string fileName, [NotNull] string contentType)
-            : base(contentType)
+        public FilePathResult([NotNull] string fileName)
+            : base(contentType: null)
         {
             FileName = fileName;
         }
@@ -45,25 +46,36 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="fileName">The path to the file. The path must be an absolute
         /// path. Relative and virtual paths are not supported.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FilePathResult(
-            [NotNull] string fileName,
-            [NotNull] string contentType,
-            [NotNull] IFileSystem fileSystem)
+        public FilePathResult([NotNull] string fileName, string contentType)
             : base(contentType)
         {
             FileName = fileName;
-            FileSystem = fileSystem;
         }
 
         /// <summary>
-        /// Gets the path to the file that will be sent back as the response.
+        /// Gets or sets the path to the file that will be sent back as the response.
         /// </summary>
-        public string FileName { get; private set; }
+        public string FileName
+        {
+            get
+            {
+                return _fileName;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                _fileName = value;
+            }
+        }
 
         /// <summary>
-        /// Gets the <see cref="IFileSystem"/> used to resolve paths.
+        /// Gets or sets the <see cref="IFileSystem"/> used to resolve paths.
         /// </summary>
-        public IFileSystem FileSystem { get; private set; }
+        public IFileSystem FileSystem { get; set; }
 
         /// <inheritdoc />
         protected override Task WriteFileAsync(HttpResponse response, CancellationToken cancellation)

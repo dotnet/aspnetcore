@@ -14,6 +14,13 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ObjectResult : ActionResult
     {
+        public ObjectResult(object value)
+        {
+            Value = value;
+            Formatters = new List<IOutputFormatter>();
+            ContentTypes = new List<MediaTypeHeaderValue>();
+        }
+
         public object Value { get; set; }
 
         public IList<IOutputFormatter> Formatters { get; set; }
@@ -26,13 +33,6 @@ namespace Microsoft.AspNet.Mvc
         /// Gets or sets the HTTP status code.
         /// </summary>
         public int? StatusCode { get; set; }
-
-        public ObjectResult(object value)
-        {
-            Value = value;
-            Formatters = new List<IOutputFormatter>();
-            ContentTypes = new List<MediaTypeHeaderValue>();
-        }
 
         public override async Task ExecuteResultAsync(ActionContext context)
         {

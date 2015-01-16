@@ -39,19 +39,19 @@ namespace Microsoft.AspNet.Mvc
         public IUrlHelper UrlHelper { get; set; }
 
         /// <summary>
-        /// Gets the name of the action to use for generating the URL.
+        /// Gets or sets the name of the action to use for generating the URL.
         /// </summary>
-        public string ActionName { get; private set; }
+        public string ActionName { get; set; }
 
         /// <summary>
-        /// Gets the name of the controller to use for generating the URL.
+        /// Gets or sets the name of the controller to use for generating the URL.
         /// </summary>
-        public string ControllerName { get; private set; }
+        public string ControllerName { get; set; }
 
         /// <summary>
-        /// Gets the route data to use for generating the URL.
+        /// Gets or sets the route data to use for generating the URL.
         /// </summary>
-        public IDictionary<string, object> RouteValues { get; private set; }
+        public IDictionary<string, object> RouteValues { get; set; }
 
         /// <inheritdoc />
         protected override void OnFormatting([NotNull] ActionContext context)

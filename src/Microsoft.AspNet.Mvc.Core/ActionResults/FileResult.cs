@@ -23,15 +23,15 @@ namespace Microsoft.AspNet.Mvc
         /// the provided <paramref name="contentType"/>.
         /// </summary>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        protected FileResult([NotNull] string contentType)
+        protected FileResult(string contentType)
         {
             ContentType = contentType;
         }
 
         /// <summary>
-        /// Gets the Content-Type header value that will be written to the response.
+        /// Gets or sets the Content-Type header value that will be written to the response.
         /// </summary>
-        public string ContentType { get; private set; }
+        public string ContentType { get; set; }
 
         /// <summary>
         /// Gets the file name that will be used in the Content-Disposition header of the response.
@@ -46,7 +46,11 @@ namespace Microsoft.AspNet.Mvc
         public override Task ExecuteResultAsync([NotNull] ActionContext context)
         {
             var response = context.HttpContext.Response;
-            response.ContentType = ContentType;
+
+            if (ContentType != null)
+            {
+                response.ContentType = ContentType;
+            }
 
             if (!string.IsNullOrEmpty(FileDownloadName))
             {

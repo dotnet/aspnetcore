@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,19 @@ namespace Microsoft.AspNet.Mvc
         // default buffer size as defined in BufferedStream type
         private const int BufferSize = 0x1000;
 
+        private Stream _fileStream;
+
+        /// <summary>
+        /// Creates a new <see cref="FileStreamResult"/> instance with
+        /// the provided <paramref name="fileStream"/>.
+        /// </summary>
+        /// <param name="fileStream">The stream with the file.</param>
+        public FileStreamResult([NotNull] Stream fileStream)
+            : base(contentType: null)
+        {
+            FileStream = fileStream;
+        }
+
         /// <summary>
         /// Creates a new <see cref="FileStreamResult"/> instance with
         /// the provided <paramref name="fileStream"/> and the
@@ -31,9 +45,24 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Gets the stream with the file that will be sent back as the response.
+        /// Gets or sets the stream with the file that will be sent back as the response.
         /// </summary>
-        public Stream FileStream { get; private set; }
+        public Stream FileStream
+        {
+            get
+            {
+                return _fileStream;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                _fileStream = value;
+            }
+        }
 
         /// <inheritdoc />
         protected async override Task WriteFileAsync(HttpResponse response, CancellationToken cancellation)

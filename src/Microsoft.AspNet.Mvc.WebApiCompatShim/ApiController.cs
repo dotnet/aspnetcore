@@ -359,7 +359,10 @@ namespace System.Web.Http
         [NonAction]
         public virtual RedirectToRouteResult RedirectToRoute([NotNull] string routeName, [NotNull] object routeValues)
         {
-            return new RedirectToRouteResult(Url, routeName, routeValues);
+            return new RedirectToRouteResult(routeName, routeValues)
+            {
+                UrlHelper = Url,
+            };
         }
 
         /// <summary>

@@ -27,10 +27,12 @@ namespace Microsoft.AspNet.Mvc.Core
             var actionContext = new ActionContext(httpContext.Object,
                                                   new RouteData(),
                                                   new ActionDescriptor());
-            IUrlHelper urlHelper = GetMockUrlHelper(expectedUrl);
-            RedirectToRouteResult result = new RedirectToRouteResult(urlHelper,
-                                                                     null,
-                                                                     TypeHelper.ObjectToDictionary(values));
+
+            var urlHelper = GetMockUrlHelper(expectedUrl);
+            var result = new RedirectToRouteResult(null, TypeHelper.ObjectToDictionary(values))
+            {
+                UrlHelper = urlHelper,
+            };
 
             // Act
             await result.ExecuteResultAsync(actionContext);
@@ -52,10 +54,11 @@ namespace Microsoft.AspNet.Mvc.Core
                                                   new RouteData(),
                                                   new ActionDescriptor());
 
-            IUrlHelper urlHelper = GetMockUrlHelper(returnValue: null);
-            RedirectToRouteResult result = new RedirectToRouteResult(urlHelper,
-                                                                     null,
-                                                                     new Dictionary<string, object>());
+            var urlHelper = GetMockUrlHelper(returnValue: null);
+            var result = new RedirectToRouteResult(null, new Dictionary<string, object>())
+            {
+                UrlHelper = urlHelper,
+            };
 
             // Act & Assert
             ExceptionAssert.ThrowsAsync<InvalidOperationException>(

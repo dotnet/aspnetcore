@@ -4,47 +4,58 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class RedirectToActionResult : ActionResult
     {
-        public RedirectToActionResult([NotNull] IUrlHelper urlHelper, string actionName,
-                                            string controllerName, IDictionary<string, object> routeValues)
-            : this(urlHelper, actionName, controllerName, routeValues, permanent: false)
+        public RedirectToActionResult(
+            string actionName,
+            string controllerName,
+            IDictionary<string, object> routeValues)
+            : this(actionName, controllerName, routeValues, permanent: false)
         {
         }
 
-        public RedirectToActionResult([NotNull] IUrlHelper urlHelper, string actionName,
-                                        string controllerName, IDictionary<string, object> routeValues, bool permanent)
+        public RedirectToActionResult(
+            string actionName,
+            string controllerName,
+            IDictionary<string, object> routeValues,
+            bool permanent)
         {
-            UrlHelper = urlHelper;
             ActionName = actionName;
             ControllerName = controllerName;
             RouteValues = routeValues;
             Permanent = permanent;
         }
 
-        public IUrlHelper UrlHelper { get; private set; }
+        public IUrlHelper UrlHelper { get; set; }
 
-        public string ActionName { get; private set; }
+        public string ActionName { get; set; }
 
-        public string ControllerName { get; private set; }
+        public string ControllerName { get; set; }
 
-        public IDictionary<string, object> RouteValues { get; private set; }
+        public IDictionary<string, object> RouteValues { get; set; }
 
-        public bool Permanent { get; private set; }
+        public bool Permanent { get; set; }
 
         public override void ExecuteResult([NotNull] ActionContext context)
         {
-            var destinationUrl = UrlHelper.Action(ActionName, ControllerName, RouteValues);
+            var urlHelper = GetUrlHelper(context);
 
+            var destinationUrl = urlHelper.Action(ActionName, ControllerName, RouteValues);
             if (string.IsNullOrEmpty(destinationUrl))
             {
                 throw new InvalidOperationException(Resources.NoRoutesMatched);
             }
 
             context.HttpContext.Response.Redirect(destinationUrl, Permanent);
+        }
+
+        private IUrlHelper GetUrlHelper(ActionContext context)
+        {
+            return UrlHelper ?? context.HttpContext.RequestServices.GetRequiredService<IUrlHelper>();
         }
     }
 }

@@ -14,6 +14,11 @@ namespace Microsoft.AspNet.Mvc
     public class ViewResult : ActionResult
     {
         /// <summary>
+        /// Gets or sets the HTTP status code.
+        /// </summary>
+        public int? StatusCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the view to render.
         /// </summary>
         /// <remarks>
@@ -43,6 +48,11 @@ namespace Microsoft.AspNet.Mvc
             var view = viewEngine.FindView(context, viewName)
                                  .EnsureSuccessful()
                                  .View;
+
+            if (StatusCode != null)
+            {
+                context.HttpContext.Response.StatusCode = StatusCode.Value;
+            }
 
             using (view as IDisposable)
             {
