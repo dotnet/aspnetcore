@@ -137,6 +137,23 @@ namespace Microsoft.AspNet.Security.OAuthBearer
             return Task.FromResult<object>(null);
         }
 
+        [Fact]
+        public async Task RetrievingTokenFromAlternateLocation()
+        {
+            var server = CreateServer(options => {
+                options.Notifications.MessageReceived = MessageReceived;
+                options.Notifications.SecurityTokenReceived = SecurityTokenReceived;
+            });
+            var response = await SendAsync(server, "http://example.com/oauth", "Bearer Token");
+            response.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        private static Task MessageReceived(MessageReceivedNotification<HttpContext, OAuthBearerAuthenticationOptions> notification)
+        {
+            notification.Token = "CustomToken";
+            return Task.FromResult<object>(null);
+        }
+
         class BlobTokenValidator : ISecurityTokenValidator
         {
 

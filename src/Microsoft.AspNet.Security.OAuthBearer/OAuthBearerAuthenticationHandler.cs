@@ -59,23 +59,29 @@ namespace Microsoft.AspNet.Security.OAuthBearer
                     return null;
                 }
 
-                string authorization = Request.Headers.Get("Authorization");
+                // If application retrieved token from somewhere else, use that.
+                token = messageReceivedNotification.Token;
 
-                // If no authorization header found, nothing to process further
-                if (String.IsNullOrEmpty(authorization))
-                {
-                    return null;
-                }
-
-                if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-                {
-                     token = authorization.Substring("Bearer ".Length).Trim();
-                }
-
-                // If no token found, no further work possible
                 if (string.IsNullOrEmpty(token))
                 {
-                    return null;
+                    string authorization = Request.Headers.Get("Authorization");
+
+                    // If no authorization header found, nothing to process further
+                    if (string.IsNullOrEmpty(authorization))
+                    {
+                        return null;
+                    }
+
+                    if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        token = authorization.Substring("Bearer ".Length).Trim();
+                    }
+
+                    // If no token found, no further work possible
+                    if (string.IsNullOrEmpty(token))
+                    {
+                        return null;
+                    }
                 }
 
                 // notify user token was received

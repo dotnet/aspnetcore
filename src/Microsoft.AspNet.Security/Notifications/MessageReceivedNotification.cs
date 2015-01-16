@@ -12,5 +12,10 @@ namespace Microsoft.AspNet.Security.Notifications
         }
 
         public TMessage ProtocolMessage { get; set; }
+
+        /// <summary>
+        /// Bearer Token. This will give application an opportunity to retrieve token from an alternation location.
+        /// </summary>
+        public string Token { get; set; }
     }
 }
