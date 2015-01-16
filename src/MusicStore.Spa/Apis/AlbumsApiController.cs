@@ -88,7 +88,7 @@ namespace MusicStore.Apis
         }
 
         [HttpPost]
-        [Authorize("app-ManageStore", "Allowed")]
+        [Authorize("app-ManageStore")]
         public async Task<ActionResult> CreateAlbum([FromBody]AlbumChangeDto album)
         {
             if (!ModelState.IsValid)
@@ -112,7 +112,7 @@ namespace MusicStore.Apis
         }
 
         [HttpPut("{albumId:int}/update")]
-        [Authorize("app-ManageStore", "Allowed")]
+        [Authorize("app-ManageStore")]
         public async Task<ActionResult> UpdateAlbum(int albumId, [FromBody]AlbumChangeDto album)
         {
             if (!ModelState.IsValid)
@@ -145,7 +145,7 @@ namespace MusicStore.Apis
         }
 
         [HttpDelete("{albumId:int}")]
-        [Authorize("app-ManageStore", "Allowed")]
+        [Authorize("app-ManageStore")]
         public async Task<ActionResult> DeleteAlbum(int albumId)
         {
             var album = await _storeContext.Albums.SingleOrDefaultAsync(a => a.AlbumId == albumId);

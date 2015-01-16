@@ -13,7 +13,7 @@ namespace MusicStore.Spa.Controllers
         }
 
         [HttpGet("admin")]
-        [Authorize("app-ManageStore", "Allowed")]
+        [Authorize("app-ManageStore")]
         public IActionResult Admin()
         {
             return View("/Pages/Admin.cshtml");

@@ -4,6 +4,7 @@ using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Security;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
@@ -85,6 +86,12 @@ namespace MusicStore
 
             //Add InMemoryCache
             services.AddSingleton<IMemoryCache, MemoryCache>();
+
+            // Configure Auth
+            services.Configure<AuthorizationOptions>(options =>
+            {
+                options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("Allowed").Build());
+            });
         }
 
         //This method is invoked when ASPNET_ENV is 'Development' or is not defined

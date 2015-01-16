@@ -5,6 +5,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Security;
 using Microsoft.AspNet.Server.WebListener;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
@@ -88,6 +89,12 @@ namespace MusicStore
 
                 //Add InMemoryCache
                 services.AddSingleton<IMemoryCache, MemoryCache>();
+
+                // Configure Auth
+                services.Configure<AuthorizationOptions>(options =>
+                {
+                    options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("Allowed").Build());
+                });
             });
 
             //Configure SignalR

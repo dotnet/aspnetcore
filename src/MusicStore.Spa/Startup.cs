@@ -7,6 +7,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Security;
 using Microsoft.AspNet.Security.Cookies;
 using Microsoft.AspNet.StaticFiles;
 using Microsoft.Data.Entity;
@@ -61,6 +62,13 @@ namespace MusicStore.Spa
 
             // Add application services to the service container
             //services.AddTransient<IModelMetadataProvider, BuddyModelMetadataProvider>();
+
+            // Configure Auth
+            services.Configure<AuthorizationOptions>(options =>
+            {
+                options.AddPolicy("app-ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("Allowed").Build());
+            });
+
         }
 
         public void Configure(IApplicationBuilder app)

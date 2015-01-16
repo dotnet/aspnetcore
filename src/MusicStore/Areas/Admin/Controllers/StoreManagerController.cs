@@ -14,7 +14,7 @@ using MusicStore.ViewModels;
 namespace MusicStore.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Microsoft.AspNet.Mvc.Authorize("ManageStore", "Allowed")]
+    [Microsoft.AspNet.Mvc.Authorize("ManageStore")]
     public class StoreManagerController : Controller
     {
         private readonly MusicStoreContext _dbContext;
