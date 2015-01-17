@@ -117,13 +117,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributeDictionary.Remove("checked");
             }
 
+            // Use ViewData only in CheckBox case (metadata null) and when the user didn't pass an isChecked value.
             return GenerateInput(
                 viewContext,
                 InputType.CheckBox,
                 metadata,
                 name,
                 value: "true",
-                useViewData: !explicitValue,
+                useViewData: (metadata == null && !explicitValue),
                 isChecked: isChecked ?? false,
                 setId: true,
                 isExplicitValue: false,
