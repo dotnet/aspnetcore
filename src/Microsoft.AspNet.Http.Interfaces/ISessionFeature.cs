@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.HttpFeature
+namespace Microsoft.AspNet.Http.Interfaces
 {
+    // TODO: Is there any reason not to flatten the Factory down into the Feature?
     [AssemblyNeutral]
-    public interface ISessionFactory
+    public interface ISessionFeature
     {
-        bool IsAvailable { get; }
+        ISessionFactory Factory { get; set; }
 
-        ISession Create();
+        ISession Session { get; set; }
     }
 }

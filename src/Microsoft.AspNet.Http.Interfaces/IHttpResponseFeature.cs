@@ -6,18 +6,16 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.HttpFeature
+namespace Microsoft.AspNet.Http.Interfaces
 {
     [AssemblyNeutral]
-    public interface IHttpRequestFeature
+    public interface IHttpResponseFeature
     {
-        string Protocol { get; set; }
-        string Scheme { get; set; }
-        string Method { get; set; }
-        string PathBase { get; set; }
-        string Path { get; set; }
-        string QueryString { get; set; }
+        int StatusCode { get; set; }
+        string ReasonPhrase { get; set; }
         IDictionary<string, string[]> Headers { get; set; }
         Stream Body { get; set; }
+        bool HeadersSent { get; }
+        void OnSendingHeaders(Action<object> callback, object state);
     }
 }

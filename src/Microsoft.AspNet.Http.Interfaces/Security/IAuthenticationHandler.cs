@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.HttpFeature.Security
+namespace Microsoft.AspNet.Http.Interfaces.Security
 {
     [AssemblyNeutral]
     public interface IAuthenticationHandler

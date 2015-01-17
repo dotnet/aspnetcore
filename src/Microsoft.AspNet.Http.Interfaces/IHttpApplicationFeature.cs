@@ -4,7 +4,7 @@
 using System.Threading;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.HttpFeature
+namespace Microsoft.AspNet.Http.Interfaces
 {
     [AssemblyNeutral]
     public interface IHttpApplicationFeature

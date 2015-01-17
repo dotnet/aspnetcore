@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.HttpFeature.Security;
+using Microsoft.AspNet.Http.Interfaces.Security;
 
 namespace Microsoft.AspNet.Http.Core.Security
 {

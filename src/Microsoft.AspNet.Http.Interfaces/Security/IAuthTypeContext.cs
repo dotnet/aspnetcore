@@ -4,14 +4,11 @@
 using System.Collections.Generic;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.HttpFeature.Security
+namespace Microsoft.AspNet.Http.Interfaces.Security
 {
     [AssemblyNeutral]
-    public interface IChallengeContext
+    public interface IAuthTypeContext
     {
-        IEnumerable<string> AuthenticationTypes {get;}
-        IDictionary<string,string> Properties {get;}
-
-        void Accept(string authenticationType, IDictionary<string,object> description);
+        void Accept(IDictionary<string,object> description);
     }
 }

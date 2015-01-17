@@ -2,7 +2,7 @@
   "dependencies": {
     "Microsoft.AspNet.FeatureModel": "1.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.HttpFeature": "1.0.0-*",
+    "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
     "xunit.runner.kre": "1.0.0-*"
   },
   "commands": {

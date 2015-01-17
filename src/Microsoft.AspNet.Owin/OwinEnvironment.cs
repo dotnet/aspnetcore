@@ -14,8 +14,8 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.HttpFeature.Security;
+using Microsoft.AspNet.Http.Interfaces;
+using Microsoft.AspNet.Http.Interfaces.Security;
 using Microsoft.AspNet.Http.Core.Security;
 
 namespace Microsoft.AspNet.Owin

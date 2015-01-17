@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.HttpFeature
+namespace Microsoft.AspNet.Http.Interfaces
 {
     [AssemblyNeutral]
     public interface IHttpSendFileFeature

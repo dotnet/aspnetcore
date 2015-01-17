@@ -4,11 +4,13 @@
 using System.Collections.Generic;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.HttpFeature.Security
+namespace Microsoft.AspNet.Http.Interfaces.Security
 {
     [AssemblyNeutral]
-    public interface IAuthTypeContext
+    public interface ISignOutContext 
     {
-        void Accept(IDictionary<string,object> description);
+        IEnumerable<string> AuthenticationTypes { get; }
+
+        void Accept(string authenticationType, IDictionary<string, object> description);
     }
 }

@@ -11,7 +11,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Core"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http", "src\Microsoft.AspNet.Http\Microsoft.AspNet.Http.kproj", "{22071333-15BA-4D16-A1D5-4D5B1A83FBDD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.HttpFeature", "src\Microsoft.AspNet.HttpFeature\Microsoft.AspNet.HttpFeature.kproj", "{D9128247-8F97-48B8-A863-F1F21A029FCE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Interfaces", "src\Microsoft.AspNet.Http.Interfaces\Microsoft.AspNet.Http.Interfaces.kproj", "{D9128247-8F97-48B8-A863-F1F21A029FCE}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FeatureModel", "src\Microsoft.AspNet.FeatureModel\Microsoft.AspNet.FeatureModel.kproj", "{32A4C918-30EE-41DB-8E26-8A3BB88ED231}"
 EndProject

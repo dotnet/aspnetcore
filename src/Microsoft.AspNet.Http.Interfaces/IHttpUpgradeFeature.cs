@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.HttpFeature
+namespace Microsoft.AspNet.Http.Interfaces
 {
-    // TODO: Is there any reason not to flatten the Factory down into the Feature?
     [AssemblyNeutral]
-    public interface ISessionFeature
+    public interface IHttpUpgradeFeature
     {
-        ISessionFactory Factory { get; set; }
-
-        ISession Session { get; set; }
+        bool IsUpgradableRequest { get; }
+        Task<Stream> UpgradeAsync();
     }
 }
