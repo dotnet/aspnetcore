@@ -7,7 +7,7 @@ using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity.InMemory.Test
 {
-    public class InMemoryStoreTest : UserManagerTestBase<InMemoryUser, IdentityRole>, IDisposable
+    public class InMemoryStoreTest : UserManagerTestBase<InMemoryUser, IdentityRole>
     {
         protected override object CreateTestContext()
         {
@@ -22,11 +22,6 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
             services.AddSingleton<IRoleStore<IdentityRole>, InMemoryRoleStore<IdentityRole>>();
-        }
-
-        public void Dispose()
-        {
-            loggerFactory.Dispose();
         }
     }
 }

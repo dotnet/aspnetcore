@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Linq;
 using Microsoft.Framework.Logging;
 using Xunit;
@@ -60,15 +59,11 @@ namespace Microsoft.AspNet.Identity.Test
         }
         private static void VerifySuccessLog(ILogger logger, string className, string methodName, string id, string userOrRole = "user")
         {
-            if (logger is TestFileLogger)
+            TestLogger testlogger = logger as TestLogger;
+            if (testlogger != null)
             {
-                var fileLogger = logger as TestFileLogger;
                 string expected = string.Format("{0} for {1}: {2} : Success", methodName, userOrRole, id);
-
-                lock (TestFileLogger.FileLock)
-                {
-                    Assert.True(File.ReadAllText(fileLogger.FileName).Contains(expected)); 
-                }
+                Assert.True(testlogger.LogMessages.Contains(expected));
             }
             else
             {
@@ -78,13 +73,10 @@ namespace Microsoft.AspNet.Identity.Test
 
         public static void VerifyLogMessage(ILogger logger, string expectedLog)
         {
-            if (logger is TestFileLogger)
+            TestLogger testlogger = logger as TestLogger;
+            if (testlogger != null)
             {
-                var fileLogger = logger as TestFileLogger;
-                lock (TestFileLogger.FileLock)
-                {
-                    Assert.True(File.ReadAllText(fileLogger.FileName).Contains(expectedLog));
-                }
+                Assert.True(testlogger.LogMessages.Contains(expectedLog));
             }
             else
             {
@@ -94,16 +86,13 @@ namespace Microsoft.AspNet.Identity.Test
 
         private static void VerifyFailureLog(ILogger logger, string className, string methodName, string userId, string userOrRole = "user", params IdentityError[] errors)
         {
-            if (logger is TestFileLogger)
+            TestLogger testlogger = logger as TestLogger;
+            if (testlogger != null)
             {
-                var fileLogger = logger as TestFileLogger;
                 errors = errors ?? new IdentityError[] { new IdentityError() };
                 string expected = string.Format("{0} for {1}: {2} : Failed : {3}", methodName, userOrRole, userId, string.Join(",", errors.Select(x => x.Code).ToList()));
 
-                lock (TestFileLogger.FileLock)
-                {
-                    Assert.True(File.ReadAllText(fileLogger.FileName).Contains(expected));
-                }
+                Assert.True(testlogger.LogMessages.Contains(expected));
             }
             else
             {

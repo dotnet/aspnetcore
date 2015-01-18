@@ -34,7 +34,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         public void DropDatabaseDone()
         {
             DropDb();
-            loggerFactory.Dispose();
         }
 
         public void DropDb()

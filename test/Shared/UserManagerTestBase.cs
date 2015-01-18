@@ -26,11 +26,11 @@ namespace Microsoft.AspNet.Identity.Test
         where TRole : IdentityRole<TKey>, new()
         where TKey : IEquatable<TKey>
     {
-        protected TestFileLoggerFactory loggerFactory;
+        protected TestLoggerFactory loggerFactory;
 
         public UserManagerTestBase()
         {
-            loggerFactory = new TestFileLoggerFactory();
+            loggerFactory = new TestLoggerFactory();
         }
 
         protected virtual void SetupIdentityServices(IServiceCollection services, object context = null)
