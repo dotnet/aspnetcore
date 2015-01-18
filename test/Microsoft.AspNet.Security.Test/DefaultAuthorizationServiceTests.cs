@@ -9,7 +9,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
@@ -53,11 +52,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    options.AddPolicy("Basic", new AuthorizationPolicyBuilder()
-                        .RequiresClaim("Permission", "CanViewPage")
-                        .Build());
+                    options.AddPolicy("Basic", policy => policy.RequiresClaim("Permission", "CanViewPage"));
                 });
             });
             var context = SetupContext(new ClaimsIdentity(new Claim[] { new Claim("Permission", "CanViewPage") }, "Basic"));
@@ -75,10 +72,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder("Basic").RequiresClaim("Permission", "CanViewPage");
-                    options.AddPolicy("Basic", policy.Build());
+                    options.AddPolicy("Basic", policy => policy.RequiresClaim("Permission", "CanViewPage"));
                 });
             });
             var context = SetupContext(new ClaimsIdentity(new Claim[] { new Claim("Permission", "CanViewPage") }, "Basic"));
@@ -96,10 +92,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder().RequiresClaim("Permission", "CanViewPage", "CanViewAnything");
-                    options.AddPolicy("Basic", policy.Build());
+                    options.AddPolicy("Basic", policy => policy.RequiresClaim("Permission", "CanViewPage", "CanViewAnything"));
                 });
             });
             var context = SetupContext(
@@ -124,10 +119,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder().RequiresClaim("Permission", "CanViewPage", "CanViewAnything");
-                    options.AddPolicy("Basic", policy.Build());
+                    options.AddPolicy("Basic", policy => policy.RequiresClaim("Permission", "CanViewPage", "CanViewAnything"));
                 });
             });
             var context = SetupContext(
@@ -151,10 +145,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder().RequiresClaim("Permission", "CanViewPage", "CanViewAnything");
-                    options.AddPolicy("Basic", policy.Build());
+                    options.AddPolicy("Basic", policy => policy.RequiresClaim("Permission", "CanViewPage", "CanViewAnything"));
                 });
             });
             var context = SetupContext(
@@ -178,10 +171,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder().RequiresClaim("Permission", "CanViewPage");
-                    options.AddPolicy("Basic", policy.Build());
+                    options.AddPolicy("Basic", policy => policy.RequiresClaim("Permission", "CanViewPage"));
                 });
             });
             var context = SetupContext(
@@ -205,10 +197,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder().RequiresClaim("Permission", "CanViewPage");
-                    options.AddPolicy("Basic", policy.Build());
+                    options.AddPolicy("Basic", policy => policy.RequiresClaim("Permission", "CanViewPage"));
                 });
             });
             var context = SetupContext(
@@ -230,10 +221,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder().RequiresClaim("Permission", "CanViewPage");
-                    options.AddPolicy("Basic", policy.Build());
+                    options.AddPolicy("Basic", policy => policy.RequiresClaim("Permission", "CanViewPage"));
                 });
             });
             var context = SetupContext();
@@ -252,10 +242,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder("Basic").RequiresClaim("Permission", "CanViewPage");
-                    options.AddPolicy("Basic", policy.Build());
+                    options.AddPolicy("Basic", policy => policy.RequiresClaim("Permission", "CanViewPage"));
                 });
             });
             var context = SetupContext(new ClaimsIdentity());
@@ -273,10 +262,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder().RequiresClaim("Permission", "CanViewPage");
-                    options.AddPolicy("Basic", policy.Build());
+                    options.AddPolicy("Basic", policy => policy.RequiresClaim("Permission", "CanViewPage"));
                 });
             });
             var context = SetupContext(
@@ -433,13 +421,11 @@ namespace Microsoft.AspNet.Security.Test
         public async Task RolePolicyCanBlockNoRole()
         {
             // Arrange
-
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder().RequiresRole("Admin", "Users");
-                    options.AddPolicy("Basic", policy.Build());
+                    options.AddPolicy("Basic", policy => policy.RequiresRole("Admin", "Users"));
                 });
             });
             var context = SetupContext(
@@ -462,10 +448,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder();
-                    options.AddPolicy("Basic", policy.Build());
+                    options.AddPolicy("Basic", policy => { });
                 });
             });
             var context = SetupContext(
@@ -489,10 +474,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser();
-                    options.AddPolicy("Any", policy.Build());
+                    options.AddPolicy("Any", policy => policy.RequireAuthenticatedUser());
                 });
             });
             var context = SetupContext(
@@ -516,10 +500,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser();
-                    options.AddPolicy("Any", policy.Build());
+                    options.AddPolicy("Any", policy => policy.RequireAuthenticatedUser());
                 });
             });
             var context = SetupContext(new ClaimsIdentity());
@@ -546,11 +529,9 @@ namespace Microsoft.AspNet.Security.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder();
-                    policy.Requirements.Add(new CustomRequirement());
-                    options.AddPolicy("Custom", policy.Build());
+                    options.AddPolicy("Custom", policy => policy.Requirements.Add(new CustomRequirement()));
                 });
             });
             var context = SetupContext();
@@ -562,7 +543,6 @@ namespace Microsoft.AspNet.Security.Test
             Assert.False(allowed);
         }
 
-
         [Fact]
         public async Task CustomReqWithHandlerSucceeds()
         {
@@ -570,11 +550,9 @@ namespace Microsoft.AspNet.Security.Test
             var authorizationService = BuildAuthorizationService(services =>
             {
                 services.AddTransient<IAuthorizationHandler, CustomHandler>();
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
-                    var policy = new AuthorizationPolicyBuilder();
-                    policy.Requirements.Add(new CustomRequirement());
-                    options.AddPolicy("Custom", policy.Build());
+                    options.AddPolicy("Custom", policy => policy.Requirements.Add(new CustomRequirement()));
                 });
             });
             var context = SetupContext();
@@ -586,5 +564,120 @@ namespace Microsoft.AspNet.Security.Test
             Assert.True(allowed);
         }
 
+        public class PassThroughRequirement : AuthorizationHandler<PassThroughRequirement>, IAuthorizationRequirement
+        {
+            public PassThroughRequirement(bool succeed)
+            {
+                Succeed = succeed;
+            }
+
+            public bool Succeed { get; set; }
+
+            public override Task<bool> CheckAsync(AuthorizationContext context, PassThroughRequirement requirement)
+            {
+                return Task.FromResult(Succeed);
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task PassThroughRequirementWillSucceedWithoutCustomHandler(bool shouldSucceed)
+        {
+            // Arrange
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.ConfigureAuthorization(options =>
+                {
+                    options.AddPolicy("Passthrough", policy => policy.Requirements.Add(new PassThroughRequirement(shouldSucceed)));
+                });
+            });
+            var context = SetupContext();
+
+            // Act
+            var allowed = await authorizationService.AuthorizeAsync("Passthrough", context.Object);
+
+            // Assert
+            Assert.Equal(shouldSucceed, allowed);
+        }
+
+        public async Task CanCombinePolicies()
+        {
+            // Arrange
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.ConfigureAuthorization(options =>
+                {
+                    var basePolicy = new AuthorizationPolicyBuilder().RequiresClaim("Base", "Value").Build();
+                    options.AddPolicy("Combineed", policy => policy.Combine(basePolicy).RequiresClaim("Claim", "Exists"));
+                });
+            });
+            var context = SetupContext(
+                new ClaimsIdentity(
+                    new Claim[] {
+                        new Claim("Base", "Value"),
+                        new Claim("Claim", "Exists")
+                    },
+                    "AuthType")
+                );
+
+            // Act
+            var allowed = await authorizationService.AuthorizeAsync("Combined", context.Object);
+
+            // Assert
+            Assert.True(allowed);
+        }
+
+        public async Task CombinePoliciesWillFailIfBasePolicyFails()
+        {
+            // Arrange
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.ConfigureAuthorization(options =>
+                {
+                    var basePolicy = new AuthorizationPolicyBuilder().RequiresClaim("Base", "Value").Build();
+                    options.AddPolicy("Combined", policy => policy.Combine(basePolicy).RequiresClaim("Claim", "Exists"));
+                });
+            });
+            var context = SetupContext(
+                new ClaimsIdentity(
+                    new Claim[] {
+                        new Claim("Claim", "Exists")
+                    },
+                    "AuthType")
+                );
+
+            // Act
+            var allowed = await authorizationService.AuthorizeAsync("Combined", context.Object);
+
+            // Assert
+            Assert.False(allowed);
+        }
+
+        public async Task CombinedPoliciesWillFailIfExtraRequirementFails()
+        {
+            // Arrange
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.ConfigureAuthorization(options =>
+                {
+                    var basePolicy = new AuthorizationPolicyBuilder().RequiresClaim("Base", "Value").Build();
+                    options.AddPolicy("Combined", policy => policy.Combine(basePolicy).RequiresClaim("Claim", "Exists"));
+                });
+            });
+            var context = SetupContext(
+                new ClaimsIdentity(
+                    new Claim[] {
+                        new Claim("Base", "Value"),
+                    },
+                    "AuthType")
+                );
+
+            // Act
+            var allowed = await authorizationService.AuthorizeAsync("Combined", context.Object);
+
+            // Assert
+            Assert.False(allowed);
+        }
     }
 }

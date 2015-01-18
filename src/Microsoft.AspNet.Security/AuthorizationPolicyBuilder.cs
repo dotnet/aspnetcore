@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 
 namespace Microsoft.AspNet.Security
@@ -10,13 +11,41 @@ namespace Microsoft.AspNet.Security
     {
         public AuthorizationPolicyBuilder(params string[] activeAuthenticationTypes)
         {
-            foreach (var authType in activeAuthenticationTypes) {
-                ActiveAuthenticationTypes.Add(authType);
-            }
+            AddAuthenticationTypes(activeAuthenticationTypes);
+        }
+
+        public AuthorizationPolicyBuilder(AuthorizationPolicy policy)
+        {
+            Combine(policy);
         }
 
         public IList<IAuthorizationRequirement> Requirements { get; set; } = new List<IAuthorizationRequirement>();
         public IList<string> ActiveAuthenticationTypes { get; set; } = new List<string>();
+
+        public AuthorizationPolicyBuilder AddAuthenticationTypes(params string[] activeAuthTypes)
+        {
+            foreach (var authType in activeAuthTypes)
+            {
+                ActiveAuthenticationTypes.Add(authType);
+            }
+            return this;
+        }
+
+        public AuthorizationPolicyBuilder AddRequirements(params IAuthorizationRequirement[] requirements)
+        {
+            foreach (var req in requirements)
+            {
+                Requirements.Add(req);
+            }
+            return this;
+        }
+
+        public AuthorizationPolicyBuilder Combine(AuthorizationPolicy policy)
+        {
+            AddAuthenticationTypes(policy.ActiveAuthenticationTypes.ToArray());
+            AddRequirements(policy.Requirements.ToArray());
+            return this;
+        }
 
         public AuthorizationPolicyBuilder RequiresClaim([NotNull] string claimType, params string[] requiredValues)
         {
