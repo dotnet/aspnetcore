@@ -97,5 +97,14 @@ namespace Microsoft.AspNet.Mvc
         {
             Validate(context, antiForgeryTokenSet.CookieToken, antiForgeryTokenSet.FormToken);
         }
+
+        /// <summary>
+        /// Generates and sets an anti-forgery cookie if one is not available or not valid. Also sets response headers.
+        /// </summary>
+        /// <param name="context">The HTTP context associated with the current call.</param>
+        public void SetCookieTokenAndHeader([NotNull] HttpContext context)
+        {
+            _worker.SetCookieTokenAndHeader(context);
+        }
     }
 }

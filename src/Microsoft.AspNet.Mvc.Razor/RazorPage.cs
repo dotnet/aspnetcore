@@ -561,7 +561,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <returns>A<see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
         /// completion returns a <see cref="HtmlString.Empty"/>.</returns>
         /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
-        /// section. However the value does not represent the rendered content.</remarks>
+        /// section. However the value does not represent the rendered content.
+        /// This method also writes out headers, so any modifications to headers must be done before FulshAsync is
+        /// called. For example, call <see cref="SetAntiForgeryCookieAndHeader"/> to send anti-forgery cookie token
+        /// and X-Frame-Options header to client before this method flushes headers out. </remarks>
         public async Task<HtmlString> FlushAsync()
         {
             // If there are active writing scopes then we should throw. Cannot flush content that has the potential to
@@ -615,6 +618,20 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void EndContext()
         {
             PageExecutionContext?.EndContext();
+        }
+
+        /// <summary>
+        /// Sets anti-forgery cookie and X-Frame-Options header on the response.
+        /// </summary>
+        /// <returns>A <see cref="HtmlString"/> that returns a <see cref="HtmlString.Empty"/>.</returns>
+        /// <remarks> Call this method to send anti-forgery cookie token and X-Frame-Options header to client
+        /// before <see cref="FlushAsync"/> flushes the headers. </remarks>
+        public virtual HtmlString SetAntiForgeryCookieAndHeader()
+        {
+            var antiForgery = Context.RequestServices.GetRequiredService<AntiForgery>();
+            antiForgery.SetCookieTokenAndHeader(Context);
+
+            return HtmlString.Empty;
         }
 
         private void EnsureMethodCanBeInvoked(string methodName)
