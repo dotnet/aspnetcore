@@ -4,7 +4,7 @@
     "dependencies": {
         "Microsoft.AspNet.Hosting": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.AspNet.HttpFeature": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.AspNet.Http.Interfaces": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "aspnet50": { },

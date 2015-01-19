@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Headers;
-using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.Http.Interfaces;
 using Microsoft.AspNet.StaticFiles.Infrastructure;
 using Microsoft.Framework.Logging;
 using Microsoft.Net.Http.Headers;
