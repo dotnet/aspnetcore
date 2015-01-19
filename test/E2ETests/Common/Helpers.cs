@@ -16,7 +16,7 @@ namespace E2ETests
             }
         }
 
-        public static void Retry(Action retryBlock, ILogger logger, int retryCount = 3)
+        public static void Retry(Action retryBlock, ILogger logger, int retryCount = 7)
         {
             for (int retry = 0; retry < retryCount; retry++)
             {
