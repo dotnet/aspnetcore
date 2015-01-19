@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -23,6 +24,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var formFiles = new FormFileCollection();
             formFiles.Add(GetMockFormFile("file", "file1.txt"));
             formFiles.Add(GetMockFormFile("file", "file2.txt"));
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+            var bindingContext = GetBindingContext(typeof(IEnumerable<IFormFile>), httpContext);
+            var binder = new FormFileModelBinder();
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(result);
+            var files = Assert.IsAssignableFrom<IList<IFormFile>>(bindingContext.Model);
+            Assert.Equal(2, files.Count);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_FilesWithQuotedContentDisposition_BindSuccessful()
+        {
+            // Arrange
+            var formFiles = new FormFileCollection();
+            formFiles.Add(GetMockFormFileWithQuotedContentDisposition("file", "file1.txt"));
+            formFiles.Add(GetMockFormFileWithQuotedContentDisposition("file", "file2.txt"));
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IEnumerable<IFormFile>), httpContext);
             var binder = new FormFileModelBinder();
@@ -167,6 +188,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var formFile = new Mock<IFormFile>();
             formFile.Setup(f => f.ContentDisposition)
                 .Returns(string.Format("form-data; name={0}; filename={1}", modelName, filename));
+            return formFile.Object;
+        }
+
+        private static IFormFile GetMockFormFileWithQuotedContentDisposition(string modelName, string filename)
+        {
+            var formFile = new Mock<IFormFile>();
+            formFile.Setup(f => f.ContentDisposition)
+                .Returns(string.Format("form-data; name=\"{0}\"; filename=\"{1}\"", modelName, filename));
             return formFile.Object;
         }
     }

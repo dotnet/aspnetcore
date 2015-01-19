@@ -62,12 +62,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                     // If there is an <input type="file" ... /> in the form and is left blank.
                     if (parsedContentDisposition == null ||
-                        (file.Length == 0 && string.IsNullOrEmpty(parsedContentDisposition.FileName)))
+                        (file.Length == 0 &&
+                         string.IsNullOrEmpty(HeaderUtilities.RemoveQuotes(parsedContentDisposition.FileName))))
                     {
                         continue;
                     }
 
-                    var modelName = parsedContentDisposition.Name;
+                    var modelName = HeaderUtilities.RemoveQuotes(parsedContentDisposition.Name);
                     if (modelName.Equals(bindingContext.ModelName, StringComparison.OrdinalIgnoreCase))
                     {
                         postedFiles.Add(file);
