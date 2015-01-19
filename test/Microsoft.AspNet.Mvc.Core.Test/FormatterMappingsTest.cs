@@ -21,13 +21,13 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var mediaType = MediaTypeHeaderValue.Parse(contentType);
             var options = new FormatterMappings();
-            options.SetFormatMapping(setFormat, mediaType);
+            options.SetMediaTypeMappingForFormat(setFormat, mediaType);
 
             // Act 
-            var returnmediaType = options.GetContentTypeForFormat(getFormat);
+            var returnMediaType = options.GetMediaTypeForFormat(getFormat);
 
             // Assert
-            Assert.Equal(mediaType, returnmediaType);
+            Assert.Equal(mediaType, returnMediaType);
         }
 
         [Theory]
@@ -45,9 +45,10 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var options = new FormatterMappings();            
+            var expectedError = "Value cannot be null or empty." + Environment.NewLine + "Parameter name: format";
 
             // Act and Assert
-            Assert.Throws<ArgumentException>(() => options.SetFormatMapping(format, mediaType));
+            Assert.Throws<ArgumentException>(() => options.SetMediaTypeMappingForFormat(format, mediaType));
         }
     }
 }

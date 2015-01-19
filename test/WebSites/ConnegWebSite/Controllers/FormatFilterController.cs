@@ -9,10 +9,21 @@ namespace ConnegWebsite
     [Produces("application/FormatFilterController")]
     public class FormatFilterController : Controller
     {
-        [FormatFilter]
-        public User MethodWithFormatFilter()
+        public override void OnActionExecuted(ActionExecutedContext context)
         {
-            return new User() { Name = "Joe", Address = "1 abc way" };
+            var result = context.Result as ObjectResult;
+            if (result != null)
+            {
+                result.Formatters.Add(new CustomFormatter("application/FormatFilterController"));
+            }
+
+            base.OnActionExecuted(context);
+        }
+
+        [FormatFilter]
+        public string MethodWithFormatFilter()
+        {
+            return "MethodWithFormatFilter";
         }
     }
 }

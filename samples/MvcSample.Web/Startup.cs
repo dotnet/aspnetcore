@@ -98,6 +98,7 @@ namespace MvcSample.Web
                     services.AddSingleton<PassThroughAttribute>();
                     services.AddSingleton<UserNameService>();
                     services.AddTransient<ITestService, TestService>();
+                    
                     // Setup services with a test AssemblyProvider so that only the
                     // sample's assemblies are loaded. This prevents loading controllers from other assemblies
                     // when the sample is used in the Functional Tests.

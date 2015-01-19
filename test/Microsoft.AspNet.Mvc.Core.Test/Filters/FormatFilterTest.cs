@@ -66,6 +66,8 @@ namespace Microsoft.AspNet.Mvc
         [Fact]
         public void FormatFilter_ContextContainsFormat_InRouteAndQueryData()
         {
+            // If the format is present in both route and query data, the one in route data wins
+
             // Arrange  
             var mediaType = MediaTypeHeaderValue.Parse("application/json");
 
@@ -116,7 +118,7 @@ namespace Microsoft.AspNet.Mvc
             var resultExecutingContext = CreateResultExecutingContext(format, place);
             var resourceExecutingContext = CreateResourceExecutingContext(new IFilter[] { }, format, place);
             var options = resultExecutingContext.HttpContext.RequestServices.GetService<IOptions<MvcOptions>>();
-            options.Options.FormatterMappings.SetFormatMapping(format, MediaTypeHeaderValue.Parse(contentType));
+            options.Options.FormatterMappings.SetMediaTypeMappingForFormat(format, MediaTypeHeaderValue.Parse(contentType));
             
             var filter = new FormatFilterAttribute();
 
@@ -194,7 +196,7 @@ namespace Microsoft.AspNet.Mvc
                 new string[] { "application/foo", "text/bar" });
             var context = CreateResourceExecutingContext(new IFilter[] { produces }, "star", FormatSource.RouteData);
             var options = context.HttpContext.RequestServices.GetService<IOptions<MvcOptions>>();
-            options.Options.FormatterMappings.SetFormatMapping("star", MediaTypeHeaderValue.Parse("application/*"));
+            options.Options.FormatterMappings.SetMediaTypeMappingForFormat("star", MediaTypeHeaderValue.Parse("application/*"));
 
             var filter = new FormatFilterAttribute();
 

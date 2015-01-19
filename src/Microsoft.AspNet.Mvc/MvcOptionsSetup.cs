@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc
             options.OutputFormatters.Add(new JsonOutputFormatter());
 
             // Set up default mapping for json extensions to content type
-            options.FormatterMappings.SetFormatMapping("json", MediaTypeHeaderValue.Parse("application/json"));
+            options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
 
             // Set up default input formatters.
             options.InputFormatters.Add(new JsonInputFormatter());

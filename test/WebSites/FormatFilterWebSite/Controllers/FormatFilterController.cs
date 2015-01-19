@@ -8,7 +8,7 @@ namespace FormatFilterWebSite
     [FormatFilter]
     public class FormatFilterController : Controller
     {   
-        public Product GetProduct(int id)
+        public Product GetProduct(int id = 0)
         {
             return new Product() { SampleInt = id };
         }

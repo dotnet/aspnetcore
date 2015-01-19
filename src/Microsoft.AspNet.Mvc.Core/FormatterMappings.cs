@@ -11,15 +11,24 @@ using Microsoft.AspNet.Mvc.Core;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// These options are used to specify mapping between the Url Format and corresponding ContentType.
+    /// Used to specify mapping between the Url Format and corresponding <see cref="MediaTypeHeaderValue"/>.
     /// </summary>
     public class FormatterMappings
     {
         private readonly Dictionary<string, MediaTypeHeaderValue> _map =
             new Dictionary<string, MediaTypeHeaderValue>(StringComparer.OrdinalIgnoreCase);
 
-        public void SetFormatMapping([NotNull] string format, [NotNull] MediaTypeHeaderValue contentType)
+        /// <summary>
+        /// This will set mapping for the format to specified <see cref="MediaTypeHeaderValue"/>. 
+        /// If the format already exists, the <see cref="MediaTypeHeaderValue"/> will be overwritten with the new value.
+        /// </summary>
+        public void SetMediaTypeMappingForFormat([NotNull] string format, [NotNull] MediaTypeHeaderValue contentType)
         {
+            if (string.IsNullOrEmpty(format))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "format");
+            }
+
             if (contentType == null)
             {
                 throw new ArgumentException((Resources.ArgumentCannotBeNullOrEmpty), "contentType");
@@ -29,7 +38,10 @@ namespace Microsoft.AspNet.Mvc
             _map[format] = contentType;
         }
 
-        public MediaTypeHeaderValue GetContentTypeForFormat(string format)
+        /// <summary>
+        /// Gets <see cref="MediaTypeHeaderValue"/> for the specified format.
+        /// </summary>
+        public MediaTypeHeaderValue GetMediaTypeForFormat(string format)
         {
             format = RemovePeriodIfPresent(format);
             MediaTypeHeaderValue value = null;
@@ -39,10 +51,6 @@ namespace Microsoft.AspNet.Mvc
 
         private string RemovePeriodIfPresent(string format)
         {
-            if (string.IsNullOrEmpty(format))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "format");
-            }
             if (format.StartsWith("."))
             {
                 format = format.Substring(1);

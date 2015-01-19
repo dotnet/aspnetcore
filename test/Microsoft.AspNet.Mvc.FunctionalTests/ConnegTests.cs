@@ -432,8 +432,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var response = await client.GetAsync("http://localhost/FormatFilter/MethodWithFormatFilter");
 
             // Assert
-            var type = response.Content.Headers.ContentType;
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal(body, "MethodWithFormatFilter");
         }
     }
 }

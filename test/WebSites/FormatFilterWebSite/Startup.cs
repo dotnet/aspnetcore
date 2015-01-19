@@ -26,7 +26,7 @@ namespace FormatFilterWebSite
                     var customFormatter = new CustomFormatter("application/custom");
                     options.OutputFormatters.Add(customFormatter);
 
-                    options.FormatterMappings.SetFormatMapping(
+                    options.FormatterMappings.SetMediaTypeMappingForFormat(
                         "custom", 
                         MediaTypeHeaderValue.Parse("application/custom"));
                 });
@@ -36,6 +36,10 @@ namespace FormatFilterWebSite
             {
                 routes.MapRoute("formatroute",
                                 "{controller}/{action}/{id}.{format?}",
+                                new { controller = "Home", action = "Index" });
+
+                routes.MapRoute("optionalroute",
+                                "{controller}/{action}.{format?}",
                                 new { controller = "Home", action = "Index" });
             });            
         }

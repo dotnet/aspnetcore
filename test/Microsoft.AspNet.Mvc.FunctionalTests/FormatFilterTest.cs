@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class FormatFilterTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("FormatFilterWebSite");
+        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(FormatFilterWebSite));
         private readonly Action<IApplicationBuilder> _app = new FormatFilterWebSite.Startup().Configure;
 
         [Fact]
@@ -46,6 +46,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task FormatFilter_ExtensionInRequest_Optional()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/FormatFilter/GetProduct.json");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(@"{""SampleInt"":0}", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
         public async Task FormatFilter_ExtensionInRequest_Custom()
         {
             // Arrange
@@ -54,6 +69,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetAsync("http://localhost/FormatFilter/GetProduct/5.custom");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(@"SampleInt:5", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task FormatFilter_ExtensionInRequest_CaseInsensitivity()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/FormatFilter/GetProduct/5.Custom");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

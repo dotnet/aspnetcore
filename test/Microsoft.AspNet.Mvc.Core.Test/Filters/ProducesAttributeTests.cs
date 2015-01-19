@@ -131,7 +131,8 @@ namespace Microsoft.AspNet.Mvc.Test
             return new ResultExecutingContext(
                 CreateActionContext(),
                 filters,
-                new ObjectResult("Some Value"));
+                new ObjectResult("Some Value"),
+                controller: new object());
         }
 
         private static ActionContext CreateActionContext()
