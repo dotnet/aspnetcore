@@ -13,8 +13,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="options">The MvcOptions</param>
         public static void AddXmlDataContractSerializerFormatter([NotNull] this MvcOptions options)
         {
-            options.OutputFormatters.Add(
-                new XmlDataContractSerializerOutputFormatter(XmlOutputFormatter.GetDefaultXmlWriterSettings()));
+            options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
 
             options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
         }

@@ -492,7 +492,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
                 new HttpNoContentOutputFormatter(),
                 new StringOutputFormatter(),
                 new JsonOutputFormatter(),
-                new XmlDataContractSerializerOutputFormatter(XmlSerializerOutputFormatter.GetDefaultXmlWriterSettings())
+                new XmlDataContractSerializerOutputFormatter()
             };
             var response = GetMockHttpResponse();
 
@@ -533,7 +533,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
                 new HttpNoContentOutputFormatter(),
                 new StringOutputFormatter(),
                 new JsonOutputFormatter(),
-                new XmlDataContractSerializerOutputFormatter(XmlSerializerOutputFormatter.GetDefaultXmlWriterSettings())
+                new XmlDataContractSerializerOutputFormatter()
             };
             var response = GetMockHttpResponse();
 
@@ -568,7 +568,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
                 new HttpNoContentOutputFormatter(),
                 new StringOutputFormatter(),
                 new JsonOutputFormatter(),
-                new XmlDataContractSerializerOutputFormatter(XmlSerializerOutputFormatter.GetDefaultXmlWriterSettings())
+                new XmlDataContractSerializerOutputFormatter()
             };
             var response = GetMockHttpResponse();
 
