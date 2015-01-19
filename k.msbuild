@@ -306,6 +306,7 @@
                 <Justification>refers to race condition</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Program.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Building\BuildContext.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Colors.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\RestoreCommand.cs;
