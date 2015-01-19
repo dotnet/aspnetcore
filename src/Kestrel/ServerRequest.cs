@@ -1,4 +1,4 @@
-using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.Http.Interfaces;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using System;
 using System.Collections.Generic;
