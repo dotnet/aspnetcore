@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core.Security;
-using Microsoft.AspNet.HttpFeature.Security;
+using Microsoft.AspNet.Http.Interfaces.Security;
 
 namespace Microsoft.AspNet.Security.Infrastructure
 {

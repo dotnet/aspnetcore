@@ -3,7 +3,7 @@
     "description": "ASP.NET 5 common types used by the various authentication middleware.",
     "dependencies": {
         "Microsoft.AspNet.RequestContainer": "1.0.0-*",
-        "Microsoft.AspNet.HttpFeature": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.AspNet.Http.Interfaces": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.AspNet.Http.Core": "1.0.0-*",
         "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*"
