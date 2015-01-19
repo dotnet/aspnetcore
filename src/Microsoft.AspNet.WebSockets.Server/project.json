@@ -3,7 +3,7 @@
     "description": "ASP.NET 5 web socket middleware for use on top of opaque servers.",
     "dependencies": {
         "Microsoft.AspNet.Http": "1.0.0-*",
-        "Microsoft.AspNet.HttpFeature": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.AspNet.Http.Interfaces": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.AspNet.WebSockets.Protocol": "1.0.0-*"
     },
     "frameworks": {
