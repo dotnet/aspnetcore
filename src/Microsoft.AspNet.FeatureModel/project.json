@@ -2,7 +2,6 @@
   "version": "1.0.0-*",
   "description": "ASP.NET 5 HTTP feature infrastructure.",
   "dependencies": {
-    "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
   },
   "frameworks": {
     "aspnet50": {},
