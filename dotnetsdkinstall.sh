@@ -1,14 +1,14 @@
 #!/bin/bash
 
-_kvmsetup_has() {
+_dotnetsdksetup_has() {
     type "$1" > /dev/null 2>&1
     return $?
 }
 
-_kvmsetup_update_profile() {
+_dotnetsdksetup_update_profile() {
     local profile="$1"
     local sourceString="$2"
-    if ! grep -qc 'kvm.sh' $profile; then
+    if ! grep -qc 'dotnetsdk.sh' $profile; then
         echo "Appending source string to $profile"
         echo "" >> "$profile"
         echo $sourceString >> "$profile"
@@ -17,29 +17,31 @@ _kvmsetup_update_profile() {
     fi
 }
 
-if [ -z "$KRE_USER_HOME" ]; then
-    eval KRE_USER_HOME=~/.kre
+if [ -z "$DOTNET_USER_HOME" ]; then
+    eval DOTNET_USER_HOME=~/.dotnet
 fi
 
-if ! _kvmsetup_has "curl"; then
-    echo "kvmsetup requires curl to be installed"
+DEFAULT_INSTALL_PATH="$DOTNET_USER_HOME/bin/dotnetsdk.sh"
+
+if ! _dotnetsdksetup_has "curl"; then
+    echo "dotnetsdksetup requires curl to be installed"
     return 1
 fi
 
-if [ -z "$KVM_SOURCE" ]; then
-    KVM_SOURCE="https://raw.githubusercontent.com/aspnet/Home/master/kvm.sh"
+if [ -z "$DOTNETSDK_SOURCE" ]; then
+    DOTNETSDK_SOURCE="https://raw.githubusercontent.com/aspnet/Home/master/dotnetsdk.sh"
 fi
 
 # Downloading to $KVM_DIR
-mkdir -p "$KRE_USER_HOME/kvm"
-if [ -s "$KRE_USER_HOME/kvm/kvm.sh" ]; then
-    echo "kvm is already installed in $KRE_USER_HOME/kvm, trying to update"
+mkdir -p "$DOTNET_USER_HOME/bin"
+if [ -s "$DEFAULT_INSTALL_PATH" ]; then
+    echo "dotnetsdk is already installed in $DOTNET_USER_HOME/dotnetsdk, trying to update"
 else
-    echo "Downloading kvm as script to '$KRE_USER_HOME/kvm'"
+    echo "Downloading dotnetsdk as script to '$DOTNET_USER_HOME/dotnetsdk'"
 fi
 
-curl -s "$KVM_SOURCE" -o "$KRE_USER_HOME/kvm/kvm.sh" || {
-    echo >&2 "Failed to download '$KVM_SOURCE'.."
+curl -s "$DOTNETSDK_SOURCE" -o "$DOTNET_USER_HOME/dotnetsdk/dotnetsdk.sh" || {
+    echo >&2 "Failed to download dotnetsdk from '$DOTNETSDK_SOURCE'.."
     return 1
 }
 
@@ -62,7 +64,7 @@ if [ -z "$ZPROFILE" ]; then
     fi
 fi
 
-SOURCE_STR="[ -s \"$KRE_USER_HOME/kvm/kvm.sh\" ] && . \"$KRE_USER_HOME/kvm/kvm.sh\" # Load kvm"
+SOURCE_STR="[ -s \"$DOTNET_USER_HOME/dotnetsdk/dotnetsdk.sh\" ] && . \"$DOTNET_USER_HOME/dotnetsdk/dotnetsdk.sh\" # Load dotnetsdk"
 
 if [ -z "$PROFILE" -a -z "$ZPROFILE" ] || [ ! -f "$PROFILE" -a ! -f "$ZPROFILE" ] ; then
     if [ -z "$PROFILE" ]; then
@@ -81,8 +83,8 @@ if [ -z "$PROFILE" -a -z "$ZPROFILE" ] || [ ! -f "$PROFILE" -a ! -f "$ZPROFILE" 
     echo " $SOURCE_STR"
     echo
 else
-    [ -n "$PROFILE" ] && _kvmsetup_update_profile "$PROFILE" "$SOURCE_STR"
-    [ -n "$ZPROFILE" ] && _kvmsetup_update_profile "$ZPROFILE" "$SOURCE_STR"
+    [ -n "$PROFILE" ] && _dotnetsdksetup_update_profile "$PROFILE" "$SOURCE_STR"
+    [ -n "$ZPROFILE" ] && _dotnetsdksetup_update_profile "$ZPROFILE" "$SOURCE_STR"
 fi
 
-echo "Type 'source $KRE_USER_HOME/kvm/kvm.sh' to start using kvm"
+echo "Type 'source $DOTNET_USER_HOME/bin/dotnetsdk.sh' to start using dotnetsdk"
