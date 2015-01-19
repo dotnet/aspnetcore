@@ -15,23 +15,26 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class MvcTagHelpersTests
+    public class MvcTagHelpersTest
     {
         private readonly IServiceProvider _provider = TestHelper.CreateServices("MvcTagHelpersWebSite");
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private static readonly Assembly _resourcesAssembly = typeof(MvcTagHelpersTests).GetTypeInfo().Assembly;
+        private static readonly Assembly _resourcesAssembly = typeof(MvcTagHelpersTest).GetTypeInfo().Assembly;
 
         [Theory]
         [InlineData("Index", null)]
+        // Test ability to generate nearly identical HTML with MVC tag and HTML helpers.
+        // Only attribute order should differ.
         [InlineData("Order", "/MvcTagHelper_Order/Submit")]
+        [InlineData("OrderUsingHtmlHelpers", "/MvcTagHelper_Order/Submit")]
         [InlineData("Product", null)]
         [InlineData("Customer", "/Customer/MvcTagHelper_Customer")]
-        // Testing InputTagHelpers invoked in the partial views 
-        [InlineData("ProductList", null)] 
+        // Testing InputTagHelpers invoked in the partial views
+        [InlineData("ProductList", null)]
         // Testing MvcTagHelpers invoked in the editor templates with the HTML helpers
-        [InlineData("EmployeeList", null)] 
-        // Testing SelectTagHelper with Html.BeginForm 
-        [InlineData("CreateWarehouse", null)] 
+        [InlineData("EmployeeList", null)]
+        // Testing SelectTagHelper with Html.BeginForm
+        [InlineData("CreateWarehouse", null)]
         // Testing the HTML helpers with FormTagHelper
         [InlineData("EditWarehouse", null)]
         // Testing the EnvironmentTagHelper
@@ -45,9 +48,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // The K runtime compiles every file under compiler/resources as a resource at runtime with the same name
             // as the file name, in order to update a baseline you just need to change the file in that folder.
-            var expectedContent =
-                    await _resourcesAssembly.ReadResourceAsStringAsync
-                                     ("compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Home." + action + ".html");
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
+                "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Home." + action + ".html");
 
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
@@ -72,9 +74,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
-            var expectedContent =
-                    await _resourcesAssembly.ReadResourceAsStringAsync
-                                     ("compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Customer.Index.html");
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
+                "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Customer.Index.html");
 
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Customer/MvcTagHelper_Customer");
             var nameValueCollection = new List<KeyValuePair<string, string>>

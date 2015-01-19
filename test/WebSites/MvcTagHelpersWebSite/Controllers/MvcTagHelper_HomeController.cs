@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using MvcTagHelpersWebSite.Models;
@@ -12,48 +11,60 @@ namespace MvcTagHelpersWebSite.Controllers
 {
     public class MvcTagHelper_HomeController : Controller
     {
-        private readonly List<Product> _products = new List<Product>();
-
-        public MvcTagHelper_HomeController()
+        private readonly List<Product> _products = new List<Product>
         {
-            _products.Add(new Product
+            new Product
             {
                 ProductName = "Product_0",
                 Number = 0,
                 HomePage = new Uri("http://www.contoso.com")
-            });
-            _products.Add(new Product
+            },
+            new Product
             {
                 ProductName = "Product_1",
                 Number = 1,
-            });
-            _products.Add(new Product
+            },
+            new Product
             {
                 ProductName = "Product_2",
                 Number = 2,
-                Description = "Product_2 desription"
-            });
+                Description = "Product_2 description"
+            },
+        };
+        private readonly IEnumerable<SelectListItem> _productsList;
+        private readonly IEnumerable<SelectListItem> _productsListWithSelection;
+        private readonly Order _order = new Order
+        {
+            Shipping = "UPSP",
+            Customer = new Customer
+            {
+                Key = "KeyA",
+                Number = 1,
+                Gender = Gender.Female,
+                Name = "NameStringValue",
+            },
+            NeedSpecialHandle = true,
+            PaymentMethod = new List<string> { "Check" },
+        };
+
+        public MvcTagHelper_HomeController()
+        {
+            _productsList = new SelectList(_products, "Number", "ProductName");
+            _productsListWithSelection = new SelectList(_products, "Number", "ProductName", 2);
         }
 
         public IActionResult Order()
         {
-            ViewBag.Items = new SelectList(_products, "Number", "ProductName", 2);
+            ViewBag.Items = _productsListWithSelection;
 
-            var order = new Order
-            {
-                Shipping = "UPSP",
-                Customer = new Customer
-                {
-                    Key = "KeyA",
-                    Number = 1,
-                    Gender = Gender.Female,
-                    Name = "NameStringValue",
-                },
-                NeedSpecialHandle = true,
-                PaymentMethod = new List<string> { "Check" }
-            };
+            return View(_order);
+        }
 
-            return View(order);
+        public IActionResult OrderUsingHtmlHelpers()
+        {
+            ViewBag.Items = _productsListWithSelection;
+
+            return View(_order);
         }
 
         public IActionResult Product()
@@ -63,6 +74,7 @@ namespace MvcTagHelpersWebSite.Controllers
                 HomePage = new System.Uri("http://www.contoso.com"),
                 Description = "Type the product description"
             };
+
             return View(product);
         }
 
@@ -88,34 +100,35 @@ namespace MvcTagHelpersWebSite.Controllers
 
         public IActionResult EmployeeList()
         {
-            var employees = new List<Employee>();
-
-            employees.Add(new Employee
+            var employees = new List<Employee>
             {
-                Name = "EmployeeName_0",
-                Number = 0,
-                Address = "Employee_0 address"
-            });
-            employees.Add(new Employee
-            {
-                Name = "EmployeeName_1",
-                Number = 1,
-                OfficeNumber = "1002",
-                Gender = Gender.Female
-            });
-            employees.Add(new Employee
-            {
-                Name = "EmployeeName_2",
-                Number = 2,
-                Remote = true
-            });
+                new Employee
+                {
+                    Name = "EmployeeName_0",
+                    Number = 0,
+                    Address = "Employee_0 address"
+                },
+                new Employee
+                {
+                    Name = "EmployeeName_1",
+                    Number = 1,
+                    OfficeNumber = "1002",
+                    Gender = Gender.Female
+                },
+                new Employee
+                {
+                    Name = "EmployeeName_2",
+                    Number = 2,
+                    Remote = true
+                },
+            };
 
             return View(employees);
         }
 
         public IActionResult CreateWarehouse()
         {
-            ViewBag.Items = new SelectList(_products, "Number", "ProductName", 9);
+            ViewBag.Items = _productsList;
 
             return View();
         }
@@ -134,6 +147,7 @@ namespace MvcTagHelpersWebSite.Controllers
                     Gender = Gender.Female
                 }
             };
+
             return View(warehouse);
         }
 

@@ -14,12 +14,6 @@ namespace MvcTagHelpersWebSite.Models
             set;
         }
 
-        public int OrderNumber
-        {
-            get;
-            set;
-        }
-
         public DateTimeOffset OrderDate
         {
             get;

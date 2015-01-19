@@ -1,0 +1,76 @@
+﻿@model MvcTagHelpersWebSite.Models.Order
+
+@{
+    ViewBag.Title = "Order Page";
+}
+
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    @* Use comments and <text/> elements to force whitespace in generated HTML. *@@using (
+Html.BeginForm(actionName: "Submit", controllerName: "MvcTagHelper_Order"))
+    {<text></text>
+        <div>
+            @Html.LabelFor(m => m.Shipping, htmlAttributes: new { @class = "order" })
+            @Html.TextBoxFor(m => m.Shipping, format: "Your shipping method is {0}", htmlAttributes: new { size = "50" })
+        </div>
+        <div>
+            @Html.LabelFor(m => m.ShippingDateTime, htmlAttributes: new { @class = "order" })
+            @Html.TextBoxFor(m => m.ShippingDateTime, htmlAttributes: new { type = "datetime-local" })
+        </div>
+        <div>
+            @Html.LabelFor(m => m.Products, htmlAttributes: new { @class = "order" })
+            @{ var productSelectList = (IEnumerable<SelectListItem>)ViewBag.Items; }
+            @Html.ListBoxFor(m => m.Products, productSelectList)
+        </div>
+        <div>
+            @Html.LabelFor(m => m.OrderDate, htmlAttributes: new { @class = "order" })
+            @Html.TextBoxFor(m => m.OrderDate, format: "{0:yyyy/MM/dd/ g}", htmlAttributes: new { type = "datetime" })
+        </div>
+        <div>
+            @Html.LabelFor(m => m.NeedSpecialHandle, htmlAttributes: new { @class = "order" })
+            @Html.CheckBoxFor(m => m.NeedSpecialHandle)
+        </div>
+        <div>
+            @Html.LabelFor(m => m.PaymentMethod, htmlAttributes: new { @class = "order" })
+            @Html.ListBoxFor(m => m.PaymentMethod, selectList: new SelectList(new[] { new { value = "Credit" }, new { value = "Check" } }, dataValueField: "value", dataTextField: "value"))
+        </div>
+        <div>
+            @Html.LabelFor(m => m.Customer.Number, htmlAttributes: new { @class = "order" })
+            @Html.TextBoxFor(m => m.Customer.Number, htmlAttributes: new { type = "number", @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Customer.Number)
+        </div>
+        <div>
+            @Html.LabelFor(m => m.Customer.Name, htmlAttributes: new { @class = "order" })
+            @Html.TextBoxFor(m => m.Customer.Name)
+        </div>
+        <div>
+            @Html.LabelFor(m => m.Customer.Email, htmlAttributes: new { @class = "order" })
+            @Html.TextBoxFor(m => m.Customer.Email, htmlAttributes: new { type = "email" })
+            @Html.ValidationMessageFor(m => m.Customer.Email)
+        </div>
+        <div>
+            @Html.LabelFor(m => m.Customer.PhoneNumber, htmlAttributes: new { @class = "order" })
+            @Html.TextBoxFor(m => m.Customer.PhoneNumber, htmlAttributes: new { type = "tel" })
+        </div>
+        <div>
+            @Html.LabelFor(m => m.Customer.Password, htmlAttributes: new { @class = "order" })
+            @Html.PasswordFor(m => m.Customer.Password, htmlAttributes: new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Customer.Password)
+        </div>
+        <div>
+            @Html.LabelFor(m => m.Customer.Gender, htmlAttributes: new { @class = "order" })
+            @Html.EditorFor(model => model.Customer.Gender, templateName: "GenderUsingHtmlHelpers")
+            @Html.ValidationMessageFor(m => m.Customer.Gender)
+        </div><text>
+        </text>@Html.ValidationSummary(message: null, htmlAttributes: new { @class = "order" })<text>
+        </text>@Html.HiddenFor(m => m.Customer.Key)<text></text>
+        <input type="submit"></input><text>
+    </text>@Html.AntiForgeryToken();
+    }@**@
+</body>
+</html>
