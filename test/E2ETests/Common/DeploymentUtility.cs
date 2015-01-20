@@ -185,16 +185,16 @@ namespace E2ETests
             logger.WriteInformation("Setting the DOTNET_APPBASE to {0}", startParameters.ApplicationPath);
 
             var monoPath = "mono";
-            var klrMonoManaged = Path.Combine(dotnetBin, "klr.mono.managed.dll");
+            var dotnetMonoManaged = Path.Combine(dotnetBin, "dotnet.mono.managed.dll");
             var applicationHost = Path.Combine(dotnetBin, "Microsoft.Framework.ApplicationHost");
 
             var commandName = startParameters.ServerType == ServerType.Kestrel ? "kestrel" : string.Empty;
-            logger.WriteInformation(string.Format("Executing command: {0} {1} {2} {3}", monoPath, klrMonoManaged, applicationHost, commandName));
+            logger.WriteInformation(string.Format("Executing command: {0} {1} {2} {3}", monoPath, dotnetMonoManaged, applicationHost, commandName));
 
             var startInfo = new ProcessStartInfo
             {
                 FileName = monoPath,
-                Arguments = string.Format("{0} {1} {2}", klrMonoManaged, applicationHost, commandName),
+                Arguments = string.Format("{0} {1} {2}", dotnetMonoManaged, applicationHost, commandName),
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardInput = true
@@ -254,11 +254,11 @@ namespace E2ETests
         private static Process StartSelfHost(StartParameters startParameters, string identityDbName, ILogger logger)
         {
             var commandName = startParameters.ServerType == ServerType.WebListener ? "web" : "kestrel";
-            logger.WriteInformation("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName);
+            logger.WriteInformation("Executing dotnet.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName);
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = "klr.exe",
+                FileName = "dotnet.exe",
                 Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName),
                 UseShellExecute = true,
                 CreateNoWindow = true
