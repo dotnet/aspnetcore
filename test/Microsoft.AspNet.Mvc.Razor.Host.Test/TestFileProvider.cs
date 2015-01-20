@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class TestFileSystem : IFileSystem
+    public class TestFileProvider : IFileProvider
     {
         private readonly Dictionary<string, IFileInfo> _lookup =
             new Dictionary<string, IFileInfo>(StringComparer.Ordinal);

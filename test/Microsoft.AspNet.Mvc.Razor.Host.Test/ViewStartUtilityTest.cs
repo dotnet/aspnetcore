@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Xunit;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 @"Views\_ViewStart.cshtml",
                 @"_ViewStart.cshtml"
             };
-            var fileSystem = new PhysicalFileSystem(GetTestFileSystemBase());
+            var fileProvider = new PhysicalFileProvider(GetTestFileProviderBase());
 
             // Act
             var result = ViewStartUtility.GetViewStartLocations(inputPath);
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void GetViewStartLocations_ReturnsEmptySequence_IfViewStartIsAtRoot()
         {
             // Arrange
-            var appBase = GetTestFileSystemBase();
+            var appBase = GetTestFileProviderBase();
             var viewPath = "_ViewStart.cshtml";
 
             // Act
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void GetViewStartLocations_ReturnsEmptySequence_IfPathIsRooted()
         {
             // Arrange
-            var appBase = GetTestFileSystemBase();
+            var appBase = GetTestFileProviderBase();
             var absolutePath = Path.Combine(Directory.GetCurrentDirectory(), "Index.cshtml");
 
             // Act
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Empty(result);
         }
 
-        private static string GetTestFileSystemBase()
+        private static string GetTestFileProviderBase()
         {
             var serviceProvider = CallContextServiceLocator.Locator.ServiceProvider;
             var appEnv = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));

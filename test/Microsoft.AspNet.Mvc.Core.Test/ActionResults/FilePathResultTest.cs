@@ -4,7 +4,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Http.Interfaces;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
 
             var result = new FilePathResult(path, "text/plain")
             {
-                FileSystem = new PhysicalFileSystem(Path.GetFullPath(".")),
+                FileProvider = new PhysicalFileProvider(Path.GetFullPath(".")),
             };
 
             var httpContext = new DefaultHttpContext();
@@ -56,15 +56,15 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public async Task ExecuteResultAsync_FallsBackToThePhysicalFileSystem_IfNoFileSystemIsPresent()
+        public async Task ExecuteResultAsync_FallsBackToThePhysicalFileProvider_IfNoFileProviderIsPresent()
         {
             // Arrange
             var path = Path.Combine("TestFiles", "FilePathResultTestFile.txt");
             var result = new FilePathResult(path, "text/plain");
 
             var appEnvironment = new Mock<IHostingEnvironment>();
-            appEnvironment.Setup(app => app.WebRoot)
-                .Returns(Directory.GetCurrentDirectory());
+            appEnvironment.Setup(app => app.WebRootFileProvider)
+                .Returns(new PhysicalFileProvider(Directory.GetCurrentDirectory()));
 
             var httpContext = new DefaultHttpContext();
             httpContext.Response.Body = new MemoryStream();
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc
 
             var result = new FilePathResult(path, "text/plain")
             {
-                FileSystem = new PhysicalFileSystem(Path.GetFullPath(".")),
+                FileProvider = new PhysicalFileProvider(Path.GetFullPath(".")),
             };
 
             var sendFileMock = new Mock<IHttpSendFileFeature>();
@@ -122,10 +122,10 @@ namespace Microsoft.AspNet.Mvc
             // forward slashes.
             path = path.Replace('/', '\\');
 
-            // Point the FileSystemRoot to a subfolder
+            // Point the FileProviderRoot to a subfolder
             var result = new FilePathResult(path, "text/plain")
             {
-                FileSystem = new PhysicalFileSystem(Path.GetFullPath("Utils")),
+                FileProvider = new PhysicalFileProvider(Path.GetFullPath("Utils")),
             };
 
             var httpContext = new DefaultHttpContext();
@@ -151,10 +151,10 @@ namespace Microsoft.AspNet.Mvc
             var path = Path.GetFullPath(Path.Combine(".", "TestFiles", "FilePathResultTestFile.txt"));
             path = path.Replace(@"\", "/");
 
-            // Point the FileSystemRoot to a subfolder
+            // Point the FileProviderRoot to a subfolder
             var result = new FilePathResult(path, "text/plain")
             {
-                FileSystem = new PhysicalFileSystem(Path.GetFullPath("Utils")),
+                FileProvider = new PhysicalFileProvider(Path.GetFullPath("Utils")),
             };
 
             var httpContext = new DefaultHttpContext();
@@ -203,15 +203,15 @@ namespace Microsoft.AspNet.Mvc
         public void GetFilePath_Resolves_RelativePaths(string path, string relativePathToFile)
         {
             // Arrange
-            var fileSystem = new PhysicalFileSystem(Path.GetFullPath("./TestFiles"));
+            var fileProvider = new PhysicalFileProvider(Path.GetFullPath("./TestFiles"));
             var expectedPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), relativePathToFile));
             var filePathResult = new FilePathResult(path, "text/plain")
             {
-                FileSystem = fileSystem,
+                FileProvider = fileProvider,
             };
 
             // Act
-            var result = filePathResult.ResolveFilePath(fileSystem);
+            var result = filePathResult.ResolveFilePath(fileProvider);
 
             // Assert
             Assert.Equal(expectedPath, result);
@@ -224,15 +224,15 @@ namespace Microsoft.AspNet.Mvc
         public void GetFilePath_FailsToResolve_InvalidVirtualPaths(string path, string relativePathToFile)
         {
             // Arrange
-            var fileSystem = new PhysicalFileSystem(Path.GetFullPath("./TestFiles"));
+            var fileProvider = new PhysicalFileProvider(Path.GetFullPath("./TestFiles"));
             var expectedPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), relativePathToFile));
             var filePathResult = new FilePathResult(path, "text/plain")
             {
-                FileSystem = fileSystem,
+                FileProvider = fileProvider,
             };
 
             // Act
-            var ex = Assert.Throws<FileNotFoundException>(() => filePathResult.ResolveFilePath(fileSystem));
+            var ex = Assert.Throws<FileNotFoundException>(() => filePathResult.ResolveFilePath(fileProvider));
 
             // Assert
             Assert.Equal("Could not find file: " + path, ex.Message);
@@ -271,18 +271,18 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
 
-            // Point the IFileSystem root to a different subfolder
-            var fileSystem = new PhysicalFileSystem(Path.GetFullPath("./Utils"));
+            // Point the IFileProvider root to a different subfolder
+            var fileProvider = new PhysicalFileProvider(Path.GetFullPath("./Utils"));
             var filePathResult = new FilePathResult(path, "text/plain")
             {
-                FileSystem = fileSystem,
+                FileProvider = fileProvider,
             };
 
             var expectedFileName = path.TrimStart('~').Replace('\\', '/');
             var expectedMessage = "Could not find file: " + expectedFileName;
 
             // Act
-            var ex = Assert.Throws<FileNotFoundException>(() => filePathResult.ResolveFilePath(fileSystem));
+            var ex = Assert.Throws<FileNotFoundException>(() => filePathResult.ResolveFilePath(fileProvider));
 
             // Assert
             Assert.Equal(expectedMessage, ex.Message);
@@ -322,7 +322,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var fileResult = new FilePathResult(path, "text/plain")
             {
-                FileSystem = Mock.Of<IFileSystem>(),
+                FileProvider = Mock.Of<IFileProvider>(),
             };
 
             // Act
@@ -342,7 +342,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var fileResult = new FilePathResult(path, "text/plain")
             {
-                FileSystem = Mock.Of<IFileSystem>(),
+                FileProvider = Mock.Of<IFileProvider>(),
             };
 
             // Act
@@ -362,7 +362,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var fileResult = new FilePathResult(path, "text/plain")
             {
-                FileSystem = Mock.Of<IFileSystem>(),
+                FileProvider = Mock.Of<IFileProvider>(),
             };
 
             // Act
@@ -382,7 +382,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var fileResult = new FilePathResult(path, "text/plain")
             {
-                FileSystem = Mock.Of<IFileSystem>(),
+                FileProvider = Mock.Of<IFileProvider>(),
             };
 
             // Act
@@ -427,7 +427,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var fileResult = new FilePathResult(path, "text/plain")
             {
-                FileSystem = Mock.Of<IFileSystem>(),
+                FileProvider = Mock.Of<IFileProvider>(),
             };
 
             // Act

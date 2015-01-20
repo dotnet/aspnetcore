@@ -3,31 +3,31 @@
 
 using System;
 using System.Collections.Concurrent;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.Expiration.Interfaces;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// Default implementation for the <see cref="IRazorFileSystemCache"/> interface that caches
-    /// the results of <see cref="RazorViewEngineOptions.FileSystem"/>.
+    /// Default implementation for the <see cref="IRazorFileProviderCache"/> interface that caches
+    /// the results of <see cref="RazorViewEngineOptions.FileProvider"/>.
     /// </summary>
-    public class DefaultRazorFileSystemCache : IRazorFileSystemCache
+    public class DefaultRazorFileProviderCache : IRazorFileProviderCache
     {
         private readonly ConcurrentDictionary<string, ExpiringFileInfo> _fileInfoCache =
             new ConcurrentDictionary<string, ExpiringFileInfo>(StringComparer.Ordinal);
 
-        private readonly IFileSystem _fileSystem;
+        private readonly IFileProvider _fileProvider;
         private readonly TimeSpan _offset;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="DefaultRazorFileSystemCache"/>.
+        /// Initializes a new instance of <see cref="DefaultRazorFileProviderCache"/>.
         /// </summary>
         /// <param name="optionsAccessor">Accessor to <see cref="RazorViewEngineOptions"/>.</param>
-        public DefaultRazorFileSystemCache(IOptions<RazorViewEngineOptions> optionsAccessor)
+        public DefaultRazorFileProviderCache(IOptions<RazorViewEngineOptions> optionsAccessor)
         {
-            _fileSystem = optionsAccessor.Options.FileSystem;
+            _fileProvider = optionsAccessor.Options.FileProvider;
             _offset = optionsAccessor.Options.ExpirationBeforeCheckingFilesOnDisk;
         }
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
-            return _fileSystem.GetDirectoryContents(subpath);
+            return _fileProvider.GetDirectoryContents(subpath);
         }
 
         /// <inheritdoc />
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                var fileInfo = _fileSystem.GetFileInfo(subpath);
+                var fileInfo = _fileProvider.GetFileInfo(subpath);
 
                 expiringFileInfo = new ExpiringFileInfo()
                 {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public IExpirationTrigger Watch(string filter)
         {
-            return _fileSystem.Watch(filter);
+            return _fileProvider.Watch(filter);
         }
 
         private class ExpiringFileInfo

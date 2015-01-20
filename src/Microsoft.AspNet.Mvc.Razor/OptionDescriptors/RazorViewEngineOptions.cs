@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -14,12 +14,12 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class RazorViewEngineOptions
     {
         private TimeSpan _expirationBeforeCheckingFilesOnDisk = TimeSpan.FromSeconds(2);
-        private IFileSystem _fileSystem;
+        private IFileProvider _fileProvider;
 
         /// <summary>
         /// Gets or sets the <see cref="TimeSpan"/> that specifies the duration for which results of
-        /// <see cref="FileSystem"/> are cached by <see cref="DefaultRazorFileSystemCache"/>. 
-        /// <see cref="DefaultRazorFileSystemCache"/> is used to query for file changes during Razor compilation.
+        /// <see cref="FileProvider"/> are cached by <see cref="DefaultRazorFileProviderCache"/>.
+        /// <see cref="DefaultRazorFileProviderCache"/> is used to query for file changes during Razor compilation.
         /// </summary>
         /// <remarks>
         /// <see cref="TimeSpan"/> of <see cref="TimeSpan.Zero"/> or less, means no caching.
@@ -53,16 +53,16 @@ namespace Microsoft.AspNet.Mvc.Razor
             = new List<ViewLocationExpanderDescriptor>();
 
         /// <summary>
-        /// Gets or sets the <see cref="IFileSystem" /> used by <see cref="RazorViewEngine"/> to locate Razor files on
+        /// Gets or sets the <see cref="IFileProvider" /> used by <see cref="RazorViewEngine"/> to locate Razor files on
         /// disk.
         /// </summary>
         /// <remarks>
-        /// At startup, this is initialized to an instance of <see cref="PhysicalFileSystem"/> that is rooted at the
+        /// At startup, this is initialized to an instance of <see cref="PhysicalFileProvider"/> that is rooted at the
         /// application root.
         /// </remarks>
-        public IFileSystem FileSystem
+        public IFileProvider FileProvider
         {
-            get { return _fileSystem; }
+            get { return _fileProvider; }
 
             set
             {
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     throw new ArgumentNullException(nameof(value));
                 }
 
-                _fileSystem = value;
+                _fileProvider = value;
             }
         }
     }

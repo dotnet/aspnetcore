@@ -5,7 +5,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.FileSystems": "1.0.0-*",
+    "Microsoft.AspNet.FileProviders": "1.0.0-*",
     "Microsoft.AspNet.Hosting": "1.0.0-*",
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },

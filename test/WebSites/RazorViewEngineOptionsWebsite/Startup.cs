@@ -4,7 +4,7 @@
 using System.IO;
 using System.Reflection;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.AspNet.Routing;
@@ -23,7 +23,7 @@ namespace RazorViewEngineOptionsWebsite
 
                 services.Configure<RazorViewEngineOptions>(options =>
                 {
-                    options.FileSystem = new EmbeddedResourceFileSystem(GetType().GetTypeInfo().Assembly, "EmbeddedResources");
+                    options.FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "EmbeddedResources");
                 });
             });
 

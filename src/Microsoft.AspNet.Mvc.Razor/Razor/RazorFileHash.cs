@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

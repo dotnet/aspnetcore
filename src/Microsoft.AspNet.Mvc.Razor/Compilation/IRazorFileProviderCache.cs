@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// An <see cref="IFileSystem"/> that caches the results of <see cref="IFileSystem.GetFileInfo(string)"/> for a
+    /// An <see cref="IFileProvider"/> that caches the results of <see cref="IFileProvider.GetFileInfo(string)"/> for a
     /// duration specified by <see cref="RazorViewEngineOptions.ExpirationBeforeCheckingFilesOnDisk"/>.
     /// </summary>
-    public interface IRazorFileSystemCache : IFileSystem
+    public interface IRazorFileProviderCache : IFileProvider
     {
     }
 }

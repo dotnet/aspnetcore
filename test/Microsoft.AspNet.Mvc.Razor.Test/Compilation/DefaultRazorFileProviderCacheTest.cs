@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Expiration.Interfaces;
 using Moq;
@@ -11,11 +11,11 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class DefaultRazorFileSystemCacheTest
+    public class DefaultRazorFileProviderCacheTest
     {
         private const string FileName = "myView.cshtml";
 
-        public DummyFileSystem TestFileSystem { get; } = new DummyFileSystem();
+        public DummyFileProvider TestFileProvider { get; } = new DummyFileProvider();
 
         public IOptions<RazorViewEngineOptions> OptionsAccessor
         {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 var options = new RazorViewEngineOptions
                 {
-                    FileSystem = TestFileSystem
+                    FileProvider = TestFileProvider
                 };
 
                 var mock = new Mock<IOptions<RazorViewEngineOptions>>(MockBehavior.Strict);
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 LastModified = DateTime.Now,
             };
 
-            TestFileSystem.AddFile(fileInfo);
+            TestFileProvider.AddFile(fileInfo);
         }
 
         public void Sleep(ControllableExpiringFileInfoCache cache, int offsetMilliseconds)
@@ -309,33 +309,33 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public void GetDirectoryInfo_PassesThroughToUnderlyingFileSystem()
+        public void GetDirectoryInfo_PassesThroughToUnderlyingFileProvider()
         {
             // Arrange
-            var fileSystem = new Mock<IFileSystem>();
+            var fileProvider = new Mock<IFileProvider>();
             var expected = Mock.Of<IDirectoryContents>();
-            fileSystem.Setup(f => f.GetDirectoryContents("/test-path"))
+            fileProvider.Setup(f => f.GetDirectoryContents("/test-path"))
                       .Returns(expected)
                       .Verifiable();
             var options = new RazorViewEngineOptions
             {
-                FileSystem = fileSystem.Object
+                FileProvider = fileProvider.Object
             };
             var accessor = new Mock<IOptions<RazorViewEngineOptions>>();
             accessor.SetupGet(a => a.Options)
                     .Returns(options);
 
-            var cachedFileSystem = new DefaultRazorFileSystemCache(accessor.Object);
+            var cachedFileProvider = new DefaultRazorFileProviderCache(accessor.Object);
 
             // Act
-            var result = cachedFileSystem.GetDirectoryContents("/test-path");
+            var result = cachedFileProvider.GetDirectoryContents("/test-path");
 
             // Assert
             Assert.Same(expected, result);
-            fileSystem.Verify();
+            fileProvider.Verify();
         }
 
-        public class ControllableExpiringFileInfoCache : DefaultRazorFileSystemCache
+        public class ControllableExpiringFileInfoCache : DefaultRazorFileProviderCache
         {
             public ControllableExpiringFileInfoCache(IOptions<RazorViewEngineOptions> optionsAccessor)
                 : base(optionsAccessor)
@@ -367,7 +367,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 _internalUtcNow = UtcNow.AddMilliseconds(milliSeconds);
             }
         }
-        public class DummyFileSystem : IFileSystem
+        public class DummyFileProvider : IFileProvider
         {
             private Dictionary<string, IFileInfo> _fileInfos = new Dictionary<string, IFileInfo>(StringComparer.OrdinalIgnoreCase);
 

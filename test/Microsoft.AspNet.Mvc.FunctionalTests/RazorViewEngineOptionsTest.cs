@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
-        public async Task RazorViewEngine_UsesFileSystemOnViewEngineOptionsToLocateViews()
+        public async Task RazorViewEngine_UsesFileProviderOnViewEngineOptionsToLocateViews()
         {
             // Arrange
             var expectedMessage = "Hello test-user, this is /RazorViewEngineOptions_Home";
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task RazorViewEngine_UsesFileSystemOnViewEngineOptionsToLocateAreaViews()
+        public async Task RazorViewEngine_UsesFileProviderOnViewEngineOptionsToLocateAreaViews()
         {
             // Arrange
             var expectedMessage = "Hello admin-user, this is /Restricted/RazorViewEngineOptions_Admin/Login";

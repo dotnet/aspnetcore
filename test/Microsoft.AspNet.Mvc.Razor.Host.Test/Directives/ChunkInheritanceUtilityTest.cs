@@ -12,11 +12,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public void GetInheritedChunks_ReadsChunksFromViewStartsInPath()
         {
             // Arrange
-            var fileSystem = new TestFileSystem();
-            fileSystem.AddFile(@"Views\accounts\_ViewStart.cshtml", "@using AccountModels");
-            fileSystem.AddFile(@"Views\Shared\_ViewStart.cshtml", "@inject SharedHelper Shared");
-            fileSystem.AddFile(@"Views\home\_ViewStart.cshtml", "@using MyNamespace");
-            fileSystem.AddFile(@"Views\_ViewStart.cshtml",
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(@"Views\accounts\_ViewStart.cshtml", "@using AccountModels");
+            fileProvider.AddFile(@"Views\Shared\_ViewStart.cshtml", "@inject SharedHelper Shared");
+            fileProvider.AddFile(@"Views\home\_ViewStart.cshtml", "@using MyNamespace");
+            fileProvider.AddFile(@"Views\_ViewStart.cshtml",
 @"@inject MyHelper<TModel> Helper
 @inherits MyBaseType
 
@@ -30,8 +30,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 new InjectChunk("MyTestHtmlHelper", "Html"),
                 new UsingChunk { Namespace = "AppNamespace.Model" },
             };
-            var host = new MvcRazorHost(fileSystem);
-            var utility = new ChunkInheritanceUtility(host, fileSystem, defaultChunks);
+            var host = new MvcRazorHost(fileProvider);
+            var utility = new ChunkInheritanceUtility(host, fileProvider, defaultChunks);
 
             // Act
             var codeTrees = utility.GetInheritedCodeTrees(@"Views\home\Index.cshtml");
@@ -66,17 +66,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public void GetInheritedChunks_ReturnsEmptySequenceIfNoViewStartsArePresent()
         {
             // Arrange
-            var fileSystem = new TestFileSystem();
-            fileSystem.AddFile(@"_ViewStart.cs", string.Empty);
-            fileSystem.AddFile(@"Views\_Layout.cshtml", string.Empty);
-            fileSystem.AddFile(@"Views\home\_not-viewstart.cshtml", string.Empty);
-            var host = new MvcRazorHost(fileSystem);
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(@"_ViewStart.cs", string.Empty);
+            fileProvider.AddFile(@"Views\_Layout.cshtml", string.Empty);
+            fileProvider.AddFile(@"Views\home\_not-viewstart.cshtml", string.Empty);
+            var host = new MvcRazorHost(fileProvider);
             var defaultChunks = new Chunk[]
             {
                 new InjectChunk("MyTestHtmlHelper", "Html"),
                 new UsingChunk { Namespace = "AppNamespace.Model" },
             };
-            var utility = new ChunkInheritanceUtility(host, fileSystem, defaultChunks);
+            var utility = new ChunkInheritanceUtility(host, fileProvider, defaultChunks);
 
             // Act
             var codeTrees = utility.GetInheritedCodeTrees(@"Views\home\Index.cshtml");
@@ -89,10 +89,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public void MergeInheritedChunks_MergesDefaultInheritedChunks()
         {
             // Arrange
-            var fileSystem = new TestFileSystem();
-            fileSystem.AddFile(@"Views\_ViewStart.cshtml",
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(@"Views\_ViewStart.cshtml",
                                "@inject DifferentHelper<TModel> Html");
-            var host = new MvcRazorHost(fileSystem);
+            var host = new MvcRazorHost(fileProvider);
             var defaultChunks = new Chunk[]
             {
                 new InjectChunk("MyTestHtmlHelper", "Html"),
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 }
             };
 
-            var utility = new ChunkInheritanceUtility(host, fileSystem, defaultChunks);
+            var utility = new ChunkInheritanceUtility(host, fileProvider, defaultChunks);
             var codeTree = new CodeTree();
 
             // Act

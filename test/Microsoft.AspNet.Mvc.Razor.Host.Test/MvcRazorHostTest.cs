@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void MvcRazorHost_EnablesInstrumentationByDefault()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileSystem());
+            var host = new MvcRazorHost(new TestFileProvider());
 
             // Act
             var instrumented = host.EnableInstrumentation;
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void MvcRazorHost_GeneratesTagHelperModelExpressionCode_DesignTime()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileSystem())
+            var host = new MvcRazorHost(new TestFileProvider())
             {
                 DesignTimeMode = true
             };
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void MvcRazorHost_ParsesAndGeneratesCodeForBasicScenarios(string scenarioName)
         {
             // Arrange
-            var host = new TestMvcRazorHost(new TestFileSystem());
+            var host = new TestMvcRazorHost(new TestFileProvider());
 
             // Act and Assert
             RunRuntimeTest(host, scenarioName);
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void InjectVisitor_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileSystem())
+            var host = new MvcRazorHost(new TestFileProvider())
             {
                 DesignTimeMode = true
             };
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void InjectVisitorWithModel_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileSystem())
+            var host = new MvcRazorHost(new TestFileProvider())
             {
                 DesignTimeMode = true
             };
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void ModelVisitor_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileSystem())
+            var host = new MvcRazorHost(new TestFileProvider())
             {
                 DesignTimeMode = true
             };
@@ -229,8 +229,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         private class TestMvcRazorHost : MvcRazorHost
         {
-            public TestMvcRazorHost(IFileSystem fileSystem)
-                : base(fileSystem)
+            public TestMvcRazorHost(IFileProvider fileProvider)
+                : base(fileProvider)
             { }
 
             public override CodeBuilder DecorateCodeBuilder(CodeBuilder incomingBuilder, CodeBuilderContext context)

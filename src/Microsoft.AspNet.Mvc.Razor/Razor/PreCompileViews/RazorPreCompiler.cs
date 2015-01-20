@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.CodeAnalysis;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.DependencyInjection;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class RazorPreCompiler
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly IFileSystem _fileSystem;
+        private readonly IFileProvider _fileProvider;
 
         public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider,
                                 [NotNull] IMemoryCache precompilationCache,
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                 [NotNull] CompilationSettings compilationSettings)
         {
             _serviceProvider = designTimeServiceProvider;
-            _fileSystem = optionsAccessor.Options.FileSystem;
+            _fileProvider = optionsAccessor.Options.FileProvider;
             CompilationSettings = compilationSettings;
             PreCompilationCache = precompilationCache;
         }
@@ -120,10 +120,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             if (entry != null)
             {
-                cacheSetContext.AddExpirationTrigger(_fileSystem.Watch(fileInfo.RelativePath));
+                cacheSetContext.AddExpirationTrigger(_fileProvider.Watch(fileInfo.RelativePath));
                 foreach (var viewStartPath in ViewStartUtility.GetViewStartLocations(fileInfo.RelativePath))
                 {
-                    cacheSetContext.AddExpirationTrigger(_fileSystem.Watch(viewStartPath));
+                    cacheSetContext.AddExpirationTrigger(_fileProvider.Watch(viewStartPath));
                 }
             }
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private void GetFileInfosRecursive(string root, List<RelativeFileInfo> razorFiles)
         {
-            var fileInfos = _fileSystem.GetDirectoryContents(root);
+            var fileInfos = _fileProvider.GetDirectoryContents(root);
 
             foreach (var fileInfo in fileInfos)
             {

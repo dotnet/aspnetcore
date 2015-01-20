@@ -146,7 +146,7 @@ MyType1
         private static CodeBuilderContext CreateContext()
         {
             return new CodeBuilderContext(
-                new CodeGeneratorContext(new MvcRazorHost(new TestFileSystem()),
+                new CodeGeneratorContext(new MvcRazorHost(new TestFileProvider()),
                                          "MyClass",
                                          "MyNamespace",
                                          string.Empty,

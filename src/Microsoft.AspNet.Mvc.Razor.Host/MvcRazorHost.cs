@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             new InjectChunk("Microsoft.AspNet.Mvc.IUrlHelper", "Url"),
         };
 
-        private readonly IFileSystem _fileSystem;
+        private readonly IFileProvider _fileProvider;
 
         // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>.
         // This field holds the type name without the generic decoration (MyBaseType)
@@ -45,18 +45,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="root">The path to the application base.</param>
         public MvcRazorHost(string root) :
-            this(new PhysicalFileSystem(root))
+            this(new PhysicalFileProvider(root))
         {
         }
 #endif
         /// <summary>
-        /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="fileSystem"/>.
+        /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="fileProvider"/>.
         /// </summary>
-        /// <param name="fileSystem">A <see cref="IFileSystem"/> rooted at the application base path.</param>
-        public MvcRazorHost(IFileSystem fileSystem)
+        /// <param name="fileProvider">A <see cref="IFileProvider"/> rooted at the application base path.</param>
+        public MvcRazorHost(IFileProvider fileProvider)
             : base(new CSharpRazorCodeLanguage())
         {
-            _fileSystem = fileSystem;
+            _fileProvider = fileProvider;
             _baseType = BaseType;
 
             TagHelperDescriptorResolver = new TagHelperDescriptorResolver();
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 if (_chunkInheritanceUtility == null)
                 {
                     // This needs to be lazily evaluated to support DefaultInheritedChunks being virtual.
-                    _chunkInheritanceUtility = new ChunkInheritanceUtility(this, _fileSystem, DefaultInheritedChunks);
+                    _chunkInheritanceUtility = new ChunkInheritanceUtility(this, _fileProvider, DefaultInheritedChunks);
                 }
 
                 return _chunkInheritanceUtility;

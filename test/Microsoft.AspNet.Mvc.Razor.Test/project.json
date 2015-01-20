@@ -1,7 +1,7 @@
 {
     "code": [
         "**/*.cs",
-        "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileSystem.cs",
+        "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileProvider.cs",
         "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileInfo.cs" 
     ],
     "dependencies": {

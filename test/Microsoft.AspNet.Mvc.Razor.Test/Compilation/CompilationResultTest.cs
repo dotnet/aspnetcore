@@ -3,7 +3,7 @@
 
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Moq;
 using Xunit;
 

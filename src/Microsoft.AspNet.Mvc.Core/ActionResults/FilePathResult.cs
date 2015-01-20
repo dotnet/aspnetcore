@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Interfaces;
@@ -73,18 +73,18 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="IFileSystem"/> used to resolve paths.
+        /// Gets or sets the <see cref="IFileProvider"/> used to resolve paths.
         /// </summary>
-        public IFileSystem FileSystem { get; set; }
+        public IFileProvider FileProvider { get; set; }
 
         /// <inheritdoc />
         protected override Task WriteFileAsync(HttpResponse response, CancellationToken cancellation)
         {
             var sendFile = response.HttpContext.GetFeature<IHttpSendFileFeature>();
 
-            var fileSystem = GetFileSystem(response.HttpContext.RequestServices);
+            var fileProvider = GetFileProvider(response.HttpContext.RequestServices);
 
-            var filePath = ResolveFilePath(fileSystem);
+            var filePath = ResolveFilePath(fileProvider);
 
             if (sendFile != null)
             {
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        internal string ResolveFilePath(IFileSystem fileSystem)
+        internal string ResolveFilePath(IFileProvider fileProvider)
         {
             // Let the file system try to get the file and if it can't,
             // fallback to trying the path directly unless the path starts with '/'.
@@ -117,10 +117,10 @@ namespace Microsoft.AspNet.Mvc
                 return path;
             }
 
-            var fileInfo = fileSystem.GetFileInfo(path);
+            var fileInfo = fileProvider.GetFileInfo(path);
             if (fileInfo.Exists)
             {
-                // The path is relative and IFileSystem found the file, so return the full
+                // The path is relative and IFileProvider found the file, so return the full
                 // path.
                 return fileInfo.PhysicalPath;
             }
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Mvc
             if (path.StartsWith("~\\", StringComparison.Ordinal))
             {
                 // ~\ is not a valid virtual path, and we don't want to replace '\' with '/' as it
-                // ofuscates the error, so just return the original path and throw at a later point
+                // obfuscates the error, so just return the original path and throw at a later point
                 // when we can't find the file.
                 return path;
             }
@@ -195,19 +195,17 @@ namespace Microsoft.AspNet.Mvc
                 path.StartsWith("\\\\", StringComparison.Ordinal);
         }
 
-        private IFileSystem GetFileSystem(IServiceProvider requestServices)
+        private IFileProvider GetFileProvider(IServiceProvider requestServices)
         {
-            if (FileSystem != null)
+            if (FileProvider != null)
             {
-                return FileSystem;
+                return FileProvider;
             }
 
-            // For right now until we can use IWebRootFileSystemProvider, see
-            // https://github.com/aspnet/Hosting/issues/86 for details.
             var hostingEnvironment = requestServices.GetService<IHostingEnvironment>();
-            FileSystem = new PhysicalFileSystem(hostingEnvironment.WebRoot);
+            FileProvider = hostingEnvironment.WebRootFileProvider;
 
-            return FileSystem;
+            return FileProvider;
         }
 
         private static async Task CopyStreamToResponse(

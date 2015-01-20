@@ -102,13 +102,13 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IViewLocationExpanderProvider, DefaultViewLocationExpanderProvider>();
             // Caches view locations that are valid for the lifetime of the application.
             yield return describe.Singleton<IViewLocationCache, DefaultViewLocationCache>();
-            yield return describe.Singleton<IRazorFileSystemCache, DefaultRazorFileSystemCache>();
+            yield return describe.Singleton<IRazorFileProviderCache, DefaultRazorFileProviderCache>();
 
             // The host is designed to be discarded after consumption and is very inexpensive to initialize.
             yield return describe.Transient<IMvcRazorHost>(serviceProvider =>
             {
-                var cachedFileSystem = serviceProvider.GetRequiredService<IRazorFileSystemCache>();
-                return new MvcRazorHost(cachedFileSystem);
+                var cachedFileProvider = serviceProvider.GetRequiredService<IRazorFileProviderCache>();
+                return new MvcRazorHost(cachedFileProvider);
             });
 
             // Caches compilation artifacts across the lifetime of the application.

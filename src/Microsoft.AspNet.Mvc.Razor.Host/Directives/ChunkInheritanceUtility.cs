@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
@@ -20,21 +20,21 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
     {
         private readonly Dictionary<string, CodeTree> _parsedCodeTrees;
         private readonly MvcRazorHost _razorHost;
-        private readonly IFileSystem _fileSystem;
+        private readonly IFileProvider _fileProvider;
         private readonly IReadOnlyList<Chunk> _defaultInheritedChunks;
 
         /// <summary>
         /// Initializes a new instance of <see cref="ChunkInheritanceUtility"/>.
         /// </summary>
         /// <param name="razorHost">The <see cref="MvcRazorHost"/> used to parse _ViewStart pages.</param>
-        /// <param name="fileSystem">The filesystem that represents the application.</param>
+        /// <param name="fileProvider">The fileProvider that represents the application.</param>
         /// <param name="defaultInheritedChunks">Sequence of <see cref="Chunk"/>s inherited by default.</param>
         public ChunkInheritanceUtility([NotNull] MvcRazorHost razorHost,
-                                       [NotNull] IFileSystem fileSystem,
+                                       [NotNull] IFileProvider fileProvider,
                                        [NotNull] IReadOnlyList<Chunk> defaultInheritedChunks)
         {
             _razorHost = razorHost;
-            _fileSystem = fileSystem;
+            _fileProvider = fileProvider;
             _defaultInheritedChunks = defaultInheritedChunks;
             _parsedCodeTrees = new Dictionary<string, CodeTree>(StringComparer.Ordinal);
         }
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         /// <summary>
         /// Gets an ordered <see cref="IReadOnlyList{T}"/> of parsed <see cref="CodeTree"/> for each _ViewStart that
         /// is applicable to the page located at <paramref name="pagePath"/>. The list is ordered so that the
-        /// <see cref="CodeTree"/> for the _ViewStart closest to the <paramref name="pagePath"/> in the filesystem
+        /// <see cref="CodeTree"/> for the _ViewStart closest to the <paramref name="pagePath"/> in the fileProvider
         /// appears first.
         /// </summary>
         /// <param name="pagePath">The path of the page to locate inherited chunks for.</param>
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 }
                 else
                 {
-                    var fileInfo = _fileSystem.GetFileInfo(viewStartPath);
+                    var fileInfo = _fileProvider.GetFileInfo(viewStartPath);
                     if (fileInfo.Exists)
                     {
                         // viewStartPath contains the app-relative path of the ViewStart.
