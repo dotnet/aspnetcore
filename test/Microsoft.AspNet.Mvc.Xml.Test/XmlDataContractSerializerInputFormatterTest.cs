@@ -15,7 +15,7 @@ using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Xml
 {
     public class XmlDataContractSerializerInputFormatterTest
     {
@@ -343,26 +343,6 @@ namespace Microsoft.AspNet.Mvc
             var levelOneModel = model as TestLevelOne;
             Assert.Equal(expectedInt, levelOneModel.SampleInt);
             Assert.Equal(expectedString, levelOneModel.sampleString);
-        }
-
-        [Fact]
-        public async Task ReadAsync_ReadsSerializableErrorXml()
-        {
-            // Arrange
-            var serializableErrorXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<Error><key1>Test Error 1 Test Error 2</key1><key2>Test Error 3</key2></Error>";
-            var formatter = new XmlDataContractSerializerInputFormatter();
-            var contentBytes = Encodings.UTF8EncodingWithoutBOM.GetBytes(serializableErrorXml);
-            var context = GetInputFormatterContext(contentBytes, typeof(SerializableError));
-
-            // Act
-            var model = await formatter.ReadAsync(context);
-
-            // Assert
-            var serializableError = model as SerializableError;
-            Assert.NotNull(serializableError);
-            Assert.Equal("Test Error 1 Test Error 2", serializableError["key1"]);
-            Assert.Equal("Test Error 3", serializableError["key2"]);
         }
 
         [Fact]

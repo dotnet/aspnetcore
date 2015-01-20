@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
@@ -38,7 +39,17 @@ namespace Microsoft.AspNet.Mvc.Xml
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
 
             WriterSettings = writerSettings;
+
+            WrapperProviderFactories = new List<IWrapperProviderFactory>();
+            WrapperProviderFactories.Add(new EnumerableWrapperProviderFactory(WrapperProviderFactories));
+            WrapperProviderFactories.Add(new SerializableErrorWrapperProviderFactory());
         }
+
+        /// <summary>
+        /// Gets the list of <see cref="IWrapperProviderFactory"/> to
+        /// provide the wrapping type for serialization.
+        /// </summary>
+        public IList<IWrapperProviderFactory> WrapperProviderFactories { get; }
 
         /// <summary>
         /// Gets the settings to be used by the XmlWriter.
@@ -48,27 +59,41 @@ namespace Microsoft.AspNet.Mvc.Xml
         /// <summary>
         /// Gets the type of the object to be serialized.
         /// </summary>
-        /// <param name="declaredType">The declared type.</param>
-        /// <param name="runtimeType">The runtime type.</param>
-        /// <returns>The type of the object to be serialized.</returns>
-        protected virtual Type GetSerializableType(Type declaredType, Type runtimeType)
+        /// <param name="declaredType">The declared type of the object.</param>
+        /// <param name="runtimeType">The runtime type of the object</param>
+        /// <returns>A type that needs to be serialized.</returns>
+        protected virtual Type ResolveType(Type declaredType, Type runtimeType)
         {
-            var type = declaredType;
             if (declaredType == null || declaredType == typeof(object))
             {
                 if (runtimeType != null)
                 {
-                    type = runtimeType;
+                    return runtimeType;
                 }
             }
 
-            return SerializableErrorWrapper.CreateSerializableType(type);
+            return declaredType;
+        }
+
+        /// <summary>
+        /// Gets the type to be serialized.
+        /// </summary>
+        /// <param name="type">The original type to be serialized</param>
+        /// <returns>The original or wrapped type provided by any <see cref="IWrapperProvider"/>.</returns>
+        protected virtual Type GetSerializableType(Type type)
+        {
+            var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(
+                                                        new WrapperProviderContext(type, isSerialization: true));
+
+            return wrapperProvider?.WrappingType ?? type;
         }
 
         /// <inheritdoc />
         protected override bool CanWriteType(Type declaredType, Type runtimeType)
         {
-            return CreateSerializer(GetSerializableType(declaredType, runtimeType)) != null;
+            var type = ResolveType(declaredType, runtimeType);
+
+            return CreateSerializer(GetSerializableType(type)) != null;
         }
 
         /// <summary>
@@ -115,12 +140,26 @@ namespace Microsoft.AspNet.Mvc.Xml
             using (var outputStream = new DelegatingStream(innerStream))
             using (var xmlWriter = CreateXmlWriter(outputStream, tempWriterSettings))
             {
-                var runtimeType = context.Object == null ? null : context.Object.GetType();
+                var obj = context.Object;
+                var runtimeType = obj?.GetType();
 
-                var type = GetSerializableType(context.DeclaredType, runtimeType);
-                var xmlSerializer = CreateSerializer(type);
-                var responseObject = SerializableErrorWrapper.WrapSerializableErrorObject(context.Object);
-                xmlSerializer.Serialize(xmlWriter, responseObject);
+                var resolvedType = ResolveType(context.DeclaredType, runtimeType);
+
+                var wrappingType = GetSerializableType(resolvedType);
+
+                // Wrap the object only if there is a wrapping type.
+                if (wrappingType != null && wrappingType != resolvedType)
+                {
+                    var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(
+                                                            new WrapperProviderContext(
+                                                                                declaredType: resolvedType,
+                                                                                isSerialization: true));
+
+                    obj = wrapperProvider.Wrap(obj);
+                }
+
+                var xmlSerializer = CreateSerializer(wrappingType);
+                xmlSerializer.Serialize(xmlWriter, obj);
             }
 
             return Task.FromResult(true);

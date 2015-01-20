@@ -20,9 +20,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private readonly IServiceProvider _provider = TestHelper.CreateServices("ActionResultsWebSite");
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private const string sampleIntError = "The field SampleInt must be between 10 and 100.";
-        private const string sampleStringError =
-            "The field SampleString must be a string or array type with a minimum length of '15'.";
                 
         [Fact]
         public async Task BadRequestResult_CanBeReturned()
@@ -188,43 +185,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("{\"SampleInt\":10,\"SampleString\":\"Foo\"}", await response.Content.ReadAsStringAsync());
         }
 
-        [Theory]
-        [InlineData("http://localhost/Home/Index",
-            "application/json;charset=utf-8",
-            "{\"test.SampleInt\":[\"" + sampleIntError + "\"]," +
-            "\"test.SampleString\":" +
-            "[\"" + sampleStringError + "\"]}")]
-        [InlineData("http://localhost/Home/Index",
-            "application/xml;charset=utf-8",
-            "<Error><test.SampleInt>" + sampleIntError + "</test.SampleInt>" +
-            "<test.SampleString>" + sampleStringError +
-            "</test.SampleString></Error>")]
-        [InlineData("http://localhost/XmlSerializer/GetSerializableError",
-            "application/xml;charset=utf-8",
-            "<Error><test.SampleInt>" + sampleIntError + "</test.SampleInt>" +
-            "<test.SampleString>" + sampleStringError +
-            "</test.SampleString></Error>")]
-        public async Task SerializableErrorIsReturnedInExpectedFormat(string url, string outputFormat, string output)
-        {
-            // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
-
-            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                "<DummyClass xmlns=\"http://schemas.datacontract.org/2004/07/ActionResultsWebSite\">" +
-                "<SampleInt>2</SampleInt><SampleString>foo</SampleString></DummyClass>";
-            var request = new HttpRequestMessage(HttpMethod.Post, url);
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse(outputFormat));
-            request.Content = new StringContent(input, Encoding.UTF8, "application/xml");
-	    
-            // Act
-            var response = await client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal(output, await response.Content.ReadAsStringAsync());
-        }
-        
         [Fact]
         public async Task SerializableError_CanSerializeNormalObjects()
         {

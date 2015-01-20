@@ -14,7 +14,11 @@
     },
     "frameworks": {
         "aspnet50": { },
-        "aspnetcore50": { }
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Linq.Queryable": "4.0.0-beta-*"
+            }
+        }
     },
     "webroot": "wwwroot"
 }

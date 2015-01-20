@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
@@ -9,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Xml
     /// Wrapper class for <see cref="SerializableError"/> to enable it to be serialized by the xml formatters.
     /// </summary>
     [XmlRoot("Error")]
-    public sealed class SerializableErrorWrapper : IXmlSerializable
+    public sealed class SerializableErrorWrapper : IXmlSerializable, IUnwrappable
     {
         // Note: XmlSerializer requires to have default constructor
         public SerializableErrorWrapper()
@@ -83,61 +86,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             }
         }
 
-        /// <summary>
-        /// Gets the 
-        /// </summary>
-        /// <param name="modelType"></param>
-        /// <param name="deserializedObject"></param>
-        /// <returns></returns>
-        public static object UnwrapSerializableErrorObject([NotNull] Type modelType, object deserializedObject)
+        /// <inheritdoc />
+        public object Unwrap([NotNull] Type declaredType)
         {
-            // Since we expect users to typically bind with SerializableError type,
-            // we should try to unwrap and get the actual SerializableError.
-            if (modelType == typeof(SerializableError))
-            {
-                var serializableErrorWrapper = deserializedObject as SerializableErrorWrapper;
-                if (serializableErrorWrapper != null)
-                {
-                    deserializedObject = serializableErrorWrapper.SerializableError;
-                }
-            }
-
-            return deserializedObject;
-        }
-
-        /// <summary>
-        /// Checks if an object is an instance of type <see cref="SerializableError"/> and if yes,
-        /// gets and returns the wrapped <see cref="SerializableErrorWrapper"/> object in it.
-        /// </summary>
-        /// <param name="obj">An </param>
-        /// <returns></returns>
-        public static object WrapSerializableErrorObject(object obj)
-        {
-            var serializableError = obj as SerializableError;
-            if (serializableError == null)
-            {
-                return obj;
-            }
-
-            return new SerializableErrorWrapper(serializableError);
-        }
-
-        /// <summary>
-        /// Checks if the given type is of type <see cref="SerializableError"/> and if yes, returns
-        /// the wrapper type <see cref="SerializableErrorWrapper"/>.
-        /// </summary>
-        /// <param name="type">The type to be checked</param>
-        /// <returns><see cref="SerializableErrorWrapper"/> type, else the original type.</returns>
-        public static Type CreateSerializableType([NotNull] Type type)
-        {
-            // Since the type "SerializableError" is not compatible
-            // with the xml serializers, we create a compatible wrapper type for serialization.
-            if (type == typeof(SerializableError))
-            {
-                type = typeof(SerializableErrorWrapper);
-            }
-
-            return type;
+            return SerializableError;
         }
     }
 }

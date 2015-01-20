@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -13,7 +14,7 @@ using Microsoft.AspNet.Mvc.Xml;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Xml
 {
     public class XmlSerializerOutputFormatterTest
     {
@@ -243,7 +244,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
             Assert.True(outputFormatterContext.ActionContext.HttpContext.Response.Body.CanRead);
         }
-        
+
         public static IEnumerable<object[]> TypesForCanWriteResult
         {
             get
@@ -257,6 +258,10 @@ namespace Microsoft.AspNet.Mvc
                     new Dictionary<string, string> { { "Hello", "world" } }, typeof(object), false };
                 yield return new object[] {
                     new Dictionary<string, string> { { "Hello", "world" } }, typeof(Dictionary<string,string>), false };
+                yield return new object[] {
+                    new[] {"value1", "value2"}, typeof(IEnumerable<string>), true };
+                yield return new object[] {
+                    Enumerable.Range(1, 2).Select(i => "value" + i).AsQueryable(), typeof(IQueryable<string>), true };
             }
         }
 

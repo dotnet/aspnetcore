@@ -61,6 +61,11 @@ namespace XmlFormattersWebSite
                         options.InputFormatters.Add(xmlSerializerInputFormatter);
                         options.OutputFormatters.Add(dcsOutputFormatter);
                         options.OutputFormatters.Add(xmlSerializerOutputFormatter);
+
+                        xmlSerializerInputFormatter.WrapperProviderFactories.Add(new PersonWrapperProviderFactory());
+                        xmlSerializerOutputFormatter.WrapperProviderFactories.Add(new PersonWrapperProviderFactory());
+                        dcsInputFormatter.WrapperProviderFactories.Add(new PersonWrapperProviderFactory());
+                        dcsOutputFormatter.WrapperProviderFactories.Add(new PersonWrapperProviderFactory());
                     });
             });
 
@@ -71,7 +76,6 @@ namespace XmlFormattersWebSite
             {
                 routes.MapRoute("ActionAsMethod", "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
-
             });
         }
     }

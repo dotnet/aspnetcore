@@ -31,17 +31,28 @@ namespace Microsoft.AspNet.Mvc.Xml
             SupportedEncodings = new List<Encoding>();
             SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(Encodings.UTF16EncodingLittleEndian);
+
             SupportedMediaTypes = new List<MediaTypeHeaderValue>();
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
+
             _serializerSettings = new DataContractSerializerSettings();
+
+            WrapperProviderFactories = new List<IWrapperProviderFactory>();
+            WrapperProviderFactories.Add(new SerializableErrorWrapperProviderFactory());
         }
 
-        /// <inheritdoc />
-        public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; private set; }
+        /// <summary>
+        /// Gets the list of <see cref="IWrapperProviderFactory"/> to
+        /// provide the wrapping type for de-serialization.
+        /// </summary>
+        public IList<IWrapperProviderFactory> WrapperProviderFactories { get; }
 
         /// <inheritdoc />
-        public IList<Encoding> SupportedEncodings { get; private set; }
+        public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; }
+
+        /// <inheritdoc />
+        public IList<Encoding> SupportedEncodings { get; }
 
         /// <summary>
         /// Indicates the acceptable input XML depth.
@@ -127,7 +138,10 @@ namespace Microsoft.AspNet.Mvc.Xml
         /// <returns>The type to which the XML will be deserialized.</returns>
         protected virtual Type GetSerializableType([NotNull] Type declaredType)
         {
-            return SerializableErrorWrapper.CreateSerializableType(declaredType);
+            var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(
+                                                    new WrapperProviderContext(declaredType, isSerialization: false));
+
+            return wrapperProvider?.WrappingType ?? declaredType;
         }
 
         /// <summary>
@@ -157,9 +171,21 @@ namespace Microsoft.AspNet.Mvc.Xml
             using (var xmlReader = CreateXmlReader(new DelegatingStream(request.Body)))
             {
                 var type = GetSerializableType(context.ModelType);
-                var dataContractSerializer = CreateSerializer(type);
-                var deserializedObject = dataContractSerializer.ReadObject(xmlReader);
-                deserializedObject = SerializableErrorWrapper.UnwrapSerializableErrorObject(context.ModelType, deserializedObject);
+
+                var serializer = CreateSerializer(type);
+
+                var deserializedObject = serializer.ReadObject(xmlReader);
+
+                // Unwrap only if the original type was wrapped.
+                if (type != context.ModelType)
+                {
+                    var unwrappable = deserializedObject as IUnwrappable;
+                    if (unwrappable != null)
+                    {
+                        deserializedObject = unwrappable.Unwrap(declaredType: context.ModelType);
+                    }
+                }
+
                 return Task.FromResult(deserializedObject);
             }
         }

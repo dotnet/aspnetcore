@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
+using XmlFormattersWebSite.Models;
 
 namespace XmlFormattersWebSite.Controllers
 {
@@ -32,6 +33,17 @@ namespace XmlFormattersWebSite.Controllers
         public SerializableError LogErrors([FromBody] SerializableError serializableError)
         {
             return serializableError;
+        }
+
+        [HttpPost]
+        public IActionResult CreateEmployee([FromBody] Employee employee)
+        {
+            if (!ModelState.IsValid)
+            {
+                return HttpBadRequest(ModelState);
+            }
+
+            return Content("Hello World!");
         }
     }
 }
