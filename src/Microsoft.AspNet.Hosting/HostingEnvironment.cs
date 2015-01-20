@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Hosting
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Hosting
         {
             EnvironmentName = DefaultEnvironmentName;
             WebRoot = HostingUtilities.GetWebRoot(appEnvironment.ApplicationBasePath);
-            WebRootFileSystem = new PhysicalFileSystem(WebRoot);
+            WebRootFileProvider = new PhysicalFileProvider(WebRoot);
             foreach (var configure in configures)
             {
                 configure.Configure(this);
@@ -26,6 +26,6 @@ namespace Microsoft.AspNet.Hosting
 
         public string WebRoot { get; private set; }
 
-        public IFileSystem WebRootFileSystem { get; set; }
+        public IFileProvider WebRootFileProvider { get; set; }
     }
 }
