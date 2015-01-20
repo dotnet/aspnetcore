@@ -102,8 +102,19 @@ namespace Microsoft.AspNet.Mvc
             var tokenSet = GetTokens(httpContext, oldCookieToken);
             var newCookieToken = tokenSet.CookieToken;
             var formToken = tokenSet.FormToken;
+            if (newCookieToken != null)
+            {
+                // If a new cookie was generated, persist it.
+                _tokenStore.SaveCookieToken(httpContext, newCookieToken);
+            }
 
-            SaveCookieTokenAndHeader(httpContext, newCookieToken);
+            if (!_config.SuppressXFrameOptionsHeader)
+            {
+                // Adding X-Frame-Options header to prevent ClickJacking. See
+                // http://tools.ietf.org/html/draft-ietf-websec-x-frame-options-10
+                // for more information.
+                httpContext.Response.Headers.Set("X-Frame-Options", "SAMEORIGIN");
+            }
 
             // <input type="hidden" name="__AntiForgeryToken" value="..." />
             var retVal = new TagBuilder("input");
@@ -132,11 +143,15 @@ namespace Microsoft.AspNet.Mvc
 
         private AntiForgeryTokenSetInternal GetTokens(HttpContext httpContext, AntiForgeryToken oldCookieToken)
         {
-            var newCookieToken = ValidateAndGenerateNewToken(oldCookieToken);
-            if (newCookieToken != null)
+            AntiForgeryToken newCookieToken = null;
+            if (!_validator.IsCookieTokenValid(oldCookieToken))
             {
-                oldCookieToken = newCookieToken;
+                // Need to make sure we're always operating with a good cookie token.
+                oldCookieToken = newCookieToken = _generator.GenerateCookieToken();
             }
+
+            Debug.Assert(_validator.IsCookieTokenValid(oldCookieToken));
+
             var formToken = _generator.GenerateFormToken(
                 httpContext,
                 ExtractIdentity(httpContext),
@@ -187,54 +202,6 @@ namespace Microsoft.AspNet.Mvc
                 ExtractIdentity(httpContext),
                 deserializedCookieToken,
                 deserializedFormToken);
-        }
-
-
-        /// <summary>
-        /// Generates and sets an anti-forgery cookie if one is not available or not valid. Also sets response headers.
-        /// </summary>
-        /// <param name="context">The HTTP context associated with the current call.</param>
-        public void SetCookieTokenAndHeader([NotNull] HttpContext httpContext)
-        {
-            CheckSSLConfig(httpContext);
-
-            var oldCookieToken = GetCookieTokenNoThrow(httpContext);
-            var newCookieToken = ValidateAndGenerateNewToken(oldCookieToken);
-            
-            SaveCookieTokenAndHeader(httpContext, newCookieToken);
-        }
-
-        // This method returns null if oldCookieToken is valid.
-        private AntiForgeryToken ValidateAndGenerateNewToken(AntiForgeryToken oldCookieToken)
-        {
-            if (!_validator.IsCookieTokenValid(oldCookieToken))
-            {
-                // Need to make sure we're always operating with a good cookie token.
-                var newCookieToken = _generator.GenerateCookieToken();
-                Debug.Assert(_validator.IsCookieTokenValid(newCookieToken));
-                return newCookieToken;
-            }
-
-            return null;
-        }
-
-        private void SaveCookieTokenAndHeader(
-            [NotNull] HttpContext httpContext,
-            AntiForgeryToken newCookieToken)
-        {
-            if (newCookieToken != null)
-            {
-                // Persist the new cookie if it is not null.
-                _tokenStore.SaveCookieToken(httpContext, newCookieToken);
-            }
-
-            if (!_config.SuppressXFrameOptionsHeader)
-            {
-                // Adding X-Frame-Options header to prevent ClickJacking. See
-                // http://tools.ietf.org/html/draft-ietf-websec-x-frame-options-10
-                // for more information.
-                httpContext.Response.Headers.Set("X-Frame-Options", "SAMEORIGIN");
-            }
         }
 
         private class AntiForgeryTokenSetInternal
