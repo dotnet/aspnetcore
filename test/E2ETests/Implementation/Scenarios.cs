@@ -35,7 +35,10 @@ namespace E2ETests
 
         private void VerifyHomePage(HttpResponseMessage response, string responseContent, bool useNtlmAuthentication = false)
         {
-            _logger.WriteVerbose("Home page content : {0}", responseContent);
+            // This seems to not print anything if the successive Assert fails.
+            //_logger.WriteVerbose("Home page content : {0}", responseContent);
+
+            Console.WriteLine("Home page content : {0}", responseContent);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             ValidateLayoutPage(responseContent);
             Assert.Contains(PrefixBaseAddress("<a href=\"/{0}/Store/Details/"), responseContent, StringComparison.OrdinalIgnoreCase);

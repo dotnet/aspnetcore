@@ -47,7 +47,13 @@ namespace E2ETests
             var interopLibrary = libraryManager.GetLibraryInformation("Microsoft.AspNet.Loader.IIS.Interop");
 
             var aspNetLoaderSrcPath = Path.Combine(interopLibrary.Path, "tools", "AspNet.Loader.dll");
-            var aspNetLoaderDestPath = Path.Combine(applicationPath, "bin", "AspNet.Loader.dll");
+            var aspNetLoaderDestPath = Path.Combine(applicationPath, "wwwroot", "bin", "AspNet.Loader.dll");
+
+            // Create bin directory if it does not exist.
+            if (!Directory.Exists(new DirectoryInfo(aspNetLoaderDestPath).Parent.FullName))
+            {
+                Directory.CreateDirectory(new DirectoryInfo(aspNetLoaderDestPath).Parent.FullName);
+            }
 
             if (!File.Exists(aspNetLoaderDestPath))
             {
@@ -230,7 +236,7 @@ namespace E2ETests
             }
 
             var parameters = string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigLocation) ?
-                            string.Format("/port:5001 /path:{0}", startParameters.ApplicationPath) :
+                            string.Format("/port:5001 /path:{0}", Path.Combine(startParameters.ApplicationPath, "wwwroot")) :
                             string.Format("/site:{0} /config:{1}", startParameters.SiteName, startParameters.ApplicationHostConfigLocation);
 
             var iisExpressPath = GetIISExpressPath(startParameters.DotnetArchitecture);
