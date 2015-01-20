@@ -2,14 +2,14 @@
 <Files>
     <!-- Exclusions -->
     <File Name="dotnetsdk.ps1" Ignore="yes" />
-    <File Name="dotnet.core45.dll" Ignore="yes" />
-    <File Name="dotnet.core45.managed.dll" Ignore="yes" />
+    <File Name="dotnet.coreclr.dll" Ignore="yes" />
+    <File Name="dotnet.coreclr.managed.dll" Ignore="yes" />
     <File Name="dotnet.exe" Ignore="yes" />
     <File Name="dotnet.host.dll" Ignore="yes" />
     <File Name="dotnet.hosting.shared.dll" Ignore="yes" />
     <File Name="dotnet.mono.managed.dll" Ignore="yes" />
-    <File Name="dotnet.net45.dll" Ignore="yes" />
-    <File Name="dotnet.net45.managed.dll" Ignore="yes" />
+    <File Name="dotnet.clr.dll" Ignore="yes" />
+    <File Name="dotnet.clr.managed.dll" Ignore="yes" />
     <File Name="libuv.dll" Ignore="yes" />    
     <File Name="Microsoft.CodeAnalysis.CSharp.dll" Ignore="yes" />
     <File Name="Microsoft.CodeAnalysis.dll" Ignore="yes" />
