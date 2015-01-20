@@ -1,17 +1,17 @@
 @{/*
 
 k 
-    Run klr commands in your project. Executes k sdk.
+    Run dotnet commands in your project. Executes k cmd.
 
 command=''
-kvmUse=''
+dotnetsdkUse=''
 
 */}
 
-default kvmUse=''
+default dotnetsdkUse=''
 
-var kvmPath='${Directory.GetCurrentDirectory()}\packages\KoreBuild\build\kvm'
+var dotnetsdkPath='${Directory.GetCurrentDirectory()}\packages\KoreBuild\build\dotnetsdk'
 
-exec program='cmd' commandline='/C k ${command}' if='!IsMono && string.IsNullOrEmpty(kvmUse)'
-exec program='cmd' commandline='/C "${kvmPath}" use ${kvmUse} && k ${command}' if='!IsMono && !string.IsNullOrEmpty(kvmUse)'
+exec program='cmd' commandline='/C k ${command}' if='!IsMono && string.IsNullOrEmpty(dotnetsdkUse)'
+exec program='cmd' commandline='/C "${dotnetsdkPath}" use ${dotnetsdkUse} && k ${command}' if='!IsMono && !string.IsNullOrEmpty(dotnetsdkUse)'
 exec program='k' commandline='${command}' if='IsMono'
