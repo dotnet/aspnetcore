@@ -296,6 +296,50 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedBody, body);
         }
 
+        [Fact]
+        public async Task JsonFormatter_SupportedMediaType_DoesNotChangeAcrossRequests()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
+            var expectedBody = "{\"MethodName\":\"ReturnJsonResult\"}";
+
+            for (int i = 0; i < 5; i++)
+            {
+                // Act and Assert
+                var response = await client.GetAsync("http://localhost/JsonResult/ReturnJsonResult");
+
+                Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+                var body = await response.Content.ReadAsStringAsync();
+                Assert.Equal(expectedBody, body);
+            }
+        }
+
+        [Fact]
+        public async Task XmlFormatter_SupportedMediaType_DoesNotChangeAcrossRequests()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
+            client.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/xml;charset=utf-8");
+            var expectedBody = @"<User xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"" " +
+                                @"xmlns=""http://schemas.datacontract.org/2004/07/ConnegWebSite""><Address>"
+                                + @"One Microsoft Way</Address><Name>John</Name></User>";
+
+            for (int i = 0; i < 5; i++)
+            {
+                // Act and Assert
+                var response = await client.GetAsync("http://localhost/Home/UserInfo");
+
+                Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+                var body = await response.Content.ReadAsStringAsync();
+                Assert.Equal(expectedBody, body);
+            }
+        }
+
         [Theory]
         [InlineData("UseTheFallback_WithDefaultFormatters")]
         [InlineData("UseTheFallback_UsingCustomFormatters")]

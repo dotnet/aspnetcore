@@ -11,5 +11,10 @@ namespace ConnegWebSite
         {
             return new JsonResult("Index Method");
         }
+
+        public User UserInfo()
+        {
+            return new User() { Name = "John", Address = "One Microsoft Way" };
+        }
     }
 }
