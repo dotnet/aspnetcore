@@ -290,8 +290,8 @@ namespace E2ETests
 
             var replaceStr = new StringBuilder().
                 Append("dotnet").
-                Append((dotnetFlavor == DotnetFlavor.CoreClr) ? "-CoreCLR" : "-CLR").
-                Append("win").
+                Append((dotnetFlavor == DotnetFlavor.CoreClr) ? "-coreclr" : "-clr").
+                Append("-win").
                 Append((dotnetArchitecture == DotnetArchitecture.x86) ? "-x86" : "-x64").
                 ToString();
 
