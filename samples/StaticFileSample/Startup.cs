@@ -1,5 +1,5 @@
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.StaticFiles;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Console;

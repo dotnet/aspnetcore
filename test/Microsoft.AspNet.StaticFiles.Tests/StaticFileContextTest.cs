@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.Framework.Expiration.Interfaces;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.StaticFiles
         {
             // Arrange
             var options = new StaticFileOptions();
-            options.FileSystem = new TestFileSystem();
+            options.FileProvider = new TestFileProvider();
             var context = new StaticFileContext(new DefaultHttpContext(), options, PathString.Empty, NullLogger.Instance);
 
             // Act
@@ -37,12 +37,12 @@ namespace Microsoft.AspNet.StaticFiles
         {
             // Arrange
             var options = new StaticFileOptions();
-            var fileSystem = new TestFileSystem();
-            fileSystem.AddFile("/foo.txt", new TestFileInfo
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile("/foo.txt", new TestFileInfo
             {
                 LastModified = new DateTimeOffset(2014, 1, 2, 3, 4, 5, TimeSpan.Zero)
             });
-            options.FileSystem = fileSystem;
+            options.FileProvider = fileProvider;
             var pathString = new PathString("/test");
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = new PathString("/test/foo.txt");
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.StaticFiles
             Assert.True(result);
         }
 
-        private sealed class TestFileSystem : IFileSystem
+        private sealed class TestFileProvider : IFileProvider
         {
             private readonly Dictionary<string, IFileInfo> _files = new Dictionary<string, IFileInfo>(StringComparer.Ordinal);
 

@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.StaticFiles
         /// <param name="options">The configuration options for this middleware.</param>
         public DefaultFilesMiddleware([NotNull] RequestDelegate next, [NotNull] IHostingEnvironment hostingEnv, [NotNull] DefaultFilesOptions options)
         {
-            options.ResolveFileSystem(hostingEnv);
+            options.ResolveFileProvider(hostingEnv);
 
             _next = next;
             _options = options;
@@ -47,14 +47,14 @@ namespace Microsoft.AspNet.StaticFiles
             if (Helpers.IsGetOrHeadMethod(context.Request.Method)
                 && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out subpath))
             {
-                var dirContents = _options.FileSystem.GetDirectoryContents(subpath.Value);
+                var dirContents = _options.FileProvider.GetDirectoryContents(subpath.Value);
                 if (dirContents.Exists)
                 {
                     // Check if any of our default files exist.
                     for (int matchIndex = 0; matchIndex < _options.DefaultFileNames.Count; matchIndex++)
                     {
                         string defaultFile = _options.DefaultFileNames[matchIndex];
-                        var file = _options.FileSystem.GetFileInfo(subpath + defaultFile);
+                        var file = _options.FileProvider.GetFileInfo(subpath + defaultFile);
                         // TryMatchPath will make sure subpath always ends with a "/" by adding it if needed.
                         if (file.Exists)
                         {

@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Headers;
 using Microsoft.AspNet.Http.Interfaces;
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         public bool LookupFileInfo()
         {
-            _fileInfo = _options.FileSystem.GetFileInfo(_subPath.Value);
+            _fileInfo = _options.FileProvider.GetFileInfo(_subPath.Value);
             if (_fileInfo.Exists)
             {
                 _length = _fileInfo.Length;

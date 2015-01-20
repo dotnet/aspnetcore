@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 
@@ -45,20 +45,20 @@ namespace Microsoft.AspNet.StaticFiles.Infrastructure
         /// <summary>
         /// The file system used to locate resources
         /// </summary>
-        public IFileSystem FileSystem
+        public IFileProvider FileProvider
         {
-            get { return SharedOptions.FileSystem; }
-            set { SharedOptions.FileSystem = value; }
+            get { return SharedOptions.FileProvider; }
+            set { SharedOptions.FileProvider = value; }
         }
 
-        internal void ResolveFileSystem(IHostingEnvironment hostingEnv)
+        internal void ResolveFileProvider(IHostingEnvironment hostingEnv)
         {
-            if (FileSystem == null)
+            if (FileProvider == null)
             {
-                FileSystem = hostingEnv.WebRootFileSystem;
-                if (FileSystem == null)
+                FileProvider = hostingEnv.WebRootFileProvider;
+                if (FileProvider == null)
                 {
-                    throw new InvalidOperationException("Missing FileSystem.");
+                    throw new InvalidOperationException("Missing FileProvider.");
                 }
             }
         }

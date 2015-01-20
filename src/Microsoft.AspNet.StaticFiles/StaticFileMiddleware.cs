@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Logging;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 throw new ArgumentException(Resources.Args_NoContentTypeProvider);
             }
-            options.ResolveFileSystem(hostingEnv);
+            options.ResolveFileProvider(hostingEnv);
 
             _next = next;
             _options = options;

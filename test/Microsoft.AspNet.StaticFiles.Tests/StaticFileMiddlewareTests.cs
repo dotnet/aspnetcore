@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Xunit;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.StaticFiles
             Assert.Throws<ArgumentException>(() => TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { ContentTypeProvider = null })));
 
             // No exception, default provided
-            TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { FileSystem = null }));
+            TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { FileProvider = null }));
 
             // PathString(null) is OK.
             TestServer server = TestServer.Create(app => app.UseStaticFiles((string)null));
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).PostAsync();
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).SendAsync("HEAD");
 

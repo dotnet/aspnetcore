@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.TestHost;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task NullArguments()
         {
             // No exception, default provided
-            TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions() { FileSystem = null }));
+            TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions() { FileProvider = null }));
 
             // PathString(null) is OK.
             TestServer server = TestServer.Create(app => app.UseDefaultFiles((string)null));
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.StaticFiles
                 app.UseDefaultFiles(new DefaultFilesOptions()
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
                 });
                 app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
             });
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.StaticFiles
                 app.UseDefaultFiles(new DefaultFilesOptions()
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
                 });
                 app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
             });
@@ -81,11 +81,11 @@ namespace Microsoft.AspNet.StaticFiles
         {
             TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
             {
-                RequestPath = new PathString(baseUrl),                
-                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
+                RequestPath = new PathString(baseUrl),
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl + queryString).GetAsync();
-            
+
             Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
             Assert.Equal(requestUrl + "/" + queryString, response.Headers.Location.ToString());
             Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileSystem = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, baseDir))
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
 

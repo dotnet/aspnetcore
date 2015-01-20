@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Net.Http.Headers;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 throw new ArgumentException(Resources.Args_NoFormatter);
             }
-            options.ResolveFileSystem(hostingEnv);
+            options.ResolveFileProvider(hostingEnv);
 
             _next = next;
             _options = options;
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         private bool TryGetDirectoryInfo(PathString subpath, out IDirectoryContents contents)
         {
-            contents = _options.FileSystem.GetDirectoryContents(subpath.Value);
+            contents = _options.FileProvider.GetDirectoryContents(subpath.Value);
             return contents.Exists;
         }
     }

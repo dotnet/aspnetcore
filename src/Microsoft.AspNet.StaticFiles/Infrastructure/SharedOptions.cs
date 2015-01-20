@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.StaticFiles.Infrastructure
@@ -41,6 +41,6 @@ namespace Microsoft.AspNet.StaticFiles.Infrastructure
         /// <summary>
         /// The file system used to locate resources
         /// </summary>
-        public IFileSystem FileSystem { get; set; }
+        public IFileProvider FileProvider { get; set; }
     }
 }
