@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             HttpMethods = new List<string>();
             Parameters = new List<ParameterModel>();
             RouteConstraints = new List<IRouteConstraintProvider>();
+            Properties = new Dictionary<object, object>();
         }
 
         public ActionModel([NotNull] ActionModel other)
@@ -36,6 +37,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilter>(other.Filters);
             HttpMethods = new List<string>(other.HttpMethods);
+            Properties = new Dictionary<object, object>(other.Properties);
 
             // Make a deep copy of other 'model' types.
             ApiExplorer = new ApiExplorerModel(other.ApiExplorer);
@@ -79,5 +81,15 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public IList<ParameterModel> Parameters { get; private set; }
 
         public IList<IRouteConstraintProvider> RouteConstraints { get; private set; }
+
+        /// <summary>
+        /// Gets a set of properties associated with the action.
+        /// These properties will be copied to <see cref="ActionDescriptor.Properties"/>.
+        /// </summary>
+        /// <remarks>
+        /// Entries will take precedence over entries with the same key in
+        /// <see cref="ApplicationModel.Properties"/> and <see cref="ControllerModel.Properties"/>.
+        /// </remarks>
+        public IDictionary<object, object> Properties { get; }
     }
 }

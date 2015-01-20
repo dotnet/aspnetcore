@@ -56,6 +56,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             controller.ControllerName = "cool";
             controller.Filters.Add(new AuthorizeAttribute());
             controller.RouteConstraints.Add(new AreaAttribute("Admin"));
+            controller.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));
 
             // Act
             var controller2 = new ControllerModel(controller);
@@ -80,6 +81,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
                     // Ensure non-default value
                     Assert.NotEmpty((IEnumerable<object>)value1);
+                }
+                else if (typeof(IDictionary<object, object>).IsAssignableFrom(property.PropertyType))
+                {
+                    Assert.Equal(value1, value2);
+
+                    // Ensure non-default value
+                    Assert.NotEmpty((IDictionary<object, object>)value1);
                 }
                 else if (property.PropertyType.IsValueType ||
                     Nullable.GetUnderlyingType(property.PropertyType) != null)

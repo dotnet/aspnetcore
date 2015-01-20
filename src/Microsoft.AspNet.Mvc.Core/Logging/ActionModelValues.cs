@@ -33,6 +33,7 @@ namespace Microsoft.AspNet.Mvc.Logging
                 }
                 HttpMethods = inner.HttpMethods;
                 ActionConstraints = inner.ActionConstraints?.Select(a => new ActionConstraintValues(a))?.ToList();
+                Properties = new Dictionary<object, object>(inner.Properties);
             }
         }
 
@@ -85,6 +86,11 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// See <see cref="ActionModel.ActionConstraints"/>.
         /// </summary>
         public IList<ActionConstraintValues> ActionConstraints { get; }
+
+        /// <summary>
+        /// Gets the set of properties associated with the action <see cref="ActionModel.Properties"/>.
+        /// </summary>
+        public IDictionary<object, object> Properties { get; }
 
         public override string Format()
         {

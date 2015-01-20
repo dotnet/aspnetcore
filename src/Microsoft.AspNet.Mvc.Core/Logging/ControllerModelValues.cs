@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.Mvc.Logging
                     r => new RouteConstraintProviderValues(r)).ToList();
                 AttributeRoutes = inner.AttributeRoutes.Select(
                     a => new AttributeRouteModelValues(a)).ToList();
+                Properties = new Dictionary<object, object>(inner.Properties);
             }
         }
 
@@ -82,6 +83,11 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// See <see cref="ControllerModel.AttributeRoutes"/>.
         /// </summary>
         public List<AttributeRouteModelValues> AttributeRoutes { get; set; }
+
+        /// <summary>
+        /// Gets the set of properties associated with the controller <see cref="ControllerModel.Properties"/>.
+        /// </summary>
+        public IDictionary<object, object> Properties { get; }
 
         public override string Format()
         {

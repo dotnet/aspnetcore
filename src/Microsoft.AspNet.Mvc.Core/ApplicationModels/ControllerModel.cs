@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             ActionConstraints = new List<IActionConstraintMetadata>();
             Filters = new List<IFilter>();
             RouteConstraints = new List<IRouteConstraintProvider>();
+            Properties = new Dictionary<object, object>();
         }
 
         public ControllerModel([NotNull] ControllerModel other)
@@ -36,6 +37,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilter>(other.Filters);
             RouteConstraints = new List<IRouteConstraintProvider>(other.RouteConstraints);
+            Properties = new Dictionary<object, object>(other.Properties);
 
             // Make a deep copy of other 'model' types.
             Actions = new List<ActionModel>(other.Actions.Select(a => new ActionModel(a)));
@@ -73,5 +75,15 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public IList<IFilter> Filters { get; private set; }
 
         public IList<IRouteConstraintProvider> RouteConstraints { get; private set; }
+
+        /// <summary>
+        /// Gets a set of properties associated with the controller.
+        /// These properties will be copied to <see cref="ActionDescriptor.Properties"/>.
+        /// </summary>
+        /// <remarks>
+        /// Entries will take precedence over entries with the same key
+        /// in <see cref="ApplicationModel.Properties"/>.
+        /// </remarks>
+        public IDictionary<object, object> Properties { get; }
     }
 }

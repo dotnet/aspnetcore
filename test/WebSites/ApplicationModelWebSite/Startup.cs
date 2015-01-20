@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.DependencyInjection;
 
 namespace ApplicationModelWebSite
@@ -15,6 +16,11 @@ namespace ApplicationModelWebSite
             app.UseServices(services =>
             {
                 services.AddMvc(configuration);
+
+                services.Configure<MvcOptions>(options =>
+                {
+                    options.ApplicationModelConventions.Add(new ApplicationDescription("Common Application Description"));
+                });
             });
 
             app.UseMvc(routes =>

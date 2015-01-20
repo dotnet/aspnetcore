@@ -53,6 +53,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             action.Filters.Add(new AuthorizeAttribute());
             action.HttpMethods.Add("GET");
             action.RouteConstraints.Add(new AreaAttribute("Admin"));
+            action.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));
 
             // Act
             var action2 = new ActionModel(action);
@@ -60,6 +61,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Assert
             foreach (var property in typeof(ActionModel).GetProperties())
             {
+                // Reflection is used to make sure the test fails when a new property is added.
                 if (property.Name.Equals("ApiExplorer") ||
                     property.Name.Equals("AttributeRouteModel") ||
                     property.Name.Equals("Parameters"))
@@ -77,6 +79,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
                     // Ensure non-default value
                     Assert.NotEmpty((IEnumerable<object>)value1);
+                }
+                else if (typeof(IDictionary<object, object>).IsAssignableFrom(property.PropertyType))
+                {
+                    Assert.Equal(value1, value2);
+
+                    // Ensure non-default value
+                    Assert.NotEmpty((IDictionary<object, object>)value1);
                 }
                 else if (property.PropertyType.IsValueType ||
                     Nullable.GetUnderlyingType(property.PropertyType) != null)
