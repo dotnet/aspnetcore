@@ -57,9 +57,9 @@ namespace E2ETests
                 // Not assigning a runtime version will choose v4.0 default.
                 applicationPool.ManagedRuntimeVersion = NATIVE_MODULE_MANAGED_RUNTIME_VERSION;
             }
-            applicationPool.Enable32BitAppOnWin64 = (_startParameters.KreArchitecture == KreArchitecture.x86);
+            applicationPool.Enable32BitAppOnWin64 = (_startParameters.DotnetArchitecture == DotnetArchitecture.x86);
             _logger.WriteInformation("Created {0} application pool '{1}' with runtime version '{2}'.",
-                _startParameters.KreArchitecture, applicationPool.Name,
+                _startParameters.DotnetArchitecture, applicationPool.Name,
                 applicationPool.ManagedRuntimeVersion ?? "default");
             return applicationPool;
         }

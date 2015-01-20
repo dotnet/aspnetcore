@@ -1,6 +1,6 @@
 ﻿namespace E2ETests
 {
-    public enum KreFlavor
+    public enum DotnetFlavor
     {
         DesktopClr,
         CoreClr,

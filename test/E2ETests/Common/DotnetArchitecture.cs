@@ -1,6 +1,6 @@
 ﻿namespace E2ETests
 {
-    public enum KreArchitecture
+    public enum DotnetArchitecture
     {
         amd64,
         x86

@@ -15,13 +15,13 @@ namespace E2ETests
 {
     internal class DeploymentUtility
     {
-        private static string GetIISExpressPath(KreArchitecture architecture)
+        private static string GetIISExpressPath(DotnetArchitecture architecture)
         {
             // Get path to program files
             var iisExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "IIS Express", "iisexpress.exe");
 
             // Get path to 64 bit of IIS Express
-            if (architecture == KreArchitecture.amd64)
+            if (architecture == DotnetArchitecture.amd64)
             {
                 iisExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "IIS Express", "iisexpress.exe");
 
@@ -61,9 +61,9 @@ namespace E2ETests
         {
             startParameters.ApplicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
 
-            //To avoid the KRE_DEFAULT_LIB of the test process flowing into Helios, set it to empty
-            var backupKreDefaultLibPath = Environment.GetEnvironmentVariable("KRE_DEFAULT_LIB");
-            Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", string.Empty);
+            //To avoid the DOTNET_DEFAULT_LIB of the test process flowing into Helios, set it to empty
+            var backupDotnetDefaultLibPath = Environment.GetEnvironmentVariable("DOTNET_DEFAULT_LIB");
+            Environment.SetEnvironmentVariable("DOTNET_DEFAULT_LIB", string.Empty);
 
             if (!string.IsNullOrWhiteSpace(startParameters.EnvironmentName))
             {
@@ -82,16 +82,16 @@ namespace E2ETests
 
             Process hostProcess = null;
 
-            if (startParameters.KreFlavor == KreFlavor.Mono)
+            if (startParameters.DotnetFlavor == DotnetFlavor.Mono)
             {
                 hostProcess = StartMonoHost(startParameters, logger);
             }
             else
             {
-                //Tweak the %PATH% to the point to the right KREFLAVOR
-                startParameters.Kre = SwitchPathToKreFlavor(startParameters.KreFlavor, startParameters.KreArchitecture, logger);
+                //Tweak the %PATH% to the point to the right DOTNETFLAVOR
+                startParameters.Dotnet = SwitchPathToDotnetFlavor(startParameters.DotnetFlavor, startParameters.DotnetArchitecture, logger);
 
-                //Reason to do pack here instead of in a common place is use the right KRE to do the packing. Previous line switches to use the right KRE.
+                //Reason to do pack here instead of in a common place is use the right Dotnet to do the packing. Previous line switches to use the right Dotnet.
                 if (startParameters.PackApplicationBeforeStart)
                 {
                     if (startParameters.ServerType == ServerType.IISNativeModule ||
@@ -156,8 +156,8 @@ namespace E2ETests
                 }
             }
 
-            //Restore the KRE_DEFAULT_LIB after starting the host process
-            Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", backupKreDefaultLibPath);
+            //Restore the DOTNET_DEFAULT_LIB after starting the host process
+            Environment.SetEnvironmentVariable("DOTNET_DEFAULT_LIB", backupDotnetDefaultLibPath);
             Environment.SetEnvironmentVariable("ASPNET_ENV", string.Empty);
             return hostProcess;
         }
@@ -165,27 +165,28 @@ namespace E2ETests
         private static Process StartMonoHost(StartParameters startParameters, ILogger logger)
         {
             var path = Environment.GetEnvironmentVariable("PATH");
-            var kreBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Where(c => c.Contains("KRE-Mono")).FirstOrDefault();
+            var dotnetBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).
+                Where(c => c.Contains("dotnet-mono")).FirstOrDefault();
 
-            if (string.IsNullOrWhiteSpace(kreBin))
+            if (string.IsNullOrWhiteSpace(dotnetBin))
             {
-                throw new Exception("KRE not detected on the machine.");
+                throw new Exception("Dotnet not detected on the machine.");
             }
 
             if (startParameters.PackApplicationBeforeStart)
             {
-                // We use full path to KRE to pack.
-                startParameters.Kre = new DirectoryInfo(kreBin).Parent.FullName;
+                // We use full path to Dotnet to pack.
+                startParameters.Dotnet = new DirectoryInfo(dotnetBin).Parent.FullName;
                 KpmPack(startParameters, logger);
             }
 
             //Mono does not have a way to pass in a --appbase switch. So it will be an environment variable. 
-            Environment.SetEnvironmentVariable("KRE_APPBASE", startParameters.ApplicationPath);
-            logger.WriteInformation("Setting the KRE_APPBASE to {0}", startParameters.ApplicationPath);
+            Environment.SetEnvironmentVariable("DOTNET_APPBASE", startParameters.ApplicationPath);
+            logger.WriteInformation("Setting the DOTNET_APPBASE to {0}", startParameters.ApplicationPath);
 
             var monoPath = "mono";
-            var klrMonoManaged = Path.Combine(kreBin, "klr.mono.managed.dll");
-            var applicationHost = Path.Combine(kreBin, "Microsoft.Framework.ApplicationHost");
+            var klrMonoManaged = Path.Combine(dotnetBin, "klr.mono.managed.dll");
+            var applicationHost = Path.Combine(dotnetBin, "Microsoft.Framework.ApplicationHost");
 
             var commandName = startParameters.ServerType == ServerType.Kestrel ? "kestrel" : string.Empty;
             logger.WriteInformation(string.Format("Executing command: {0} {1} {2} {3}", monoPath, klrMonoManaged, applicationHost, commandName));
@@ -204,7 +205,7 @@ namespace E2ETests
             Thread.Sleep(25 * 1000);
 
             //Clear the appbase so that it does not create issues with successive runs
-            Environment.SetEnvironmentVariable("KRE_APPBASE", string.Empty);
+            Environment.SetEnvironmentVariable("DOTNET_APPBASE", string.Empty);
             return hostProcess;
         }
 
@@ -232,7 +233,7 @@ namespace E2ETests
                             string.Format("/port:5001 /path:{0}", startParameters.ApplicationPath) :
                             string.Format("/site:{0} /config:{1}", startParameters.SiteName, startParameters.ApplicationHostConfigLocation);
 
-            var iisExpressPath = GetIISExpressPath(startParameters.KreArchitecture);
+            var iisExpressPath = GetIISExpressPath(startParameters.DotnetArchitecture);
 
             logger.WriteInformation("Executing command : {0} {1}", iisExpressPath, parameters);
 
@@ -281,37 +282,38 @@ namespace E2ETests
             return hostProcess;
         }
 
-        private static string SwitchPathToKreFlavor(KreFlavor kreFlavor, KreArchitecture kreArchitecture, ILogger logger)
+        private static string SwitchPathToDotnetFlavor(DotnetFlavor dotnetFlavor, DotnetArchitecture dotnetArchitecture, ILogger logger)
         {
             var pathValue = Environment.GetEnvironmentVariable("PATH");
             logger.WriteInformation(string.Empty);
             logger.WriteInformation("Current %PATH% value : {0}", pathValue);
 
             var replaceStr = new StringBuilder().
-                Append("KRE").
-                Append((kreFlavor == KreFlavor.CoreClr) ? "-CoreCLR" : "-CLR").
-                Append((kreArchitecture == KreArchitecture.x86) ? "-x86" : "-amd64").
+                Append("dotnet").
+                Append((dotnetFlavor == DotnetFlavor.CoreClr) ? "-CoreCLR" : "-CLR").
+                Append("win").
+                Append((dotnetArchitecture == DotnetArchitecture.x86) ? "-x86" : "-x64").
                 ToString();
 
-            pathValue = Regex.Replace(pathValue, "KRE-(CLR|CoreCLR)-(x86|amd64)", replaceStr, RegexOptions.IgnoreCase);
+            pathValue = Regex.Replace(pathValue, "dotnet-(clr|coreclr)-win-(x86|x64)", replaceStr, RegexOptions.IgnoreCase);
 
-            var startIndex = pathValue.IndexOf(replaceStr); // First instance of this KRE name.
-            var kreName = pathValue.Substring(startIndex, pathValue.IndexOf(';', startIndex) - startIndex);
-            kreName = kreName.Substring(0, kreName.IndexOf('\\')); // Trim the \bin from the path.
+            var startIndex = pathValue.IndexOf(replaceStr); // First instance of this Dotnet name.
+            var dotnetName = pathValue.Substring(startIndex, pathValue.IndexOf(';', startIndex) - startIndex);
+            dotnetName = dotnetName.Substring(0, dotnetName.IndexOf('\\')); // Trim the \bin from the path.
 
-            // Tweak the %PATH% to the point to the right KREFLAVOR.
+            // Tweak the %PATH% to the point to the right DOTNETFLAVOR.
             Environment.SetEnvironmentVariable("PATH", pathValue);
 
             logger.WriteInformation(string.Empty);
-            logger.WriteInformation("Changing to use KRE : {0}", kreName);
-            return kreName;
+            logger.WriteInformation("Changing to use DOTNET : {0}", dotnetName);
+            return dotnetName;
         }
 
         private static void KpmPack(StartParameters startParameters, ILogger logger, string packRoot = null)
         {
             startParameters.PackedApplicationRootPath = Path.Combine(packRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            var parameters = string.Format("pack {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.PackedApplicationRootPath, startParameters.Kre);
+            var parameters = string.Format("pack {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.PackedApplicationRootPath, startParameters.Dotnet);
             logger.WriteInformation("Executing command kpm {0}", parameters);
 
             var startInfo = new ProcessStartInfo

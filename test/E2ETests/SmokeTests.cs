@@ -27,44 +27,44 @@ namespace E2ETests
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.IISExpress, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5001/")]
-        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5002/")]
-        [InlineData(ServerType.Kestrel, KreFlavor.DesktopClr, KreArchitecture.x86, "http://localhost:5004/")]
-        [InlineData(ServerType.IISExpress, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5001/")]
-        [InlineData(ServerType.WebListener, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5002/")]
-        [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5004/")]
-        public void SmokeTestSuite_OnX86(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IISExpress, DotnetFlavor.DesktopClr, DotnetArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.WebListener, DotnetFlavor.DesktopClr, DotnetArchitecture.x86, "http://localhost:5002/")]
+        [InlineData(ServerType.Kestrel, DotnetFlavor.DesktopClr, DotnetArchitecture.x86, "http://localhost:5004/")]
+        [InlineData(ServerType.IISExpress, DotnetFlavor.CoreClr, DotnetArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.WebListener, DotnetFlavor.CoreClr, DotnetArchitecture.x86, "http://localhost:5002/")]
+        [InlineData(ServerType.Kestrel, DotnetFlavor.CoreClr, DotnetArchitecture.x86, "http://localhost:5004/")]
+        public void SmokeTestSuite_OnX86(ServerType serverType, DotnetFlavor dotnetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
         {
-            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+            SmokeTestSuite(serverType, dotnetFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [SkipOn32BitOS]
-        [InlineData(ServerType.WebListener, KreFlavor.DesktopClr, KreArchitecture.amd64, "http://localhost:5002/")]
-        [InlineData(ServerType.IISExpress, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5001/")]
-        [InlineData(ServerType.Kestrel, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5004/")]
-        public void SmokeTestSuite_OnAMD64(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.WebListener, DotnetFlavor.DesktopClr, DotnetArchitecture.amd64, "http://localhost:5002/")]
+        [InlineData(ServerType.IISExpress, DotnetFlavor.CoreClr, DotnetArchitecture.amd64, "http://localhost:5001/")]
+        [InlineData(ServerType.Kestrel, DotnetFlavor.CoreClr, DotnetArchitecture.amd64, "http://localhost:5004/")]
+        public void SmokeTestSuite_OnAMD64(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
         {
-            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+            SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
-        [InlineData(ServerType.Kestrel, KreFlavor.Mono, KreArchitecture.x86, "http://localhost:5004/")]
-        public void SmokeTestSuite_OnMono(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.Kestrel, DotnetFlavor.Mono, DotnetArchitecture.x86, "http://localhost:5004/")]
+        public void SmokeTestSuite_OnMono(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
         {
-            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+            SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory]
         [SkipIfNativeModuleNotInstalled]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
-        [InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5005/")]
-        public void SmokeTestSuite_On_NativeModule_X86(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IISNativeModule, DotnetFlavor.CoreClr, DotnetArchitecture.x86, "http://localhost:5005/")]
+        public void SmokeTestSuite_On_NativeModule_X86(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
         {
-            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+            SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory]
@@ -72,33 +72,33 @@ namespace E2ETests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
         [SkipOn32BitOS]
-        [InlineData(ServerType.IISNativeModule, KreFlavor.CoreClr, KreArchitecture.amd64, "http://localhost:5005/")]
-        public void SmokeTestSuite_On_NativeModule_AMD64(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IISNativeModule, DotnetFlavor.CoreClr, DotnetArchitecture.amd64, "http://localhost:5005/")]
+        public void SmokeTestSuite_On_NativeModule_AMD64(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
         {
-            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+            SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
 
         // [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Unix)]
-        [InlineData(ServerType.IIS, KreFlavor.CoreClr, KreArchitecture.x86, "http://localhost:5005/")]
-        public void SmokeTestSuite_On_IIS_X86(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IIS, DotnetFlavor.CoreClr, DotnetArchitecture.x86, "http://localhost:5005/")]
+        public void SmokeTestSuite_On_IIS_X86(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
         {
-            SmokeTestSuite(serverType, kreFlavor, architecture, applicationBaseUrl);
+            SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
 
-        private void SmokeTestSuite(ServerType serverType, KreFlavor kreFlavor, KreArchitecture architecture, string applicationBaseUrl)
+        private void SmokeTestSuite(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
         {
             using (_logger.BeginScope("SmokeTestSuite"))
             {
-                _logger.WriteInformation("Variation Details : HostType = {0}, KreFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}",
-                    serverType, kreFlavor, architecture, applicationBaseUrl);
+                _logger.WriteInformation("Variation Details : HostType = {0}, DonetFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}",
+                    serverType, donetFlavor, architecture, applicationBaseUrl);
 
                 _startParameters = new StartParameters
                 {
                     ServerType = serverType,
-                    KreFlavor = kreFlavor,
-                    KreArchitecture = architecture,
+                    DotnetFlavor = donetFlavor,
+                    DotnetArchitecture = architecture,
                     EnvironmentName = "SocialTesting"
                 };
 

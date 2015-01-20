@@ -7,9 +7,9 @@
     {
         public ServerType ServerType { get; set; }
 
-        public KreFlavor KreFlavor { get; set; }
+        public DotnetFlavor DotnetFlavor { get; set; }
 
-        public KreArchitecture KreArchitecture { get; set; }
+        public DotnetArchitecture DotnetArchitecture { get; set; }
 
         public string EnvironmentName { get; set; }
 
@@ -25,7 +25,7 @@
 
         public string PackedApplicationRootPath { get; set; }
 
-        public string Kre { get; set; }
+        public string Dotnet { get; set; }
 
         public IISApplication IISApplication { get; set; }
     }
