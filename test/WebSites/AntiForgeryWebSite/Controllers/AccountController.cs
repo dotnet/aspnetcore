@@ -31,5 +31,23 @@ namespace AntiForgeryWebSite
         {
             return "OK";
         }
+
+        // GET: /Account/FlushAsyncLogin
+        [AllowAnonymous]
+        public ActionResult FlushAsyncLogin(string returnUrl = null)
+        {
+            ViewBag.ReturnUrl = returnUrl;
+
+            return View();
+        }
+
+        // POST: /Account/FlushAsyncLogin
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public string FlushAsyncLogin(LoginViewModel model)
+        {
+            return "OK";
+        }
     }
 }
