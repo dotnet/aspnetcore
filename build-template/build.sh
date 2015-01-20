@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if test `uname` = Darwin; then
     cachedir=~/Library/Caches/KBuild
@@ -28,7 +28,7 @@ if test ! -d packages/KoreBuild; then
 fi
 
 if ! type k > /dev/null 2>&1; then
-    source setup/dotnetsdk.sh
+    source packages/KoreBuild/build/dotnetsdk.sh
 fi
 
 if ! type k > /dev/null 2>&1; then
