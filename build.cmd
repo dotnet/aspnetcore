@@ -25,4 +25,4 @@ CALL packages\KoreBuild\build\dotnetsdk install default -runtime CoreCLR -x86
 
 :run
 CALL packages\KoreBuild\build\dotnetsdk use default -runtime CLR -x86
-packages\Sake\tools\Sake.exe -I packages\KoreBuild\build -f makefile.shade %*
+packages\Sake\tools\Sake.exe -I build -I packages\KoreBuild\build -f makefile.shade %*
