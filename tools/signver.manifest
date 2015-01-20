@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Files>
     <!-- Exclusions -->
-    <File Name="kvm.ps1" Ignore="yes" />
-    <File Name="klr.core45.dll" Ignore="yes" />
-    <File Name="klr.core45.managed.dll" Ignore="yes" />
-    <File Name="klr.exe" Ignore="yes" />
-    <File Name="klr.host.dll" Ignore="yes" />
-    <File Name="klr.hosting.shared.dll" Ignore="yes" />    
-    <File Name="klr.mono.managed.dll" Ignore="yes" />
-    <File Name="klr.net45.dll" Ignore="yes" />
-    <File Name="klr.net45.managed.dll" Ignore="yes" />
+    <File Name="dotnetsdk.ps1" Ignore="yes" />
+    <File Name="dotnet.core45.dll" Ignore="yes" />
+    <File Name="dotnet.core45.managed.dll" Ignore="yes" />
+    <File Name="dotnet.exe" Ignore="yes" />
+    <File Name="dotnet.host.dll" Ignore="yes" />
+    <File Name="dotnet.hosting.shared.dll" Ignore="yes" />
+    <File Name="dotnet.mono.managed.dll" Ignore="yes" />
+    <File Name="dotnet.net45.dll" Ignore="yes" />
+    <File Name="dotnet.net45.managed.dll" Ignore="yes" />
     <File Name="libuv.dll" Ignore="yes" />    
     <File Name="Microsoft.CodeAnalysis.CSharp.dll" Ignore="yes" />
     <File Name="Microsoft.CodeAnalysis.dll" Ignore="yes" />
