@@ -75,6 +75,10 @@ namespace MusicStore
             //Add InMemoryCache
             services.AddSingleton<IMemoryCache, MemoryCache>();
 
+            // Add session related services.
+            services.AddCachingServices();
+            services.AddSessionServices();
+
             // Configure Auth
             services.Configure<AuthorizationOptions>(options =>
             {
@@ -104,6 +108,9 @@ namespace MusicStore
 
         public void Configure(IApplicationBuilder app)
         {
+            // Configure Session.
+            app.UseSession();
+
             //Configure SignalR
             app.UseSignalR();
 

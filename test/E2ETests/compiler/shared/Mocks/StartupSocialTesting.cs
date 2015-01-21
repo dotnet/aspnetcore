@@ -111,12 +111,19 @@ namespace MusicStore
                 //Add InMemoryCache
                 services.AddSingleton<IMemoryCache, MemoryCache>();
 
+                // Add session related services.
+                services.AddCachingServices();
+                services.AddSessionServices();
+
                 // Configure Auth
                 services.Configure<AuthorizationOptions>(options =>
                 {
                     options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("ManageStore", "Allowed").Build());
                 });
             });
+
+            // Configure Session.
+            app.UseSession();
 
             //To gracefully shutdown the server - Not for production scenarios
             app.Map("/shutdown", shutdown =>

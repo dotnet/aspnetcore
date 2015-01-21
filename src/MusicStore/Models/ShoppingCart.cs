@@ -147,22 +147,17 @@ namespace MusicStore.Models
         }
 
         // We're using HttpContextBase to allow access to cookies.
-        public string GetCartId(HttpContext context)
+        private string GetCartId(HttpContext context)
         {
-            var sessionCookie = context.Request.Cookies.Get("Session");
-            string cartId = null;
+            var cartId = context.Session.GetString("Session");
 
-            if (string.IsNullOrWhiteSpace(sessionCookie))
+            if (cartId == null)
             {
                 //A GUID to hold the cartId. 
                 cartId = Guid.NewGuid().ToString();
 
                 // Send cart Id as a cookie to the client.
-                context.Response.Cookies.Append("Session", cartId);
-            }
-            else
-            {
-                cartId = sessionCookie;
+                context.Session.SetString("Session", cartId);
             }
 
             return cartId;

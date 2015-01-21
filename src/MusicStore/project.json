@@ -27,9 +27,10 @@
 		"Microsoft.AspNet.Security.Twitter": "1.0.0-*",
 		"Microsoft.AspNet.Server.IIS": "1.0.0-*",
 		"Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+		"Microsoft.AspNet.Session": "1.0.0-*",
 		"Microsoft.AspNet.SignalR.Server": "3.0.0-*",
 		"Microsoft.AspNet.StaticFiles": "1.0.0-*",
-		"Microsoft.Framework.Cache.Memory": "1.0.0-*",
+		"Microsoft.Framework.Cache.Distributed": "1.0.0-*", // For Session.
 		"Microsoft.Framework.CodeGenerators.Mvc": "1.0.0-*",
 		"Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
 		"Microsoft.Framework.Logging.Console": "1.0.0-*"
