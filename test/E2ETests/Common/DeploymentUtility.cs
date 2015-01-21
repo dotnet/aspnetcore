@@ -220,7 +220,7 @@ namespace E2ETests
             if (!string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigTemplateContent))
             {
                 startParameters.ApplicationHostConfigTemplateContent =
-                    startParameters.ApplicationHostConfigTemplateContent.Replace("[ApplicationPhysicalPath]", startParameters.ApplicationPath);
+                    startParameters.ApplicationHostConfigTemplateContent.Replace("[ApplicationPhysicalPath]", Path.Combine(startParameters.ApplicationPath, "wwwroot"));
             }
 
             CopyAspNetLoader(startParameters.ApplicationPath);
@@ -235,8 +235,14 @@ namespace E2ETests
                 startParameters.ApplicationHostConfigLocation = tempApplicationHostConfig;
             }
 
+            var webroot = startParameters.ApplicationPath;
+            if (!webroot.EndsWith("wwwroot"))
+            {
+                webroot = Path.Combine(webroot, "wwwroot");
+            }
+
             var parameters = string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigLocation) ?
-                            string.Format("/port:5001 /path:{0}", Path.Combine(startParameters.ApplicationPath, "wwwroot")) :
+                            string.Format("/port:5001 /path:{0}", webroot) :
                             string.Format("/site:{0} /config:{1}", startParameters.SiteName, startParameters.ApplicationHostConfigLocation);
 
             var iisExpressPath = GetIISExpressPath(startParameters.DotnetArchitecture);
