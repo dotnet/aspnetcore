@@ -110,10 +110,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
-            var explicitValue = isChecked.HasValue;
-            if (explicitValue && htmlAttributeDictionary != null)
+            if (isChecked.HasValue && htmlAttributeDictionary != null)
             {
-                // Explicit value must override dictionary
+                // Explicit isChecked value must override "checked" in dictionary.
                 htmlAttributeDictionary.Remove("checked");
             }
 
@@ -124,7 +123,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 metadata,
                 name,
                 value: "true",
-                useViewData: (metadata == null && !explicitValue),
+                useViewData: (metadata == null && !isChecked.HasValue),
                 isChecked: isChecked ?? false,
                 setId: true,
                 isExplicitValue: false,
@@ -325,10 +324,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     string.Equals(model.ToString(), valueString, StringComparison.OrdinalIgnoreCase);
             }
 
-            var explicitValue = isChecked.HasValue;
-            if (explicitValue && htmlAttributeDictionary != null)
+            if (isChecked.HasValue && htmlAttributeDictionary != null)
             {
-                // Explicit value must override dictionary
+                // Explicit isChecked value must override "checked" in dictionary.
                 htmlAttributeDictionary.Remove("checked");
             }
 
