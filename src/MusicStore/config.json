@@ -10,7 +10,7 @@
     },
     "EntityFramework": {
         "MusicStoreContext": {
-            "ConnectionStringKey": "Data:DefaultConnection:ConnectionString"
+            "ConnectionString": "Name=Data:DefaultConnection:ConnectionString"
         }
     }
 }
