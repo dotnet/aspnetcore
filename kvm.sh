@@ -15,7 +15,7 @@ fi
 
 KRE_USER_PACKAGES="$KRE_USER_HOME/packages"
 if [ -z "$KRE_FEED" ]; then
-    KRE_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
+    KRE_FEED="https://www.nuget.org/api/v2"
 fi
 
 _kvm_find_latest() {
@@ -154,7 +154,7 @@ kvm()
     case $1 in
         "help" )
             echo ""
-            echo "K Runtime Environment Version Manager - Build 10058"
+            echo "K Runtime Environment Version Manager - Build 10050"
             echo ""
             echo "USAGE: kvm <command> [options]"
             echo ""
