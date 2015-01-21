@@ -286,5 +286,45 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected2, response3.Trim());
             Assert.Equal(expected2, response4.Trim());
         }
+
+        [Fact]
+        public async Task CacheTagHelper_BubblesExpirationOfNestedTagHelpers()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            client.BaseAddress = new Uri("http://localhost");
+
+            // Act - 1
+            var response1 = await client.GetStringAsync("/categories/Books?correlationId=1");
+
+            // Assert - 1
+            var expected1 =
+@"Category: Books
+Products: Book1, Book2 (1)";
+            Assert.Equal(expected1, response1.Trim());
+
+            // Act - 2
+            var response2 = await client.GetStringAsync("/categories/Electronics?correlationId=2");
+
+            // Assert - 2
+            var expected2 =
+@"Category: Electronics
+Products: Book1, Book2 (1)";
+            Assert.Equal(expected2, response2.Trim());
+
+            // Act - 3
+            // Trigger an expiration
+            var response3 = await client.PostAsync("/categories/update-products", new StringContent(string.Empty));
+            response3.EnsureSuccessStatusCode();
+
+            var response4 = await client.GetStringAsync("/categories/Electronics?correlationId=3");
+
+            // Assert - 3
+            var expected3 =
+@"Category: Electronics
+Products: Laptops (3)";
+            Assert.Equal(expected3, response4.Trim());
+        }
     }
 }

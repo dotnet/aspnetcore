@@ -7,14 +7,16 @@ using System.IO;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.Cache.Memory.Infrastructure;
+using Microsoft.Framework.Expiration.Interfaces;
 using Moq;
 using Xunit;
 
@@ -345,7 +347,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var expiresOn = DateTimeOffset.UtcNow.AddMinutes(4);
             var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheContext = new Mock<ICacheSetContext>();
+            var cacheContext = new Mock<ICacheSetContext>(MockBehavior.Strict);
             cacheContext.Setup(c => c.SetAbsoluteExpiration(expiresOn))
                         .Verifiable();
             var cacheTagHelper = new CacheTagHelper
@@ -355,7 +357,64 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
-            cacheTagHelper.UpdateCacheContext(cacheContext.Object);
+            cacheTagHelper.UpdateCacheContext(cacheContext.Object, new EntryLink());
+
+            // Assert
+            cacheContext.Verify();
+        }
+
+        [Fact]
+        public void UpdateCacheContext_UsesAbsoluteExpirationSpecifiedOnEntryLink()
+        {
+            // Arrange
+            var expiresOn = DateTimeOffset.UtcNow.AddMinutes(7);
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var cacheContext = new Mock<ICacheSetContext>(MockBehavior.Strict);
+            cacheContext.Setup(c => c.SetAbsoluteExpiration(expiresOn))
+                        .Verifiable();
+            var cacheTagHelper = new CacheTagHelper
+            {
+                MemoryCache = cache
+            };
+
+            var entryLink = new EntryLink();
+            entryLink.SetAbsoluteExpiration(expiresOn);
+
+            // Act
+            cacheTagHelper.UpdateCacheContext(cacheContext.Object, entryLink);
+
+            // Assert
+            cacheContext.Verify();
+        }
+
+        [Fact]
+        public void UpdateCacheContext_PrefersAbsoluteExpirationSpecifiedOnEntryLinkOverExpiresOn()
+        {
+            // Arrange
+            var expiresOn1 = DateTimeOffset.UtcNow.AddDays(12);
+            var expiresOn2 = DateTimeOffset.UtcNow.AddMinutes(4);
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var cacheContext = new Mock<ICacheSetContext>();
+            var sequence = new MockSequence();
+            cacheContext.InSequence(sequence)
+                        .Setup(c => c.SetAbsoluteExpiration(expiresOn1))
+                        .Verifiable();
+
+            cacheContext.InSequence(sequence)
+                        .Setup(c => c.SetAbsoluteExpiration(expiresOn2))
+                        .Verifiable();
+
+            var cacheTagHelper = new CacheTagHelper
+            {
+                MemoryCache = cache,
+                ExpiresOn = expiresOn1
+            };
+
+            var entryLink = new EntryLink();
+            entryLink.SetAbsoluteExpiration(expiresOn2);
+
+            // Act
+            cacheTagHelper.UpdateCacheContext(cacheContext.Object, entryLink);
 
             // Assert
             cacheContext.Verify();
@@ -377,7 +436,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
-            cacheTagHelper.UpdateCacheContext(cacheContext.Object);
+            cacheTagHelper.UpdateCacheContext(cacheContext.Object, new EntryLink());
 
             // Assert
             cacheContext.Verify();
@@ -399,7 +458,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
-            cacheTagHelper.UpdateCacheContext(cacheContext.Object);
+            cacheTagHelper.UpdateCacheContext(cacheContext.Object, new EntryLink());
 
             // Assert
             cacheContext.Verify();
@@ -421,10 +480,41 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
-            cacheTagHelper.UpdateCacheContext(cacheContext.Object);
+            cacheTagHelper.UpdateCacheContext(cacheContext.Object, new EntryLink());
 
             // Assert
             cacheContext.Verify();
+        }
+
+        [Fact]
+        public void UpdateCacheContext_CopiesTriggersFromEntryLink()
+        {
+            // Arrange
+            var expiresSliding = TimeSpan.FromSeconds(30);
+            var expected = new[] { Mock.Of<IExpirationTrigger>(), Mock.Of<IExpirationTrigger>() };
+            var triggers = new List<IExpirationTrigger>();
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var cacheContext = new Mock<ICacheSetContext>();
+            cacheContext.Setup(c => c.SetSlidingExpiration(expiresSliding))
+                        .Verifiable();
+            cacheContext.Setup(c => c.AddExpirationTrigger(It.IsAny<IExpirationTrigger>()))
+                        .Callback<IExpirationTrigger>(triggers.Add)
+                        .Verifiable();
+            var cacheTagHelper = new CacheTagHelper
+            {
+                MemoryCache = cache,
+                ExpiresSliding = expiresSliding
+            };
+
+            var entryLink = new EntryLink();
+            entryLink.AddExpirationTriggers(expected);
+
+            // Act
+            cacheTagHelper.UpdateCacheContext(cacheContext.Object, entryLink);
+
+            // Assert
+            cacheContext.Verify();
+            Assert.Equal(expected, triggers);
         }
 
         [Fact]
@@ -602,6 +692,57 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Null(tagHelperOutput2.PostContent);
             Assert.True(tagHelperOutput2.ContentSet);
             Assert.Equal(childContent2, tagHelperOutput2.Content);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_FlowsEntryLinkThatAllowsAddingTriggersToAddedEntry()
+        {
+            // Arrange
+            var id = "some-id";
+            var expectedContent = "some-content";
+            var tokenSource = new CancellationTokenSource();
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>(),
+                                        id,
+                                        () =>
+                                        {
+                                            var entryLink = EntryLinkHelpers.ContextLink;
+                                            Assert.NotNull(entryLink);
+                                            entryLink.AddExpirationTriggers(new[]
+                                            {
+                                                new CancellationTokenTrigger(tokenSource.Token)
+                                            });
+                                            return Task.FromResult(expectedContent);
+                                        });
+            var tagHelperOutput = new TagHelperOutput("cache", new Dictionary<string, string>())
+            {
+                PreContent = "<cache>",
+                PostContent = "</cache>"
+            };
+            var cacheTagHelper = new CacheTagHelper
+            {
+                ViewContext = GetViewContext(),
+                MemoryCache = cache,
+            };
+            var key = cacheTagHelper.GenerateKey(tagHelperContext);
+
+            // Act - 1
+            await cacheTagHelper.ProcessAsync(tagHelperContext, tagHelperOutput);
+            string cachedValue;
+            var result = cache.TryGetValue(key, out cachedValue);
+
+            // Assert - 1
+            Assert.Equal(expectedContent, tagHelperOutput.Content);
+            Assert.True(result);
+            Assert.Equal(expectedContent, cachedValue);
+
+            // Act - 2
+            tokenSource.Cancel();
+            result = cache.TryGetValue(key, out cachedValue);
+
+            // Assert - 2
+            Assert.False(result);
+            Assert.Null(cachedValue);
         }
 
         private static ViewContext GetViewContext()
