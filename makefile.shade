@@ -188,7 +188,8 @@ var buildTarget = "compile"
                       Path.Combine(repo, "NuGet.config"),
                       overwrite: true);
             GitCommand(repo, "commit -am \"Updating NuGet.config\"");
-            GitCommand(repo, "push origin master");
+
+            GitCommand(repo, "push origin master:master -f");
         }
     }
 
