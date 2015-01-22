@@ -19,7 +19,6 @@ functions
             // The repos list is topologically sorted based on build order
             "Configuration",
             "Caching",
-            "DataCommon",
             "DataProtection",
             "DependencyInjection",
             "Options",
@@ -47,7 +46,7 @@ functions
         };
         
         // Doesn't build on Mono since their contracts don't match
-        string[] excludeReposOnMono = new[] { "DataCommon", "Helios" };
+        string[] excludeReposOnMono = new[] { "Helios" };
 
         static bool useHttps = UseHttps(BASE_DIR);
         static string gitHubUriPrefix = useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/";
@@ -414,7 +413,6 @@ functions
             var nonDefaultRepos = new[]
             {
               "KRuntime",
-              "SqlClient",
               "MusicStore"
             };
             return Enumerable.Concat(repos, nonDefaultRepos);
