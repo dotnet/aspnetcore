@@ -29,4 +29,7 @@ nuget.exe
 *.ncrunchsolution
 *.*sdf
 *.ipch
+.settings
 *.sln.ide
+node_modules
+**/[Cc]ompiler/[Rr]esources/**/*.js

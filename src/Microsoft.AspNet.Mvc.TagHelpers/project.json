@@ -1,17 +1,21 @@
 {
-  "description": "Contains a default set of Tag Helpers for building ASP.NET MVC applications.",
-  "version": "6.0.0-*",
-  "compilationOptions": {
-    "warningsAsErrors": true
-  },
-  "dependencies": {
-    "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
-    "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-    "Microsoft.Framework.Cache.Memory": "1.0.0-*",
-    "System.Security.Cryptography.Hashing.Algorithms":  "4.0.0-beta-*"
-  },
-  "frameworks": {
-    "aspnet50": {},
-    "aspnetcore50": {}
-  }
+    "description": "Contains a default set of Tag Helpers for building ASP.NET MVC applications.",
+    "version": "6.0.0-*",
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+    "dependencies": {
+        "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
+        "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
+        "Microsoft.Framework.Cache.Memory": "1.0.0-*",
+        "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" },
+        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*"
+    },
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": { }
+    },
+    "scripts": {
+        "prebuild": [ "npm install", "grunt" ]
+    }
 }

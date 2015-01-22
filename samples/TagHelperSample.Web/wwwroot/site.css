@@ -1,0 +1,13 @@
+﻿meta.fallback-test {
+    visibility: hidden;
+}
+
+body::after {
+    display: block;
+    color: #0fa912;
+    font-size: 0.9em;
+    margin-top: 2.4em;
+    content: "Stylesheet 'site.css' loaded successfully!";
+}
+
+

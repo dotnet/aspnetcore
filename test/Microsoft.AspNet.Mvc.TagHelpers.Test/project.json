@@ -2,6 +2,7 @@
     "dependencies": {
         "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" },
         "xunit.runner.kre": "1.0.0-*"
     },
     "commands": {

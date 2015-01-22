@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -31,10 +32,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             "/Home/Index",
         };
 
+        private readonly ILoggerFactory _loggerFactory = new TestLoggerFactory();
         // Path relative to Mvc\\test\Microsoft.AspNet.Mvc.FunctionalTests
         private readonly IServiceProvider _services =
             TestHelper.CreateServices("TagHelperSample.Web", Path.Combine("..", "..", "samples"));
-        private readonly Action<IApplicationBuilder> _app = new TagHelperSample.Web.Startup().Configure;
+        private readonly Action<IApplicationBuilder, ILoggerFactory> _app = new TagHelperSample.Web.Startup().Configure;
 
         [Fact]
         public async Task Home_Pages_ReturnSuccess()
@@ -42,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             using (TestHelper.ReplaceCallContextServiceLocationService(_services))
             {
                 // Arrange
-                var server = TestServer.Create(_services, _app);
+                var server = TestServer.Create(_services, app => _app(app, _loggerFactory));
                 var client = server.CreateClient();
 
                 for (var index = 0; index < Paths.Count; index++)
@@ -55,6 +57,45 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     Assert.NotNull(response);
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 }
+            }
+        }
+        
+        private class TestLoggerFactory : ILoggerFactory
+        {
+            public void AddProvider(ILoggerProvider provider)
+            {
+
+            }
+            
+            public ILogger Create(string name)
+            {
+                return new TestLogger();
+            }
+        }
+        
+        private class TestLogger : ILogger
+        {
+            public bool IsEnabled(LogLevel level)
+            {
+                return false;
+            }
+            
+            public IDisposable BeginScope(object scope)
+            {
+                return new TestDisposable();
+            }
+            
+            public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            {
+
+            }
+        }
+        
+        private class TestDisposable : IDisposable
+        {
+            public void Dispose()
+            {
+
             }
         }
     }

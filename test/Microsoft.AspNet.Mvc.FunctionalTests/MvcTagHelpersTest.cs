@@ -39,6 +39,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("EditWarehouse", null)]
         // Testing the EnvironmentTagHelper
         [InlineData("Environment", null)]
+        // Testing the LinkTagHelper
+        [InlineData("Link", null)]
         public async Task MvcTagHelpers_GeneratesExpectedResults(string action, string antiForgeryPath)
         {
             // Arrange
