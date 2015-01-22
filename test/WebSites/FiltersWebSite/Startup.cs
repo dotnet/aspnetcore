@@ -5,7 +5,6 @@ using System.Security.Claims;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Security;
-using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 
 namespace FiltersWebSite

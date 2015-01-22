@@ -13,19 +13,18 @@ using System.Collections.Generic;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// This will look at the format parameter if present in the route data or query data and sets the content type in 
-    /// ObjectResult corresponding to the format value.
+    /// A filter which will use the format value in the route data or query string to set the content type on an 
+    /// <see cref="ObjectResult" /> returned from an action.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class FormatFilterAttribute : Attribute, IFormatFilter, IResourceFilter, IResultFilter
     {
         /// <summary>
-        /// As a resourceFilter, this filter looks at the request and rejects it
-        /// before going ahead if
+        /// As a <see cref="IResourceFilter"/>, this filter looks at the request and rejects it before going ahead if
         /// 1. The format in the request doesnt match any format in the map.
         /// 2. If there is a conflicting producesFilter.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">The <see cref="ResourceExecutingContext"/>.</param>
         public void OnResourceExecuting([NotNull] ResourceExecutingContext context)
         {
             var format = GetFormat(context);
@@ -40,21 +39,23 @@ namespace Microsoft.AspNet.Mvc
                 }
                 else
                 {
-                    var responseTypeFilters = context.Filters.OfType<IApiResponseMetadataProvider>();
-                    if (responseTypeFilters.Count() != 0)
+                    var responseTypeFilters = context.Filters.OfType<IApiResponseMetadataProvider>();                    
+                    var contentTypes = new List<MediaTypeHeaderValue>();
+
+                    foreach (var filter in responseTypeFilters)
                     {
-                        var contentTypes = new List<MediaTypeHeaderValue>();
+                        filter.SetContentTypes(contentTypes);
+                    }
 
-                        foreach (var filter in responseTypeFilters)
-                        {
-                            filter.SetContentTypes(contentTypes);
-                        }
-
-                        if (!contentTypes.Any(c => c.IsSubsetOf(formatContentType)))
+                    if (contentTypes.Count() != 0)
+                    {
+                        // If formatfilterContentType is not subset of any of the content types produced by 
+                        // IApiResponseMetadataProviders, return 404
+                        if (!contentTypes.Any(c => formatContentType.IsSubsetOf(c)))
                         {
                             context.Result = new HttpNotFoundResult();
                         }
-                    }    
+                    }                   
                 }
             }
         }
@@ -66,19 +67,19 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// This method looks at the format that request has and sets it in the context
+        /// Sets a Content Type on an  <see cref="ObjectResult" />  using a format value from the request.
         /// </summary>
+        /// <param name="context">The <see cref="ResultExecutingContext"/>.</param>
         public void OnResultExecuting([NotNull] ResultExecutingContext context)
         {
             var format = GetFormat(context);
-            if (format != null)
+            if (!string.IsNullOrEmpty(format))
             {
-                var contentType = GetContentType(format, context);
-                Debug.Assert(contentType != null);
-
                 var objectResult = context.Result as ObjectResult;
                 if (objectResult != null)
                 {
+                    var contentType = GetContentType(format, context);
+                    Debug.Assert(contentType != null);
                     objectResult.ContentTypes.Clear();
                     objectResult.ContentTypes.Add(contentType);
                 }
@@ -92,20 +93,15 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Looks at the current request for the format parameter. If it contains format, it returns the content type 
-        /// for it.
+        /// If the current request contains format value, returns true. It means the format filter is going to execute.
         /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        public MediaTypeHeaderValue GetContentTypeForCurrentRequest(FilterContext context)
+        /// <param name="context">The <see cref="FilterContext"/></param>
+        /// <returns>If the filter is active and will execute.</returns>
+        public bool IsActive(FilterContext context)
         {
             var format = GetFormat(context);
-            if (format != null && !string.IsNullOrEmpty(format.ToString()))
-            {
-                return GetContentType(format, context);
-            }
 
-            return null;
+            return !string.IsNullOrEmpty(format);
         }
 
         private string GetFormat(FilterContext context)
@@ -114,25 +110,17 @@ namespace Microsoft.AspNet.Mvc
 
             if (!context.RouteData.Values.TryGetValue("format", out format))
             {
-                if (context.HttpContext.Request.Query.ContainsKey("format"))
-                {
-                    format = context.HttpContext.Request.Query.Get("format");
-                    return format.ToString();
-                }
-            }
-            else
-            {
-                return format.ToString();
+                format = context.HttpContext.Request.Query["format"];
             }
 
-            return null;            
+            return (string)format;
         }
 
-        private MediaTypeHeaderValue GetContentType(object format, FilterContext context)
+        private MediaTypeHeaderValue GetContentType(string format, FilterContext context)
         {
-            Debug.Assert(format != null);
             var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>();
-            var contentType = options.Options.FormatterMappings.GetMediaTypeForFormat(format.ToString());
+            var contentType = options.Options.FormatterMappings.GetMediaTypeMappingForFormat(format);
+
             return contentType;
         }
     }

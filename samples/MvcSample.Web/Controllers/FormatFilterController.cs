@@ -5,7 +5,6 @@ using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web.Controllers
 {
-    [FormatFilter]    
     public class FormatFilterController : Controller
     {
         public Product GetProduct(int id)

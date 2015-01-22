@@ -7,14 +7,17 @@ using System;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Implement this interface if you want to have your own implementation of FormatFilter. A FormatFilter decides 
-    /// what content type to use if the format is present in the Url. 
+    ///  A filter which produces a desired content type for the current request. 
     /// </summary>
+    /// <remarks>A FormatFilter decides what content type to use if a format value is present in the URL. 
+    /// </remarks>
     public interface IFormatFilter : IFilter
     {
         /// <summary>
-        /// Get the <see cref="MediaTypeHeaderValue"/> registered fot the format in the request.
+        /// Returns true if the filter is going to be executed for the current request.
         /// </summary>
-        MediaTypeHeaderValue GetContentTypeForCurrentRequest(FilterContext context);
+        /// <param name="context">The <see cref="FilterContext"/></param>
+        /// <returns>If the filter will execute</returns>
+        bool IsActive(FilterContext context);
     }
 }

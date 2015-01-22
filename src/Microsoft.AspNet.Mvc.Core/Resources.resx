@@ -450,6 +450,9 @@
   </data>
   <data name="ApiExplorer_UnsupportedAction" xml:space="preserve">
     <value>The action '{0}' has ApiExplorer enabled, but is using conventional routing. Only actions which use attribute routing support ApiExplorer.</value>
+    </data>
+  <data name="FormatterMappings_NotValidMediaType" xml:space="preserve">
+    <value>The media type {0} is not valid. The media type containing "&lt;mediatype&gt;/*" are not supported.</value>
   </data>
   <data name="RemoteAttribute_NoUrlFound" xml:space="preserve">
     <value>No URL for remote validation could be found.</value>

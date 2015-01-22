@@ -39,16 +39,38 @@ namespace Microsoft.AspNet.Mvc.Test
         }
         
         [Fact]
-        public async Task ProducesContentAttribute_FormatFilterAttribute()
+        public async Task ProducesContentAttribute_FormatFilterAttribute_NotActive()
         {
             // Arrange
-            var mediaType1 = MediaTypeHeaderValue.Parse("application/xml");
-            var mediaType2 = MediaTypeHeaderValue.Parse("application/json");
             var producesContentAttribute = new ProducesAttribute("application/xml");
 
             var formatFilter = new Mock<IFormatFilter>();
-            formatFilter.Setup(f => f.GetContentTypeForCurrentRequest(It.IsAny<FilterContext>()))
-                .Returns(mediaType2);
+            formatFilter.Setup(f => f.IsActive(It.IsAny<FilterContext>()))
+                .Returns(false);
+
+            var filters = new IFilter[] { producesContentAttribute, formatFilter.Object };
+            var resultExecutingContext = CreateResultExecutingContext(filters);
+
+            var next = new ResultExecutionDelegate(
+                            () => Task.FromResult(CreateResultExecutedContext(resultExecutingContext)));
+
+            // Act
+            await producesContentAttribute.OnResultExecutionAsync(resultExecutingContext, next);
+
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
+            Assert.Equal(1, objectResult.ContentTypes.Count);
+        }
+
+        [Fact]
+        public async Task ProducesContentAttribute_FormatFilterAttribute_Active()
+        {
+            // Arrange
+            var producesContentAttribute = new ProducesAttribute("application/xml");
+
+            var formatFilter = new Mock<IFormatFilter>();
+            formatFilter.Setup(f => f.IsActive(It.IsAny<FilterContext>()))
+                .Returns(true);
 
             var filters = new IFilter[] { producesContentAttribute, formatFilter.Object };
             var resultExecutingContext = CreateResultExecutingContext(filters);
@@ -63,7 +85,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
             Assert.Equal(0, objectResult.ContentTypes.Count);
         }
-
 
         [Theory]
         [InlineData("", "")]

@@ -11,7 +11,7 @@ using Microsoft.AspNet.Mvc.Core;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Used to specify mapping between the Url Format and corresponding <see cref="MediaTypeHeaderValue"/>.
+    /// Used to specify mapping between the URL Format and corresponding <see cref="MediaTypeHeaderValue"/>.
     /// </summary>
     public class FormatterMappings
     {
@@ -19,21 +19,14 @@ namespace Microsoft.AspNet.Mvc
             new Dictionary<string, MediaTypeHeaderValue>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// This will set mapping for the format to specified <see cref="MediaTypeHeaderValue"/>. 
+        /// Sets mapping for the format to specified <see cref="MediaTypeHeaderValue"/>. 
         /// If the format already exists, the <see cref="MediaTypeHeaderValue"/> will be overwritten with the new value.
         /// </summary>
+        /// <param name="format">format value</param>
+        /// <param name="contentType">The <see cref="MediaTypeHeaderValue"/> for the format value</param>
         public void SetMediaTypeMappingForFormat([NotNull] string format, [NotNull] MediaTypeHeaderValue contentType)
         {
-            if (string.IsNullOrEmpty(format))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "format");
-            }
-
-            if (contentType == null)
-            {
-                throw new ArgumentException((Resources.ArgumentCannotBeNullOrEmpty), "contentType");
-            }
-
+            ValidateContentType(contentType);
             format = RemovePeriodIfPresent(format);
             _map[format] = contentType;
         }
@@ -41,12 +34,24 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets <see cref="MediaTypeHeaderValue"/> for the specified format.
         /// </summary>
-        public MediaTypeHeaderValue GetMediaTypeForFormat(string format)
+        /// <param name="format">format value.</param>
+        /// <returns>The <see cref="MediaTypeHeaderValue"/> for input format</returns>
+        public MediaTypeHeaderValue GetMediaTypeMappingForFormat([NotNull] string format)
         {
             format = RemovePeriodIfPresent(format);
+
             MediaTypeHeaderValue value = null;
             _map.TryGetValue(format, out value);
+            
             return value;
+        }
+
+        private void ValidateContentType(MediaTypeHeaderValue contentType)
+        {
+            if(contentType.Type == "*" || contentType.SubType == "*")
+            {
+                throw new ArgumentException(string.Format(Resources.FormatterMappings_NotValidMediaType, contentType));
+            }
         }
 
         private string RemovePeriodIfPresent(string format)

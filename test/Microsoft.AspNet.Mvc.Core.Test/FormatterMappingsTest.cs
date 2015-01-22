@@ -24,31 +24,25 @@ namespace Microsoft.AspNet.Mvc
             options.SetMediaTypeMappingForFormat(setFormat, mediaType);
 
             // Act 
-            var returnMediaType = options.GetMediaTypeForFormat(getFormat);
+            var returnMediaType = options.GetMediaTypeMappingForFormat(getFormat);
 
             // Assert
             Assert.Equal(mediaType, returnMediaType);
         }
-
+        
         [Theory]
-        [InlineData("xml", null)]
-        [InlineData(".json", null)]
-        [InlineData(null, "application/json")]
-        [InlineData("", "text/foo")]        
-        public void FormatterMappings_SetFormatMapping_Invalid(string format, string contentType)
+        [InlineData("application/*")]
+        [InlineData("*/json")]
+        [InlineData("*/*")]
+        public void FormatterMappings_Wildcardformat(string format)
         {
             // Arrange
-            MediaTypeHeaderValue mediaType = null;
-            if (!string.IsNullOrEmpty(contentType))
-            {
-                mediaType = MediaTypeHeaderValue.Parse(contentType);
-            }
+            var options = new FormatterMappings();
+            var expected = string.Format(@"The media type {0} is not valid. The media type containing ""<mediatype>/*"" are not supported.", format);
 
-            var options = new FormatterMappings();            
-            var expectedError = "Value cannot be null or empty." + Environment.NewLine + "Parameter name: format";
-
-            // Act and Assert
-            Assert.Throws<ArgumentException>(() => options.SetMediaTypeMappingForFormat(format, mediaType));
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => options.SetMediaTypeMappingForFormat("star", MediaTypeHeaderValue.Parse(format)));
+            Assert.Equal(expected, exception.Message);
         }
     }
 }

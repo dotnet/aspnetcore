@@ -141,10 +141,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/ProducesDerived/ReturnClassName.json");
+            var response = await client.GetAsync("http://localhost/ProducesOverride/ReturnClassName");
 
             // Assert
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(@"ProducesOverrideController", await response.Content.ReadAsStringAsync());
         }
     }
 }

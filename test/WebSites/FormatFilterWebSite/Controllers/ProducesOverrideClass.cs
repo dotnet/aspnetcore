@@ -5,11 +5,11 @@ using Microsoft.AspNet.Mvc;
 
 namespace FormatFilterWebSite
 {
-    [Produces("application/custom_ProducesOverrideController")]
-    public class ProducesOverrideController : ProducesBaseController
+    [Produces("application/custom_ProducesController")]
+    public class ProducesOverrideController
     {
-        [FormatFilter]
-        public override string ReturnClassName()
+        [Produces("application/ProducesMethod")]
+        public string ReturnClassName()
         {
             // should be written using the content defined at base class's action.
             return "ProducesOverrideController";

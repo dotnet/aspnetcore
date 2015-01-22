@@ -171,8 +171,8 @@ namespace Microsoft.AspNet.Mvc
         [InlineData("json", FormatSource.RouteData, "application/json")]
         [InlineData("json", FormatSource.QueryData, "application/json")]
         public void FormatFilter_ContextContainsFormat_ContainsProducesFilter_Matching(
-            string format, 
-            FormatSource place, 
+            string format,
+            FormatSource place,
             string contentType)
         {
             // Arrange
@@ -188,23 +188,38 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public void FormatFilter_ContextContainsFormat_ContainsProducesFilter_WildCardMatching()
+        public void FormatFilter_LessSpecificThan_Produces()
         {
             // Arrange
-            var produces = new ProducesAttribute(
-                "application/baz", 
-                new string[] { "application/foo", "text/bar" });
-            var context = CreateResourceExecutingContext(new IFilter[] { produces }, "star", FormatSource.RouteData);
+            var produces = new ProducesAttribute("application/xml;version=1", new string [] { });
+            var context = CreateResourceExecutingContext(new IFilter[] { produces },  "xml", FormatSource.RouteData);
             var options = context.HttpContext.RequestServices.GetService<IOptions<MvcOptions>>();
-            options.Options.FormatterMappings.SetMediaTypeMappingForFormat("star", MediaTypeHeaderValue.Parse("application/*"));
+            options.Options.FormatterMappings.SetMediaTypeMappingForFormat("xml", MediaTypeHeaderValue.Parse("application/xml"));
+            var filter = new FormatFilterAttribute();
 
+            // Act
+            filter.OnResourceExecuting(context);
+
+            // Assert
+            Assert.Null(context.Result);
+        }
+
+        [Fact]
+        public void FormatFilter_MoreSpecificThan_Produces()
+        {
+            // Arrange
+            var produces = new ProducesAttribute("application/xml", new string[] { });
+            var context = CreateResourceExecutingContext(new IFilter[] { produces }, "xml", FormatSource.RouteData);
+            var options = context.HttpContext.RequestServices.GetService<IOptions<MvcOptions>>();
+            options.Options.FormatterMappings.SetMediaTypeMappingForFormat("xml", MediaTypeHeaderValue.Parse("application/xml;version=1"));
             var filter = new FormatFilterAttribute();
 
             // Act
             filter.OnResourceExecuting(context);
 
             // Assert            
-            Assert.Null(context.Result);
+            var actionResult = context.Result;
+            Assert.IsType<HttpNotFoundResult>(actionResult);
         }
 
         [Theory]
@@ -241,7 +256,7 @@ namespace Microsoft.AspNet.Mvc
             var resourceExecutingContext = CreateResourceExecutingContext(
                 new IFilter[] { }, 
                 format, 
-                FormatSource.RouteData);
+                place);
             var filter = new FormatFilterAttribute();
 
             // Act
@@ -252,31 +267,24 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Theory]
-        [InlineData("json", FormatSource.RouteData, "application/json")]
-        [InlineData("json", FormatSource.QueryData, "application/json")]
-        [InlineData("", FormatSource.RouteAndQueryData, null)]
-        [InlineData(null, FormatSource.RouteAndQueryData, null)]
-        public void FormatFilter_GetContentTypeForRequest(
+        [InlineData("json", FormatSource.RouteData, true)]
+        [InlineData("json", FormatSource.QueryData, true )]
+        [InlineData("", FormatSource.RouteAndQueryData, false)]
+        [InlineData(null, FormatSource.RouteAndQueryData, false)]
+        public void FormatFilter_IsActive(
             string format,
             FormatSource place,
-            string contentType)
+            bool expected)
         {
             // Arrange            
-            var resourceExecutingContext = CreateResourceExecutingContext(
-                new IFilter[] { },
-                format,
-                FormatSource.RouteData);
+            var resultExecutingContext = CreateResultExecutingContext(format, place);
             var filter = new FormatFilterAttribute();
-            var returnContentType = filter.GetContentTypeForCurrentRequest(resourceExecutingContext);
 
+            // Act
+            var isActive = filter.IsActive(resultExecutingContext);
 
-            MediaTypeHeaderValue mediaType = null;
-            if (returnContentType != null)
-            {
-                mediaType = MediaTypeHeaderValue.Parse("application/json");
-            }
-
-            Assert.Equal(mediaType, returnContentType);
+            // Assert
+            Assert.Equal(expected, isActive);
         }
 
         private static ResourceExecutingContext CreateResourceExecutingContext(
@@ -332,7 +340,7 @@ namespace Microsoft.AspNet.Mvc
             if (place == FormatSource.QueryData || place == FormatSource.RouteAndQueryData)
             {
                 httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(true);
-                httpContext.Setup(c => c.Request.Query.Get("format")).Returns(format);                
+                httpContext.Setup(c => c.Request.Query["format"]).Returns(format);                
             }
             else if (place == null && format == null)
             {

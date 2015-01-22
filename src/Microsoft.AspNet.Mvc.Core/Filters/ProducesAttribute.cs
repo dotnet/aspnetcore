@@ -34,10 +34,9 @@ namespace Microsoft.AspNet.Mvc
 
             if (objectResult != null)
             {
-                // Check if FormatFilter has already set the content type
-                // If it has, dont override it
-                var formatFilter = context.Filters.OfType<IFormatFilter>().LastOrDefault();
-                if (formatFilter == null || formatFilter.GetContentTypeForCurrentRequest(context) == null)
+                // Check if there are any IFormatFilter in the pipeline, and if any of them is active. If there is one,
+                // do not override the content type value.
+                if (context.Filters.OfType<IFormatFilter>().All(f => !f.IsActive(context)))
                 {
                     SetContentTypes(objectResult.ContentTypes);
                 }

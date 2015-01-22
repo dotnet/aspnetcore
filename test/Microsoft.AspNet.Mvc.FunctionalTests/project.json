@@ -17,6 +17,7 @@
         "ErrorPageMiddlewareWebSite": "1.0.0",
         "FilesWebSite": "1.0.0",
         "FiltersWebSite": "1.0.0",
+        "FormatFilterWebSite": "1.0.0-*",
         "FormatterWebSite": "1.0.0",
         "InlineConstraintsWebSite": "1.0.0",
         "LoggingWebSite": "1.0.0",
@@ -44,8 +45,7 @@
         "MvcTagHelpersWebSite": "1.0.0",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
         "xunit.runner.kre": "1.0.0-*",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
-"FormatFilterWebSite": "1.0.0-*"
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*"
     },
     "commands": {
         "test": "xunit.runner.kre"

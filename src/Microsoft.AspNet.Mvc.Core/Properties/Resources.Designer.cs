@@ -562,6 +562,11 @@ namespace Microsoft.AspNet.Mvc.Core
             get { return GetString("Common_ValueNotValidForProperty"); }
         }
 
+        internal static string FormatterMappings_NotValidMediaType
+        {
+            get { return GetString("FormatterMappings_NotValidMediaType"); }
+        }
+
         /// <summary>
         /// The value '{0}' is invalid.
         /// </summary>

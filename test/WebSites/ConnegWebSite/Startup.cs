@@ -31,7 +31,7 @@ namespace ConnegWebSite
             app.UseMvc(routes =>
             {
                 routes.MapRoute("ActionAsMethod", "{controller}/{action}",
-                    defaults: new { controller = "Home", action = "Index" });                
+                    defaults: new { controller = "Home", action = "Index" });
             });
         }
     }
