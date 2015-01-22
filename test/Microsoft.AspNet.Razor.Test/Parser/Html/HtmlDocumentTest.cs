@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         [Fact]
         public void ParseDocumentReturnsOneMarkupSegmentIfNoCodeBlocksEncountered()
         {
-            SingleSpanDocumentTest("Foo Baz<!--Foo-->Bar<!-F> Qux", BlockType.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("Foo Baz<!--Foo-->Bar<!--F> Qux", BlockType.Markup, SpanKind.Markup);
         }
 
         [Fact]

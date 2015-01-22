@@ -104,6 +104,14 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return self.Span(SpanKind.Comment, content, type);
         }
 
+        public static SpanConstructor BangEscape(this SpanFactory self)
+        {
+            return self
+                .Span(SpanKind.MetaCode, "!", markup: true)
+                .With(SpanCodeGenerator.Null)
+                .Accepts(AcceptedCharacters.None);
+        }
+
         public static SpanConstructor Markup(this SpanFactory self, string content)
         {
             return self.Span(SpanKind.Markup, content, markup: true).With(new MarkupCodeGenerator());

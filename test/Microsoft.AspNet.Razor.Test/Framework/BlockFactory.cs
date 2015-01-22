@@ -14,6 +14,19 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             _factory = factory;
         }
 
+        public Block EscapedMarkupTagBlock(string prefix, string suffix)
+        {
+            return EscapedMarkupTagBlock(prefix, suffix, AcceptedCharacters.Any);
+        }
+
+        public Block EscapedMarkupTagBlock(string prefix, string suffix, AcceptedCharacters acceptedCharacters)
+        {
+            return new MarkupTagBlock(
+                _factory.Markup(prefix),
+                _factory.BangEscape(),
+                _factory.Markup(suffix).Accepts(acceptedCharacters));
+        }
+
         public Block MarkupTagBlock(string content)
         {
             return MarkupTagBlock(content, AcceptedCharacters.Any);
