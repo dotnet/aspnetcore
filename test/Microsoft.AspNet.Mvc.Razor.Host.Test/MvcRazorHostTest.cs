@@ -79,6 +79,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         [InlineData("Basic")]
         [InlineData("Inject")]
         [InlineData("InjectWithModel")]
+        [InlineData("InjectWithSemicolon")]
         [InlineData("Model")]
         [InlineData("ModelExpressionTagHelper")]
         public void MvcRazorHost_ParsesAndGeneratesCodeForBasicScenarios(string scenarioName)
@@ -127,6 +128,28 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Act and Assert
             RunDesignTimeTest(host, "InjectWithModel", expectedLineMappings);
+        }
+
+        [Fact]
+        public void InjectVisitorWithSemicolon_GeneratesCorrectLineMappings()
+        {
+            // Arrange
+            var host = new MvcRazorHost(new TestFileProvider())
+            {
+                DesignTimeMode = true
+            };
+            host.NamespaceImports.Clear();
+            var expectedLineMappings = new[]
+            {
+                BuildLineMapping(7, 0, 7, 222, 6, 7, 7),
+                BuildLineMapping(24, 1, 8, 729, 26, 8, 20),
+                BuildLineMapping(58, 2, 8, 941, 34, 8, 23),
+                BuildLineMapping(93, 3, 8, 1156, 42, 8, 21),
+                BuildLineMapping(129, 4, 8, 1369, 50, 8, 24),
+            };
+
+            // Act and Assert
+            RunDesignTimeTest(host, "InjectWithSemicolon", expectedLineMappings);
         }
 
         [Fact]

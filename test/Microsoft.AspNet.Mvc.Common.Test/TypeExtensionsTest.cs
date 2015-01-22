@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class TypeExtensionTests
+    public class TypeExtensionsTest
     {
         [Theory]
         [InlineData(typeof(decimal))]

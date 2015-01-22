@@ -3,13 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+#if !ASPNETCORE50
 using Moq;
+#endif
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core
+namespace Microsoft.AspNet.Mvc
 {
     public class CopyOnWriteDictionaryTest
     {
+#if !ASPNETCORE50
         [Fact]
         public void ReadOperation_DelegatesToSourceDictionary_IfNoMutationsArePerformed()
         {
@@ -49,6 +52,7 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.False(copyOnWriteDictionary.TryGetValue("different-key", out value));
             sourceDictionary.Verify();
         }
+#endif
 
         [Fact]
         public void ReadOperation_DoesNotDelegateToSourceDictionary_OnceAValueIsChanged()
