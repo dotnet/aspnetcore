@@ -3,10 +3,7 @@
 
 namespace ApiExplorerWebSite
 {
-    public class Product
+    public interface IOrderRepository
     {
-        public int Id { get; set; }
-
-        public string Name { get; set; }
     }
 }

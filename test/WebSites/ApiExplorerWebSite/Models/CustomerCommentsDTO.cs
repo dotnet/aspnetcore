@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Mvc;
+
 namespace ApiExplorerWebSite
 {
-    public class Product
+    public class CustomerCommentsDTO
     {
-        public int Id { get; set; }
+        [FromQuery]
+        public string ShippingInstructions { get; set; }
 
-        public string Name { get; set; }
+        public string Feedback { get; set; }
     }
 }

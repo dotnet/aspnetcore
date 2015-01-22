@@ -246,7 +246,7 @@ namespace Microsoft.AspNet.Mvc
                  StringComparison.OrdinalIgnoreCase);
         }
 
-        private static string CreatePropertyModelName(string prefix, string propertyName)
+        public static string CreatePropertyModelName(string prefix, string propertyName)
         {
             if (string.IsNullOrEmpty(prefix))
             {

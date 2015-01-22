@@ -29,5 +29,12 @@ namespace MvcSample.Web.ApiExplorerSamples
         {
             return null;
         }
+
+        [Produces("application/json", Type = typeof(ProductOrderConfirmation))]
+        [HttpPut("{order.acountId:int}/PlaceOrder")]
+        public IActionResult PlaceOrder(Order order)
+        {
+            return null;
+        }
     }
 }

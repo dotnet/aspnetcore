@@ -1562,6 +1562,150 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("ResponseCache_SpecifyDuration"), p0, p1);
         }
 
+        /// <summary>
+        /// Body
+        /// </summary>
+        internal static string ApiParameterSource_Body
+        {
+            get { return GetString("ApiParameterSource_Body"); }
+        }
+
+        /// <summary>
+        /// Body
+        /// </summary>
+        internal static string FormatApiParameterSource_Body()
+        {
+            return GetString("ApiParameterSource_Body");
+        }
+
+        /// <summary>
+        /// Custom
+        /// </summary>
+        internal static string ApiParameterSource_Custom
+        {
+            get { return GetString("ApiParameterSource_Custom"); }
+        }
+
+        /// <summary>
+        /// Custom
+        /// </summary>
+        internal static string FormatApiParameterSource_Custom()
+        {
+            return GetString("ApiParameterSource_Custom");
+        }
+
+        /// <summary>
+        /// Header
+        /// </summary>
+        internal static string ApiParameterSource_Header
+        {
+            get { return GetString("ApiParameterSource_Header"); }
+        }
+
+        /// <summary>
+        /// Header
+        /// </summary>
+        internal static string FormatApiParameterSource_Header()
+        {
+            return GetString("ApiParameterSource_Header");
+        }
+
+        /// <summary>
+        /// Hidden
+        /// </summary>
+        internal static string ApiParameterSource_Hidden
+        {
+            get { return GetString("ApiParameterSource_Hidden"); }
+        }
+
+        /// <summary>
+        /// Hidden
+        /// </summary>
+        internal static string FormatApiParameterSource_Hidden()
+        {
+            return GetString("ApiParameterSource_Hidden");
+        }
+
+        /// <summary>
+        /// ModelBinding
+        /// </summary>
+        internal static string ApiParameterSource_ModelBinding
+        {
+            get { return GetString("ApiParameterSource_ModelBinding"); }
+        }
+
+        /// <summary>
+        /// ModelBinding
+        /// </summary>
+        internal static string FormatApiParameterSource_ModelBinding()
+        {
+            return GetString("ApiParameterSource_ModelBinding");
+        }
+
+        /// <summary>
+        /// Path
+        /// </summary>
+        internal static string ApiParameterSource_Path
+        {
+            get { return GetString("ApiParameterSource_Path"); }
+        }
+
+        /// <summary>
+        /// Path
+        /// </summary>
+        internal static string FormatApiParameterSource_Path()
+        {
+            return GetString("ApiParameterSource_Path");
+        }
+
+        /// <summary>
+        /// Query
+        /// </summary>
+        internal static string ApiParameterSource_Query
+        {
+            get { return GetString("ApiParameterSource_Query"); }
+        }
+
+        /// <summary>
+        /// Query
+        /// </summary>
+        internal static string FormatApiParameterSource_Query()
+        {
+            return GetString("ApiParameterSource_Query");
+        }
+
+        /// <summary>
+        /// Form
+        /// </summary>
+        internal static string ApiParameterSource_Form
+        {
+            get { return GetString("ApiParameterSource_Form"); }
+        }
+
+        /// <summary>
+        /// Form
+        /// </summary>
+        internal static string FormatApiParameterSource_Form()
+        {
+            return GetString("ApiParameterSource_Form");
+        }
+
+        /// <summary>
+        /// The action '{0}' has ApiExplorer enabled, but is using conventional routing. Only actions which use attribute routing support ApiExplorer.
+        /// </summary>
+        internal static string ApiExplorer_UnsupportedAction
+        {
+            get { return GetString("ApiExplorer_UnsupportedAction"); }
+        }
+
+        /// <summary>
+        /// The action '{0}' has ApiExplorer enabled, but is using conventional routing. Only actions which use attribute routing support ApiExplorer.
+        /// </summary>
+        internal static string FormatApiExplorer_UnsupportedAction(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ApiExplorer_UnsupportedAction"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

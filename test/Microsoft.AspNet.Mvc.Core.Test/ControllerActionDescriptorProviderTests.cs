@@ -1092,6 +1092,24 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("Store", action.GetProperty<ApiDescriptionActionData>().GroupName);
         }
 
+        [Theory]
+        [InlineData("A", typeof(ApiExplorerEnabledConventionalRoutedController))]
+        [InlineData("A", typeof(ApiExplorerEnabledActionConventionalRoutedController))]
+        public void ApiExplorer_ThrowsForContentionalRouting(string actionName, Type type)
+        {
+            var expected = string.Format(
+                "The action '{0}.{1}' has ApiExplorer enabled, but is using conventional routing. " +
+                "Only actions which use attribute routing support ApiExplorer.",
+                type.FullName, actionName);
+
+            // Arrange
+            var provider = GetProvider(type.GetTypeInfo());
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.GetDescriptors());
+            Assert.Equal(expected, ex.Message);
+        }
+
         // Verifies the sequence of conventions running
         [Fact]
         public void ApplyConventions_RunsInOrderOfDecreasingScope()
@@ -1743,29 +1761,34 @@ namespace Microsoft.AspNet.Mvc.Test
             public int Name { get; set; }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         private class ApiExplorerNotVisibleController
         {
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings()]
         private class ApiExplorerVisibleController
         {
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings(IgnoreApi = true)]
         private class ApiExplorerExplicitlyNotVisibleController
         {
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         private class ApiExplorerExplicitlyNotVisibleOnActionController
         {
             [ApiExplorerSettings(IgnoreApi = true)]
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings(IgnoreApi = true)]
         private class ApiExplorerVisibilityOverrideController
         {
@@ -1775,25 +1798,28 @@ namespace Microsoft.AspNet.Mvc.Test
             public void Create() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings(GroupName = "Store")]
         private class ApiExplorerNameOnControllerController
         {
             public void Edit() { }
         }
 
-
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         private class ApiExplorerNameOnActionController
         {
             [ApiExplorerSettings(GroupName = "Blog")]
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings()]
         private class ApiExplorerNoNameController
         {
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings(GroupName = "Store")]
         private class ApiExplorerNameOverrideController
         {
@@ -1850,6 +1876,23 @@ namespace Microsoft.AspNet.Mvc.Test
         [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
         private class ConstraintAttribute : Attribute, IActionConstraintMetadata
         {
+        }
+
+        [ApiExplorerSettings(GroupName = "Default")]
+        private class ApiExplorerEnabledConventionalRoutedController : Controller
+        {
+            public void A()
+            {
+            }
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        private class ApiExplorerEnabledActionConventionalRoutedController : Controller
+        {
+            [ApiExplorerSettings(GroupName = "Default")]
+            public void A()
+            {
+            }
         }
     }
 }

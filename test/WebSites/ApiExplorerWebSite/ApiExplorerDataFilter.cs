@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc;
@@ -9,11 +10,11 @@ using Microsoft.AspNet.Mvc.Description;
 namespace ApiExplorerWebSite
 {
     /// <summary>
-    /// An action filter that looks up and serializes Api Explorer data for the action.
+    /// A resource filter that looks up and serializes Api Explorer data for the action.
     ///
     /// This replaces the 'actual' output of the action.
     /// </summary>
-    public class ApiExplorerDataFilter : ActionFilterAttribute
+    public class ApiExplorerDataFilter : IResourceFilter
     {
         private readonly IApiDescriptionGroupCollectionProvider _descriptionProvider;
 
@@ -22,7 +23,7 @@ namespace ApiExplorerWebSite
             _descriptionProvider = descriptionProvider;
         }
 
-        public override void OnActionExecuted(ActionExecutedContext context)
+        public void OnResourceExecuting(ResourceExecutingContext context)
         {
             var descriptions = new List<ApiExplorerData>();
             foreach (var group in _descriptionProvider.ApiDescriptionGroups.Items)
@@ -39,6 +40,11 @@ namespace ApiExplorerWebSite
             context.Result = new JsonResult(descriptions);
         }
 
+        public void OnResourceExecuted(ResourceExecutedContext context)
+        {
+            throw new NotImplementedException();
+        }
+
         private ApiExplorerData CreateSerializableData(ApiDescription description)
         {
             var data = new ApiExplorerData()
@@ -53,12 +59,20 @@ namespace ApiExplorerWebSite
             {
                 var parameterData = new ApiExplorerParameterData()
                 {
-                    IsOptional = parameter.IsOptional,
                     Name = parameter.Name,
-                    Source = parameter.Source.ToString(),
-                    Type = parameter?.Type?.FullName,
-                    ConstraintTypes = parameter?.Constraints?.Select(c => c.GetType().Name).ToArray(),
+                    Source = parameter.Source.Id,
+                    Type = parameter.Type?.FullName,
                 };
+
+                if (parameter.RouteInfo != null)
+                {
+                    parameterData.RouteInfo = new ApiExplorerParameterRouteInfo()
+                    {
+                        ConstraintTypes = parameter.RouteInfo.Constraints?.Select(c => c.GetType().Name).ToArray(),
+                        DefaultValue = parameter.RouteInfo.DefaultValue,
+                        IsOptional = parameter.RouteInfo.IsOptional,
+                    };
+                }
 
                 data.ParameterDescriptions.Add(parameterData);
             }
@@ -96,15 +110,23 @@ namespace ApiExplorerWebSite
         // Used to serialize data between client and server
         private class ApiExplorerParameterData
         {
-            public bool IsOptional { get; set; }
-
             public string Name { get; set; }
+
+            public ApiExplorerParameterRouteInfo RouteInfo { get; set; }
 
             public string Source { get; set; }
 
             public string Type { get; set; }
+        }
 
+        // Used to serialize data between client and server
+        private class ApiExplorerParameterRouteInfo
+        {
             public string[] ConstraintTypes { get; set; }
+
+            public object DefaultValue { get; set; }
+
+            public bool IsOptional { get; set; }
         }
 
         // Used to serialize data between client and server

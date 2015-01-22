@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -35,8 +34,8 @@ namespace Microsoft.AspNet.Mvc.Description
             IModelMetadataProvider modelMetadataProvider)
         {
             _formattersProvider = formattersProvider;
-            _modelMetadataProvider = modelMetadataProvider;
             _constraintResolver = constraintResolver;
+            _modelMetadataProvider = modelMetadataProvider;
         }
 
         /// <inheritdoc />
@@ -81,7 +80,8 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var templateParameters = parsedTemplate?.Parameters?.ToList() ?? new List<TemplatePart>();
 
-            GetParameters(apiDescription, action.Parameters, templateParameters);
+            var parameterContext = new ApiParameterContext(_modelMetadataProvider, action, templateParameters);
+            apiDescription.ParameterDescriptions.AddRange(GetParameters(parameterContext));
 
             var responseMetadataAttributes = GetResponseMetadataAttributes(action);
 
@@ -124,43 +124,90 @@ namespace Microsoft.AspNet.Mvc.Description
             return apiDescription;
         }
 
-        private void GetParameters(
-            ApiDescription apiDescription,
-            IList<ParameterDescriptor> parameterDescriptors,
-            IList<TemplatePart> templateParameters)
+        private IList<ApiParameterDescription> GetParameters(ApiParameterContext context)
         {
-            if (parameterDescriptors != null)
+            // First, get parameters from the model-binding/parameter-binding side of the world.
+            if (context.ActionDescriptor.Parameters != null)
             {
-                foreach (var parameter in parameterDescriptors)
+                foreach (var actionParameter in context.ActionDescriptor.Parameters)
                 {
-                    // Process together parameters that appear on the path template and on the
-                    // action descriptor and do not come from the body.
-                    TemplatePart templateParameter = null;
-                    if (parameter.BinderMetadata as IFormatterBinderMetadata == null)
-                    {
-                        templateParameter = templateParameters
-                            .FirstOrDefault(p => p.Name.Equals(parameter.Name, StringComparison.OrdinalIgnoreCase));
+                    var visitor = new PseudoModelBindingVisitor(context, actionParameter);
+                    visitor.WalkParameter();
+                }
+            }
 
-                        if (templateParameter != null)
+            for (var i = context.Results.Count - 1; i >= 0; i--)
+            {
+                // Remove any 'hidden' parameters. These are things that can't come from user input,
+                // so they aren't worth showing.
+                if (context.Results[i].Source == ApiParameterSource.Hidden)
+                {
+                    context.Results.RemoveAt(i);
+                }
+            }
+
+            // Next, we want to join up any route parameters with those discovered from the action's parameters.
+            var routeParameters = new Dictionary<string, ApiParameterRouteInfo>(StringComparer.OrdinalIgnoreCase);
+            foreach (var routeParameter in context.RouteParameters)
+            {
+                routeParameters.Add(routeParameter.Name, CreateRouteInfo(routeParameter));
+            }
+
+            foreach (var parameter in context.Results)
+            {
+                if (parameter.Source == ApiParameterSource.Path ||
+                    parameter.Source == ApiParameterSource.ModelBinding ||
+                    parameter.Source == ApiParameterSource.Custom)
+                {
+                    ApiParameterRouteInfo routeInfo;
+                    if (routeParameters.TryGetValue(parameter.Name, out routeInfo))
+                    {
+                        parameter.RouteInfo = routeInfo;
+                        routeParameters.Remove(parameter.Name);
+
+                        if (parameter.Source == ApiParameterSource.ModelBinding &&
+                            !parameter.RouteInfo.IsOptional)
                         {
-                            templateParameters.Remove(templateParameter);
+                            // If we didn't see any information about the parameter, but we have
+                            // a route parameter that matches, let's switch it to path.
+                            parameter.Source = ApiParameterSource.Path;
                         }
                     }
-
-                    apiDescription.ParameterDescriptions.Add(GetParameter(parameter, templateParameter));
                 }
             }
 
-            if (templateParameters.Count > 0)
+            // Lastly, create a parameter representation for each route parameter that did not find
+            // a partner.
+            foreach (var routeParameter in routeParameters)
             {
-                // Process parameters that only appear on the path template if any.
-                foreach (var templateParameter in templateParameters)
+                context.Results.Add(new ApiParameterDescription()
                 {
-                    var parameterDescription =
-                        GetParameter(parameterDescriptor: null, templateParameter: templateParameter);
-                    apiDescription.ParameterDescriptions.Add(parameterDescription);
+                    Name = routeParameter.Key,
+                    RouteInfo = routeParameter.Value,
+                    Source = ApiParameterSource.Path,
+                });
+            }
+
+            return context.Results;
+        }
+
+        private ApiParameterRouteInfo CreateRouteInfo(TemplatePart routeParameter)
+        {
+            var constraints = new List<IRouteConstraint>();
+            if (routeParameter.InlineConstraints != null)
+            {
+                foreach (var constraint in routeParameter.InlineConstraints)
+                {
+                    constraints.Add(_constraintResolver.ResolveConstraint(constraint.Constraint));
                 }
             }
+
+            return new ApiParameterRouteInfo()
+            {
+                Constraints = constraints,
+                DefaultValue = routeParameter.DefaultValue,
+                IsOptional = routeParameter.IsOptional || routeParameter.DefaultValue != null,
+            };
         }
 
         private IEnumerable<string> GetHttpMethods(ControllerActionDescriptor action)
@@ -214,117 +261,6 @@ namespace Microsoft.AspNet.Mvc.Description
             }
 
             return string.Join("/", segments);
-        }
-
-        private ApiParameterDescription GetParameter(
-            ParameterDescriptor parameterDescriptor,
-            TemplatePart templateParameter)
-        {
-            // This is a placeholder based on currently available functionality for parameters. See #886.
-            ApiParameterDescription parameterDescription = null;
-
-            if (templateParameter != null && parameterDescriptor == null)
-            {
-                // The parameter is part of the route template but not part of the ActionDescriptor.
-
-                // For now if a parameter is part of the template we will asume its value comes from the path.
-                // We will be more accurate when we implement #886.
-                parameterDescription = CreateParameterFromTemplate(templateParameter);
-            }
-            else if (templateParameter != null && parameterDescriptor != null)
-            {
-                // The parameter is part of the route template and part of the ActionDescriptor.
-                parameterDescription = CreateParameterFromTemplateAndParameterDescriptor(
-                    templateParameter,
-                    parameterDescriptor);
-            }
-            else if (templateParameter == null && parameterDescriptor != null)
-            {
-                // The parameter is part of the ActionDescriptor but is not part of the route template.
-                parameterDescription = CreateParameterFromParameterDescriptor(parameterDescriptor);
-            }
-            else
-            {
-                // We will never call this method with templateParameter == null && parameterDescriptor == null
-                Debug.Assert(parameterDescriptor != null);
-            }
-
-            if (parameterDescription.Type != null)
-            {
-                parameterDescription.ModelMetadata = _modelMetadataProvider.GetMetadataForType(
-                    modelAccessor: null,
-                    modelType: parameterDescription.Type);
-            }
-
-            return parameterDescription;
-        }
-
-        private static ApiParameterDescription CreateParameterFromParameterDescriptor(ParameterDescriptor parameter)
-        {
-            var resourceParameter = new ApiParameterDescription
-            {
-                Name = parameter.Name,
-                ParameterDescriptor = parameter,
-                Type = parameter.ParameterType,
-            };
-
-            if (parameter.BinderMetadata as IFormatterBinderMetadata != null)
-            {
-                resourceParameter.Source = ApiParameterSource.Body;
-            }
-            else
-            {
-                resourceParameter.Source = ApiParameterSource.Query;
-            }
-
-            return resourceParameter;
-        }
-
-        private ApiParameterDescription CreateParameterFromTemplateAndParameterDescriptor(
-            TemplatePart templateParameter,
-            ParameterDescriptor parameter)
-        {
-            var resourceParameter = new ApiParameterDescription
-            {
-                Source = ApiParameterSource.Path,
-                IsOptional = IsOptionalParameter(templateParameter),
-                Name = parameter.Name,
-                ParameterDescriptor = parameter,
-                Constraints = GetConstraints(_constraintResolver, templateParameter.InlineConstraints),
-                DefaultValue = templateParameter.DefaultValue,
-                Type = parameter.ParameterType,
-            };
-
-            return resourceParameter;
-        }
-
-        private static IEnumerable<IRouteConstraint> GetConstraints(
-            IInlineConstraintResolver constraintResolver,
-            IEnumerable<InlineConstraint> constraints)
-        {
-            return
-                constraints
-                .Select(c => constraintResolver.ResolveConstraint(c.Constraint))
-                .Where(c => c != null)
-                .ToArray();
-        }
-
-        private static bool IsOptionalParameter(TemplatePart templateParameter)
-        {
-            return templateParameter.IsOptional || templateParameter.DefaultValue != null;
-        }
-
-        private ApiParameterDescription CreateParameterFromTemplate(TemplatePart templateParameter)
-        {
-            return new ApiParameterDescription
-            {
-                Source = ApiParameterSource.Path,
-                IsOptional = IsOptionalParameter(templateParameter),
-                Name = templateParameter.Name,
-                ParameterDescriptor = null,
-                Constraints = GetConstraints(_constraintResolver, templateParameter.InlineConstraints),
-                DefaultValue = templateParameter.DefaultValue,
-            };
         }
 
         private IReadOnlyList<ApiResponseFormat> GetResponseFormats(
@@ -442,13 +378,341 @@ namespace Microsoft.AspNet.Mvc.Description
             }
 
             // This technique for enumerating filters will intentionally ignore any filter that is an IFilterFactory
-            // for a filter that implements IApiResponseMetadataProvider.
+            // while searching for a filter that implements IApiResponseMetadataProvider.
             //
             // The workaround for that is to implement the metadata interface on the IFilterFactory.
             return action.FilterDescriptors
                 .Select(fd => fd.Filter)
                 .OfType<IApiResponseMetadataProvider>()
                 .ToArray();
+        }
+
+        private class ApiParameterContext
+        {
+            public ApiParameterContext(
+                IModelMetadataProvider metadataProvider,
+                ControllerActionDescriptor actionDescriptor,
+                IReadOnlyList<TemplatePart> routeParameters)
+            {
+                MetadataProvider = metadataProvider;
+                ActionDescriptor = actionDescriptor;
+                RouteParameters = routeParameters;
+
+                Results = new List<ApiParameterDescription>();
+            }
+
+            public ControllerActionDescriptor ActionDescriptor { get; }
+
+            public IModelMetadataProvider MetadataProvider { get; }
+
+            public IList<ApiParameterDescription> Results { get; }
+
+            public IReadOnlyList<TemplatePart> RouteParameters { get; }
+        }
+
+        private class PseudoModelBindingVisitor
+        {
+            public PseudoModelBindingVisitor(ApiParameterContext context, ParameterDescriptor parameter)
+            {
+                Context = context;
+                Parameter = parameter;
+
+                Visited = new HashSet<PropertyKey>();
+            }
+
+            public ApiParameterContext Context { get; }
+
+            public ParameterDescriptor Parameter { get; }
+
+            // Avoid infinite recursion by tracking properties. 
+            private HashSet<PropertyKey> Visited { get; }
+
+            public void WalkParameter()
+            {
+                var modelMetadata = Context.MetadataProvider.GetMetadataForParameter(
+                    modelAccessor: null,
+                    methodInfo: Context.ActionDescriptor.MethodInfo,
+                    parameterName: Parameter.Name);
+
+                var binderMetadata = Parameter.BinderMetadata;
+                if (binderMetadata != null)
+                {
+                    modelMetadata.BinderMetadata = binderMetadata;
+                }
+
+                var nameProvider = binderMetadata as IModelNameProvider;
+                if (nameProvider != null && nameProvider.Name != null)
+                {
+                    modelMetadata.BinderModelName = nameProvider.Name;
+                }
+
+                // Attempt to find a binding source for the parameter
+                //
+                // The default is ModelBinding (aka all default value providers)
+                var source = ApiParameterSource.ModelBinding;
+                if (!Visit(modelMetadata, source, containerName: string.Empty))
+                {
+                    // If we get here, then it means we didn't find a match for any of the model. This means that it's
+                    // likely 'model-bound' in the traditional MVC sense (formdata + query string + route data) and
+                    // doesn't use any IBinderMetadata.
+                    // 
+                    // Add a single 'default' parameter description for the model.
+                    Context.Results.Add(CreateResult(modelMetadata, source, containerName: string.Empty));
+                }
+            }
+
+            /// <summary>
+            /// Visits a node in a model, and attempts to create <see cref="ApiParameterDescription"/> for any
+            /// model properties where we can definitely compute an answer. 
+            /// </summary>
+            /// <param name="modelMetadata">The metadata for the model.</param>
+            /// <param name="ambientSource">The <see cref="ApiParameterSource"/> from the ambient context.</param>
+            /// <param name="containerName">The current name prefix (to prepend to property names).</param>
+            /// <returns>
+            /// <c>true</c> if the set of <see cref="ApiParameterDescription"/> objects were created for the model.
+            /// <c>false</c> if no <see cref="ApiParameterDescription"/> objects were created for the model.
+            /// </returns>
+            /// <remarks>
+            /// Its the reponsibility of this method to create a parameter description for ALL of the current model
+            /// or NONE of it. If a parameter description is created for ANY sub-properties of the model, then a parameter
+            /// description will be created for ALL of them.
+            /// </remarks>
+            private bool Visit(ModelMetadata modelMetadata, ApiParameterSource ambientSource, string containerName)
+            {
+                ApiParameterSource source;
+                if (GetSource(modelMetadata, out source))
+                {
+                    // We have a definite answer for this model. This is a greedy source like
+                    // [FromBody] so there's no need to consider properties.
+                    Context.Results.Add(CreateResult(modelMetadata, source, containerName));
+
+                    return true;
+                }
+
+                // For any property which is a leaf node, we don't want to keep traversing:
+                //
+                //  1)  Collections - while it's possible to have binder attributes on the inside of a collection,
+                //      it hardly seems useful, and would result in some very wierd binding.
+                //
+                //  2)  Simple Types - These are generally part of the .net framework - primitives, or types which have a
+                //      type converter from string.
+                //
+                //  3)  Types with no properties. Obviously nothing to explore there.
+                //
+                if (modelMetadata.IsCollectionType ||
+                    !modelMetadata.IsComplexType ||
+                    !modelMetadata.Properties.Any())
+                {
+                    if (source == null || source == ambientSource)
+                    {
+                        // If it's a leaf node, and we have no new source then we don't know how to bind this.
+                        // Return without creating any parameters, so that this can be included in the parent model.
+                        return false;
+                    }
+                    else
+                    {
+                        // We found a new source, and this model has no properties. This is probabaly
+                        // a simple type with an attribute like [FromQuery].
+                        Context.Results.Add(CreateResult(modelMetadata, source, containerName));
+                        return true;
+                    }
+                }
+
+                // This will come from composite model binding - so investigate what's going on with each property.
+                // 
+                // Basically once we find something that we know how to bind, we want to treat all properties at that
+                // level (and higher levels) as separate parameters. 
+                //
+                // Ex:
+                //
+                //      public IActionResult PlaceOrder(OrderDTO order) {...}
+                //
+                //      public class OrderDTO
+                //      {
+                //          public int AccountId { get; set; }
+                //          
+                //          [FromBody]
+                //          public Order { get; set; }
+                //      }
+                //
+                // This should result in two parameters:
+                //
+                //  AccountId - source: Any
+                //  Order - source: Body
+                //
+
+                var propertyCount = 0;
+                var unboundProperties = new HashSet<ModelMetadata>();
+
+                // We don't want to append the **parameter** name when building a model name.
+                var newContainerName = containerName;
+                if (modelMetadata.ContainerType != null)
+                {
+                    newContainerName = GetName(containerName, modelMetadata);
+                }
+
+                foreach (var propertyMetadata in modelMetadata.Properties)
+                {
+                    propertyCount++;
+                    var key = new PropertyKey(propertyMetadata, source);
+
+                    if (Visited.Add(key))
+                    {
+                        if (!Visit(propertyMetadata, source ?? ambientSource, newContainerName))
+                        {
+                            unboundProperties.Add(propertyMetadata);
+                        }
+                    }
+                    else
+                    {
+                        unboundProperties.Add(propertyMetadata);
+                    }
+                }
+
+                if (unboundProperties.Count == propertyCount)
+                {
+                    if (source == null || source == ambientSource)
+                    {
+                        // No properties were bound and we didn't find a new source, let the caller handle it.
+                        return false;
+                    }
+                    else
+                    {
+                        // We found a new source, and didn't create a result for any of the properties yet,
+                        // so create a result for the current object.
+                        Context.Results.Add(CreateResult(modelMetadata, source, containerName));
+                        return true;
+                    }
+                }
+                else
+                {
+                    // This model was only partially bound, so create a result for all the other properties
+                    foreach (var property in unboundProperties)
+                    {
+                        // Create a 'default' description for each property
+                        Context.Results.Add(CreateResult(property, source ?? ambientSource, newContainerName));
+                    }
+
+                    return true;
+                }
+            }
+
+            private ApiParameterDescription CreateResult(
+                ModelMetadata metadata,
+                ApiParameterSource source,
+                string containerName)
+            {
+                return new ApiParameterDescription()
+                {
+                    ModelMetadata = metadata,
+                    Name = GetName(containerName, metadata),
+                    Source = source,
+                    Type = metadata.ModelType,
+                };
+            }
+
+            private static string GetName(string containerName, ModelMetadata metadata)
+            {
+                if (!string.IsNullOrEmpty(metadata.BinderModelName))
+                {
+                    // Name was explicitly provided
+                    return metadata.BinderModelName;
+                }
+                else
+                {
+                    return ModelBindingHelper.CreatePropertyModelName(containerName, metadata.PropertyName);
+                }
+            }
+
+            // This isn't extensible right now.
+            //
+            // Returns true if the source is greedy (means to stop exploring the model)
+            // Returns false if the source in unknown or known but not greedy (like [FromQuery])
+            private static bool GetSource(ModelMetadata metadata, out ApiParameterSource source)
+            {
+                if (metadata.BinderMetadata == null)
+                {
+                    // There's nothing we can figure out.
+                    source = null;
+                    return false;
+                }
+
+                if (metadata.BinderMetadata is IFormatterBinderMetadata)
+                {
+                    source = ApiParameterSource.Body;
+                    return true;
+                }
+                else if (metadata.BinderMetadata is IHeaderBinderMetadata)
+                {
+                    source = ApiParameterSource.Header;
+                    return true;
+                }
+                else if (metadata.BinderMetadata is IServiceActivatorBinderMetadata)
+                {
+                    source = ApiParameterSource.Hidden;
+                    return true;
+                }
+                else if (metadata.BinderMetadata is IRouteDataValueProviderMetadata)
+                {
+                    source = ApiParameterSource.Path;
+                    return false;
+                }
+                else if (metadata.BinderMetadata is IQueryValueProviderMetadata)
+                {
+                    source = ApiParameterSource.Query;
+                    return false;
+                }
+                else if (metadata.BinderMetadata is IFormDataValueProviderMetadata)
+                {
+                    source = ApiParameterSource.Form;
+                    return false;
+                }
+
+                var binderTypeMetadata = metadata.BinderMetadata as IBinderTypeProviderMetadata;
+                if (binderTypeMetadata != null && binderTypeMetadata.BinderType != null)
+                {
+                    // This provides it's own model binder, so we can't really make a good
+                    // estimate of where it comes from.
+                    source = ApiParameterSource.Custom;
+                    return true;
+                }
+
+                // We're out of cases we know how to handle.
+                source = null;
+                return false;
+            }
+
+            private struct PropertyKey
+            {
+                public readonly Type ContainerType;
+
+                public readonly string PropertyName;
+
+                public readonly ApiParameterSource Source;
+
+                public PropertyKey(ModelMetadata metadata, ApiParameterSource source)
+                {
+                    ContainerType = metadata.ContainerType;
+                    PropertyName = metadata.PropertyName;
+                    Source = source;
+                }
+            }
+
+            private class PropertyKeyEqualityComparer : IEqualityComparer<PropertyKey>
+            {
+                public bool Equals(PropertyKey x, PropertyKey y)
+                {
+                    return
+                        x.ContainerType == y.ContainerType &&
+                        x.PropertyName == y.PropertyName &&
+                        x.Source == y.Source;
+                }
+
+                public int GetHashCode(PropertyKey obj)
+                {
+                    return obj.ContainerType.GetHashCode() ^ obj.PropertyName.GetHashCode() ^ obj.Source.GetHashCode();
+                }
+            }
         }
     }
 }
