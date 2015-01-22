@@ -184,5 +184,38 @@ namespace Microsoft.AspNet.Razor.Parser
             Initialize(Span);
             NextToken();
         }
+
+        private bool IsBangEscape(int lookahead)
+        {
+            var potentialBang = Lookahead(lookahead);
+
+            if (potentialBang != null &&
+                potentialBang.Type == HtmlSymbolType.Bang)
+            {
+                var afterBang = Lookahead(lookahead + 1);
+
+                return afterBang != null &&
+                    afterBang.Type == HtmlSymbolType.Text &&
+                    !string.Equals(afterBang.Content, "DOCTYPE", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        private void OptionalBangEscape()
+        {
+            if (IsBangEscape(lookahead: 0))
+            {
+                Output(SpanKind.Markup);
+
+                // Accept the parser escape character '!'.
+                Assert(HtmlSymbolType.Bang);
+                AcceptAndMoveNext();
+
+                // Setup the metacode span that we will be outputing.
+                Span.CodeGenerator = SpanCodeGenerator.Null;
+                Output(SpanKind.MetaCode, AcceptedCharacters.None);
+            }
+        }
     }
 }

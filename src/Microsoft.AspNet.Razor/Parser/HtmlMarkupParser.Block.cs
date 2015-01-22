@@ -133,7 +133,9 @@ namespace Microsoft.AspNet.Razor.Parser
                 IDisposable tagBlockWrapper = null;
                 try
                 {
-                    if (!EndOfFile && !AtSpecialTag)
+                    var atSpecialTag = AtSpecialTag;
+
+                    if (!EndOfFile && !atSpecialTag)
                     {
                         // Start a Block tag.  This is used to wrap things like <p> or <a class="btn"> etc.
                         tagBlockWrapper = Context.StartBlock(BlockType.Tag);
@@ -157,7 +159,7 @@ namespace Microsoft.AspNet.Razor.Parser
                         }
                         else
                         {
-                            complete = AfterTagStart(tagStart, tags, tagBlockWrapper);
+                            complete = AfterTagStart(tagStart, tags, atSpecialTag, tagBlockWrapper);
                         }
                     }
 
@@ -187,6 +189,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private bool AfterTagStart(SourceLocation tagStart,
                                    Stack<Tuple<HtmlSymbol, SourceLocation>> tags,
+                                   bool atSpecialTag,
                                    IDisposable tagBlockWrapper)
         {
             if (!EndOfFile)
@@ -197,9 +200,16 @@ namespace Microsoft.AspNet.Razor.Parser
                         // End Tag
                         return EndTag(tagStart, tags, tagBlockWrapper);
                     case HtmlSymbolType.Bang:
-                        // Comment
-                        Accept(_bufferedOpenAngle);
-                        return BangTag();
+                        // Comment, CDATA, DOCTYPE, or a parser-escaped HTML tag.
+                        if (atSpecialTag)
+                        {
+                            Accept(_bufferedOpenAngle);
+                            return BangTag();
+                        }
+                        else
+                        {
+                            goto default;
+                        }
                     case HtmlSymbolType.QuestionMark:
                         // XML PI
                         Accept(_bufferedOpenAngle);
@@ -275,30 +285,48 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             // Accept "/" and move next
             Assert(HtmlSymbolType.ForwardSlash);
-            var solidus = CurrentSymbol;
+            var forwardSlash = CurrentSymbol;
             if (!NextToken())
             {
                 Accept(_bufferedOpenAngle);
-                Accept(solidus);
+                Accept(forwardSlash);
                 return false;
             }
             else
             {
-                var tagName = String.Empty;
-                if (At(HtmlSymbolType.Text))
+                var tagName = string.Empty;
+                HtmlSymbol bangSymbol = null;
+
+                if (At(HtmlSymbolType.Bang))
+                {
+                    bangSymbol = CurrentSymbol;
+
+                    var nextSymbol = Lookahead(count: 1);
+
+                    if (nextSymbol != null && nextSymbol.Type == HtmlSymbolType.Text)
+                    {
+                        tagName = "!" + nextSymbol.Content;
+                    }
+                }
+                else if (At(HtmlSymbolType.Text))
                 {
                     tagName = CurrentSymbol.Content;
                 }
+
                 var matched = RemoveTag(tags, tagName, tagStart);
 
                 if (tags.Count == 0 &&
-                    String.Equals(tagName, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase) &&
+                    // Note tagName may contain a '!' escape character. This ensures </!text> doesn't match here. 
+                    // </!text> tags are treated like any other escaped HTML end tag.
+                    string.Equals(tagName, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase) &&
                     matched)
                 {
-                    return EndTextTag(solidus, tagBlockWrapper);
+                    return EndTextTag(forwardSlash, tagBlockWrapper);
                 }
                 Accept(_bufferedOpenAngle);
-                Accept(solidus);
+                Accept(forwardSlash);
+
+                OptionalBangEscape();
 
                 AcceptUntil(HtmlSymbolType.CloseAngle);
 
@@ -347,14 +375,22 @@ namespace Microsoft.AspNet.Razor.Parser
             return seenCloseAngle;
         }
 
-        // Special tags include <! and <? tags
+        // Special tags include <!--, <!DOCTYPE, <![CDATA and <? tags
         private bool AtSpecialTag
         {
             get
             {
-                return (At(HtmlSymbolType.OpenAngle) &&
-                       (NextIs(HtmlSymbolType.Bang) ||
-                        NextIs(HtmlSymbolType.QuestionMark)));
+                if (At(HtmlSymbolType.OpenAngle))
+                {
+                    if (NextIs(HtmlSymbolType.Bang))
+                    {
+                        return !IsBangEscape(lookahead: 1);
+                    }
+
+                    return NextIs(HtmlSymbolType.QuestionMark);
+                }
+
+                return false;
             }
         }
 
@@ -651,20 +687,41 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private bool StartTag(Stack<Tuple<HtmlSymbol, SourceLocation>> tags, IDisposable tagBlockWrapper)
         {
-            // If we're at text, it's the name, otherwise the name is ""
-            HtmlSymbol tagName;
-            if (At(HtmlSymbolType.Text))
+            HtmlSymbol bangSymbol = null;
+            HtmlSymbol potentialTagNameSymbol;
+
+            if (At(HtmlSymbolType.Bang))
             {
-                tagName = CurrentSymbol;
+                bangSymbol = CurrentSymbol;
+
+                potentialTagNameSymbol = Lookahead(count: 1);
             }
             else
             {
-                tagName = new HtmlSymbol(CurrentLocation, String.Empty, HtmlSymbolType.Unknown);
+                potentialTagNameSymbol = CurrentSymbol;
+            }
+
+            HtmlSymbol tagName;
+
+            if (potentialTagNameSymbol == null || potentialTagNameSymbol.Type != HtmlSymbolType.Text)
+            {
+                tagName = new HtmlSymbol(potentialTagNameSymbol.Start, string.Empty, HtmlSymbolType.Unknown);
+            }
+            else if (bangSymbol != null)
+            {
+                tagName = new HtmlSymbol(bangSymbol.Start, "!" + potentialTagNameSymbol.Content, HtmlSymbolType.Text);
+            }
+            else
+            {
+                tagName = potentialTagNameSymbol;
             }
 
             Tuple<HtmlSymbol, SourceLocation> tag = Tuple.Create(tagName, _lastTagStart);
 
-            if (tags.Count == 0 && String.Equals(tag.Item1.Content, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase))
+            if (tags.Count == 0 &&
+                // Note tagName may contain a '!' escape character. This ensures <!text> doesn't match here. 
+                // <!text> tags are treated like any other escaped HTML start tag.
+                string.Equals(tag.Item1.Content, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase))
             {
                 Output(SpanKind.Markup);
                 Span.CodeGenerator = SpanCodeGenerator.Null;
@@ -709,7 +766,9 @@ namespace Microsoft.AspNet.Razor.Parser
 
                 return true;
             }
+
             Accept(_bufferedOpenAngle);
+            OptionalBangEscape();
             Optional(HtmlSymbolType.Text);
             return RestOfTag(tag, tags, tagBlockWrapper);
         }
