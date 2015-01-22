@@ -59,7 +59,7 @@ $scriptPath = $myInvocation.MyCommand.Definition
 
 function DotNetSdk-Help {
 @"
-.NET SDK Manager - Build 10304
+.NET SDK Manager - Build 10305
 
 USAGE: dotnetsdk <command> [options]
 

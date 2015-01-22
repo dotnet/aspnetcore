@@ -155,7 +155,7 @@ dotnetsdk()
     case $1 in
         "help" )
             echo ""
-            echo ".NET SDK Manager - Build 10304"
+            echo ".NET SDK Manager - Build 10305"
             echo ""
             echo "USAGE: dotnetsdk <command> [options]"
             echo ""
