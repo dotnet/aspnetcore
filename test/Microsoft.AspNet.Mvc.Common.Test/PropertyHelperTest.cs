@@ -16,10 +16,10 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var anonymous = new { foo = "bar" };
-            PropertyInfo property = anonymous.GetType().GetProperties().First();
+            var property = PropertyHelper.GetProperties(anonymous.GetType()).First().Property;
 
             // Act
-            PropertyHelper helper = new PropertyHelper(property);
+            var helper = new PropertyHelper(property);
 
             // Assert
             Assert.Equal("foo", property.Name);
@@ -31,10 +31,10 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var anonymous = new { bar = "baz" };
-            PropertyInfo property = anonymous.GetType().GetProperties().First();
+            var property = PropertyHelper.GetProperties(anonymous.GetType()).First().Property;
 
             // Act
-            PropertyHelper helper = new PropertyHelper(property);
+            var helper = new PropertyHelper(property);
 
             // Assert
             Assert.Equal("bar", helper.Name);
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var anonymous = new { foo = 32 };
-            var property = anonymous.GetType().GetProperties().First();
+            var property = PropertyHelper.GetProperties(anonymous.GetType()).First().Property;
 
             // Act
             var helper = new PropertyHelper(property);

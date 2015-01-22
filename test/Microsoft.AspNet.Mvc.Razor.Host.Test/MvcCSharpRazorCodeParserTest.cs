@@ -273,6 +273,50 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Theory]
+        [InlineData("IMyService Service;", "IMyService", "Service")]
+        [InlineData("IMyService Service;;", "IMyService", "Service")]
+        [InlineData("  Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper;  ",
+                    "Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
+        [InlineData("  Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper;  ;  ",
+                    "Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
+        [InlineData("    TestService    @class; ; ", "TestService", "@class")]
+        [InlineData("IMyService Service  ;", "IMyService", "Service")]
+        [InlineData("IMyService Service  ;  ;", "IMyService", "Service")]
+        [InlineData("  Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper  ;  ",
+                    "Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
+        [InlineData("  Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper  ;  ;  ",
+                    "Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
+        [InlineData("    TestService    @class  ; ", "TestService", "@class")]
+        [InlineData("    TestService    @class  ; ; ", "TestService", "@class")]
+        public void ParseInjectKeyword_AllowsOptionalTrailingSemicolon(
+            string injectStatement,
+            string expectedService,
+            string expectedPropertyName)
+        {
+            // Arrange
+            var documentContent = "@inject " + injectStatement;
+            var factory = SpanFactory.CreateCsHtml();
+            var errors = new List<RazorError>();
+            var expectedSpans = new Span[]
+            {
+                factory.EmptyHtml(),
+                factory.CodeTransition(SyntaxConstants.TransitionString)
+                    .Accepts(AcceptedCharacters.None),
+                factory.MetaCode("inject ")
+                    .Accepts(AcceptedCharacters.None),
+                factory.Code(injectStatement)
+                    .As(new InjectParameterGenerator(expectedService, expectedPropertyName))
+            };
+
+            // Act
+            var spans = ParseDocument(documentContent, errors);
+
+            // Assert
+            Assert.Equal(expectedSpans, spans);
+            Assert.Empty(errors);
+        }
+
+        [Theory]
         [InlineData("IMyService              Service                ", "IMyService", "Service")]
         [InlineData("           TestService    @namespace  ", "TestService", "@namespace")]
         public void ParseInjectKeyword_ParsesUpToNewLine(string injectStatement,
