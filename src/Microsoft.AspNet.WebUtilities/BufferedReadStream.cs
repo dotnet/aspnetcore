@@ -11,8 +11,8 @@ namespace Microsoft.AspNet.WebUtilities
 {
     internal class BufferedReadStream : Stream
     {
-        private const char CR = '\r';
-        private const char LF = '\n';
+        private const byte CR = (byte)'\r';
+        private const byte LF = (byte)'\n';
 
         private readonly Stream _inner;
         private readonly byte[] _buffer;
@@ -310,8 +310,9 @@ namespace Microsoft.AspNet.WebUtilities
         public string ReadLine(int lengthLimit)
         {
             CheckDisposed();
-            StringBuilder builder = new StringBuilder();
+            var builder = new MemoryStream(200);
             bool foundCR = false, foundCRLF = false;
+
             while (!foundCRLF && EnsureBuffered())
             {
                 if (builder.Length > lengthLimit)
@@ -321,19 +322,15 @@ namespace Microsoft.AspNet.WebUtilities
                 ProcessLineChar(builder, ref foundCR, ref foundCRLF);
             }
 
-            if (foundCRLF)
-            {
-                return builder.ToString(0, builder.Length - 2); // Drop the CRLF
-            }
-            // Stream ended with no CRLF.
-            return builder.ToString();
+            return DecodeLine(builder, foundCRLF);
         }
 
         public async Task<string> ReadLineAsync(int lengthLimit, CancellationToken cancellationToken)
         {
             CheckDisposed();
-            StringBuilder builder = new StringBuilder();
+            var builder = new MemoryStream(200);
             bool foundCR = false, foundCRLF = false;
+
             while (!foundCRLF && await EnsureBufferedAsync(cancellationToken))
             {
                 if (builder.Length > lengthLimit)
@@ -344,25 +341,20 @@ namespace Microsoft.AspNet.WebUtilities
                 ProcessLineChar(builder, ref foundCR, ref foundCRLF);
             }
 
-            if (foundCRLF)
-            {
-                return builder.ToString(0, builder.Length - 2); // Drop the CRLF
-            }
-            // Stream ended with no CRLF.
-            return builder.ToString();
+            return DecodeLine(builder, foundCRLF);
         }
 
-        private void ProcessLineChar(StringBuilder builder, ref bool foundCR, ref bool foundCRLF)
+        private void ProcessLineChar(MemoryStream builder, ref bool foundCR, ref bool foundCRLF)
         {
-            char ch = (char)_buffer[_bufferOffset]; // TODO: Encoding enforcement
-            builder.Append(ch);
+            var b = _buffer[_bufferOffset];
+            builder.WriteByte(b);
             _bufferOffset++;
             _bufferCount--;
-            if (ch == CR)
+            if (b == CR)
             {
                 foundCR = true;
             }
-            else if (ch == LF)
+            else if (b == LF)
             {
                 if (foundCR)
                 {
@@ -373,6 +365,13 @@ namespace Microsoft.AspNet.WebUtilities
                     foundCR = false;
                 }
             }
+        }
+
+        private string DecodeLine(MemoryStream builder, bool foundCRLF)
+        {
+            // Drop the final CRLF, if any
+            var length = foundCRLF ? builder.Length - 2 : builder.Length;
+            return Encoding.UTF8.GetString(builder.ToArray(), 0, (int)length);
         }
 
         private void CheckDisposed()
