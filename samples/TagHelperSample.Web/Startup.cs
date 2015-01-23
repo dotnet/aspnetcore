@@ -4,6 +4,7 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.DependencyInjection;
+using TagHelperSample.Web.Services;
 
 namespace TagHelperSample.Web
 {
@@ -18,6 +19,7 @@ namespace TagHelperSample.Web
                 // Setup services with a test AssemblyProvider so that only the sample's assemblies are loaded. This
                 // prevents loading controllers from other assemblies when the sample is used in functional tests.
                 services.AddTransient<IAssemblyProvider, TestAssemblyProvider<Startup>>();
+                services.AddSingleton<MoviesService>();
 
                 services.Configure<MvcOptions>(options =>
                 {

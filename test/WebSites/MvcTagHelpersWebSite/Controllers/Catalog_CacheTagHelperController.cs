@@ -8,6 +8,9 @@ namespace MvcTagHelpersWebSite.Controllers
 {
     public class Catalog_CacheTagHelperController : Controller
     {
+        [Activate]
+        public ProductsService ProductsService { get; set; }
+
         [HttpGet("/catalog")]
         public ViewResult Splash(int categoryId, int correlationId, [FromHeader]string locale)
         {
@@ -60,6 +63,22 @@ namespace MvcTagHelpersWebSite.Controllers
             Context.User = new ClaimsPrincipal(identity);
             ViewData["CorrelationId"] = correlationId;
             return View();
+        }
+
+        [HttpGet("/categories/{category}")]
+        public ViewResult ListCategories(string category, int correlationId)
+        {
+            ViewData["Category"] = category;
+            ViewData["CorrelationId"] = correlationId;
+
+            return View();
+        }
+
+        [HttpPost("/categories/update-products")]
+        public IActionResult UpdateCategories()
+        {
+            ProductsService.UpdateProducts();
+            return new EmptyResult();
         }
     }
 }

@@ -115,10 +115,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string result;
             if (!MemoryCache.TryGetValue(key, out result))
             {
-                result = await context.GetChildContentAsync();
+                // Create an EntryLink and flow it so that it is accessible via the ambient EntryLinkHelpers.ContentLink
+                // for user code.
+                var entryLink = new EntryLink();
+                using (entryLink.FlowContext())
+                {
+                    result = await context.GetChildContentAsync();
+                }
+
                 MemoryCache.Set(key, cacheSetContext =>
                 {
-                    UpdateCacheContext(cacheSetContext);
+                    UpdateCacheContext(cacheSetContext, entryLink);
                     return result;
                 });
             }
@@ -171,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         // Internal for unit testing
-        internal void UpdateCacheContext(ICacheSetContext cacheSetContext)
+        internal void UpdateCacheContext(ICacheSetContext cacheSetContext, EntryLink entryLink)
         {
             if (ExpiresOn != null)
             {
@@ -192,6 +199,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 cacheSetContext.SetPriority(Priority.Value);
             }
+
+            cacheSetContext.AddEntryLink(entryLink);
         }
 
         private static void AddStringCollectionKey(StringBuilder builder,
