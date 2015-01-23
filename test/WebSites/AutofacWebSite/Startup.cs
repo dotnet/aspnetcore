@@ -4,7 +4,6 @@
 using System;
 using Autofac;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Autofac;
 

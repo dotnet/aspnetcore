@@ -22,7 +22,12 @@ namespace RequestServicesWebSite
             // Initializes the RequestId service for each request
             app.UseMiddleware<RequestIdMiddleware>();
 
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
         }
     }
 }
