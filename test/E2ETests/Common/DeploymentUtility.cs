@@ -81,8 +81,8 @@ namespace E2ETests
                 }
                 else
                 {
-                    // Cannot override with environment in case of IIS. Pack and write a Microsoft.AspNet.Hosting.ini file.
-                    startParameters.PackApplicationBeforeStart = true;
+                    // Cannot override with environment in case of IIS. Bundle and write a Microsoft.AspNet.Hosting.ini file.
+                    startParameters.BundleApplicationBeforeStart = true;
                 }
             }
 
@@ -98,13 +98,13 @@ namespace E2ETests
                 startParameters.Dotnet = SwitchPathToDotnetFlavor(startParameters.DotnetFlavor, startParameters.DotnetArchitecture, logger);
 
                 //Reason to do pack here instead of in a common place is use the right Dotnet to do the packing. Previous line switches to use the right Dotnet.
-                if (startParameters.PackApplicationBeforeStart)
+                if (startParameters.BundleApplicationBeforeStart)
                 {
                     if (startParameters.ServerType == ServerType.IISNativeModule ||
                         startParameters.ServerType == ServerType.IIS)
                     {
-                        // Pack to IIS root\application folder.
-                        KpmPack(startParameters, logger, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
+                        // Bundle to IIS root\application folder.
+                        KpmBundle(startParameters, logger, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
 
                         // Drop a Microsoft.AspNet.Hosting.ini with ASPNET_ENV information.
                         logger.WriteInformation("Creating Microsoft.AspNet.Hosting.ini file with ASPNET_ENV.");
@@ -142,7 +142,7 @@ namespace E2ETests
                     }
                     else
                     {
-                        KpmPack(startParameters, logger);
+                        KpmBundle(startParameters, logger);
                     }
                 }
 
@@ -179,28 +179,26 @@ namespace E2ETests
                 throw new Exception("Dotnet not detected on the machine.");
             }
 
-            if (startParameters.PackApplicationBeforeStart)
+            if (startParameters.BundleApplicationBeforeStart)
             {
                 // We use full path to Dotnet to pack.
                 startParameters.Dotnet = new DirectoryInfo(dotnetBin).Parent.FullName;
-                KpmPack(startParameters, logger);
+                KpmBundle(startParameters, logger);
             }
 
-            //Mono does not have a way to pass in a --appbase switch. So it will be an environment variable. 
+            //Mono now supports --appbase 
             Environment.SetEnvironmentVariable("DOTNET_APPBASE", startParameters.ApplicationPath);
-            logger.WriteInformation("Setting the DOTNET_APPBASE to {0}", startParameters.ApplicationPath);
+            logger.WriteInformation("Setting the --appbase to", startParameters.ApplicationPath);
 
-            var monoPath = "mono";
-            var dotnetMonoManaged = Path.Combine(dotnetBin, "dotnet.mono.managed.dll");
-            var applicationHost = Path.Combine(dotnetBin, "Microsoft.Framework.ApplicationHost");
+            var dotnet = "dotnet";
 
             var commandName = startParameters.ServerType == ServerType.Kestrel ? "kestrel" : string.Empty;
-            logger.WriteInformation(string.Format("Executing command: {0} {1} {2} {3}", monoPath, dotnetMonoManaged, applicationHost, commandName));
+            logger.WriteInformation(string.Format("Executing command: {0} {1} {2}", dotnet, startParameters.ApplicationPath, commandName));
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = monoPath,
-                Arguments = string.Format("{0} {1} {2}", dotnetMonoManaged, applicationHost, commandName),
+                FileName = dotnet,
+                Arguments = string.Format("{0} {1}", startParameters.ApplicationPath, commandName),
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardInput = true
@@ -210,8 +208,6 @@ namespace E2ETests
             logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
             Thread.Sleep(25 * 1000);
 
-            //Clear the appbase so that it does not create issues with successive runs
-            Environment.SetEnvironmentVariable("DOTNET_APPBASE", string.Empty);
             return hostProcess;
         }
 
@@ -321,11 +317,11 @@ namespace E2ETests
             return dotnetName;
         }
 
-        private static void KpmPack(StartParameters startParameters, ILogger logger, string packRoot = null)
+        private static void KpmBundle(StartParameters startParameters, ILogger logger, string bundleRoot = null)
         {
-            startParameters.PackedApplicationRootPath = Path.Combine(packRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
+            startParameters.BundledApplicationRootPath = Path.Combine(bundleRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            var parameters = string.Format("pack {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.PackedApplicationRootPath, startParameters.Dotnet);
+            var parameters = string.Format("bundle {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.BundledApplicationRootPath, startParameters.Dotnet);
             logger.WriteInformation("Executing command kpm {0}", parameters);
 
             var startInfo = new ProcessStartInfo
@@ -343,10 +339,10 @@ namespace E2ETests
                 (startParameters.ServerType == ServerType.IISExpress ||
                 startParameters.ServerType == ServerType.IISNativeModule ||
                 startParameters.ServerType == ServerType.IIS) ?
-                Path.Combine(startParameters.PackedApplicationRootPath, "wwwroot") :
-                Path.Combine(startParameters.PackedApplicationRootPath, "approot", "src", "MusicStore");
+                Path.Combine(startParameters.BundledApplicationRootPath, "wwwroot") :
+                Path.Combine(startParameters.BundledApplicationRootPath, "approot", "src", "MusicStore");
 
-            logger.WriteInformation("kpm pack finished with exit code : {0}", hostProcess.ExitCode);
+            logger.WriteInformation("kpm bundle finished with exit code : {0}", hostProcess.ExitCode);
         }
 
         //In case of self-host application activation happens immediately unlike iis where activation happens on first request.
@@ -446,12 +442,12 @@ namespace E2ETests
                 }
             }
 
-            if (startParameters.PackApplicationBeforeStart)
+            if (startParameters.BundleApplicationBeforeStart)
             {
                 try
                 {
-                    //We've originally packed the application in a temp folder. We need to delete it. 
-                    Directory.Delete(startParameters.PackedApplicationRootPath, true);
+                    //We've originally bundled the application in a temp folder. We need to delete it. 
+                    Directory.Delete(startParameters.BundledApplicationRootPath, true);
                 }
                 catch (Exception exception)
                 {

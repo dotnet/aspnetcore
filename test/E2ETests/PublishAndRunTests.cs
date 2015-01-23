@@ -48,7 +48,7 @@ namespace E2ETests
                     ServerType = serverType,
                     DotnetFlavor = dotnetFlavor,
                     DotnetArchitecture = architecture,
-                    PackApplicationBeforeStart = true
+                    BundleApplicationBeforeStart = true
                 };
 
                 var testStartTime = DateTime.Now;
@@ -95,7 +95,7 @@ namespace E2ETests
                     {
                         if (Directory.GetFiles(_startParameters.ApplicationPath, "*.cmd", SearchOption.TopDirectoryOnly).Length > 0)
                         {
-                            throw new Exception("packExclude parameter values are not honored.");
+                            throw new Exception("bundleExclude parameter values are not honored.");
                         }
                     }
 

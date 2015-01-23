@@ -9,7 +9,7 @@
 		"**/*.cs",
 		"../../test/E2ETests/compiler/shared/**/*.cs" // This code is for testing only.
 	],
-	"packExclude": "*.cmd",
+	"bundleExclude": "*.cmd",
 	"webroot": "wwwroot",
 	"dependencies": {
 		"EntityFramework.SqlServer": "7.0.0-*",
