@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Framework.DependencyInjection;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNet.Builder
 {
     public static class RouteBuilderExtensions
     {
