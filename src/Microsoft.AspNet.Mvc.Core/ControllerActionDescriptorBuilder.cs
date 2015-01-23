@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -55,7 +56,7 @@ namespace Microsoft.AspNet.Mvc
                         actionDescriptor.ControllerName = controller.ControllerName;
                         actionDescriptor.ControllerTypeInfo = controller.ControllerType;
 
-                        AddApiExplorerInfo(actionDescriptor, action, controller);
+                        AddApiExplorerInfo(actionDescriptor, application, controller, action);
                         AddRouteConstraints(removalConstraints, actionDescriptor, controller, action);
 
                         if (IsAttributeRoutedAction(actionDescriptor))
@@ -284,18 +285,40 @@ namespace Microsoft.AspNet.Mvc
 
         private static void AddApiExplorerInfo(
             ControllerActionDescriptor actionDescriptor,
-            ActionModel action,
-            ControllerModel controller)
+            ApplicationModel application,
+            ControllerModel controller,
+            ActionModel action)
         {
-            var apiExplorerIsVisible = action.ApiExplorer?.IsVisible ?? controller.ApiExplorer?.IsVisible ?? false;
-            if (apiExplorerIsVisible)
+            
+            var isVisible = 
+                action.ApiExplorer?.IsVisible ?? 
+                controller.ApiExplorer?.IsVisible ?? 
+                application.ApiExplorer?.IsVisible ??
+                false;
+
+            var isVisibleSetOnActionOrController = 
+                action.ApiExplorer?.IsVisible ?? 
+                controller.ApiExplorer?.IsVisible ?? 
+                false;
+
+            // ApiExplorer isn't supported on conventional-routed actions, but we still allow you to configure
+            // it at the application level when you have a mix of controller types. We'll just skip over enabling
+            // ApiExplorer for conventional-routed controllers when this happens.
+            var isVisibleSetOnApplication = application.ApiExplorer?.IsVisible ?? false;
+
+            if (isVisibleSetOnActionOrController && !IsAttributeRoutedAction(actionDescriptor))
             {
-                if (!IsAttributeRoutedAction(actionDescriptor))
-                {
-                    // ApiExplorer is only supported on attribute routed actions.
-                    throw new InvalidOperationException(Resources.FormatApiExplorer_UnsupportedAction(
-                        actionDescriptor.DisplayName));
-                }
+                // ApiExplorer is only supported on attribute routed actions.
+                throw new InvalidOperationException(Resources.FormatApiExplorer_UnsupportedAction(
+                    actionDescriptor.DisplayName));
+            }
+            else if (isVisibleSetOnApplication && !IsAttributeRoutedAction(actionDescriptor))
+            {
+                // This is the case where we're going to be lenient, just ignore it.
+            }
+            else if (isVisible)
+            {
+                Debug.Assert(IsAttributeRoutedAction(actionDescriptor));
 
                 var apiExplorerActionData = new ApiDescriptionActionData()
                 {

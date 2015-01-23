@@ -1092,6 +1092,38 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("Store", action.GetProperty<ApiDescriptionActionData>().GroupName);
         }
 
+        [Fact]
+        public void ApiExplorer_IsVisibleOnApplication_CanOverrideOnController()
+        {
+            // Arrange
+            var convention = new ApiExplorerIsVisibleConvention(isVisible: true);
+            var provider = GetProvider(typeof(ApiExplorerExplicitlyNotVisibleController).GetTypeInfo(), convention);
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            var action = Assert.Single(actions);
+            Assert.Null(action.GetProperty<ApiDescriptionActionData>());
+        }
+
+        [Fact]
+        public void ApiExplorer_IsVisibleOnApplication_CanOverrideOnAction()
+        {
+            // Arrange
+            var convention = new ApiExplorerIsVisibleConvention(isVisible: true);
+            var provider = GetProvider(
+                typeof(ApiExplorerExplicitlyNotVisibleOnActionController).GetTypeInfo(),
+                convention);
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            var action = Assert.Single(actions);
+            Assert.Null(action.GetProperty<ApiDescriptionActionData>());
+        }
+
         [Theory]
         [InlineData("A", typeof(ApiExplorerEnabledConventionalRoutedController))]
         [InlineData("A", typeof(ApiExplorerEnabledActionConventionalRoutedController))]
@@ -1108,6 +1140,23 @@ namespace Microsoft.AspNet.Mvc.Test
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => provider.GetDescriptors());
             Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void ApiExplorer_SkipsConventionalRoutedController_WhenConfiguredOnApplication()
+        {
+            // Arrange
+            var convention = new ApiExplorerIsVisibleConvention(isVisible: true);
+            var provider = GetProvider(
+                typeof(ConventionallyRoutedController).GetTypeInfo(),
+                convention);
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            var action = Assert.Single(actions);
+            Assert.Null(action.GetProperty<ApiDescriptionActionData>());
         }
 
         // Verifies the sequence of conventions running
@@ -1352,7 +1401,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
         private ControllerActionDescriptorProvider GetProvider(
             TypeInfo type,
-            IOptions<MvcOptions> options)
+            IApplicationModelConvention convention)
         {
             var modelBuilder = new StaticControllerModelBuilder(type);
 
@@ -1360,6 +1409,9 @@ namespace Microsoft.AspNet.Mvc.Test
             assemblyProvider
                 .SetupGet(ap => ap.CandidateAssemblies)
                 .Returns(new Assembly[] { type.Assembly });
+
+            var options = new MockMvcOptionsAccessor();
+            options.Options.ApplicationModelConventions.Add(convention);
 
             return new ControllerActionDescriptorProvider(
                 assemblyProvider.Object,
@@ -1892,6 +1944,21 @@ namespace Microsoft.AspNet.Mvc.Test
             [ApiExplorerSettings(GroupName = "Default")]
             public void A()
             {
+            }
+        }
+
+        private class ApiExplorerIsVisibleConvention : IApplicationModelConvention
+        {
+            private bool _isVisible;
+
+            public ApiExplorerIsVisibleConvention(bool isVisible)
+            {
+                _isVisible = isVisible;
+            }
+
+            public void Apply([NotNull] ApplicationModel application)
+            {
+                application.ApiExplorer.IsVisible = _isVisible;
             }
         }
     }

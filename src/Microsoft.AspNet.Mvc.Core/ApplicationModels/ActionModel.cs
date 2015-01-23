@@ -58,8 +58,11 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// Gets or sets the <see cref="ApiExplorerModel"/> for this action.
         /// </summary>
         /// <remarks>
-        /// Setting the value of any properties on <see cref="ActionModel.ApiExplorer"/> will override any
-        /// values set on the associated <see cref="ControllerModel.ApiExplorer"/>.
+        /// <see cref="ActionModel.ApiExplorer"/> allows configuration of settings for ApiExplorer
+        /// which apply to the action.
+        /// 
+        /// Settings applied by <see cref="ActionModel.ApiExplorer"/> override settings from
+        /// <see cref="ApplicationModel.ApiExplorer"/> and <see cref="ControllerModel.ApiExplorer"/>.
         /// </remarks>
         public ApiExplorerModel ApiExplorer { get; set; }
 
