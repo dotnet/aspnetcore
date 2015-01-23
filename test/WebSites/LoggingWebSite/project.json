@@ -4,7 +4,7 @@
     "exclude": [
         "wwwroot"
     ],
-    "packExclude": [
+    "bundleExclude": [
         "**.kproj",
         "**.user",
         "**.vspscc"
