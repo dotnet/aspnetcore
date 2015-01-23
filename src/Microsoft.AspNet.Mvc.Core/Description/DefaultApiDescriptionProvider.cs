@@ -541,7 +541,6 @@ namespace Microsoft.AspNet.Mvc.Description
                 //  Order - source: Body
                 //
 
-                var propertyCount = 0;
                 var unboundProperties = new HashSet<ModelMetadata>();
 
                 // We don't want to append the **parameter** name when building a model name.
@@ -553,7 +552,6 @@ namespace Microsoft.AspNet.Mvc.Description
 
                 foreach (var propertyMetadata in modelMetadata.Properties)
                 {
-                    propertyCount++;
                     var key = new PropertyKey(propertyMetadata, source);
 
                     if (Visited.Add(key))
@@ -569,7 +567,7 @@ namespace Microsoft.AspNet.Mvc.Description
                     }
                 }
 
-                if (unboundProperties.Count == propertyCount)
+                if (unboundProperties.Count == modelMetadata.Properties.Count)
                 {
                     if (source == null || source == ambientSource)
                     {

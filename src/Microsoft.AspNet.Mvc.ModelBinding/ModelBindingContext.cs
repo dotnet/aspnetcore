@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private string _modelName;
         private ModelStateDictionary _modelState;
-        private Dictionary<string, ModelMetadata> _propertyMetadata;
         private ModelValidationNode _validationNode;
         private Func<ModelBindingContext, string, bool> _propertyFilter;
 
@@ -151,25 +150,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Gets or sets the <see cref="IValueProvider"/> associated with this context.
         /// </summary>
         public IValueProvider ValueProvider { get; set; }
-
-        /// <summary>
-        /// Gets a dictionary of property name to <see cref="ModelMetadata"/> instances for
-        /// <see cref="ModelMetadata.Properties"/>
-        /// </summary>
-        public IDictionary<string, ModelMetadata> PropertyMetadata
-        {
-            get
-            {
-                if (_propertyMetadata == null)
-                {
-                    _propertyMetadata = ModelMetadata.Properties
-                                                     .ToDictionary(m => m.PropertyName,
-                                                                   StringComparer.OrdinalIgnoreCase);
-                }
-
-                return _propertyMetadata;
-            }
-        }
 
         public Func<ModelBindingContext, string, bool> PropertyFilter
         {

@@ -315,7 +315,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             foreach (var property in properties)
             {
                 var propertyName = property.Name;
-                var propertyMetadata = bindingContext.PropertyMetadata[propertyName];
+                var propertyMetadata = bindingContext.ModelMetadata.Properties[propertyName];
                 var requiredValidator = bindingContext.OperationBindingContext
                                                       .ValidatorProvider
                                                       .GetValidators(propertyMetadata)
@@ -366,7 +366,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 // Update Model as SetProperty() would: Place null value where validator will check for non-null. This
                 // ensures a failure result from a required validator (if any) even for a non-nullable property.
                 // (Otherwise, propertyMetadata.Model is likely already null.)
-                var propertyMetadata = bindingContext.PropertyMetadata[missingRequiredProperty];
+                var propertyMetadata = bindingContext.ModelMetadata.Properties[missingRequiredProperty];
                 propertyMetadata.Model = null;
 
                 // Execute validator (if any) to get custom error message.

@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
             var metadata = provider.GetMetadataForType(modelAccessor: null, modelType: typeof(ClassWithHiddenProperties));
-            var property = metadata.Properties.First(m => string.Equals("DirectlyHidden", m.PropertyName));
+            var property = metadata.Properties["DirectlyHidden"];
 
             // Act
             var result = property.HideSurroundingHtml;
@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
             var metadata = provider.GetMetadataForType(modelAccessor: null, modelType: typeof(ClassWithHiddenProperties));
-            var property = metadata.Properties.First(m => string.Equals("OfHiddenType", m.PropertyName));
+            var property = metadata.Properties["OfHiddenType"];
 
             // Act
             var result = property.HideSurroundingHtml;

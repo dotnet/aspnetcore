@@ -313,6 +313,7 @@ namespace Microsoft.AspNet.Mvc.Core
             {
                 MetadataProvider = new Mock<IModelMetadataProvider>();
                 Metadata = new Mock<ModelMetadata>(MetadataProvider.Object, null, null, typeof(object), null);
+                Metadata.SetupGet(m => m.Properties).CallBase();
 
                 MetadataProvider.Setup(p => p.GetMetadataForProperties(It.IsAny<object>(), It.IsAny<Type>()))
                     .Returns(new ModelMetadata[0]);

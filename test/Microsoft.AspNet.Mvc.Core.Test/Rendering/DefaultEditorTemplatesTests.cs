@@ -187,8 +187,8 @@ Environment.NewLine;
 
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
             var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            var metadata =
-                html.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+            
+            var metadata = html.ViewData.ModelMetadata.Properties["Property1"];
             metadata.HideSurroundingHtml = true;
 
             // Act
@@ -340,8 +340,8 @@ Environment.NewLine;
                 viewEngine.Object,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
             helper.ViewData["Property1"] = "True";
-            var metadata =
-                helper.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+
+            var metadata = helper.ViewData.ModelMetadata.Properties["Property1"];
             metadata.DataTypeName = templateName;
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
@@ -372,8 +372,8 @@ Environment.NewLine;
                 model,
                 viewEngine.Object,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
-            var metadata =
-                helper.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+
+            var metadata = helper.ViewData.ModelMetadata.Properties["Property1"];
             metadata.DataTypeName = templateName;
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
@@ -405,8 +405,8 @@ Environment.NewLine;
                 viewEngine.Object,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
             helper.ViewData["Property1"] = "True";
-            var metadata =
-                helper.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+
+            var metadata = helper.ViewData.ModelMetadata.Properties["Property1"];
             metadata.TemplateHint = templateName;
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
@@ -437,8 +437,8 @@ Environment.NewLine;
                 model,
                 viewEngine.Object,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
-            var metadata =
-                helper.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+
+            var metadata = helper.ViewData.ModelMetadata.Properties["Property1"];
             metadata.TemplateHint = templateName;
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.

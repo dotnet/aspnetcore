@@ -118,8 +118,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             else
             {
                 //  Try getting a property from ModelMetadata if we couldn't find an answer in ViewData
-                var propertyMetadata =
-                    viewData.ModelMetadata.Properties.Where(p => p.PropertyName == expression).FirstOrDefault();
+                var propertyMetadata = viewData.ModelMetadata.Properties[expression];
                 if (propertyMetadata != null)
                 {
                     return propertyMetadata;

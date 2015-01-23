@@ -141,8 +141,8 @@ namespace Microsoft.AspNet.Mvc.Core
 
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
             var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            var metadata =
-                html.ViewData.ModelMetadata.Properties.First(m => string.Equals(m.PropertyName, "Property1"));
+
+            var metadata = html.ViewData.ModelMetadata.Properties["Property1"];
             metadata.HideSurroundingHtml = true;
 
             // Act

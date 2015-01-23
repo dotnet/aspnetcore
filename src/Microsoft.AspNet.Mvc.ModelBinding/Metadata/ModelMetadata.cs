@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private Func<object> _modelAccessor;
         private int _order = DefaultOrder;
         private bool _isRequired;
-        private IEnumerable<ModelMetadata> _properties;
+        private ModelPropertyCollection _properties;
         private Type _realModelType;
         private string _simpleDisplayText;
 
@@ -193,14 +193,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public virtual string NullDisplayText { get; set; }
 
-        public virtual IEnumerable<ModelMetadata> Properties
+        /// <summary>
+        /// Gets the collection of <see cref="ModelMetadata"/> instances for the model's properties.
+        /// </summary>
+        public virtual ModelPropertyCollection Properties
         {
             get
             {
                 if (_properties == null)
                 {
                     var properties = Provider.GetMetadataForProperties(Model, RealModelType);
-                    _properties = properties.OrderBy(m => m.Order).ToList();
+                    _properties = new ModelPropertyCollection(properties.OrderBy(m => m.Order));
                 }
 
                 return _properties;
