@@ -77,6 +77,13 @@ namespace ActionResultsWebSite
             return Content("content", "application/json", Encoding.ASCII);
         }
 
+        public IActionResult GetObjectResultWithNoContent()
+        {
+            var result = new ObjectResult(null);
+            result.StatusCode = 201;
+            return result;
+        }
+
         public DummyClass GetDummy(int id)
         {
             return CreateDummy();

@@ -307,5 +307,22 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("us-ascii", response.Content.Headers.ContentType.CharSet);
             Assert.Equal("content", await response.Content.ReadAsStringAsync());
         }
+
+        [Fact]
+        public async Task ObjectResult_WithStatusCodeAndNoContent_SetsSameStatusCode()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(
+                            HttpMethod.Get,
+                            "http://localhost/ActionResultsVerification/GetObjectResultWithNoContent");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        }
     }
 }

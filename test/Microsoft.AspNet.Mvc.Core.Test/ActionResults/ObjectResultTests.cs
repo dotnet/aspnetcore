@@ -431,6 +431,36 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         }
 
         [Fact]
+        public async Task ObjectResult_Execute_NullContent_SetsStatusCode()
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var expectedStatusCode = 201;
+            var httpResponse = new Mock<HttpResponse>();
+            httpResponse.SetupGet(r => r.Body).Returns(stream);
+
+            var formatters = new IOutputFormatter[]
+            {
+                new HttpNoContentOutputFormatter(),
+                new StringOutputFormatter(),
+                new JsonOutputFormatter()
+            };
+            var actionContext = CreateMockActionContext(formatters,
+                                                        httpResponse.Object,
+                                                        requestAcceptHeader: null,
+                                                        requestContentType: null);
+            var result = new ObjectResult(null);
+            result.StatusCode = expectedStatusCode;
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            httpResponse.VerifySet(r => r.StatusCode = expectedStatusCode);
+            Assert.Equal(0, httpResponse.Object.Body.Length);
+        }
+
+        [Fact]
         public async Task ObjectResult_Execute_CallsJsonResult_SetsContent()
         {
             // Arrange

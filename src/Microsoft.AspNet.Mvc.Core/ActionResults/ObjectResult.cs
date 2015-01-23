@@ -42,6 +42,7 @@ namespace Microsoft.AspNet.Mvc
                 DeclaredType = DeclaredType,
                 ActionContext = context,
                 Object = Value,
+                StatusCode = StatusCode
             };
 
             var selectedFormatter = SelectFormatter(formatterContext, formatters);
@@ -52,9 +53,9 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
-            if (StatusCode != null)
+            if (StatusCode.HasValue)
             {
-                context.HttpContext.Response.StatusCode = (int)StatusCode;
+                context.HttpContext.Response.StatusCode = StatusCode.Value;
             }
 
             OnFormatting(context);

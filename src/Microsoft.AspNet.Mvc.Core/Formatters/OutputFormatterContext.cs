@@ -37,5 +37,13 @@ namespace Microsoft.AspNet.Mvc
         /// The content type which is chosen by the selected formatter.
         /// </summary>
         public MediaTypeHeaderValue SelectedContentType { get; set; }
+
+        /// <summary>
+        /// Gets the status code that was previously set by the <see cref="ObjectResult"/>.
+        /// </summary>
+        /// <remarks>
+        /// Null indicates no value set by the <see cref="ObjectResult"/>.
+        /// </remarks>
+        public int? StatusCode { get; set; }
     }
 }

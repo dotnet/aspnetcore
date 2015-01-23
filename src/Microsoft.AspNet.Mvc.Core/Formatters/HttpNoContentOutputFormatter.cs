@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var response = context.ActionContext.HttpContext.Response;
             response.ContentLength = 0;
-            response.StatusCode = 204;
+            response.StatusCode = context.StatusCode ?? 204;
             return Task.FromResult(true);
         }
     }

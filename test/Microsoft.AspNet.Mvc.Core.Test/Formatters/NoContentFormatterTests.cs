@@ -127,5 +127,26 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.Equal(204, defaultHttpContext.Response.StatusCode);
         }
+
+        [Fact]
+        public async Task WriteAsync_ContextStatusCodeSet_WritesSameStatusCode()
+        {
+            // Arrange
+            var defaultHttpContext = new DefaultHttpContext();
+            var formatterContext = new OutputFormatterContext()
+            {
+                Object = null,
+                ActionContext = new ActionContext(defaultHttpContext, new RouteData(), new ActionDescriptor()),
+                StatusCode = 201
+            };
+
+            var formatter = new HttpNoContentOutputFormatter();
+
+            // Act
+            await formatter.WriteAsync(formatterContext);
+
+            // Assert
+            Assert.Equal(201, defaultHttpContext.Response.StatusCode);
+        }
     }
 }
