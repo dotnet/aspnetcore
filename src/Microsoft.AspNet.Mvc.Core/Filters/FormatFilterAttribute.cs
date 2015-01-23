@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc
                         filter.SetContentTypes(contentTypes);
                     }
 
-                    if (contentTypes.Count() != 0)
+                    if (contentTypes.Count != 0)
                     {
                         // If formatfilterContentType is not subset of any of the content types produced by 
                         // IApiResponseMetadataProviders, return 404
@@ -93,10 +93,11 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// If the current request contains format value, returns true. It means the format filter is going to execute.
+        /// Returns <c>true</c> if the filter is active and will execute; otherwise, <c>false</c>. The filter is active
+        ///  if the current request contains format value. 
         /// </summary>
         /// <param name="context">The <see cref="FilterContext"/></param>
-        /// <returns>If the filter is active and will execute.</returns>
+        /// <returns><c>true</c> if the current request contains format value; otherwise, <c>false</c>.</returns>
         public bool IsActive(FilterContext context)
         {
             var format = GetFormat(context);
@@ -113,7 +114,12 @@ namespace Microsoft.AspNet.Mvc
                 format = context.HttpContext.Request.Query["format"];
             }
 
-            return (string)format;
+            if (format != null)
+            {
+                return format.ToString();
+            }
+
+            return null;
         }
 
         private MediaTypeHeaderValue GetContentType(string format, FilterContext context)

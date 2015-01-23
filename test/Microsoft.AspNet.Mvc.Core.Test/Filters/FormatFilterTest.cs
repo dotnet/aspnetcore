@@ -118,7 +118,9 @@ namespace Microsoft.AspNet.Mvc
             var resultExecutingContext = CreateResultExecutingContext(format, place);
             var resourceExecutingContext = CreateResourceExecutingContext(new IFilter[] { }, format, place);
             var options = resultExecutingContext.HttpContext.RequestServices.GetService<IOptions<MvcOptions>>();
-            options.Options.FormatterMappings.SetMediaTypeMappingForFormat(format, MediaTypeHeaderValue.Parse(contentType));
+            options.Options.FormatterMappings.SetMediaTypeMappingForFormat(
+                format, 
+                MediaTypeHeaderValue.Parse(contentType));
             
             var filter = new FormatFilterAttribute();
 
@@ -194,7 +196,28 @@ namespace Microsoft.AspNet.Mvc
             var produces = new ProducesAttribute("application/xml;version=1", new string [] { });
             var context = CreateResourceExecutingContext(new IFilter[] { produces },  "xml", FormatSource.RouteData);
             var options = context.HttpContext.RequestServices.GetService<IOptions<MvcOptions>>();
-            options.Options.FormatterMappings.SetMediaTypeMappingForFormat("xml", MediaTypeHeaderValue.Parse("application/xml"));
+            options.Options.FormatterMappings.SetMediaTypeMappingForFormat(
+                "xml", 
+                MediaTypeHeaderValue.Parse("application/xml"));
+            var filter = new FormatFilterAttribute();
+
+            // Act
+            filter.OnResourceExecuting(context);
+
+            // Assert
+            Assert.Null(context.Result);
+        }
+
+        [Fact]
+        public void FormatFilter_LessSpecificThan_Produces_Wildcard()
+        {
+            // Arrange
+            var produces = new ProducesAttribute("application/*", new string[] { });
+            var context = CreateResourceExecutingContext(new IFilter[] { produces }, "xml", FormatSource.RouteData);
+            var options = context.HttpContext.RequestServices.GetService<IOptions<MvcOptions>>();
+            options.Options.FormatterMappings.SetMediaTypeMappingForFormat(
+                "xml",
+                MediaTypeHeaderValue.Parse("application/xml"));
             var filter = new FormatFilterAttribute();
 
             // Act
@@ -211,7 +234,9 @@ namespace Microsoft.AspNet.Mvc
             var produces = new ProducesAttribute("application/xml", new string[] { });
             var context = CreateResourceExecutingContext(new IFilter[] { produces }, "xml", FormatSource.RouteData);
             var options = context.HttpContext.RequestServices.GetService<IOptions<MvcOptions>>();
-            options.Options.FormatterMappings.SetMediaTypeMappingForFormat("xml", MediaTypeHeaderValue.Parse("application/xml;version=1"));
+            options.Options.FormatterMappings.SetMediaTypeMappingForFormat(
+                "xml", 
+                MediaTypeHeaderValue.Parse("application/xml;version=1"));
             var filter = new FormatFilterAttribute();
 
             // Act

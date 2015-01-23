@@ -6,8 +6,8 @@ using System.Xml.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.OptionsModel;
-using Newtonsoft.Json.Linq;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Mvc
 {

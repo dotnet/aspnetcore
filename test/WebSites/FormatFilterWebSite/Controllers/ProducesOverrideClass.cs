@@ -11,7 +11,6 @@ namespace FormatFilterWebSite
         [Produces("application/ProducesMethod")]
         public string ReturnClassName()
         {
-            // should be written using the content defined at base class's action.
             return "ProducesOverrideController";
         }
     }        

@@ -452,7 +452,10 @@
     <value>The action '{0}' has ApiExplorer enabled, but is using conventional routing. Only actions which use attribute routing support ApiExplorer.</value>
     </data>
   <data name="FormatterMappings_NotValidMediaType" xml:space="preserve">
-    <value>The media type {0} is not valid. The media type containing "&lt;mediatype&gt;/*" are not supported.</value>
+    <value>The media type "{0}" is not valid. MediaTypes containing wildcards (*) are not allowed in formatter mappings.</value>
+  </data>
+  <data name="Format_NotValid" xml:space="preserve">
+    <value>The format provided is invalid '{0}'. A format must be a non-empty file-extension, optionally prefixed with a '.' character.</value>
   </data>
   <data name="RemoteAttribute_NoUrlFound" xml:space="preserve">
     <value>No URL for remote validation could be found.</value>

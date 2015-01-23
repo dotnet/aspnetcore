@@ -562,9 +562,22 @@ namespace Microsoft.AspNet.Mvc.Core
             get { return GetString("Common_ValueNotValidForProperty"); }
         }
 
+        /// <summary>
+        /// The media type "{0}" is not valid. MediaTypes containing wildcards (*) are not allowed in formatter 
+        /// mappings.
+        /// </summary>
         internal static string FormatterMappings_NotValidMediaType
         {
             get { return GetString("FormatterMappings_NotValidMediaType"); }
+        }
+
+        /// <summary>
+        /// The format provided is invalid '{0}'. A format must be a non-empty file-extension, optionally prefixed 
+        /// with a '.' character.
+        /// </summary>
+        internal static string Format_NotValid
+        {
+            get { return GetString("Format_NotValid"); }
         }
 
         /// <summary>

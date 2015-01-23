@@ -27,6 +27,8 @@ namespace FormatFilterWebSite
                 var actionReturn = context.Object as Product;
                 if (actionReturn != null)
                 {
+                    var response = context.ActionContext.HttpContext.Response;
+                    context.SelectedContentType = contentType;
                     return true;
                 }
             }
@@ -35,8 +37,7 @@ namespace FormatFilterWebSite
 
         public override async Task WriteResponseBodyAsync(OutputFormatterContext context)
         {
-            var response = context.ActionContext.HttpContext.Response;
-            response.ContentType = ContentType + ";charset=utf-8";
+            var response = context.ActionContext.HttpContext.Response;            
             await response.WriteAsync(context.Object.ToString());
         }
     }

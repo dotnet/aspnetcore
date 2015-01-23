@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Mvc
                     CurrentCandidate = candidate
                 };
 
-                if (candidate.Constraints == null || candidate.Constraints.Count() == 0 ||
+                if (candidate.Constraints == null || candidate.Constraints.Count == 0 ||
                     candidate.Constraints.Any(constraint => constraint is IConsumesActionConstraint &&
                                                             constraint.Accept(tempContext)))
                 {
