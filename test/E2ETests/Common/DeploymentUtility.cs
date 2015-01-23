@@ -186,21 +186,19 @@ namespace E2ETests
                 KpmPack(startParameters, logger);
             }
 
-            //Mono does not have a way to pass in a --appbase switch. So it will be an environment variable. 
+            //Mono now supports --appbase 
             Environment.SetEnvironmentVariable("DOTNET_APPBASE", startParameters.ApplicationPath);
-            logger.WriteInformation("Setting the DOTNET_APPBASE to {0}", startParameters.ApplicationPath);
+            logger.WriteInformation("Setting the --appbase to", startParameters.ApplicationPath);
 
-            var monoPath = "mono";
-            var dotnetMonoManaged = Path.Combine(dotnetBin, "dotnet.mono.managed.dll");
-            var applicationHost = Path.Combine(dotnetBin, "Microsoft.Framework.ApplicationHost");
+            var dotnet = "dotnet";
 
             var commandName = startParameters.ServerType == ServerType.Kestrel ? "kestrel" : string.Empty;
-            logger.WriteInformation(string.Format("Executing command: {0} {1} {2} {3}", monoPath, dotnetMonoManaged, applicationHost, commandName));
+            logger.WriteInformation(string.Format("Executing command: {0} {1} {2}", dotnet, startParameters.ApplicationPath, commandName));
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = monoPath,
-                Arguments = string.Format("{0} {1} {2}", dotnetMonoManaged, applicationHost, commandName),
+                FileName = dotnet,
+                Arguments = string.Format("{0} {1}", startParameters.ApplicationPath, commandName),
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardInput = true
@@ -210,8 +208,6 @@ namespace E2ETests
             logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
             Thread.Sleep(25 * 1000);
 
-            //Clear the appbase so that it does not create issues with successive runs
-            Environment.SetEnvironmentVariable("DOTNET_APPBASE", string.Empty);
             return hostProcess;
         }
 
