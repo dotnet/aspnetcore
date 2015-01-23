@@ -34,7 +34,8 @@
     "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
-    "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*"
+    "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
+    "AutoMapper": "4.0.0-ci1026"
   },
   "commands": {
     "WebListener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5102",
