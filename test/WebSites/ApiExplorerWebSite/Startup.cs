@@ -4,7 +4,6 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Xml;
-using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 
 namespace ApiExplorerWebSite

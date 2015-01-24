@@ -17,7 +17,12 @@ namespace ApplicationModelWebSite
                 services.AddMvc(configuration);
             });
 
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller}/{action}/{id?}");
+            });
         }
     }
 }
