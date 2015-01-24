@@ -315,7 +315,7 @@
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\AddCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\WrapCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\InstallCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Packing\PackManager.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Bundle\BundleManager.cs;
                                     $(PoliCheckPath)**\**\Microsoft.Framework.PackageManager.dll">
                 <term>Red</term>
                 <Justification>Color constant name</Justification>
