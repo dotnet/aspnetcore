@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Routing.Logging;
@@ -210,7 +211,7 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.True(routeValues.ContainsKey("country"));
             Assert.Equal("USA", routeValues["country"]);
             Assert.True(routeValues.ContainsKey("id"));
-            Assert.Equal("5",routeValues["id"]);
+            Assert.Equal("5", routeValues["id"]);
 
             Assert.True(context.RouteData.Values.ContainsKey("country"));
             Assert.Equal("USA", context.RouteData.Values["country"]);
@@ -223,7 +224,7 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.NotSame(originalDataTokens, context.RouteData.DataTokens);
             Assert.NotSame(route.DataTokens, context.RouteData.DataTokens);
         }
-        
+
         [Fact]
         public async Task RouteAsync_MergesExistingRouteData_PassedToConstraint()
         {
@@ -492,7 +493,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             Assert.NotEmpty(route.Constraints);
             Assert.IsType<OptionalRouteConstraint>(route.Constraints["id"]);
-            
+
             // Act
             await route.RouteAsync(context);
 
@@ -571,7 +572,7 @@ namespace Microsoft.AspNet.Routing.Template
                 mockTarget.Object,
                 template,
                 defaults: null,
-                constraints: constraints, 
+                constraints: constraints,
                 dataTokens: null,
                 inlineConstraintResolver: _inlineConstraintResolver);
 
@@ -581,7 +582,7 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.IsType<CompositeRouteConstraint>(innerConstraint);
             var compositeConstraint = (CompositeRouteConstraint)innerConstraint;
             Assert.Equal(compositeConstraint.Constraints.Count<IRouteConstraint>(), 2);
-            
+
             Assert.Single(compositeConstraint.Constraints, c => c is IntRouteConstraint);
             Assert.Single(compositeConstraint.Constraints, c => c is RangeRouteConstraint);
 
@@ -629,7 +630,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Act
             await route.RouteAsync(context);
-            
+
             // Assert
             Assert.False(context.IsHandled);
         }
@@ -1062,7 +1063,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             var route = CreateRoute(target.Object, "{controller}/{action}");
             var context = CreateVirtualPathContext(
-                new { action = "Store" }, 
+                new { action = "Store" },
                 new { Controller = "Home", action = "Blog" });
 
             var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store" });
@@ -1243,7 +1244,7 @@ namespace Microsoft.AspNet.Routing.Template
             // Arrange
             var route = CreateRoute("{controller}/{action}/{id:int}");
             var context = CreateVirtualPathContext(
-                values:  new { action = "Index",  controller = "Home", id = 4 });
+                values: new { action = "Index", controller = "Home", id = 4 });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -1359,7 +1360,7 @@ namespace Microsoft.AspNet.Routing.Template
                 constraints: null);
 
             var context = CreateVirtualPathContext(
-                values: new { action = "Index", controller = "Home", name = "products", format = "xml"});
+                values: new { action = "Index", controller = "Home", name = "products", format = "xml" });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -1379,7 +1380,7 @@ namespace Microsoft.AspNet.Routing.Template
                 constraints: null);
 
             var context = CreateVirtualPathContext(
-                values: new { action = "Index", controller = "Home", name = "products"});
+                values: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -1399,7 +1400,7 @@ namespace Microsoft.AspNet.Routing.Template
                 constraints: null);
 
             var context = CreateVirtualPathContext(
-                values: new { action = "Index", controller = "Home", name = "products" , format = "xml"});
+                values: new { action = "Index", controller = "Home", name = "products", format = "xml" });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -1419,7 +1420,7 @@ namespace Microsoft.AspNet.Routing.Template
                 constraints: null);
 
             var context = CreateVirtualPathContext(
-                values: new { action = "Index", controller = "Home", name = "products"});
+                values: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -1459,7 +1460,7 @@ namespace Microsoft.AspNet.Routing.Template
                 constraints: null);
 
             var context = CreateVirtualPathContext(
-                values: new { action = "Index", controller = "Home", name = "products"});
+                values: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -1479,7 +1480,7 @@ namespace Microsoft.AspNet.Routing.Template
                 constraints: null);
 
             var context = CreateVirtualPathContext(
-                values: new { action = "Index", controller = "Home"});
+                values: new { action = "Index", controller = "Home" });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -1499,7 +1500,7 @@ namespace Microsoft.AspNet.Routing.Template
                 constraints: null);
 
             var context = CreateVirtualPathContext(
-                values: new { action = "Index", controller = "Home"});
+                values: new { action = "Index", controller = "Home" });
 
             // Act
             var path = route.GetVirtualPath(context);
@@ -1519,7 +1520,7 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         private static VirtualPathContext CreateVirtualPathContext(
-            IDictionary<string, object> values, 
+            IDictionary<string, object> values,
             IDictionary<string, object> ambientValues)
         {
             var context = new Mock<HttpContext>(MockBehavior.Strict);

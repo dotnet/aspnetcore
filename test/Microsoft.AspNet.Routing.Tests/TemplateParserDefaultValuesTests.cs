@@ -4,10 +4,7 @@
 #if ASPNET50
 
 using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
