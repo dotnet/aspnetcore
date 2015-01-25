@@ -73,7 +73,7 @@ default Configuration='${E("Configuration")}'
 
 
 #nuget-install target='install' description='Install NuGet packages to local repo'
-  kpm-local-publish sourcePackagesDir='${BUILD_DIR}'
+  kpm-local-publish sourcePackagesDir='${BUILD_DIR}' targetPackagesDir='${E("PACKAGES_PUBLISH_DIR")}'
 
 #xunit-test target='test' if='Directory.Exists("test")'
   k-test each='var projectFile in Files.Include("test/**/project.json")'
