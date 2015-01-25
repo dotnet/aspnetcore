@@ -1,6 +1,6 @@
 @{/*
 
-k-local-publish
+kpm-publish
     Builds project. Downloads and executes k sdk tools.
 
 sourcePackagesDir=''
