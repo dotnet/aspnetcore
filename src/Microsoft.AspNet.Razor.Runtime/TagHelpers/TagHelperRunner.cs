@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -24,8 +25,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 executionContext.UniqueId,
                 executionContext.GetChildContentAsync);
             var tagHelperOutput = new TagHelperOutput(executionContext.TagName, executionContext.HTMLAttributes);
+            var orderedTagHelpers = executionContext.TagHelpers.OrderBy(tagHelper => tagHelper.Order);
 
-            foreach (var tagHelper in executionContext.TagHelpers)
+            foreach (var tagHelper in orderedTagHelpers)
             {
                 await tagHelper.ProcessAsync(tagHelperContext, tagHelperOutput);
             }
