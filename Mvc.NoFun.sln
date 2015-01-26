@@ -52,6 +52,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TagHel
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Xml", "src\Microsoft.AspNet.Mvc.Xml\Microsoft.AspNet.Mvc.Xml.kproj", "{9C632DF0-DC06-410B-95AE-B5423702E84F}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Xml.Test", "test\Microsoft.AspNet.Mvc.Xml.Test\Microsoft.AspNet.Mvc.Xml.Test.kproj", "{22019146-BDFA-442E-8C8E-345FB9644578}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -262,6 +264,18 @@ Global
 		{9C632DF0-DC06-410B-95AE-B5423702E84F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{9C632DF0-DC06-410B-95AE-B5423702E84F}.Release|x86.ActiveCfg = Release|Any CPU
 		{9C632DF0-DC06-410B-95AE-B5423702E84F}.Release|x86.Build.0 = Release|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Debug|x86.Build.0 = Debug|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Release|x86.ActiveCfg = Release|Any CPU
+		{22019146-BDFA-442E-8C8E-345FB9644578}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -286,5 +300,6 @@ Global
 		{2223120F-D675-40DA-8CD8-11DC14A0B2C7} = {DAAE4C74-D06F-4874-A166-33305D2643CE}
 		{860119ED-3DB1-424D-8D0A-30132A8A7D96} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{9C632DF0-DC06-410B-95AE-B5423702E84F} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
+		{22019146-BDFA-442E-8C8E-345FB9644578} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 	EndGlobalSection
 EndGlobal

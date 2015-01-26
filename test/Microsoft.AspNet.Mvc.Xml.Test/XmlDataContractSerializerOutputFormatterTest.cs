@@ -15,9 +15,9 @@ using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core
+namespace Microsoft.AspNet.Mvc
 {
-    public class XmlDataContractSerializerOutputFormatterTests
+    public class XmlDataContractSerializerOutputFormatterTest
     {
         [DataContract(Name = "DummyClass", Namespace = "")]
         public class DummyClass
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
         [Theory]
         [MemberData(nameof(BasicTypeValues))]
-        public async Task XmlDataContractSerializerOutputFormatterCanWriteBasicTypes(object input, string expectedOutput)
+        public async Task WriteAsync_CanWriteBasicTypes(object input, string expectedOutput)
         {
             // Arrange
             var formatter = new XmlDataContractSerializerOutputFormatter();
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task XmlDataContractSerializerOutputFormatterWritesSimpleTypes()
+        public async Task WriteAsync_WritesSimpleTypes()
         {
             // Arrange
             var sampleInput = new DummyClass { SampleInt = 10 };
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task XmlDataContractSerializerOutputFormatterWritesComplexTypes()
+        public async Task WriteAsync_WritesComplexTypes()
         {
             // Arrange
             var sampleInput = new TestLevelTwo
@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task XmlDataContractSerializerOutputFormatterWritesOnModifiedWriterSettings()
+        public async Task WriteAsync_WritesOnModifiedWriterSettings()
         {
             // Arrange
             var sampleInput = new DummyClass { SampleInt = 10 };
@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task XmlDataContractSerializerOutputFormatterWritesUTF16Output()
+        public async Task WriteAsync_WritesUTF16Output()
         {
             // Arrange
             var sampleInput = new DummyClass { SampleInt = 10 };
@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task XmlDataContractSerializerOutputFormatterWritesIndentedOutput()
+        public async Task WriteAsync_WritesIndentedOutput()
         {
             // Arrange
             var sampleInput = new DummyClass { SampleInt = 10 };
@@ -272,7 +272,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task VerifyBodyIsNotClosedAfterOutputIsWritten()
+        public async Task WriteAsync_VerifyBodyIsNotClosedAfterOutputIsWritten()
         {
             // Arrange
             var sampleInput = new DummyClass { SampleInt = 10 };
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task XmlSerializerOutputFormatterDoesntFlushOutputStream()
+        public async Task WriteAsync_DoesntFlushOutputStream()
         {
             // Arrange
             var sampleInput = new DummyClass { SampleInt = 10 };
@@ -301,6 +301,7 @@ namespace Microsoft.AspNet.Mvc.Core
             // Act & Assert
             await formatter.WriteAsync(outputFormatterContext);
         }
+
         public static IEnumerable<object[]> TypesForCanWriteResult
         {
             get
@@ -319,7 +320,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
         [Theory]
         [MemberData(nameof(TypesForCanWriteResult))]
-        public void XmlDataContractSerializer_CanWriteResult(object input, Type declaredType, bool expectedOutput)
+        public void CanWriteResult_ReturnsExpectedOutput(object input, Type declaredType, bool expectedOutput)
         {
             // Arrange
             var formatter = new XmlDataContractSerializerOutputFormatter();
@@ -347,7 +348,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
         [Theory]
         [MemberData(nameof(TypesForGetSupportedContentTypes))]
-        public void XmlDataContractSerializer_GetSupportedContentTypes_Returns_SupportedTypes(Type declaredType, 
+        public void GetSupportedContentTypes_ReturnsSupportedTypes(Type declaredType, 
             Type runtimeType, object expectedOutput)
         {
             // Arrange
@@ -369,7 +370,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task XmlDataContractSerializerOutputFormatterThrowsWhenNotConfiguredWithKnownTypes()
+        public async Task WriteAsync_ThrowsWhenNotConfiguredWithKnownTypes()
         {
             // Arrange
             var sampleInput = new SomeDummyClass { SampleInt = 1, SampleString = "TestString" };
@@ -382,7 +383,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task XmlDataContractSerializerOutputFormatterThrowsWhenNotConfiguredWithPreserveReferences()
+        public async Task WriteAsync_ThrowsWhenNotConfiguredWithPreserveReferences()
         {
             // Arrange
             var child = new Child { Id = 1 };
@@ -398,7 +399,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task XmlDataContractSerializerFormatterWritesWhenConfiguredWithRootName()
+        public async Task WriteAsync_WritesWhenConfiguredWithRootName()
         {
             // Arrange
             var sampleInt = 10;
@@ -439,7 +440,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task XmlDataContractSerializerFormatterWritesWhenConfiguredWithKnownTypes()
+        public async Task WriteAsync_WritesWhenConfiguredWithKnownTypes()
         {
             // Arrange
             var sampleInt = 10;
@@ -483,7 +484,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public async Task XmlDataContractSerializerFormatterWritesWhenConfiguredWithPreserveReferences()
+        public async Task WriteAsync_WritesWhenConfiguredWithPreserveReferences()
         {
             // Arrange
             var sampleId = 1;
@@ -527,7 +528,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         private OutputFormatterContext GetOutputFormatterContext(object outputValue, Type outputType,
-                                                        string contentType = "application/xml; charset=utf-8")
+            string contentType = "application/xml; charset=utf-8")
         {
             return new OutputFormatterContext
             {
