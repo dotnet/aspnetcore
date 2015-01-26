@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Xml
                 return GetDefaultValueForType(context.ModelType);
             }
 
-            return await ReadInternal(context);
+            return await ReadInternalAsync(context);
         }
 
         /// <summary>
@@ -121,12 +121,23 @@ namespace Microsoft.AspNet.Mvc.Xml
         }
 
         /// <summary>
-        /// Called during deserialization to get the <see cref="XmlObjectSerializer"/>.
+        /// Gets the type to which the XML will be deserialized.
         /// </summary>
-        /// <returns>The <see cref="XmlObjectSerializer"/> used during deserialization.</returns>
-        protected virtual XmlObjectSerializer CreateDataContractSerializer(Type type)
+        /// <param name="declaredType">The declared type.</param>
+        /// <returns>The type to which the XML will be deserialized.</returns>
+        protected virtual Type GetSerializableType([NotNull] Type declaredType)
         {
-            return new DataContractSerializer(SerializableErrorWrapper.CreateSerializableType(type), _serializerSettings);
+            return SerializableErrorWrapper.CreateSerializableType(declaredType);
+        }
+
+        /// <summary>
+        /// Called during deserialization to get the <see cref="DataContractSerializer"/>.
+        /// </summary>
+        /// <param name="type">The type of object for which the serializer should be created.</param>
+        /// <returns>The <see cref="DataContractSerializer"/> used during deserialization.</returns>
+        protected virtual DataContractSerializer CreateSerializer([NotNull] Type type)
+        {
+            return new DataContractSerializer(type, _serializerSettings);
         }
 
         private object GetDefaultValueForType(Type modelType)
@@ -139,16 +150,16 @@ namespace Microsoft.AspNet.Mvc.Xml
             return null;
         }
 
-        private Task<object> ReadInternal(InputFormatterContext context)
+        private Task<object> ReadInternalAsync(InputFormatterContext context)
         {
-            var type = context.ModelType;
             var request = context.ActionContext.HttpContext.Request;
 
             using (var xmlReader = CreateXmlReader(new DelegatingStream(request.Body)))
             {
-                var xmlSerializer = CreateDataContractSerializer(type);
-                var deserializedObject = xmlSerializer.ReadObject(xmlReader);
-                deserializedObject = SerializableErrorWrapper.UnwrapSerializableErrorObject(type, deserializedObject);
+                var type = GetSerializableType(context.ModelType);
+                var dataContractSerializer = CreateSerializer(type);
+                var deserializedObject = dataContractSerializer.ReadObject(xmlReader);
+                deserializedObject = SerializableErrorWrapper.UnwrapSerializableErrorObject(context.ModelType, deserializedObject);
                 return Task.FromResult(deserializedObject);
             }
         }
