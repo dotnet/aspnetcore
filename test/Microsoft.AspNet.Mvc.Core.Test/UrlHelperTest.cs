@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -58,9 +59,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Equal(expectedPath, path);
         }
 
+        // UrlHelper.IsLocalUrl depends on the UrlUtility.IsLocalUrl method. 
+        // To avoid duplicate tests, all the tests exercising IsLocalUrl verify  
+        // both of UrlHelper.IsLocalUrl and UrlUtility.IsLocalUrl
         [Theory]
         [InlineData(null)]
         [InlineData("")]
+        [InlineData(" ")]
         public void IsLocalUrl_ReturnsFalseOnEmpty(string url)
         {
             // Arrange
@@ -68,6 +73,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Act
             var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
 
             // Assert
             Assert.False(result);
@@ -87,6 +98,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.True(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
+
+            // Assert
+            Assert.True(result);
         }
 
         [Theory]
@@ -99,6 +116,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Act
             var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.True(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
 
             // Assert
             Assert.True(result);
@@ -115,6 +138,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Act
             var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
 
             // Assert
             Assert.False(result);
@@ -135,6 +164,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.False(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
         }
 
         [Theory]
@@ -147,6 +182,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Act
             var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
 
             // Assert
             Assert.False(result);
@@ -165,6 +206,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.False(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
         }
 
         [Theory]
@@ -176,6 +223,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Act
             var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
 
             // Assert
             Assert.False(result);
@@ -196,6 +249,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.False(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
         }
 
         [Theory]
@@ -211,6 +270,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Act
             var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
 
             // Assert
             Assert.False(result);
@@ -233,6 +298,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.False(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
         }
 
         [Theory]
@@ -247,6 +318,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Act
             var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+
+            // Arrange & Act
+            result = UrlUtility.IsLocalUrl(url);
 
             // Assert
             Assert.False(result);

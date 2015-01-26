@@ -33,10 +33,24 @@ namespace Microsoft.AspNet.Mvc
         string Content(string contentPath);
 
         /// <summary>
-        /// Returns a value that indicates whether the URL is local.
+        /// Returns a value that indicates whether the URL is local. An URL with an absolute path is considered local
+        /// if it does not have a host/authority part. URLs using the virtual paths ('~/') are also local.
         /// </summary>
         /// <param name="url">The URL.</param>
-        /// <returns>true if the URL is local; otherwise, false.</returns>
+        /// <returns><c>true</c> if the URL is local; otherwise, <c>false</c>.</returns>
+        /// <example>
+        /// <para>
+        /// For example, the following URLs are considered local:
+        /// /Views/Default/Index.html
+        /// ~/Index.html
+        /// </para>
+        /// <para>
+        /// The following URLs are non-local:
+        /// ../Index.html
+        /// http://www.contoso.com/
+        /// http://localhost/Index.html
+        /// </para>
+        /// </example>
         bool IsLocalUrl(string url);
 
         /// <summary>
