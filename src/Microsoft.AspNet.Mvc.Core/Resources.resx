@@ -445,4 +445,10 @@
   <data name="ApiExplorer_UnsupportedAction" xml:space="preserve">
     <value>The action '{0}' has ApiExplorer enabled, but is using conventional routing. Only actions which use attribute routing support ApiExplorer.</value>
   </data>
+  <data name="RemoteAttribute_NoUrlFound" xml:space="preserve">
+    <value>No URL for remote validation could be found.</value>
+  </data>
+  <data name="RemoteAttribute_RemoteValidationFailed" xml:space="preserve">
+    <value>'{0}' is invalid.</value>
+  </data>
 </root>

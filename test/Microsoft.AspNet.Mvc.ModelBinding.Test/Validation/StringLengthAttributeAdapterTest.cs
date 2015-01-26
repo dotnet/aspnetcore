@@ -3,6 +3,8 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -18,7 +20,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var metadata = provider.GetMetadataForProperty(() => null, typeof(string), "Length");
             var attribute = new StringLengthAttribute(8);
             var adapter = new StringLengthAttributeAdapter(attribute);
-            var context = new ClientModelValidationContext(metadata, provider);
+            var serviceCollection = new ServiceCollection();
+            var requestServices = serviceCollection.BuildServiceProvider();
+            var context = new ClientModelValidationContext(metadata, provider, requestServices);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);
@@ -40,7 +44,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var metadata = provider.GetMetadataForProperty(() => null, typeof(string), "Length");
             var attribute = new StringLengthAttribute(10) { MinimumLength = 3 };
             var adapter = new StringLengthAttributeAdapter(attribute);
-            var context = new ClientModelValidationContext(metadata, provider);
+            var serviceCollection = new ServiceCollection();
+            var requestServices = serviceCollection.BuildServiceProvider();
+            var context = new ClientModelValidationContext(metadata, provider, requestServices);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);

@@ -351,19 +351,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        private static IEnumerable<string> SplitString(string original)
-        {
-            if (string.IsNullOrEmpty(original))
-            {
-                return new string[0];
-            }
-
-            var split = original.Split(',')
-                                .Select(piece => piece.Trim())
-                                .Where(trimmed => !string.IsNullOrEmpty(trimmed));
-            return split;
-        }
-
         private class CompositePredicateProvider : IPropertyBindingPredicateProvider
         {
             private readonly IPropertyBindingPredicateProvider[] _providers;

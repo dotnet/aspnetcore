@@ -13,7 +13,7 @@ using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core.Test
+namespace Microsoft.AspNet.Mvc
 {
     public class UrlHelperTest
     {
@@ -695,7 +695,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         private static UrlHelper CreateUrlHelperWithRouteCollection(string appPrefix)
         {
             var routeCollection = GetRouter();
-            return CreateUrlHelper("/app", routeCollection);
+            return CreateUrlHelper(appPrefix, routeCollection);
         }
 
         private static IRouter GetRouter()
@@ -708,13 +708,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var rt = new RouteBuilder();
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
-                .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c =>
-                {
-                    rt.ToString();
-                    c.IsBound = true;
-                })
-                .Returns<VirtualPathContext>(rc => null);
+                .Setup(router => router.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(context => context.IsBound = true)
+                .Returns<VirtualPathContext>(context => null);
             rt.DefaultHandler = target.Object;
             var serviceProviderMock = new Mock<IServiceProvider>();
             var accessorMock = new Mock<IOptions<RouteOptions>>();

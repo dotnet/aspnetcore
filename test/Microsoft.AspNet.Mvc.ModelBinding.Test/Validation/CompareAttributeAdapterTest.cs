@@ -3,6 +3,8 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -17,7 +19,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var metadata = metadataProvider.GetMetadataForProperty(() => null, typeof(PropertyDisplayNameModel), "MyProperty");
             var attribute = new CompareAttribute("OtherProperty");
-            var context = new ClientModelValidationContext(metadata, metadataProvider);
+            var serviceCollection = new ServiceCollection();
+            var requestServices = serviceCollection.BuildServiceProvider();
+            var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
             var adapter = new CompareAttributeAdapter(attribute);
 
             // Act
@@ -36,7 +40,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var metadata = metadataProvider.GetMetadataForProperty(() => null, typeof(PropertyNameModel), "MyProperty");
             var attribute = new CompareAttribute("OtherProperty");
-            var context = new ClientModelValidationContext(metadata, metadataProvider);
+            var serviceCollection = new ServiceCollection();
+            var requestServices = serviceCollection.BuildServiceProvider();
+            var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
             var adapter = new CompareAttributeAdapter(attribute);
 
             // Act
@@ -57,7 +63,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 ErrorMessage = "Hello '{0}', goodbye '{1}'."
             };
-            var context = new ClientModelValidationContext(metadata, metadataProvider);
+            var serviceCollection = new ServiceCollection();
+            var requestServices = serviceCollection.BuildServiceProvider();
+            var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
             var adapter = new CompareAttributeAdapter(attribute);
 
             // Act
@@ -85,7 +93,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ErrorMessageResourceName = "CompareAttributeTestResource",
                 ErrorMessageResourceType = typeof(Test.Resources),
             };
-            var context = new ClientModelValidationContext(metadata, metadataProvider);
+            var serviceCollection = new ServiceCollection();
+            var requestServices = serviceCollection.BuildServiceProvider();
+            var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
             var adapter = new CompareAttributeAdapter(attribute);
 
             // Act

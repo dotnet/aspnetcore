@@ -1,10 +1,15 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 #if ASPNET50
 using System.Linq;
+#endif
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+#if ASPNET50
 using Moq;
 using Moq.Protected;
 #endif
@@ -197,6 +202,51 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 #endif
 
         [Fact]
+        public void GetClientValidationRules_ReturnsEmptyRuleSet()
+        {
+            // Arrange
+            var attribute = new FileExtensionsAttribute();
+            var validator = new DataAnnotationsModelValidator<FileExtensionsAttribute>(attribute);
+            var metadata = _metadataProvider.GetMetadataForProperty(
+                modelAccessor: null,
+                containerType: typeof(string),
+                propertyName: nameof(string.Length));
+            var serviceCollection = new ServiceCollection();
+            var requestServices = serviceCollection.BuildServiceProvider();
+            var context = new ClientModelValidationContext(metadata, _metadataProvider, requestServices);
+
+            // Act
+            var results = validator.GetClientValidationRules(context);
+
+            // Assert
+            Assert.Empty(results);
+        }
+
+        [Fact]
+        public void GetClientValidationRules_WithIClientModelValidator_CallsAttribute()
+        {
+            // Arrange
+            var attribute = new TestableAttribute();
+            var validator = new DataAnnotationsModelValidator<TestableAttribute>(attribute);
+            var metadata = _metadataProvider.GetMetadataForProperty(
+                modelAccessor: null,
+                containerType: typeof(string),
+                propertyName: nameof(string.Length));
+            var serviceCollection = new ServiceCollection();
+            var requestServices = serviceCollection.BuildServiceProvider();
+            var context = new ClientModelValidationContext(metadata, _metadataProvider, requestServices);
+
+            // Act
+            var results = validator.GetClientValidationRules(context);
+
+            // Assert
+            var rule = Assert.Single(results);
+            Assert.Equal("an error", rule.ErrorMessage);
+            Assert.Empty(rule.ValidationParameters);
+            Assert.Equal("testable", rule.ValidationType);
+        }
+
+        [Fact]
         public void IsRequiredTests()
         {
             // Arrange
@@ -220,6 +270,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private class SampleModel
         {
             public string Name { get; set; }
+        }
+
+        private class TestableAttribute : ValidationAttribute, IClientModelValidator
+        {
+            public IEnumerable<ModelClientValidationRule> GetClientValidationRules(ClientModelValidationContext context)
+            {
+                return new[] { new ModelClientValidationRule(validationType: "testable", errorMessage: "an error") };
+            }
         }
     }
 }

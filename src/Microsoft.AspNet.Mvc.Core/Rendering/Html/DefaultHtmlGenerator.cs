@@ -724,16 +724,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string name)
         {
             var validatorProvider = _bindingContextAccessor.Value.ValidatorProvider;
-            
             metadata = metadata ??
                 ExpressionMetadataProvider.FromStringExpression(name, viewContext.ViewData, _metadataProvider);
+            var validationContext =
+                new ClientModelValidationContext(metadata, _metadataProvider, viewContext.HttpContext.RequestServices);
 
-            return 
-                validatorProvider
+            return validatorProvider
                 .GetValidators(metadata)
                 .OfType<IClientModelValidator>()
-                .SelectMany(v => v.GetClientValidationRules(
-                    new ClientModelValidationContext(metadata, _metadataProvider)));
+                .SelectMany(v => v.GetClientValidationRules(validationContext));
         }
 
         internal static string EvalString(ViewContext viewContext, string key, string format)

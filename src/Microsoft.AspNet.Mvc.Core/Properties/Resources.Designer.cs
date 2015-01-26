@@ -1706,6 +1706,38 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("ApiExplorer_UnsupportedAction"), p0);
         }
 
+        /// <summary>
+        /// No URL for remote validation could be found.
+        /// </summary>
+        internal static string RemoteAttribute_NoUrlFound
+        {
+            get { return GetString("RemoteAttribute_NoUrlFound"); }
+        }
+
+        /// <summary>
+        /// No URL for remote validation could be found.
+        /// </summary>
+        internal static string FormatRemoteAttribute_NoUrlFound()
+        {
+            return GetString("RemoteAttribute_NoUrlFound");
+        }
+
+        /// <summary>
+        /// '{0}' is invalid.
+        /// </summary>
+        internal static string RemoteAttribute_RemoteValidationFailed
+        {
+            get { return GetString("RemoteAttribute_RemoteValidationFailed"); }
+        }
+
+        /// <summary>
+        /// '{0}' is invalid.
+        /// </summary>
+        internal static string FormatRemoteAttribute_RemoteValidationFailed(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RemoteAttribute_RemoteValidationFailed"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

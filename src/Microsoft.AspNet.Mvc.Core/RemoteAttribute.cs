@@ -1,158 +1,251 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Web.Mvc.Properties;
-using System.Web.Routing;
+using System.Linq;
+using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
 
-namespace System.Web.Mvc
+namespace Microsoft.AspNet.Mvc
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    [SuppressMessage("Microsoft.Design", "CA1019:DefineAccessorsForAttributeArguments", Justification = "The constructor parameters are used to feed RouteData, which is public.")]
-    [SuppressMessage("Microsoft.Performance", "CA1813:AvoidUnsealedAttributes", Justification = "This attribute is designed to be a base class for other attributes.")]
-    public class RemoteAttribute : ValidationAttribute, IClientValidatable
+    /// <summary>
+    /// A <see cref="ValidationAttribute"/> which configures Unobtrusive validation to send an Ajax request to the
+    /// web site. The invoked action should return JSON indicating whether the value is valid.
+    /// </summary>
+    /// <remarks>Does no server-side validation of the final form submission.</remarks>
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class RemoteAttribute : ValidationAttribute, IClientModelValidator
     {
-        private string _additionalFields;
-        private string[] _additonalFieldsSplit = new string[0];
+        private string _additionalFields = string.Empty;
+        private string[] _additionalFieldsSplit = new string[0];
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoteAttribute"/> class.
+        /// </summary>
+        /// <remarks>
+        /// Intended for subclasses that support URL generation with no route, action, or controller names.
+        /// </remarks>
         protected RemoteAttribute()
-            : base(MvcResources.RemoteAttribute_RemoteValidationFailed)
+            : base(Resources.RemoteAttribute_RemoteValidationFailed)
         {
             RouteData = new RouteValueDictionary();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoteAttribute"/> class.
+        /// </summary>
+        /// <param name="routeName">
+        /// The route name used when generating the URL where client should send a validation request.
+        /// </param>
+        /// <remarks>
+        /// Finds the <paramref name="routeName"/> in any area of the application.
+        /// </remarks>
         public RemoteAttribute(string routeName)
             : this()
         {
-            if (String.IsNullOrWhiteSpace(routeName))
-            {
-                throw new ArgumentException(MvcResources.Common_NullOrEmpty, "routeName");
-            }
-
             RouteName = routeName;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoteAttribute"/> class.
+        /// </summary>
+        /// <param name="action">
+        /// The action name used when generating the URL where client should send a validation request.
+        /// </param>
+        /// <param name="controller">
+        /// The controller name used when generating the URL where client should send a validation request.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// If either <paramref name="action"/> or <paramref name="controller"/> is <c>null</c>, uses the corresponding
+        /// ambient value.
+        /// </para>
+        /// <para>Finds the <paramref name="controller"/> in the current area.</para>
+        /// </remarks>
         public RemoteAttribute(string action, string controller)
-            :
-                this(action, controller, null /* areaName */)
-        {
-        }
-
-        public RemoteAttribute(string action, string controller, string areaName)
             : this()
         {
-            if (String.IsNullOrWhiteSpace(action))
+            if (action != null)
             {
-                throw new ArgumentException(MvcResources.Common_NullOrEmpty, "action");
-            }
-            if (String.IsNullOrWhiteSpace(controller))
-            {
-                throw new ArgumentException(MvcResources.Common_NullOrEmpty, "controller");
+                RouteData["action"] = action;
             }
 
-            RouteData["controller"] = controller;
-            RouteData["action"] = action;
-
-            if (!String.IsNullOrWhiteSpace(areaName))
+            if (controller != null)
             {
-                RouteData["area"] = areaName;
+                RouteData["controller"] = controller;
             }
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RemoteAttribute"/> class.
         /// </summary>
-        /// <param name="action">The route name.</param>
-        /// <param name="controller">The name of the controller.</param>
-        /// <param name="areaReference">
-        /// Find the controller in the root if <see cref="AreaReference.UseRoot"/>. Otherwise look in the current area.
+        /// <param name="action">
+        /// The action name used when generating the URL where client should send a validation request.
         /// </param>
-        public RemoteAttribute(string action, string controller, AreaReference areaReference)
+        /// <param name="controller">
+        /// The controller name used when generating the URL where client should send a validation request.
+        /// </param>
+        /// <param name="areaName">The name of the area containing the <paramref name="controller"/>.</param>
+        /// <remarks>
+        /// <para>
+        /// If either <paramref name="action"/> or <paramref name="controller"/> is <c>null</c>, uses the corresponding
+        /// ambient value.
+        /// </para>
+        /// If <paramref name="areaName"/> is <c>null</c>, finds the <paramref name="controller"/> in the root area.
+        /// Use the <see cref="RemoteAttribute(string, string)"/> overload find the <paramref name="controller"/> in
+        /// the current area. Or explicitly pass the current area's name as the <paramref name="areaName"/> argument to
+        /// this overload.
+        /// </remarks>
+        public RemoteAttribute(string action, string controller, string areaName)
             : this(action, controller)
         {
-            if (areaReference == AreaReference.UseRoot)
-            {
-                RouteData["area"] = null;
-            }
+            RouteData["area"] = areaName;
         }
 
+        /// <summary>
+        /// Gets or sets the HTTP method (<c>"Get"</c> or <c>"Post"</c>) client should use when sending a validation
+        /// request.
+        /// </summary>
         public string HttpMethod { get; set; }
 
+        /// <summary>
+        /// Gets or sets the comma-separated names of fields the client should include in a validation request.
+        /// </summary>
         public string AdditionalFields
         {
-            get { return _additionalFields ?? String.Empty; }
+            get { return _additionalFields; }
             set
             {
-                _additionalFields = value;
-                _additonalFieldsSplit = AuthorizeAttribute.SplitString(value);
+                _additionalFields = value ?? string.Empty;
+                _additionalFieldsSplit = SplitAndTrimPropertyNames(value)
+                    .Select(field => FormatPropertyForClientValidation(field))
+                    .ToArray();
             }
         }
 
-        protected RouteValueDictionary RouteData { get; private set; }
+        /// <summary>
+        /// Gets the <see cref="RouteValueDictionary"/> used when generating the URL where client should send a
+        /// validation request.
+        /// </summary>
+        protected RouteValueDictionary RouteData { get; }
 
+        /// <summary>
+        /// Gets or sets the route name used when generating the URL where client should send a validation request.
+        /// </summary>
         protected string RouteName { get; set; }
 
-        protected virtual RouteCollection Routes
-        {
-            get { return RouteTable.Routes; }
-        }
-
+        /// <summary>
+        /// Formats <paramref name="property"/> and <see cref="AdditionalFields"/> for use in generated HTML.
+        /// </summary>
+        /// <param name="property">
+        /// Name of the property associated with this <see cref="RemoteAttribute"/> instance.
+        /// </param>
+        /// <returns>Comma-separated names of fields the client should include in a validation request.</returns>
+        /// <remarks>
+        /// Excludes any whitespace from <see cref="AdditionalFields"/> in the return value.
+        /// Prefixes each field name in the return value with <c>"*."</c>.
+        /// </remarks>
         public string FormatAdditionalFieldsForClientValidation(string property)
         {
-            if (String.IsNullOrEmpty(property))
+            if (string.IsNullOrEmpty(property))
             {
-                throw new ArgumentException(MvcResources.Common_NullOrEmpty, "property");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "property");
             }
 
-            string delimitedAdditionalFields = FormatPropertyForClientValidation(property);
-
-            foreach (string field in _additonalFieldsSplit)
+            var delimitedAdditionalFields = string.Join(",", _additionalFieldsSplit);
+            if (!string.IsNullOrEmpty(delimitedAdditionalFields))
             {
-                delimitedAdditionalFields += "," + FormatPropertyForClientValidation(field);
+                delimitedAdditionalFields = "," + delimitedAdditionalFields;
             }
 
-            return delimitedAdditionalFields;
+            var formattedString = FormatPropertyForClientValidation(property) + delimitedAdditionalFields;
+
+            return formattedString;
         }
 
+        /// <summary>
+        /// Formats <paramref name="property"/> for use in generated HTML.
+        /// </summary>
+        /// <param name="property">One field name the client should include in a validation request.</param>
+        /// <returns>Name of a field the client should include in a validation request.</returns>
+        /// <remarks>Returns <paramref name="property"/> with a <c>"*."</c> prefix.</remarks>
         public static string FormatPropertyForClientValidation(string property)
         {
-            if (String.IsNullOrEmpty(property))
+            if (string.IsNullOrEmpty(property))
             {
-                throw new ArgumentException(MvcResources.Common_NullOrEmpty, "property");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "property");
             }
+
             return "*." + property;
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings", Justification = "The value is a not a regular URL since it may contain ~/ ASP.NET-specific characters")]
-        protected virtual string GetUrl(ControllerContext controllerContext)
+        /// <summary>
+        /// Returns the URL where the client should send a validation request.
+        /// </summary>
+        /// <param name="context">The <see cref="ClientModelValidationContext"/> used to generate the URL.</param>
+        /// <returns>The URL where the client should send a validation request.</returns>
+        protected virtual string GetUrl([NotNull] ClientModelValidationContext context)
         {
-            var pathData = Routes.GetVirtualPathForArea(controllerContext.RequestContext,
-                                                        RouteName,
-                                                        RouteData);
-
-            if (pathData == null)
+            var urlHelper = context.RequestServices.GetRequiredService<IUrlHelper>();
+            var url = urlHelper.RouteUrl(RouteName, values: RouteData, protocol: null, host: null, fragment: null);
+            if (url == null)
             {
-                throw new InvalidOperationException(MvcResources.RemoteAttribute_NoUrlFound);
+                throw new InvalidOperationException(Resources.RemoteAttribute_NoUrlFound);
             }
 
-            return pathData.VirtualPath;
+            return url;
         }
 
+        /// <inheritdoc />
         public override string FormatErrorMessage(string name)
         {
-            return String.Format(CultureInfo.CurrentCulture, ErrorMessageString, name);
+            return string.Format(CultureInfo.CurrentCulture, ErrorMessageString, name);
         }
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always returns <c>true</c> since this <see cref="ValidationAttribute"/> does no validation itself.
+        /// Related validations occur only when the client sends a validation request.
+        /// </remarks>
         public override bool IsValid(object value)
         {
             return true;
         }
 
-        public IEnumerable<ModelClientValidationRule> GetClientValidationRules(ModelMetadata metadata, ControllerContext context)
+        /// <inheritdoc />
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if unable to generate a target URL for a validation request.
+        /// </exception>
+        public virtual IEnumerable<ModelClientValidationRule> GetClientValidationRules(
+            [NotNull] ClientModelValidationContext context)
         {
-            yield return new ModelClientValidationRemoteRule(FormatErrorMessage(metadata.GetDisplayName()), GetUrl(context), HttpMethod, FormatAdditionalFieldsForClientValidation(metadata.PropertyName));
+            var metadata = context.ModelMetadata;
+            var rule = new ModelClientValidationRemoteRule(
+                FormatErrorMessage(metadata.GetDisplayName()),
+                GetUrl(context),
+                HttpMethod,
+                FormatAdditionalFieldsForClientValidation(metadata.PropertyName));
+
+            return new[] { rule };
+        }
+
+        private static IEnumerable<string> SplitAndTrimPropertyNames(string original)
+        {
+            if (string.IsNullOrEmpty(original))
+            {
+                return new string[0];
+            }
+
+            var split = original.Split(',')
+                                .Select(piece => piece.Trim())
+                                .Where(trimmed => !string.IsNullOrEmpty(trimmed));
+            return split;
         }
     }
 }

@@ -1,26 +1,47 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
+using System;
+using Microsoft.AspNet.Mvc.ModelBinding;
 
-namespace System.Web.Mvc
+namespace Microsoft.AspNet.Mvc.Internal
 {
-    [TypeForwardedFrom("System.Web.Mvc, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35")]
+    /// <summary>
+    /// <see cref="ModelClientValidationRule"/> containing information for HTML attribute generation in fields a
+    /// <see cref="RemoteAttribute"/> targets.
+    /// </summary>
     public class ModelClientValidationRemoteRule : ModelClientValidationRule
     {
-        [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", Justification = "The value is a not a regular URL since it may contain ~/ ASP.NET-specific characters")]
-        public ModelClientValidationRemoteRule(string errorMessage, string url, string httpMethod, string additionalFields)
-        {
-            ErrorMessage = errorMessage;
-            ValidationType = "remote";
-            ValidationParameters["url"] = url;
+        private const string RemoteValidationType = "remote";
+        private const string AdditionalFieldsValidationParameter = "additionalfields";
+        private const string TypeValidationParameter = "type";
+        private const string UrlValidationParameter = "url";
 
-            if (!String.IsNullOrEmpty(httpMethod))
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModelClientValidationRemoteRule"/> class.
+        /// </summary>
+        /// <param name="errorMessage">Error message client should display when validation fails.</param>
+        /// <param name="url">URL where client should send a validation request.</param>
+        /// <param name="httpMethod">
+        /// HTTP method (<c>"GET"</c> or <c>"POST"</c>) client should use when sending a validation request.
+        /// </param>
+        /// <param name="additionalFields">
+        /// Comma-separated names of fields the client should include in a validation request.
+        /// </param>
+        public ModelClientValidationRemoteRule(
+            string errorMessage,
+            string url,
+            string httpMethod,
+            string additionalFields)
+            : base(validationType: RemoteValidationType, errorMessage: errorMessage)
+        {
+            ValidationParameters[UrlValidationParameter] = url;
+            if (!string.IsNullOrEmpty(httpMethod))
             {
-                ValidationParameters["type"] = httpMethod;
+                ValidationParameters[TypeValidationParameter] = httpMethod;
             }
 
-            ValidationParameters["additionalfields"] = additionalFields;
+            ValidationParameters[AdditionalFieldsValidationParameter] = additionalFields;
         }
     }
 }

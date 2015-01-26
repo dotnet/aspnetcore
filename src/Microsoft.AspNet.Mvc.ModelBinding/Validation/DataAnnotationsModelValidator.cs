@@ -61,6 +61,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public virtual IEnumerable<ModelClientValidationRule> GetClientValidationRules(
             [NotNull] ClientModelValidationContext context)
         {
+            var customValidator = Attribute as IClientModelValidator;
+            if (customValidator != null)
+            {
+                return customValidator.GetClientValidationRules(context);
+            }
+
             return Enumerable.Empty<ModelClientValidationRule>();
         }
 
