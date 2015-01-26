@@ -40,11 +40,13 @@ projectFile=''
         
         foreach (var framework in targetFrameworks)
         {
+            var testArgs = IsMono ? " -parallel none" : "";
+
             if (framework.StartsWith("net", StringComparison.OrdinalIgnoreCase)
                 || (framework.StartsWith("aspnet", StringComparison.OrdinalIgnoreCase)
                     && !framework.StartsWith("aspnetcore", StringComparison.OrdinalIgnoreCase)))
             {
-                K("test", projectFolder, "");
+                K(("test" + testArgs), projectFolder, "");
             }
             else if (!IsMono)
             {
