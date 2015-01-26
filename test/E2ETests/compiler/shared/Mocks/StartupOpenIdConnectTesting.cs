@@ -14,22 +14,9 @@ using MusicStore.Models;
 
 namespace MusicStore
 {
-    /// <summary>
-    /// To make runtime to load an environment based startup class, specify the environment by the following ways: 
-    /// 1. Drop a Microsoft.AspNet.Hosting.ini file in the wwwroot folder
-    /// 2. Add a setting in the ini file named 'ASPNET_ENV' with value of the format 'Startup[EnvironmentName]'. For example: To load a Startup class named
-    /// 'StartupOpenIdConnect' the value of the env should be 'OpenIdConnect' (eg. ASPNET_ENV=OpenIdConnect). Runtime adds a 'Startup' prefix to this and loads 'StartupOpenIdConnect'. 
-    /// If no environment name is specified the default startup class loaded is 'Startup'. 
-    /// Alternative ways to specify environment are:
-    /// 1. Set the environment variable named SET ASPNET_ENV=OpenIdConnect
-    /// 2. For selfhost based servers pass in a command line variable named --env with this value. Eg:
-    /// "commands": {
-    ///    "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002 --ASPNET_ENV OpenIdConnect",
-    ///  },
-    /// </summary>
-    public class StartupOpenIdConnect
+    public class StartupOpenIdConnectTesting
     {
-        public StartupOpenIdConnect()
+        public StartupOpenIdConnectTesting()
         {
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
@@ -119,6 +106,7 @@ namespace MusicStore
             {
                 options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
                 options.ClientId = "[ClientId]";
+                options.BackchannelHttpHandler = null; // TODO: Yet to implement the handler.
             });
 
             // Add MVC to the request pipeline
