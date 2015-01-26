@@ -1,0 +1,21 @@
+@{/*
+
+kpm-publish
+    Builds project. Downloads and executes k sdk tools.
+
+sourcePackagesDir=''
+    Required. Path to packages to install (skips symbol packages)
+
+targetPackagesDir=''
+    Optional. Path to publish packages.
+*/}
+
+default targetPackagesDir=''
+
+@{
+   var packages = Directory.EnumerateFiles(sourcePackagesDir, "*.nupkg")
+                           .Where(p => !p.EndsWith(".symbols.nupkg"));
+}
+
+exec program='cmd' commandline='/C kpm packages add ${package} ${targetPackagesDir}' if='!IsMono' each='var package in packages'
+exec program='kpm' commandline='packages add ${package} ${targetPackagesDir}' if='IsMono' each='var package in packages'

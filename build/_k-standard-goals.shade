@@ -72,8 +72,8 @@ default Configuration='${E("Configuration")}'
   copy sourceDir='${Path.GetDirectoryName(project)}' include='bin/**/' outputDir='${Path.Combine(BUILD_DIR, Path.GetFileNameWithoutExtension(project))}' overwrite='${true}' each='var project in nativeProjects'
 
 
-#nuget-install target='install' description='Copy NuGet packages to local repo'
-  nuget-local-publish sourcePackagesDir='${BUILD_DIR}'
+#nuget-install target='install' description='Install NuGet packages to local repo'
+  kpm-publish sourcePackagesDir='${BUILD_DIR}' targetPackagesDir='${E("PACKAGES_PUBLISH_DIR")}'
 
 #xunit-test target='test' if='Directory.Exists("test")'
   k-test each='var projectFile in Files.Include("test/**/project.json")'
