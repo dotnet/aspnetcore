@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.Mvc
     public class ModelBinderAttribute : Attribute, IModelNameProvider, IBinderTypeProviderMetadata
     {
         private Type _binderType;
+        private BindingSource _bindingSource;
 
         /// <inheritdoc />
         public Type BinderType
@@ -52,6 +53,24 @@ namespace Microsoft.AspNet.Mvc
                 }
 
                 _binderType = value;
+            }
+        }
+
+        /// <inheritdoc />
+        public BindingSource BindingSource
+        {
+            get
+            {
+                if (_bindingSource == null && _binderType != null)
+                {
+                    return BindingSource.Custom;
+                }
+
+                return _bindingSource;
+            }
+            set
+            {
+                _bindingSource = value;
             }
         }
 

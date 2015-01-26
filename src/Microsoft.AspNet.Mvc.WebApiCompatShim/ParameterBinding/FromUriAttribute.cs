@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using WebApiShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
 
 namespace System.Web.Http
 {
@@ -13,10 +14,15 @@ namespace System.Web.Http
     public class FromUriAttribute :
         Attribute,
         IOptionalBinderMetadata,
-        IQueryValueProviderMetadata,
-        IRouteDataValueProviderMetadata,
+        IBindingSourceMetadata,
         IModelNameProvider
     {
+        private static readonly BindingSource FromUriSource = CompositeBindingSource.Create(
+            new BindingSource[] { BindingSource.Path, BindingSource.Query },
+            WebApiShimResources.BindingSource_URL);
+
+        public BindingSource BindingSource { get { return FromUriSource; } }
+
         public bool IsOptional { get; set; }
 
         /// <inheritdoc />

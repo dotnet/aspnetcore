@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Description
         /// An optional parameter is considered optional by the routing system. This does not imply
         /// that the parameter is considered optional by the action.
         /// 
-        /// If the parameter uses <see cref="ApiParameterSource.ModelBinding"/> for the value of
+        /// If the parameter uses <see cref="ModelBinding.BindingSource.ModelBinding"/> for the value of
         /// <see cref="ApiParameterDescription.Source"/> then the value may also come from the 
         /// URL query string or form data.
         /// </remarks>

@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.Description
             {
                 // Remove any 'hidden' parameters. These are things that can't come from user input,
                 // so they aren't worth showing.
-                if (context.Results[i].Source == ApiParameterSource.Hidden)
+                if (!context.Results[i].Source.IsFromRequest)
                 {
                     context.Results.RemoveAt(i);
                 }
@@ -155,9 +155,9 @@ namespace Microsoft.AspNet.Mvc.Description
 
             foreach (var parameter in context.Results)
             {
-                if (parameter.Source == ApiParameterSource.Path ||
-                    parameter.Source == ApiParameterSource.ModelBinding ||
-                    parameter.Source == ApiParameterSource.Custom)
+                if (parameter.Source == BindingSource.Path ||
+                    parameter.Source == BindingSource.ModelBinding ||
+                    parameter.Source == BindingSource.Custom)
                 {
                     ApiParameterRouteInfo routeInfo;
                     if (routeParameters.TryGetValue(parameter.Name, out routeInfo))
@@ -165,12 +165,12 @@ namespace Microsoft.AspNet.Mvc.Description
                         parameter.RouteInfo = routeInfo;
                         routeParameters.Remove(parameter.Name);
 
-                        if (parameter.Source == ApiParameterSource.ModelBinding &&
+                        if (parameter.Source == BindingSource.ModelBinding &&
                             !parameter.RouteInfo.IsOptional)
                         {
                             // If we didn't see any information about the parameter, but we have
                             // a route parameter that matches, let's switch it to path.
-                            parameter.Source = ApiParameterSource.Path;
+                            parameter.Source = BindingSource.Path;
                         }
                     }
                 }
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.Description
                 {
                     Name = routeParameter.Key,
                     RouteInfo = routeParameter.Value,
-                    Source = ApiParameterSource.Path,
+                    Source = BindingSource.Path,
                 });
             }
 
@@ -449,7 +449,7 @@ namespace Microsoft.AspNet.Mvc.Description
                 // Attempt to find a binding source for the parameter
                 //
                 // The default is ModelBinding (aka all default value providers)
-                var source = ApiParameterSource.ModelBinding;
+                var source = BindingSource.ModelBinding;
                 if (!Visit(modelMetadata, source, containerName: string.Empty))
                 {
                     // If we get here, then it means we didn't find a match for any of the model. This means that it's
@@ -466,7 +466,7 @@ namespace Microsoft.AspNet.Mvc.Description
             /// model properties where we can definitely compute an answer. 
             /// </summary>
             /// <param name="modelMetadata">The metadata for the model.</param>
-            /// <param name="ambientSource">The <see cref="ApiParameterSource"/> from the ambient context.</param>
+            /// <param name="ambientSource">The <see cref="BindingSource"/> from the ambient context.</param>
             /// <param name="containerName">The current name prefix (to prepend to property names).</param>
             /// <returns>
             /// <c>true</c> if the set of <see cref="ApiParameterDescription"/> objects were created for the model.
@@ -477,10 +477,10 @@ namespace Microsoft.AspNet.Mvc.Description
             /// or NONE of it. If a parameter description is created for ANY sub-properties of the model, then a parameter
             /// description will be created for ALL of them.
             /// </remarks>
-            private bool Visit(ModelMetadata modelMetadata, ApiParameterSource ambientSource, string containerName)
+            private bool Visit(ModelMetadata modelMetadata, BindingSource ambientSource, string containerName)
             {
-                ApiParameterSource source;
-                if (GetSource(modelMetadata, out source))
+                var source = BindingSource.GetBindingSource(modelMetadata.BinderMetadata);
+                if (source != null && source.IsGreedy)
                 {
                     // We have a definite answer for this model. This is a greedy source like
                     // [FromBody] so there's no need to consider properties.
@@ -597,7 +597,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             private ApiParameterDescription CreateResult(
                 ModelMetadata metadata,
-                ApiParameterSource source,
+                BindingSource source,
                 string containerName)
             {
                 return new ApiParameterDescription()
@@ -622,73 +622,15 @@ namespace Microsoft.AspNet.Mvc.Description
                 }
             }
 
-            // This isn't extensible right now.
-            //
-            // Returns true if the source is greedy (means to stop exploring the model)
-            // Returns false if the source in unknown or known but not greedy (like [FromQuery])
-            private static bool GetSource(ModelMetadata metadata, out ApiParameterSource source)
-            {
-                if (metadata.BinderMetadata == null)
-                {
-                    // There's nothing we can figure out.
-                    source = null;
-                    return false;
-                }
-
-                if (metadata.BinderMetadata is IFormatterBinderMetadata)
-                {
-                    source = ApiParameterSource.Body;
-                    return true;
-                }
-                else if (metadata.BinderMetadata is IHeaderBinderMetadata)
-                {
-                    source = ApiParameterSource.Header;
-                    return true;
-                }
-                else if (metadata.BinderMetadata is IServiceActivatorBinderMetadata)
-                {
-                    source = ApiParameterSource.Hidden;
-                    return true;
-                }
-                else if (metadata.BinderMetadata is IRouteDataValueProviderMetadata)
-                {
-                    source = ApiParameterSource.Path;
-                    return false;
-                }
-                else if (metadata.BinderMetadata is IQueryValueProviderMetadata)
-                {
-                    source = ApiParameterSource.Query;
-                    return false;
-                }
-                else if (metadata.BinderMetadata is IFormDataValueProviderMetadata)
-                {
-                    source = ApiParameterSource.Form;
-                    return false;
-                }
-
-                var binderTypeMetadata = metadata.BinderMetadata as IBinderTypeProviderMetadata;
-                if (binderTypeMetadata != null && binderTypeMetadata.BinderType != null)
-                {
-                    // This provides it's own model binder, so we can't really make a good
-                    // estimate of where it comes from.
-                    source = ApiParameterSource.Custom;
-                    return true;
-                }
-
-                // We're out of cases we know how to handle.
-                source = null;
-                return false;
-            }
-
             private struct PropertyKey
             {
                 public readonly Type ContainerType;
 
                 public readonly string PropertyName;
 
-                public readonly ApiParameterSource Source;
+                public readonly BindingSource Source;
 
-                public PropertyKey(ModelMetadata metadata, ApiParameterSource source)
+                public PropertyKey(ModelMetadata metadata, BindingSource source)
                 {
                     ContainerType = metadata.ContainerType;
                     PropertyName = metadata.PropertyName;

@@ -1,23 +1,27 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// An <see cref="IModelBinder"/> which understands <see cref="IServiceActivatorBinderMetadata"/>
-    /// and activates a given model using <see cref="IServiceProvider"/>.
+    /// An <see cref="IModelBinder"/> which binds models from the request services when a model 
+    /// has the binding source <see cref="BindingSource.Services"/>/
     /// </summary>
-    public class ServicesModelBinder : MetadataAwareBinder<IServiceActivatorBinderMetadata>
+    public class ServicesModelBinder : BindingSourceModelBinder
     {
+        /// <summary>
+        /// Creates a new <see cref="ServicesModelBinder"/>.
+        /// </summary>
+        public ServicesModelBinder()
+            : base(BindingSource.Services)
+        {
+        }
+
         /// <inheritdoc />
-        protected override Task<bool> BindAsync(
-            [NotNull] ModelBindingContext bindingContext,
-            [NotNull] IServiceActivatorBinderMetadata metadata)
+        protected override Task BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
         {
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
             bindingContext.Model = requestServices.GetRequiredService(bindingContext.ModelType);

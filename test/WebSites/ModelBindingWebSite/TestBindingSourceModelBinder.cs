@@ -8,10 +8,16 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace ModelBindingWebSite
 {
-    public class TestMetadataAwareBinder : MetadataAwareBinder<FromTestAttribute>
+    public class TestBindingSourceModelBinder : BindingSourceModelBinder
     {
-        protected override Task<bool> BindAsync(ModelBindingContext bindingContext, FromTestAttribute metadata)
+        public TestBindingSourceModelBinder()
+            : base(FromTestAttribute.TestBindingSource)
         {
+        }
+
+        protected override Task BindModelCoreAsync(ModelBindingContext bindingContext)
+        {
+            var metadata = (FromTestAttribute)bindingContext.ModelMetadata.BinderMetadata;
             bindingContext.Model = metadata.Value;
 
             if (!IsSimpleType(bindingContext.ModelType))
@@ -21,7 +27,6 @@ namespace ModelBindingWebSite
 
             return Task.FromResult(true);
         }
-
 
         private bool IsSimpleType(Type type)
         {

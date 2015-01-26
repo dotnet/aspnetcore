@@ -9,12 +9,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// Provides a <see cref="Type"/> which implements <see cref="IModelBinder"/> or 
     /// <see cref="IModelBinderProvider"/>.
     /// </summary>
-    public interface IBinderTypeProviderMetadata : IBinderMetadata
+    public interface IBinderTypeProviderMetadata : IBindingSourceMetadata
     {
         /// <summary>
         /// A <see cref="Type"/> which implements either <see cref="IModelBinder"/> or
         /// <see cref="IModelBinderProvider"/>.
         /// </summary>
-        Type BinderType { get; set; }
+        Type BinderType { get; }
     }
 }

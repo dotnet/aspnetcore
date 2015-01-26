@@ -7,11 +7,12 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// This attribute is used on action parameters to indicate that
-    /// they will be bound using form data of the incoming request.
+    /// Specifies that a parameter or property should be bound using form-data in the request body.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class FromFormAttribute : Attribute, IFormDataValueProviderMetadata
+    public class FromFormAttribute : Attribute, IBindingSourceMetadata
     {
+        /// <inheritdoc />
+        public BindingSource BindingSource { get { return BindingSource.Form; } }
     }
 }

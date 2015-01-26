@@ -7,11 +7,12 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// This attribute is used on action parameters or model properties to indicate that
-    /// they will be bound using service provider.
+    /// Specifies that a parameter or property should be bound using the request services.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class FromServicesAttribute : Attribute, IServiceActivatorBinderMetadata
+    public class FromServicesAttribute : Attribute, IBindingSourceMetadata
     {
+        /// <inheritdoc />
+        public BindingSource BindingSource { get { return BindingSource.Services; } }
     }
 }

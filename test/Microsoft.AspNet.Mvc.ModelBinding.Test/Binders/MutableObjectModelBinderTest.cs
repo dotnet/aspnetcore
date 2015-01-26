@@ -236,26 +236,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [Theory]
         [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), false)]
         [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), true)]
-        public async Task CanCreateModel_ForExplicitValueProviderMetadata_UsesOriginalValueProvider(Type modelType, bool originalValueProviderProvidesValue)
+        public async Task CanCreateModel_ForExplicitValueProviderMetadata_UsesOriginalValueProvider(
+            Type modelType,
+            bool originalValueProviderProvidesValue)
         {
             var mockValueProvider = new Mock<IValueProvider>();
             mockValueProvider.Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
                              .Returns(Task.FromResult(false));
 
-            var mockOriginalValueProvider = new Mock<IMetadataAwareValueProvider>();
-            mockOriginalValueProvider.Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                                     .Returns(Task.FromResult(originalValueProviderProvidesValue));
-            mockOriginalValueProvider.Setup(o => o.Filter(It.IsAny<IValueProviderMetadata>()))
-                                     .Returns<IValueProviderMetadata>(
-                                        valueProviderMetadata =>
-                                                {
-                                                    if (valueProviderMetadata is ValueBinderMetadataAttribute)
-                                                    {
-                                                        return mockOriginalValueProvider.Object;
-                                                    }
+            var mockOriginalValueProvider = new Mock<IBindingSourceValueProvider>();
+            mockOriginalValueProvider
+                .Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
+                .Returns(Task.FromResult(originalValueProviderProvidesValue));
 
-                                                    return null;
-                                                });
+            mockOriginalValueProvider
+                .Setup(o => o.Filter(It.IsAny<BindingSource>()))
+                .Returns<BindingSource>(source =>
+                {
+                    if (source == BindingSource.Query)
+                    {
+                        return mockOriginalValueProvider.Object;
+                    }
+
+                    return null;
+                });
 
             var bindingContext = new MutableObjectBinderContext
             {
@@ -1542,12 +1546,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public Document SubDocument { get; set; }
         }
 
-        private class NonValueBinderMetadataAttribute : Attribute, IBinderMetadata
+        private class NonValueBinderMetadataAttribute : Attribute, IBindingSourceMetadata
         {
+            public BindingSource BindingSource { get { return BindingSource.Body; } }
         }
 
-        private class ValueBinderMetadataAttribute : Attribute, IValueProviderMetadata
+        private class ValueBinderMetadataAttribute : Attribute, IBindingSourceMetadata
         {
+            public BindingSource BindingSource { get { return BindingSource.Query; } }
         }
 
         public class ExcludedProvider : IPropertyBindingPredicateProvider

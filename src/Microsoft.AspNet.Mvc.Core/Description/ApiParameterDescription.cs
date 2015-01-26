@@ -27,9 +27,9 @@ namespace Microsoft.AspNet.Mvc.Description
         public ApiParameterRouteInfo RouteInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="ApiParameterSource"/>.
+        /// Gets or sets the <see cref="BindingSource"/>.
         /// </summary>
-        public ApiParameterSource Source { get; set; }
+        public BindingSource Source { get; set; }
 
         /// <summary>
         /// Gets or sets the parameter type.

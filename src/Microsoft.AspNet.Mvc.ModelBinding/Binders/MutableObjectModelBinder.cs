@@ -54,16 +54,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var isTopLevelObject = bindingContext.ModelMetadata.ContainerType == null;
             var hasExplicitAlias = bindingContext.ModelMetadata.BinderModelName != null;
 
-            // The fact that this has reached here,
-            // it is a complex object which was not directly bound by any previous model binders.
-            // Check if this was supposed to be handled by a non value provider based binder.
-            // if it was then it should be not be bound using mutable object binder.
-            // This check would prevent it from recursing in if a model contains a property of its own type.
+            // If we get here the model is a complex object which was not directly bound by any previous model binder,
+            // so we want to decide if we want to continue binding. This is important to get right to avoid infinite
+            // recursion.
+            //
+            // First, we want to make sure this object is allowed to come from a value provider source as this binder
+            // will always include value provider data. For instance if the model is marked with [FromBody], then we
+            // can just skip it. A greedy source cannot be a value provider.
+            //
+            // If the model isn't marked with ANY binding source, then we assume it's ok also.
+            //
             // We skip this check if it is a top level object because we want to always evaluate
             // the creation of top level object (this is also required for ModelBinderAttribute to work.)
+            var bindingSource = BindingSource.GetBindingSource(bindingContext.ModelMetadata.BinderMetadata);
             if (!isTopLevelObject &&
-                bindingContext.ModelMetadata.BinderMetadata != null &&
-                !(bindingContext.ModelMetadata.BinderMetadata is IValueProviderMetadata))
+                bindingSource != null &&
+                bindingSource.IsGreedy)
             {
                 return false;
             }
@@ -103,18 +109,37 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private async Task<bool> CanValueBindAnyModelProperties(MutableObjectBinderContext context)
         {
-            // We need to enumerate the non marked properties and properties marked with IValueProviderMetadata
-            // instead of checking bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName)
-            // because there can be a case where a value provider might be willing to provide a marked property,
-            // which might never be bound.
-            // For example if person.Name is marked with FromQuery, and FormValueProvider has a key person.Name,
-            // and the QueryValueProvider does not, we do not want to create Person.
+            // We want to check to see if any of the properties of the model can be bound using the value providers,
+            // because that's all that MutableObjectModelBinder can handle.
+            //
+            // However, because a property might specify a custom binding source ([FromForm]), it's not correct
+            // for us to just try bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName),
+            // because that may include ALL value providers - that would lead us to mistakenly create the model
+            // when the data is coming from a source we should use (ex: value found in query string, but the 
+            // model has [FromForm]).
+            //
+            // To do this we need to enumerate the properties, and see which of them provide a binding source
+            // through metadata, then we decide what to do.
+            //
+            //      If a property has a binding source, and it's a greedy source, then it's not
+            //      allowed to come from a value provider, so we skip it.
+            //
+            //      If a property has a binding source, and it's a non-greedy source, then we'll filter the
+            //      the value providers to just that source, and see if we can find a matching prefix
+            //      (see CanBindValue).
+            //
+            //      If a property does not have a binding source, then it's fair game for any value provider.
+            //
+            // If any property meets the above conditions and has a value from valueproviders, then we'll
+            // create the model and try to bind it. OR if ALL properties of the model have a greedy source, 
+            // then we go ahead and create it.
+            //
             var isAnyPropertyEnabledForValueProviderBasedBinding = false;
             foreach (var propertyMetadata in context.PropertyMetadata)
             {
                 // This check will skip properties which are marked explicitly using a non value binder.
-                if (propertyMetadata.BinderMetadata == null ||
-                    propertyMetadata.BinderMetadata is IValueProviderMetadata)
+                var bindingSource = BindingSource.GetBindingSource(propertyMetadata.BinderMetadata);
+                if (bindingSource == null || !bindingSource.IsGreedy)
                 {
                     isAnyPropertyEnabledForValueProviderBasedBinding = true;
 
@@ -141,15 +166,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private async Task<bool> CanBindValue(ModelBindingContext bindingContext, ModelMetadata metadata)
         {
             var valueProvider = bindingContext.ValueProvider;
-            var valueProviderMetadata = metadata.BinderMetadata as IValueProviderMetadata;
-            if (valueProviderMetadata != null)
+
+            var bindingSource = BindingSource.GetBindingSource(metadata.BinderMetadata);
+            if (bindingSource != null && !bindingSource.IsGreedy)
             {
-                // if there is a binder metadata and since the property can be bound using a value provider.
-                var metadataAwareValueProvider =
-                    bindingContext.OperationBindingContext.ValueProvider as IMetadataAwareValueProvider;
-                if (metadataAwareValueProvider != null)
+                var rootValueProvider = bindingContext.OperationBindingContext.ValueProvider as IBindingSourceValueProvider;
+                if (rootValueProvider != null)
                 {
-                    valueProvider = metadataAwareValueProvider.Filter(valueProviderMetadata);
+                    valueProvider = rootValueProvider.Filter(bindingSource);
                 }
             }
 

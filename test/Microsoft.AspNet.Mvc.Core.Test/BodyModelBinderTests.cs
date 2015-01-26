@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc
                               .Verifiable();
 
             var bindingContext = GetBindingContext(typeof(Person), inputFormatter: mockInputFormatter.Object);
-            bindingContext.ModelMetadata.BinderMetadata = Mock.Of<IFormatterBinderMetadata>();
+            bindingContext.ModelMetadata.BinderMetadata = new FromBodyAttribute();
 
             var binder = GetBodyBinder(mockInputFormatter.Object, mockValidator.Object);
 
@@ -47,7 +47,8 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
-            bindingContext.ModelMetadata.BinderMetadata = Mock.Of<IFormatterBinderMetadata>();
+            bindingContext.ModelMetadata.BinderMetadata = new FromBodyAttribute();
+
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
@@ -61,22 +62,61 @@ namespace Microsoft.AspNet.Mvc
             Assert.True(bindingContext.ModelState.ContainsKey("someName"));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task BindModel_IsMetadataAware(bool useBody)
+        [Fact]
+        public async Task BindModel_IsGreedy()
         {
             // Arrange
+            var metadata = new Mock<IBindingSourceMetadata>();
+            metadata.SetupGet(m => m.BindingSource).Returns(BindingSource.Body);
+
             var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
-            bindingContext.ModelMetadata.BinderMetadata = useBody ? Mock.Of<IFormatterBinderMetadata>() :
-                                                                  Mock.Of<IBinderMetadata>();
+            bindingContext.ModelMetadata.BinderMetadata = metadata.Object;
+
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Equal(useBody, binderResult);
+            Assert.True(binderResult);
+        }
+
+        [Fact]
+        public async Task BindModel_IsGreedy_IgnoresWrongSource()
+        {
+            // Arrange
+            var metadata = new Mock<IBindingSourceMetadata>();
+            metadata.SetupGet(m => m.BindingSource).Returns(BindingSource.Header);
+
+            var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
+            bindingContext.ModelMetadata.BinderMetadata = metadata.Object;
+
+            var binder = bindingContext.OperationBindingContext.ModelBinder;
+
+            // Act
+            var binderResult = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.False(binderResult);
+        }
+
+        [Fact]
+        public async Task BindModel_IsGreedy_IgnoresMetadataWithNoSource()
+        {
+            // Arrange
+            var metadata = new Mock<IBindingSourceMetadata>();
+            metadata.SetupGet(m => m.BindingSource).Returns((BindingSource)null);
+
+            var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
+            bindingContext.ModelMetadata.BinderMetadata = metadata.Object;
+
+            var binder = bindingContext.OperationBindingContext.ModelBinder;
+
+            // Act
+            var binderResult = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.False(binderResult);
         }
 
         private static ModelBindingContext GetBindingContext(Type modelType, IInputFormatter inputFormatter)

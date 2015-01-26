@@ -145,6 +145,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private class TestBinderTypeProvider : IBinderTypeProviderMetadata
         {
             public Type BinderType { get; set; }
+
+            public BindingSource BindingSource { get; set; }
         }
 
         private class TestPredicateProvider : IPropertyBindingPredicateProvider

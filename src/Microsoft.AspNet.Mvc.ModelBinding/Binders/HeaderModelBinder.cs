@@ -9,15 +9,21 @@ using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// A <see cref="MetadataAwareBinder{IHeaderBinderMetadata}"/> which uses <see cref="Http.HttpRequest.Headers"/>
-    /// to bind the model.
+    /// An <see cref="IModelBinder"/> which binds models from the request headers when a model 
+    /// has the binding source <see cref="BindingSource.Header"/>/
     /// </summary>
-    public class HeaderModelBinder : MetadataAwareBinder<IHeaderBinderMetadata>
+    public class HeaderModelBinder : BindingSourceModelBinder
     {
+        /// <summary>
+        /// Creates a new <see cref="HeaderModelBinder"/>.
+        /// </summary>
+        public HeaderModelBinder()
+            : base(BindingSource.Header)
+        {
+        }
+
         /// <inheritdoc />
-        protected override Task<bool> BindAsync(
-            [NotNull] ModelBindingContext bindingContext,
-            [NotNull] IHeaderBinderMetadata metadata)
+        protected override Task BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
         {
             var request = bindingContext.OperationBindingContext.HttpContext.Request;
             var modelMetadata = bindingContext.ModelMetadata;
@@ -38,8 +44,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var values = request.Headers.GetCommaSeparatedValues(headerName);
                 if (values != null)
                 {
-                    bindingContext.Model =
-                        ModelBindingHelper.ConvertValuesToCollectionType(bindingContext.ModelType, values);
+                    bindingContext.Model = ModelBindingHelper.ConvertValuesToCollectionType(
+                        bindingContext.ModelType,
+                        values);
                 }
             }
 

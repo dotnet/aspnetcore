@@ -91,8 +91,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             return bindingContext;
         }
 
-        public class TestFromHeader : IHeaderBinderMetadata
+        public class TestFromHeader : IBindingSourceMetadata
         {
+            public BindingSource BindingSource { get; } = BindingSource.Header;
         }
     }
 }

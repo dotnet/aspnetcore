@@ -11,9 +11,10 @@ using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class ReadableStringCollectionValueProvider<TBinderMetadata> :
-        MetadataAwareValueProvider<TBinderMetadata>, IEnumerableValueProvider
-        where TBinderMetadata : IValueProviderMetadata
+    /// <summary>
+    /// An <see cref="IValueProvider"/> adapter for data stored in an <see cref="IReadableStringCollection"/>.
+    /// </summary>
+    public class ReadableStringCollectionValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
     {
         private readonly CultureInfo _culture;
         private readonly Func<Task<IReadableStringCollection>> _valuesFactory;
@@ -23,9 +24,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Creates a provider for <see cref="IReadableStringCollection"/> wrapping an existing set of key value pairs.
         /// </summary>
+        /// <param name="bindingSource">The <see cref="BindingSource"/> for the data.</param>
         /// <param name="values">The key value pairs to wrap.</param>
         /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
-        public ReadableStringCollectionValueProvider([NotNull] IReadableStringCollection values, CultureInfo culture)
+        public ReadableStringCollectionValueProvider(
+            [NotNull] BindingSource bindingSource,
+            [NotNull] IReadableStringCollection values, 
+            CultureInfo culture)
+            : base(bindingSource)
         {
             _values = values;
             _culture = culture;
@@ -35,10 +41,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Creates a provider for <see cref="IReadableStringCollection"/> wrapping an
         /// existing set of key value pairs provided by the delegate.
         /// </summary>
+        /// <param name="bindingSource">The <see cref="BindingSource"/> for the data.</param>
         /// <param name="values">The delegate that provides the key value pairs to wrap.</param>
         /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
-        public ReadableStringCollectionValueProvider([NotNull] Func<Task<IReadableStringCollection>> valuesFactory,
-                                                     CultureInfo culture)
+        public ReadableStringCollectionValueProvider(
+            [NotNull] BindingSource bindingSource,
+            [NotNull] Func<Task<IReadableStringCollection>> valuesFactory,
+            CultureInfo culture)
+            : base(bindingSource)
         {
             _valuesFactory = valuesFactory;
             _culture = culture;

@@ -6,8 +6,16 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace ModelBindingWebSite
 {
-    public class FromTestAttribute : Attribute, IBinderMetadata
+    public class FromTestAttribute : Attribute, IBindingSourceMetadata
     {
+        public static readonly BindingSource TestBindingSource = new BindingSource(
+            "Test",
+            displayName: null,
+            isGreedy: true,
+            isFromRequest: true);
+
+        public BindingSource BindingSource { get { return TestBindingSource; } }
+
         public object Value { get; set; }
     }
 }

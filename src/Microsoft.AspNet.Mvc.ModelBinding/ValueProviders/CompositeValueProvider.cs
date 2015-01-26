@@ -12,8 +12,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// <summary>
     /// Represents a <see cref="IValueProvider"/> whose values come from a collection of <see cref="IValueProvider"/>s.
     /// </summary>
-    public class CompositeValueProvider
-        : Collection<IValueProvider>, IEnumerableValueProvider, IMetadataAwareValueProvider
+    public class CompositeValueProvider :
+        Collection<IValueProvider>, 
+        IEnumerableValueProvider, 
+        IBindingSourceValueProvider
     {
         /// <summary>
         /// Initializes a new instance of <see cref="CompositeValueProvider"/>.
@@ -122,12 +124,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public IValueProvider Filter(IValueProviderMetadata valueBinderMetadata)
+        public IValueProvider Filter(BindingSource bindingSource)
         {
             var filteredValueProviders = new List<IValueProvider>();
-            foreach (var valueProvider in this.OfType<IMetadataAwareValueProvider>())
+            foreach (var valueProvider in this.OfType<IBindingSourceValueProvider>())
             {
-                var result = valueProvider.Filter(valueBinderMetadata);
+                var result = valueProvider.Filter(bindingSource);
                 if (result != null)
                 {
                     filteredValueProviders.Add(result);

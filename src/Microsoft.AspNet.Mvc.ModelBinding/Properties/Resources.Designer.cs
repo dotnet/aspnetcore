@@ -474,6 +474,198 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinderUtil_ValueInvalidGeneric"), p0);
         }
 
+        /// <summary>
+        /// Body
+        /// </summary>
+        internal static string BindingSource_Body
+        {
+            get { return GetString("BindingSource_Body"); }
+        }
+
+        /// <summary>
+        /// Body
+        /// </summary>
+        internal static string FormatBindingSource_Body()
+        {
+            return GetString("BindingSource_Body");
+        }
+
+        /// <summary>
+        /// Custom
+        /// </summary>
+        internal static string BindingSource_Custom
+        {
+            get { return GetString("BindingSource_Custom"); }
+        }
+
+        /// <summary>
+        /// Custom
+        /// </summary>
+        internal static string FormatBindingSource_Custom()
+        {
+            return GetString("BindingSource_Custom");
+        }
+
+        /// <summary>
+        /// Form
+        /// </summary>
+        internal static string BindingSource_Form
+        {
+            get { return GetString("BindingSource_Form"); }
+        }
+
+        /// <summary>
+        /// Form
+        /// </summary>
+        internal static string FormatBindingSource_Form()
+        {
+            return GetString("BindingSource_Form");
+        }
+
+        /// <summary>
+        /// Header
+        /// </summary>
+        internal static string BindingSource_Header
+        {
+            get { return GetString("BindingSource_Header"); }
+        }
+
+        /// <summary>
+        /// Header
+        /// </summary>
+        internal static string FormatBindingSource_Header()
+        {
+            return GetString("BindingSource_Header");
+        }
+
+        /// <summary>
+        /// Services
+        /// </summary>
+        internal static string BindingSource_Services
+        {
+            get { return GetString("BindingSource_Services"); }
+        }
+
+        /// <summary>
+        /// Services
+        /// </summary>
+        internal static string FormatBindingSource_Services()
+        {
+            return GetString("BindingSource_Services");
+        }
+
+        /// <summary>
+        /// ModelBinding
+        /// </summary>
+        internal static string BindingSource_ModelBinding
+        {
+            get { return GetString("BindingSource_ModelBinding"); }
+        }
+
+        /// <summary>
+        /// ModelBinding
+        /// </summary>
+        internal static string FormatBindingSource_ModelBinding()
+        {
+            return GetString("BindingSource_ModelBinding");
+        }
+
+        /// <summary>
+        /// Path
+        /// </summary>
+        internal static string BindingSource_Path
+        {
+            get { return GetString("BindingSource_Path"); }
+        }
+
+        /// <summary>
+        /// Path
+        /// </summary>
+        internal static string FormatBindingSource_Path()
+        {
+            return GetString("BindingSource_Path");
+        }
+
+        /// <summary>
+        /// Query
+        /// </summary>
+        internal static string BindingSource_Query
+        {
+            get { return GetString("BindingSource_Query"); }
+        }
+
+        /// <summary>
+        /// Query
+        /// </summary>
+        internal static string FormatBindingSource_Query()
+        {
+            return GetString("BindingSource_Query");
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is a composite. '{1}' requires that the source must represent a single type of input.
+        /// </summary>
+        internal static string BindingSource_CannotBeComposite
+        {
+            get { return GetString("BindingSource_CannotBeComposite"); }
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is a composite. '{1}' requires that the source must represent a single type of input.
+        /// </summary>
+        internal static string FormatBindingSource_CannotBeComposite(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_CannotBeComposite"), p0, p1);
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is not a request-based binding source. '{1}' requires that the source must represent data from an HTTP request.
+        /// </summary>
+        internal static string BindingSource_MustBeFromRequest
+        {
+            get { return GetString("BindingSource_MustBeFromRequest"); }
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is not a request-based binding source. '{1}' requires that the source must represent data from an HTTP request.
+        /// </summary>
+        internal static string FormatBindingSource_MustBeFromRequest(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_MustBeFromRequest"), p0, p1);
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is a greedy data source. '{1}' does not support greedy data sources.
+        /// </summary>
+        internal static string BindingSource_CannotBeGreedy
+        {
+            get { return GetString("BindingSource_CannotBeGreedy"); }
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is a greedy data source. '{1}' does not support greedy data sources.
+        /// </summary>
+        internal static string FormatBindingSource_CannotBeGreedy(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_CannotBeGreedy"), p0, p1);
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is not a greedy data source. '{1}' only supports greedy data sources.
+        /// </summary>
+        internal static string BindingSource_MustBeGreedy
+        {
+            get { return GetString("BindingSource_MustBeGreedy"); }
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is not a greedy data source. '{1}' only supports greedy data sources.
+        /// </summary>
+        internal static string FormatBindingSource_MustBeGreedy(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_MustBeGreedy"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -8,17 +8,29 @@ using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class DictionaryBasedValueProvider<TBinderMetadata> : MetadataAwareValueProvider<TBinderMetadata>
-        where TBinderMetadata : IValueProviderMetadata
+    /// <summary>
+    /// An <see cref="IValueProvider"/> adapter for data stored in an
+    /// <see cref="IDictionary{string, object}"/>.
+    /// </summary>
+    public class DictionaryBasedValueProvider: BindingSourceValueProvider
     {
         private readonly IDictionary<string, object> _values;
         private PrefixContainer _prefixContainer;
 
-        public DictionaryBasedValueProvider(IDictionary<string, object> values)
+        /// <summary>
+        /// Creates a new <see cref="DictionaryBasedValueProvider"/>.
+        /// </summary>
+        /// <param name="bindingSource">The <see cref="BindingSource"/> of the data.</param>
+        /// <param name="values">The values.</param>
+        public DictionaryBasedValueProvider(
+            [NotNull] BindingSource bindingSource,
+            [NotNull] IDictionary<string, object> values)
+            : base(bindingSource)
         {
             _values = values;
         }
 
+        /// <inheritdoc />
         public override Task<bool> ContainsPrefixAsync(string key)
         {
             var prefixContainer = GetOrCreatePrefixContainer();
@@ -35,6 +47,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return _prefixContainer;
         }
 
+        /// <inheritdoc />
         public override Task<ValueProviderResult> GetValueAsync([NotNull] string key)
         {
             object value;

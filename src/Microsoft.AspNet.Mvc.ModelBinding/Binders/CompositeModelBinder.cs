@@ -137,21 +137,32 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             newBindingContext.OperationBindingContext.BodyBindingState = GetBodyBindingState(oldBindingContext);
 
-            // look at the value providers and see if they need to be restricted.
-            var metadata = oldBindingContext.ModelMetadata.BinderMetadata as IValueProviderMetadata;
-            if (metadata != null)
+            // If the property has a specified data binding sources, we need to filter the set of value providers
+            // to just those that match. We can skip filtering when IsGreedy == true, because that can't use
+            // value providers.
+            //
+            // We also want to base this filtering on the - top-level value profider in case the data source
+            // on this property doesn't intersect with the ambient data source.
+            //
+            // Ex:
+            //
+            // public class Person
+            // {
+            //      [FromQuery]
+            //      public int Id { get; set; }
+            // }
+            //
+            // public IActionResult UpdatePerson([FromForm] Person person) { }
+            //
+            // In this example, [FromQuery] overrides the ambient data source (form).
+            var bindingSource = BindingSource.GetBindingSource(oldBindingContext.ModelMetadata.BinderMetadata);
+            if (bindingSource != null && !bindingSource.IsGreedy)
             {
-                // ValueProvider property might contain a filtered list of value providers.
-                // While deciding to bind a particular property which is annotated with a IValueProviderMetadata,
-                // instead of refiltering an already filtered list, we need to filter value providers from a global
-                // list of all value providers. This is so that every artifact that is explicitly marked using an
-                // IValueProviderMetadata can restrict model binding to only use value providers which support this
-                // IValueProviderMetadata.
                 var valueProvider =
-                    oldBindingContext.OperationBindingContext.ValueProvider as IMetadataAwareValueProvider;
+                    oldBindingContext.OperationBindingContext.ValueProvider as IBindingSourceValueProvider;
                 if (valueProvider != null)
                 {
-                    newBindingContext.ValueProvider = valueProvider.Filter(metadata);
+                    newBindingContext.ValueProvider = valueProvider.Filter(bindingSource);
                 }
             }
 
@@ -160,27 +171,29 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static BodyBindingState GetBodyBindingState(ModelBindingContext oldBindingContext)
         {
-            var binderMetadata = oldBindingContext.ModelMetadata.BinderMetadata;
-            var newIsFormatterBasedMetadataFound = binderMetadata is IFormatterBinderMetadata;
-            var newIsFormBasedMetadataFound = binderMetadata is IFormDataValueProviderMetadata;
-            var currentModelNeedsToReadBody = newIsFormatterBasedMetadataFound || newIsFormBasedMetadataFound;
+            var bindingSource = BindingSource.GetBindingSource(oldBindingContext.ModelMetadata.BinderMetadata);
+
+            var willReadBodyWithFormatter = bindingSource == BindingSource.Body;
+            var willReadBodyAsFormData = bindingSource == BindingSource.Form;
+
+            var currentModelNeedsToReadBody = willReadBodyWithFormatter || willReadBodyAsFormData;
             var oldState = oldBindingContext.OperationBindingContext.BodyBindingState;
 
             // We need to throw if there are multiple models which can cause body to be read multiple times.
             // Reading form data multiple times is ok since we cache form data. For the models marked to read using
             // formatters, multiple reads are not allowed.
             if (oldState == BodyBindingState.FormatterBased && currentModelNeedsToReadBody ||
-                oldState == BodyBindingState.FormBased && newIsFormatterBasedMetadataFound)
+                oldState == BodyBindingState.FormBased && willReadBodyWithFormatter)
             {
                 throw new InvalidOperationException(Resources.MultipleBodyParametersOrPropertiesAreNotAllowed);
             }
 
             var state = oldBindingContext.OperationBindingContext.BodyBindingState;
-            if (newIsFormatterBasedMetadataFound)
+            if (willReadBodyWithFormatter)
             {
                 state = BodyBindingState.FormatterBased;
             }
-            else if (newIsFormBasedMetadataFound && oldState != BodyBindingState.FormatterBased)
+            else if (willReadBodyAsFormData && oldState != BodyBindingState.FormatterBased)
             {
                 // Only update the model binding state if we have not discovered formatter based state already.
                 state = BodyBindingState.FormBased;

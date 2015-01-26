@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.Description
             var description = Assert.Single(descriptions);
 
             var parameter = Assert.Single(description.ParameterDescriptions);
-            Assert.Equal(ApiParameterSource.Path, parameter.Source);
+            Assert.Equal(BindingSource.Path, parameter.Source);
             Assert.Equal(isOptional, parameter.RouteInfo.IsOptional);
             Assert.Equal("id", parameter.Name);
 
@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.Mvc.Description
             var description = Assert.Single(descriptions);
 
             var parameter = Assert.Single(description.ParameterDescriptions);
-            Assert.Equal(ApiParameterSource.Path, parameter.Source);
+            Assert.Equal(BindingSource.Path, parameter.Source);
             Assert.Equal(isOptional, parameter.RouteInfo.IsOptional);
             Assert.Equal("id", parameter.Name);
 
@@ -219,6 +219,8 @@ namespace Microsoft.AspNet.Mvc.Description
             var action = CreateActionDescriptor(methodName);
             action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
 
+            var expected = new BindingSource(source, displayName: null, isGreedy: false, isFromRequest: false);
+
             // Act
             var descriptions = GetApiDescriptions(action);
 
@@ -226,7 +228,7 @@ namespace Microsoft.AspNet.Mvc.Description
             var description = Assert.Single(descriptions);
             var parameters = description.ParameterDescriptions;
 
-            var id = Assert.Single(parameters, p => p.Source == new ApiParameterSource(source, displayName: null));
+            var id = Assert.Single(parameters, p => p.Source == expected);
             Assert.Null(id.RouteInfo);
         }
 
@@ -248,6 +250,8 @@ namespace Microsoft.AspNet.Mvc.Description
             var action = CreateActionDescriptor(methodName);
             action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
 
+            var expected = new BindingSource(source, displayName: null, isGreedy: false, isFromRequest: false);
+
             // Act
             var descriptions = GetApiDescriptions(action);
 
@@ -255,7 +259,7 @@ namespace Microsoft.AspNet.Mvc.Description
             var description = Assert.Single(descriptions);
             var parameters = description.ParameterDescriptions;
 
-            var id = Assert.Single(parameters, p => p.Source == new ApiParameterSource(source, displayName: null));
+            var id = Assert.Single(parameters, p => p.Source == expected);
             Assert.NotNull(id.RouteInfo);
         }
 
@@ -318,11 +322,11 @@ namespace Microsoft.AspNet.Mvc.Description
             // Assert
             var description = Assert.Single(descriptions);
             var id1 = Assert.Single(description.ParameterDescriptions, p => p.Name == "id1");
-            Assert.Equal(ApiParameterSource.Path, id1.Source);
+            Assert.Equal(BindingSource.Path, id1.Source);
             Assert.Empty(id1.RouteInfo.Constraints);
 
             var id2 = Assert.Single(description.ParameterDescriptions, p => p.Name == "id2");
-            Assert.Equal(ApiParameterSource.Path, id2.Source);
+            Assert.Equal(BindingSource.Path, id2.Source);
             Assert.IsType<IntRouteConstraint>(Assert.Single(id2.RouteInfo.Constraints));
         }
 
@@ -537,7 +541,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("product", parameter.Name);
-            Assert.Same(ApiParameterSource.ModelBinding, parameter.Source);
+            Assert.Same(BindingSource.ModelBinding, parameter.Source);
         }
 
         [Fact]
@@ -554,7 +558,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("id", parameter.Name);
-            Assert.Same(ApiParameterSource.Path, parameter.Source);
+            Assert.Same(BindingSource.Path, parameter.Source);
         }
 
         [Fact]
@@ -571,7 +575,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("id", parameter.Name);
-            Assert.Same(ApiParameterSource.Query, parameter.Source);
+            Assert.Same(BindingSource.Query, parameter.Source);
         }
 
         [Fact]
@@ -588,7 +592,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("product", parameter.Name);
-            Assert.Same(ApiParameterSource.Body, parameter.Source);
+            Assert.Same(BindingSource.Body, parameter.Source);
         }
 
         [Fact]
@@ -605,7 +609,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("product", parameter.Name);
-            Assert.Same(ApiParameterSource.Form, parameter.Source);
+            Assert.Same(BindingSource.Form, parameter.Source);
         }
 
         [Fact]
@@ -622,7 +626,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("id", parameter.Name);
-            Assert.Same(ApiParameterSource.Header, parameter.Source);
+            Assert.Same(BindingSource.Header, parameter.Source);
         }
 
         // 'Hidden' parameters are hidden (not returned).
@@ -654,7 +658,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("product", parameter.Name);
-            Assert.Same(ApiParameterSource.Custom, parameter.Source);
+            Assert.Same(BindingSource.Custom, parameter.Source);
         }
 
         [Fact]
@@ -671,7 +675,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("product", parameter.Name);
-            Assert.Same(ApiParameterSource.ModelBinding, parameter.Source);
+            Assert.Same(BindingSource.ModelBinding, parameter.Source);
         }
 
         [Fact]
@@ -689,19 +693,19 @@ namespace Microsoft.AspNet.Mvc.Description
             Assert.Equal(4, description.ParameterDescriptions.Count);
 
             var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
-            Assert.Same(ApiParameterSource.Path, id.Source);
+            Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
 
             var product = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product");
-            Assert.Same(ApiParameterSource.Body, product.Source);
+            Assert.Same(BindingSource.Body, product.Source);
             Assert.Equal(typeof(Product), product.Type);
 
             var userId = Assert.Single(description.ParameterDescriptions, p => p.Name == "UserId");
-            Assert.Same(ApiParameterSource.Header, userId.Source);
+            Assert.Same(BindingSource.Header, userId.Source);
             Assert.Equal(typeof(string), userId.Type);
 
             var comments = Assert.Single(description.ParameterDescriptions, p => p.Name == "Comments");
-            Assert.Same(ApiParameterSource.ModelBinding, comments.Source);
+            Assert.Same(BindingSource.ModelBinding, comments.Source);
             Assert.Equal(typeof(string), comments.Type);
         }
 
@@ -721,19 +725,19 @@ namespace Microsoft.AspNet.Mvc.Description
             Assert.Equal(4, description.ParameterDescriptions.Count);
 
             var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
-            Assert.Same(ApiParameterSource.Path, id.Source);
+            Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
 
             var product = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product");
-            Assert.Same(ApiParameterSource.Body, product.Source);
+            Assert.Same(BindingSource.Body, product.Source);
             Assert.Equal(typeof(Product), product.Type);
 
             var userId = Assert.Single(description.ParameterDescriptions, p => p.Name == "UserId");
-            Assert.Same(ApiParameterSource.Header, userId.Source);
+            Assert.Same(BindingSource.Header, userId.Source);
             Assert.Equal(typeof(string), userId.Type);
 
             var comments = Assert.Single(description.ParameterDescriptions, p => p.Name == "Comments");
-            Assert.Same(ApiParameterSource.Query, comments.Source);
+            Assert.Same(BindingSource.Query, comments.Source);
             Assert.Equal(typeof(string), comments.Type);
         }
 
@@ -752,19 +756,19 @@ namespace Microsoft.AspNet.Mvc.Description
             Assert.Equal(4, description.ParameterDescriptions.Count);
 
             var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
-            Assert.Same(ApiParameterSource.Path, id.Source);
+            Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
 
             var quantity = Assert.Single(description.ParameterDescriptions, p => p.Name == "Quantity");
-            Assert.Same(ApiParameterSource.ModelBinding, quantity.Source);
+            Assert.Same(BindingSource.ModelBinding, quantity.Source);
             Assert.Equal(typeof(int), quantity.Type);
 
             var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Id");
-            Assert.Same(ApiParameterSource.ModelBinding, productId.Source);
+            Assert.Same(BindingSource.ModelBinding, productId.Source);
             Assert.Equal(typeof(int), productId.Type);
 
             var price = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Price");
-            Assert.Same(ApiParameterSource.Query, price.Source);
+            Assert.Same(BindingSource.Query, price.Source);
             Assert.Equal(typeof(decimal), price.Type);
         }
 
@@ -784,15 +788,15 @@ namespace Microsoft.AspNet.Mvc.Description
             Assert.Equal(3, description.ParameterDescriptions.Count);
 
             var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
-            Assert.Same(ApiParameterSource.Path, id.Source);
+            Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
 
             var quantity = Assert.Single(description.ParameterDescriptions, p => p.Name == "Quantity");
-            Assert.Same(ApiParameterSource.Query, quantity.Source);
+            Assert.Same(BindingSource.Query, quantity.Source);
             Assert.Equal(typeof(int), quantity.Type);
 
             var product = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product");
-            Assert.Same(ApiParameterSource.Query, product.Source);
+            Assert.Same(BindingSource.Query, product.Source);
             Assert.Equal(typeof(OrderProductDTO), product.Type);
         }
 
@@ -810,7 +814,7 @@ namespace Microsoft.AspNet.Mvc.Description
             var description = Assert.Single(descriptions);
 
             var c = Assert.Single(description.ParameterDescriptions);
-            Assert.Same(ApiParameterSource.Query, c.Source);
+            Assert.Same(BindingSource.Query, c.Source);
             Assert.Equal("C.C", c.Name);
             Assert.Equal(typeof(Cycle1), c.Type);
         }
@@ -829,7 +833,7 @@ namespace Microsoft.AspNet.Mvc.Description
             var description = Assert.Single(descriptions);
 
             var products = Assert.Single(description.ParameterDescriptions);
-            Assert.Same(ApiParameterSource.Query, products.Source);
+            Assert.Same(BindingSource.Query, products.Source);
             Assert.Equal("Products", products.Name);
             Assert.Equal(typeof(Product[]), products.Type);
         }
@@ -849,7 +853,7 @@ namespace Microsoft.AspNet.Mvc.Description
             var description = Assert.Single(descriptions);
 
             var c = Assert.Single(description.ParameterDescriptions);
-            Assert.Same(ApiParameterSource.ModelBinding, c.Source);
+            Assert.Same(BindingSource.ModelBinding, c.Source);
             Assert.Equal("c", c.Name);
             Assert.Equal(typeof(HasCollection_Complex), c.Type);
         }
@@ -868,7 +872,7 @@ namespace Microsoft.AspNet.Mvc.Description
             var description = Assert.Single(descriptions);
 
             var r = Assert.Single(description.ParameterDescriptions);
-            Assert.Same(ApiParameterSource.Query, r.Source);
+            Assert.Same(BindingSource.Query, r.Source);
             Assert.Equal("r", r.Name);
             Assert.Equal(typeof(RedundentMetadata), r.Type);
         }
@@ -887,11 +891,11 @@ namespace Microsoft.AspNet.Mvc.Description
             var description = Assert.Single(descriptions);
 
             var name = Assert.Single(description.ParameterDescriptions, p => p.Name == "Name");
-            Assert.Same(ApiParameterSource.Header, name.Source);
+            Assert.Same(BindingSource.Header, name.Source);
             Assert.Equal(typeof(string), name.Type);
 
             var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
-            Assert.Same(ApiParameterSource.Form, id.Source);
+            Assert.Same(BindingSource.Form, id.Source);
             Assert.Equal(typeof(int), id.Type);
         }
 

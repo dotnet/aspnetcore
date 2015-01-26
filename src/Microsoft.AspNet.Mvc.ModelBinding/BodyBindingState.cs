@@ -15,13 +15,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         NotBodyBased,
 
         /// <summary>
-        /// Represents if there is a <see cref="IFormatterBinderMetadata"/> that
+        /// Represents if there is a <see cref="BindingSource.Body"/> that
         /// has been found during the current model binding process.
         /// </summary>
         FormatterBased,
 
         /// <summary>
-        /// Represents if there is a <see cref = "IFormDataValueProviderMetadata" /> that
+        /// Represents if there is a <see cref = "BindingSource.Form" /> that
         /// has been found during the current model binding process.
         /// </summary>
         FormBased

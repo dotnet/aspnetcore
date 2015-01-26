@@ -170,6 +170,22 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             return string.Format(CultureInfo.CurrentCulture, GetString("CreatedAtRoute_RouteFailed"), p0);
         }
 
+        /// <summary>
+        /// URL
+        /// </summary>
+        internal static string BindingSource_URL
+        {
+            get { return GetString("BindingSource_URL"); }
+        }
+
+        /// <summary>
+        /// URL
+        /// </summary>
+        internal static string FormatBindingSource_URL()
+        {
+            return GetString("BindingSource_URL");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

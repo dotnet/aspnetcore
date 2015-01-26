@@ -424,30 +424,6 @@
   <data name="ResponseCache_SpecifyDuration" xml:space="preserve">
     <value>If the '{0}' property is not set to true, '{1}' property must be specified.</value>
   </data>
-  <data name="ApiParameterSource_Body" xml:space="preserve">
-    <value>Body</value>
-  </data>
-  <data name="ApiParameterSource_Custom" xml:space="preserve">
-    <value>Custom</value>
-  </data>
-  <data name="ApiParameterSource_Header" xml:space="preserve">
-    <value>Header</value>
-  </data>
-  <data name="ApiParameterSource_Hidden" xml:space="preserve">
-    <value>Hidden</value>
-  </data>
-  <data name="ApiParameterSource_ModelBinding" xml:space="preserve">
-    <value>ModelBinding</value>
-  </data>
-  <data name="ApiParameterSource_Path" xml:space="preserve">
-    <value>Path</value>
-  </data>
-  <data name="ApiParameterSource_Query" xml:space="preserve">
-    <value>Query</value>
-  </data>
-  <data name="ApiParameterSource_Form" xml:space="preserve">
-    <value>Form</value>
-  </data>
   <data name="ApiExplorer_UnsupportedAction" xml:space="preserve">
     <value>The action '{0}' has ApiExplorer enabled, but is using conventional routing. Only actions which use attribute routing support ApiExplorer.</value>
   </data>

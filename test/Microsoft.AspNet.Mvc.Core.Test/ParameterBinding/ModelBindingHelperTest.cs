@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             {
                 { "", null }
             };
-            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMetadata>(values);
+            var valueProvider = new TestValueProvider(values);
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 { "", null },
                 { "MyProperty", "MyPropertyValue" }
             };
-            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMetadata>(values);
+            var valueProvider = new TestValueProvider(values);
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                 string.Equals(propertyName, "IncludedProperty", StringComparison.OrdinalIgnoreCase) ||
                                 string.Equals(propertyName, "MyProperty", StringComparison.OrdinalIgnoreCase);
 
-            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMetadata>(values);
+            var valueProvider = new TestValueProvider(values);
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 { "ExcludedProperty", "ExcludedPropertyValue" }
             };
 
-            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMetadata>(values);
+            var valueProvider = new TestValueProvider(values);
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
@@ -326,7 +326,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 { "ExcludedProperty", "ExcludedPropertyValue" }
             };
 
-            var valueProvider = new DictionaryBasedValueProvider<TestValueBinderMetadata>(values);
+            var valueProvider = new TestValueProvider(values);
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
@@ -508,10 +508,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             public string IncludedProperty { get; set; }
 
             public string ExcludedProperty { get; set; }
-        }
-
-        private class TestValueBinderMetadata : IValueProviderMetadata
-        {
         }
     }
 }

@@ -13,21 +13,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class CompositeValueProviderTests
     {
-        public static IEnumerable<object[]> RegisteredAsMetadataClasses
-        {
-            get
-            {
-                yield return new object[] { new TestValueProviderMetadata() };
-                yield return new object[] { new DerivedValueBinderMetadata() };
-            }
-        }
-
         [Fact]
         public async Task GetKeysFromPrefixAsync_ReturnsResultFromFirstValueProviderThatReturnsValues()
         {
             // Arrange
             var provider1 = Mock.Of<IValueProvider>();
-            var dictionary =  new Dictionary<string, string>(StringComparer.Ordinal)
+            var dictionary = new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 { "prefix-test", "some-value" },
             };
@@ -62,19 +53,29 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Empty(values);
         }
 
+        public static IEnumerable<object[]> BinderMetadata
+        {
+            get
+            {
+                yield return new object[] { new TestValueProviderMetadata() };
+                yield return new object[] { new DerivedValueProviderMetadata() };
+            }
+        }
+
         [Theory]
-        [MemberData(nameof(RegisteredAsMetadataClasses))]
-        public void FilterReturnsItself_ForAnyClassRegisteredAsGenericParam(IValueProviderMetadata metadata)
+        [MemberData(nameof(BinderMetadata))]
+        public void FilterReturnsItself_ForAnyClassRegisteredAsGenericParam(IBindingSourceMetadata metadata)
         {
             // Arrange
             var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            var unrelatedMetadata = new UnrelatedValueBinderMetadata();
-            var valueProvider1 = GetMockValueProvider(metadata);
-            var valueProvider2 = GetMockValueProvider(unrelatedMetadata);
+
+            var valueProvider1 = GetMockValueProvider("Test");
+            var valueProvider2 = GetMockValueProvider("Unrelated");
+
             var provider = new CompositeValueProvider(new List<IValueProvider>() { valueProvider1.Object, valueProvider2.Object });
 
             // Act
-            var result = provider.Filter(metadata);
+            var result = provider.Filter(metadata.BindingSource);
 
             // Assert
             var valueProvider = Assert.IsType<CompositeValueProvider>(result);
@@ -84,23 +85,45 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Same(valueProvider1.Object, filteredProvider);
         }
 
-        private Mock<IMetadataAwareValueProvider> GetMockValueProvider(IValueProviderMetadata metadata)
+        private Mock<IBindingSourceValueProvider> GetMockValueProvider(string bindingSourceId)
         {
-            var valueProvider = new Mock<IMetadataAwareValueProvider>();
-            valueProvider.Setup(o => o.Filter(metadata))
-                         .Returns(valueProvider.Object);
+            var valueProvider = new Mock<IBindingSourceValueProvider>(MockBehavior.Strict);
+
+            valueProvider
+                .Setup(o => o.Filter(It.Is<BindingSource>(s => s.Id == bindingSourceId)))
+                .Returns(valueProvider.Object);
+
+            valueProvider
+                .Setup(o => o.Filter(It.Is<BindingSource>(s => s.Id != bindingSourceId)))
+                .Returns((IBindingSourceValueProvider)null);
+
             return valueProvider;
         }
-        private class TestValueProviderMetadata : IValueProviderMetadata
+
+        private class TestValueProviderMetadata : IBindingSourceMetadata
+        {
+            public BindingSource BindingSource
+            {
+                get
+                {
+                    return new BindingSource("Test", displayName: null, isGreedy: true, isFromRequest: true);
+                }
+            }
+        }
+
+        private class DerivedValueProviderMetadata : TestValueProviderMetadata
         {
         }
 
-        private class DerivedValueBinderMetadata : TestValueProviderMetadata
+        private class UnrelatedValueBinderMetadata : IBindingSourceMetadata
         {
-        }
-
-        private class UnrelatedValueBinderMetadata : IValueProviderMetadata
-        {
+            public BindingSource BindingSource
+            {
+                get
+                {
+                    return new BindingSource("Unrelated", displayName: null, isGreedy: true, isFromRequest: true);
+                }
+            }
         }
     }
 }

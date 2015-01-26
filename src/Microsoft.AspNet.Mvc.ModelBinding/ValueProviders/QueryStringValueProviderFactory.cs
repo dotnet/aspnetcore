@@ -18,13 +18,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (!storage.TryGetValue(_cacheKey, out value))
             {
                 var queryCollection = context.HttpContext.Request.Query;
-                provider = new ReadableStringCollectionValueProvider<IQueryValueProviderMetadata>(queryCollection,
-                                                                                         CultureInfo.InvariantCulture);
+                provider = new ReadableStringCollectionValueProvider(
+                    BindingSource.Query,
+                    queryCollection,
+                    CultureInfo.InvariantCulture);
+
                 storage[_cacheKey] = provider;
             }
             else
             {
-                provider = (ReadableStringCollectionValueProvider<IQueryValueProviderMetadata>)value;
+                provider = (ReadableStringCollectionValueProvider)value;
             }
             return provider;
         }

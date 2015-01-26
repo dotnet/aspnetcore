@@ -393,12 +393,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             public string Name { get; set; }
         }
 
-        private class NonValueProviderBinderMetadataAttribute : Attribute, IBinderMetadata
+        private class NonValueProviderBinderMetadataAttribute : Attribute, IBindingSourceMetadata
         {
+            public BindingSource BindingSource { get { return BindingSource.Body; } }
         }
 
-        private class ValueProviderMetadataAttribute : Attribute, IValueProviderMetadata
+        private class ValueProviderMetadataAttribute : Attribute, IBindingSourceMetadata
         {
+            public BindingSource BindingSource { get { return BindingSource.Query; } }
         }
 
         [Bind(new string[] { nameof(IncludedExplicitly1), nameof(IncludedExplicitly2) })]
