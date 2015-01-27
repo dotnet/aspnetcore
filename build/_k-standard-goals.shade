@@ -95,12 +95,12 @@ default Configuration='${E("Configuration")}'
 #restore-npm-modules
   -// Find all dirs that contain a package.json file
   var npmDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json")}'
-  npm npmCommand='install' each='var npmDir in npmDirs'
+  npm npmCommand='install ${E("npm_install_options")}' each='var npmDir in npmDirs'
 
 #restore-bower-components
   -// Find all dirs that contain a bower.json file
   var bowerDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "bower.json")}'
-  bower each='var bowerDir in bowerDirs' bowerCommand='install'
+  bower each='var bowerDir in bowerDirs' bowerCommand='install ${E("bower_install_options")}'
 
 #run-grunt .restore-npm-modules .restore-bower-components target='compile'
   -// Find all dirs that contain a gruntfile.js file
@@ -122,6 +122,8 @@ default Configuration='${E("Configuration")}'
   @{
     E("KPM_pack_options"," --quiet");
     E("KPM_restore_options"," --quiet");
+    E("bower_install_options","--quiet");
+    E("npm_install_options","--quiet");
   }
 
 #stylecop if='Directory.Exists("src")'

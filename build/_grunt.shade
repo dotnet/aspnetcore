@@ -6,7 +6,7 @@ var gruntCliInstalled = '${Directory.Exists(Path.Combine(nodeDir, "node_modules"
 var gruntCmd = '${ gruntCliGloballyInstalled ? "grunt" : Path.Combine(nodeDir, "node_modules", "grunt-cli") }'
 
 -// Install grunt-cli locally
-npm npmCommand='install --prefix ${nodeDir} grunt-cli' if='!(gruntCliGloballyInstalled || gruntCliInstalled)' once='installGruntCli'
+npm npmCommand='install ${E("npm_install_options")} --prefix ${nodeDir} grunt-cli' if='!(gruntCliGloballyInstalled || gruntCliInstalled)' once='installGruntCli'
 
 -// Run grunt
 exec program='cmd' commandline='/C ${gruntCmd}' workingdir='${gruntDir}' if='gruntCliGloballyInstalled'
