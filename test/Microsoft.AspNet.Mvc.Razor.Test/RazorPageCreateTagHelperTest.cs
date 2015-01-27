@@ -85,8 +85,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(serviceProvider.Object);
-            var routeContext = new RouteContext(httpContext.Object);
-            var actionContext = new ActionContext(routeContext, new ActionDescriptor());
+
+            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
             var viewContext = new ViewContext(actionContext,
                                               Mock.Of<IView>(),

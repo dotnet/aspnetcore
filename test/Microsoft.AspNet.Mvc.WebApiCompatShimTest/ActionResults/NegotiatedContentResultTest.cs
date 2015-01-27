@@ -27,7 +27,7 @@ namespace System.Web.Http
             var stream = new MemoryStream();
             httpContext.Response.Body = stream;
 
-            var context = new ActionContext(new RouteContext(httpContext), new ActionDescriptor());
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var result = new NegotiatedContentResult<Product>(HttpStatusCode.Ambiguous, new Product());
 
             // Act
@@ -47,7 +47,7 @@ namespace System.Web.Http
             var stream = new MemoryStream();
             httpContext.Response.Body = stream;
 
-            var context = new ActionContext(new RouteContext(httpContext), new ActionDescriptor());
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var result = new NegotiatedContentResult<Product>(HttpStatusCode.Ambiguous, new Product());
 
             // Act

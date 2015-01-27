@@ -27,7 +27,7 @@ namespace System.Web.Http
             var stream = new MemoryStream();
             httpContext.Response.Body = stream;
 
-            var context = new ActionContext(new RouteContext(httpContext), new ActionDescriptor());
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             var modelState = new ModelStateDictionary();
             modelState.AddModelError("product.Name", "Name is required.");
@@ -51,7 +51,7 @@ namespace System.Web.Http
             var stream = new MemoryStream();
             httpContext.Response.Body = stream;
 
-            var context = new ActionContext(new RouteContext(httpContext), new ActionDescriptor());
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             var modelState = new ModelStateDictionary();
             modelState.AddModelError("product.Name", "Name is required.");

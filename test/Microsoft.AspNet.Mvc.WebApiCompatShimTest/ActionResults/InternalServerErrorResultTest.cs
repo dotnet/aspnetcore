@@ -15,7 +15,7 @@ namespace System.Web.Http
         public async Task InternalServerErrorResult_SetsStatusCode()
         {
             // Arrange
-            var context = new ActionContext(new RouteContext(new DefaultHttpContext()), new ActionDescriptor());
+            var context = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
             var result = new InternalServerErrorResult();
 
             // Act

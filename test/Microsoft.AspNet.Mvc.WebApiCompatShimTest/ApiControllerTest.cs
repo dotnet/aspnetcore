@@ -27,7 +27,7 @@ namespace System.Web.Http
             httpContext.User = new ClaimsPrincipal();
 
             var routeContext = new RouteContext(httpContext);
-            var actionContext = new ActionContext(routeContext, new ActionDescriptor());
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
             controller.ActionContext = actionContext;

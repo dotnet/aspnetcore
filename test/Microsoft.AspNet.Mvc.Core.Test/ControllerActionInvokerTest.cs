@@ -2027,9 +2027,8 @@ namespace Microsoft.AspNet.Mvc
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Items)
                    .Returns(new Dictionary<object, object>());
-            var routeContext = new RouteContext(context.Object);
 
-            var actionContext = new ActionContext(routeContext, actionDescriptor);
+            var actionContext = new ActionContext(context.Object, new RouteData(), actionDescriptor);
 
             var controllerFactory = new Mock<IControllerFactory>();
             controllerFactory.Setup(c => c.CreateController(It.IsAny<ActionContext>()))

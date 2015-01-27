@@ -104,8 +104,8 @@ namespace Microsoft.AspNet.Mvc
             var httpContext = new Mock<DefaultHttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(serviceProvider);
-            var routeContext = new RouteContext(httpContext.Object);
-            var actionContext = new ActionContext(routeContext, new ActionDescriptor());
+
+            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
             return new ViewContext(actionContext,
                                               Mock.Of<IView>(),
                                               new ViewDataDictionary(new EmptyModelMetadataProvider()),

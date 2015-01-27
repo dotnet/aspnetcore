@@ -3,9 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Moq;
@@ -53,8 +52,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var actionContext = new ActionContext(
-                new RouteContext(Mock.Of<HttpContext>()),
-                Mock.Of<ActionDescriptor>());
+                new DefaultHttpContext(),
+                new RouteData(),
+                new ControllerActionDescriptor());
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelMetadata = metadataProvider.GetMetadataForType(
@@ -81,8 +81,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var methodInfo = type.GetMethod("ParameterWithNoBindAttribute");
 
             var actionContext = new ActionContext(
-                new RouteContext(Mock.Of<HttpContext>()),
-                Mock.Of<ActionDescriptor>());
+                new DefaultHttpContext(),
+                new RouteData(),
+                Mock.Of<ControllerActionDescriptor>());
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
@@ -112,8 +113,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var methodInfo = type.GetMethod(actionMethodName);
 
             var actionContext = new ActionContext(
-                new RouteContext(Mock.Of<HttpContext>()),
-                Mock.Of<ActionDescriptor>());
+                new DefaultHttpContext(),
+                new RouteData(),
+                Mock.Of<ControllerActionDescriptor>());
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
@@ -143,8 +145,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var methodInfo = type.GetMethod(actionMethodName);
 
             var actionContext = new ActionContext(
-                new RouteContext(Mock.Of<HttpContext>()),
-                Mock.Of<ActionDescriptor>());
+                new DefaultHttpContext(),
+                new RouteData(),
+                Mock.Of<ControllerActionDescriptor>());
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
@@ -190,7 +193,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 })
                 .Returns(Task.FromResult(result: false));
 
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()), actionDescriptor);
+            var actionContext = new ActionContext(
+                new DefaultHttpContext(),
+                new RouteData(),
+                actionDescriptor);
 
             var actionBindingContext = new ActionBindingContext()
             {
@@ -238,7 +244,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 })
                 .Returns(Task.FromResult(result: true));
 
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()), actionDescriptor);
+            var actionContext = new ActionContext(
+                new DefaultHttpContext(),
+                new RouteData(),
+                actionDescriptor);
 
             var actionBindingContext = new ActionBindingContext()
             {
@@ -293,7 +302,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 })
                 .Returns(Task.FromResult(result: true));
 
-            var actionContext = new ActionContext(new RouteContext(Mock.Of<HttpContext>()), actionDescriptor);
+            var actionContext = new ActionContext(
+                new DefaultHttpContext(),
+                new RouteData(),
+                actionDescriptor);
 
             var actionBindingContext = new ActionBindingContext()
             {

@@ -26,7 +26,7 @@ namespace System.Web.Http
             var stream = new MemoryStream();
             httpContext.Response.Body = stream;
 
-            var context = new ActionContext(new RouteContext(httpContext), new ActionDescriptor());
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var result = new BadRequestErrorMessageResult("Error");
 
             // Act
@@ -46,7 +46,7 @@ namespace System.Web.Http
             var stream = new MemoryStream();
             httpContext.Response.Body = stream;
 
-            var context = new ActionContext(new RouteContext(httpContext), new ActionDescriptor());
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var result = new BadRequestErrorMessageResult("Error");
 
             // Act

@@ -27,9 +27,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                        .Returns(httpRequest);
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(services);
-            var routeContext = new RouteContext(httpContext.Object);
+
             var controller = new TestController();
-            var context = new ActionContext(routeContext, new ActionDescriptor());
+            var context = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
             var activator = new DefaultControllerActivator();
 
             // Act
@@ -50,9 +50,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(services);
-            var routeContext = new RouteContext(httpContext.Object);
+
             var controller = new TestController();
-            var context = new ActionContext(routeContext, new ActionDescriptor());
+            var context = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
             var activator = new DefaultControllerActivator();
 
             // Act
@@ -74,10 +74,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(services);
-            var routeContext = new RouteContext(httpContext.Object);
 
             var controller = new TestController();
-            var context = new ActionContext(routeContext, new ActionDescriptor());
+            var context = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
 
             var activator = new DefaultControllerActivator();
 
@@ -98,9 +97,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(services);
-            var routeContext = new RouteContext(httpContext.Object);
+
             var controller = new TestController();
-            var context = new ActionContext(routeContext, new ActionDescriptor());
+            var context = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
             var activator = new DefaultControllerActivator();
 
             // Act
@@ -121,9 +120,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                        .Returns(Mock.Of<HttpResponse>());
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(services);
-            var routeContext = new RouteContext(httpContext.Object);
+
             var controller = new TestController();
-            var context = new ActionContext(routeContext, new ActionDescriptor());
+            var context = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
             var activator = new DefaultControllerActivator();
 
             // Act

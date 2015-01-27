@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Mvc
 
         private static ViewComponentContext GetViewComponentContext(IView view, Stream stream)
         {
-            var actionContext = new ActionContext(new RouteContext(new DefaultHttpContext()), new ActionDescriptor());
+            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
             var viewContext = new ViewContext(actionContext, view, viewData, TextWriter.Null);
             var writer = new StreamWriter(stream) { AutoFlush = true };
