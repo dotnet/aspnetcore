@@ -262,7 +262,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(typeof(PreCompile), actual1.CompiledType);
 
             // Act 2
-            fileProvider.AddFile("Views\\_ViewStart.cshtml", "");
+            var viewStartTrigger = fileProvider.GetTrigger("Views\\_ViewStart.cshtml");
+            viewStartTrigger.IsExpired = true;
             var actual2 = cache.GetOrAdd(relativeFile,
                                          compile: _ => CompilationResult.Successful(expectedType));
 
@@ -318,7 +319,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(typeof(PreCompile), actual1.CompiledType);
 
             // Act 2
-            fileProvider.DeleteFile(viewStartFileInfo.PhysicalPath);
+            var trigger = fileProvider.GetTrigger(viewStartFileInfo.PhysicalPath);
+            trigger.IsExpired = true;
             var actual2 = cache.GetOrAdd(fileInfo,
                                          compile: _ => CompilationResult.Successful(expectedType));
 

@@ -167,6 +167,41 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected, responseContent.Trim());
         }
 
+        [Fact]
+        public async Task DeletingPrecompiledViewStart_PriorToFirstRequestToAView_CausesViewToBeRecompiled()
+        {
+            // Arrange
+            var expected = typeof(Startup).GetTypeInfo().Assembly.GetName().ToString();
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var applicationEnvironment = _services.GetRequiredService<IApplicationEnvironment>();
+
+            var viewsDirectory = Path.Combine(applicationEnvironment.ApplicationBasePath, "Views", "ViewStartDelete");
+            var viewStartPath = Path.Combine(viewsDirectory, "_ViewStart.cshtml");
+            var viewStartContent = File.ReadAllText(viewStartPath);
+
+            // Act - 1
+            // Query the Test view so we know the compiler cache gets populated.
+            var response = await client.GetStringAsync("/Test");
+
+            // Assert - 1
+            Assert.Equal("Test", response.Trim());
+
+            try
+            {
+                // Act - 2
+                var response2 = await client.GetStringAsync("http://localhost/Home/ViewStartDeletedPriorToFirstRequest");
+
+                // Assert - 2
+                Assert.NotEqual(expected, response2.Trim());
+            }
+            finally
+            {
+                File.WriteAllText(viewStartPath, viewStartContent);
+            }
+        }
+
         private static Task TouchFile(string viewsDir, string file)
         {
             File.AppendAllText(Path.Combine(viewsDir, file), " ");

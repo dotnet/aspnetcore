@@ -16,5 +16,16 @@ namespace PrecompilationWebSite.Controllers
         {
             return View("~/Views/ViewsConsumingCompilationOptions/Index");
         }
+
+        public IActionResult ViewStartDeletedPriorToFirstRequest()
+        {
+            return View("~/Views/ViewStartDelete/Index");
+        }
+
+        [HttpGet("/Test")]
+        public IActionResult TestView()
+        {
+            return View("~/Views/Test/Index");
+        }
     }
 }

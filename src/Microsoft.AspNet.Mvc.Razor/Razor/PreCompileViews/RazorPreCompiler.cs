@@ -167,13 +167,16 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                     if (fullTypeName != null)
                     {
-                        var hash = RazorFileHash.GetHash(fileInfo.FileInfo, RazorFileHash.HashAlgorithmVersion1);
+                        var hashAlgorithmVersion = RazorFileHash.HashAlgorithmVersion1;
+                        var hash = RazorFileHash.GetHash(fileInfo.FileInfo, hashAlgorithmVersion);
                         var razorFileInfo = new RazorFileInfo
                         {
                             RelativePath = fileInfo.RelativePath,
                             LastModified = fileInfo.FileInfo.LastModified,
                             Length = fileInfo.FileInfo.Length,
-                            FullTypeName = fullTypeName
+                            FullTypeName = fullTypeName,
+                            Hash = hash,
+                            HashAlgorithmVersion = hashAlgorithmVersion
                         };
 
                         return new PrecompilationCacheEntry(razorFileInfo, syntaxTree);

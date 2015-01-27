@@ -13,6 +13,8 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private readonly Dictionary<string, IFileInfo> _lookup =
             new Dictionary<string, IFileInfo>(StringComparer.Ordinal);
+        private readonly Dictionary<string, TestFileTrigger> _fileTriggers =
+            new Dictionary<string, TestFileTrigger>(StringComparer.Ordinal);
 
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
@@ -56,7 +58,19 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public IExpirationTrigger Watch(string filter)
         {
-            throw new NotImplementedException();
+            TestFileTrigger trigger;
+            if (!_fileTriggers.TryGetValue(filter, out trigger) || trigger.IsExpired)
+            {
+                trigger = new TestFileTrigger();
+                _fileTriggers[filter] = trigger;
+            }
+
+            return trigger;
+        }
+
+        public TestFileTrigger GetTrigger(string filter)
+        {
+            return _fileTriggers[filter];
         }
     }
 }

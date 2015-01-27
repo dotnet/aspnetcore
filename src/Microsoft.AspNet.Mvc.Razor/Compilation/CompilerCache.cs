@@ -2,19 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.Framework.Cache.Memory;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Caches the result of runtime compilation of Razor files for the duration of the app lifetime.
+    /// </summary>
     public class CompilerCache : ICompilerCache
     {
-        private readonly ConcurrentDictionary<string, CompilerCacheEntry> _cache;
         private readonly IFileProvider _fileProvider;
+        private readonly IMemoryCache _cache;
 
         /// <summary>
         /// Initializes a new instance of <see cref="CompilerCache"/> populated with precompiled views
@@ -33,36 +35,39 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         // Internal for unit testing
-        internal CompilerCache(IEnumerable<RazorFileInfoCollection> viewCollections, IFileProvider fileProvider)
+        internal CompilerCache(IEnumerable<RazorFileInfoCollection> razorFileInfoCollection,
+                               IFileProvider fileProvider)
         {
             _fileProvider = fileProvider;
-            _cache = new ConcurrentDictionary<string, CompilerCacheEntry>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var viewCollection in viewCollections)
+            _cache = new MemoryCache(new MemoryCacheOptions { ListenForMemoryPressure = false });
+            var cacheEntries = new List<CompilerCacheEntry>();
+            foreach (var viewCollection in razorFileInfoCollection)
             {
+                var containingAssembly = viewCollection.GetType().GetTypeInfo().Assembly;
                 foreach (var fileInfo in viewCollection.FileInfos)
                 {
-                    var containingAssembly = viewCollection.GetType().GetTypeInfo().Assembly;
                     var viewType = containingAssembly.GetType(fileInfo.FullTypeName);
                     var cacheEntry = new CompilerCacheEntry(fileInfo, viewType);
 
                     // There shouldn't be any duplicates and if there are any the first will win.
                     // If the result doesn't match the one on disk its going to recompile anyways.
-                    _cache.TryAdd(NormalizePath(fileInfo.RelativePath), cacheEntry);
+                    _cache.Set(NormalizePath(fileInfo.RelativePath), cacheEntry, PopulateCacheSetContext);
+
+                    cacheEntries.Add(cacheEntry);
                 }
             }
 
             // Set up ViewStarts
-            foreach (var entry in _cache)
+            foreach (var entry in cacheEntries)
             {
-                var viewStartLocations = ViewStartUtility.GetViewStartLocations(entry.Key);
+                var viewStartLocations = ViewStartUtility.GetViewStartLocations(entry.RelativePath);
                 foreach (var location in viewStartLocations)
                 {
-                    CompilerCacheEntry viewStartEntry;
-                    if (_cache.TryGetValue(location, out viewStartEntry))
+                    var viewStartEntry = _cache.Get<CompilerCacheEntry>(location);
+                    if (viewStartEntry != null)
                     {
                         // Add the the composite _ViewStart entry as a dependency.
-                        entry.Value.AssociatedViewStartEntry = viewStartEntry;
+                        entry.AssociatedViewStartEntry = viewStartEntry;
                         break;
                     }
                 }
@@ -105,14 +110,19 @@ namespace Microsoft.AspNet.Mvc.Razor
                                             Func<RelativeFileInfo, CompilationResult> compile,
                                             out CompilationResult result)
         {
-            CompilerCacheEntry cacheEntry;
             var normalizedPath = NormalizePath(relativeFileInfo.RelativePath);
-            if (!_cache.TryGetValue(normalizedPath, out cacheEntry))
+            var cacheEntry = _cache.Get<CompilerCacheEntry>(normalizedPath);
+            if (cacheEntry == null)
             {
                 return OnCacheMiss(relativeFileInfo, normalizedPath, compile, out result);
             }
-            else
+            else if (cacheEntry.IsPreCompiled && !cacheEntry.IsValidatedPreCompiled)
             {
+                // For precompiled views, the first time the entry is read, we need to ensure that no changes were made
+                // either to the file associated with this entry, or any _ViewStart associated with it between the time
+                // the View was precompiled and the time EnsureInitialized was called. For later iterations, we can
+                // rely on expiration triggers ensuring the validity of the entry.
+
                 var fileInfo = relativeFileInfo.FileInfo;
                 if (cacheEntry.Length != fileInfo.Length)
                 {
@@ -129,6 +139,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 if (cacheEntry.LastModified == fileInfo.LastModified)
                 {
                     result = CompilationResult.Successful(cacheEntry.CompiledType);
+                    // Assigning to IsValidatedPreCompiled is an atomic operation and will result in a safe race
+                    // if it is being concurrently updated and read.
+                    cacheEntry.IsValidatedPreCompiled = true;
                     return cacheEntry;
                 }
 
@@ -139,9 +152,10 @@ namespace Microsoft.AspNet.Mvc.Razor
                                   StringComparison.Ordinal))
                 {
                     // Cache hit, but we need to update the entry.
-                    // Assigning to LastModified is an atomic operation and will result in a safe race if it is
-                    // being concurrently read and written or updated concurrently.
+                    // Assigning to LastModified and IsValidatedPreCompiled are atomic operations and will result in safe races
+                    // if the entry is being concurrently read or updated.
                     cacheEntry.LastModified = fileInfo.LastModified;
+                    cacheEntry.IsValidatedPreCompiled = true;
                     result = CompilationResult.Successful(cacheEntry.CompiledType);
 
                     return cacheEntry;
@@ -150,6 +164,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // it's not a match, recompile
                 return OnCacheMiss(relativeFileInfo, normalizedPath, compile, out result);
             }
+
+            result = CompilationResult.Successful(cacheEntry.CompiledType);
+            return cacheEntry;
         }
 
         private CompilerCacheEntry OnCacheMiss(RelativeFileInfo file,
@@ -159,15 +176,24 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             result = compile(file);
 
-            var cacheEntry = new CompilerCacheEntry(file, result.CompiledType)
-            {
-                AssociatedViewStartEntry = GetCompositeViewStartEntry(normalizedPath, compile)
-            };
+            var cacheEntry = new CompilerCacheEntry(file, result.CompiledType);
 
-            // The cache is a concurrent dictionary, so concurrent addition to it with the same key would result in a
-            // safe race.
-            _cache[normalizedPath] = cacheEntry;
-            return cacheEntry;
+            // Concurrent addition to MemoryCache with the same key result in safe race.
+            return _cache.Set(normalizedPath, cacheEntry, PopulateCacheSetContext);
+        }
+
+        private CompilerCacheEntry PopulateCacheSetContext(ICacheSetContext cacheSetContext)
+        {
+            var entry = (CompilerCacheEntry)cacheSetContext.State;
+            cacheSetContext.AddExpirationTrigger(_fileProvider.Watch(entry.RelativePath));
+
+            var viewStartLocations = ViewStartUtility.GetViewStartLocations(cacheSetContext.Key);
+            foreach (var location in viewStartLocations)
+            {
+                cacheSetContext.AddExpirationTrigger(_fileProvider.Watch(location));
+            }
+
+            return entry;
         }
 
         private bool AssociatedViewStartsChanged(CompilerCacheEntry entry,

@@ -26,6 +26,7 @@
         "PrecompilationWebSite": "1.0.0",
         "RoutingWebSite": "1.0.0",
         "RazorWebSite": "1.0.0",
+        "RazorCompilerCacheWebSite": "1.0.0",
         "RazorInstrumentationWebsite": "1.0.0",
         "RazorViewEngineOptionsWebsite": "1.0.0",
         "RequestServicesWebSite": "1.0.0",

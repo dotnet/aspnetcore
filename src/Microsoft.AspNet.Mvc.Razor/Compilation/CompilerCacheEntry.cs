@@ -82,5 +82,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// depends on.
         /// </summary>
         public CompilerCacheEntry AssociatedViewStartEntry { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag that determines if the validity of this cache entry was performed at runtime.
+        /// </summary>
+        public bool IsValidatedPreCompiled { get; set; }
     }
 }
