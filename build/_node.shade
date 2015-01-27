@@ -1,8 +1,9 @@
 default currentDir = '${Directory.GetCurrentDirectory()}'
 default nodeDir = '${Path.Combine(currentDir, "bin", "node")}'
-default nodeGloballyInstalled = '${TestCommand("node", "--version")}'
-
-var nodeExePath = '${ nodeGloballyInstalled ? "node" : Path.Combine(nodeDir, "node.exe") }'
 
 node-install once='installNode'
+
+var nodeExeFile = '${ Path.Combine(nodeDir, "node.exe") }'
+var nodeExePath = '${ File.Exists(nodeExeFile) ? nodeExeFile : "node"  }'
+
 exec program='${nodeExePath}' commandline='${nodeCommand}'
