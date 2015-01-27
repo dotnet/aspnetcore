@@ -1362,16 +1362,13 @@ namespace Microsoft.AspNet.Mvc.Test
             TypeInfo controllerTypeInfo,
             IEnumerable<IFilter> filters = null)
         {
-            var modelBuilder = new StaticControllerModelBuilder(controllerTypeInfo);
-
-            var assemblyProvider = new Mock<IAssemblyProvider>();
-            assemblyProvider
-                .SetupGet(ap => ap.CandidateAssemblies)
-                .Returns(new Assembly[] { controllerTypeInfo.Assembly });
+            var controllerTypeProvider = new FixedSetControllerTypeProvider(new[] { controllerTypeInfo });
+            var controllerModelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(),
+                                                                           NullLoggerFactory.Instance);
 
             var provider = new ControllerActionDescriptorProvider(
-                assemblyProvider.Object,
-                modelBuilder,
+                controllerTypeProvider,
+                controllerModelBuilder,
                 new TestGlobalFilterProvider(filters),
                 new MockMvcOptionsAccessor(),
                 new NullLoggerFactory());
@@ -1382,16 +1379,13 @@ namespace Microsoft.AspNet.Mvc.Test
         private ControllerActionDescriptorProvider GetProvider(
             params TypeInfo[] controllerTypeInfo)
         {
-            var modelBuilder = new StaticControllerModelBuilder(controllerTypeInfo);
-
-            var assemblyProvider = new Mock<IAssemblyProvider>();
-            assemblyProvider
-                .SetupGet(ap => ap.CandidateAssemblies)
-                .Returns(new Assembly[] { controllerTypeInfo.First().Assembly });
+            var controllerTypeProvider = new FixedSetControllerTypeProvider(controllerTypeInfo);
+            var controllerModelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(),
+                                                                           NullLoggerFactory.Instance);
 
             var provider = new ControllerActionDescriptorProvider(
-                assemblyProvider.Object,
-                modelBuilder,
+                controllerTypeProvider,
+                controllerModelBuilder,
                 new TestGlobalFilterProvider(),
                 new MockMvcOptionsAccessor(),
                 new NullLoggerFactory());
@@ -1403,18 +1397,15 @@ namespace Microsoft.AspNet.Mvc.Test
             TypeInfo type,
             IApplicationModelConvention convention)
         {
-            var modelBuilder = new StaticControllerModelBuilder(type);
-
-            var assemblyProvider = new Mock<IAssemblyProvider>();
-            assemblyProvider
-                .SetupGet(ap => ap.CandidateAssemblies)
-                .Returns(new Assembly[] { type.Assembly });
+            var controllerTypeProvider = new FixedSetControllerTypeProvider(new[] { type });
+            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(),
+                                                                 NullLoggerFactory.Instance);
 
             var options = new MockMvcOptionsAccessor();
             options.Options.Conventions.Add(convention);
 
             return new ControllerActionDescriptorProvider(
-                assemblyProvider.Object,
+                controllerTypeProvider,
                 modelBuilder,
                 new TestGlobalFilterProvider(),
                 options,
@@ -1423,15 +1414,12 @@ namespace Microsoft.AspNet.Mvc.Test
 
         private IEnumerable<ActionDescriptor> GetDescriptors(params TypeInfo[] controllerTypeInfos)
         {
-            var modelBuilder = new StaticControllerModelBuilder(controllerTypeInfos);
-
-            var assemblyProvider = new Mock<IAssemblyProvider>();
-            assemblyProvider
-                .SetupGet(ap => ap.CandidateAssemblies)
-                .Returns(controllerTypeInfos.Select(cti => cti.Assembly).Distinct());
+            var controllerTypeProvider = new FixedSetControllerTypeProvider(controllerTypeInfos);
+            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(),
+                                                                 NullLoggerFactory.Instance);
 
             var provider = new ControllerActionDescriptorProvider(
-                assemblyProvider.Object,
+                controllerTypeProvider,
                 modelBuilder,
                 new TestGlobalFilterProvider(),
                 new MockMvcOptionsAccessor(),

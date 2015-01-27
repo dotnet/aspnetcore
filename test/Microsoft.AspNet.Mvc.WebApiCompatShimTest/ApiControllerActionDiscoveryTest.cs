@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.DependencyInjection;
@@ -368,10 +369,11 @@ namespace System.Web.Http
 
         private INestedProviderManager<ActionDescriptorProviderContext> CreateProvider()
         {
-            var assemblyProvider = new Mock<IAssemblyProvider>();
-            assemblyProvider
-                .SetupGet(ap => ap.CandidateAssemblies)
-                .Returns(new Assembly[] { typeof(ApiControllerActionDiscoveryTest).Assembly });
+            var assemblyProvider = new FixedSetAssemblyProvider();
+            assemblyProvider.CandidateAssemblies.Add(GetType().GetTypeInfo().Assembly);
+            var controllerTypeProvider = new NamespaceFilteredControllerTypeProvider(assemblyProvider);
+            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(),
+                                                                 NullLoggerFactory.Instance);
 
             var filterProvider = new Mock<IGlobalFilterProvider>();
             filterProvider
@@ -389,8 +391,8 @@ namespace System.Web.Http
                 .Returns(options);
 
             var provider = new ControllerActionDescriptorProvider(
-                assemblyProvider.Object,
-                new NamespaceLimitedActionDiscoveryConventions(),
+                controllerTypeProvider,
+                modelBuilder,
                 filterProvider.Object,
                 optionsAccessor.Object,
                 new NullLoggerFactory());
@@ -402,18 +404,21 @@ namespace System.Web.Http
                 });
         }
 
-        private class NamespaceLimitedActionDiscoveryConventions : DefaultControllerModelBuilder
+        private class NamespaceFilteredControllerTypeProvider : DefaultControllerTypeProvider
         {
-            public NamespaceLimitedActionDiscoveryConventions()
-                : base(new DefaultActionModelBuilder(), new NullLoggerFactory())
+            public NamespaceFilteredControllerTypeProvider(IAssemblyProvider provider)
+                : base(provider, NullLoggerFactory.Instance)
             {
+
             }
 
-            protected override bool IsController(TypeInfo typeInfo)
+            public override IEnumerable<TypeInfo> ControllerTypes
             {
-                return
-                    typeInfo.Namespace == "System.Web.Http.TestControllers" &&
-                    base.IsController(typeInfo);
+                get
+                {
+                    return base.ControllerTypes
+                               .Where(typeInfo => typeInfo.Namespace == "System.Web.Http.TestControllers");
+                }
             }
         }
     }

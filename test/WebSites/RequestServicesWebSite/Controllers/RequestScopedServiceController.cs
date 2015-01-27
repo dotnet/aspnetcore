@@ -8,7 +8,7 @@ namespace RequestServicesWebSite
     [Route("RequestScoped/[action]")]
     public class RequestScopedServiceController
     {
-        [Activate]
+        [FromServices]
         public RequestIdService RequestIdService { get; set; }
 
         [HttpGet]

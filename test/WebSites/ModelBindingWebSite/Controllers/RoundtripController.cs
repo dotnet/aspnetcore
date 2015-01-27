@@ -14,7 +14,7 @@ namespace ModelBindingWebSite.Controllers
         private IHtmlHelper<Person> _personHelper;
         private bool _activated;
 
-        [Activate]
+        [FromServices]
         public IHtmlHelper<Person> PersonHelper
         {
             get

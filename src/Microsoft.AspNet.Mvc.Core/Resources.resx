@@ -433,6 +433,9 @@
   <data name="Format_NotValid" xml:space="preserve">
     <value>The format provided is invalid '{0}'. A format must be a non-empty file-extension, optionally prefixed with a '.' character.</value>
   </data>
+  <data name="ControllerFactory_PropertyCannotBeActivated" xml:space="preserve">
+    <value>The property '{0}' on controller '{1}' cannot be activated.</value>
+  </data>
   <data name="RemoteAttribute_NoUrlFound" xml:space="preserve">
     <value>No URL for remote validation could be found.</value>
   </data>

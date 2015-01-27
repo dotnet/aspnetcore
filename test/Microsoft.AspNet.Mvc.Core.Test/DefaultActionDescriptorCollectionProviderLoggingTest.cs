@@ -8,32 +8,12 @@ using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Microsoft.Framework.Logging;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
     public class DefaultActionDescriptorCollectionProviderLoggingTest
     {
-        [Fact]
-        public void SimpleController_AssemblyDiscovery()
-        {
-            // Arrange
-            var sink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(sink);
-
-            // Act
-            var provider = GetProvider(loggerFactory, typeof(SimpleController).GetTypeInfo());
-            provider.BuildModel();
-
-            // Assert
-            Assert.Single(sink.Writes);
-
-            var assemblyValues = sink.Writes[0].State as AssemblyValues;
-            Assert.NotNull(assemblyValues);
-            Assert.True(assemblyValues.AssemblyName.Contains("Microsoft.AspNet.Mvc.Core.Test"));
-        }
-
         [Fact]
         public void ControllerDiscovery()
         {
@@ -49,10 +29,10 @@ namespace Microsoft.AspNet.Mvc.Logging
             provider.GetDescriptors();
 
             // Assert
-            // 1 assembly, 2 controllers
-            Assert.Equal(3, sink.Writes.Count);
+            // 2 controllers
+            Assert.Equal(2, sink.Writes.Count);
 
-            var controllerModelValues = sink.Writes[1].State as ControllerModelValues;
+            var controllerModelValues = Assert.IsType<ControllerModelValues>(sink.Writes[0].State);
             Assert.NotNull(controllerModelValues);
             Assert.Equal("Simple", controllerModelValues.ControllerName);
             Assert.Equal(typeof(SimpleController), controllerModelValues.ControllerType);
@@ -62,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Logging
             Assert.Empty(controllerModelValues.Attributes);
             Assert.Empty(controllerModelValues.Filters);
 
-            controllerModelValues = sink.Writes[2].State as ControllerModelValues;
+            controllerModelValues = Assert.IsType<ControllerModelValues>(sink.Writes[1].State);
             Assert.NotNull(controllerModelValues);
             Assert.Equal("Basic", controllerModelValues.ControllerName);
             Assert.Equal(typeof(BasicController), controllerModelValues.ControllerType);
@@ -88,10 +68,12 @@ namespace Microsoft.AspNet.Mvc.Logging
                                     typeof(BasicController).GetTypeInfo());
 
             // Assert
-            // 1 assembly, 2 controllers, 3 actions
-            Assert.Equal(6, sink.Writes.Count);
+            // 2 controllers, 3 actions
+            Assert.Equal(5, sink.Writes.Count);
+            Assert.IsType<ControllerModelValues>(sink.Writes[0].State);
+            Assert.IsType<ControllerModelValues>(sink.Writes[1].State);
 
-            var actionDescriptorValues = sink.Writes[3].State as ActionDescriptorValues;
+            var actionDescriptorValues = Assert.IsType<ActionDescriptorValues>(sink.Writes[2].State);
             Assert.NotNull(actionDescriptorValues);
             Assert.Equal("EmptyAction", actionDescriptorValues.Name);
             Assert.Equal("Simple", actionDescriptorValues.ControllerName);
@@ -101,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.Logging
             Assert.Empty(actionDescriptorValues.FilterDescriptors);
             Assert.Empty(actionDescriptorValues.Parameters);
 
-            actionDescriptorValues = sink.Writes[4].State as ActionDescriptorValues;
+            actionDescriptorValues = Assert.IsType<ActionDescriptorValues>(sink.Writes[3].State);
             Assert.NotNull(actionDescriptorValues);
             Assert.Equal("Basic", actionDescriptorValues.Name);
             Assert.Equal("Basic", actionDescriptorValues.ControllerName);
@@ -111,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.Logging
             Assert.Equal(2, actionDescriptorValues.FilterDescriptors.Count);
             Assert.Empty(actionDescriptorValues.Parameters);
 
-            actionDescriptorValues = sink.Writes[5].State as ActionDescriptorValues;
+            actionDescriptorValues = Assert.IsType<ActionDescriptorValues>(sink.Writes[4].State);
             Assert.NotNull(actionDescriptorValues);
             Assert.Equal("Basic", actionDescriptorValues.Name);
             Assert.Equal("Basic", actionDescriptorValues.ControllerName);
@@ -140,15 +122,12 @@ namespace Microsoft.AspNet.Mvc.Logging
         private ControllerActionDescriptorProvider GetProvider(
             ILoggerFactory loggerFactory, params TypeInfo[] controllerTypeInfo)
         {
-            var modelBuilder = new StaticControllerModelBuilder(controllerTypeInfo);
-
-            var assemblyProvider = new Mock<IAssemblyProvider>();
-            assemblyProvider
-                .SetupGet(ap => ap.CandidateAssemblies)
-                .Returns(new Assembly[] { controllerTypeInfo.First().Assembly });
+            var controllerTypeProvider = new FixedSetControllerTypeProvider(controllerTypeInfo);
+            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(),
+                                                                 loggerFactory);
 
             var provider = new ControllerActionDescriptorProvider(
-                assemblyProvider.Object,
+                controllerTypeProvider,
                 modelBuilder,
                 new TestGlobalFilterProvider(),
                 new MockMvcOptionsAccessor(),

@@ -41,31 +41,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task IsControllerValues_LoggedAtStartup()
-        {
-            // Arrange and Act
-            var logs = await GetLogsByDataTypeAsync<IsControllerValues>();
-
-            // Assert
-            Assert.NotEmpty(logs);
-            foreach (var log in logs)
-            {
-                dynamic isController = log.State;
-                if (string.Equals(typeof(HomeController).AssemblyQualifiedName, isController.Type.ToString()))
-                {
-                    Assert.Equal(
-                        ControllerStatus.IsController,
-                        Enum.Parse(typeof(ControllerStatus), isController.Status.ToString()));
-                }
-                else
-                {
-                    Assert.NotEqual(ControllerStatus.IsController,
-                        Enum.Parse(typeof(ControllerStatus), isController.Status.ToString()));
-                }
-            }
-        }
-
-        [Fact]
         public async Task ControllerModelValues_LoggedAtStartup()
         {
             // Arrange and Act

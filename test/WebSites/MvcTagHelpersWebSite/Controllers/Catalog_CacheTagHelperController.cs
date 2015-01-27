@@ -8,7 +8,7 @@ namespace MvcTagHelpersWebSite.Controllers
 {
     public class Catalog_CacheTagHelperController : Controller
     {
-        [Activate]
+        [FromServices]
         public ProductsService ProductsService { get; set; }
 
         [HttpGet("/catalog")]

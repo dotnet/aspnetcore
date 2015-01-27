@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Logging;
@@ -15,18 +14,18 @@ namespace Microsoft.AspNet.Mvc
     public class ControllerActionDescriptorProvider : IActionDescriptorProvider
     {
         private readonly IControllerModelBuilder _applicationModelBuilder;
-        private readonly IAssemblyProvider _assemblyProvider;
+        private readonly IControllerTypeProvider _controllerTypeProvider;
         private readonly IReadOnlyList<IFilter> _globalFilters;
         private readonly IEnumerable<IApplicationModelConvention> _conventions;
         private readonly ILogger _logger;
 
-        public ControllerActionDescriptorProvider([NotNull] IAssemblyProvider assemblyProvider,
+        public ControllerActionDescriptorProvider([NotNull] IControllerTypeProvider controllerTypeProvider,
                                                   [NotNull] IControllerModelBuilder applicationModelBuilder,
                                                   [NotNull] IGlobalFilterProvider globalFilters,
                                                   [NotNull] IOptions<MvcOptions> optionsAccessor,
                                                   [NotNull] ILoggerFactory loggerFactory)
         {
-            _assemblyProvider = assemblyProvider;
+            _controllerTypeProvider = controllerTypeProvider;
             _applicationModelBuilder = applicationModelBuilder;
             _globalFilters = globalFilters.Filters;
             _conventions = optionsAccessor.Options.Conventions;
@@ -66,17 +65,7 @@ namespace Microsoft.AspNet.Mvc
                 applicationModel.Filters.Add(filter);
             }
 
-            var assemblies = _assemblyProvider.CandidateAssemblies;
-            var types = assemblies.SelectMany(a => a.DefinedTypes);
-            if (_logger.IsEnabled(LogLevel.Verbose))
-            {
-                foreach (var assembly in assemblies)
-                {
-                    _logger.WriteVerbose(new AssemblyValues(assembly));
-                }
-            }
-
-            foreach (var type in types)
+            foreach (var type in _controllerTypeProvider.ControllerTypes)
             {
                 var controllerModel = _applicationModelBuilder.BuildControllerModel(type);
                 if (controllerModel != null)

@@ -15,7 +15,7 @@ namespace WebApiCompatShimWebSite
 {
     public class BasicApiController : ApiController
     {
-        [Activate]
+        [FromServices]
         public IOptions<WebApiCompatShimOptions> OptionsAccessor { get; set; }
 
         // Verifies property activation

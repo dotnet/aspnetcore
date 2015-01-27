@@ -1643,6 +1643,22 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// The property '{0}' on controller '{1}' cannot be activated.
+        /// </summary>
+        internal static string ControllerFactory_PropertyCannotBeActivated
+        {
+            get { return GetString("ControllerFactory_PropertyCannotBeActivated"); }
+        }
+
+        /// <summary>
+        /// The property '{0}' on controller '{1}' cannot be activated.
+        /// </summary>
+        internal static string FormatControllerFactory_PropertyCannotBeActivated(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ControllerFactory_PropertyCannotBeActivated"), p0, p1);
+        }
+
+        /// <summary>
         /// No URL for remote validation could be found.
         /// </summary>
         internal static string RemoteAttribute_NoUrlFound

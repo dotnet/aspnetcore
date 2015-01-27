@@ -38,7 +38,8 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                return GetCandidateLibraries().SelectMany(l => l.LoadableAssemblies).Select(Load);
+                return GetCandidateLibraries().SelectMany(l => l.LoadableAssemblies)
+                                              .Select(Load);
             }
         }
 

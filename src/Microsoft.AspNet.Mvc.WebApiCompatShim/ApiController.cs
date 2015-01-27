@@ -51,7 +51,7 @@ namespace System.Web.Http
         /// Gets the <see cref="IModelMetadataProvider"/>.
         /// </summary>
         /// <remarks>The setter is intended for unit testing purposes only.</remarks>
-        [Activate]
+        [FromServices]
         public IModelMetadataProvider MetadataProvider { get; set; }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace System.Web.Http
         /// Gets a factory used to generate URLs to other APIs.
         /// </summary>
         /// <remarks>The setter is intended for unit testing purposes only.</remarks>
-        [Activate]
+        [FromServices]
         public IUrlHelper Url { get; set; }
 
         /// <summary>

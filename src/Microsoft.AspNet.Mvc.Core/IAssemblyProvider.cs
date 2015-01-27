@@ -6,8 +6,16 @@ using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc
 {
+    /// <summary>
+    /// Specifies the contract for discovering assemblies that may contain Mvc specific types such as controllers,
+    /// view components and precompiled views.
+    /// </summary>
     public interface IAssemblyProvider
     {
+        /// <summary>
+        /// Gets the sequence of candidate <see cref="Assembly"/>ies that the application
+        /// uses for discovery of Mvc specific types.
+        /// </summary>
         IEnumerable<Assembly> CandidateAssemblies { get; }
     }
 }

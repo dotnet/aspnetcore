@@ -17,6 +17,7 @@
         "BasicWebSite": "1.0.0",
         "CompositeViewEngineWebSite": "1.0.0",
         "ConnegWebSite": "1.0.0",
+        "ControllersFromServicesWebSite": "1.0.0",
         "CustomRouteWebSite": "1.0.0",
         "ErrorPageMiddlewareWebSite": "1.0.0",
         "FilesWebSite": "1.0.0",

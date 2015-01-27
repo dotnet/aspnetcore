@@ -759,16 +759,17 @@ namespace Microsoft.AspNet.Mvc
 
         private ControllerActionDescriptorProvider GetActionDescriptorProvider()
         {
-            var assemblyProvider = new StaticAssemblyProvider();
-
             var controllerTypes = typeof(DefaultActionSelectorTests)
                 .GetNestedTypes(BindingFlags.NonPublic)
-                .Select(t => t.GetTypeInfo());
+                .Select(t => t.GetTypeInfo())
+                .ToList();
 
-            var modelBuilder = new StaticControllerModelBuilder(controllerTypes.ToArray());
+            var controllerTypeProvider = new FixedSetControllerTypeProvider(controllerTypes);
+            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(),
+                                                                 NullLoggerFactory.Instance);
 
             return new ControllerActionDescriptorProvider(
-                                        assemblyProvider,
+                                        controllerTypeProvider,
                                         modelBuilder,
                                         new TestGlobalFilterProvider(),
                                         new MockMvcOptionsAccessor(),

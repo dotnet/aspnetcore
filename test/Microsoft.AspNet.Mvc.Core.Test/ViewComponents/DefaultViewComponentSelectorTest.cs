@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Mvc
         private class FilteredViewComponentSelector : DefaultViewComponentSelector
         {
             public FilteredViewComponentSelector()
-                : base(new StaticAssemblyProvider())
+                : base(GetAssemblyProvider())
             {
                 AllowedTypes = typeof(DefaultViewComponentSelectorTest).GetNestedTypes(BindingFlags.NonPublic);
             }
@@ -187,6 +187,15 @@ namespace Microsoft.AspNet.Mvc
             protected override bool IsViewComponentType([NotNull] TypeInfo typeInfo)
             {
                 return AllowedTypes.Contains(typeInfo.AsType());
+            }
+
+            private static IAssemblyProvider GetAssemblyProvider()
+            {
+                var assemblyProvider = new FixedSetAssemblyProvider();
+                assemblyProvider.CandidateAssemblies.Add(
+                    typeof(FilteredViewComponentSelector).GetTypeInfo().Assembly);
+
+                return assemblyProvider;
             }
         }
     }

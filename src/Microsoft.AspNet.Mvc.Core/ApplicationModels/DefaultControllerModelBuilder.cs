@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Framework.Logging;
 
@@ -34,11 +33,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// <inheritdoc />
         public ControllerModel BuildControllerModel([NotNull] TypeInfo typeInfo)
         {
-            if (!IsController(typeInfo))
-            {
-                return null;
-            }
-
             var controllerModel = CreateControllerModel(typeInfo);
 
             foreach (var methodInfo in typeInfo.AsType().GetMethods())
@@ -55,54 +49,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
 
             return controllerModel;
-        }
-
-        /// <summary>
-        /// Returns <c>true</c> if the <paramref name="typeInfo"/> is a controller. Otherwise <c>false</c>.
-        /// </summary>
-        /// <param name="typeInfo">The <see cref="TypeInfo"/>.</param>
-        /// <returns><c>true</c> if the <paramref name="typeInfo"/> is a controller. Otherwise <c>false</c>.</returns>
-        /// <remarks>
-        /// Override this method to provide custom logic to determine which types are considered controllers.
-        /// </remarks>
-        protected virtual bool IsController([NotNull] TypeInfo typeInfo)
-        {
-            var status = ControllerStatus.IsController;
-
-            if (!typeInfo.IsClass)
-            {
-                status |= ControllerStatus.IsNotAClass;
-            }
-            if (typeInfo.IsAbstract)
-            {
-                status |= ControllerStatus.IsAbstract;
-            }
-            // We only consider public top-level classes as controllers. IsPublic returns false for nested
-            // classes, regardless of visibility modifiers
-            if (!typeInfo.IsPublic)
-            {
-                status |= ControllerStatus.IsNotPublicOrTopLevel;
-            }
-            if (typeInfo.ContainsGenericParameters)
-            {
-                status |= ControllerStatus.ContainsGenericParameters;
-            }
-            if (typeInfo.Name.Equals("Controller", StringComparison.OrdinalIgnoreCase))
-            {
-                status |= ControllerStatus.NameIsController;
-            }
-            if (!typeInfo.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase) &&
-                   !typeof(Controller).GetTypeInfo().IsAssignableFrom(typeInfo))
-            {
-                status |= ControllerStatus.DoesNotEndWithControllerAndIsNotAssignable;
-            }
-            if (_logger.IsEnabled(LogLevel.Verbose))
-            {
-                _logger.WriteVerbose(new IsControllerValues(
-                    typeInfo.AsType(),
-                    status));
-            }
-            return status == ControllerStatus.IsController;
         }
 
         /// <summary>

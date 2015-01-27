@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Provides methods to create a controller.
+    /// Provides methods for discovery of controller types.
     /// </summary>
-    public interface IControllerActivator
+    public interface IControllerTypeProvider
     {
         /// <summary>
-        /// Creates a controller.
+        /// Gets a <see cref="IEnumerable{T}"/> of controller <see cref="TypeInfo"/>s.
         /// </summary>
-        /// <param name="context">The <see cref="ActionContext"/> for the executing action.</param>
-        object Create(ActionContext context, Type controllerType);
+        IEnumerable<TypeInfo> ControllerTypes { get; }
     }
 }

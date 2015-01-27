@@ -42,11 +42,12 @@ namespace Microsoft.AspNet.Mvc
             // Core action discovery, filters and action execution.
 
             // These are consumed only when creating action descriptors, then they can be de-allocated
+            yield return describe.Transient<IControllerTypeProvider, DefaultControllerTypeProvider>();
             yield return describe.Transient<IControllerModelBuilder, DefaultControllerModelBuilder>();
             yield return describe.Transient<IActionModelBuilder, DefaultActionModelBuilder>();
 
-            // This accesses per-request services to activate the controller
-            yield return describe.Transient<IControllerFactory, DefaultControllerFactory>();
+            // This has a cache, so it needs to be a singleton
+            yield return describe.Singleton<IControllerFactory, DefaultControllerFactory>();
 
             // This has a cache, so it needs to be a singleton
             yield return describe.Singleton<IControllerActivator, DefaultControllerActivator>();

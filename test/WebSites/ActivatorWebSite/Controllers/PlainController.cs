@@ -8,7 +8,7 @@ namespace ActivatorWebSite
 {
     public class PlainController
     {
-        [Activate]
+        [FromServices]
         public MyService Service { get; set; }
 
         [Activate]

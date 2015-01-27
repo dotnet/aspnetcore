@@ -100,10 +100,10 @@ namespace Microsoft.AspNet.Mvc
         [Activate]
         public ActionBindingContext BindingContext { get; set; }
 
-        [Activate]
+        [FromServices]
         public IModelMetadataProvider MetadataProvider { get; set; }
 
-        [Activate]
+        [FromServices]
         public IUrlHelper Url { get; set; }
 
         public IPrincipal User

@@ -92,7 +92,7 @@ namespace MvcSample.Web
             return View("MyView", user);
         }
 
-        [Activate]
+        [FromServices]
         public IHostingEnvironment HostingEnvironment { get; set; }
 
         /// <summary>

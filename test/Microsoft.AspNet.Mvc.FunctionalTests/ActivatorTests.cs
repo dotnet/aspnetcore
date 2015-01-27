@@ -22,8 +22,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
 
-            var expectedMessage = "No service for type 'ActivatorWebSite.CannotBeActivatedController+FakeType' " +
-                                   "has been registered.";
+            var expectedMessage = "The property 'Service' on controller 'ActivatorWebSite.CannotBeActivatedController' " +
+                                   "cannot be activated.";
 
             // Act & Assert
             var response = await client.GetAsync("http://localhost/CannotBeActivated/Index");
