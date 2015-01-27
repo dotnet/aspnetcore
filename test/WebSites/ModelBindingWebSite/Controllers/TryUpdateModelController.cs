@@ -98,6 +98,16 @@ namespace ModelBindingWebSite.Controllers
             return user;
         }
 
+        public async Task<Employee> GetEmployeeAsync_BindToBaseDeclaredType()
+        {
+            var employee = new Employee();
+            await TryUpdateModelAsync<Person>(
+                employee,
+                prefix: string.Empty);
+
+            return employee;
+        }
+
         private User GetUser(int id)
         {
             return new User

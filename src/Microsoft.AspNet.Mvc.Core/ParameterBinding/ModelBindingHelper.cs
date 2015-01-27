@@ -138,7 +138,8 @@ namespace Microsoft.AspNet.Mvc
         {
             var modelMetadata = metadataProvider.GetMetadataForType(
                 modelAccessor: null,
-                modelType: typeof(TModel));
+                modelType: model.GetType());
+
             var operationBindingContext = new OperationBindingContext
             {
                 ModelBinder = modelBinder,

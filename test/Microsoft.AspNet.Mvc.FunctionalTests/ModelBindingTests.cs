@@ -1429,5 +1429,26 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("test.txt", fileDetails.Filename);
             Assert.Equal("Test Content", fileDetails.Content);
         }
+
+        [Fact]
+        public async Task TryUpdateModel_ReturnDerivedAndBaseProperties()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/TryUpdateModel/" +
+                "GetEmployeeAsync_BindToBaseDeclaredType" +
+                "?Parent.Name=fatherName&Parent.Parent.Name=grandFatherName&Department=Sales");
+
+            // Assert
+            var employee = JsonConvert.DeserializeObject<Employee>(response);
+            Assert.Equal("fatherName", employee.Parent.Name);
+            Assert.Equal("Sales", employee.Department);
+
+            // Round-tripped value includes descendent instances for all properties with data in the request.
+            Assert.Equal("grandFatherName", employee.Parent.Parent.Name);
+        }
     }
 }
