@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
-        public async Task ProducesContentAttribute_SingleContentType_PicksTheFirstSupportedFormatter()
+        public async Task ProducesAttribute_SingleContentType_PicksTheFirstSupportedFormatter()
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ProducesContentAttribute_MultipleContentTypes_RunsConnegToSelectFormatter()
+        public async Task ProducesAttribute_MultipleContentTypes_RunsConnegToSelectFormatter()
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task NoProducesContentAttribute_ActionReturningString_RunsUsingTextFormatter()
+        public async Task NoProducesAttribute_ActionReturningString_RunsUsingTextFormatter()
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task NoProducesContentAttribute_ActionReturningAnyObject_RunsUsingDefaultFormatters()
+        public async Task NoProducesAttribute_ActionReturningAnyObject_RunsUsingDefaultFormatters()
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ProducesContentAttribute_OnAction_OverridesTheValueOnClass()
+        public async Task ProducesAttribute_OnAction_OverridesTheValueOnClass()
         {
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ProducesContentAttribute_OnDerivedClass_OverridesTheValueOnBaseClass()
+        public async Task ProducesAttribute_OnDerivedClass_OverridesTheValueOnBaseClass()
         {
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ProducesContentAttribute_OnDerivedAction_OverridesTheValueOnBaseClass()
+        public async Task ProducesAttribute_OnDerivedAction_OverridesTheValueOnBaseClass()
         {
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ProducesContentAttribute_OnDerivedAction_OverridesTheValueOnBaseAction()
+        public async Task ProducesAttribute_OnDerivedAction_OverridesTheValueOnBaseAction()
         {
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ProducesContentAttribute_OnDerivedClassAndAction_OverridesTheValueOnBaseClass()
+        public async Task ProducesAttribute_OnDerivedClassAndAction_OverridesTheValueOnBaseClass()
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
@@ -224,8 +224,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
         }
+
         [Fact]
-        public async Task ProducesContentAttribute_IsNotHonored_ForJsonResult()
+        public async Task ProducesAttribute_IsNotHonored_ForJsonResult()
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);

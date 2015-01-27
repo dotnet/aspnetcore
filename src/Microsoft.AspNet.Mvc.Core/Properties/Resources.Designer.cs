@@ -11,6 +11,38 @@ namespace Microsoft.AspNet.Mvc.Core
             = new ResourceManager("Microsoft.AspNet.Mvc.Core.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The argument '{0}' is invalid. Media types containing wildcards (*) are not supported.
+        /// </summary>
+        internal static string MatchAllContentTypeIsNotAllowed
+        {
+            get { return GetString("MatchAllContentTypeIsNotAllowed"); }
+        }
+
+        /// <summary>
+        /// The argument '{0}' is invalid. Media types containing wildcards (*) are not supported.
+        /// </summary>
+        internal static string FormatMatchAllContentTypeIsNotAllowed(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MatchAllContentTypeIsNotAllowed"), p0);
+        }
+
+        /// <summary>
+        /// The content-type '{0}' added in the '{1}' property is invalid. Media types containing wildcards (*) are not supported.
+        /// </summary>
+        internal static string ObjectResult_MatchAllContentType
+        {
+            get { return GetString("ObjectResult_MatchAllContentType"); }
+        }
+
+        /// <summary>
+        /// The content-type '{0}' added in the '{1}' property is invalid. Media types containing wildcards (*) are not supported.
+        /// </summary>
+        internal static string FormatObjectResult_MatchAllContentType(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ObjectResult_MatchAllContentType"), p0, p1);
+        }
+
+        /// <summary>
         /// The provided anti-forgery token failed a custom data check.
         /// </summary>
         internal static string AntiForgeryToken_AdditionalDataCheckFailed

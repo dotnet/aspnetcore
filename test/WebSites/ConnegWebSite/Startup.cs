@@ -24,7 +24,9 @@ namespace ConnegWebSite
                     options.AddXmlDataContractSerializerFormatter();
                 });
             });
-                        
+
+            app.UseErrorReporter();
+
             // Add MVC to the request pipeline
             app.UseMvc(routes =>
             {

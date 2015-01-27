@@ -5,7 +5,7 @@ using Microsoft.AspNet.Mvc;
 
 namespace ApiExplorerWebSite
 {
-    [Produces("*/*", Type = typeof(Product))]
+    [Produces("application/json", Type = typeof(Product))]
     [Route("ApiExplorerResponseTypeOverrideOnAction")]
     public class ApiExplorerResponseTypeOverrideOnActionController : Controller
     {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
 using Moq;
@@ -24,6 +25,49 @@ namespace Microsoft.AspNet.Mvc
             // Act & Assert
             var exception = Assert.Throws<FormatException>(() => new ConsumesAttribute(contentType));
             Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Theory]
+        [InlineData("", "")]
+        [InlineData("application/xml,, application/json", "")]
+        [InlineData(", application/json", "")]
+        [InlineData("invalid", "invalid")]
+        [InlineData("application/xml,invalid, application/json", "invalid")]
+        [InlineData("invalid, application/json", "invalid")]
+        public void Constructor_UnparsableContentType_Throws(string content, string invalidContentType)
+        {
+            // Act
+            var contentTypes = content.Split(',').Select(contentType => contentType.Trim()).ToArray();
+
+            // Assert
+            var ex = Assert.Throws<FormatException>(
+                       () => new ConsumesAttribute(contentTypes[0], contentTypes.Skip(1).ToArray()));
+            Assert.Equal("Invalid value '" + (invalidContentType ?? "<null>") + "'.",
+                         ex.Message);
+        }
+
+        [Theory]
+        [InlineData("application/*", "application/*")]
+        [InlineData("application/xml, application/*, application/json", "application/*")]
+        [InlineData("application/*, application/json", "application/*")]
+
+        [InlineData("*/*", "*/*")]
+        [InlineData("application/xml, */*, application/json", "*/*")]
+        [InlineData("*/*, application/json", "*/*")]
+        public void Constructor_InvalidContentType_Throws(string content, string invalidContentType)
+        {
+            // Act
+            var contentTypes = content.Split(',').Select(contentType => contentType.Trim()).ToArray();
+
+            // Assert
+            var ex = Assert.Throws<InvalidOperationException>(
+                       () => new ConsumesAttribute(contentTypes[0], contentTypes.Skip(1).ToArray()));
+
+            Assert.Equal(
+                string.Format("The argument '{0}' is invalid. "+
+                              "Media types which match all types or match all subtypes are not supported.",
+                              invalidContentType),
+                ex.Message);
         }
 
         [Theory]

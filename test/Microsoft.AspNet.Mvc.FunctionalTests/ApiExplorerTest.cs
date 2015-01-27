@@ -597,63 +597,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(typeof(JsonOutputFormatter).FullName, applicationJson.FormatterType);
         }
 
-        // uses [Produces("*/*")]
-        [Fact]
-        public async Task ApiExplorer_ResponseContentType_AllTypes()
-        {
-            // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/ApiExplorerResponseContentType/AllTypes");
-
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
-
-            // Assert
-            var description = Assert.Single(result);
-
-            var formats = description.SupportedResponseFormats;
-            Assert.Equal(4, formats.Count);
-
-            var textXml = Assert.Single(formats, f => f.MediaType == "text/xml");
-            Assert.Equal(typeof(XmlDataContractSerializerOutputFormatter).FullName, textXml.FormatterType);
-            var applicationXml = Assert.Single(formats, f => f.MediaType == "application/xml");
-            Assert.Equal(typeof(XmlDataContractSerializerOutputFormatter).FullName, applicationXml.FormatterType);
-
-            var textJson = Assert.Single(formats, f => f.MediaType == "text/json");
-            Assert.Equal(typeof(JsonOutputFormatter).FullName, textJson.FormatterType);
-            var applicationJson = Assert.Single(formats, f => f.MediaType == "application/json");
-            Assert.Equal(typeof(JsonOutputFormatter).FullName, applicationJson.FormatterType);
-        }
-
-        [Fact]
-        public async Task ApiExplorer_ResponseContentType_Range()
-        {
-            // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/ApiExplorerResponseContentType/Range");
-
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
-
-            // Assert
-            var description = Assert.Single(result);
-
-            var formats = description.SupportedResponseFormats;
-            Assert.Equal(2, formats.Count);
-
-            var textXml = Assert.Single(formats, f => f.MediaType == "text/xml");
-            Assert.Equal(typeof(XmlDataContractSerializerOutputFormatter).FullName, textXml.FormatterType);
-
-            var textJson = Assert.Single(formats, f => f.MediaType == "text/json");
-            Assert.Equal(typeof(JsonOutputFormatter).FullName, textJson.FormatterType);
-        }
-
         [Fact]
         public async Task ApiExplorer_ResponseContentType_Specific()
         {
@@ -671,10 +614,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var description = Assert.Single(result);
 
             var formats = description.SupportedResponseFormats;
-            Assert.Equal(1, formats.Count);
+            Assert.Equal(2, formats.Count);
 
             var applicationJson = Assert.Single(formats, f => f.MediaType == "application/json");
             Assert.Equal(typeof(JsonOutputFormatter).FullName, applicationJson.FormatterType);
+
+            var textJson = Assert.Single(formats, f => f.MediaType == "text/json");
+            Assert.Equal(typeof(JsonOutputFormatter).FullName, textJson.FormatterType);
         }
 
         [Fact]

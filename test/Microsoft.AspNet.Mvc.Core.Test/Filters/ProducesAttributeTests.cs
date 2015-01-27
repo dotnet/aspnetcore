@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Test
     public class ProducesAttributeTests
     {
         [Fact]
-        public async Task ProducesContentAttribute_SetsContentType()
+        public async Task ProducesAttribute_SetsContentType()
         {
             // Arrange
             var mediaType1 = MediaTypeHeaderValue.Parse("application/json");
@@ -34,16 +35,45 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Theory]
-        [InlineData("")]
-        [InlineData(null)]
-        [InlineData("invalid")]
-        public void ProducesAttribute_InvalidContentType_Throws(string content)
+        [InlineData("", "")]
+        [InlineData("application/xml,, application/json", "")]
+        [InlineData(", application/json", "")]
+        [InlineData("invalid", "invalid")]
+        [InlineData("application/xml,invalid, application/json", "invalid")]
+        [InlineData("invalid, application/json", "invalid")]
+        public void ProducesAttribute_UnParsableContentType_Throws(string content, string invalidContentType)
         {
-            // Act & Assert
+            // Act
+            var contentTypes = content.Split(',').Select(contentType => contentType.Trim()).ToArray();
+
+            // Assert
             var ex = Assert.Throws<FormatException>(
-                       () => new ProducesAttribute(content));
-            Assert.Equal("Invalid value '" + (content ?? "<null>") + "'.",
-                         ex.Message);
+                       () => new ProducesAttribute(contentTypes[0], contentTypes.Skip(1).ToArray()));
+            Assert.Equal("Invalid value '" + (invalidContentType ?? "<null>") + "'.", ex.Message);
+        }
+
+        [Theory]
+        [InlineData("application/*", "application/*")]
+        [InlineData("application/xml, application/*, application/json", "application/*")]
+        [InlineData("application/*, application/json", "application/*")]
+
+        [InlineData("*/*", "*/*")]
+        [InlineData("application/xml, */*, application/json", "*/*")]
+        [InlineData("*/*, application/json", "*/*")]
+        public void ProducesAttribute_InvalidContentType_Throws(string content, string invalidContentType)
+        {
+            // Act
+            var contentTypes = content.Split(',').Select(contentType => contentType.Trim()).ToArray();
+
+            // Assert
+            var ex = Assert.Throws<InvalidOperationException>(
+                       () => new ProducesAttribute(contentTypes[0], contentTypes.Skip(1).ToArray()));
+
+            Assert.Equal(
+                string.Format("The argument '{0}' is invalid. "+
+                              "Media types which match all types or match all subtypes are not supported.",
+                              invalidContentType),
+                ex.Message);
         }
 
         private static void ValidateMediaType(MediaTypeHeaderValue expectedMediaType, MediaTypeHeaderValue actualMediaType)

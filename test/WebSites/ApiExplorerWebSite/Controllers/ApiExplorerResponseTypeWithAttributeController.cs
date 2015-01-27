@@ -16,7 +16,7 @@ namespace ApiExplorerWebSite
         }
 
         [HttpGet]
-        [Produces("*/*", Type = typeof(Product))]
+        [Produces("application/json", Type = typeof(Product))]
         public object GetObject()
         {
             return null;

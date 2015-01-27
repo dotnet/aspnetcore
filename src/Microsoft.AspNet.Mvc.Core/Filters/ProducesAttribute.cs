@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.Net.Http.Headers;
 
@@ -15,7 +17,7 @@ namespace Microsoft.AspNet.Mvc
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class ProducesAttribute : ResultFilterAttribute, IApiResponseMetadataProvider
     {
-        public ProducesAttribute(string contentType, params string[] additionalContentTypes)
+        public ProducesAttribute([NotNull] string contentType, params string[] additionalContentTypes)
         {
             ContentTypes = GetContentTypes(contentType, additionalContentTypes);
         }
@@ -37,11 +39,19 @@ namespace Microsoft.AspNet.Mvc
 
         private List<MediaTypeHeaderValue> GetContentTypes(string firstArg, string[] args)
         {
+            var completeArgs = new List<string>();
+            completeArgs.Add(firstArg);
+            completeArgs.AddRange(args);
             var contentTypes = new List<MediaTypeHeaderValue>();
-            contentTypes.Add(MediaTypeHeaderValue.Parse(firstArg));
-            foreach (var item in args)
+            foreach (var arg in completeArgs)
             {
-                var contentType = MediaTypeHeaderValue.Parse(item);
+                var contentType = MediaTypeHeaderValue.Parse(arg);
+                if (contentType.MatchesAllSubTypes || contentType.MatchesAllTypes)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatMatchAllContentTypeIsNotAllowed(arg));
+                }
+
                 contentTypes.Add(contentType);
             }
 

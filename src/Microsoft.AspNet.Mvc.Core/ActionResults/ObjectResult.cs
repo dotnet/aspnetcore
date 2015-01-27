@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
@@ -36,6 +38,8 @@ namespace Microsoft.AspNet.Mvc
 
         public override async Task ExecuteResultAsync(ActionContext context)
         {
+            // See if the list of content types added to this object result is valid.
+            ThrowIfUnsupportedContentType();
             var formatters = GetDefaultFormatters(context);
             var formatterContext = new OutputFormatterContext()
             {
@@ -216,6 +220,17 @@ namespace Microsoft.AspNet.Mvc
                                                     .Any(contentType =>
                                                             formatter.CanWriteResult(formatterContext, contentType)));
             return selectedFormatter;
+        }
+
+        private void ThrowIfUnsupportedContentType()
+        {
+            var matchAllContentType = ContentTypes?.FirstOrDefault(
+                contentType => contentType.MatchesAllSubTypes || contentType.MatchesAllTypes);
+            if (matchAllContentType != null)
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatObjectResult_MatchAllContentType(matchAllContentType, nameof(ContentTypes)));
+            }
         }
 
         private static IEnumerable<MediaTypeHeaderValue> SortMediaTypeHeaderValues(
