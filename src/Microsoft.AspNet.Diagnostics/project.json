@@ -3,6 +3,7 @@
     "description": "ASP.NET 5 Middleware for error handling, error pages, and diagnostics information.",
     "dependencies": {
         "Microsoft.AspNet.RequestContainer": "1.0.0-*",
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {

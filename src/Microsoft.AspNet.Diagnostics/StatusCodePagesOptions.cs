@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.WebUtilities;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.Diagnostics
                 // Note the 500 spaces are to work around an IE 'feature'
                 var statusCode = context.HttpContext.Response.StatusCode;
                 var body = string.Format(CultureInfo.InvariantCulture, "Status Code: {0}; {1}",
-                    statusCode, ReasonPhraseHelper.GetReasonPhrase(statusCode)) + new string(' ', 500);
+                    statusCode, ReasonPhrases.GetReasonPhrase(statusCode)) + new string(' ', 500);
                 return context.HttpContext.Response.SendAsync(body, "text/plain");
             };
         }
