@@ -114,7 +114,6 @@ namespace MvcSample.Web
 
             app.UseMvc(routes =>
             {
-                routes.MapRoute("FormatRoute", "{controller}/{action}/{id}.{format?}");
                 routes.MapRoute("areaRoute", "{area:exists}/{controller}/{action}");
                 routes.MapRoute(
                     "controllerActionRoute",

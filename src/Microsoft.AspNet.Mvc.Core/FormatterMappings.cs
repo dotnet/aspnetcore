@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Net.Http.Headers;
-using System.Collections.ObjectModel;
-using System.Globalization;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {

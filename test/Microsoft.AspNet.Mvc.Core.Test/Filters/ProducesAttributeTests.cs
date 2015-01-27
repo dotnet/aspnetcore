@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Test
             ValidateMediaType(mediaType1, objectResult.ContentTypes[0]);
             ValidateMediaType(mediaType2, objectResult.ContentTypes[1]);
         }
-        
+
         [Fact]
         public async Task ProducesContentAttribute_FormatFilterAttribute_NotActive()
         {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var producesContentAttribute = new ProducesAttribute("application/xml");
 
             var formatFilter = new Mock<IFormatFilter>();
-            formatFilter.Setup(f => f.IsActive(It.IsAny<FilterContext>()))
+            formatFilter.Setup(f => f.IsActive)
                 .Returns(false);
 
             var filters = new IFilter[] { producesContentAttribute, formatFilter.Object };
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var producesContentAttribute = new ProducesAttribute("application/xml");
 
             var formatFilter = new Mock<IFormatFilter>();
-            formatFilter.Setup(f => f.IsActive(It.IsAny<FilterContext>()))
+            formatFilter.Setup(f => f.IsActive)
                 .Returns(true);
 
             var filters = new IFilter[] { producesContentAttribute, formatFilter.Object };

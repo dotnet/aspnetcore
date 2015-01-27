@@ -5,14 +5,15 @@ using Microsoft.AspNet.Mvc;
 
 namespace MvcSample.Web.Controllers
 {
+    [Route("[controller]/[action]/{id}.{format?}")]
     public class FormatFilterController : Controller
     {
         public Product GetProduct(int id)
         {
             return new Product() { SampleInt = id };
         }
-
-        [Produces("application/custom", "application/json", "text/json")]
+        
+        [Produces("application/json", "text/json")]
         public Product ProducesMethod(int id)
         {
             return new Product() { SampleInt = id }; ;

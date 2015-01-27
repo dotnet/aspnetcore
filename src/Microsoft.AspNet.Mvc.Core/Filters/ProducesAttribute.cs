@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 // Check if there are any IFormatFilter in the pipeline, and if any of them is active. If there is one,
                 // do not override the content type value.
-                if (context.Filters.OfType<IFormatFilter>().All(f => !f.IsActive(context)))
+                if (context.Filters.OfType<IFormatFilter>().All(f => !f.IsActive))
                 {
                     SetContentTypes(objectResult.ContentTypes);
                 }
