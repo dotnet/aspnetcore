@@ -15,13 +15,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public class ModelStateDictionary : IDictionary<string, ModelState>
     {
+        // Make sure to update the doc headers if this value is changed.
+        /// <summary>
+        /// The default value for <see cref="MaxAllowedErrors"/> of <c>200</c>.
+        /// </summary>
+        public static readonly int DefaultMaxAllowedErrors = 200;
+
         private readonly IDictionary<string, ModelState> _innerDictionary;
+        private int _maxAllowedErrors;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ModelStateDictionary"/> class.
         /// </summary>
         public ModelStateDictionary()
+            : this(DefaultMaxAllowedErrors)
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModelStateDictionary"/> class.
+        /// </summary>
+        public ModelStateDictionary(int maxAllowedErrors)
+        {
+            MaxAllowedErrors = maxAllowedErrors;
+
             _innerDictionary = new Dictionary<string, ModelState>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -41,29 +58,53 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Gets or sets the maximum allowed errors in this instance of <see cref="ModelStateDictionary"/>.
-        /// Defaults to <see cref="int.MaxValue"/>.
+        /// Gets or sets the maximum allowed model state errors in this instance of <see cref="ModelStateDictionary"/>.
+        /// Defaults to <c>200</c>.
         /// </summary>
         /// <remarks>
-        /// The value of this property is used to track the total number of calls to
-        /// <see cref="AddModelError(string, Exception)"/> and <see cref="AddModelError(string, string)"/> after which
-        /// an error is thrown for further invocations. Errors added via modifying <see cref="ModelState"/> do not
-        /// count towards this limit.
+        /// <para>
+        /// <see cref="ModelStateDictionary"/> tracks the number of model errors added by calls to
+        /// <see cref="AddModelError(string, Exception)"/> or <see cref="TryAddModelError(string, Exception)"/>.
+        /// Once the value of <code>MaxAllowedErrors - 1</code> is reached, if another attempt is made to add an error,
+        /// the error message will be ignored and a <see cref="TooManyModelErrorsException"/> will be added.
+        /// </para>
+        /// <para>
+        /// Errors added via modifying <see cref="ModelState"/> directly do not count towards this limit.
+        /// </para>
         /// </remarks>
-        public int MaxAllowedErrors { get; set; } = int.MaxValue;
+        public int MaxAllowedErrors
+        {
+            get
+            {
+                return _maxAllowedErrors;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _maxAllowedErrors = value;
+            }
+        }
 
         /// <summary>
-        /// Gets a flag that determines if the total number of added errors (given by <see cref="ErrorCount"/>) is
-        /// fewer than <see cref="MaxAllowedErrors"/>.
+        /// Gets a value indicating whether or not the maximum number of errors have been
+        /// recorded.
         /// </summary>
-        public bool CanAddErrors
+        /// <remarks>
+        /// Returns <c>true</c> if a <see cref="TooManyModelErrorsException"/> has been recorded;
+        /// otherwise <c>false</c>.
+        /// </remarks>
+        public bool HasReachedMaxErrors
         {
-            get { return ErrorCount < MaxAllowedErrors; }
+            get { return ErrorCount >= MaxAllowedErrors; }
         }
 
         /// <summary>
         /// Gets the number of errors added to this instance of <see cref="ModelStateDictionary"/> via
-        /// <see cref="AddModelError(string, Exception)"/> and <see cref="AddModelError(string, string)"/>.
+        /// <see cref="AddModelError"/> or <see cref="TryAddModelError"/>.
         /// </summary>
         public int ErrorCount { get; private set; }
 
@@ -149,12 +190,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="key">The key of the <see cref="ModelState"/> to add errors to.</param>
         /// <param name="exception">The <see cref="Exception"/> to add.</param>
-        /// <returns>True if the error was added, false if the dictionary has already recorded
-        /// at least <see cref="MaxAllowedErrors"/> number of errors.</returns>
-        /// <remarks>
-        /// This method only allows adding up to <see cref="MaxAllowedErrors"/> - 1. <see cref="MaxAllowedErrors"/>nt
-        /// invocation would result in adding a <see cref="TooManyModelErrorsException"/> to the dictionary.
-        /// </remarks>
+        /// <returns>
+        /// <c>True</c> if the given error was added, <c>false</c> if the error was ignored.
+        /// See <see cref="MaxAllowedErrors"/>.
+        /// </returns>
         public bool TryAddModelError([NotNull] string key, [NotNull] Exception exception)
         {
             if (ErrorCount >= MaxAllowedErrors - 1)
@@ -186,12 +225,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="key">The key of the <see cref="ModelState"/> to add errors to.</param>
         /// <param name="errorMessage">The error message to add.</param>
-        /// <returns>True if the error was added, false if the dictionary has already recorded
-        /// at least <see cref="MaxAllowedErrors"/> number of errors.</returns>
-        /// <remarks>
-        /// This method only allows adding up to <see cref="MaxAllowedErrors"/> - 1. <see cref="MaxAllowedErrors"/>nt
-        /// invocation would result in adding a <see cref="TooManyModelErrorsException"/> to the dictionary.
-        /// </remarks>
+        /// <returns>
+        /// <c>True</c> if the given error was added, <c>false</c> if the error was ignored.
+        /// See <see cref="MaxAllowedErrors"/>.
+        /// </returns>
         public bool TryAddModelError([NotNull] string key, [NotNull] string errorMessage)
         {
             if (ErrorCount >= MaxAllowedErrors - 1)

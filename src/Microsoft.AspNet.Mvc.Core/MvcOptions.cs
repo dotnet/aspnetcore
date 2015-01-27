@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
+using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -15,7 +16,7 @@ namespace Microsoft.AspNet.Mvc
     public class MvcOptions
     {
         private AntiForgeryOptions _antiForgeryOptions = new AntiForgeryOptions();
-        private int _maxModelStateErrors = 200;
+        private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
 
         public MvcOptions()
         {

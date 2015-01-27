@@ -385,7 +385,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             dictionary.AddModelError("key6", "error6");
 
             // Act and Assert
-            Assert.False(dictionary.CanAddErrors);
+            Assert.True(dictionary.HasReachedMaxErrors);
             Assert.Equal(5, dictionary.ErrorCount);
             var error = Assert.Single(dictionary[""].Errors);
             Assert.IsType<TooManyModelErrorsException>(error.Exception);
@@ -415,7 +415,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             result = dictionary.TryAddModelError("key4", "error4");
             Assert.False(result);
 
-            Assert.False(dictionary.CanAddErrors);
+            Assert.True(dictionary.HasReachedMaxErrors);
             Assert.Equal(3, dictionary.ErrorCount);
             Assert.Equal(3, dictionary.Count);
 
@@ -441,7 +441,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             dictionary.AddModelError("key5", new FormatException());
 
             // Act and Assert
-            Assert.False(dictionary.CanAddErrors);
+            Assert.True(dictionary.HasReachedMaxErrors);
             Assert.Equal(4, dictionary.ErrorCount);
             Assert.Equal(4, dictionary.Count);
             var error = Assert.Single(dictionary[""].Errors);
@@ -498,6 +498,31 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.IsType<TooManyModelErrorsException>(error.Exception);
             Assert.Equal(expected, error.Exception.Message);
         }
+
+        [Theory]
+        [InlineData(2, false)]
+        [InlineData(3, true)]
+        [InlineData(4, true)]
+        public void ModelStateDictionary_HasReachedMaxErrors(int errorCount, bool expected)
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary()
+            {
+                MaxAllowedErrors = 3
+            };
+
+            for (var i = 0; i < errorCount; i++)
+            {
+                dictionary.AddModelError("key" + i, "error");
+            }
+
+            // Act
+            var canAdd = dictionary.HasReachedMaxErrors;
+
+            // Assert
+            Assert.Equal(expected, canAdd);
+        }
+
 
         private static ValueProviderResult GetValueProviderResult(object rawValue = null, string attemptedValue = null)
         {

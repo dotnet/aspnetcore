@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public void Validate([NotNull] ModelValidationContext validationContext, ModelValidationNode parentNode)
         {
-            if (SuppressValidation || !validationContext.ModelState.CanAddErrors)
+            if (SuppressValidation || validationContext.ModelState.HasReachedMaxErrors)
             {
                 // Short circuit if validation does not need to be applied or if we've reached the max number of
                 // validation errors.

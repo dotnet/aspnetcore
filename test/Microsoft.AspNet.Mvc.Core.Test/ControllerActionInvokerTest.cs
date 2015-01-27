@@ -2043,7 +2043,7 @@ namespace Microsoft.AspNet.Mvc
                 controllerFactory.Object,
                 actionDescriptor,
                 inputFormattersProvider.Object,
-                new DefaultControllerActionArgumentBinder(new EmptyModelMetadataProvider()),
+                new DefaultControllerActionArgumentBinder(new EmptyModelMetadataProvider(), new MockMvcOptionsAccessor()),
                 new MockModelBinderProvider() { ModelBinders = new List<IModelBinder>() { binder.Object } },
                 new MockModelValidatorProviderProvider(),
                 new MockValueProviderFactoryProvider(),

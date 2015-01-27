@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -16,10 +17,14 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultControllerActionArgumentBinder : IControllerActionArgumentBinder
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
+        private readonly MvcOptions _options;
 
-        public DefaultControllerActionArgumentBinder(IModelMetadataProvider modelMetadataProvider)
+        public DefaultControllerActionArgumentBinder(
+            IModelMetadataProvider modelMetadataProvider,
+            IOptions<MvcOptions> optionsAccessor)
         {
             _modelMetadataProvider = modelMetadataProvider;
+            _options = optionsAccessor.Options;
         }
 
         public async Task<IDictionary<string, object>> GetActionArgumentsAsync(
@@ -84,10 +89,13 @@ namespace Microsoft.AspNet.Mvc
                 ValueProvider = bindingContext.ValueProvider,
             };
 
+            var modelState = actionContext.ModelState;
+            modelState.MaxAllowedErrors = _options.MaxModelValidationErrors;
+
             foreach (var parameter in parameterMetadata)
             {
                 var parameterType = parameter.ModelType;
-                var modelBindingContext = GetModelBindingContext(parameter, actionContext, operationBindingContext);
+                var modelBindingContext = GetModelBindingContext(parameter, modelState, operationBindingContext);
                 if (await bindingContext.ModelBinder.BindModelAsync(modelBindingContext) &&
                     modelBindingContext.IsModelSet)
                 {
@@ -96,16 +104,17 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        // Internal for tests
         internal static ModelBindingContext GetModelBindingContext(
             ModelMetadata modelMetadata,
-            ActionContext actionContext,
+            ModelStateDictionary modelState,
             OperationBindingContext operationBindingContext)
         {
             var modelBindingContext = new ModelBindingContext
             {
                 ModelName = modelMetadata.BinderModelName ?? modelMetadata.PropertyName,
                 ModelMetadata = modelMetadata,
-                ModelState = actionContext.ModelState,
+                ModelState = modelState,
 
                 // Fallback only if there is no explicit model name set.
                 FallbackToEmptyPrefix = modelMetadata.BinderModelName == null,
