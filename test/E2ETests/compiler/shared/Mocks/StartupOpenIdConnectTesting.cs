@@ -3,13 +3,14 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Console;
+using MusicStore.Mocks.Common;
+using MusicStore.Mocks.OpenIdConnect;
 using MusicStore.Models;
 
 namespace MusicStore
@@ -105,8 +106,11 @@ namespace MusicStore
             app.UseOpenIdConnectAuthentication(options =>
             {
                 options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
-                options.ClientId = "[ClientId]";
-                options.BackchannelHttpHandler = null; // TODO: Yet to implement the handler.
+                options.ClientId = "c99497aa-3ee2-4707-b8a8-c33f51323fef";
+                options.BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler();
+                options.StateDataFormat = new CustomStateDataFormat();
+                options.TokenValidationParameters.ValidateLifetime = false;
+                options.ProtocolValidator.RequireNonce = false;
             });
 
             // Add MVC to the request pipeline
