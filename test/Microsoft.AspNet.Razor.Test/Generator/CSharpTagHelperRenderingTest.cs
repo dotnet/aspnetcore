@@ -213,7 +213,41 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                             BuildLineMapping(1094, 30, 18, 5179, 187, 19, 29),
                             BuildLineMapping(1231, 34, 5279, 192, 0, 1),
                         }
-                    }
+                    },
+                    {
+                        "EmptyAttributeTagHelpers",
+                        "EmptyAttributeTagHelpers.DesignTime",
+                        PAndInputTagHelperDescriptors,
+                        new List<LineMapping>
+                        {
+                            BuildLineMapping(documentAbsoluteIndex: 14,
+                                             documentLineIndex: 0,
+                                             generatedAbsoluteIndex: 493,
+                                             generatedLineIndex: 15,
+                                             characterOffsetIndex: 14,
+                                             contentLength: 11),
+                            BuildLineMapping(documentAbsoluteIndex: 62,
+                                             documentLineIndex: 3,
+                                             documentCharacterOffsetIndex: 26,
+                                             generatedAbsoluteIndex: 1289,
+                                             generatedLineIndex: 39,
+                                             generatedCharacterOffsetIndex: 28,
+                                             contentLength: 0),
+                            BuildLineMapping(documentAbsoluteIndex: 122,
+                                             documentLineIndex: 5,
+                                             generatedAbsoluteIndex: 1634,
+                                             generatedLineIndex: 48,
+                                             characterOffsetIndex: 30,
+                                             contentLength: 0),
+                            BuildLineMapping(documentAbsoluteIndex: 88,
+                                             documentLineIndex: 4,
+                                             documentCharacterOffsetIndex: 12,
+                                             generatedAbsoluteIndex: 1789,
+                                             generatedLineIndex: 54,
+                                             generatedCharacterOffsetIndex: 19,
+                                             contentLength: 0)
+                        }
+                    },
                 };
             }
         }
@@ -245,6 +279,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     { "BasicTagHelpers", PAndInputTagHelperDescriptors },
                     { "BasicTagHelpers.RemoveTagHelper", PAndInputTagHelperDescriptors },
                     { "ComplexTagHelpers", PAndInputTagHelperDescriptors },
+                    { "EmptyAttributeTagHelpers", PAndInputTagHelperDescriptors },
                 };
             }
         }

@@ -19,6 +19,77 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : CsHtmlMarkupParserTestBase
     {
+        public static TheoryData EmptyAttributeTagHelperData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+
+                // documentContent, expectedOutput
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        "<p class=\"\"></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "class",  new MarkupBlock() }
+                            }))
+                    },
+                    {
+                        "<p class=''></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "class",  new MarkupBlock() }
+                            }))
+                    },
+                    {
+                        "<p class=></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                // We expected a markup node here because attribute values without quotes can only ever
+                                // be a single item, hence don't need to be enclosed by a block.
+                                { "class",  factory.Markup("").With(SpanCodeGenerator.Null) },
+                            }))
+                    },
+                    {
+                        "<p class1='' class2= class3=\"\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "class1",  new MarkupBlock() },
+                                { "class2",  factory.Markup("").With(SpanCodeGenerator.Null) },
+                                { "class3",  new MarkupBlock() },
+                            }))
+                    },
+                    {
+                        "<p class1=''class2=\"\"class3= />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                            new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "class1",  new MarkupBlock() },
+                                { "class2",  new MarkupBlock() },
+                                { "class3",  factory.Markup("").With(SpanCodeGenerator.Null) },
+                            }))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(EmptyAttributeTagHelperData))]
+        public void Rewrite_UnderstandsEmptyAttributeTagHelpers(string documentContent, MarkupBlock expectedOutput)
+        {
+            RunParseTreeRewriterTest(documentContent, expectedOutput, new RazorError[0], "p");
+        }
+
         public static TheoryData<string, MarkupBlock, RazorError[]> MalformedTagHelperAttributeBlockData
         {
             get

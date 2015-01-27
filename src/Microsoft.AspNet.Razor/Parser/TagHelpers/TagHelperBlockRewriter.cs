@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
@@ -90,10 +91,15 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 EditHandler = span.EditHandler,
                 Kind = span.Kind
             };
+
+            // Will contain symbols that represent a single attribute value: <input| class="btn"| />
             var htmlSymbols = span.Symbols.OfType<HtmlSymbol>().ToArray();
             var capturedAttributeValueStart = false;
             var attributeValueStartLocation = span.Start;
-            var symbolOffset = 1;
+
+            // The symbolOffset is initialized to 0 to expect worst case: "class=". If a quote is found later on for
+            // the attribute value the symbolOffset is adjusted accordingly.
+            var symbolOffset = 0;
             string name = null;
 
             // Iterate down through the symbols to find the name and the start of the value.
@@ -104,6 +110,11 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
                 if (afterEquals)
                 {
+                    // We've captured all leading whitespace, the attribute name, and an equals with an optional 
+                    // quote/double quote. We're now at: " asp-for='|...'" or " asp-for=|..."
+                    // The goal here is to capture all symbols until the end of the attribute. Note this will not 
+                    // consume an ending quote due to the symbolOffset.
+
                     // When symbols are accepted into SpanBuilders, their locations get altered to be offset by the 
                     // parent which is why we need to mark our start location prior to adding the symbol. 
                     // This is needed to know the location of the attribute value start within the document.
@@ -118,13 +129,24 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 }
                 else if (name == null && symbol.Type == HtmlSymbolType.Text)
                 {
+                    // We've captured all leading whitespace prior to the attribute name.
+                    // We're now at: " |asp-for='...'" or " |asp-for=..."
+                    // The goal here is to capture the attribute name.
+
                     name = symbol.Content;
-                    attributeValueStartLocation = SourceLocation.Advance(span.Start, name);
+                    attributeValueStartLocation = SourceLocation.Advance(attributeValueStartLocation, name);
                 }
                 else if (symbol.Type == HtmlSymbolType.Equals)
                 {
-                    // We've found an '=' symbol, this means that the coming symbols will either be a quote
-                    // or value (in the case that the value is unquoted).
+                    Debug.Assert(
+                        name != null,
+                        "Name should never be null here. The parser should guaruntee an attribute has a name.");
+
+                    // We've captured all leading whitespace and the attribute name.
+                    // We're now at: " asp-for|='...'" or " asp-for|=..."
+                    // The goal here is to consume the equal sign and the optional single/double-quote.
+
+                    // The coming symbols will either be a quote or value (in the case that the value is unquoted).
                     // Spaces after/before the equal symbol are not yet supported:
                     // https://github.com/aspnet/Razor/issues/123
 
@@ -134,26 +156,37 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     SourceLocation symbolStartLocation;
 
                     // Check for attribute start values, aka single or double quote
-                    if (IsQuote(htmlSymbols[i + 1]))
+                    if ((i + 1) < htmlSymbols.Length && IsQuote(htmlSymbols[i + 1]))
                     {
                         // Move past the attribute start so we can accept the true value.
                         i++;
-                        symbolStartLocation = htmlSymbols[i + 1].Start;
+                        symbolStartLocation = htmlSymbols[i].Start;
+
+                        // If there's a start quote then there must be an end quote to be valid, skip it.
+                        symbolOffset = 1;
                     }
                     else
                     {
                         symbolStartLocation = symbol.Start;
-
-                        // Set the symbol offset to 0 so we don't attempt to skip an end quote that doesn't exist.
-                        symbolOffset = 0;
                     }
 
-                    attributeValueStartLocation = symbolStartLocation +
-                                                  span.Start +
-                                                  new SourceLocation(absoluteIndex: 1,
-                                                                     lineIndex: 0,
-                                                                     characterIndex: 1);
+                    attributeValueStartLocation =
+                        span.Start +
+                        symbolStartLocation +
+                        new SourceLocation(absoluteIndex: 1, lineIndex: 0, characterIndex: 1);
+
                     afterEquals = true;
+                }
+                else if (symbol.Type == HtmlSymbolType.WhiteSpace)
+                {
+                    // We're at the start of the attribute, this branch may be hit on the first iterations of 
+                    // the loop since the parser separates attributes with their spaces included as symbols.
+                    // We're at: "| asp-for='...'" or "| asp-for=..."
+                    // Note: This will not be hit even for situations like asp-for  ="..." because the core Razor 
+                    // parser currently does not know how to handle attributes in that format. This will be addressed
+                    // by https://github.com/aspnet/Razor/issues/123.
+
+                    attributeValueStartLocation = SourceLocation.Advance(attributeValueStartLocation, symbol.Content);
                 }
             }
 
