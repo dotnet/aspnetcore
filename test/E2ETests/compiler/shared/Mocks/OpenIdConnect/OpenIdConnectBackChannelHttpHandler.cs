@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace MusicStore.Mocks.OpenIdConnect
 {
-    public class OpenIdConnectBackChannelHttpHandler : HttpMessageHandler
+    internal class OpenIdConnectBackChannelHttpHandler : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

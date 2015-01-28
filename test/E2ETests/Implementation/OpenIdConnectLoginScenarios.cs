@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.WebUtilities;
@@ -35,35 +36,66 @@ namespace E2ETests
             Assert.Equal<string>("code id_token", queryItems["response_type"]);
             Assert.Equal<string>("openid profile", queryItems["scope"]);
             Assert.Equal<string>("OpenIdConnect.AuthenticationProperties=ValidStateData", queryItems["state"]);
+            Assert.NotNull(queryItems["nonce"]);
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.OpenIdConnect.Nonce.protectedString"));
 
-            //This is just to generate a correlation cookie. Previous step would generate this cookie, but we have reset the handler now.
+            Console.WriteLine("Before..");
+            foreach (Cookie item in _httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)))
+            {
+                Console.WriteLine(item.Name + " " + item.Value + " " + item.Path);
+            }
+            Console.WriteLine("End of Before..");
+
+            // This is just enable the auto-redirect.
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = true };
             _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
-
-            response = _httpClient.GetAsync("Account/Login").Result;
-            responseContent = response.Content.ReadAsStringAsync().Result;
-            formParameters = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("provider", "OpenIdConnect"),
-                new KeyValuePair<string, string>("returnUrl", "/"),
-                new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/ExternalLogin")),
-            };
-
-            content = new FormUrlEncodedContent(formParameters.ToArray());
-            response = _httpClient.PostAsync("Account/ExternalLogin", content).Result;
+            _httpClientHandler.CookieContainer.Add(new Uri(_applicationBaseUrl), new Cookie(".AspNet.OpenIdConnect.Nonce.protectedString", "N"));
 
             //Post a message to the OpenIdConnect middleware
             var token = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("code", "AAABAAAAvPM1KaPlrEqdFSBzjqfTGMQtbI_OHOamje5gJL8fAgpLsNlGHTJmFBHKtpy8zM9Ck__IcUuEd7oirpHPB6yhq2m6e-hjLiJv1AcHNR8V27s0bk7eHak9LqRtE68A9L4hSBTP4L4Uafz9FUwoO9uGfPLrLdNA26KYV6YzkJHQ6JmLQdMviK-hK7bKU2n8Tszjj4izVPXRfoTIzZvGqLERofoTQ011ede6vOD87UaJ8qbYvmsLh1QoaS2pCh3ZKiCHkEjsbgUTYpBPQLo3qjeEXr34DHYdlgK_ICYLoIBTtpFixETFp6jMYr3QideJbUC9vKrscQ2xbEZ4uX7v5NMuvESRRaNqrQfQ9kwPO1-x3trbZWHHdKYgzrAiYeD7vYo1YdDCc6hDTEhferKW9eS2ThYR5leeTIVmQYXvGyE1LfsO0cvsxubBIuSVKq3tVDatQScWQo34V1fdAoB9cG8aQwtjxKo9BG-UkTFiVhMuLORPSDSN3xtKjjbSgj2rABQBFbpjRzhc-aiDgAnHMDtvPfFkftFUujbi3WtifoNraVUZyKvubOrU7Y4I1GgZgzS8eF-YMpdZUDwItlqJjPA6OcdqXQbzsvg1bhOUNUrttGLSESeSUcxd_NDTX-mHGfFf9GXPT8VO83v-WmSbcYr0bw7zhnPsqxgczCcgvZFQnCYDHfrocPfQri9qhcZ_t5TRgRjOkICAcsKX_Dz1Pme8fCAA"),
-                new KeyValuePair<string, string>("id_token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6ImtyaU1QZG1Cdng2OHNrVDgtbVBBQjNCc2VlQSJ9.eyJhdWQiOiJjOTk0OTdhYS0zZWUyLTQ3MDctYjhhOC1jMzNmNTEzMjNmZWYiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC80YWZiYzY4OS04MDViLTQ4Y2YtYTI0Yy1kNGFhMzI0OGEyNDgvIiwiaWF0IjoxNDIyMzA0MDQ5LCJuYmYiOjE0MjIzMDQwNDksImV4cCI6MTQyMjMwNzk0OSwidmVyIjoiMS4wIiwidGlkIjoiNGFmYmM2ODktODA1Yi00OGNmLWEyNGMtZDRhYTMyNDhhMjQ4IiwiYW1yIjpbInB3ZCJdLCJvaWQiOiJmODc2YWJlYi1kNmI1LTQ0ZTQtOTcxNi02MjY2YWMwMTgxYTgiLCJ1cG4iOiJ1c2VyM0BwcmFidXJhamdtYWlsLm9ubWljcm9zb2Z0LmNvbSIsInN1YiI6IlBVZGhjbFA1UGdJalNVOVAxUy1IZWxEYVNGU2YtbVhWMVk2MC1LMnZXcXciLCJnaXZlbl9uYW1lIjoiVXNlcjMiLCJmYW1pbHlfbmFtZSI6IlVzZXIzIiwibmFtZSI6IlVzZXIzIiwidW5pcXVlX25hbWUiOiJ1c2VyM0BwcmFidXJhamdtYWlsLm9ubWljcm9zb2Z0LmNvbSIsIm5vbmNlIjoiNjM1NTc5MDExNDk4NzcwNDQ5Lk1HRTBPRE01TmpNdE16ZGhaQzAwTnpObUxXRmpPREl0TWpGaU1URTVaRGsxWm1Nek1USmhabVExWkRBdFptSmtPUzAwTnpRM0xUZzRZV1V0TWpZNVlqVmlOREppTXpNNSIsImNfaGFzaCI6Im9hX2oxckRJdEhqY2tlRHBQbTA4bHciLCJwd2RfZXhwIjoiNjc4NDk5NCIsInB3ZF91cmwiOiJodHRwczovL3BvcnRhbC5taWNyb3NvZnRvbmxpbmUuY29tL0NoYW5nZVBhc3N3b3JkLmFzcHgifQ.PDVbcUPw_MXE13PTOHl1WQwoV763Lu4p-hPyc-K-UumsNwAGtQy6R5IMqNPxv86BymMdwXZjQqZPaldrjSJf7bFr9sCS_wh8IKCls4uumsRF0lC93yey5Qo7_N4NWjLw1f2QNuGcaaIimDjaoeZyGnCx84grtL-3TuSEhyGV2lc0BoovRSz_LZR4H4VnGWjVzdIZhb84LJWLjYClocWLnNdkYZAXgx4tuwAa8DckZL4JiCo1Lngpy9-ELWy8vdZqIBBwIEeO-bg9TTxxknd7kjG7OO5IKfiuAAt5121udsx9DB4TeQp5taEzFfPbOq4H3z41jlK0KCNPDDFbXU36rQ"),
+                new KeyValuePair<string, string>("code", "AAABAAAAvPM1KaPlrEqdFSBzjqfTGGBtrTYVn589oKw4lLgJ6Svz0AhPVOJr0J2-Uu_KffGlqIbYlRAyxmt-vZ7VlSVdrWvOkNhK9OaAMaSD7LDoPbBTVMEkB0MdAgBTV34l2el-s8ZI02_9PvgQaORZs7n8eGaGbcoKAoxiDn2OcKuJVplXYgrGUwU4VpRaqe6RaNzuseM7qBFbLIv4Wps8CndE6W8ccmuu6EvGC6-H4uF9EZL7gU4nEcTcvkE4Qyt8do6VhTVfM1ygRNQgmV1BCig5t_5xfhL6-xWQdy15Uzn_Df8VSsyDXe8s9cxyKlqc_AIyLFy_NEiMQFUqjZWKd_rR3A8ugug15SEEGuo1kF3jMc7dVMdE6OF9UBd-Ax5ILWT7V4clnRQb6-CXB538DlolREfE-PowXYruFBA-ARD6rwAVtuVfCSbS0Zr4ZqfNjt6x8yQdK-OkdQRZ1thiZcZlm1lyb2EquGZ8Deh2iWBoY1uNcyjzhG-L43EivxtHAp6Y8cErhbo41iacgqOycgyJWxiB5J0HHkxD0nQ2RVVuY8Ybc9sdgyfKkkK2wZ3idGaRCdZN8Q9VBhWRXPDMqHWG8t3aZRtvJ_Xd3WhjNPJC0GpepUGNNQtXiEoIECC363o1z6PZC5-E7U3l9xK06BZkcfTOnggUiSWNCrxUKS44dNqaozdYlO5E028UgAEhJ4eDtcP3PZty-0j4j5Mw0F2FmyAA"),
+                new KeyValuePair<string, string>("id_token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6ImtyaU1QZG1Cdng2OHNrVDgtbVBBQjNCc2VlQSJ9.eyJhdWQiOiJjOTk0OTdhYS0zZWUyLTQ3MDctYjhhOC1jMzNmNTEzMjNmZWYiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC80YWZiYzY4OS04MDViLTQ4Y2YtYTI0Yy1kNGFhMzI0OGEyNDgvIiwiaWF0IjoxNDIyMzk1NzYzLCJuYmYiOjE0MjIzOTU3NjMsImV4cCI6MTQyMjM5OTY2MywidmVyIjoiMS4wIiwidGlkIjoiNGFmYmM2ODktODA1Yi00OGNmLWEyNGMtZDRhYTMyNDhhMjQ4IiwiYW1yIjpbInB3ZCJdLCJvaWQiOiJmODc2YWJlYi1kNmI1LTQ0ZTQtOTcxNi02MjY2YWMwMTgxYTgiLCJ1cG4iOiJ1c2VyM0BwcmFidXJhamdtYWlsLm9ubWljcm9zb2Z0LmNvbSIsInN1YiI6IlBVZGhjbFA1UGdJalNVOVAxUy1IZWxEYVNGU2YtbVhWMVk2MC1LMnZXcXciLCJnaXZlbl9uYW1lIjoiVXNlcjMiLCJmYW1pbHlfbmFtZSI6IlVzZXIzIiwibmFtZSI6IlVzZXIzIiwidW5pcXVlX25hbWUiOiJ1c2VyM0BwcmFidXJhamdtYWlsLm9ubWljcm9zb2Z0LmNvbSIsIm5vbmNlIjoiNjM1NTc5OTI4NjM5NTE3NzE1Lk9UUmpPVFZrTTJFdE1EUm1ZUzAwWkRFM0xUaGhaR1V0WldabVpHTTRPRGt6Wkdaa01EUmxORGhrTjJNdE9XSXdNQzAwWm1Wa0xXSTVNVEl0TVRVd1ltUTRNemRtT1dJMCIsImNfaGFzaCI6IkZHdDN3Y1FBRGUwUFkxUXg3TzFyNmciLCJwd2RfZXhwIjoiNjY5MzI4MCIsInB3ZF91cmwiOiJodHRwczovL3BvcnRhbC5taWNyb3NvZnRvbmxpbmUuY29tL0NoYW5nZVBhc3N3b3JkLmFzcHgifQ.coAdCkdMgnslMHagdU8IBgH7Z0dilRdMfKytyqPJuTr6sbmbhrAoAj-KeGwbKgzrd-BeDk_rW47dntWuuAqGrAOGzxXvS2dcSWgoEKoXuDccIL5b4rIomRpfJpaeE-YwiU3usyRvoQCpHmtOa0g7xVilIj3_1-9ylMgRDY5qcrtQ_hEZlGuYyiCPR0dw8WmNU7r6PKObG-o3Yk_RbEBHjnaWxKoJwrVUEZUQOJDAvlr6ZYEmGTlD_BM0Rc_0fJZPU7A3uN9PHLw1atm-chN06IDXf23R33JI_xFuEZnj9HZQ_eIzNCl7GFmUryK3FFgYJpIbsI0BIFuksSikXz33IA"),
                 new KeyValuePair<string, string>("state", "OpenIdConnect.AuthenticationProperties=ValidStateData"),
-                new KeyValuePair<string, string>("session_state", "17d814f8-618c-47a2-af6a-43df8a62279a")
+                new KeyValuePair<string, string>("session_state", "d0b59ffa-2df9-4d8c-b43a-2c410987f4ae")
             };
 
             response = _httpClient.PostAsync(string.Empty, new FormUrlEncodedContent(token.ToArray())).Result;
             ThrowIfResponseStatusNotOk(response);
             responseContent = response.Content.ReadAsStringAsync().Result;
+            Console.WriteLine("After..");
+            foreach (Cookie item in _httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)))
+            {
+                Console.WriteLine(item.Name + " " + item.Value + " " + item.Path);
+            }
+            Console.WriteLine("end of After..");
+            Assert.Equal(_applicationBaseUrl + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
+
+            formParameters = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("Email", "User3@aspnettest.onmicrosoft.com"),
+                new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/ExternalLoginConfirmation?ReturnUrl=%2F")),
+            };
+
+            content = new FormUrlEncodedContent(formParameters.ToArray());
+            response = _httpClient.PostAsync("Account/ExternalLoginConfirmation", content).Result;
+            ThrowIfResponseStatusNotOk(response);
+            responseContent = response.Content.ReadAsStringAsync().Result;
+
+            Assert.Contains(string.Format("Hello {0}!", "User3@aspnettest.onmicrosoft.com"), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
+            //Verify cookie sent
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
+            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
+            _logger.WriteInformation("Successfully signed in with user '{0}'", "User3@aspnettest.onmicrosoft.com");
+
+            //_logger.WriteInformation("Verifying if the middleware notifications were fired");
+            ////Check for a non existing item
+            //response = _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123")).Result;
+            ////This action requires admin permissions. If notifications are fired this permission is granted
+            //Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            //_logger.WriteInformation("Middleware notifications were fired successfully");
+            Console.ReadLine();
         }
     }
 }

@@ -108,9 +108,23 @@ namespace MusicStore
                 options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
                 options.ClientId = "c99497aa-3ee2-4707-b8a8-c33f51323fef";
                 options.BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler();
+                options.StringDataFormat = new CustomStringDataFormat();
                 options.StateDataFormat = new CustomStateDataFormat();
                 options.TokenValidationParameters.ValidateLifetime = false;
-                options.ProtocolValidator.RequireNonce = false;
+                options.ProtocolValidator.RequireNonce = true;
+                options.ProtocolValidator.NonceLifetime = TimeSpan.FromDays(36500);
+
+                if (options.Notifications == null)
+                {
+                    // Bug: Notifications should be instantiated.
+                    options.Notifications = new Microsoft.AspNet.Security.OpenIdConnect.OpenIdConnectAuthenticationNotifications();
+                }
+
+                options.Notifications.MessageReceived = OpenIdConnectNotifications.MessageReceived;
+                options.Notifications.AuthorizationCodeReceived = OpenIdConnectNotifications.AuthorizationCodeReceived;
+                options.Notifications.RedirectToIdentityProvider = OpenIdConnectNotifications.RedirectToIdentityProvider;
+                options.Notifications.SecurityTokenReceived = OpenIdConnectNotifications.SecurityTokenReceived;
+                options.Notifications.SecurityTokenValidated = OpenIdConnectNotifications.SecurityTokenValidated;
             });
 
             // Add MVC to the request pipeline
