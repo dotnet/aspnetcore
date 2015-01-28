@@ -89,13 +89,12 @@ namespace E2ETests
             Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
             _logger.WriteInformation("Successfully signed in with user '{0}'", "User3@aspnettest.onmicrosoft.com");
 
-            //_logger.WriteInformation("Verifying if the middleware notifications were fired");
-            ////Check for a non existing item
-            //response = _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123")).Result;
-            ////This action requires admin permissions. If notifications are fired this permission is granted
-            //Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            //_logger.WriteInformation("Middleware notifications were fired successfully");
-            Console.ReadLine();
+            _logger.WriteInformation("Verifying if the middleware notifications were fired");
+            //Check for a non existing item
+            response = _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123")).Result;
+            //This action requires admin permissions. If notifications are fired this permission is granted
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            _logger.WriteInformation("Middleware notifications were fired successfully");
         }
     }
 }

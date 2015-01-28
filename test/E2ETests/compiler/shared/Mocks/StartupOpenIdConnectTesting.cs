@@ -4,6 +4,7 @@ using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Security;
+using Microsoft.AspNet.Security.OpenIdConnect;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
@@ -113,18 +114,16 @@ namespace MusicStore
                 options.TokenValidationParameters.ValidateLifetime = false;
                 options.ProtocolValidator.RequireNonce = true;
                 options.ProtocolValidator.NonceLifetime = TimeSpan.FromDays(36500);
+                options.UseTokenLifetime = false;
 
-                if (options.Notifications == null)
+                options.Notifications = new OpenIdConnectAuthenticationNotifications
                 {
-                    // Bug: Notifications should be instantiated.
-                    options.Notifications = new Microsoft.AspNet.Security.OpenIdConnect.OpenIdConnectAuthenticationNotifications();
-                }
-
-                options.Notifications.MessageReceived = OpenIdConnectNotifications.MessageReceived;
-                options.Notifications.AuthorizationCodeReceived = OpenIdConnectNotifications.AuthorizationCodeReceived;
-                options.Notifications.RedirectToIdentityProvider = OpenIdConnectNotifications.RedirectToIdentityProvider;
-                options.Notifications.SecurityTokenReceived = OpenIdConnectNotifications.SecurityTokenReceived;
-                options.Notifications.SecurityTokenValidated = OpenIdConnectNotifications.SecurityTokenValidated;
+                    MessageReceived = OpenIdConnectNotifications.MessageReceived,
+                    AuthorizationCodeReceived = OpenIdConnectNotifications.AuthorizationCodeReceived,
+                    RedirectToIdentityProvider = OpenIdConnectNotifications.RedirectToIdentityProvider,
+                    SecurityTokenReceived = OpenIdConnectNotifications.SecurityTokenReceived,
+                    SecurityTokenValidated = OpenIdConnectNotifications.SecurityTokenValidated
+                };
             });
 
             // Add MVC to the request pipeline
