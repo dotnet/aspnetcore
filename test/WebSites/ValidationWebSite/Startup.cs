@@ -12,6 +12,9 @@ namespace ValidationWebSite
         {
             var configuration = app.GetTestConfiguration();
 
+            // Set up file serving for JavaScript files.
+            app.UseFileServer();
+
             // Set up application services
             app.UseServices(services =>
             {
