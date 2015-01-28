@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                     string redirectUri = notification.ProtocolMessage.CreateLogoutRequestUrl();
                     if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
                     {
-                        _logger.WriteWarning("The logout redirect URI is malformed: " + redirectUri);
+                        _logger.WriteWarning("The logout redirect URI is malformed: {0}", (redirectUri ?? "null"));
                     }
 
                     Response.Redirect(redirectUri);
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                 string redirectUri = notification.ProtocolMessage.CreateAuthenticationRequestUrl();
                 if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
                 {
-                    _logger.WriteWarning("Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: " + (redirectUri ?? "null"));
+                    _logger.WriteWarning("Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: {0}", (redirectUri ?? "null"));
                 }
 
                 Response.Redirect(redirectUri);
@@ -343,7 +343,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                     throw new InvalidOperationException("No SecurityTokenValidator found for token: " + openIdConnectMessage.IdToken);
                 }
 
-                ticket = new AuthenticationTicket(principal, properties, Options.AuthenticationType);
+                ticket = new AuthenticationTicket(principal.Identity as ClaimsIdentity, properties);
                 if (!string.IsNullOrWhiteSpace(openIdConnectMessage.SessionState))
                 {
                     ticket.Properties.Dictionary[OpenIdConnectSessionProperties.SessionState] = openIdConnectMessage.SessionState;
