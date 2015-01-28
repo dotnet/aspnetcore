@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.Mvc.Xml
     /// </summary>
     public class XmlDataContractSerializerInputFormatter : IInputFormatter
     {
+        private DataContractSerializerSettings _serializerSettings;
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
 
         /// <summary>
@@ -33,6 +34,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             SupportedMediaTypes = new List<MediaTypeHeaderValue>();
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
+            _serializerSettings = new DataContractSerializerSettings();
         }
 
         /// <inheritdoc />
@@ -74,6 +76,24 @@ namespace Microsoft.AspNet.Mvc.Xml
         }
 
         /// <summary>
+        /// Gets or sets the <see cref="DataContractSerializerSettings"/> used to configure the 
+        /// <see cref="DataContractSerializer"/>.
+        /// </summary>
+        public DataContractSerializerSettings SerializerSettings
+        {
+            get { return _serializerSettings; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _serializerSettings = value;
+            }
+        }
+
+        /// <summary>
         /// Reads the input XML.
         /// </summary>
         /// <param name="context">The input formatter context which contains the body to be read.</param>
@@ -106,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.Xml
         /// <returns>The <see cref="XmlObjectSerializer"/> used during deserialization.</returns>
         protected virtual XmlObjectSerializer CreateDataContractSerializer(Type type)
         {
-            return new DataContractSerializer(SerializableErrorWrapper.CreateSerializableType(type));
+            return new DataContractSerializer(SerializableErrorWrapper.CreateSerializableType(type), _serializerSettings);
         }
 
         private object GetDefaultValueForType(Type modelType)

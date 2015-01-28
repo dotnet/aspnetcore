@@ -27,6 +27,13 @@ namespace Microsoft.AspNet.Mvc
             public int SampleInt { get; set; }
         }
 
+        [DataContract(Name = "SomeDummyClass", Namespace = "")]
+        public class SomeDummyClass : DummyClass
+        {
+            [DataMember]
+            public string SampleString { get; set; }
+        }
+
         [DataContract(Name = "TestLevelOne", Namespace = "")]
         public class TestLevelOne
         {
@@ -357,6 +364,118 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(serializableError);
             Assert.Equal("Test Error 1 Test Error 2", serializableError["key1"]);
             Assert.Equal("Test Error 3", serializableError["key2"]);
+        }
+
+        [Fact]
+        public async Task XmlDataContractSerializerFormatterThrowsWhenNotConfiguredWithRootName()
+        {
+            // Arrange
+            var SubstituteRootName = "SomeOtherClass";
+            var SubstituteRootNamespace = "http://tempuri.org";
+
+            var input = string.Format(
+                "<{0} xmlns=\"{1}\"><SampleInt xmlns=\"\">1</SampleInt></{0}>",
+                SubstituteRootName,
+                SubstituteRootNamespace);
+            var formatter = new XmlDataContractSerializerInputFormatter();
+            var contentBytes = Encoding.UTF8.GetBytes(input);
+            var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
+
+            // Act & Assert
+            await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
+        }
+
+        [Fact]
+        public async Task XmlDataContractSerializerFormatterReadsWhenConfiguredWithRootName()
+        {
+            // Arrange
+            var expectedInt = 10;
+            var SubstituteRootName = "SomeOtherClass";
+            var SubstituteRootNamespace = "http://tempuri.org";
+
+            var input = string.Format(
+                "<{0} xmlns=\"{1}\"><SampleInt xmlns=\"\">{2}</SampleInt></{0}>",
+                SubstituteRootName,
+                SubstituteRootNamespace,
+                expectedInt);
+
+            var dictionary = new XmlDictionary();
+            var settings = new DataContractSerializerSettings
+            {
+                RootName = dictionary.Add(SubstituteRootName),
+                RootNamespace = dictionary.Add(SubstituteRootNamespace)
+            };
+            var formatter = new XmlDataContractSerializerInputFormatter
+            {
+                SerializerSettings = settings
+            };
+            var contentBytes = Encoding.UTF8.GetBytes(input);
+            var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
+
+            // Act
+            var model = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.NotNull(model);
+            var dummyModel = Assert.IsType<DummyClass>(model);
+            Assert.Equal(expectedInt, dummyModel.SampleInt);
+        }
+
+        [Fact]
+        public async Task XmlDataContractSerializerFormatterThrowsWhenNotConfiguredWithKnownTypes()
+        {
+            // Arrange
+            var KnownTypeName = "SomeDummyClass";
+            var InstanceNamespace = "http://www.w3.org/2001/XMLSchema-instance";
+
+            var input = string.Format(
+                    "<DummyClass i:type=\"{0}\" xmlns:i=\"{1}\"><SampleInt>1</SampleInt>"
+                    + "<SampleString>Some text</SampleString></DummyClass>",
+                    KnownTypeName,
+                    InstanceNamespace);
+            var formatter = new XmlDataContractSerializerInputFormatter();
+            var contentBytes = Encoding.UTF8.GetBytes(input);
+            var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
+
+            // Act & Assert
+            await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
+        }
+
+        [Fact]
+        public async Task XmlDataContractSerializerFormatterReadsWhenConfiguredWithKnownTypes()
+        {
+            // Arrange
+            var expectedInt = 10;
+            var expectedString = "TestString";
+            var KnownTypeName = "SomeDummyClass";
+            var InstanceNamespace = "http://www.w3.org/2001/XMLSchema-instance";
+
+            var input = string.Format(
+                    "<DummyClass i:type=\"{0}\" xmlns:i=\"{1}\"><SampleInt>{2}</SampleInt>"
+                    + "<SampleString>{3}</SampleString></DummyClass>",
+                    KnownTypeName,
+                    InstanceNamespace,
+                    expectedInt,
+                    expectedString);
+            var settings = new DataContractSerializerSettings
+            {
+                KnownTypes = new[] { typeof(SomeDummyClass) }
+            };
+            var formatter = new XmlDataContractSerializerInputFormatter
+            {
+                SerializerSettings = settings
+            };
+            var contentBytes = Encoding.UTF8.GetBytes(input);
+            var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
+
+            // Act
+            var model = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.NotNull(model);
+            var dummyModel = Assert.IsType<SomeDummyClass>(model);
+            Assert.Equal(expectedInt, dummyModel.SampleInt);
+            Assert.Equal(expectedString, dummyModel.SampleString);
         }
 
         private InputFormatterContext GetInputFormatterContext(byte[] contentBytes, Type modelType)
