@@ -39,13 +39,6 @@ namespace E2ETests
             Assert.NotNull(queryItems["nonce"]);
             Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.OpenIdConnect.Nonce.protectedString"));
 
-            Console.WriteLine("Before..");
-            foreach (Cookie item in _httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)))
-            {
-                Console.WriteLine(item.Name + " " + item.Value + " " + item.Path);
-            }
-            Console.WriteLine("End of Before..");
-
             // This is just enable the auto-redirect.
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = true };
             _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
@@ -63,12 +56,6 @@ namespace E2ETests
             response = _httpClient.PostAsync(string.Empty, new FormUrlEncodedContent(token.ToArray())).Result;
             ThrowIfResponseStatusNotOk(response);
             responseContent = response.Content.ReadAsStringAsync().Result;
-            Console.WriteLine("After..");
-            foreach (Cookie item in _httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)))
-            {
-                Console.WriteLine(item.Name + " " + item.Value + " " + item.Path);
-            }
-            Console.WriteLine("end of After..");
             Assert.Equal(_applicationBaseUrl + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
 
             formParameters = new List<KeyValuePair<string, string>>
