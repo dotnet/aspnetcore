@@ -29,6 +29,8 @@ namespace MvcSample.Web.Components
         [Activate]
         public ViewContext ViewContext { get; set; }
 
+        public int Order { get; } = 0;
+
         public async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             var result = await InvokeAsync(Count);
