@@ -17,6 +17,7 @@ namespace Microsoft.Framework.DependencyInjection
         {
             var describe = new ServiceDescriber(config);
             services.TryAdd(describe.Singleton<ILoggerFactory, LoggerFactory>());
+            services.TryAdd(describe.Singleton(typeof(ILogger<>), typeof(Logger<>)));
             return services;
         }
 
