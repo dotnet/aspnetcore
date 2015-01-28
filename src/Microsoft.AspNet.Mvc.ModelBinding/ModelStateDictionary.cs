@@ -202,6 +202,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return false;
             }
 
+            if (exception is FormatException)
+            {
+                // Convert FormatExceptions to Invalid value messages.
+                ModelState modelState;
+                TryGetValue(key, out modelState);
+                string errorMessage;
+                if (modelState == null)
+                {
+                    errorMessage = Resources.FormatModelBinderUtil_ValueInvalidGeneric(key);
+                }
+                else
+                {
+                    errorMessage = Resources.FormatModelBinderUtil_ValueInvalid(
+                        modelState.Value.AttemptedValue,
+                        key);
+                }
+
+                return TryAddModelError(key, errorMessage);
+            }
+
             ErrorCount++;
             AddModelErrorCore(key, exception);
             return true;

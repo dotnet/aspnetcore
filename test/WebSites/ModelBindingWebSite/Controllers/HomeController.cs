@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -57,6 +58,11 @@ namespace ModelBindingWebSite.Controllers
             TryUpdateModelAsync(customer);
 
             return customer;
+        }
+
+        public IActionResult GetErrorMessage(DateTime birthdate)
+        {
+            return Content(ModelState[nameof(birthdate)].Errors[0].ErrorMessage);
         }
 
         private Customer CreateCustomer(int id)

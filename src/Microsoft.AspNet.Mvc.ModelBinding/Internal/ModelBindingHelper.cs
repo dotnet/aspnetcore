@@ -96,30 +96,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
             }
         }
 
-        internal static void AddModelErrorBasedOnExceptionType(ModelBindingContext bindingContext, Exception ex)
-        {
-            if (IsFormatException(ex))
-            {
-                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex.Message);
-            }
-            else
-            {
-                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex);
-            }
-        }
-
-        internal static bool IsFormatException(Exception ex)
-        {
-            for (; ex != null; ex = ex.InnerException)
-            {
-                if (ex is FormatException)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         public static object ConvertValuesToCollectionType<T>(Type modelType, IList<T> values)
         {
             // There's a limited set of collection types we can support here.

@@ -6,6 +6,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -162,8 +163,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(
-                    Resources.FormatValueProviderResult_ConversionThrew(value.GetType(), destinationType), ex);
+                if (ex is FormatException)
+                {
+                    throw ex;
+                }
+                else
+                {
+                    // TypeConverter throws System.Exception wrapping the FormatException,
+                    // so we throw the inner exception.
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+
+                    // this code is never reached because the previous line is throwing;
+                    throw;
+                }
             }
         }
 

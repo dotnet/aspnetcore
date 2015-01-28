@@ -71,8 +71,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_Error_FormatExceptionsTurnedIntoStringsInModelState()
         {
             // Arrange
-            var message = "The parameter conversion from type 'System.String' to type 'System.Int32' failed." +
-                " See the inner exception for more information.";
+            var message = "The value 'not an integer' is not valid for theModelName.";
             var bindingContext = GetBindingContext(typeof(int));
             bindingContext.ValueProvider = new SimpleHttpValueProvider
             {

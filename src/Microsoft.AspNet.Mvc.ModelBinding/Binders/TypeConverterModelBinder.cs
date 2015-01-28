@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             catch (Exception ex)
             {
-                ModelBindingHelper.AddModelErrorBasedOnExceptionType(bindingContext, ex);
+                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex);
             }
 
             return true;

@@ -1529,5 +1529,27 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedContent, body);
         }
+
+        public async Task ModelBinder_FormatsDontMatch_ThrowsUserFriendlyException()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/Home/GetErrorMessage";
+
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("birthdate", "random string"),
+            };
+            var formData = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act
+            var response = await client.PostAsync(url, formData);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = await response.Content.ReadAsStringAsync();
+            Assert.Equal("The value 'random string' is not valid for birthdate.", result);
+        }
     }
 }

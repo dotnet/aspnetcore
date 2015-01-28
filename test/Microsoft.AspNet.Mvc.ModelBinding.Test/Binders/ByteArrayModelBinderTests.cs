@@ -61,8 +61,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var expected = TestPlatformHelper.IsMono ?
                 "Invalid length." :
-                 "The input is not a valid Base-64 string as it contains a non-base 64 character," +
-                " more than two padding characters, or an illegal character among the padding characters. ";
+                 "The supplied value is invalid for foo.";
 
             var valueProvider = new SimpleHttpValueProvider()
             {

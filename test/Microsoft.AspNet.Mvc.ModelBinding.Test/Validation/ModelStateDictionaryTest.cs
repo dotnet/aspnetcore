@@ -538,6 +538,51 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(expected, canAdd);
         }
 
+        [Fact]
+        public void ModelStateDictionary_ReturnGenericErrorMessage_WhenModelStateNotSet()
+        {
+            // Arrange
+            var expected = "The supplied value is invalid for key.";
+            var dictionary = new ModelStateDictionary();
+
+            // Act
+            dictionary.TryAddModelError("key", new FormatException());
+
+            // Assert
+            var error = Assert.Single(dictionary["key"].Errors);
+            Assert.Equal(expected, error.ErrorMessage);
+        }
+
+        [Fact]
+        public void ModelStateDictionary_ReturnSpecificErrorMessage_WhenModelStateSet()
+        {
+            // Arrange
+            var expected = "The value 'some value' is not valid for key.";
+            var dictionary = new ModelStateDictionary();
+            dictionary.SetModelValue("key", GetValueProviderResult());
+
+            // Act
+            dictionary.TryAddModelError("key", new FormatException());
+
+            // Assert
+            var error = Assert.Single(dictionary["key"].Errors);
+            Assert.Equal(expected, error.ErrorMessage);
+        }
+
+        [Fact]
+        public void ModelStateDictionary_NoErrorMessage_ForNonFormatException()
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            dictionary.SetModelValue("key", GetValueProviderResult());
+
+            // Act
+            dictionary.TryAddModelError("key", new InvalidOperationException());
+
+            // Assert
+            var error = Assert.Single(dictionary["key"].Errors);
+            Assert.Empty(error.ErrorMessage);
+        }
 
         private static ValueProviderResult GetValueProviderResult(object rawValue = null, string attemptedValue = null)
         {

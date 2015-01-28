@@ -339,17 +339,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [InlineData(typeof(int), typeof(InvalidOperationException), typeof(Exception))]
-        [InlineData(typeof(double?), typeof(InvalidOperationException), typeof(Exception))]
-        [InlineData(typeof(MyEnum?), typeof(InvalidOperationException), typeof(FormatException))]
-        public void ConvertToThrowsIfConverterThrows(Type destinationType, Type exceptionType, Type innerExceptionType)
+        [InlineData(typeof(int))]
+        [InlineData(typeof(double?))]
+        [InlineData(typeof(MyEnum?))]
+        public void ConvertToThrowsIfConverterThrows(Type destinationType)
         {
             // Arrange
             var vpr = new ValueProviderResult("this-is-not-a-valid-value", null, CultureInfo.InvariantCulture);
 
             // Act & Assert
-            var ex = Assert.Throws(exceptionType, () => vpr.ConvertTo(destinationType));
-            Assert.IsType(innerExceptionType, ex.InnerException);
+            var ex = Assert.Throws(typeof(FormatException), () => vpr.ConvertTo(destinationType));
         }
 
         [Fact]
@@ -380,7 +379,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(12.5M, cultureResult);
-            Assert.Throws<InvalidOperationException>(() => vpr.ConvertTo(typeof(decimal)));
+            Assert.Throws<FormatException>(() => vpr.ConvertTo(typeof(decimal)));
         }
 
         [Fact]
