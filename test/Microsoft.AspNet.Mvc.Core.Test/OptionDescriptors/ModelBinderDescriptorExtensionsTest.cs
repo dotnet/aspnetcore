@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Moq;
@@ -67,6 +68,23 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(binder2, collection[1].Instance);
             Assert.Equal(type2, collection[2].OptionType);
             Assert.Equal(type1, collection[3].OptionType);
+        }
+
+        [Fact]
+        public void ModelBinders_RemoveTypesOf_RemovesDescriptorsOfIModelBinder()
+        {
+            // Arrange
+            var modelBinders = new MvcOptions().ModelBinders;
+            modelBinders.Add(new ByteArrayModelBinder());
+            modelBinders.Add(Mock.Of<IModelBinder>());
+            modelBinders.Add(typeof(ByteArrayModelBinder));
+            modelBinders.Add(Mock.Of<IModelBinder>());
+
+            // Act
+            modelBinders.RemoveTypesOf<ByteArrayModelBinder>();
+
+            // Assert
+            Assert.DoesNotContain(modelBinders, descriptor => descriptor.OptionType == typeof(ByteArrayModelBinder));
         }
     }
 }

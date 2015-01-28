@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
     /// Encapsulates information that describes a <typeparamref name="TOption"/> option on <see cref="MvcOptions"/> .
     /// </summary>
     /// <typeparam name="TOption">The type of the option.</typeparam>
-    public class OptionDescriptor<TOption>
+    public class OptionDescriptor<TOption> : IOptionDescriptor<TOption>
     {
         /// <summary>
         /// Creates a new instance of <see cref="OptionDescriptor{TOption}"/>.

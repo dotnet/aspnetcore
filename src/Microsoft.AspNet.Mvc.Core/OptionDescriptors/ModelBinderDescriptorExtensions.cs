@@ -80,5 +80,23 @@ namespace Microsoft.AspNet.Mvc
             descriptors.Insert(index, descriptor);
             return descriptor;
         }
+
+        /// <summary>
+        /// Removes instances of <typeparamref name="TInstance"/> from a descriptor collection 
+        /// where the type exactly matches <typeparamref name="TInstance"/>.
+        /// </summary>
+        /// <typeparam name="TInstance">A type that implements <see cref="IModelBinder"/>.</typeparam>
+        /// <param name="descriptors">A list of ModelBinderDescriptors.</param>
+        public static void RemoveTypesOf<TInstance>([NotNull] this IList<ModelBinderDescriptor> descriptors)
+            where TInstance : class, IModelBinder
+        {
+            for (int i = descriptors.Count - 1; i >= 0; i--)
+            {
+                if (descriptors[i].OptionType == typeof(TInstance))
+                {
+                    descriptors.RemoveAt(i);
+                }
+            }
+        }
     }
 }

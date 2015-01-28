@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Moq;
@@ -62,6 +63,23 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(2, collection.Count);
             Assert.IsType<TestValueProviderFactory>(collection[0].Instance);
             Assert.Same(valueProviderFactory, collection[0].Instance);
+        }
+
+        [Fact]
+        public void ValueProviderFactories_RemoveTypesOf_RemovesDescriptorsOfIValueProviderFactory()
+        {
+            // Arrange
+            var factories = new MvcOptions().ValueProviderFactories;
+            factories.Add(new FormValueProviderFactory());
+            factories.Add(Mock.Of<IValueProviderFactory>());
+            factories.Add(typeof(FormValueProviderFactory));
+            factories.Add(Mock.Of<IValueProviderFactory>());
+
+            // Act
+            factories.RemoveTypesOf<FormValueProviderFactory>();
+
+            // Assert
+            Assert.DoesNotContain(factories, descriptor => descriptor.OptionType == typeof(FormValueProviderFactory));
         }
 
         private class TestValueProviderFactory : IValueProviderFactory

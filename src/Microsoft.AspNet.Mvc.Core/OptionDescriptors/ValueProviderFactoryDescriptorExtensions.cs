@@ -84,5 +84,23 @@ namespace Microsoft.AspNet.Mvc
             descriptors.Insert(index, descriptor);
             return descriptor;
         }
+
+        /// <summary>
+        /// Removes instances of <typeparamref name="TInstance"/> from a descriptor collection 
+        /// where the type exactly matches <typeparamref name="TInstance"/>.
+        /// </summary>
+        /// <typeparam name="TInstance">A type that implements <see cref="IValueProviderFactory"/>.</typeparam>
+        /// <param name="descriptors">A list of ValueProviderFactoryDescriptors.</param>
+        public static void RemoveTypesOf<TInstance>([NotNull] this IList<ValueProviderFactoryDescriptor> descriptors)
+            where TInstance : class, IValueProviderFactory
+        {
+            for (int i = descriptors.Count - 1; i >= 0; i--)
+            {
+                if (descriptors[i].OptionType == typeof(TInstance))
+                {
+                    descriptors.RemoveAt(i);
+                }
+            }
+        }
     }
 }

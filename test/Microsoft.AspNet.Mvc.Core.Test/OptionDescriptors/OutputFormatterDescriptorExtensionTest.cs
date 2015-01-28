@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if ASPNET50
+
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Moq;
 using Xunit;
@@ -69,6 +70,22 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Equal(type2, collection[2].OptionType);
             Assert.Equal(type1, collection[3].OptionType);
         }
+
+        [Fact]
+        public void OutputFormatters_RemoveTypesOf_RemovesDescriptorsOfIOutputFormatter()
+        {
+            // Arrange
+            var formatters = new MvcOptions().OutputFormatters;
+            formatters.Add(new JsonOutputFormatter());
+            formatters.Add(Mock.Of<IOutputFormatter>());
+            formatters.Add(typeof(JsonOutputFormatter));
+            formatters.Add(Mock.Of<IOutputFormatter>());
+
+            // Act
+            formatters.RemoveTypesOf<JsonOutputFormatter>();
+
+            // Assert
+            Assert.DoesNotContain(formatters, descriptor => descriptor.OptionType == typeof(JsonOutputFormatter));
+        }
     }
 }
-#endif
