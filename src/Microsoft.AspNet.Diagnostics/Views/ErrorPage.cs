@@ -472,7 +472,7 @@ using Views
 #line hidden
 
 #line 123 "ErrorPage.cshtml"
-                                     if (frame.Line != 0 && frame.ContextCode != null)
+                                     if (frame.Line != 0 && frame.ContextCode.Any())
                                     {
 
 #line default
@@ -493,8 +493,8 @@ using Views
 #line hidden
 
             WriteLiteral("                                                <ol");
-            WriteAttribute("start", Tuple.Create(" start=\"", 5277), Tuple.Create("\"", 5306), 
-            Tuple.Create(Tuple.Create("", 5285), Tuple.Create<System.Object, System.Int32>(frame.PreContextLine, 5285), false));
+            WriteAttribute("start", Tuple.Create(" start=\"", 5275), Tuple.Create("\"", 5304), 
+            Tuple.Create(Tuple.Create("", 5283), Tuple.Create<System.Object, System.Int32>(frame.PreContextLine, 5283), false));
             WriteLiteral(" class=\"collapsible\">\r\n");
 #line 129 "ErrorPage.cshtml"
                                                     
@@ -530,22 +530,43 @@ using Views
 #line hidden
 
             WriteLiteral("\r\n                                            <ol");
-            WriteAttribute("start", Tuple.Create(" start=\"", 5774), Tuple.Create("\"", 5793), 
-            Tuple.Create(Tuple.Create("", 5782), Tuple.Create<System.Object, System.Int32>(frame.Line, 5782), false));
-            WriteLiteral(" class=\"highlight\">\r\n                                                <li><span>");
+            WriteAttribute("start", Tuple.Create(" start=\"", 5772), Tuple.Create("\"", 5791), 
+            Tuple.Create(Tuple.Create("", 5780), Tuple.Create<System.Object, System.Int32>(frame.Line, 5780), false));
+            WriteLiteral(" class=\"highlight\">\r\n");
 #line 137 "ErrorPage.cshtml"
-                                                     Write(frame.ContextCode);
+                                                
 
 #line default
 #line hidden
-            WriteLiteral("</span></li></ol>\r\n\r\n");
+
+#line 137 "ErrorPage.cshtml"
+                                                 foreach (var line in frame.ContextCode)
+                                                {
+
+#line default
+#line hidden
+
+            WriteLiteral("                                                    <li><span>");
 #line 139 "ErrorPage.cshtml"
+                                                         Write(line);
+
+#line default
+#line hidden
+            WriteLiteral("</span></li>\r\n");
+#line 140 "ErrorPage.cshtml"
+                                                }
+
+#line default
+#line hidden
+
+            WriteLiteral("                                            </ol>\r\n\r\n");
+#line 143 "ErrorPage.cshtml"
                                             
 
 #line default
 #line hidden
 
-#line 139 "ErrorPage.cshtml"
+#line 143 "ErrorPage.cshtml"
                                              if (frame.PostContextCode != null)
                                             {
 
@@ -553,16 +574,16 @@ using Views
 #line hidden
 
             WriteLiteral("                                                <ol");
-            WriteAttribute("start", Tuple.Create(" start=\'", 6091), Tuple.Create("\'", 6116), 
-            Tuple.Create(Tuple.Create("", 6099), Tuple.Create<System.Object, System.Int32>(frame.Line + 1, 6099), false));
+            WriteAttribute("start", Tuple.Create(" start=\'", 6318), Tuple.Create("\'", 6343), 
+            Tuple.Create(Tuple.Create("", 6326), Tuple.Create<System.Object, System.Int32>(frame.Line + 1, 6326), false));
             WriteLiteral(" class=\"collapsible\">\r\n");
-#line 142 "ErrorPage.cshtml"
+#line 146 "ErrorPage.cshtml"
                                                     
 
 #line default
 #line hidden
 
-#line 142 "ErrorPage.cshtml"
+#line 146 "ErrorPage.cshtml"
                                                      foreach (var line in frame.PostContextCode)
                                                     {
 
@@ -570,55 +591,55 @@ using Views
 #line hidden
 
             WriteLiteral("                                                        <li><span>");
-#line 144 "ErrorPage.cshtml"
+#line 148 "ErrorPage.cshtml"
                                                              Write(line);
 
 #line default
 #line hidden
             WriteLiteral("</span></li>\r\n");
-#line 145 "ErrorPage.cshtml"
+#line 149 "ErrorPage.cshtml"
                                                     }
 
 #line default
 #line hidden
 
             WriteLiteral("                                                </ol>\r\n");
-#line 147 "ErrorPage.cshtml"
+#line 151 "ErrorPage.cshtml"
                                             } 
 
 #line default
 #line hidden
 
             WriteLiteral("                                        </div>\r\n");
-#line 149 "ErrorPage.cshtml"
+#line 153 "ErrorPage.cshtml"
                                     } 
 
 #line default
 #line hidden
 
             WriteLiteral("                                </li>\r\n");
-#line 151 "ErrorPage.cshtml"
+#line 155 "ErrorPage.cshtml"
                             }
 
 #line default
 #line hidden
 
             WriteLiteral("                            </ul>\r\n                        </li>\r\n");
-#line 154 "ErrorPage.cshtml"
+#line 158 "ErrorPage.cshtml"
                     }
 
 #line default
 #line hidden
 
             WriteLiteral("                </ul>\r\n            </div>\r\n");
-#line 157 "ErrorPage.cshtml"
+#line 161 "ErrorPage.cshtml"
         }
 
 #line default
 #line hidden
 
             WriteLiteral("        ");
-#line 158 "ErrorPage.cshtml"
+#line 162 "ErrorPage.cshtml"
          if (Model.Options.ShowQuery)
         {
 
@@ -626,13 +647,13 @@ using Views
 #line hidden
 
             WriteLiteral("            <div id=\"querypage\" class=\"page\">\r\n");
-#line 161 "ErrorPage.cshtml"
+#line 165 "ErrorPage.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 161 "ErrorPage.cshtml"
+#line 165 "ErrorPage.cshtml"
                  if (Model.Query.Any())
                 {
 
@@ -641,26 +662,26 @@ using Views
 
             WriteLiteral("                    <table>\r\n                        <thead>\r\n                   " +
 "         <tr>\r\n                                <th>");
-#line 166 "ErrorPage.cshtml"
+#line 170 "ErrorPage.cshtml"
                                Write(Resources.ErrorPageHtml_VariableColumn);
 
 #line default
 #line hidden
             WriteLiteral("</th>\r\n                                <th>");
-#line 167 "ErrorPage.cshtml"
+#line 171 "ErrorPage.cshtml"
                                Write(Resources.ErrorPageHtml_ValueColumn);
 
 #line default
 #line hidden
             WriteLiteral("</th>\r\n                            </tr>\r\n                        </thead>\r\n     " +
 "                   <tbody>\r\n");
-#line 171 "ErrorPage.cshtml"
+#line 175 "ErrorPage.cshtml"
                             
 
 #line default
 #line hidden
 
-#line 171 "ErrorPage.cshtml"
+#line 175 "ErrorPage.cshtml"
                              foreach (var kv in Model.Query.OrderBy(kv => kv.Key))
                             {
                                 foreach (var v in kv.Value)
@@ -671,19 +692,19 @@ using Views
 
             WriteLiteral("                                    <tr>\r\n                                       " +
 " <td>");
-#line 176 "ErrorPage.cshtml"
+#line 180 "ErrorPage.cshtml"
                                        Write(kv.Key);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                        <td>");
-#line 177 "ErrorPage.cshtml"
+#line 181 "ErrorPage.cshtml"
                                        Write(v);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                    </tr>\r\n");
-#line 179 "ErrorPage.cshtml"
+#line 183 "ErrorPage.cshtml"
                                 }
                             }
 
@@ -691,7 +712,7 @@ using Views
 #line hidden
 
             WriteLiteral("                        </tbody>\r\n                    </table>\r\n");
-#line 183 "ErrorPage.cshtml"
+#line 187 "ErrorPage.cshtml"
                 }
                 else
                 {
@@ -700,27 +721,27 @@ using Views
 #line hidden
 
             WriteLiteral("                    <p>");
-#line 186 "ErrorPage.cshtml"
+#line 190 "ErrorPage.cshtml"
                   Write(Resources.ErrorPageHtml_NoQueryStringData);
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n");
-#line 187 "ErrorPage.cshtml"
+#line 191 "ErrorPage.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("            </div>\r\n");
-#line 189 "ErrorPage.cshtml"
+#line 193 "ErrorPage.cshtml"
         }
 
 #line default
 #line hidden
 
             WriteLiteral("        ");
-#line 190 "ErrorPage.cshtml"
+#line 194 "ErrorPage.cshtml"
          if (Model.Options.ShowCookies)
         {
             /* TODO:
@@ -757,7 +778,7 @@ using Views
 #line hidden
 
             WriteLiteral("        ");
-#line 221 "ErrorPage.cshtml"
+#line 225 "ErrorPage.cshtml"
          if (Model.Options.ShowHeaders)
         {
 
@@ -765,13 +786,13 @@ using Views
 #line hidden
 
             WriteLiteral("            <div id=\"headerspage\" class=\"page\">\r\n");
-#line 224 "ErrorPage.cshtml"
+#line 228 "ErrorPage.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 224 "ErrorPage.cshtml"
+#line 228 "ErrorPage.cshtml"
                  if (Model.Headers.Any())
                 {
 
@@ -780,26 +801,26 @@ using Views
 
             WriteLiteral("                    <table>\r\n                        <thead>\r\n                   " +
 "         <tr>\r\n                                <th>");
-#line 229 "ErrorPage.cshtml"
+#line 233 "ErrorPage.cshtml"
                                Write(Resources.ErrorPageHtml_VariableColumn);
 
 #line default
 #line hidden
             WriteLiteral("</th>\r\n                                <th>");
-#line 230 "ErrorPage.cshtml"
+#line 234 "ErrorPage.cshtml"
                                Write(Resources.ErrorPageHtml_ValueColumn);
 
 #line default
 #line hidden
             WriteLiteral("</th>\r\n                            </tr>\r\n                        </thead>\r\n     " +
 "                   <tbody>\r\n");
-#line 234 "ErrorPage.cshtml"
+#line 238 "ErrorPage.cshtml"
                             
 
 #line default
 #line hidden
 
-#line 234 "ErrorPage.cshtml"
+#line 238 "ErrorPage.cshtml"
                              foreach (var kv in Model.Headers.OrderBy(kv => kv.Key))
                             {
                                 foreach (var v in kv.Value)
@@ -810,19 +831,19 @@ using Views
 
             WriteLiteral("                                    <tr>\r\n                                       " +
 " <td>");
-#line 239 "ErrorPage.cshtml"
+#line 243 "ErrorPage.cshtml"
                                        Write(kv.Key);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                        <td>");
-#line 240 "ErrorPage.cshtml"
+#line 244 "ErrorPage.cshtml"
                                        Write(v);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                    </tr>\r\n");
-#line 242 "ErrorPage.cshtml"
+#line 246 "ErrorPage.cshtml"
                                 }
                             }
 
@@ -830,7 +851,7 @@ using Views
 #line hidden
 
             WriteLiteral("                        </tbody>\r\n                    </table>\r\n");
-#line 246 "ErrorPage.cshtml"
+#line 250 "ErrorPage.cshtml"
                 }
                 else
                 {
@@ -839,27 +860,27 @@ using Views
 #line hidden
 
             WriteLiteral("                    <p>");
-#line 249 "ErrorPage.cshtml"
+#line 253 "ErrorPage.cshtml"
                   Write(Resources.ErrorPageHtml_NoHeaderData);
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n");
-#line 250 "ErrorPage.cshtml"
+#line 254 "ErrorPage.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("            </div>\r\n");
-#line 252 "ErrorPage.cshtml"
+#line 256 "ErrorPage.cshtml"
         }
 
 #line default
 #line hidden
 
             WriteLiteral("        ");
-#line 253 "ErrorPage.cshtml"
+#line 257 "ErrorPage.cshtml"
          if (Model.Options.ShowEnvironment)
         {
             /* TODO:

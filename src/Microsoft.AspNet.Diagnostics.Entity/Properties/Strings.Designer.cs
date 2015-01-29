@@ -458,6 +458,86 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             return GetString("DatabaseErrorPage_EnableMigrationsCommandsInfo");
         }
 
+        /// <summary>
+        /// {0} occurred, checking if Entity Framework recorded this exception as resulting from a failed database operation.
+        /// </summary>
+        internal static string DatabaseErrorPage_AttemptingToMatchException
+        {
+            get { return GetString("DatabaseErrorPage_AttemptingToMatchException"); }
+        }
+
+        /// <summary>
+        /// {0} occurred, checking if Entity Framework recorded this exception as resulting from a failed database operation.
+        /// </summary>
+        internal static string FormatDatabaseErrorPage_AttemptingToMatchException(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DatabaseErrorPage_AttemptingToMatchException"), p0);
+        }
+
+        /// <summary>
+        /// Entity Framework recorded that the current exception was due to a failed database operation. Attempting to show database error page.
+        /// </summary>
+        internal static string DatabaseErrorPage_Matched
+        {
+            get { return GetString("DatabaseErrorPage_Matched"); }
+        }
+
+        /// <summary>
+        /// Entity Framework recorded that the current exception was due to a failed database operation. Attempting to show database error page.
+        /// </summary>
+        internal static string FormatDatabaseErrorPage_Matched()
+        {
+            return GetString("DatabaseErrorPage_Matched");
+        }
+
+        /// <summary>
+        /// Entity Framework did not record any exceptions due to failed database operations. This means the current exception is not a failed Entity Framework database operation, or the current exception occurred from a DbContext that was not obtained from request services.
+        /// </summary>
+        internal static string DatabaseErrorPage_NoRecordedException
+        {
+            get { return GetString("DatabaseErrorPage_NoRecordedException"); }
+        }
+
+        /// <summary>
+        /// Entity Framework did not record any exceptions due to failed database operations. This means the current exception is not a failed Entity Framework database operation, or the current exception occurred from a DbContext that was not obtained from request services.
+        /// </summary>
+        internal static string FormatDatabaseErrorPage_NoRecordedException()
+        {
+            return GetString("DatabaseErrorPage_NoRecordedException");
+        }
+
+        /// <summary>
+        /// The target data store is not a relational database. Skipping the database error page.
+        /// </summary>
+        internal static string DatabaseErrorPage_NotRelationalDatabase
+        {
+            get { return GetString("DatabaseErrorPage_NotRelationalDatabase"); }
+        }
+
+        /// <summary>
+        /// The target data store is not a relational database. Skipping the database error page.
+        /// </summary>
+        internal static string FormatDatabaseErrorPage_NotRelationalDatabase()
+        {
+            return GetString("DatabaseErrorPage_NotRelationalDatabase");
+        }
+
+        /// <summary>
+        /// The current exception (and its inner exceptions) do not match the last exception Entity Framework recorded due to a failed database operation. This means the database operation exception was handled and another exception occurred later in the request.
+        /// </summary>
+        internal static string DatabaseErrorPage_NoMatch
+        {
+            get { return GetString("DatabaseErrorPage_NoMatch"); }
+        }
+
+        /// <summary>
+        /// The current exception (and its inner exceptions) do not match the last exception Entity Framework recorded due to a failed database operation. This means the database operation exception was handled and another exception occurred later in the request.
+        /// </summary>
+        internal static string FormatDatabaseErrorPage_NoMatch()
+        {
+            return GetString("DatabaseErrorPage_NoMatch");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

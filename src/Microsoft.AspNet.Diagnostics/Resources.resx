@@ -230,4 +230,7 @@
   <data name="WelcomeTitle" xml:space="preserve">
     <value>Your ASP.NET vNext application has been successfully started.</value>
   </data>
+  <data name="ErrorPageHtml_CompilationException" xml:space="preserve">
+    <value>An error occurred during the compilation of a resource required to process this request. Please review the following specific error details and modify your source code appropriately.</value>
+  </data>
 </root>

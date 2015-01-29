@@ -12,9 +12,9 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Data.Entity.Migrations;
-using Microsoft.Data.Entity.Migrations.Infrastructure;
-using Microsoft.Data.Entity.Migrations.Utilities;
+using Microsoft.Data.Entity.Relational.Migrations;
+using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
+using Microsoft.Data.Entity.Relational.Migrations.Utilities;
 using Microsoft.Data.Entity.Utilities;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
@@ -65,7 +65,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             using (var database = SqlServerTestStore.CreateScratch())
             {
-                var options = new DbContextOptions().UseSqlServer(database.ConnectionString);
+                var options = new DbContextOptions();
+                options.UseSqlServer(database.ConnectionString);
                 var path = useCustomPath ? new PathString("/EndPoints/ApplyMyMigrations") : MigrationsEndPointOptions.DefaultPath;
 
                 TestServer server = TestServer.Create(app =>
@@ -183,7 +184,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             using (var database = SqlServerTestStore.CreateScratch())
             {
-                var options = new DbContextOptions().UseSqlServer(database.ConnectionString);
+                var options = new DbContextOptions();
+                options.UseSqlServer(database.ConnectionString);
 
                 TestServer server = TestServer.Create(app =>
                 {

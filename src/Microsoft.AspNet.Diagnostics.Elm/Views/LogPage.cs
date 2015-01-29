@@ -7,36 +7,42 @@ using System
 #line hidden
     ;
 #line 2 "LogPage.cshtml"
-using System.Globalization
+using System.Collections.Generic
 
 #line default
 #line hidden
     ;
 #line 3 "LogPage.cshtml"
-using System.Linq
+using System.Globalization
 
 #line default
 #line hidden
     ;
 #line 4 "LogPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Elm.Views
+using System.Linq
 
 #line default
 #line hidden
     ;
 #line 5 "LogPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Elm
+using Microsoft.AspNet.Diagnostics.Elm.Views
 
 #line default
 #line hidden
     ;
 #line 6 "LogPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Views
+using Microsoft.AspNet.Diagnostics.Elm
 
 #line default
 #line hidden
     ;
 #line 7 "LogPage.cshtml"
+using Microsoft.AspNet.Diagnostics.Views
+
+#line default
+#line hidden
+    ;
+#line 8 "LogPage.cshtml"
 using Microsoft.Framework.Logging
 
 #line default
@@ -47,13 +53,13 @@ using Microsoft.Framework.Logging
     public class LogPage : Microsoft.AspNet.Diagnostics.Views.BaseView
     {
 public  HelperResult 
-#line 20 "LogPage.cshtml"
+#line 21 "LogPage.cshtml"
 LogRow(LogInfo log, int level) {
 
 #line default
 #line hidden
         return new HelperResult((__razor_helper_writer) => {
-#line 20 "LogPage.cshtml"
+#line 21 "LogPage.cshtml"
                                         
     if (log.Severity >= Model.Options.MinLevel && 
         (string.IsNullOrEmpty(Model.Options.NamePrefix) || log.Name.StartsWith(Model.Options.NamePrefix, StringComparison.Ordinal)))
@@ -63,46 +69,46 @@ LogRow(LogInfo log, int level) {
 #line hidden
 
             WriteLiteralTo(__razor_helper_writer, "        <tr class=\"logRow\">\r\n            <td>");
-#line 25 "LogPage.cshtml"
+#line 26 "LogPage.cshtml"
 WriteTo(__razor_helper_writer, string.Format("{0:MM/dd/yy}", log.Time));
 
 #line default
 #line hidden
             WriteLiteralTo(__razor_helper_writer, "</td>\r\n            <td>");
-#line 26 "LogPage.cshtml"
+#line 27 "LogPage.cshtml"
 WriteTo(__razor_helper_writer, string.Format("{0:H:mm:ss}", log.Time));
 
 #line default
 #line hidden
             WriteLiteralTo(__razor_helper_writer, "</td>\r\n            <td");
-            WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 836), Tuple.Create("\"", 853), 
-            Tuple.Create(Tuple.Create("", 844), Tuple.Create<System.Object, System.Int32>(log.Name, 844), false));
+            WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 871), Tuple.Create("\"", 888), 
+            Tuple.Create(Tuple.Create("", 879), Tuple.Create<System.Object, System.Int32>(log.Name, 879), false));
             WriteLiteralTo(__razor_helper_writer, ">");
-#line 27 "LogPage.cshtml"
+#line 28 "LogPage.cshtml"
     WriteTo(__razor_helper_writer, log.Name);
 
 #line default
 #line hidden
             WriteLiteralTo(__razor_helper_writer, "</td>\r\n            <td");
-            WriteAttributeTo(__razor_helper_writer, "class", Tuple.Create(" class=\"", 886), Tuple.Create("\"", 937), 
-            Tuple.Create(Tuple.Create("", 894), Tuple.Create<System.Object, System.Int32>(log.Severity.ToString().ToLowerInvariant(), 894), false));
+            WriteAttributeTo(__razor_helper_writer, "class", Tuple.Create(" class=\"", 921), Tuple.Create("\"", 972), 
+            Tuple.Create(Tuple.Create("", 929), Tuple.Create<System.Object, System.Int32>(log.Severity.ToString().ToLowerInvariant(), 929), false));
             WriteLiteralTo(__razor_helper_writer, ">");
-#line 28 "LogPage.cshtml"
+#line 29 "LogPage.cshtml"
                                       WriteTo(__razor_helper_writer, log.Severity);
 
 #line default
 #line hidden
             WriteLiteralTo(__razor_helper_writer, "</td>\r\n            <td");
-            WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 974), Tuple.Create("\"", 994), 
-            Tuple.Create(Tuple.Create("", 982), Tuple.Create<System.Object, System.Int32>(log.Message, 982), false));
+            WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 1009), Tuple.Create("\"", 1029), 
+            Tuple.Create(Tuple.Create("", 1017), Tuple.Create<System.Object, System.Int32>(log.Message, 1017), false));
             WriteLiteralTo(__razor_helper_writer, ">\r\n");
-#line 30 "LogPage.cshtml"
+#line 31 "LogPage.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 30 "LogPage.cshtml"
+#line 31 "LogPage.cshtml"
                  for (var i = 0; i < level; i++)
                 {
 
@@ -110,29 +116,29 @@ WriteTo(__razor_helper_writer, string.Format("{0:H:mm:ss}", log.Time));
 #line hidden
 
             WriteLiteralTo(__razor_helper_writer, "                    <span class=\"tab\"></span>\r\n");
-#line 33 "LogPage.cshtml"
+#line 34 "LogPage.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteralTo(__razor_helper_writer, "                ");
-#line 34 "LogPage.cshtml"
+#line 35 "LogPage.cshtml"
 WriteTo(__razor_helper_writer, log.Message);
 
 #line default
 #line hidden
             WriteLiteralTo(__razor_helper_writer, "\r\n            </td>\r\n            <td");
-            WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 1197), Tuple.Create("\"", 1219), 
-            Tuple.Create(Tuple.Create("", 1205), Tuple.Create<System.Object, System.Int32>(log.Exception, 1205), false));
+            WriteAttributeTo(__razor_helper_writer, "title", Tuple.Create(" title=\"", 1232), Tuple.Create("\"", 1254), 
+            Tuple.Create(Tuple.Create("", 1240), Tuple.Create<System.Object, System.Int32>(log.Exception, 1240), false));
             WriteLiteralTo(__razor_helper_writer, ">");
-#line 36 "LogPage.cshtml"
+#line 37 "LogPage.cshtml"
          WriteTo(__razor_helper_writer, log.Exception);
 
 #line default
 #line hidden
             WriteLiteralTo(__razor_helper_writer, "</td>\r\n        </tr>\r\n");
-#line 38 "LogPage.cshtml"
+#line 39 "LogPage.cshtml"
     }
 
 #line default
@@ -140,21 +146,21 @@ WriteTo(__razor_helper_writer, log.Message);
 
         }
         );
-#line 39 "LogPage.cshtml"
+#line 40 "LogPage.cshtml"
 }
 
 #line default
 #line hidden
 
 public  HelperResult 
-#line 41 "LogPage.cshtml"
-Traverse(ScopeNode node, int level)
+#line 42 "LogPage.cshtml"
+Traverse(ScopeNode node, int level, Dictionary<string, int> counts)
 {
 
 #line default
 #line hidden
         return new HelperResult((__razor_helper_writer) => {
-#line 42 "LogPage.cshtml"
+#line 43 "LogPage.cshtml"
  
     // print start of scope
     
@@ -162,7 +168,7 @@ Traverse(ScopeNode node, int level)
 #line default
 #line hidden
 
-#line 44 "LogPage.cshtml"
+#line 45 "LogPage.cshtml"
 WriteTo(__razor_helper_writer, LogRow(new LogInfo()
     {
         Name = node.Name,
@@ -173,7 +179,7 @@ WriteTo(__razor_helper_writer, LogRow(new LogInfo()
 
 #line default
 #line hidden
-#line 50 "LogPage.cshtml"
+#line 51 "LogPage.cshtml"
              ;
     var messageIndex = 0;
     var childIndex = 0;
@@ -186,13 +192,14 @@ WriteTo(__razor_helper_writer, LogRow(new LogInfo()
 #line default
 #line hidden
 
-#line 57 "LogPage.cshtml"
+#line 58 "LogPage.cshtml"
 WriteTo(__razor_helper_writer, LogRow(node.Messages[messageIndex], level));
 
 #line default
 #line hidden
-#line 57 "LogPage.cshtml"
+#line 58 "LogPage.cshtml"
                                                        
+            counts[node.Messages[messageIndex].Severity.ToString()]++;
             messageIndex++;
         }
         else
@@ -202,13 +209,13 @@ WriteTo(__razor_helper_writer, LogRow(node.Messages[messageIndex], level));
 #line default
 #line hidden
 
-#line 62 "LogPage.cshtml"
-WriteTo(__razor_helper_writer, Traverse(node.Children[childIndex], level + 1));
+#line 64 "LogPage.cshtml"
+WriteTo(__razor_helper_writer, Traverse(node.Children[childIndex], level + 1, counts));
 
 #line default
 #line hidden
-#line 62 "LogPage.cshtml"
-                                                           
+#line 64 "LogPage.cshtml"
+                                                                   
             childIndex++;
         }
     }
@@ -221,13 +228,14 @@ WriteTo(__razor_helper_writer, Traverse(node.Children[childIndex], level + 1));
 #line default
 #line hidden
 
-#line 70 "LogPage.cshtml"
+#line 72 "LogPage.cshtml"
 WriteTo(__razor_helper_writer, LogRow(node.Messages[i], level));
 
 #line default
 #line hidden
-#line 70 "LogPage.cshtml"
+#line 72 "LogPage.cshtml"
                                             
+            counts[node.Messages[i].Severity.ToString()]++;
         }
     }
     else
@@ -239,13 +247,13 @@ WriteTo(__razor_helper_writer, LogRow(node.Messages[i], level));
 #line default
 #line hidden
 
-#line 77 "LogPage.cshtml"
-WriteTo(__razor_helper_writer, Traverse(node.Children[i], level + 1));
+#line 80 "LogPage.cshtml"
+WriteTo(__razor_helper_writer, Traverse(node.Children[i], level + 1, counts));
 
 #line default
 #line hidden
-#line 77 "LogPage.cshtml"
-                                                  
+#line 80 "LogPage.cshtml"
+                                                          
         }
     }
     // print end of scope
@@ -254,7 +262,7 @@ WriteTo(__razor_helper_writer, Traverse(node.Children[i], level + 1));
 #line default
 #line hidden
 
-#line 81 "LogPage.cshtml"
+#line 84 "LogPage.cshtml"
 WriteTo(__razor_helper_writer, LogRow(new LogInfo()
     {
         Name = node.Name,
@@ -265,7 +273,7 @@ WriteTo(__razor_helper_writer, LogRow(new LogInfo()
 
 #line default
 #line hidden
-#line 87 "LogPage.cshtml"
+#line 90 "LogPage.cshtml"
              ;
 
 #line default
@@ -273,13 +281,13 @@ WriteTo(__razor_helper_writer, LogRow(new LogInfo()
 
         }
         );
-#line 88 "LogPage.cshtml"
+#line 91 "LogPage.cshtml"
 }
 
 #line default
 #line hidden
 
-#line 10 "LogPage.cshtml"
+#line 11 "LogPage.cshtml"
 
     public LogPage(LogPageModel model)
     {
@@ -307,6 +315,7 @@ WriteTo(__razor_helper_writer, LogRow(new LogInfo()
 <head>
     <meta charset=""utf-8"" />
     <title>ASP.NET Logs</title>
+    <script src=""//ajax.aspnetcdn.com/ajax/jquery/jquery-2.1.1.min.js""></script>
     <style>
         body {
     font-size: .813em;
@@ -314,7 +323,7 @@ WriteTo(__razor_helper_writer, LogRow(new LogInfo()
     margin: 20px;
 }
 
-col:nth-child(2) {
+col:nth-child(2n) {
     background-color: #FAFAFA;
 }
 
@@ -355,6 +364,13 @@ tr {
     line-height: 2em;
 }
 
+.collapse {
+    color: black;
+    float: right;
+    font-weight: normal;
+    width: 1em;
+}
+
 .date, .time {
     width: 70px; 
 }
@@ -389,6 +405,15 @@ tr {
 
 .severity {
     width: 80px;
+}
+
+.summary {
+    color: black;
+    line-height: 1.8em;
+}
+
+.summary>th {
+    font-weight: normal;
 }
 
 .tab {
@@ -448,13 +473,13 @@ tr:nth-child(2n) {
     <form id=""viewOptions"" method=""get"">
         <select name=""level"">
 ");
-#line 104 "LogPage.cshtml"
+#line 108 "LogPage.cshtml"
             
 
 #line default
 #line hidden
 
-#line 104 "LogPage.cshtml"
+#line 108 "LogPage.cshtml"
              foreach (var severity in Enum.GetValues(typeof(LogLevel)))
             {
                 var severityInt = (int)severity;
@@ -465,16 +490,16 @@ tr:nth-child(2n) {
 #line hidden
 
             WriteLiteral("                    <option");
-            WriteAttribute("value", Tuple.Create(" value=\"", 3202), Tuple.Create("\"", 3222), 
-            Tuple.Create(Tuple.Create("", 3210), Tuple.Create<System.Object, System.Int32>(severityInt, 3210), false));
+            WriteAttribute("value", Tuple.Create(" value=\"", 3500), Tuple.Create("\"", 3520), 
+            Tuple.Create(Tuple.Create("", 3508), Tuple.Create<System.Object, System.Int32>(severityInt, 3508), false));
             WriteLiteral(" selected=\"selected\">");
-#line 109 "LogPage.cshtml"
+#line 113 "LogPage.cshtml"
                                                                 Write(severity);
 
 #line default
 #line hidden
             WriteLiteral("</option>\r\n");
-#line 110 "LogPage.cshtml"
+#line 114 "LogPage.cshtml"
                 }
                 else
                 {
@@ -483,16 +508,16 @@ tr:nth-child(2n) {
 #line hidden
 
             WriteLiteral("                    <option");
-            WriteAttribute("value", Tuple.Create(" value=\"", 3351), Tuple.Create("\"", 3371), 
-            Tuple.Create(Tuple.Create("", 3359), Tuple.Create<System.Object, System.Int32>(severityInt, 3359), false));
+            WriteAttribute("value", Tuple.Create(" value=\"", 3649), Tuple.Create("\"", 3669), 
+            Tuple.Create(Tuple.Create("", 3657), Tuple.Create<System.Object, System.Int32>(severityInt, 3657), false));
             WriteLiteral(">");
-#line 113 "LogPage.cshtml"
+#line 117 "LogPage.cshtml"
                                             Write(severity);
 
 #line default
 #line hidden
             WriteLiteral("</option>\r\n");
-#line 114 "LogPage.cshtml"
+#line 118 "LogPage.cshtml"
                 }
             }
 
@@ -500,8 +525,8 @@ tr:nth-child(2n) {
 #line hidden
 
             WriteLiteral("        </select>\r\n        <input type=\"text\" name=\"name\"");
-            WriteAttribute("value", Tuple.Create(" value=\"", 3484), Tuple.Create("\"", 3517), 
-            Tuple.Create(Tuple.Create("", 3492), Tuple.Create<System.Object, System.Int32>(Model.Options.NamePrefix, 3492), false));
+            WriteAttribute("value", Tuple.Create(" value=\"", 3782), Tuple.Create("\"", 3815), 
+            Tuple.Create(Tuple.Create("", 3790), Tuple.Create<System.Object, System.Int32>(Model.Options.NamePrefix, 3790), false));
             WriteLiteral(@" />
         <input type=""submit"" value=""filter"" />
     </form>
@@ -513,6 +538,7 @@ tr:nth-child(2n) {
         <thead id=""requestHeader"">
             <tr>
                 <th class=""path"">Path</th>
+                <th class=""method"">Method</th>
                 <th class=""host"">Host</th>
                 <th class=""statusCode"">Status Code</th>
                 <th class=""logs"">Logs</th>
@@ -523,15 +549,16 @@ tr:nth-child(2n) {
             <col />
             <col />
             <col />
+            <col />
         </colgroup>
 ");
-#line 139 "LogPage.cshtml"
+#line 145 "LogPage.cshtml"
         
 
 #line default
 #line hidden
 
-#line 139 "LogPage.cshtml"
+#line 145 "LogPage.cshtml"
          foreach (var activity in Model.Activities.Reverse())
         {
 
@@ -539,46 +566,72 @@ tr:nth-child(2n) {
 #line hidden
 
             WriteLiteral("            <tbody>\r\n                <tr class=\"requestRow\">\r\n");
-#line 143 "LogPage.cshtml"
+#line 149 "LogPage.cshtml"
                     
 
 #line default
 #line hidden
 
-#line 143 "LogPage.cshtml"
+#line 149 "LogPage.cshtml"
                       
+                        var activityPath = Model.Path.Value + "/" + activity.Id;
                         if (activity.HttpInfo != null)
                         {
-                            var requestPath = Model.Path.Value + "/" + activity.HttpInfo.RequestID;
 
 #line default
 #line hidden
 
-            WriteLiteral("                            <td><a");
-            WriteAttribute("href", Tuple.Create(" href=\"", 4534), Tuple.Create("\"", 4553), 
-            Tuple.Create(Tuple.Create("", 4541), Tuple.Create<System.Object, System.Int32>(requestPath, 4541), false));
-            WriteAttribute("title", Tuple.Create(" title=\"", 4554), Tuple.Create("\"", 4585), 
-            Tuple.Create(Tuple.Create("", 4562), Tuple.Create<System.Object, System.Int32>(activity.HttpInfo.Path, 4562), false));
+            WriteLiteral("                        \t<td><a");
+            WriteAttribute("href", Tuple.Create(" href=\"", 4879), Tuple.Create("\"", 4899), 
+            Tuple.Create(Tuple.Create("", 4886), Tuple.Create<System.Object, System.Int32>(activityPath, 4886), false));
+            WriteAttribute("title", Tuple.Create(" title=\"", 4900), Tuple.Create("\"", 4931), 
+            Tuple.Create(Tuple.Create("", 4908), Tuple.Create<System.Object, System.Int32>(activity.HttpInfo.Path, 4908), false));
             WriteLiteral(">");
-#line 147 "LogPage.cshtml"
-                                                                                  Write(activity.HttpInfo.Path);
+#line 153 "LogPage.cshtml"
+                                                                                   Write(activity.HttpInfo.Path);
 
 #line default
 #line hidden
             WriteLiteral("</a></td>\r\n                            <td>");
-#line 148 "LogPage.cshtml"
+#line 154 "LogPage.cshtml"
+                           Write(activity.HttpInfo.Method);
+
+#line default
+#line hidden
+            WriteLiteral("</td>\r\n                            <td>");
+#line 155 "LogPage.cshtml"
                            Write(activity.HttpInfo.Host);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                            <td>");
-#line 149 "LogPage.cshtml"
+#line 156 "LogPage.cshtml"
                            Write(activity.HttpInfo.StatusCode);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n");
-#line 150 "LogPage.cshtml"
+#line 157 "LogPage.cshtml"
+                        }
+                        else if (activity.RepresentsScope)
+                        {
+
+#line default
+#line hidden
+
+            WriteLiteral("                            <td colspan=\"4\"><a");
+            WriteAttribute("href", Tuple.Create(" href=\"", 5321), Tuple.Create("\"", 5341), 
+            Tuple.Create(Tuple.Create("", 5328), Tuple.Create<System.Object, System.Int32>(activityPath, 5328), false));
+            WriteAttribute("title", Tuple.Create(" title=\"", 5342), Tuple.Create("\"", 5370), 
+            Tuple.Create(Tuple.Create("", 5350), Tuple.Create<System.Object, System.Int32>(activity.Root.State, 5350), false));
+            WriteLiteral(">");
+#line 160 "LogPage.cshtml"
+                                                                                            Write(activity.Root.State);
+
+#line default
+#line hidden
+            WriteLiteral("</a></td>\r\n");
+#line 161 "LogPage.cshtml"
                         }
                         else
                         {
@@ -586,14 +639,11 @@ tr:nth-child(2n) {
 #line default
 #line hidden
 
-            WriteLiteral("                            <td colspan=\"3\">");
-#line 153 "LogPage.cshtml"
-                                       Write(activity.Root.State);
-
-#line default
-#line hidden
-            WriteLiteral("</td>\r\n");
-#line 154 "LogPage.cshtml"
+            WriteLiteral("                            <td colspan=\"4\"><a");
+            WriteAttribute("href", Tuple.Create(" href=\"", 5533), Tuple.Create("\"", 5553), 
+            Tuple.Create(Tuple.Create("", 5540), Tuple.Create<System.Object, System.Int32>(activityPath, 5540), false));
+            WriteLiteral(">Non-scope Log</a></td>\r\n");
+#line 165 "LogPage.cshtml"
                         }
                     
 
@@ -604,39 +654,60 @@ tr:nth-child(2n) {
                     <td class=""logTd"">
                         <table class=""logTable"">
                             <thead class=""logHeader"">
-                                <tr>
+                                <tr class=""headerRow"">
                                     <th class=""date"">Date</th>
                                     <th class=""time"">Time</th>
                                     <th class=""name"">Name</th>
                                     <th class=""severity"">Severity</th>
                                     <th class=""state"">State</th>
-                                    <th>Error</th>
+                                    <th>Error<span class=""collapse"">^</span></th>
                                 </tr>
                             </thead>
-                            <tbody>
 ");
-#line 169 "LogPage.cshtml"
+#line 179 "LogPage.cshtml"
+                            
+
+#line default
+#line hidden
+
+#line 179 "LogPage.cshtml"
+                              
+                                var counts = new Dictionary<string, int>();
+                                counts["Critical"] = 0;
+                                counts["Error"] = 0;
+                                counts["Warning"] = 0;                                
+                                counts["Information"] = 0;
+                                counts["Verbose"] = 0;
+                            
+
+#line default
+#line hidden
+
+            WriteLiteral("\r\n                            <tbody class=\"logBody\">\r\n");
+#line 188 "LogPage.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 169 "LogPage.cshtml"
-                                 if (activity.Id.Equals(Guid.Empty))
+#line 188 "LogPage.cshtml"
+                                 if (!activity.RepresentsScope)
                                 {
                                     // message not within a scope
+                                    var logInfo = activity.Root.Messages.FirstOrDefault();
                                     
 
 #line default
 #line hidden
 
-#line 172 "LogPage.cshtml"
-                               Write(LogRow(activity.Root.Messages.FirstOrDefault(), 0));
+#line 192 "LogPage.cshtml"
+                               Write(LogRow(logInfo, 0));
 
 #line default
 #line hidden
-#line 172 "LogPage.cshtml"
-                                                                                       
+#line 192 "LogPage.cshtml"
+                                                       
+                                    counts[logInfo.Severity.ToString()] = 1;
                                 }
                                 else
                                 {
@@ -645,27 +716,110 @@ tr:nth-child(2n) {
 #line default
 #line hidden
 
-#line 176 "LogPage.cshtml"
-                               Write(Traverse(activity.Root, 0));
+#line 197 "LogPage.cshtml"
+                               Write(Traverse(activity.Root, 0, counts));
 
 #line default
 #line hidden
-#line 176 "LogPage.cshtml"
-                                                               
+#line 197 "LogPage.cshtml"
+                                                                       
                                 }
 
 #line default
 #line hidden
 
-            WriteLiteral("                            </tbody>\r\n                        </table>\r\n         " +
-"           </td>\r\n                </tr>\r\n            </tbody>\r\n");
-#line 183 "LogPage.cshtml"
+            WriteLiteral("                            </tbody>\r\n                            <tbody class=\"s" +
+"ummary\">\r\n                                <tr class=\"logRow\">\r\n                 " +
+"                   <td>");
+#line 202 "LogPage.cshtml"
+                                   Write(activity.Time.ToString("MM-dd-yyyy HH:mm:ss"));
+
+#line default
+#line hidden
+            WriteLiteral("</td>\r\n");
+#line 203 "LogPage.cshtml"
+                                    
+
+#line default
+#line hidden
+
+#line 203 "LogPage.cshtml"
+                                     foreach (var kvp in counts)
+                                    {
+                                        if (string.Equals("Verbose", kvp.Key)) {
+
+#line default
+#line hidden
+
+            WriteLiteral("                                            <td>");
+#line 206 "LogPage.cshtml"
+                                           Write(kvp.Value);
+
+#line default
+#line hidden
+            WriteLiteral(" ");
+#line 206 "LogPage.cshtml"
+                                                      Write(kvp.Key);
+
+#line default
+#line hidden
+            WriteLiteral("<span class=\"collapse\">v</span></td>\r\n");
+#line 207 "LogPage.cshtml"
+                                        }
+                                        else
+                                        {
+
+#line default
+#line hidden
+
+            WriteLiteral("                                            <td>");
+#line 210 "LogPage.cshtml"
+                                           Write(kvp.Value);
+
+#line default
+#line hidden
+            WriteLiteral(" ");
+#line 210 "LogPage.cshtml"
+                                                      Write(kvp.Key);
+
+#line default
+#line hidden
+            WriteLiteral("</td>\r\n");
+#line 211 "LogPage.cshtml"
+                                        }
+                                    }
+
+#line default
+#line hidden
+
+            WriteLiteral("                                </tr>\r\n                            </tbody>\r\n    " +
+"                    </table>\r\n                    </td>\r\n                </tr>\r\n" +
+"            </tbody>\r\n");
+#line 219 "LogPage.cshtml"
         }
 
 #line default
 #line hidden
 
-            WriteLiteral("    </table>\r\n</body>\r\n</html>");
+            WriteLiteral(@"    </table>
+    <script type=""text/javascript"">
+        $(document).ready(function () {
+            $("".logBody"").hide();
+            $("".logTable > thead"").hide();
+            $("".logTable > thead"").click(function () {
+                $(this).closest("".logTable"").find(""tbody"").hide();
+                $(this).closest("".logTable"").find("".summary"").show();
+                $(this).hide();
+            });
+            $("".logTable > .summary"").click(function () {
+                $(this).closest("".logTable"").find(""tbody"").show();
+                $(this).closest("".logTable"").find(""thead"").show();
+                $(this).hide();
+            });
+        });
+    </script>
+</body>
+</html>");
         }
         #pragma warning restore 1998
     }

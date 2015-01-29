@@ -14,8 +14,8 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Data.Entity.Migrations;
-using Microsoft.Data.Entity.Migrations.Infrastructure;
+using Microsoft.Data.Entity.Relational.Migrations;
+using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
 using Microsoft.Data.Entity.Utilities;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -235,7 +235,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     {
                         services.AddEntityFramework().AddSqlServer();
                         services.AddScoped<BloggingContextWithMigrations>();
-                        services.AddInstance<DbContextOptions>(new DbContextOptions().UseSqlServer(database.ConnectionString));
+
+                        var contextOptions = new DbContextOptions();
+                        contextOptions.UseSqlServer(database.ConnectionString);
+                        services.AddInstance<DbContextOptions>(contextOptions);
                     });
 
                     var options = DatabaseErrorPageOptions.ShowAll;
@@ -268,9 +271,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                         services.AddEntityFramework()
                             .AddSqlServer();
 
-                        services.AddInstance<DbContextOptions>(
-                            new DbContextOptions()
-                                .UseSqlServer(database.ConnectionString));
+                        var options = new DbContextOptions();
+                        options.UseSqlServer(database.ConnectionString);
+
+                        services.AddInstance<DbContextOptions>(options);
                     });
 
                     app.UseDatabaseErrorPage();
@@ -338,6 +342,41 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             }
         }
 
+        [Fact]
+        public async Task Error_page_displayed_when_exception_wrapped()
+        {
+            TestServer server = SetupTestServer<BloggingContext, WrappedExceptionMiddleware>();
+            HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains("I wrapped your exception", content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_NoDbOrMigrationsTitle", typeof(BloggingContext).Name), content);
+        }
+
+        class WrappedExceptionMiddleware
+        {
+            public WrappedExceptionMiddleware(RequestDelegate next)
+            { }
+
+            public virtual Task Invoke(HttpContext context)
+            {
+                using (var db = context.ApplicationServices.GetService<BloggingContext>())
+                {
+                    db.Blogs.Add(new Blog());
+                    try
+                    {
+                        db.SaveChanges();
+                        throw new Exception("SaveChanges should have thrown");
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception("I wrapped your exception", ex);
+                    }
+                }
+            }
+        }
+
         private static TestServer SetupTestServer<TContext, TMiddleware>(ILoggerProvider logProvider = null)
             where TContext : DbContext
         {
@@ -351,9 +390,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                             .AddSqlServer();
 
                         services.AddScoped<TContext>();
-                        services.AddInstance<DbContextOptions>(
-                            new DbContextOptions()
-                                .UseSqlServer(database.ConnectionString));
+
+                        var options = new DbContextOptions();
+                        options.UseSqlServer(database.ConnectionString);
+
+                        services.AddInstance<DbContextOptions>(options);
                     });
 
                     app.UseDatabaseErrorPage();

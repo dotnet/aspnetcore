@@ -14,5 +14,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         public DateTimeOffset Time { get; set; }
 
         public bool IsCollapsed { get; set; }
+
+        public bool RepresentsScope { get; set; }
     }
 }

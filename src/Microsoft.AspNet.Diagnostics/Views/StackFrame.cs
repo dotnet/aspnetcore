@@ -39,11 +39,16 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <summary>
         /// 
         /// </summary>
-        public string ContextCode { get; set; }
+        public IEnumerable<string> ContextCode { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         public IEnumerable<string> PostContextCode { get; set; }
+
+        /// <summary>
+        /// Specific error details for this stack frame.
+        /// </summary>
+        public string ErrorDetails { get; set; }
     }
 }

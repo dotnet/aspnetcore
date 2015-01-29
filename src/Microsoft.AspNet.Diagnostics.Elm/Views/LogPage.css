@@ -4,7 +4,7 @@
     margin: 20px;
 }
 
-col:nth-child(2) {
+col:nth-child(2n) {
     background-color: #FAFAFA;
 }
 
@@ -45,6 +45,13 @@ tr {
     line-height: 2em;
 }
 
+.collapse {
+    color: black;
+    float: right;
+    font-weight: normal;
+    width: 1em;
+}
+
 .date, .time {
     width: 70px; 
 }
@@ -79,6 +86,15 @@ tr {
 
 .severity {
     width: 80px;
+}
+
+.summary {
+    color: black;
+    line-height: 1.8em;
+}
+
+.summary>th {
+    font-weight: normal;
 }
 
 .tab {

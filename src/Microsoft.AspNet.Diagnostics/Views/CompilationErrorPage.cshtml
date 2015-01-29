@@ -1,0 +1,101 @@
+﻿@using System
+@using System.Globalization
+@using System.Linq
+@using System.Net
+@using Views
+@functions
+{
+    public CompilationErrorPageModel Model { get; set; }
+}
+@{
+    var errorDetail = Model.ErrorDetails;
+
+    Response.StatusCode = 500;
+    Response.ContentType = "text/html";
+    Response.ContentLength = null; // Clear any prior Content-Length
+}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>@Resources.ErrorPageHtml_Title</title>
+        <style>
+            <%$ include: ErrorPage.css %>
+        </style>
+    </head>
+    <body>
+        <h1>@Resources.ErrorPageHtml_CompilationException</h1>
+        @if (Model.Options.ShowExceptionDetails)
+        {
+            <div class="titleerror">@errorDetail.Error.GetType().Name: @{ Output.Write(WebUtility.HtmlEncode(errorDetail.Error.Message).Replace("\r\n", "<br/>").Replace("\r", "<br/>").Replace("\n", "<br/>")); }</div>
+        }
+        else
+        {
+            <h2>@Resources.ErrorPageHtml_EnableShowExceptions</h2>
+        }
+        @if (Model.Options.ShowExceptionDetails)
+        {
+            <div id="stackpage" class="page">
+                @{ int tabIndex = 6; }
+                <br />
+                <ul>
+                @foreach (var frame in errorDetail.StackFrames)
+                {
+                    <li class="frame" tabindex="@tabIndex">
+                        @{ tabIndex++; }
+                        @if (!string.IsNullOrEmpty(frame.ErrorDetails))
+                        {
+                            <h3>@frame.ErrorDetails</h3>
+                        }
+                        else
+                        {
+                            if (string.IsNullOrEmpty(frame.File))
+                            {
+                                <h3>@frame.Function</h3>
+                            }
+                            else
+                            {
+                                <h3>@frame.Function in <code title="@frame.File">@System.IO.Path.GetFileName(frame.File)</code></h3>
+                            }
+                        }
+                        @if (frame.Line != 0 && frame.ContextCode.Any())
+                        {
+                            <div class="source">
+                                @if (frame.PreContextCode != null)
+                                {
+                                    <ol start="@frame.PreContextLine" class="collapsible">
+                                        @foreach (var line in frame.PreContextCode)
+                                        {
+                                            <li><span>@line</span></li>
+                                        }
+                                    </ol>
+                                }
+                                <ol start="@frame.Line" class="highlight">
+                                    @foreach (var line in frame.ContextCode)
+                                    {
+                                        <li><span>@line</span></li>
+                                    }
+                                </ol>
+                                @if (frame.PostContextCode != null)
+                                {
+                                    <ol start='@(frame.Line + 1)' class="collapsible">
+                                        @foreach (var line in frame.PostContextCode)
+                                        {
+                                            <li><span>@line</span></li>
+                                        }
+                                    </ol>
+                                } 
+                            </div>
+                        } 
+                    </li>
+                }
+                </ul>
+            </div>
+        }
+        <script>
+            //<!--
+            <%$ include: ErrorPage.js %>
+            //-->
+        </script>
+    </body>
+</html>

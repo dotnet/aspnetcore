@@ -8,7 +8,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Entity.Utilities;
 using Microsoft.AspNet.Http;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Migrations.Infrastructure;
+using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
 using Microsoft.Framework.DependencyInjection;
 using System.Net;
 using Microsoft.Framework.Logging;
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
         private static async Task<DbContext> GetDbContext(HttpContext context, ILogger logger)
         {
-            var form = await context.Request.GetFormAsync().WithCurrentCulture();
+            var form = await context.Request.ReadFormAsync().WithCurrentCulture();
             var contextTypeName = form["context"];
             if (string.IsNullOrWhiteSpace(contextTypeName))
             {

@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
 
                 // Assert
                 contextMock.VerifyGet(c => c.Request.Query, Times.AtLeastOnce());
-                Assert.True(response.Contains("Invalid Request Id"));
+                Assert.True(response.Contains("Invalid Id"));
             }
         }
 
@@ -205,8 +205,8 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 .SetupGet(c => c.Request.Cookies)
                 .Returns(new Mock<IReadableStringCollection>().Object);
             contextMock
-                .Setup(c => c.Request.GetFormAsync(It.IsAny<System.Threading.CancellationToken>()))
-                .Returns(Task.FromResult(new Mock<IReadableStringCollection>().Object));
+                .Setup(c => c.Request.ReadFormAsync(It.IsAny<System.Threading.CancellationToken>()))
+                .Returns(Task.FromResult(new Mock<IFormCollection>().Object));
 
             return contextMock;
         }
