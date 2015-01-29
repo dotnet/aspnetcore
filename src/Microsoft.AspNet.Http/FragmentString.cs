@@ -90,12 +90,8 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="uri">The Uri object</param>
         /// <returns>The resulting FragmentString</returns>
-        public static FragmentString FromUriComponent(Uri uri)
+        public static FragmentString FromUriComponent([NotNull] Uri uri)
         {
-            if (uri == null)
-            {
-                throw new ArgumentNullException("uri");
-            }
             string fragmentValue = uri.GetComponents(UriComponents.Fragment, UriFormat.UriEscaped);
             if (!string.IsNullOrEmpty(fragmentValue))
             {

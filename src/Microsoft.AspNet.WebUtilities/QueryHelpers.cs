@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.WebUtilities
 {
@@ -50,9 +49,49 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="text">The raw query string value, with or without the leading '?'.</param>
         /// <returns>A collection of parsed keys and values.</returns>
-        public static IReadableStringCollection ParseQuery(string text)
+        public static IDictionary<string, string[]> ParseQuery(string queryString)
         {
-            return ParsingHelpers.GetQuery(text);
+            if (!string.IsNullOrEmpty(queryString) && queryString[0] == '?')
+            {
+                queryString = queryString.Substring(1);
+            }
+            var accumulator = new KeyValueAccumulator<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            int textLength = queryString.Length;
+            int equalIndex = queryString.IndexOf('=');
+            if (equalIndex == -1)
+            {
+                equalIndex = textLength;
+            }
+            int scanIndex = 0;
+            while (scanIndex < textLength)
+            {
+                int delimiterIndex = queryString.IndexOf('&', scanIndex);
+                if (delimiterIndex == -1)
+                {
+                    delimiterIndex = textLength;
+                }
+                if (equalIndex < delimiterIndex)
+                {
+                    while (scanIndex != equalIndex && char.IsWhiteSpace(queryString[scanIndex]))
+                    {
+                        ++scanIndex;
+                    }
+                    string name = queryString.Substring(scanIndex, equalIndex - scanIndex);
+                    string value = queryString.Substring(equalIndex + 1, delimiterIndex - equalIndex - 1);
+                    accumulator.Append(
+                        Uri.UnescapeDataString(name.Replace('+', ' ')),
+                        Uri.UnescapeDataString(value.Replace('+', ' ')));
+                    equalIndex = queryString.IndexOf('=', delimiterIndex);
+                    if (equalIndex == -1)
+                    {
+                        equalIndex = textLength;
+                    }
+                }
+                scanIndex = delimiterIndex + 1;
+            }
+
+            return accumulator.GetResults();
         }
     }
 }

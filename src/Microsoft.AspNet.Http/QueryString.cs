@@ -102,12 +102,8 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="uri">The Uri object</param>
         /// <returns>The resulting QueryString</returns>
-        public static QueryString FromUriComponent(Uri uri)
+        public static QueryString FromUriComponent([NotNull] Uri uri)
         {
-            if (uri == null)
-            {
-                throw new ArgumentNullException("uri");
-            }
             string queryValue = uri.GetComponents(UriComponents.Query, UriFormat.UriEscaped);
             if (!string.IsNullOrEmpty(queryValue))
             {

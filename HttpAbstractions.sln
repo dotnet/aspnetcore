@@ -1,21 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.21916.0
+VisualStudioVersion = 14.0.22513.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5A15F1C-885A-452A-A731-B0173DDBD913}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F31FF137-390C-49BF-A3BD-7C6ED3597C21}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.PipelineCore", "src\Microsoft.AspNet.PipelineCore\Microsoft.AspNet.PipelineCore.kproj", "{BCF0F967-8753-4438-BD07-AADCA9CE509A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Core", "src\Microsoft.AspNet.Http.Core\Microsoft.AspNet.Http.Core.kproj", "{BCF0F967-8753-4438-BD07-AADCA9CE509A}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http", "src\Microsoft.AspNet.Http\Microsoft.AspNet.Http.kproj", "{22071333-15BA-4D16-A1D5-4D5B1A83FBDD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.HttpFeature", "src\Microsoft.AspNet.HttpFeature\Microsoft.AspNet.HttpFeature.kproj", "{D9128247-8F97-48B8-A863-F1F21A029FCE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Interfaces", "src\Microsoft.AspNet.Http.Interfaces\Microsoft.AspNet.Http.Interfaces.kproj", "{D9128247-8F97-48B8-A863-F1F21A029FCE}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FeatureModel", "src\Microsoft.AspNet.FeatureModel\Microsoft.AspNet.FeatureModel.kproj", "{32A4C918-30EE-41DB-8E26-8A3BB88ED231}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.PipelineCore.Tests", "test\Microsoft.AspNet.PipelineCore.Tests\Microsoft.AspNet.PipelineCore.Tests.kproj", "{AA99AF26-F7B1-4A6B-A922-5C25539F6391}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Core.Tests", "test\Microsoft.AspNet.Http.Core.Tests\Microsoft.AspNet.Http.Core.Tests.kproj", "{AA99AF26-F7B1-4A6B-A922-5C25539F6391}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FeatureModel.Tests", "test\Microsoft.AspNet.FeatureModel.Tests\Microsoft.AspNet.FeatureModel.Tests.kproj", "{C5D2BAE1-E182-48A0-AA74-1AF14B782BF7}"
 EndProject
@@ -32,6 +32,10 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebUtilities", "src\Microsoft.AspNet.WebUtilities\Microsoft.AspNet.WebUtilities.kproj", "{A2FB7838-0031-4FAD-BA3E-83C30B3AF406}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebUtilities.Tests", "test\Microsoft.AspNet.WebUtilities.Tests\Microsoft.AspNet.WebUtilities.Tests.kproj", "{93C10E50-BCBB-4D8E-9492-D46E1396225B}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Http.Headers", "src\Microsoft.Net.Http.Headers\Microsoft.Net.Http.Headers.kproj", "{60AA2FDB-8121-4826-8D00-9A143FEFAF66}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Http.Headers.Tests", "test\Microsoft.Net.Http.Headers.Tests\Microsoft.Net.Http.Headers.Tests.kproj", "{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -173,6 +177,30 @@ Global
 		{93C10E50-BCBB-4D8E-9492-D46E1396225B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{93C10E50-BCBB-4D8E-9492-D46E1396225B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{93C10E50-BCBB-4D8E-9492-D46E1396225B}.Release|x86.ActiveCfg = Release|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Debug|x86.Build.0 = Debug|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Release|x86.ActiveCfg = Release|Any CPU
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66}.Release|x86.Build.0 = Release|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Debug|x86.Build.0 = Debug|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Release|x86.ActiveCfg = Release|Any CPU
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -191,5 +219,7 @@ Global
 		{AE25EF21-7F91-4B86-B73E-AF746821D339} = {F31FF137-390C-49BF-A3BD-7C6ED3597C21}
 		{A2FB7838-0031-4FAD-BA3E-83C30B3AF406} = {A5A15F1C-885A-452A-A731-B0173DDBD913}
 		{93C10E50-BCBB-4D8E-9492-D46E1396225B} = {F31FF137-390C-49BF-A3BD-7C6ED3597C21}
+		{60AA2FDB-8121-4826-8D00-9A143FEFAF66} = {A5A15F1C-885A-452A-A731-B0173DDBD913}
+		{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1} = {F31FF137-390C-49BF-A3BD-7C6ED3597C21}
 	EndGlobalSection
 EndGlobal

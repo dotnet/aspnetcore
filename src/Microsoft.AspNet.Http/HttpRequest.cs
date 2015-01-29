@@ -65,12 +65,6 @@ namespace Microsoft.AspNet.Http
         public abstract IReadableStringCollection Query { get; }
 
         /// <summary>
-        /// Gets the form collection.
-        /// </summary>
-        /// <returns>The form collection parsed from the request body.</returns>
-        public abstract Task<IReadableStringCollection> GetFormAsync(CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
         /// Gets or set the owin.RequestProtocol.
         /// </summary>
         /// <returns>The owin.RequestProtocol.</returns>
@@ -100,33 +94,25 @@ namespace Microsoft.AspNet.Http
         public abstract string ContentType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Cache-Control header.
-        /// </summary>
-        /// <returns>The Cache-Control header.</returns>
-        // (TODO header conventions?) public abstract string CacheControl { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Media-Type header.
-        /// </summary>
-        /// <returns>The Media-Type header.</returns>
-        // (TODO header conventions?) public abstract string MediaType { get; set; }
-
-        /// <summary>
-        /// Gets or set the Accept header.
-        /// </summary>
-        /// <returns>The Accept header.</returns>
-        public abstract string Accept { get; set; }
-
-        /// <summary>
-        /// Gets or set the Accept-Charset header.
-        /// </summary>
-        /// <returns>The Accept-Charset header.</returns>
-        public abstract string AcceptCharset { get; set; }
-
-        /// <summary>
         /// Gets or set the owin.RequestBody Stream.
         /// </summary>
         /// <returns>The owin.RequestBody Stream.</returns>
         public abstract Stream Body { get; set; }
+
+        /// <summary>
+        /// Checks the content-type header for form types.
+        /// </summary>
+        public abstract bool HasFormContentType { get; }
+
+        /// <summary>
+        /// Gets or sets the request body as a form.
+        /// </summary>
+        public abstract IFormCollection Form { get; set; }
+
+        /// <summary>
+        /// Reads the request body if it is a form.
+        /// </summary>
+        /// <returns></returns>
+        public abstract Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken());
     }
 }

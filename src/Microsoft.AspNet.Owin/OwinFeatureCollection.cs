@@ -15,8 +15,8 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.HttpFeature.Security;
+using Microsoft.AspNet.Http.Interfaces;
+using Microsoft.AspNet.Http.Interfaces.Security;
 
 namespace Microsoft.AspNet.Owin
 {
@@ -294,7 +294,7 @@ namespace Microsoft.AspNet.Owin
         public bool ContainsKey(Type key)
         {
             // Does this type implement the requested interface?
-            if (key.GetTypeInfo().IsAssignableFrom(this.GetType().GetTypeInfo()))
+            if (key.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
             {
                 // Check for conditional features
                 if (key == typeof(IHttpSendFileFeature))
@@ -399,12 +399,8 @@ namespace Microsoft.AspNet.Owin
             return TryGetValue(item.Key, out result) && result.Equals(item.Value);
         }
 
-        public void CopyTo(KeyValuePair<Type, object>[] array, int arrayIndex)
+        public void CopyTo([NotNull] KeyValuePair<Type, object>[] array, int arrayIndex)
         {
-            if (array == null)
-            {
-                throw new ArgumentNullException("array");
-            }
             if (arrayIndex < 0 || arrayIndex > array.Length)
             {
                 throw new ArgumentOutOfRangeException("arrayIndex", arrayIndex, string.Empty);

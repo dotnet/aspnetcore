@@ -86,12 +86,8 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="uri">The Uri object</param>
         /// <returns>The resulting PathString</returns>
-        public static PathString FromUriComponent(Uri uri)
+        public static PathString FromUriComponent([NotNull] Uri uri)
         {
-            if (uri == null)
-            {
-                throw new ArgumentNullException("uri");
-            }
             // REVIEW: what is the exactly correct thing to do?
             return new PathString("/" + uri.GetComponents(UriComponents.Path, UriFormat.Unescaped));
         }
