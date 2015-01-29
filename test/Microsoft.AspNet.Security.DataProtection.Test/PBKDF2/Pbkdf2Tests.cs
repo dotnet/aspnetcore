@@ -4,6 +4,7 @@
 using System;
 using System.Text;
 using Microsoft.AspNet.Security.DataProtection.PBKDF2;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.Security.DataProtection.Test.PBKDF2
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.PBKDF2
         [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 - 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm9")]
         [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 0, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Q==")]
         [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Wk=")]
-        public void RunTest_Normal(string password, KeyDerivationPrf prf, int iterationCount, int numBytesRequested, string expectedValueAsBase64)
+        public void RunTest_Normal_Managed(string password, KeyDerivationPrf prf, int iterationCount, int numBytesRequested, string expectedValueAsBase64)
         {
             // Arrange
             byte[] salt = new byte[256];
@@ -32,14 +33,86 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.PBKDF2
                 salt[i] = (byte)i;
             }
 
-            // Act & assert - fully managed, Win7, and Win8
+            // Act & assert
             TestProvider<ManagedPbkdf2Provider>(password, salt, prf, iterationCount, numBytesRequested, expectedValueAsBase64);
+        }
+
+        // The 'numBytesRequested' parameters below are chosen to exercise code paths where
+        // this value straddles the digest length of the PRF. We only use 5 iterations so
+        // that our unit tests are fast.
+        [ConditionalTheory]
+        [ConditionalRunTestOnlyIfBcryptAvailable("BCryptDeriveKeyPBKDF2")]
+        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 - 1, "efmxNcKD/U1urTEDGvsThlPnHA==")]
+        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 0, "efmxNcKD/U1urTEDGvsThlPnHDI=")]
+        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 1, "efmxNcKD/U1urTEDGvsThlPnHDLk")]
+        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 - 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRA==")]
+        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 + 0, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLo=")]
+        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 + 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLpk")]
+        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 - 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm9")]
+        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 0, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Q==")]
+        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Wk=")]
+        public void RunTest_Normal_Win7(string password, KeyDerivationPrf prf, int iterationCount, int numBytesRequested, string expectedValueAsBase64)
+        {
+            // Arrange
+            byte[] salt = new byte[256];
+            for (int i = 0; i < salt.Length; i++)
+            {
+                salt[i] = (byte)i;
+            }
+
+            // Act & assert
             TestProvider<Win7Pbkdf2Provider>(password, salt, prf, iterationCount, numBytesRequested, expectedValueAsBase64);
+        }
+
+        // The 'numBytesRequested' parameters below are chosen to exercise code paths where
+        // this value straddles the digest length of the PRF. We only use 5 iterations so
+        // that our unit tests are fast.
+        [ConditionalTheory]
+        [ConditionalRunTestOnlyIfBcryptAvailable("BCryptKeyDerivation")]
+        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 - 1, "efmxNcKD/U1urTEDGvsThlPnHA==")]
+        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 0, "efmxNcKD/U1urTEDGvsThlPnHDI=")]
+        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 1, "efmxNcKD/U1urTEDGvsThlPnHDLk")]
+        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 - 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRA==")]
+        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 + 0, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLo=")]
+        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 + 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLpk")]
+        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 - 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm9")]
+        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 0, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Q==")]
+        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Wk=")]
+        public void RunTest_Normal_Win8(string password, KeyDerivationPrf prf, int iterationCount, int numBytesRequested, string expectedValueAsBase64)
+        {
+            // Arrange
+            byte[] salt = new byte[256];
+            for (int i = 0; i < salt.Length; i++)
+            {
+                salt[i] = (byte)i;
+            }
+
+            // Act & assert
             TestProvider<Win8Pbkdf2Provider>(password, salt, prf, iterationCount, numBytesRequested, expectedValueAsBase64);
         }
 
         [Fact]
-        public void RunTest_WithLongPassword()
+        public void RunTest_WithLongPassword_Managed()
+        {
+            RunTest_WithLongPassword_Impl<ManagedPbkdf2Provider>();
+        }
+
+        [ConditionalFact]
+        [ConditionalRunTestOnlyIfBcryptAvailable("BCryptDeriveKeyPBKDF2")]
+        public void RunTest_WithLongPassword_Win7()
+        {
+            RunTest_WithLongPassword_Impl<Win7Pbkdf2Provider>();
+        }
+
+        [ConditionalFact]
+        [ConditionalRunTestOnlyIfBcryptAvailable("BCryptKeyDerivation")]
+        public void RunTest_WithLongPassword_Win8()
+        {
+            RunTest_WithLongPassword_Impl<Win8Pbkdf2Provider>();
+        }
+
+        private static void RunTest_WithLongPassword_Impl<TProvider>()
+            where TProvider : IPbkdf2Provider, new()
         {
             // Arrange
             string password = new String('x', 50000); // 50,000 char password
@@ -49,10 +122,8 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.PBKDF2
             const int iterationCount = 5;
             const int numBytesRequested = 128;
 
-            // Act & assert - fully managed, Win7, and Win8
-            TestProvider<ManagedPbkdf2Provider>(password, salt, prf, iterationCount, numBytesRequested, expectedDerivedKeyBase64);
-            TestProvider<Win7Pbkdf2Provider>(password, salt, prf, iterationCount, numBytesRequested, expectedDerivedKeyBase64);
-            TestProvider<Win8Pbkdf2Provider>(password, salt, prf, iterationCount, numBytesRequested, expectedDerivedKeyBase64);
+            // Act & assert
+            TestProvider<TProvider>(password, salt, prf, iterationCount, numBytesRequested, expectedDerivedKeyBase64);
         }
 
         private static void TestProvider<TProvider>(string password, byte[] salt, KeyDerivationPrf prf, int iterationCount, int numBytesRequested, string expectedDerivedKeyAsBase64)

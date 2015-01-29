@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Security.DataProtection.Cng;
+using Microsoft.AspNet.Testing.xunit;
 using Moq;
 using Xunit;
 
@@ -10,7 +11,8 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
 {
     public unsafe class CngAuthenticatedEncryptorBaseTests
     {
-        [Fact]
+        [ConditionalFact]
+        [ConditionalRunTestOnlyIfBcryptAvailable]
         public void Decrypt_ForwardsArraySegment()
         {
             // Arrange
@@ -35,7 +37,8 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
             Assert.Equal(new byte[] { 0x20, 0x21, 0x22 }, retVal);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [ConditionalRunTestOnlyIfBcryptAvailable]
         public void Decrypt_HandlesEmptyAADPointerFixup()
         {
             // Arrange
@@ -60,7 +63,8 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
             Assert.Equal(new byte[] { 0x20, 0x21, 0x22 }, retVal);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [ConditionalRunTestOnlyIfBcryptAvailable]
         public void Decrypt_HandlesEmptyCiphertextPointerFixup()
         {
             // Arrange

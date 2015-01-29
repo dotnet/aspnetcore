@@ -23,6 +23,7 @@
         "aspnetcore50": {
             "dependencies": {
                 "Microsoft.Win32.Registry": "4.0.0-beta-*",
+                "System.IO": "4.0.10-beta-*",
                 "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
                 "System.Security.Cryptography.Encryption.Aes": "4.0.0-beta-*",
                 "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",

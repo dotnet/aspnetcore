@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Azure
                 {
                     blobRef.DownloadToStream(memoryStream);
                 }
-                catch (StorageException ex) if (ex.RequestInformation.HttpStatusCode == (int)HttpStatusCode.NotFound)
+                catch (StorageException ex) when (ex.RequestInformation.HttpStatusCode == (int)HttpStatusCode.NotFound)
                 {
                     // 404s are not a fatal error - empty keyring
                     return null;

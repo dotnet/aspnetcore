@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Security.DataProtection
                 byte[] protectedDataAsBytes = protector.Protect(unprotectedDataAsBytes);
                 return WebEncoders.Base64UrlEncode(protectedDataAsBytes);
             }
-            catch (Exception ex) if (!(ex is CryptographicException))
+            catch (Exception ex) when (!(ex is CryptographicException))
             {
                 // Homogenize exceptions to CryptographicException
                 throw Error.CryptCommon_GenericError(ex);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Security.DataProtection
                 byte[] unprotectedDataAsBytes = protector.Unprotect(protectedDataAsBytes);
                 return CryptoUtil.SecureUtf8Encoding.GetString(unprotectedDataAsBytes);
             }
-            catch (Exception ex) if (!(ex is CryptographicException))
+            catch (Exception ex) when (!(ex is CryptographicException))
             {
                 // Homogenize exceptions to CryptographicException
                 throw Error.CryptCommon_GenericError(ex);
