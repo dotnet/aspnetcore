@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Files>
     <!-- Exclusions -->
+    <File Name="install.ps1" Ignore="yes" />
     <File Name="kvm.ps1" Ignore="yes" />
     <File Name="klr.exe" Ignore="yes" />
     <File Name="kre.coreclr.dll" Ignore="yes" />
@@ -180,6 +181,7 @@
     <File Name="System.Xml.XPath.XDocument.dll" Ignore="yes" />
     <File Name="System.Xml.XPath.XmlDocument.dll" Ignore="yes" />
     <File Name="SNI.dll" Ignore="yes" />
+    <File Name="uninstall.ps1" Ignore="yes" />
     <File Name="Xunit.KRunner.dll" Ignore="yes" />
     <File Name="xunit.abstractions.dll" Ignore="yes" />
     <File Name="xunit.assert.dll" Ignore="yes" />
