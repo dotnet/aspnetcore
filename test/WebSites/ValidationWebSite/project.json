@@ -15,5 +15,17 @@
         "aspnet50": { },
         "aspnetcore50": { }
     },
+    "exclude": [
+        "wwwroot",
+        "node_modules",
+        "bower_components"
+    ],
+    "packExclude": [
+        "node_modules",
+        "bower_components",
+        "**.kproj",
+        "**.user",
+        "**.vspscc"
+    ],
     "webroot": "wwwroot"
 }

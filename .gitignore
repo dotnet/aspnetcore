@@ -8,6 +8,9 @@ packages/
 artifacts/
 PublishProfiles/
 .vs/
+bower_components/
+node_modules/
+**/wwwroot/lib/
 debugSettings.json
 *.user
 *.suo

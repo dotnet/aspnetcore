@@ -1,0 +1,21 @@
+{
+    "name": "ValidationWebSite",
+    "description": "Web site demonstrating various validations.",
+    "private": true,
+    "dependencies": {
+        "jquery": "1.11.2",
+        "jquery-validation": "1.13.1",
+        "jquery-validation-unobtrusive": "3.2.2"
+    },
+    "exportsOverride": {
+        "jquery": {
+            "js": "jquery.{js,min.js,min.map}"
+        },
+        "jquery-validation": {
+            "": "jquery.validate.js"
+        },
+        "jquery-validation-unobtrusive": {
+            "": "jquery.validate.unobtrusive.{js,min.js}"
+        }
+    }
+}
