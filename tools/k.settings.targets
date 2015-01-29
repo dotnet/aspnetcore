@@ -28,7 +28,7 @@
         <CodeSignVerificationPath>$(SignedOutputPath)Verification\</CodeSignVerificationPath>
         <SignedBinariesPath>$(SignedOutputPath)</SignedBinariesPath>
 
-        <kvmRootDrop Condition="'$(kvmRootDrop)' == ''">\\projectk-tc\drops\dotnetsdk\dev\</DotnetSdkRootDrop>
+        <kvmRootDrop Condition="'$(kvmRootDrop)' == ''">\\projectk-tc\drops\dotnetsdk\dev\</kvmRootDrop>
     </PropertyGroup>
 
     <PropertyGroup>
