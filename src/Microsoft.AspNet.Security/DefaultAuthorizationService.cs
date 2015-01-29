@@ -1,101 +1,67 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Security
 {
     public class DefaultAuthorizationService : IAuthorizationService
     {
-        private readonly IList<IAuthorizationPolicy> _policies;
-        public int MaxRetries = 99;
+        private readonly IList<IAuthorizationHandler> _handlers;
+        private readonly AuthorizationOptions _options;
 
-        public DefaultAuthorizationService(IEnumerable<IAuthorizationPolicy> policies)
+        public DefaultAuthorizationService(IOptions<AuthorizationOptions> options, IEnumerable<IAuthorizationHandler> handlers)
         {
-            if (policies == null)
-            {
-                _policies = Enumerable.Empty<IAuthorizationPolicy>().ToArray();
-            } 
-            else 
-            {
-                _policies = policies.OrderBy(x => x.Order).ToArray();
-            }
+            _handlers = handlers.ToArray();
+            _options = options.Options;
         }
 
-        public async Task<bool> AuthorizeAsync(IEnumerable<Claim> claims, ClaimsPrincipal user, object resource)
+        public Task<bool> AuthorizeAsync([NotNull] string policyName, HttpContext context, object resource = null)
         {
-            var context = new AuthorizationPolicyContext(claims, user, resource);
-
-            foreach (var policy in _policies)
+            var policy = _options.GetPolicy(policyName);
+            if (policy == null)
             {
-                await policy.ApplyingAsync(context);
+                return Task.FromResult(false);
             }
+            return AuthorizeAsync(policy, context, resource);
+        }
 
-            // we only apply the policies for a limited number of times to prevent
-            // infinite loops
-
-            int retries;
-            for (retries = 0; retries < MaxRetries; retries++)
+        public async Task<bool> AuthorizeAsync([NotNull] AuthorizationPolicy policy, [NotNull] HttpContext context, object resource = null)
+        {
+            var user = context.User;
+            try
             {
-                // we don't need to check for owned claims if the permission is already granted
-                if (!context.Authorized)
+                // Generate the user identities if policy specified the AuthTypes
+                if (policy.ActiveAuthenticationTypes != null && policy.ActiveAuthenticationTypes.Any() )
                 {
-                    if (context.User != null)
+                    var principal = new ClaimsPrincipal();
+
+                    var results = await context.AuthenticateAsync(policy.ActiveAuthenticationTypes);
+                    // REVIEW: re requesting the identities fails for MVC currently, so we only request if not found
+                    foreach (var result in results)
                     {
-                        if (ClaimsMatch(context.Claims, context.UserClaims))
-                        {
-                            context.Authorized = true;
-                        }
+                        principal.AddIdentity(result.Identity);
                     }
+                    context.User = principal;
                 }
 
-                // reset the retry flag
-                context.Retry = false;
+                var authContext = new AuthorizationContext(policy, context, resource);
 
-                // give a chance for policies to change claims or the grant
-                foreach (var policy in _policies)
+                foreach (var handler in _handlers)
                 {
-                    await policy.ApplyAsync(context);
+                    await handler.HandleAsync(authContext);
                 }
-
-                // if no policies have changed the context, stop checking
-                if (!context.Retry)
-                {
-                    break;
-                }
+                return authContext.HasSucceeded;
             }
-
-            if (retries == MaxRetries)
+            finally
             {
-                throw new InvalidOperationException("Too many authorization retries.");
+                context.User = user;
             }
-
-            foreach (var policy in _policies)
-            {
-                await policy.AppliedAsync(context);
-            }
-
-            return context.Authorized;
-        }
-
-        public bool Authorize(IEnumerable<Claim> claims, ClaimsPrincipal user, object resource)
-        {
-            return AuthorizeAsync(claims, user, resource).GetAwaiter().GetResult();
-        }
-
-        private bool ClaimsMatch([NotNull] IEnumerable<Claim> x, [NotNull] IEnumerable<Claim> y)
-        {
-            return x.Any(claim => 
-                        y.Any(userClaim => 
-                            string.Equals(claim.Type, userClaim.Type, StringComparison.OrdinalIgnoreCase) &&
-                            string.Equals(claim.Value, userClaim.Value, StringComparison.Ordinal)
-                        )
-                    );
-
         }
     }
 }

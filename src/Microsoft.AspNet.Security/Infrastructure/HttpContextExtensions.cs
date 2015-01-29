@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.HttpFeature.Security;
-using Microsoft.AspNet.PipelineCore.Security;
+using Microsoft.AspNet.Http.Core.Security;
+using Microsoft.AspNet.Http.Interfaces.Security;
 
 namespace Microsoft.AspNet.Security.Infrastructure
 {

@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Net.Http;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Security.DataHandler;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Net.Http;
 
 namespace Microsoft.AspNet.Security.OAuth
 {
@@ -45,18 +45,22 @@ namespace Microsoft.AspNet.Security.OAuth
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "AuthenticationType"));
             }
+
             if (string.IsNullOrWhiteSpace(Options.ClientId))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientId"));
             }
+
             if (string.IsNullOrWhiteSpace(Options.ClientSecret))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientSecret"));
             }
+
             if (string.IsNullOrWhiteSpace(Options.AuthorizationEndpoint))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "AuthorizationEndpoint"));
             }
+
             if (string.IsNullOrWhiteSpace(Options.TokenEndpoint))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "TokenEndpoint"));

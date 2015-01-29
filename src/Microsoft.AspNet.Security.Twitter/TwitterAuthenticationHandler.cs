@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.AspNet.Security.Twitter.Messages;
@@ -275,7 +276,7 @@ namespace Microsoft.AspNet.Security.Twitter
             response.EnsureSuccessStatusCode();
             string responseText = await response.Content.ReadAsStringAsync();
 
-            IFormCollection responseParameters = FormHelpers.ParseForm(responseText);
+            IFormCollection responseParameters = new FormCollection(FormReader.ReadForm(responseText));
             if (string.Equals(responseParameters["oauth_callback_confirmed"], "true", StringComparison.Ordinal))
             {
                 return new RequestToken { Token = Uri.UnescapeDataString(responseParameters["oauth_token"]), TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"]), CallbackConfirmed = true, Properties = properties };
@@ -351,7 +352,7 @@ namespace Microsoft.AspNet.Security.Twitter
 
             string responseText = await response.Content.ReadAsStringAsync();
 
-            IFormCollection responseParameters = FormHelpers.ParseForm(responseText);
+            IFormCollection responseParameters = new FormCollection(FormReader.ReadForm(responseText));
 
             return new AccessToken
             {

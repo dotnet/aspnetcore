@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Security.Cookies
                 {
                     Domain = Options.CookieDomain,
                     HttpOnly = Options.CookieHttpOnly,
-                    Path = Options.CookiePath ?? "/",
+                    Path = Options.CookiePath ?? (RequestPathBase.HasValue ? RequestPathBase.ToString() : "/"),
                 };
                 if (Options.CookieSecure == CookieSecureOption.SameAsRequest)
                 {

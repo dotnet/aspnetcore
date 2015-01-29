@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.HttpFeature.Security;
+using Microsoft.AspNet.Http.Interfaces.Security;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.AspNet.Security.Notifications;
 

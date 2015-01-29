@@ -2,31 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Security
 {
-    /// <summary>
-    /// This class provides a base implementation for <see cref="IAuthorizationPolicy" />
-    /// </summary>
-    public abstract class AuthorizationPolicy : IAuthorizationPolicy
+    public class AuthorizationPolicy
     {
-        public int Order { get; set; }
-        
-        public virtual Task ApplyingAsync(AuthorizationPolicyContext context)
+        public AuthorizationPolicy(IEnumerable<IAuthorizationRequirement> requirements, IEnumerable<string> activeAuthenticationTypes)
         {
-            return Task.FromResult(0);
+            Requirements = requirements;
+            ActiveAuthenticationTypes = activeAuthenticationTypes;
         }
 
-        public virtual Task ApplyAsync(AuthorizationPolicyContext context) 
-        {
-            return Task.FromResult(0);
-        }
-
-        public virtual Task AppliedAsync(AuthorizationPolicyContext context)
-        {
-            return Task.FromResult(0);
-        }
+        public IEnumerable<IAuthorizationRequirement> Requirements { get; private set; }
+        public IEnumerable<string> ActiveAuthenticationTypes { get; private set; }
     }
 }

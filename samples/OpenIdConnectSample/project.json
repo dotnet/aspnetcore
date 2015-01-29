@@ -1,0 +1,18 @@
+﻿{
+    "dependencies": {
+        "Kestrel": "1.0.0-*",
+        "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.AspNet.Security.OpenIdConnect": "1.0.0-*",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-*"
+    },
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": { }
+    },
+    "commands": {
+        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:12345",
+        "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5004"
+    },    
+    "webroot": "wwwroot"
+}

@@ -41,9 +41,25 @@ namespace Microsoft.AspNet.Security.Infrastructure
             {
                 AuthenticationHandler<TOptions> handler = CreateHandler();
                 await handler.Initialize(Options, context);
-                if (!await handler.InvokeAsync())
+                try
                 {
-                    await _next(context);
+                    if (!await handler.InvokeAsync())
+                    {
+                        await _next(context);
+                    }
+                }
+                catch (Exception)
+                {
+                    try
+                    {
+                        handler.Faulted = true;
+                        await handler.TeardownAsync();
+                    }
+                    catch (Exception)
+                    {
+                        // Don't mask the original exception
+                    }
+                    throw;
                 }
                 await handler.TeardownAsync();
             }

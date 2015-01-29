@@ -6,7 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Security.Infrastructure;
 using Shouldly;
 using Xunit;

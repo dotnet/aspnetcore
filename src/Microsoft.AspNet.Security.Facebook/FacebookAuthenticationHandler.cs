@@ -9,6 +9,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core.Collections;
+using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security.OAuth;
 using Microsoft.AspNet.WebUtilities;
@@ -39,7 +41,7 @@ namespace Microsoft.AspNet.Security.Facebook
             tokenResponse.EnsureSuccessStatusCode();
             string oauthTokenResponse = await tokenResponse.Content.ReadAsStringAsync();
 
-            IFormCollection form = FormHelpers.ParseForm(oauthTokenResponse);
+            IFormCollection form = new FormCollection(FormReader.ReadForm(oauthTokenResponse));
             var response = new JObject();
             foreach (string key in form.Keys)
             {

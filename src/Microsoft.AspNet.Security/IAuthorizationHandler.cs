@@ -5,11 +5,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Security
 {
-    public interface IAuthorizationPolicy
+    public interface IAuthorizationHandler
     {
-        int Order { get; set; }
-        Task ApplyingAsync(AuthorizationPolicyContext context);
-        Task ApplyAsync(AuthorizationPolicyContext context);
-        Task AppliedAsync(AuthorizationPolicyContext context);
+        Task HandleAsync(AuthorizationContext context);
+        //void Handle(AuthorizationContext context);
     }
 }

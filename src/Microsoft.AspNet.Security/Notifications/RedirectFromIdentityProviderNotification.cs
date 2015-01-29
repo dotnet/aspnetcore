@@ -1,17 +1,21 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Security.Notifications
 {
-    public class RedirectFromIdentityProviderNotification
+    public class RedirectFromIdentityProviderNotification<TMessage, TOptions> : BaseNotification<TOptions>
     {
-        public AuthenticationTicket AuthenticationTicket { get; set; }
+        public RedirectFromIdentityProviderNotification(HttpContext context, TOptions options)
+            : base(context, options)
+        {
+        }
 
         public string SignInAsAuthenticationType { get; set; }
 
-        public bool Cancel { get; set; }
-
         public bool IsRequestCompleted { get; set; }
+
+        public TMessage ProtocolMessage { get; set; }
     }
 }
