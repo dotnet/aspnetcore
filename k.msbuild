@@ -22,8 +22,8 @@
             <Output TaskParameter="LatestPath" PropertyName="DropSource"/>
         </FindLatestDrop>
 
-        <FindLatestDrop RootPath="$(DotnetSdkRootDrop)" SubFolder="">
-            <Output TaskParameter="LatestPath" PropertyName="DotnetSdkDropSource"/>
+        <FindLatestDrop RootPath="$(kvmRootDrop)" SubFolder="">
+            <Output TaskParameter="LatestPath" PropertyName="kvmDropSource"/>
         </FindLatestDrop>
 
         <PropertyGroup>
@@ -37,17 +37,17 @@
         <MakeDir Directories="$(OutputPath)" />
         <Copy SourceFiles="$(DropSource)..\commit" DestinationFolder="$(OutputPath)" />
 
-        <!-- dotnetsdk doesn't have a package so copy all the scripts and then replace the dotnetsdk.ps1 file with the signed copy. -->
+        <!-- kvm doesn't have a package so copy all the scripts and then replace the kvm.ps1 file with the signed copy. -->
         <ItemGroup>
-            <DotnetSdkFiles Include="$(DotnetSdkDropSource)\*.*" />
+            <kvmFiles Include="$(kvmDropSource)\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(DotnetSdkFiles)" DestinationFolder="$(OutputPath)dotnetsdk" />
+        <Copy SourceFiles="@(kvmFiles)" DestinationFolder="$(OutputPath)kvm" />
 
         <ItemGroup>
             <UnsignedPackages
                 Include="$(DropSource)**\EntityFramework*.nupkg;
                          $(DropSource)**\Kestrel*.nupkg;
-                         $(DropSource)**\dotnet*.nupkg;
+                         $(DropSource)**\kre*.nupkg;
                          $(DropSource)**\KoreBuild*.nupkg;
                          $(DropSource)**\Microsoft.AspNet*.nupkg;
                          $(DropSource)**\Microsoft.Data*.nupkg;
@@ -61,7 +61,7 @@
                 Include="$(SymbolPackagePath)**\EntityFramework*.nupkg;
                          $(SymbolPackagePath)**\Kestrel*.nupkg;
                          $(SymbolPackagePath)**\KoreBuild*.nupkg;
-                         $(SymbolPackagePath)**\dotnet*.nupkg;
+                         $(SymbolPackagePath)**\kre*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.AspNet*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Data*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Framework*.nupkg;
@@ -94,7 +94,7 @@
                          $(UnsignedPackagesPath)**\EntityFramework*\**\init.ps1;
                          $(UnsignedPackagesPath)**\EntityFramework*\**\install.ps1;
                          $(UnsignedPackagesPath)**\Kestrel*.dll;
-                         $(UnsignedPackagesPath)**\dotnet*.dll;
+                         $(UnsignedPackagesPath)**\kre*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNet*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Data*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Framework*.dll;                         
@@ -103,7 +103,7 @@
                          $(UnsignedPackagesPath)**\System.Data.*.dll;
                          $(UnsignedPackagesPath)**\SNI.dll;
                          $(UnsignedPackagesPath)**\System.Security.Claims*.dll;
-                         $(UnsignedPackagesPath)**\dotnet*.exe;
+                         $(UnsignedPackagesPath)**\klr*.exe;
                          $(UnsignedPackagesPath)**\CsprojDumper.exe"
             />
 
@@ -115,7 +115,7 @@
 
             <PackageBinariesToSign Include="%(UnsignedPackageBinaries.UnsignedFlatFileName)" />
 
-            <DotnetSdkBinariesToSign Include="$(OutputPath)dotnetsdk\dotnetsdk.ps1" />
+            <kvmBinariesToSign Include="$(OutputPath)kvm\kvm.ps1" />
         </ItemGroup>
 
         <Copy SourceFiles="@(UnsignedPackageBinaries)" DestinationFiles="@(UnsignedPackageBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
@@ -133,9 +133,9 @@
         </ItemGroup>
 
         <ItemGroup>
-            <BinariesToSign Include="@(DotnetSdkBinariesToSign)">
-                <CopyScript>DotnetSdkAuthentiCode400.bat</CopyScript>
-                <CopyScriptTargetPath>$(SignedOutputPath)dotnetsdk</CopyScriptTargetPath>
+            <BinariesToSign Include="@(kvmBinariesToSign)">
+                <CopyScript>kvmAuthentiCode400.bat</CopyScript>
+                <CopyScriptTargetPath>$(SignedOutputPath)kvm</CopyScriptTargetPath>
             </BinariesToSign>
         </ItemGroup>
 
@@ -170,9 +170,9 @@
             <NuSpecEULA Include="$(UnsignedPackagesPath)**\EntityFramework*.nuspec;
                                  $(UnsignedPackagesPath)**\K.*.nuspec;
                                  $(UnsignedPackagesPath)**\Kestrel*.nuspec;
-                                 $(UnsignedPackagesPath)**\dotnetsdk.*.nuspec;
+                                 $(UnsignedPackagesPath)**\kvm.*.nuspec;
                                  $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
-                                 $(UnsignedPackagesPath)**\dotnet*.nuspec;
+                                 $(UnsignedPackagesPath)**\kre*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.AspNet*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Data*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Framework.*.nuspec;
@@ -244,7 +244,7 @@
         <ItemGroup>
             <PoliCheckPackages Include="$(SymbolPackagePath)EntityFramework.*.symbols.nupkg;
                                         $(SymbolPackagePath)Kestrel*.symbols.nupkg;
-                                        $(SymbolPackagePath)dotnet*.symbols.nupkg;
+                                        $(SymbolPackagePath)kre*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.AspNet*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Data*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Framework*.symbols.nupkg;
@@ -386,7 +386,7 @@
         <ItemGroup>
             <SignedPackagesForBinScope Include="$(PackagesOutputPath)**\*.nupkg"
                                        Exclude="$(PackagesOutputPath)**\CoreCLR*.nupkg;
-                                                $(PackagesOutputPath)**\dotnet*.nupkg;
+                                                $(PackagesOutputPath)**\kre*.nupkg;
                                                 $(PackagesOutputPath)**\Microsoft.CSharp*.nupkg;
                                                 $(PackagesOutputPath)**\Microsoft.AspNet.Loader.IIS.Interop*.nupkg" />
         </ItemGroup>
