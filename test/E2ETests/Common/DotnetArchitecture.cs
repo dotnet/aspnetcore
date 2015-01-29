@@ -1,6 +1,6 @@
 ﻿namespace E2ETests
 {
-    public enum DotnetArchitecture
+    public enum RuntimeArchitecture
     {
         amd64,
         x86

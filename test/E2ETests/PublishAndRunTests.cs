@@ -12,42 +12,42 @@ namespace E2ETests
     {
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.IISExpress, DotnetFlavor.DesktopClr, DotnetArchitecture.x86, "http://localhost:5001/")]
-        public void Publish_And_Run_Tests_On_X86(ServerType serverType, DotnetFlavor dotnetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
+        public void Publish_And_Run_Tests_On_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
-            Publish_And_Run_Tests(serverType, dotnetFlavor, architecture, applicationBaseUrl);
+            Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
-        [InlineData(ServerType.Kestrel, DotnetFlavor.Mono, DotnetArchitecture.x86, "http://localhost:5004/")]
-        public void Publish_And_Run_Tests_On_Mono(ServerType serverType, DotnetFlavor dotnetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/")]
+        public void Publish_And_Run_Tests_On_Mono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
-            Publish_And_Run_Tests(serverType, dotnetFlavor, architecture, applicationBaseUrl);
+            Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.WebListener, DotnetFlavor.DesktopClr, DotnetArchitecture.amd64, "http://localhost:5002/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.DesktopClr, RuntimeArchitecture.amd64, "http://localhost:5002/")]
         //https://github.com/aspnet/KRuntime/issues/642
-        //[InlineData(ServerType.Helios, DotnetFlavor.CoreClr, DotnetArchitecture.amd64, "http://localhost:5001/")]
-        public void Publish_And_Run_Tests_On_AMD64(ServerType serverType, DotnetFlavor dotnetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        //[InlineData(ServerType.Helios, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5001/")]
+        public void Publish_And_Run_Tests_On_AMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
-            Publish_And_Run_Tests(serverType, dotnetFlavor, architecture, applicationBaseUrl);
+            Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
-        private void Publish_And_Run_Tests(ServerType serverType, DotnetFlavor dotnetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        private void Publish_And_Run_Tests(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             using (_logger.BeginScope("Publish_And_Run_Tests"))
             {
-                _logger.WriteInformation("Variation Details : HostType = {0}, DotnetFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}",
-                    serverType, dotnetFlavor, architecture, applicationBaseUrl);
+                _logger.WriteInformation("Variation Details : HostType = {0}, RuntimeFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}",
+                    serverType, runtimeFlavor, architecture, applicationBaseUrl);
 
                 _startParameters = new StartParameters
                 {
                     ServerType = serverType,
-                    DotnetFlavor = dotnetFlavor,
-                    DotnetArchitecture = architecture,
+                    RuntimeFlavor = runtimeFlavor,
+                    RuntimeArchitecture = architecture,
                     BundleApplicationBeforeStart = true
                 };
 
