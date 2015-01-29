@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.Mvc
         [InlineData("json", FormatSource.QueryData, "application/json")]
         [InlineData("json", FormatSource.RouteAndQueryData, "application/json")]
         public void FormatFilter_ContextContainsFormat_DefaultFormat(
-            string format, 
-            FormatSource place, 
+            string format,
+            FormatSource place,
             string contentType)
         {
             // Arrange
@@ -44,8 +44,7 @@ namespace Microsoft.AspNet.Mvc
             var resultExecutingContext = mockObjects.CreateResultExecutingContext();
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { });
 
-            var filterAttribute = new FormatFilterAttribute();
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
+            var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -55,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Act
             filter.OnResultExecuting(resultExecutingContext);
-            
+
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
             Assert.Equal(1, objectResult.ContentTypes.Count);
@@ -70,11 +69,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange  
             var mediaType = MediaTypeHeaderValue.Parse("application/json");
             var mockObjects = new MockObjects("json", FormatSource.RouteData);
-
             var httpContext = new Mock<HttpContext>();
-            httpContext
-                    .Setup(c => c.RequestServices)
-                    .Returns(mockObjects.MockServiceProvider);
 
             // Query contains xml    
             httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(true);
@@ -87,17 +82,16 @@ namespace Microsoft.AspNet.Mvc
             var ac = new ActionContext(httpContext.Object, data, new ActionDescriptor());
 
             var resultExecutingContext = new ResultExecutingContext(
-                ac, 
-                new IFilter[] { }, 
+                ac,
+                new IFilter[] { },
                 new ObjectResult("Hello!"),
                 controller: new object());
-            
+
             var resourceExecutingContext = new ResourceExecutingContext(
                 ac,
                 new IFilter[] { });
 
-            var filterAttribute = new FormatFilterAttribute();
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
+            var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -114,29 +108,27 @@ namespace Microsoft.AspNet.Mvc
         [InlineData("foo", FormatSource.QueryData, "application/foo")]
         [InlineData("foo", FormatSource.RouteAndQueryData, "application/foo")]
         public void FormatFilter_ContextContainsFormat_Custom(
-            string format, 
-            FormatSource place, 
+            string format,
+            FormatSource place,
             string contentType)
         {
             // Arrange  
             var mediaType = MediaTypeHeaderValue.Parse(contentType);
-            
+
             var mockObjects = new MockObjects(format, place);
             var resultExecutingContext = mockObjects.CreateResultExecutingContext();
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { });
 
-            var options =  mockObjects.MockServiceProvider.GetService<IOptions<MvcOptions>>();
-            options.Options.FormatterMappings.SetMediaTypeMappingForFormat(
-                format, 
+            mockObjects.MockOptions.FormatterMappings.SetMediaTypeMappingForFormat(
+                format,
                 MediaTypeHeaderValue.Parse(contentType));
 
-            var filterAttribute = new FormatFilterAttribute();
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
+            var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
             filter.OnResultExecuting(resultExecutingContext);
-            
+
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
             Assert.Equal(1, objectResult.ContentTypes.Count);
@@ -154,8 +146,7 @@ namespace Microsoft.AspNet.Mvc
             var mockObjects = new MockObjects(format, place);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { });
 
-            var filterAttribute = new FormatFilterAttribute();            
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
+            var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -172,8 +163,7 @@ namespace Microsoft.AspNet.Mvc
             var mockObjects = new MockObjects();
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { });
 
-            var filterAttribute = new FormatFilterAttribute();            
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
+            var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -195,30 +185,7 @@ namespace Microsoft.AspNet.Mvc
             var mockObjects = new MockObjects(format, place);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { produces });
 
-            var filterAttribute = new FormatFilterAttribute();            
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
-
-            // Act
-            filter.OnResourceExecuting(resourceExecutingContext);
-
-            // Assert            
-            Assert.Null(resourceExecutingContext.Result);
-        }
-
-        [Fact]
-        public void FormatFilter_LessSpecificThan_Produces()
-        {
-            // Arrange
-            var produces = new ProducesAttribute("application/xml;version=1", new string [] { });
-            var mockObjects = new MockObjects("xml", FormatSource.RouteData);
-            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { produces });
-            var options =  mockObjects.MockServiceProvider.GetService<IOptions<MvcOptions>>();
-            options.Options.FormatterMappings.SetMediaTypeMappingForFormat(
-                "xml", 
-                MediaTypeHeaderValue.Parse("application/xml"));
-            
-            var filterAttribute = new FormatFilterAttribute();            
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
+            var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -228,20 +195,18 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public void FormatFilter_LessSpecificThan_Produces_Wildcard()
+        public void FormatFilter_LessSpecificThan_Produces()
         {
             // Arrange
-            var produces = new ProducesAttribute("application/*", new string[] { });
-
+            var produces = new ProducesAttribute("application/xml;version=1", new string[] { });
             var mockObjects = new MockObjects("xml", FormatSource.RouteData);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { produces });
-            var options =  mockObjects.MockServiceProvider.GetService<IOptions<MvcOptions>>();
-            options.Options.FormatterMappings.SetMediaTypeMappingForFormat(
+
+            mockObjects.MockOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml"));
 
-            var filterAttribute = new FormatFilterAttribute();            
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
+            var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -257,13 +222,12 @@ namespace Microsoft.AspNet.Mvc
             var produces = new ProducesAttribute("application/xml", new string[] { });
             var mockObjects = new MockObjects("xml", FormatSource.RouteData);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { produces });
-            var options =  mockObjects.MockServiceProvider.GetService<IOptions<MvcOptions>>();
-            options.Options.FormatterMappings.SetMediaTypeMappingForFormat(
+
+            mockObjects.MockOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml;version=1"));
 
-            var filterAttribute = new FormatFilterAttribute();            
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
+            var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -284,21 +248,20 @@ namespace Microsoft.AspNet.Mvc
             var produces = new ProducesAttribute("application/xml", new string[] { "application/foo", "text/bar" });
             var mockObjects = new MockObjects(format, place);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { produces });
-            var options =  mockObjects.MockServiceProvider.GetService<IOptions<MvcOptions>>();
-            options.Options.FormatterMappings.SetMediaTypeMappingForFormat(
+
+            mockObjects.MockOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml"));
 
-            var filterAttribute = new FormatFilterAttribute();            
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
-            
+            var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
+
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
 
             // Assert
             var result = Assert.IsType<HttpNotFoundResult>(resourceExecutingContext.Result);
         }
-        
+
         [Theory]
         [InlineData("", FormatSource.RouteData)]
         [InlineData(null, FormatSource.QueryData)]
@@ -311,8 +274,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var mockObjects = new MockObjects(format, place);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { });
-            var filterAttribute = new FormatFilterAttribute();
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
+            var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -323,7 +285,7 @@ namespace Microsoft.AspNet.Mvc
 
         [Theory]
         [InlineData("json", FormatSource.RouteData, true)]
-        [InlineData("json", FormatSource.QueryData, true )]
+        [InlineData("json", FormatSource.QueryData, true)]
         [InlineData("", FormatSource.RouteAndQueryData, false)]
         [InlineData(null, FormatSource.RouteAndQueryData, false)]
         public void FormatFilter_IsActive(
@@ -335,14 +297,14 @@ namespace Microsoft.AspNet.Mvc
             var mockObjects = new MockObjects(format, place);
             var resultExecutingContext = mockObjects.CreateResultExecutingContext();
             var filterAttribute = new FormatFilterAttribute();
-            var filter = (FormatFilter)filterAttribute.CreateInstance(mockObjects.MockServiceProvider);
+            var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
             // Act and Assert
             Assert.Equal(expected, filter.IsActive);
         }
 
         private static void AssertMediaTypesEqual(
-            MediaTypeHeaderValue expectedMediaType, 
+            MediaTypeHeaderValue expectedMediaType,
             MediaTypeHeaderValue actualMediaType)
         {
             Assert.Equal(expectedMediaType.MediaType, actualMediaType.MediaType);
@@ -357,25 +319,22 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public class MockObjects
+        private class MockObjects
         {
-            public IServiceProvider MockServiceProvider { get; private set; }
+            public MvcOptions MockOptions { get; private set; }
             public HttpContext MockHttpContext { get; private set; }
             public ActionContext MockActionContext { get; private set; }
-            
+
+            public IScopedInstance<ActionContext> ScopedInstance { get; private set; }
+            public IOptions<MvcOptions> IOptions { get; private set; }
+
             public MockObjects(string format = null, FormatSource? place = null)
             {
                 var httpContext = new Mock<HttpContext>();
-                MockServiceProvider = CreateMockServiceProvider(httpContext, format, place);
-
-                httpContext
-                    .Setup(c => c.RequestServices)
-                    .Returns(MockServiceProvider);
-
                 httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(false);
-
                 MockHttpContext = httpContext.Object;
-                //MockActionContext = CreateMockActionContext(httpContext, format, place);
+
+                Initialize(httpContext, format, place);
             }
 
             public ResourceExecutingContext CreateResourceExecutingContext(IFilter[] filters)
@@ -396,8 +355,8 @@ namespace Microsoft.AspNet.Mvc
             }
 
             private ActionContext CreateMockActionContext(
-                Mock<HttpContext> httpContext, 
-                string format, 
+                Mock<HttpContext> httpContext,
+                string format,
                 FormatSource? place)
             {
                 var data = new RouteData();
@@ -421,41 +380,33 @@ namespace Microsoft.AspNet.Mvc
                 return new ActionContext(httpContext.Object, data, new ActionDescriptor());
             }
 
-            private IServiceProvider CreateMockServiceProvider(
+            private void Initialize(
                 Mock<HttpContext> httpContext,
                 string format = null,
                 FormatSource? place = null)
             {
                 // Setup options on mock service provider
-                var options = new MvcOptions();
-                //MvcOptionsSetup.ConfigureMvc(options);
+                MockOptions = new MvcOptions();
 
                 // Set up default output formatters.
-                options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
-                options.OutputFormatters.Add(new StringOutputFormatter());
-                options.OutputFormatters.Add(new JsonOutputFormatter());
+                MockOptions.OutputFormatters.Add(new HttpNoContentOutputFormatter());
+                MockOptions.OutputFormatters.Add(new StringOutputFormatter());
+                MockOptions.OutputFormatters.Add(new JsonOutputFormatter());
 
                 // Set up default mapping for json extensions to content type
-                options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
+                MockOptions.FormatterMappings.SetMediaTypeMappingForFormat(
+                    "json",
+                    MediaTypeHeaderValue.Parse("application/json"));
 
                 var mvcOptions = new Mock<IOptions<MvcOptions>>();
-                mvcOptions.Setup(o => o.Options).Returns(options);
-
-                var serviceProvider = new Mock<IServiceProvider>();
-                serviceProvider
-                    .Setup(s => s.GetService(It.Is<Type>(t => t == typeof(IOptions<MvcOptions>))))
-                    .Returns(mvcOptions.Object);
+                mvcOptions.Setup(o => o.Options).Returns(MockOptions);
+                IOptions = mvcOptions.Object;
 
                 // Setup MVC services on mock service provider
                 MockActionContext = CreateMockActionContext(httpContext, format, place);
                 var scopedInstance = new Mock<IScopedInstance<ActionContext>>();
                 scopedInstance.Setup(s => s.Value).Returns(MockActionContext);
-
-                serviceProvider
-                    .Setup(s => s.GetService(It.Is<Type>(t => t == typeof(IScopedInstance<ActionContext>))))
-                    .Returns(scopedInstance.Object);
-
-                return serviceProvider.Object;
+                ScopedInstance = scopedInstance.Object;
             }
         }
 #endif

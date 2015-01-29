@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -21,9 +20,7 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>An instance of <see cref="FormatFilter"/></returns>
         public IFilter CreateInstance([NotNull] IServiceProvider serviceProvider)
         {
-            var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();
-            var actionContext = serviceProvider.GetRequiredService<IScopedInstance<ActionContext>>();
-            return new FormatFilter(options.Options, actionContext.Value);
+            return serviceProvider.GetRequiredService<FormatFilter>();
         }
     }
 }

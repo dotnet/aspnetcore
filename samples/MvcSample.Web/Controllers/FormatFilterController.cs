@@ -12,7 +12,7 @@ namespace MvcSample.Web.Controllers
         {
             return new Product() { SampleInt = id };
         }
-        
+
         [Produces("application/json", "text/json")]
         public Product ProducesMethod(int id)
         {

@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc
 
             yield return describe.Transient<INestedProvider<FilterProviderContext>, DefaultFilterProvider>();
 
-            yield return describe.Transient<IFilterFactory, FormatFilterAttribute>();
+            yield return describe.Transient<FormatFilter, FormatFilter>();
 
             // Dataflow - ModelBinding, Validation and Formatting
 

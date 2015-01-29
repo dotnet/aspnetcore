@@ -4,6 +4,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Description;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -17,11 +19,12 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Initializes an instance of <see cref="FormatFilter"/>.
         /// </summary>
-        /// <param name="options"><see cref="MvcOptions"/>.</param>
-        public FormatFilter(MvcOptions options, ActionContext actionContext)
+        /// <param name="options">The <see cref="IOptions{MvcOptions}"/></param>
+        /// <param name="actionContext">The <see cref="IScopedInstance{ActionContext}"/></param>
+        public FormatFilter(IOptions<MvcOptions> options, IScopedInstance<ActionContext> actionContext)
         {
             IsActive = true;
-            Format = GetFormat(actionContext);
+            Format = GetFormat(actionContext.Value);
 
             if (string.IsNullOrEmpty(Format))
             {
@@ -29,23 +32,23 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
-            ContentType = options.FormatterMappings.GetMediaTypeMappingForFormat(Format);
+            ContentType = options.Options.FormatterMappings.GetMediaTypeMappingForFormat(Format);
         }
 
         /// <summary>
-        /// format value in the current request. <c>null</c> if format not present in the current request.
+        /// Format value in the current request. <c>null</c> if format not present in the current request.
         /// </summary>
-        public string Format { get; private set; }
+        public string Format { get; }
 
         /// <summary>
         /// <see cref="MediaTypeHeaderValue"/> for the format value in the current request.
         /// </summary>
-        public MediaTypeHeaderValue ContentType { get; private set; }
+        public MediaTypeHeaderValue ContentType { get; }
 
         /// <summary>
         /// <c>true</c> if the current <see cref="FormatFilter"/> is active and will execute. 
         /// </summary>
-        public bool IsActive { get; private set; }
+        public bool IsActive { get; }
 
         /// <summary>
         /// As a <see cref="IResourceFilter"/>, this filter looks at the request and rejects it before going ahead if
@@ -64,25 +67,24 @@ namespace Microsoft.AspNet.Mvc
             {
                 // no contentType exists for the format, return 404
                 context.Result = new HttpNotFoundResult();
+                return;
             }
-            else
+
+            var responseTypeFilters = context.Filters.OfType<IApiResponseMetadataProvider>();
+            var contentTypes = new List<MediaTypeHeaderValue>();
+
+            foreach (var filter in responseTypeFilters)
             {
-                var responseTypeFilters = context.Filters.OfType<IApiResponseMetadataProvider>();
-                var contentTypes = new List<MediaTypeHeaderValue>();
+                filter.SetContentTypes(contentTypes);
+            }
 
-                foreach (var filter in responseTypeFilters)
+            if (contentTypes.Count != 0)
+            {
+                // We need to check if the action can generate the content type the user asked for. If it cannot, exit
+                // here with not found result. 
+                if (!contentTypes.Any(c => ContentType.IsSubsetOf(c)))
                 {
-                    filter.SetContentTypes(contentTypes);
-                }
-
-                if (contentTypes.Count != 0)
-                {
-                    // There is no IApiResponseMetadataProvider to generate the content type user asked for. We have to
-                    // exit here with not found result. 
-                    if (!contentTypes.Any(c => ContentType.IsSubsetOf(c)))
-                    {
-                        context.Result = new HttpNotFoundResult();
-                    }
+                    context.Result = new HttpNotFoundResult();
                 }
             }
         }
