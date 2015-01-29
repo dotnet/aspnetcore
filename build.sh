@@ -28,11 +28,11 @@ if test ! -d packages/KoreBuild; then
 fi
 
 if ! type k > /dev/null 2>&1; then
-    source packages/KoreBuild/build/dotnetsdk.sh
+    source packages/KoreBuild/build/kvm.sh
 fi
 
 if ! type k > /dev/null 2>&1; then
-    dotnetsdk upgrade
+    kvm upgrade
 fi
 
 mono packages/Sake/tools/Sake.exe -I packages/KoreBuild/build -f makefile.shade "$@"
