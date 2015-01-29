@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                     if (fullTypeName != null)
                     {
-                        var hash = RazorFileHash.GetHash(fileInfo.FileInfo);
+                        var hash = RazorFileHash.GetHash(fileInfo.FileInfo, RazorFileHash.HashAlgorithmVersion1);
                         var razorFileInfo = new RazorFileInfo
                         {
                             RelativePath = fileInfo.RelativePath,

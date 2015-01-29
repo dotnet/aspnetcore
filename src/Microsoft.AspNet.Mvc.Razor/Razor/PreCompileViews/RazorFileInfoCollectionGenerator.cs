@@ -51,7 +51,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                                  fileInfo.Length,
                                  fileInfo.RelativePath,
                                  fileInfo.FullTypeName,
-                                 fileInfo.Hash);
+                                 fileInfo.Hash,
+                                 fileInfo.HashAlgorithmVersion);
         }
 
         protected virtual string Top
@@ -103,7 +104,8 @@ namespace __ASP_ASSEMBLY
                 " + nameof(RazorFileInfo.Length) + @" = {1:D},
                 " + nameof(RazorFileInfo.RelativePath) + @" = @""{2}"",
                 " + nameof(RazorFileInfo.FullTypeName) + @" = @""{3}"",
-                " + nameof(RazorFileInfo.Hash) + @" = @""{4}"",
+                " + nameof(RazorFileInfo.Hash) + @" = ""{4}"",
+                " + nameof(RazorFileInfo.HashAlgorithmVersion) + @" = {5},
             }};
             fileInfos.Add(info);
 ";

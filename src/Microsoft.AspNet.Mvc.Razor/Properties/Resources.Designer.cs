@@ -362,6 +362,22 @@ namespace Microsoft.AspNet.Mvc.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewMustBeContextualized"), p0, p1);
         }
 
+        /// <summary>
+        /// Unsupported hash algorithm.
+        /// </summary>
+        internal static string RazorHash_UnsupportedHashAlgorithm
+        {
+            get { return GetString("RazorHash_UnsupportedHashAlgorithm"); }
+        }
+
+        /// <summary>
+        /// Unsupported hash algorithm.
+        /// </summary>
+        internal static string FormatRazorHash_UnsupportedHashAlgorithm()
+        {
+            return GetString("RazorHash_UnsupportedHashAlgorithm");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

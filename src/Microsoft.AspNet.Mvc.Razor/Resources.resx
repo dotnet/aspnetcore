@@ -183,4 +183,7 @@
   <data name="ViewMustBeContextualized" xml:space="preserve">
     <value>The '{0}' method must be called before '{1}' can be invoked.</value>
   </data>
+  <data name="RazorHash_UnsupportedHashAlgorithm" xml:space="preserve">
+    <value>Unsupported hash algorithm.</value>
+  </data>
 </root>

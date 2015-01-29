@@ -134,7 +134,9 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 // Timestamp doesn't match but it might be because of deployment, compare the hash.
                 if (cacheEntry.IsPreCompiled &&
-                    string.Equals(cacheEntry.Hash, RazorFileHash.GetHash(fileInfo), StringComparison.Ordinal))
+                    string.Equals(cacheEntry.Hash,
+                                  RazorFileHash.GetHash(fileInfo, cacheEntry.HashAlgorithmVersion),
+                                  StringComparison.Ordinal))
                 {
                     // Cache hit, but we need to update the entry.
                     // Assigning to LastModified is an atomic operation and will result in a safe race if it is
@@ -174,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewStartEntry = GetCompositeViewStartEntry(entry.RelativePath, compile);
             return entry.AssociatedViewStartEntry != viewStartEntry;
         }
-        
+
         // Returns the entry for the nearest _ViewStart that the file inherits directives from. Since _ViewStart
         // entries are affected by other _ViewStart entries that are in the path hierarchy, the returned value
         // represents the composite result of performing a cache check on individual _ViewStart entries.

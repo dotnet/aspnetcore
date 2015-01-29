@@ -31,5 +31,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// A hash of the file content.
         /// </summary>
         public string Hash { get; set; }
+
+        /// <summary>
+        /// The version of hash algorithm used to generate <see cref="Hash"/>.
+        /// </summary>
+        public int HashAlgorithmVersion { get; set; }
     }
 }
