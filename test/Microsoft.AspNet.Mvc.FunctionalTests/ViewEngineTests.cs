@@ -164,25 +164,41 @@ component-content";
             Assert.Equal(expected, body.Trim());
         }
 
-        public static IEnumerable<object[]> PartialRazorViews_DoNotRenderLayoutData
+        public static IEnumerable<object[]> RazorViewEngine_RendersPartialViewsData
         {
             get
             {
                 yield return new[]
                 {
-                    "ViewWithoutLayout", @"ViewWithoutLayout-Content"
+                    "ViewWithoutLayout", "ViewWithoutLayout-Content"
                 };
                 yield return new[]
                 {
-                    "PartialViewWithNamePassedIn", @"ViewWithLayout-Content"
+                    "PartialViewWithNamePassedIn",
+@"<layout>
+
+ViewWithLayout-Content
+</layout>"
                 };
                 yield return new[]
                 {
-                    "ViewWithFullPath", "ViewWithFullPath-content"
+                    "ViewWithFullPath",
+@"<layout>
+
+ViewWithFullPath-content
+</layout>"
                 };
                 yield return new[]
                 {
-                    "ViewWithNestedLayout", "ViewWithNestedLayout-Content"
+                    "ViewWithNestedLayout",
+@"<layout>
+
+<nested-layout>
+/PartialViewEngine/ViewWithNestedLayout
+
+ViewWithNestedLayout-Content
+</nested-layout>
+</layout>"
                 };
                 yield return new[]
                 {
@@ -199,8 +215,8 @@ component-content";
         }
 
         [Theory]
-        [MemberData(nameof(PartialRazorViews_DoNotRenderLayoutData))]
-        public async Task PartialRazorViews_DoNotRenderLayout(string actionName, string expected)
+        [MemberData(nameof(RazorViewEngine_RendersPartialViewsData))]
+        public async Task RazorViewEngine_RendersPartialViews(string actionName, string expected)
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
@@ -285,6 +301,96 @@ View With Layout
 
             // Act
             var body = await client.GetStringAsync(target);
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
+
+        [Fact]
+        public async Task ViewComponentsExecuteLayout()
+        {
+            // Arrange
+            var expected =
+@"<title>View With Component With Layout</title>
+
+Page Content
+<component-title>ViewComponent With Title</component-title>
+<component-body>
+Component With Layout</component-body>";
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/ViewEngine/ViewWithComponentThatHasLayout");
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
+
+        [Fact]
+        public async Task ViewComponentsDoNotExecuteViewStarts()
+        {
+            // Arrange
+            var expected = @"<page-content>ViewComponent With ViewStart</page-content>";
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/ViewEngine/ViewWithComponentThatHasViewStart");
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
+
+        [Fact]
+        public async Task PartialDoNotExecuteViewStarts()
+        {
+            // Arrange
+            var expected = "Partial that does not specify Layout";
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/PartialsWithLayout/PartialDoesNotExecuteViewStarts");
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
+
+        [Fact]
+        public async Task PartialsRenderedViaRenderPartialAsync_CanRenderLayouts()
+        {
+            // Arrange
+            var expected =
+@"<layout-for-viewstart-with-layout><layout-for-viewstart-with-layout>
+Partial that specifies Layout
+</layout-for-viewstart-with-layout>Partial that does not specify Layout
+</layout-for-viewstart-with-layout>";
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/PartialsWithLayout/PartialsRenderedViaRenderPartial");
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
+
+        [Fact]
+        public async Task PartialsRenderedViaPartialAsync_CanRenderLayouts()
+        {
+            // Arrange
+            var expected =
+@"<layout-for-viewstart-with-layout><layout-for-viewstart-with-layout>
+Partial that specifies Layout
+</layout-for-viewstart-with-layout>
+Partial that does not specify Layout
+</layout-for-viewstart-with-layout>";
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/PartialsWithLayout/PartialsRenderedViaPartialAsync");
 
             // Assert
             Assert.Equal(expected, body.Trim());

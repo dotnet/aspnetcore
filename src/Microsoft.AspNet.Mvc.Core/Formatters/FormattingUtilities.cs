@@ -34,5 +34,19 @@ namespace Microsoft.AspNet.Mvc
                 MaxStringContentLength = int.MaxValue
             };
         }
+
+        /// <summary>
+        /// Gets the default XmlWriterSettings.
+        /// </summary>
+        /// <returns>Default <see cref="XmlWriterSettings"/></returns>
+        public static XmlWriterSettings GetDefaultXmlWriterSettings()
+        {
+            return new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true,
+                CloseOutput = false,
+                CheckCharacters = false
+            };
+        }
     }
 }

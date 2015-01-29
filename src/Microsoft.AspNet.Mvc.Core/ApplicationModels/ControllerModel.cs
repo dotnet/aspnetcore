@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             AttributeRoutes = new List<AttributeRouteModel>();
             ActionConstraints = new List<IActionConstraintMetadata>();
             Filters = new List<IFilter>();
-            RouteConstraints = new List<RouteConstraintAttribute>();
+            RouteConstraints = new List<IRouteConstraintProvider>();
         }
 
         public ControllerModel([NotNull] ControllerModel other)
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             ActionConstraints = new List<IActionConstraintMetadata>(other.ActionConstraints);
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilter>(other.Filters);
-            RouteConstraints = new List<RouteConstraintAttribute>(other.RouteConstraints);
+            RouteConstraints = new List<IRouteConstraintProvider>(other.RouteConstraints);
 
             // Make a deep copy of other 'model' types.
             Actions = new List<ActionModel>(other.Actions.Select(a => new ActionModel(a)));
@@ -44,9 +44,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 other.AttributeRoutes.Select(a => new AttributeRouteModel(a)));
         }
 
-        public List<IActionConstraintMetadata> ActionConstraints { get; private set; }
+        public IList<IActionConstraintMetadata> ActionConstraints { get; private set; }
 
-        public List<ActionModel> Actions { get; private set; }
+        public IList<ActionModel> Actions { get; private set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ApiExplorerModel"/> for this controller.
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public ApplicationModel Application { get; set; }
 
-        public List<AttributeRouteModel> AttributeRoutes { get; private set; }
+        public IList<AttributeRouteModel> AttributeRoutes { get; private set; }
 
         public IReadOnlyList<object> Attributes { get; }
 
@@ -63,8 +63,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public TypeInfo ControllerType { get; private set; }
 
-        public List<IFilter> Filters { get; private set; }
+        public IList<IFilter> Filters { get; private set; }
 
-        public List<RouteConstraintAttribute> RouteConstraints { get; private set; }
+        public IList<IRouteConstraintProvider> RouteConstraints { get; private set; }
     }
 }

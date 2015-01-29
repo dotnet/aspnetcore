@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         protected abstract IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata,
-                                                                      IEnumerable<Attribute> attributes);
+                                                                      IEnumerable<object> attributes);
 
         private IEnumerable<IModelValidator> GetValidatorsForProperty(ModelMetadata metadata)
         {
@@ -38,15 +39,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     "metadata");
             }
 
-            var attributes = property.GetCustomAttributes();
+            var attributes = ModelAttributes.GetAttributesForProperty(metadata.ContainerType, property);
             return GetValidators(metadata, attributes);
         }
 
         private IEnumerable<IModelValidator> GetValidatorsForType(ModelMetadata metadata)
         {
-            var attributes = metadata.ModelType
-                                     .GetTypeInfo()
-                                     .GetCustomAttributes();
+            var attributes = ModelAttributes.GetAttributesForType(metadata.ModelType);
+
             return GetValidators(metadata, attributes);
         }
     }

@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.Mvc
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public abstract class HttpMethodAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
     {
-        private int? _order;
         private readonly IEnumerable<string> _httpMethods;
+        private int? _order;
 
         /// <summary>
         /// Creates a new <see cref="HttpMethodAttribute"/> with the given

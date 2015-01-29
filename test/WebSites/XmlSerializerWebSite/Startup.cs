@@ -27,6 +27,8 @@ namespace XmlSerializerWebSite
                     });
             });
 
+            app.UseErrorReporter();
+
             // Add MVC to the request pipeline
             app.UseMvc(routes =>
             {

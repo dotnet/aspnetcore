@@ -1,0 +1,11 @@
+﻿@inject FrameworkSpecificHelper MyHelper
+@{
+    string value =
+#if ASPNET50_CUSTOM_DEFINE
+    MyHelper.ExecuteAspNet50Operation();
+#endif
+#if ASPNETCORE50_CUSTOM_DEFINE
+    MyHelper.ExecuteAspNetCore50Operation();
+#endif
+}
+@value

@@ -14,7 +14,8 @@ namespace Microsoft.AspNet.Mvc
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
     public class BindAttribute : Attribute, IModelNameProvider, IPropertyBindingPredicateProvider
     {
-        private static readonly Func<ModelBindingContext, string, bool> _defaultFilter = (context, propertyName) => true;
+        private static readonly Func<ModelBindingContext, string, bool> _defaultFilter =
+            (context, propertyName) => true;
 
         private Func<ModelBindingContext, string, bool> _predicateFromInclude;
 

@@ -39,7 +39,6 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         [Theory]
         [InlineData(typeof(BaseType))]
         [InlineData(typeof(UnRelatedType))]
-        [InlineData(typeof(UnRelatedType))]
         public void Add_RegisterDerivedType_BaseAndUnrealatedTypesAreNotExcluded(Type type)
         {
             // Arrange

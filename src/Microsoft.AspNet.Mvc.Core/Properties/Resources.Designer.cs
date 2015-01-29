@@ -1514,6 +1514,198 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AmbiguousTypeMatch_Item"), p0, p1);
         }
 
+        /// <summary>
+        /// The input was not valid.
+        /// </summary>
+        internal static string SerializableError_DefaultError
+        {
+            get { return GetString("SerializableError_DefaultError"); }
+        }
+
+        /// <summary>
+        /// The input was not valid.
+        /// </summary>
+        internal static string FormatSerializableError_DefaultError()
+        {
+            return GetString("SerializableError_DefaultError");
+        }
+
+        /// <summary>
+        /// If an {0} provides a result value by setting the {1} property of {2} to a non-null value, then it cannot call the next filter by invoking {3}.
+        /// </summary>
+        internal static string AsyncResourceFilter_InvalidShortCircuit
+        {
+            get { return GetString("AsyncResourceFilter_InvalidShortCircuit"); }
+        }
+
+        /// <summary>
+        /// If an {0} provides a result value by setting the {1} property of {2} to a non-null value, then it cannot call the next filter by invoking {3}.
+        /// </summary>
+        internal static string FormatAsyncResourceFilter_InvalidShortCircuit(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AsyncResourceFilter_InvalidShortCircuit"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// If the '{0}' property is not set to true, '{1}' property must be specified.
+        /// </summary>
+        internal static string ResponseCache_SpecifyDuration
+        {
+            get { return GetString("ResponseCache_SpecifyDuration"); }
+        }
+
+        /// <summary>
+        /// If the '{0}' property is not set to true, '{1}' property must be specified.
+        /// </summary>
+        internal static string FormatResponseCache_SpecifyDuration(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ResponseCache_SpecifyDuration"), p0, p1);
+        }
+
+        /// <summary>
+        /// Body
+        /// </summary>
+        internal static string ApiParameterSource_Body
+        {
+            get { return GetString("ApiParameterSource_Body"); }
+        }
+
+        /// <summary>
+        /// Body
+        /// </summary>
+        internal static string FormatApiParameterSource_Body()
+        {
+            return GetString("ApiParameterSource_Body");
+        }
+
+        /// <summary>
+        /// Custom
+        /// </summary>
+        internal static string ApiParameterSource_Custom
+        {
+            get { return GetString("ApiParameterSource_Custom"); }
+        }
+
+        /// <summary>
+        /// Custom
+        /// </summary>
+        internal static string FormatApiParameterSource_Custom()
+        {
+            return GetString("ApiParameterSource_Custom");
+        }
+
+        /// <summary>
+        /// Header
+        /// </summary>
+        internal static string ApiParameterSource_Header
+        {
+            get { return GetString("ApiParameterSource_Header"); }
+        }
+
+        /// <summary>
+        /// Header
+        /// </summary>
+        internal static string FormatApiParameterSource_Header()
+        {
+            return GetString("ApiParameterSource_Header");
+        }
+
+        /// <summary>
+        /// Hidden
+        /// </summary>
+        internal static string ApiParameterSource_Hidden
+        {
+            get { return GetString("ApiParameterSource_Hidden"); }
+        }
+
+        /// <summary>
+        /// Hidden
+        /// </summary>
+        internal static string FormatApiParameterSource_Hidden()
+        {
+            return GetString("ApiParameterSource_Hidden");
+        }
+
+        /// <summary>
+        /// ModelBinding
+        /// </summary>
+        internal static string ApiParameterSource_ModelBinding
+        {
+            get { return GetString("ApiParameterSource_ModelBinding"); }
+        }
+
+        /// <summary>
+        /// ModelBinding
+        /// </summary>
+        internal static string FormatApiParameterSource_ModelBinding()
+        {
+            return GetString("ApiParameterSource_ModelBinding");
+        }
+
+        /// <summary>
+        /// Path
+        /// </summary>
+        internal static string ApiParameterSource_Path
+        {
+            get { return GetString("ApiParameterSource_Path"); }
+        }
+
+        /// <summary>
+        /// Path
+        /// </summary>
+        internal static string FormatApiParameterSource_Path()
+        {
+            return GetString("ApiParameterSource_Path");
+        }
+
+        /// <summary>
+        /// Query
+        /// </summary>
+        internal static string ApiParameterSource_Query
+        {
+            get { return GetString("ApiParameterSource_Query"); }
+        }
+
+        /// <summary>
+        /// Query
+        /// </summary>
+        internal static string FormatApiParameterSource_Query()
+        {
+            return GetString("ApiParameterSource_Query");
+        }
+
+        /// <summary>
+        /// Form
+        /// </summary>
+        internal static string ApiParameterSource_Form
+        {
+            get { return GetString("ApiParameterSource_Form"); }
+        }
+
+        /// <summary>
+        /// Form
+        /// </summary>
+        internal static string FormatApiParameterSource_Form()
+        {
+            return GetString("ApiParameterSource_Form");
+        }
+
+        /// <summary>
+        /// The action '{0}' has ApiExplorer enabled, but is using conventional routing. Only actions which use attribute routing support ApiExplorer.
+        /// </summary>
+        internal static string ApiExplorer_UnsupportedAction
+        {
+            get { return GetString("ApiExplorer_UnsupportedAction"); }
+        }
+
+        /// <summary>
+        /// The action '{0}' has ApiExplorer enabled, but is using conventional routing. Only actions which use attribute routing support ApiExplorer.
+        /// </summary>
+        internal static string FormatApiExplorer_UnsupportedAction(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ApiExplorer_UnsupportedAction"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -26,21 +26,28 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         /// <remarks>If the attribute being rendered is of the type
-        /// <see cref="GeneratedTagHelperAttributeContext.ModelExpressionTypeName"/> then a model expression will be
+        /// <see cref="GeneratedTagHelperAttributeContext.ModelExpressionTypeName"/>, then a model expression will be
         /// created by calling into <see cref="GeneratedTagHelperAttributeContext.CreateModelExpressionMethodName"/>.
         /// </remarks>
         public override void RenderAttributeValue([NotNull] TagHelperAttributeDescriptor attributeDescriptor,
                                                   [NotNull] CSharpCodeWriter writer,
                                                   [NotNull] CodeBuilderContext codeBuilderContext,
-                                                  [NotNull] Action<CSharpCodeWriter> renderAttributeValue)
+                                                  [NotNull] Action<CSharpCodeWriter> renderAttributeValue,
+                                                  bool complexValue)
         {
             if (attributeDescriptor.TypeName.Equals(_context.ModelExpressionTypeName, StringComparison.Ordinal))
             {
-                writer.WriteStartMethodInvocation(_context.CreateModelExpressionMethodName)
-                      .Write(ModelLambdaVariableName)
-                      .Write(" => ")
-                      .Write(ModelLambdaVariableName)
-                      .Write(".");
+                writer
+                    .WriteStartMethodInvocation(_context.CreateModelExpressionMethodName)
+                    .Write(ModelLambdaVariableName)
+                    .Write(" => ");
+                if (!complexValue)
+                {
+                    writer
+                        .Write(ModelLambdaVariableName)
+                        .Write(".");
+
+                }
 
                 renderAttributeValue(writer);
 
@@ -48,7 +55,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                base.RenderAttributeValue(attributeDescriptor, writer, codeBuilderContext, renderAttributeValue);
+                base.RenderAttributeValue(
+                    attributeDescriptor,
+                    writer,
+                    codeBuilderContext,
+                    renderAttributeValue,
+                    complexValue);
             }
         }
     }

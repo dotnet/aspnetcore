@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private TModelMetadata CreateTypeInformation(Type type, IEnumerable<Attribute> associatedAttributes)
         {
-            var attributes = type.GetTypeInfo().GetCustomAttributes();
+            var attributes = ModelAttributes.GetAttributesForType(type);
             if (associatedAttributes != null)
             {
                 attributes = attributes.Concat(associatedAttributes);
@@ -169,10 +169,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private PropertyInformation CreatePropertyInformation(Type containerType, PropertyHelper helper)
         {
             var property = helper.Property;
+            var attributes = ModelAttributes.GetAttributesForProperty(containerType, property);
+
             return new PropertyInformation
             {
                 PropertyHelper = helper,
-                Prototype = CreateMetadataPrototype(ModelAttributes.GetAttributesForProperty(property),
+                Prototype = CreateMetadataPrototype(attributes,
                                                     containerType,
                                                     property.PropertyType,
                                                     property.Name),

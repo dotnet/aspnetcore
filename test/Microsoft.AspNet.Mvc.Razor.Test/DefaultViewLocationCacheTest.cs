@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
 using Xunit;
 

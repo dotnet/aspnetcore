@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
 using Moq;
 #endif
@@ -34,12 +34,17 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         {
             // Arrange
             var filter = new HttpResponseExceptionActionFilter();
-            var context = new ActionExecutingContext(new ActionContext(
-                            new DefaultHttpContext(),
-                            new RouteData(),
-                            actionDescriptor: Mock.Of<ActionDescriptor>()),
-                            filters: Mock.Of<IList<IFilter>>(),
-                            actionArguments: new Dictionary<string, object>());
+
+            var actionContext = new ActionContext(
+                                new DefaultHttpContext(),
+                                new RouteData(),
+                                Mock.Of<ActionDescriptor>());
+
+            var context = new ActionExecutingContext(
+                actionContext,
+                filters: new List<IFilter>(),
+                actionArguments: new Dictionary<string, object>(),
+                controller: new object());
 
             // Act
             filter.OnActionExecuting(context);
@@ -56,12 +61,16 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = "GET";
 
+            var actionContext = new ActionContext(
+                                httpContext,
+                                new RouteData(),
+                                Mock.Of<ActionDescriptor>());
+
             var context = new ActionExecutedContext(
-                new ActionContext(
-                            httpContext,
-                            new RouteData(),
-                            actionDescriptor: Mock.Of<ActionDescriptor>()),
-                filters: null);
+                actionContext,
+                filters: new List<IFilter>(),
+                controller: new object());
+
             context.Exception = new HttpResponseException(HttpStatusCode.BadRequest);
 
             // Act

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNet.Mvc;
 
@@ -12,6 +14,17 @@ namespace ModelBindingWebSite.Controllers
         // Echo back the header value
         [HttpGet("BindToStringParameter")]
         public object BindToStringParameter([FromHeader] string transactionId)
+        {
+            return new Result()
+            {
+                HeaderValue = transactionId,
+                ModelStateErrors = ModelState.Where(kvp => kvp.Value.Errors.Count > 0).Select(kvp => kvp.Key).ToArray(),
+            };
+        }
+
+        // Echo back the header value
+        [HttpGet("BindToStringParameterDefaultValue")]
+        public object BindToStringParameterDefaultValue([FromHeader] string transactionId = "default-value")
         {
             return new Result()
             {
@@ -52,6 +65,29 @@ namespace ModelBindingWebSite.Controllers
             };
         }
 
+        [HttpGet("BindToModelWithInitializedValue")]
+        public object BindToModelWithInitializedValue(BlogPostWithInitializedValue blogPost)
+        {
+            return new Result()
+            {
+                HeaderValue = blogPost.Title,
+                HeaderValues = blogPost.Tags,
+                ModelStateErrors = ModelState.Where(kvp => kvp.Value.Errors.Count > 0).Select(kvp => kvp.Key).ToArray(),
+            };
+        }
+
+        [HttpGet("BindToModelWithDefaultValue")]
+        public object BindToModelWithDefaultValue(BlogPostWithDefaultValue blogPost)
+        {
+            return new Result()
+            {
+                HeaderValue = blogPost.Title,
+                HeaderValues = blogPost.Tags,
+                ModelStateErrors = ModelState.Where(kvp => kvp.Value.Errors.Count > 0).Select(kvp => kvp.Key).ToArray(),
+            };
+        }
+
+
         private class Result
         {
             public string HeaderValue { get; set; }
@@ -63,10 +99,37 @@ namespace ModelBindingWebSite.Controllers
 
         public class BlogPost
         {
+            [Required]
             [FromHeader]
             public string Title { get; set; }
 
             [FromHeader]
+            public string[] Tags { get; set; }
+
+            public string Author { get; set; }
+        }
+
+        public class BlogPostWithInitializedValue
+        {
+            [Required]
+            [FromHeader]
+            public string Title { get; set; } = "How to Make Soup";
+
+            [FromHeader]
+            public string[] Tags { get; set; } = new string[] { "Cooking" };
+
+            public string Author { get; set; }
+        }
+
+        public class BlogPostWithDefaultValue
+        {
+            [Required]
+            [FromHeader]
+            [DefaultValue("How to Make Soup")]
+            public string Title { get; set; }
+
+            [FromHeader]
+            [DefaultValue(new string[] { "Cooking" })]
             public string[] Tags { get; set; }
 
             public string Author { get; set; }

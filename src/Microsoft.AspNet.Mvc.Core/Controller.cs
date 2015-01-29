@@ -16,10 +16,10 @@ using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class Controller : IActionFilter, IAsyncActionFilter, IOrderedFilter, IDisposable
+    public class Controller : IActionFilter, IAsyncActionFilter, IDisposable
     {
         private DynamicViewData _viewBag;
-        private IViewEngine _viewEngine;
+        private ViewDataDictionary _viewData;
 
         public IServiceProvider Resolver
         {
@@ -59,27 +59,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 return ActionContext?.RouteData;
             }
-        }
-
-        public IViewEngine ViewEngine
-        {
-            get
-            {
-                if (_viewEngine == null)
-                {
-                    _viewEngine = ActionContext?.
-                        HttpContext?.
-                        RequestServices.GetRequiredService<ICompositeViewEngine>();
-                }
-
-                return _viewEngine;
             }
-
-            set
-            {
-                _viewEngine = value;
-            }
-        }
 
         public ModelStateDictionary ModelState
         {
@@ -93,10 +73,13 @@ namespace Microsoft.AspNet.Mvc
         public ActionContext ActionContext { get; set; }
 
         [Activate]
-        public IUrlHelper Url { get; set; }
+        public ActionBindingContext BindingContext { get; set; }
 
         [Activate]
-        public IActionBindingContextProvider BindingContextProvider { get; set; }
+        public IModelMetadataProvider MetadataProvider { get; set; }
+
+        [Activate]
+        public IUrlHelper Url { get; set; }
 
         public IPrincipal User
         {
@@ -106,8 +89,40 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets or sets <see cref="ViewDataDictionary"/> used by <see cref="ViewResult"/> and <see cref="ViewBag"/>.
+        /// </summary>
+        /// <remarks>
+        /// By default, this property is activated when <see cref="IControllerActivator"/> activates controllers.
+        /// However, when controllers are directly instantiated in user codes, this property is initialized with
+        /// <see cref="EmptyModelMetadataProvider"/>.
+        /// </remarks>
         [Activate]
-        public ViewDataDictionary ViewData { get; set; }
+        public ViewDataDictionary ViewData
+        {
+            get
+            {
+                if (_viewData == null)
+                {
+                    // This should run only for the controller unit test scenarios
+                    _viewData =
+                        new ViewDataDictionary(new EmptyModelMetadataProvider(),
+                                                ActionContext?.ModelState ?? new ModelStateDictionary());
+                }
+
+                return _viewData;
+            }
+            set
+                {
+                if (value == null)
+                {
+                    throw
+                        new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(ViewData));
+                }
+
+                _viewData = value;
+            }
+        }
 
         public dynamic ViewBag
         {
@@ -119,15 +134,6 @@ namespace Microsoft.AspNet.Mvc
                 }
 
                 return _viewBag;
-            }
-        }
-
-        int IOrderedFilter.Order
-        {
-            get
-            {
-                // Controller-filter methods run farthest the action by default.
-                return int.MinValue;
             }
         }
 
@@ -184,7 +190,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewName = viewName,
                 ViewData = ViewData,
-                ViewEngine = _viewEngine,
             };
         }
 
@@ -282,17 +287,9 @@ namespace Microsoft.AspNet.Mvc
             var result = new ContentResult
             {
                 Content = content,
+                ContentEncoding = contentEncoding,
+                ContentType = contentType
             };
-
-            if (contentType != null)
-            {
-                result.ContentType = contentType;
-            }
-
-            if (contentEncoding != null)
-            {
-                result.ContentEncoding = contentEncoding;
-            }
 
             return result;
         }
@@ -392,8 +389,10 @@ namespace Microsoft.AspNet.Mvc
         public virtual RedirectToActionResult RedirectToAction(string actionName, string controllerName,
                                         object routeValues)
         {
-            return new RedirectToActionResult(Url, actionName, controllerName,
-                                                TypeHelper.ObjectToDictionary(routeValues));
+            return new RedirectToActionResult(actionName, controllerName, TypeHelper.ObjectToDictionary(routeValues))
+            {
+                UrlHelper = Url,
+            };
         }
 
         /// <summary>
@@ -447,8 +446,14 @@ namespace Microsoft.AspNet.Mvc
         public virtual RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName,
                                         object routeValues)
         {
-            return new RedirectToActionResult(Url, actionName, controllerName,
-                                                TypeHelper.ObjectToDictionary(routeValues), permanent: true);
+            return new RedirectToActionResult(
+                actionName,
+                controllerName,
+                TypeHelper.ObjectToDictionary(routeValues),
+                permanent: true)
+            {
+                UrlHelper = Url,
+            };
         }
 
         /// <summary>
@@ -483,7 +488,10 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual RedirectToRouteResult RedirectToRoute(string routeName, object routeValues)
         {
-            return new RedirectToRouteResult(Url, routeName, routeValues);
+            return new RedirectToRouteResult(routeName, routeValues)
+            {
+                UrlHelper = Url,
+            };
         }
 
         /// <summary>
@@ -520,7 +528,10 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual RedirectToRouteResult RedirectToRoutePermanent(string routeName, object routeValues)
         {
-            return new RedirectToRouteResult(Url, routeName, routeValues, permanent: true);
+            return new RedirectToRouteResult(routeName, routeValues, permanent: true)
+            {
+                UrlHelper = Url,
+            };
         }
 
         /// <summary>
@@ -618,6 +629,148 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Creates an <see cref="BadRequestResult"/> that produces a Bad Request (400) response.
+        /// </summary>
+        /// <returns>The created <see cref="BadRequestResult"/> for the response.</returns>
+        [NonAction]
+        public virtual BadRequestResult HttpBadRequest()
+        {
+            return new BadRequestResult();
+        }
+
+        /// <summary>
+        /// Creates an <see cref="BadRequestObjectResult"/> that produces a Bad Request (400) response.
+        /// </summary>
+        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual BadRequestObjectResult HttpBadRequest(object error)
+        {
+            return new BadRequestObjectResult(error);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="BadRequestObjectResult"/> that produces a Bad Request (400) response.
+        /// </summary>
+        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual BadRequestObjectResult HttpBadRequest([NotNull] ModelStateDictionary modelState)
+        {
+            return new BadRequestObjectResult(modelState);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="uri">The URI at which the content has been created.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedResult Created([NotNull] string uri, object value)
+        {
+            return new CreatedResult(uri, value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="uri">The URI at which the content has been created.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedResult Created([NotNull] Uri uri, object value)
+        {
+            string location;
+            if (uri.IsAbsoluteUri)
+            {
+                location = uri.AbsoluteUri;
+            }
+            else
+            {
+                location = uri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            }
+            return new CreatedResult(location, value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtActionResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="actionName">The name of the action to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtActionResult CreatedAtAction(string actionName, object value)
+        {
+            return CreatedAtAction(actionName, routeValues: null, value: value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtActionResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="actionName">The name of the action to use for generating the URL.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtActionResult CreatedAtAction(string actionName, object routeValues, object value)
+        {
+            return CreatedAtAction(actionName, controllerName: null, routeValues: routeValues, value: value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtActionResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="actionName">The name of the action to use for generating the URL.</param>
+        /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtActionResult CreatedAtAction(string actionName,
+                                                             string controllerName,
+                                                             object routeValues,
+                                                             object value)
+        {
+            return new CreatedAtActionResult(actionName, controllerName, routeValues, value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtRouteResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="routeName">The name of the route to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, object value)
+        {
+            return CreatedAtRoute(routeName, routeValues: null, value: value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtRouteResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtRouteResult CreatedAtRoute(object routeValues, object value)
+        {
+            return CreatedAtRoute(routeName: null, routeValues: routeValues, value: value);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CreatedAtRouteResult"/> object that produces a Created (201) response.
+        /// </summary>
+        /// <param name="routeName">The name of the route to use for generating the URL.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        [NonAction]
+        public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, object routeValues, object value)
+        {
+            return new CreatedAtRouteResult(routeName, routeValues, value);
+        }
+
+        /// <summary>
         /// Called before the action method is invoked.
         /// </summary>
         /// <param name="context">The action executing context.</param>
@@ -655,7 +808,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using values from the controller's current 
+        /// Updates the specified <paramref name="model"/> instance using values from the controller's current
         /// <see cref="IValueProvider"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
@@ -682,15 +835,15 @@ namespace Microsoft.AspNet.Mvc
                                                                     [NotNull] string prefix)
             where TModel : class
         {
-            if (BindingContextProvider == null)
+            if (BindingContext == null)
             {
-                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider), 
-                                                                         GetType().FullName);
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(BindingContext),
+                    typeof(Controller).FullName);
                 throw new InvalidOperationException(message);
             }
 
-            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
-            return await TryUpdateModelAsync(model, prefix, bindingContext.ValueProvider);
+            return await TryUpdateModelAsync(model, prefix, BindingContext.ValueProvider);
         }
 
         /// <summary>
@@ -709,22 +862,23 @@ namespace Microsoft.AspNet.Mvc
                                                                     [NotNull] IValueProvider valueProvider)
             where TModel : class
         {
-            if (BindingContextProvider == null)
+            if (BindingContext == null)
             {
-                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider), 
-                                                                         GetType().FullName);
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(BindingContext),
+                    typeof(Controller).FullName);
                 throw new InvalidOperationException(message);
             }
 
-            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
-            return await ModelBindingHelper.TryUpdateModelAsync(model,
-                                                                prefix,
-                                                                ActionContext.HttpContext,
-                                                                ModelState,
-                                                                bindingContext.MetadataProvider,
-                                                                bindingContext.ModelBinder,
-                                                                valueProvider,
-                                                                bindingContext.ValidatorProvider);
+            return await ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                prefix,
+                ActionContext.HttpContext,
+                ModelState,
+                MetadataProvider,
+                BindingContext.ModelBinder,
+                valueProvider,
+                BindingContext.ValidatorProvider);
         }
 
         /// <summary>
@@ -745,23 +899,24 @@ namespace Microsoft.AspNet.Mvc
             [NotNull] params Expression<Func<TModel, object>>[] includeExpressions)
            where TModel : class
         {
-            if (BindingContextProvider == null)
+            if (BindingContext == null)
             {
-                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider),
-                                                                         GetType().FullName);
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(BindingContext),
+                    typeof(Controller).FullName);
                 throw new InvalidOperationException(message);
             }
 
-            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
-            return await ModelBindingHelper.TryUpdateModelAsync(model,
-                                                                prefix,
-                                                                ActionContext.HttpContext,
-                                                                ModelState,
-                                                                bindingContext.MetadataProvider,
-                                                                bindingContext.ModelBinder,
-                                                                bindingContext.ValueProvider,
-                                                                bindingContext.ValidatorProvider,
-                                                                includeExpressions);
+            return await ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                prefix,
+                ActionContext.HttpContext,
+                ModelState,
+                MetadataProvider,
+                BindingContext.ModelBinder,
+                BindingContext.ValueProvider,
+                BindingContext.ValidatorProvider,
+                includeExpressions);
         }
 
         /// <summary>
@@ -781,23 +936,24 @@ namespace Microsoft.AspNet.Mvc
             [NotNull] Func<ModelBindingContext, string, bool> predicate)
             where TModel : class
         {
-            if (BindingContextProvider == null)
+            if (BindingContext == null)
             {
-                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider), 
-                                                                         GetType().FullName);
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(BindingContext),
+                    typeof(Controller).FullName);
                 throw new InvalidOperationException(message);
             }
 
-            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
-            return await ModelBindingHelper.TryUpdateModelAsync(model,
-                                                                prefix,
-                                                                ActionContext.HttpContext,
-                                                                ModelState,
-                                                                bindingContext.MetadataProvider,
-                                                                bindingContext.ModelBinder,
-                                                                bindingContext.ValueProvider,
-                                                                bindingContext.ValidatorProvider,
-                                                                predicate);
+            return await ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                prefix,
+                ActionContext.HttpContext,
+                ModelState,
+                MetadataProvider,
+                BindingContext.ModelBinder,
+                BindingContext.ValueProvider,
+                BindingContext.ValidatorProvider,
+                predicate);
         }
 
         /// <summary>
@@ -820,23 +976,24 @@ namespace Microsoft.AspNet.Mvc
             [NotNull] params Expression<Func<TModel, object>>[] includeExpressions)
            where TModel : class
         {
-            if (BindingContextProvider == null)
+            if (BindingContext == null)
             {
-                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider), 
-                                                                         GetType().FullName);
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(BindingContext),
+                    typeof(Controller).FullName);
                 throw new InvalidOperationException(message);
             }
 
-            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
-            return await ModelBindingHelper.TryUpdateModelAsync(model,
-                                                                prefix,
-                                                                ActionContext.HttpContext,
-                                                                ModelState,
-                                                                bindingContext.MetadataProvider,
-                                                                bindingContext.ModelBinder,
-                                                                valueProvider,
-                                                                bindingContext.ValidatorProvider,
-                                                                includeExpressions);
+            return await ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                prefix,
+                ActionContext.HttpContext,
+                ModelState,
+                MetadataProvider,
+                BindingContext.ModelBinder,
+                valueProvider,
+                BindingContext.ValidatorProvider,
+                includeExpressions);
         }
 
         /// <summary>
@@ -858,23 +1015,75 @@ namespace Microsoft.AspNet.Mvc
             [NotNull] Func<ModelBindingContext, string, bool> predicate)
             where TModel : class
         {
-            if (BindingContextProvider == null)
+            if (BindingContext == null)
             {
-                var message = Resources.FormatPropertyOfTypeCannotBeNull(nameof(BindingContextProvider), 
-                                                                         GetType().FullName);
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(BindingContext),
+                    typeof(Controller).FullName);
                 throw new InvalidOperationException(message);
             }
 
-            var bindingContext = await BindingContextProvider.GetActionBindingContextAsync(ActionContext);
-            return await ModelBindingHelper.TryUpdateModelAsync(model,
-                                                                prefix,
-                                                                ActionContext.HttpContext,
-                                                                ModelState,
-                                                                bindingContext.MetadataProvider,
-                                                                bindingContext.ModelBinder,
-                                                                valueProvider,
-                                                                bindingContext.ValidatorProvider,
-                                                                predicate);
+            return await ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                prefix,
+                ActionContext.HttpContext,
+                ModelState,
+                MetadataProvider,
+                BindingContext.ModelBinder,
+                valueProvider,
+                BindingContext.ValidatorProvider,
+                predicate);
+        }
+
+        /// <summary>
+        /// Validates the specified <paramref name="model"/> instance.
+        /// </summary>
+        /// <param name="model">The model to validate.</param>
+        /// <returns><c>true</c> if the <see cref="ModelState"/> is valid; <c>false</c> otherwise. </returns>
+        [NonAction]
+        public virtual bool TryValidateModel([NotNull] object model)
+        {
+            return TryValidateModel(model, prefix: null);
+        }
+
+        /// <summary>
+        /// Validates the specified <paramref name="model"/> instance.
+        /// </summary>
+        /// <param name="model">The model to validate.</param>
+        /// <param name="prefix">The key to use when looking up information in <see cref="ModelState"/>.
+        /// </param>
+        /// <returns><c>true</c> if the <see cref="ModelState"/> is valid;<c>false</c> otherwise. </returns>
+        [NonAction]
+        public virtual bool TryValidateModel([NotNull] object model, string prefix)
+        {
+            if (BindingContext == null)
+            {
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(BindingContext),
+                    typeof(Controller).FullName);
+                throw new InvalidOperationException(message);
+            }
+
+            var modelMetadata = MetadataProvider.GetMetadataForType(
+               modelAccessor: () => model,
+               modelType: model.GetType());
+
+            var validationContext = new ModelValidationContext(
+                MetadataProvider,
+                BindingContext.ValidatorProvider,
+                ModelState,
+                modelMetadata,
+                containerMetadata: null);
+
+            var modelName = prefix ?? string.Empty;
+
+            var validationNode = new ModelValidationNode(modelMetadata, modelName)
+            {
+                ValidateAllProperties = true
+            };
+            validationNode.Validate(validationContext);
+
+            return ModelState.IsValid;
         }
 
         public void Dispose()

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
                 return false;
             }
 
-            for (int idx = 0; idx < t1.Length; ++idx)
+            for (var idx = 0; idx < t1.Length; ++idx)
             {
                 if (t1[idx] != t2[idx])
                 {

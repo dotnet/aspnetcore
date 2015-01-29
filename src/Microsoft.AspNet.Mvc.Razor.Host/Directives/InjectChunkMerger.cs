@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         /// <param name="modelType">The model type to be used to replace &lt;TModel&gt; tokens.</param>
         public InjectChunkMerger([NotNull] string modelType)
         {
-            _modelType = '<' + modelType + '>';
+            _modelType = "<" + modelType + ">";
         }
 
         /// <inheritdoc />

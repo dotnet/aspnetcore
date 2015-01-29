@@ -1,0 +1,20 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+namespace Microsoft.AspNet.Mvc
+{
+    /// <summary>
+    /// A <see cref="HttpStatusCodeResult"/> that when
+    /// executed will produce a Bad Request (400) response.
+    /// </summary>
+    public class BadRequestResult : HttpStatusCodeResult
+    {
+        /// <summary>
+        /// Creates a new <see cref="BadRequestResult"/> instance.
+        /// </summary>
+        public BadRequestResult()
+            : base(400)
+        {
+        }
+    }
+}

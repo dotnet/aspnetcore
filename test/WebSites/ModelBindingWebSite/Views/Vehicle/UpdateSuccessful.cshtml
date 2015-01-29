@@ -1,0 +1,26 @@
+﻿@model ModelBindingWebSite.ViewModels.VehicleWithDealerViewModel
+
+<div class="left">
+    <ul>
+        <li>
+            Vin: @Html.DisplayFor(m => m.Vehicle.Vin)
+        </li>
+        <li>
+            Inspected Dates: @Html.DisplayFor(m => m.Vehicle.InspectedDates)
+        </li>
+    </ul>
+</div>
+<div>
+    <ul>
+        <li>
+            Dealer: @Html.DisplayFor(m => m.Dealer.Id)
+        </li>
+        <li>
+            Phone: @Html.DisplayFor(m => m.Dealer.Phone)
+        </li>
+    </ul>
+</div>
+
+<footer>
+Tracked by @Model.TrackingId
+</footer>

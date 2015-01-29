@@ -14,14 +14,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Initializes a new instance of <see cref="CompositeModelValidatorProvider"/>.
         /// </summary>
-        /// <param name="provider">The <see cref="IModelValidatorProviderProvider"/> instance used to get the list of
-        /// activated <see cref="IModelValidatorProvider"/> that this instance delegates to.</param>
-        public CompositeModelValidatorProvider(IModelValidatorProviderProvider provider)
+        /// <param name="providers">
+        /// A collection of <see cref="IModelValidatorProvider"/> instances.
+        /// </param>
+        public CompositeModelValidatorProvider([NotNull] IEnumerable<IModelValidatorProvider> providers)
         {
-            ValidatorProviders = provider.ModelValidatorProviders;
+            ValidatorProviders = new List<IModelValidatorProvider>(providers);
         }
 
-        public IReadOnlyList<IModelValidatorProvider> ValidatorProviders { get; private set; }
+        public IReadOnlyList<IModelValidatorProvider> ValidatorProviders { get; }
 
         public IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata)
         {

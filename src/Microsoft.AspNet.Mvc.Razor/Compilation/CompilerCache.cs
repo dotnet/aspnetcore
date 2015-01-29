@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class CompilerCache : ICompilerCache
     {
         private readonly ConcurrentDictionary<string, CompilerCacheEntry> _cache;
-        private readonly IFileSystem _fileSystem;
+        private readonly IFileProvider _fileProvider;
 
         /// <summary>
         /// Initializes a new instance of <see cref="CompilerCache"/> populated with precompiled views
@@ -24,18 +24,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// An <see cref="IAssemblyProvider"/> representing the assemblies
         /// used to search for pre-compiled views.
         /// </param>
-        /// <param name="fileSystem">An <see cref="IRazorFileSystemCache"/> instance that represents the application's
+        /// <param name="fileProvider">An <see cref="IRazorFileProviderCache"/> instance that represents the application's
         /// file system.
         /// </param>
-        public CompilerCache(IAssemblyProvider provider, IRazorFileSystemCache fileSystem)
-            : this (GetFileInfos(provider.CandidateAssemblies), fileSystem)
+        public CompilerCache(IAssemblyProvider provider, IRazorFileProviderCache fileProvider)
+            : this(GetFileInfos(provider.CandidateAssemblies), fileProvider)
         {
         }
 
         // Internal for unit testing
-        internal CompilerCache(IEnumerable<RazorFileInfoCollection> viewCollections, IFileSystem fileSystem)
+        internal CompilerCache(IEnumerable<RazorFileInfoCollection> viewCollections, IFileProvider fileProvider)
         {
-            _fileSystem = fileSystem;
+            _fileProvider = fileProvider;
             _cache = new ConcurrentDictionary<string, CompilerCacheEntry>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var viewCollection in viewCollections)
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewStartLocations = ViewStartUtility.GetViewStartLocations(relativePath);
             foreach (var viewStartLocation in viewStartLocations)
             {
-                var viewStartFileInfo = _fileSystem.GetFileInfo(viewStartLocation);
+                var viewStartFileInfo = _fileProvider.GetFileInfo(viewStartLocation);
                 if (viewStartFileInfo.Exists)
                 {
                     var relativeFileInfo = new RelativeFileInfo(viewStartFileInfo, viewStartLocation);

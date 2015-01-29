@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
+using Microsoft.Net.Http.Headers;
 
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     public class PlainTextFormatter : OutputFormatter
     {

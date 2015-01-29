@@ -95,32 +95,25 @@ namespace Microsoft.AspNet.Mvc
             var optionsAccessor = services.GetRequiredService<IOptions<MvcOptions>>();
             actionContext.ModelState.MaxAllowedErrors = optionsAccessor.Options.MaxModelValidationErrors;
 
-            var contextAccessor = services.GetRequiredService<IContextAccessor<ActionContext>>();
-            using (contextAccessor.SetContextSource(() => actionContext, PreventExchange))
+            var contextAccessor = services.GetRequiredService<IScopedInstance<ActionContext>>();
+            contextAccessor.Value = actionContext;
+            var invokerFactory = services.GetRequiredService<IActionInvokerFactory>();
+            var invoker = invokerFactory.CreateInvoker(actionContext);
+            if (invoker == null)
             {
-                var invokerFactory = services.GetRequiredService<IActionInvokerFactory>();
-                var invoker = invokerFactory.CreateInvoker(actionContext);
-                if (invoker == null)
-                {
-                    LogActionSelection(actionSelected: true, actionInvoked: false, handled: context.IsHandled);
+                LogActionSelection(actionSelected: true, actionInvoked: false, handled: context.IsHandled);
 
-                    var ex = new InvalidOperationException(
-                        Resources.FormatActionInvokerFactory_CouldNotCreateInvoker(
-                            actionDescriptor.DisplayName));
+                var ex = new InvalidOperationException(
+                    Resources.FormatActionInvokerFactory_CouldNotCreateInvoker(
+                        actionDescriptor.DisplayName));
 
-                    // Add tracing/logging (what do we think of this pattern of
-                    // tacking on extra data on the exception?)
-                    ex.Data.Add("AD", actionDescriptor);
-                    throw ex;
-                }
-
-                await invoker.InvokeAsync();
+                // Add tracing/logging (what do we think of this pattern of
+                // tacking on extra data on the exception?)
+                ex.Data.Add("AD", actionDescriptor);
+                throw ex;
             }
-        }
 
-        private ActionContext PreventExchange(ActionContext contex)
-        {
-            throw new InvalidOperationException(Resources.ActionContextAccessor_SetValueNotSupported);
+            await invoker.InvokeAsync();
         }
 
         private void EnsureLogger(HttpContext context)

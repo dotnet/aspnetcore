@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
-    public class HtmlHelperCheckboxTest
+    public class HtmlHelperCheckBoxTest
     {
         [Fact]
         public void CheckBoxOverridesCalculatedValuesWithValuesFromHtmlAttributes()
@@ -214,16 +214,46 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void CheckBoxForWithInvalidBooleanThrows()
+        public void CheckBoxForWithNullContainer_TreatsBooleanAsFalse()
         {
             // Arrange
-            var expected = "String was not recognized as a valid Boolean.";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            var expected = @"<input id=""Property1"" name=""Property1"" type=""checkbox"" value=""true"" />" +
+                           @"<input name=""Property1"" type=""hidden"" value=""false"" />";
+            var viewData = GetTestModelViewData();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+            var valueProviderResult = new ValueProviderResult("false", "false", CultureInfo.InvariantCulture);
+            viewData.ModelState.SetModelValue("Property1", valueProviderResult);
 
-            // Act & Assert
-            // "Property2" in ViewData isn't a valid boolean
-            var ex = Assert.Throws<FormatException>(() => helper.CheckBoxFor(m => m.Property2));
-            Assert.Equal(expected, ex.Message);
+            // Act
+            var html = helper.CheckBoxFor(m => m.Property1);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Theory]
+        [InlineData(false, "")]
+        [InlineData(true, "checked=\"checked\" ")]
+        public void CheckBoxForWithNonNullContainer_UsesPropertyValue(bool value, string expectedChecked)
+        {
+            // Arrange
+            var expected = @"<input {0}id=""Property1"" name=""Property1"" type=""checkbox"" value=""true"" />" +
+                           @"<input name=""Property1"" type=""hidden"" value=""false"" />";
+            expected = string.Format(expected, expectedChecked);
+
+            var viewData = GetTestModelViewData();
+            viewData.Model = new TestModel
+            {
+                Property1 = value,
+            };
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+
+            // Act
+            var html = helper.CheckBoxFor(m => m.Property1);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
         }
 
         [Fact]
@@ -262,15 +292,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal(expected, html.ToString());
         }
 
-        [Fact]
-        public void CheckBoxForUsesModelStateAttemptedValue()
+        [Theory]
+        [InlineData("false", "")]
+        [InlineData("true", "checked=\"checked\" ")]
+        public void CheckBoxFor_UsesModelStateAttemptedValue(string attemptedValue, string expectedChecked)
         {
             // Arrange
-            var expected = @"<input id=""Property1"" name=""Property1"" type=""checkbox"" value=""true"" />" +
+            var expected = @"<input {0}id=""Property1"" name=""Property1"" type=""checkbox"" value=""true"" />" +
                            @"<input name=""Property1"" type=""hidden"" value=""false"" />";
+            expected = string.Format(expected, expectedChecked);
+
             var viewData = GetTestModelViewData();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
-            var valueProviderResult = new ValueProviderResult("false", "false", CultureInfo.InvariantCulture);
+            var valueProviderResult =
+                new ValueProviderResult(attemptedValue, attemptedValue, CultureInfo.InvariantCulture);
             viewData.ModelState.SetModelValue("Property1", valueProviderResult);
 
             // Act
@@ -281,10 +316,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void CheckBoxForWithObjectAttributeWithUnderscores()
+        public void CheckBoxFor_WithObjectAttribute_MapsUnderscoresInNamesToDashes()
         {
             // Arrange
-            var expected = @"<input checked=""checked"" id=""Property1"" name=""Property1"" " +
+            var expected = @"<input id=""Property1"" name=""Property1"" " +
                            @"Property1-Property3=""Property3ObjValue"" type=""checkbox"" value=""true"" /><input " +
                            @"name=""Property1"" type=""hidden"" value=""false"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
@@ -298,10 +333,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void CheckBoxForWithAttributeDictionary()
+        public void CheckBoxForWith_AttributeDictionary_GeneratesExpectedAttributes()
         {
             // Arrange
-            var expected = @"<input checked=""checked"" id=""Property1"" name=""Property1"" " +
+            var expected = @"<input id=""Property1"" name=""Property1"" " +
                            @"Property3=""Property3Value"" type=""checkbox"" value=""true"" /><input " +
                            @"name=""Property1"" type=""hidden"" value=""false"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
@@ -333,10 +368,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void CheckboxForWithComplexExpressionsUsesValuesFromViewDataDictionary()
+        public void CheckBoxFor_WithComplexExpressions_DoesNotUseValuesFromViewDataDictionary()
         {
             // Arrange
-            var expected = @"<input checked=""checked"" id=""ComplexProperty_Property1"" name=""ComplexProperty." +
+            var expected = @"<input id=""ComplexProperty_Property1"" name=""ComplexProperty." +
                         @"Property1"" type=""checkbox"" value=""true"" /><input name=""ComplexProperty.Property1"" " +
                         @"type=""hidden"" value=""false"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetModelWithValidationViewData());

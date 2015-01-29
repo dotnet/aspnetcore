@@ -227,12 +227,13 @@ namespace Microsoft.AspNet.Mvc.Test
             return new ActionExecutingContext(
                 CreateActionContext(),
                 new IFilter[] { filter, },
-                new Dictionary<string, object>());
+                new Dictionary<string, object>(),
+                controller: new object());
         }
 
         private static ActionExecutedContext CreateActionExecutedContext(ActionExecutingContext context)
         {
-            return new ActionExecutedContext(context, context.Filters)
+            return new ActionExecutedContext(context, context.Filters, context.Controller)
             {
                 Result = context.Result,
             };
@@ -243,12 +244,13 @@ namespace Microsoft.AspNet.Mvc.Test
             return new ResultExecutingContext(
                 CreateActionContext(),
                 new IFilter[] { filter, },
-                new NoOpResult());
+                new NoOpResult(),
+                controller: new object());
         }
 
         private static ResultExecutedContext CreateResultExecutedContext(ResultExecutingContext context)
         {
-            return new ResultExecutedContext(context, context.Filters, context.Result);
+            return new ResultExecutedContext(context, context.Filters, context.Result, context.Controller);
         }
 
         private static ActionContext CreateActionContext()

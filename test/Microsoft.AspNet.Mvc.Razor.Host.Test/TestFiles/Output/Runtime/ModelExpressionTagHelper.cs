@@ -1,4 +1,4 @@
-﻿#pragma checksum "TestFiles/Input/ModelExpressionTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "11088b573392b1db9fe4cac4fff3a9ce68a72c40"
+﻿#pragma checksum "TestFiles/Input/ModelExpressionTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "f068e0ad45f53d090f04213f542f87fb2cf750d2"
 namespace Asp
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -18,7 +18,9 @@ namespace Asp
     >
     {
         #line hidden
+        #pragma warning disable 0414
         private System.IO.TextWriter __tagHelperStringValueBuffer = null;
+        #pragma warning restore 0414
         private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext = null;
         private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperRunner();
         private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperScopeManager __tagHelperScopeManager = new Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperScopeManager();
@@ -43,13 +45,65 @@ namespace Asp
             BeginContext(120, 2, true);
             WriteLiteral("\r\n");
             EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("inputTest");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", "test", async() => {
+            }
+            , StartWritingScope, EndWritingScope);
             __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<Microsoft.AspNet.Mvc.Razor.InputTestTagHelper>();
             __tagHelperExecutionContext.Add(__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper);
-            __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
-            __tagHelperExecutionContext.AddTagHelperAttribute("For", __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For);
+#line 5 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
+__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
+
+#line default
+#line hidden
+            __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For);
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
+            WriteLiteral(__tagHelperExecutionContext.Output.GeneratePreContent());
+            if (__tagHelperExecutionContext.Output.ContentSet)
+            {
+                WriteLiteral(__tagHelperExecutionContext.Output.GenerateContent());
+            }
+            else if (__tagHelperExecutionContext.ChildContentRetrieved)
+            {
+                WriteLiteral(__tagHelperExecutionContext.GetChildContentAsync().Result);
+            }
+            else
+            {
+                __tagHelperExecutionContext.ExecuteChildContentAsync().Wait();
+            }
+            WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
+            WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
+            __tagHelperExecutionContext = __tagHelperScopeManager.End();
+            BeginContext(146, 2, true);
+            WriteLiteral("\r\n");
+            EndContext();
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", "test", async() => {
+            }
+            , StartWritingScope, EndWritingScope);
+            __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<Microsoft.AspNet.Mvc.Razor.InputTestTagHelper>();
+            __tagHelperExecutionContext.Add(__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper);
+#line 6 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
+__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => Model);
+
+#line default
+#line hidden
+            __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For);
+            __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
+            WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
+            WriteLiteral(__tagHelperExecutionContext.Output.GeneratePreContent());
+            if (__tagHelperExecutionContext.Output.ContentSet)
+            {
+                WriteLiteral(__tagHelperExecutionContext.Output.GenerateContent());
+            }
+            else if (__tagHelperExecutionContext.ChildContentRetrieved)
+            {
+                WriteLiteral(__tagHelperExecutionContext.GetChildContentAsync().Result);
+            }
+            else
+            {
+                __tagHelperExecutionContext.ExecuteChildContentAsync().Wait();
+            }
+            WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }

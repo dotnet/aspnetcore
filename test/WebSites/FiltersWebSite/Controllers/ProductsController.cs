@@ -10,11 +10,13 @@ namespace FiltersWebSite
     [ControllerResultFilter]
     [ControllerActionFilter]
     [ControllerAuthorizationFilter]
-    public class ProductsController : Controller, IResultFilter, IAuthorizationFilter
+    [TracingResourceFilter("Controller Resource Filter")]
+    public class ProductsController : Controller, IResultFilter
     {
         [PassThroughResultFilter]
         [PassThroughActionFilter]
         [AuthorizeUser]
+        [TracingResourceFilter("Action Resource Filter")]
         public IActionResult GetPrice(int id)
         {
             Response.Headers.Append("filters", "Executing Action");
@@ -41,11 +43,6 @@ namespace FiltersWebSite
         public void OnResultExecuting(ResultExecutingContext context)
         {
             context.HttpContext.Response.Headers.Append("filters", "Controller Override - OnResultExecuting");
-        }
-
-        public void OnAuthorization(AuthorizationContext context)
-        {
-            context.HttpContext.Response.Headers.Append("filters", "Controller Override - OnAuthorization");
         }
     }
 }

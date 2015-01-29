@@ -13,10 +13,10 @@ namespace Microsoft.AspNet.Mvc
     /// <remarks>
     /// <see cref="ContentViewComponentResult"/> always writes HTML encoded text from the
     /// <see cref="EncodedContent"/> property.
-    /// 
+    ///
     /// When using <see cref="ContentViewComponentResult(string)"/>, the provided content will be HTML
     /// encoded and stored in <see cref="EncodedContent"/>.
-    /// 
+    ///
     /// To write pre-encoded conent, use <see cref="ContentViewComponentResult(HtmlString)"/>.
     /// </remarks>
     public class ContentViewComponentResult : IViewComponentResult

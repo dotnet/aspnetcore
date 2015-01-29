@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Mvc
             };
 
             Debug.Assert(!string.IsNullOrEmpty(candidate.FullName));
-            var separatorIndex = candidate.FullName.LastIndexOf(".");
+            var separatorIndex = candidate.FullName.LastIndexOf('.');
             if (separatorIndex >= 0)
             {
                 candidate.ShortName = candidate.FullName.Substring(separatorIndex + 1);

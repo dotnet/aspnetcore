@@ -8,10 +8,9 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
-using System.Runtime.Serialization;
+using System.Reflection;
 using System.Xml;
 using Newtonsoft.Json.Linq;
-using System.Reflection;
 
 namespace System.Net.Http
 {
@@ -161,7 +160,9 @@ namespace System.Net.Http
         /// <returns></returns>
         public static XmlDictionaryReaderQuotas CreateDefaultReaderQuotas()
         {
-#if NETFX_CORE // MaxDepth is a DOS mitigation. We don't support MaxDepth in portable libraries because it is strictly client side.
+            // MaxDepth is a DOS mitigation. We don't support MaxDepth in portable libraries because it is strictly
+            // client side.
+#if NETFX_CORE
             return XmlDictionaryReaderQuotas.Max;
 #else
             return new XmlDictionaryReaderQuotas()
@@ -187,7 +188,9 @@ namespace System.Net.Http
                 return token;
             }
 
-            if (token.StartsWith("\"", StringComparison.Ordinal) && token.EndsWith("\"", StringComparison.Ordinal) && token.Length > 1)
+            if (token.StartsWith("\"", StringComparison.Ordinal) &&
+                token.EndsWith("\"", StringComparison.Ordinal) &&
+                token.Length > 1)
             {
                 return token.Substring(1, token.Length - 2);
             }

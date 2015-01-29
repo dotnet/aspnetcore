@@ -15,7 +15,8 @@ namespace System.Net.Http.Formatting
     /// header field q-values.
     internal class MediaTypeWithQualityHeaderValueComparer : IComparer<MediaTypeWithQualityHeaderValue>
     {
-        private static readonly MediaTypeWithQualityHeaderValueComparer _mediaTypeComparer = new MediaTypeWithQualityHeaderValueComparer();
+        private static readonly MediaTypeWithQualityHeaderValueComparer _mediaTypeComparer =
+            new MediaTypeWithQualityHeaderValueComparer();
 
         private MediaTypeWithQualityHeaderValueComparer()
         {
@@ -27,11 +28,12 @@ namespace System.Net.Http.Formatting
         }
 
         /// <summary>
-        /// Compares two <see cref="MediaTypeWithQualityHeaderValue"/> based on their quality value (a.k.a their "q-value").
-        /// Values with identical q-values are considered equal (i.e the result is 0) with the exception that sub-type wild-cards are
-        /// considered less than specific media types and full wild-cards are considered less than sub-type wild-cards. This allows to
-        /// sort a sequence of <see cref="StringWithQualityHeaderValue"/> following their q-values in the order of specific media types,
-        /// sub-type wildcards, and last any full wild-cards.
+        /// Compares two <see cref="MediaTypeWithQualityHeaderValue"/> based on their quality value (a.k.a their
+        /// "q-value"). Values with identical q-values are considered equal (i.e the result is 0) with the exception
+        /// that sub-type wild-cards are considered less than specific media types and full wild-cards are considered
+        /// less than sub-type wild-cards. This allows to sort a sequence of <see cref="StringWithQualityHeaderValue"/>
+        /// following their q-values in the order of specific media types, subtype wild-cards, and last any full
+        /// wild-cards.
         /// </summary>
         /// <param name="mediaType1">The first <see cref="MediaTypeWithQualityHeaderValue"/> to compare.</param>
         /// <param name="mediaType2">The second <see cref="MediaTypeWithQualityHeaderValue"/> to compare.</param>
@@ -46,12 +48,11 @@ namespace System.Net.Http.Formatting
                 return 0;
             }
 
-            int returnValue = CompareBasedOnQualityFactor(mediaType1, mediaType2);
-
+            var returnValue = CompareBasedOnQualityFactor(mediaType1, mediaType2);
             if (returnValue == 0)
             {
-                ParsedMediaTypeHeaderValue parsedMediaType1 = new ParsedMediaTypeHeaderValue(mediaType1);
-                ParsedMediaTypeHeaderValue parsedMediaType2 = new ParsedMediaTypeHeaderValue(mediaType2);
+                var parsedMediaType1 = new ParsedMediaTypeHeaderValue(mediaType1);
+                var parsedMediaType2 = new ParsedMediaTypeHeaderValue(mediaType2);
 
                 if (!parsedMediaType1.TypesEqual(ref parsedMediaType2))
                 {
@@ -88,14 +89,16 @@ namespace System.Net.Http.Formatting
             return returnValue;
         }
 
-        private static int CompareBasedOnQualityFactor(MediaTypeWithQualityHeaderValue mediaType1, MediaTypeWithQualityHeaderValue mediaType2)
+        private static int CompareBasedOnQualityFactor(
+            MediaTypeWithQualityHeaderValue mediaType1,
+            MediaTypeWithQualityHeaderValue mediaType2)
         {
             Debug.Assert(mediaType1 != null);
             Debug.Assert(mediaType2 != null);
 
-            double mediaType1Quality = mediaType1.Quality ?? FormattingUtilities.Match;
-            double mediaType2Quality = mediaType2.Quality ?? FormattingUtilities.Match;
-            double qualityDifference = mediaType1Quality - mediaType2Quality;
+            var mediaType1Quality = mediaType1.Quality ?? FormattingUtilities.Match;
+            var mediaType2Quality = mediaType2.Quality ?? FormattingUtilities.Match;
+            var qualityDifference = mediaType1Quality - mediaType2Quality;
             if (qualityDifference < 0)
             {
                 return -1;

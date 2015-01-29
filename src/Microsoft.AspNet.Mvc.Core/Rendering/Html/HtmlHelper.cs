@@ -702,7 +702,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return CreateForm();
         }
 
-
         protected virtual HtmlString GenerateHidden(
             ModelMetadata metadata,
             string name,

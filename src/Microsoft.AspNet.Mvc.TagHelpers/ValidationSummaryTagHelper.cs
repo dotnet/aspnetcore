@@ -12,11 +12,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <see cref="ITagHelper"/> implementation targeting &lt;div&gt; elements with an <c>asp-validation-summary</c>
     /// attribute.
     /// </summary>
-    [TagName("div")]
-    [ContentBehavior(ContentBehavior.Append)]
+    [HtmlElementName("div")]
     public class ValidationSummaryTagHelper : TagHelper
     {
         private const string ValidationSummaryAttributeName = "asp-validation-summary";
+        private ValidationSummary _validationSummary;
 
         // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
@@ -26,53 +26,61 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [Activate]
         protected internal IHtmlGenerator Generator { get; set; }
 
-        // TODO: https://github.com/aspnet/Razor/issues/196 Change to ValidationSummary enum once #196 has been completed.
         /// <summary>
-        /// If <c>All</c> or <c>ModelOnly</c>, appends a validation summary. Acceptable values are defined by the
-        /// <see cref="ValidationSummary"/> enum.
+        /// If <see cref="ValidationSummary.All"/> or <see cref="ValidationSummary.ModelOnly"/>, appends a validation
+        /// summary. Otherwise (<see cref="ValidationSummary.None"/>, the default), this tag helper does nothing.
         /// </summary>
+        /// <exception cref="ArgumentException">
+        /// Thrown if setter is called with an undefined <see cref="ValidationSummary"/> value e.g.
+        /// <c>(ValidationSummary)23</c>.
+        /// </exception>
         [HtmlAttributeName(ValidationSummaryAttributeName)]
-        public string ValidationSummaryValue { get; set; }
+        public ValidationSummary ValidationSummary
+        {
+            get
+            {
+                return _validationSummary;
+            }
+            set
+            {
+                switch (value)
+                {
+                    case ValidationSummary.All:
+                    case ValidationSummary.ModelOnly:
+                    case ValidationSummary.None:
+                        _validationSummary = value;
+                        break;
+
+                    default:
+                        throw new ArgumentException(
+                            message: Resources.FormatInvalidEnumArgument(
+                                nameof(value),
+                                value,
+                                typeof(ValidationSummary).FullName),
+                            paramName: nameof(value));
+                }
+            }
+        }
 
         /// <inheritdoc />
-        /// <remarks>Does nothing if <see cref="ValidationSummaryValue"/> is <c>null</c>, empty or "None".</remarks>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if <see cref="ValidationSummaryValue"/> is not a valid <see cref="ValidationSummary"/> value.
-        /// </exception>
+        /// <remarks>Does nothing if <see cref="ValidationSummary"/> is <see cref="ValidationSummary.None"/>.</remarks>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            if (!string.IsNullOrEmpty(ValidationSummaryValue))
+            if (ValidationSummary == ValidationSummary.None)
             {
-                ValidationSummary validationSummaryValue;
-                if (!Enum.TryParse(ValidationSummaryValue, ignoreCase: true, result: out validationSummaryValue))
-                {
-                    throw new InvalidOperationException(
-                        Resources.FormatTagHelpers_InvalidValue_ThreeAcceptableValues(
-                            "<div>",
-                            ValidationSummaryAttributeName,
-                            ValidationSummaryValue,
-                            ValidationSummary.All,
-                            ValidationSummary.ModelOnly,
-                            ValidationSummary.None));
-                }
-                else if (validationSummaryValue == ValidationSummary.None)
-                {
-                    return;
-                }
+                return;
+            }
 
-                var validationModelErrorsOnly = validationSummaryValue == ValidationSummary.ModelOnly;
-                var tagBuilder = Generator.GenerateValidationSummary(
-                    ViewContext,
-                    excludePropertyErrors: validationModelErrorsOnly,
-                    message: null,
-                    headerTag: null,
-                    htmlAttributes: null);
-
-                if (tagBuilder != null)
-                {
-                    output.MergeAttributes(tagBuilder);
-                    output.Content += tagBuilder.InnerHtml;
-                }
+            var tagBuilder = Generator.GenerateValidationSummary(
+                ViewContext,
+                excludePropertyErrors: ValidationSummary == ValidationSummary.ModelOnly,
+                message: null,
+                headerTag: null,
+                htmlAttributes: null);
+            if (tagBuilder != null)
+            {
+                output.MergeAttributes(tagBuilder);
+                output.PostContent += tagBuilder.InnerHtml;
             }
         }
     }

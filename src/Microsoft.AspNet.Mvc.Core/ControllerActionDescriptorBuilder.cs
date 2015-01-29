@@ -56,11 +56,7 @@ namespace Microsoft.AspNet.Mvc
                         actionDescriptor.ControllerTypeInfo = controller.ControllerType;
 
                         AddApiExplorerInfo(actionDescriptor, action, controller);
-                        AddRouteConstraints(actionDescriptor, controller, action);
-                        AddControllerRouteConstraints(
-                            actionDescriptor,
-                            controller.RouteConstraints,
-                            removalConstraints);
+                        AddRouteConstraints(removalConstraints, actionDescriptor, controller, action);
 
                         if (IsAttributeRoutedAction(actionDescriptor))
                         {
@@ -279,7 +275,6 @@ namespace Microsoft.AspNet.Mvc
             var parameterDescriptor = new ParameterDescriptor()
             {
                 BinderMetadata = parameter.BinderMetadata,
-                IsOptional = parameter.IsOptional,
                 Name = parameter.ParameterName,
                 ParameterType = parameter.ParameterInfo.ParameterType,
             };
@@ -295,6 +290,13 @@ namespace Microsoft.AspNet.Mvc
             var apiExplorerIsVisible = action.ApiExplorer?.IsVisible ?? controller.ApiExplorer?.IsVisible ?? false;
             if (apiExplorerIsVisible)
             {
+                if (!IsAttributeRoutedAction(actionDescriptor))
+                {
+                    // ApiExplorer is only supported on attribute routed actions.
+                    throw new InvalidOperationException(Resources.FormatApiExplorer_UnsupportedAction(
+                        actionDescriptor.DisplayName));
+                }
+
                 var apiExplorerActionData = new ApiDescriptionActionData()
                 {
                     GroupName = action.ApiExplorer?.GroupName ?? controller.ApiExplorer?.GroupName,
@@ -371,39 +373,17 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public static void AddRouteConstraints(
+            ISet<string> removalConstraints,
             ControllerActionDescriptor actionDescriptor,
             ControllerModel controller,
             ActionModel action)
         {
-            actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                "controller",
-                controller.ControllerName));
-
-            if (action.IsActionNameMatchRequired)
-            {
-                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                    "action",
-                    action.ActionName));
-            }
-            else
-            {
-                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                    "action",
-                    string.Empty));
-            }
-        }
-
-        private static void AddControllerRouteConstraints(
-            ControllerActionDescriptor actionDescriptor,
-            IList<RouteConstraintAttribute> routeconstraints,
-            ISet<string> removalConstraints)
-        {
-            // Apply all the constraints defined on the controller (for example, [Area]) to the actions
-            // in that controller. Also keep track of all the constraints that require preventing actions
+            // Apply all the constraints defined on the action, then controller (for example, [Area]) 
+            // to the actions. Also keep track of all the constraints that require preventing actions
             // without the constraint to match. For example, actions without an [Area] attribute on their
             // controller should not match when a value has been given for area when matching a url or
             // generating a link.
-            foreach (var constraintAttribute in routeconstraints)
+            foreach (var constraintAttribute in action.RouteConstraints)
             {
                 if (constraintAttribute.BlockNonAttributedActions)
                 {
@@ -426,6 +406,46 @@ namespace Microsoft.AspNet.Mvc
                             constraintAttribute.RouteValue));
                     }
                 }
+            }
+
+            foreach (var constraintAttribute in controller.RouteConstraints)
+            {
+                if (constraintAttribute.BlockNonAttributedActions)
+                {
+                    removalConstraints.Add(constraintAttribute.RouteKey);
+                }
+
+                // Skip duplicates - this also means that a value on the action will take precedence
+                if (!HasConstraint(actionDescriptor.RouteConstraints, constraintAttribute.RouteKey))
+                {
+                    if (constraintAttribute.RouteKeyHandling == RouteKeyHandling.CatchAll)
+                    {
+                        actionDescriptor.RouteConstraints.Add(
+                            RouteDataActionConstraint.CreateCatchAll(
+                            constraintAttribute.RouteKey));
+                    }
+                    else
+                    {
+                        actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                            constraintAttribute.RouteKey,
+                            constraintAttribute.RouteValue));
+                    }
+                }
+            }
+
+            // Lastly add the 'default' values
+            if (!HasConstraint(actionDescriptor.RouteConstraints, "action"))
+            {
+                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                    "action",
+                    action.ActionName ?? string.Empty));
+            }
+
+            if (!HasConstraint(actionDescriptor.RouteConstraints, "controller"))
+            {
+                actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                    "controller",
+                    controller.ControllerName));
             }
         }
 

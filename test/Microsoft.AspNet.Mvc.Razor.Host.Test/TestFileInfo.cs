@@ -4,8 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.FileSystems;
-using Microsoft.Framework.Expiration.Interfaces;
+using Microsoft.AspNet.FileProviders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -15,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public bool IsDirectory { get; } = false;
 
-        public DateTime LastModified { get; set; }
+        public DateTimeOffset LastModified { get; set; }
 
         public long Length { get; set; }
 
@@ -58,11 +57,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         public void Delete()
-        {
-            throw new NotSupportedException();
-        }
-
-        public IExpirationTrigger CreateFileChangeTrigger()
         {
             throw new NotSupportedException();
         }

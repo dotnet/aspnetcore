@@ -4,6 +4,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -15,18 +16,36 @@ namespace Microsoft.AspNet.Mvc
 
         public string ContentType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the HTTP status code.
+        /// </summary>
+        public int? StatusCode { get; set; }
+
         public override async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
             var response = context.HttpContext.Response;
 
-            if (!string.IsNullOrEmpty(ContentType))
+            MediaTypeHeaderValue contentTypeHeader;
+            if (string.IsNullOrEmpty(ContentType))
             {
-                response.ContentType = ContentType;
+                contentTypeHeader = new MediaTypeHeaderValue("text/plain");
+            }
+            else
+            {
+                contentTypeHeader = new MediaTypeHeaderValue(ContentType);
+            }
+
+            contentTypeHeader.Encoding = ContentEncoding ?? Encodings.UTF8EncodingWithoutBOM;
+            response.ContentType = contentTypeHeader.ToString();
+
+            if (StatusCode != null)
+            {
+                response.StatusCode = StatusCode.Value;
             }
 
             if (Content != null)
             {
-                await response.WriteAsync(Content);
+                await response.WriteAsync(Content, contentTypeHeader.Encoding);
             }
         }
     }

@@ -8,7 +8,6 @@ using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [ContentBehavior(ContentBehavior.Prepend)]
     public class ATagHelper : TagHelper
     {
         [Activate]
@@ -31,7 +30,7 @@ namespace TagHelpersWebSite.TagHelpers
 
                 output.Attributes["href"] = UrlHelper.Action(Action, Controller, methodParameters);
 
-                output.Content = "My ";
+                output.PreContent = "My ";
             }
         }
     }

@@ -39,5 +39,10 @@ namespace TagHelpersWebSite.Controllers
         {
             return View();
         }
+
+        public ViewResult ViewWithInheritedRemoveTagHelper()
+        {
+            return View("/Views/RemoveTagHelperViewStart/ViewWithInheritedRemoveTagHelper.cshtml");
+        }
     }
 }

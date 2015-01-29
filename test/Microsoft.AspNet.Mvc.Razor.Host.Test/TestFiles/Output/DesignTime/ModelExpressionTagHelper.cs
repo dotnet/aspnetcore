@@ -50,7 +50,17 @@
         public override async Task ExecuteAsync()
         {
             __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<Microsoft.AspNet.Mvc.Razor.InputTestTagHelper>();
-            __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
+#line 5 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
+__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
+
+#line default
+#line hidden
+            __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<Microsoft.AspNet.Mvc.Razor.InputTestTagHelper>();
+#line 6 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
+__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => Model);
+
+#line default
+#line hidden
         }
         #pragma warning restore 1998
     }

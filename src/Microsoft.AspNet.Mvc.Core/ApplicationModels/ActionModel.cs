@@ -20,13 +20,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Filters = new List<IFilter>();
             HttpMethods = new List<string>();
             Parameters = new List<ParameterModel>();
+            RouteConstraints = new List<IRouteConstraintProvider>();
         }
 
         public ActionModel([NotNull] ActionModel other)
         {
             ActionMethod = other.ActionMethod;
             ActionName = other.ActionName;
-            IsActionNameMatchRequired = other.IsActionNameMatchRequired;
 
             // Not making a deep copy of the controller, this action still belongs to the same controller.
             Controller = other.Controller;
@@ -40,6 +40,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Make a deep copy of other 'model' types.
             ApiExplorer = new ApiExplorerModel(other.ApiExplorer);
             Parameters = new List<ParameterModel>(other.Parameters.Select(p => new ParameterModel(p)));
+            RouteConstraints = new List<IRouteConstraintProvider>(other.RouteConstraints);
 
             if (other.AttributeRouteModel != null)
             {
@@ -47,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
         }
 
-        public List<IActionConstraintMetadata> ActionConstraints { get; private set; }
+        public IList<IActionConstraintMetadata> ActionConstraints { get; private set; }
 
         public MethodInfo ActionMethod { get; }
 
@@ -62,18 +63,18 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// </remarks>
         public ApiExplorerModel ApiExplorer { get; set; }
 
+        public AttributeRouteModel AttributeRouteModel { get; set; }
+
         public IReadOnlyList<object> Attributes { get; }
 
         public ControllerModel Controller { get; set; }
 
-        public List<IFilter> Filters { get; private set; }
+        public IList<IFilter> Filters { get; private set; }
 
-        public List<string> HttpMethods { get; private set; }
+        public IList<string> HttpMethods { get; private set; }
 
-        public bool IsActionNameMatchRequired { get; set; }
+        public IList<ParameterModel> Parameters { get; private set; }
 
-        public List<ParameterModel> Parameters { get; private set; }
-
-        public AttributeRouteModel AttributeRouteModel { get; set; }
+        public IList<IRouteConstraintProvider> RouteConstraints { get; private set; }
     }
 }

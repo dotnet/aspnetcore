@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Empty(result.ModelStateErrors);
         }
 
-        // The action that this test hits will echo back the model-state error
+        // There should be no model state error for a top-level object
         [Theory]
         [InlineData("transactionId1234", "1e331f25-0869-4c87-8a94-64e6e40cb5a0")]
         public async Task FromHeader_BindHeader_ToString_OnParameter_NoValues(string headerName, string headerValue)
@@ -96,9 +96,37 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             Assert.Null(result.HeaderValue);
             Assert.Null(result.HeaderValues);
-            
-            var error = Assert.Single(result.ModelStateErrors);
-            Assert.Equal("transactionId", error);
+            Assert.Empty(result.ModelStateErrors);
+        }
+
+        // There should be no model state error for a top-level object
+        [Theory]
+        [InlineData("transactionId1234", "1e331f25-0869-4c87-8a94-64e6e40cb5a0")]
+        public async Task FromHeader_BindHeader_ToString_OnParameter_NoValues_DefaultValue(
+            string headerName,
+            string headerValue)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "http://localhost/Blog/BindToStringParameterDefaultValue");
+            // Intentionally not setting a header value
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<Result>(body);
+
+            Assert.Equal("default-value", result.HeaderValue);
+            Assert.Null(result.HeaderValues);
+            Assert.Empty(result.ModelStateErrors);
         }
 
         // The action that this test hits will echo back the model-bound values
@@ -158,6 +186,99 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(title, result.HeaderValue);
             Assert.Equal<string>(tags, result.HeaderValues);
             Assert.Empty(result.ModelStateErrors);
+        }
+
+        // Title on the model has [Required] so it will have a validation error
+        // Tags does not, so no error.
+        [Fact]
+        public async Task FromHeader_BindHeader_ToModel_NoValues_ValidationError()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToModel?author=Marvin");
+
+            // Intentionally not setting a title or tags
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<Result>(body);
+
+            Assert.Null(result.HeaderValue);
+            Assert.Null(result.HeaderValues);
+
+            var error = Assert.Single(result.ModelStateErrors);
+            Assert.Equal("Title", error);
+        }
+
+        // This model sets a value for 'Title', and the model binder won't trounce it.
+        //
+        // There's no validation error because we validate the initialized value.
+        [Fact]
+        public async Task FromHeader_BindHeader_ToModel_NoValues_InitializedValue_ValidationError()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "http://localhost/Blog/BindToModelWithInitializedValue?author=Marvin");
+
+            // Intentionally not setting a title or tags
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<Result>(body);
+
+            Assert.Equal("How to Make Soup", result.HeaderValue);
+            Assert.Equal<string>(new[] { "Cooking" }, result.HeaderValues);
+
+            var error = Assert.Single(result.ModelStateErrors);
+            Assert.Equal("Title", error);
+        }
+
+        // This model uses default value for 'Title'.
+        //
+        // There's no validation error because we validate the default value.
+        [Fact]
+        public async Task FromHeader_BindHeader_ToModel_NoValues_DefaultValue_NoValidationError()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "http://localhost/Blog/BindToModelWithDefaultValue?author=Marvin");
+
+            // Intentionally not setting a title or tags
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<Result>(body);
+
+            Assert.Equal("How to Make Soup", result.HeaderValue);
+            Assert.Equal<string>(new[] { "Cooking" }, result.HeaderValues);
+
+            var error = Assert.Single(result.ModelStateErrors);
+            Assert.Equal("Title", error);
         }
 
         private class Result

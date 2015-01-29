@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc
             var mediaType = formatter.SupportedMediaTypes[0];
 
             // Assert
-            Assert.Equal("application/json", mediaType.RawValue);
+            Assert.Equal("application/json", mediaType.ToString());
         }
 
         public static IEnumerable<object[]> JsonFormatterReadSimpleTypesData

@@ -4,18 +4,19 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.Mvc.Razor.Compilation
+namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
     /// A type that uses Roslyn to compile C# content.
@@ -29,6 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly ILibraryManager _libraryManager;
         private readonly IApplicationEnvironment _environment;
         private readonly IAssemblyLoadContext _loader;
+        private readonly ICompilerOptionsProvider _compilerOptionsProvider;
 
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
 
@@ -44,27 +46,37 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         public RoslynCompilationService(IApplicationEnvironment environment,
                                         IAssemblyLoadContextAccessor loaderAccessor,
                                         ILibraryManager libraryManager,
+                                        ICompilerOptionsProvider compilerOptionsProvider,
                                         IMvcRazorHost host)
         {
             _environment = environment;
             _loader = loaderAccessor.GetLoadContext(typeof(RoslynCompilationService).GetTypeInfo().Assembly);
             _libraryManager = libraryManager;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
+            _compilerOptionsProvider = compilerOptionsProvider;
             _classPrefix = host.MainClassNamePrefix;
         }
 
         /// <inheritdoc />
-        public CompilationResult Compile(IFileInfo fileInfo, string compilationContent)
+        public CompilationResult Compile([NotNull] IFileInfo fileInfo, [NotNull] string compilationContent)
         {
-            var syntaxTrees = new[] { SyntaxTreeGenerator.Generate(compilationContent, fileInfo.PhysicalPath) };
-
+            // The path passed to SyntaxTreeGenerator.Generate is used by the compiler to generate symbols (pdb) that
+            // map to the source file. If a file does not exist on a physical file system, PhysicalPath will be null.
+            // This prevents files that exist in a non-physical file system from being debugged.
+            var path = fileInfo.PhysicalPath ?? fileInfo.Name;
+            var compilationSettings = _compilerOptionsProvider.GetCompilationSettings(_environment);
+            var syntaxTree = SyntaxTreeGenerator.Generate(compilationContent,
+                                                          path,
+                                                          compilationSettings);
             var references = _applicationReferences.Value;
 
             var assemblyName = Path.GetRandomFileName();
+            var compilationOptions = compilationSettings.CompilationOptions
+                                                        .WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
 
             var compilation = CSharpCompilation.Create(assemblyName,
-                        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                        syntaxTrees: syntaxTrees,
+                        options: compilationOptions,
+                        syntaxTrees: new[] { syntaxTree },
                         references: references);
 
             using (var ms = new MemoryStream())
@@ -108,10 +120,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     }
 
                     var type = assembly.GetExportedTypes()
-                                       .First(t => t.Name.
-                                          StartsWith(_classPrefix, StringComparison.Ordinal));
+                                       .First(t => t.Name.StartsWith(_classPrefix, StringComparison.Ordinal));
 
-                    return UncachedCompilationResult.Successful(type);
+                    return UncachedCompilationResult.Successful(type, compilationContent);
                 }
             }
         }
@@ -120,8 +131,25 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             var references = new List<MetadataReference>();
 
-            var export = _libraryManager.GetAllExports(_environment.ApplicationName);
+            // Get the MetadataReference for the executing application. If it's a Roslyn reference,
+            // we can copy the references created when compiling the application to the Razor page being compiled.
+            // This avoids performing expensive calls to MetadataReference.CreateFromImage.
+            var libraryExport = _libraryManager.GetLibraryExport(_environment.ApplicationName);
+            if (libraryExport?.MetadataReferences != null && libraryExport.MetadataReferences.Count > 0)
+            {
+                Debug.Assert(libraryExport.MetadataReferences.Count == 1,
+                             "Expected 1 MetadataReferences, found " + libraryExport.MetadataReferences.Count);
+                var roslynReference = libraryExport.MetadataReferences[0] as IRoslynMetadataReference;
+                var compilationReference = roslynReference?.MetadataReference as CompilationReference;
+                if (compilationReference != null)
+                {
+                    references.AddRange(compilationReference.Compilation.References);
+                    references.Add(roslynReference.MetadataReference);
+                    return references;
+                }
+            }
 
+            var export = _libraryManager.GetAllExports(_environment.ApplicationName);
             foreach (var metadataReference in export.MetadataReferences)
             {
                 // Taken from https://github.com/aspnet/KRuntime/blob/757ba9bfdf80bd6277e715d6375969a7f44370ee/src/...
@@ -187,7 +215,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
         private static CompilationMessage GetCompilationMessage(DiagnosticFormatter formatter, Diagnostic diagnostic)
         {
-            return new CompilationMessage(formatter.Format(diagnostic));
+            var lineSpan = diagnostic.Location.GetMappedLineSpan();
+            return new CompilationMessage(formatter.Format(diagnostic),
+                                          startColumn: lineSpan.StartLinePosition.Character,
+                                          startLine: lineSpan.StartLinePosition.Line,
+                                          endColumn: lineSpan.EndLinePosition.Character,
+                                          endLine: lineSpan.EndLinePosition.Line);
         }
 
         private static bool IsError(Diagnostic diagnostic)

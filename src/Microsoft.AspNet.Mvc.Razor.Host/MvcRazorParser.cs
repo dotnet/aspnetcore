@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Generator.Compiler;
@@ -8,6 +9,7 @@ using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -17,18 +19,23 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class MvcRazorParser : RazorParser
     {
-        private readonly IReadOnlyList<Chunk> _viewStartChunks;
+        private readonly IEnumerable<TagHelperDirectiveDescriptor> _viewStartDirectiveDescriptors;
 
         /// <summary>
         /// Initializes a new instance of <see cref="MvcRazorParser"/>.
         /// </summary>
         /// <param name="parser">The <see cref="RazorParser"/> to copy properties from.</param>
-        /// <param name="viewStartChunks">The <see cref="IReadOnlyList{T}"/> of <see cref="Chunk"/>s that are inherited
-        /// by parsed pages from _ViewStart files.</param>
-        public MvcRazorParser(RazorParser parser, IReadOnlyList<Chunk> viewStartChunks)
+        /// <param name="inheritedCodeTrees">The <see cref="IReadOnlyList{CodeTree}"/>s that are inherited
+        /// from parsed pages from _ViewStart files.</param>
+        /// <param name="defaultInheritedChunks">The <see cref="IReadOnlyList{Chunk}"/> inherited by
+        /// default by all Razor pages in the application.</param>
+        public MvcRazorParser([NotNull] RazorParser parser, 
+                              [NotNull] IReadOnlyList<CodeTree> inheritedCodeTrees, 
+                              [NotNull] IReadOnlyList<Chunk> defaultInheritedChunks)
             : base(parser)
         {
-            _viewStartChunks = viewStartChunks;
+            // Construct tag helper descriptors from @addTagHelper and @removeTagHelper chunks
+            _viewStartDirectiveDescriptors = GetTagHelperDescriptors(inheritedCodeTrees, defaultInheritedChunks);
         }
 
         /// <inheritdoc />
@@ -36,17 +43,47 @@ namespace Microsoft.AspNet.Mvc.Razor
             [NotNull] Block documentRoot,
             [NotNull] ParserErrorSink errorSink)
         {
-            // Grab all the @addtaghelper chunks from view starts and construct TagHelperDirectiveDescriptors
-            var directiveDescriptors = _viewStartChunks.OfType<AddTagHelperChunk>()
-                                                       .Select(chunk => new TagHelperDirectiveDescriptor(
-                                                            chunk.LookupText,
-                                                            chunk.Start,
-                                                            TagHelperDirectiveType.AddTagHelper));
-
             var visitor = new ViewStartAddRemoveTagHelperVisitor(TagHelperDescriptorResolver,
-                                                                 directiveDescriptors,
+                                                                 _viewStartDirectiveDescriptors,
                                                                  errorSink);
-            var descriptors = visitor.GetDescriptors(documentRoot);
+            return visitor.GetDescriptors(documentRoot);
+        }
+
+        private static IEnumerable<TagHelperDirectiveDescriptor> GetTagHelperDescriptors(
+           IReadOnlyList<CodeTree> inheritedCodeTrees,
+           IReadOnlyList<Chunk> defaultInheritedChunks)
+        {
+            var descriptors = new List<TagHelperDirectiveDescriptor>();
+
+            // For tag helpers, the @removeTagHelper only applies tag helpers that were added prior to it.
+            // Consequently we must visit tag helpers outside-in - furthest _ViewStart first and nearest one last. This
+            // is different from the behavior of chunk merging where we visit the nearest one first and ignore chunks
+            // that were previously visited.
+            var chunksFromViewStarts = inheritedCodeTrees.Reverse()
+                                                         .SelectMany(tree => tree.Chunks);
+            var chunksInOrder = defaultInheritedChunks.Concat(chunksFromViewStarts);
+            foreach (var chunk in chunksInOrder)
+            {
+                var addHelperChunk = chunk as AddTagHelperChunk;
+                if (addHelperChunk != null)
+                {
+                    var descriptor = new TagHelperDirectiveDescriptor(addHelperChunk.LookupText,
+                                                                      SourceLocation.Undefined,
+                                                                      TagHelperDirectiveType.AddTagHelper);
+                    descriptors.Add(descriptor);
+                }
+                else
+                {
+                    var removeHelperChunk = chunk as RemoveTagHelperChunk;
+                    if (removeHelperChunk != null)
+                    {
+                        var descriptor = new TagHelperDirectiveDescriptor(removeHelperChunk.LookupText,
+                                                                          SourceLocation.Undefined,
+                                                                          TagHelperDirectiveType.RemoveTagHelper);
+                        descriptors.Add(descriptor);
+                    }
+                }
+            }
 
             return descriptors;
         }

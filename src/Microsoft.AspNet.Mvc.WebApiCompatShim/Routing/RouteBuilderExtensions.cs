@@ -3,9 +3,10 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Constraints;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNet.Builder
 {
     public static class RouteBuilderExtensions
     {

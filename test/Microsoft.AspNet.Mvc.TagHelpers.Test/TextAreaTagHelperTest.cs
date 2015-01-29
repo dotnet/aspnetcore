@@ -107,13 +107,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 For = modelExpression,
             };
 
-            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var htmlAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, htmlAttributes, "original content")
+            var output = new TagHelperOutput(expectedTagName, htmlAttributes)
             {
+                Content = "original content",
                 SelfClosing = true,
             };
 
@@ -146,7 +150,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
+            var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
+            var expectedPostContent = "original post-content";
             var expectedTagName = "textarea";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
@@ -157,9 +163,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var modelExpression = new ModelExpression(nameof(Model.Text), metadata);
             var tagHelper = new TextAreaTagHelper();
 
-            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
-            var output = new TagHelperOutput(expectedTagName, expectedAttributes, expectedContent)
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
+            var output = new TagHelperOutput(expectedTagName, expectedAttributes)
             {
+                PreContent = expectedPreContent,
+                Content = expectedContent,
+                PostContent = expectedPostContent,
                 SelfClosing = true,
             };
 

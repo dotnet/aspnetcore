@@ -9,13 +9,13 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class RazorViewEngineOptionsTest
     {
         [Fact]
-        public void FileSystemThrows_IfNullIsAsseigned()
+        public void FileProviderThrows_IfNullIsAsseigned()
         {
             // Arrange
             var options = new RazorViewEngineOptions();
 
             // Act and Assert
-            var ex = Assert.Throws<ArgumentNullException>(() => options.FileSystem = null);
+            var ex = Assert.Throws<ArgumentNullException>(() => options.FileProvider = null);
             Assert.Equal("value", ex.ParamName);
         }
     }

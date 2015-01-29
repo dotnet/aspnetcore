@@ -53,9 +53,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         public long Length { get; private set; }
 
         /// <summary>
-        /// Gets or sets the last modified <see cref="DateTime"/> for the file at the time of compilation.
+        /// Gets or sets the last modified <see cref="DateTimeOffset"/> for the file at the time of compilation.
         /// </summary>
-        public DateTime LastModified { get; set; }
+        public DateTimeOffset LastModified { get; set; }
 
         /// <summary>
         /// Gets the file hash, should only be available for pre compiled files.
@@ -65,7 +65,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets a flag that indicates if the file is precompiled.
         /// </summary>
-        public bool IsPreCompiled { get { return Hash != null; } }
+        public bool IsPreCompiled
+        {
+            get
+            {
+                return Hash != null;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="CompilerCacheEntry"/> for the nearest ViewStart that the compiled type

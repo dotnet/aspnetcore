@@ -2,10 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Description;
+using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
@@ -15,14 +19,16 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
     public class DefaultControllerModelBuilder : IControllerModelBuilder
     {
         private readonly IActionModelBuilder _actionModelBuilder;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Creates a new <see cref="DefaultControllerModelBuilder"/>.
         /// </summary>
         /// <param name="actionModelBuilder">The <see cref="IActionModelBuilder"/> used to create actions.</param>
-        public DefaultControllerModelBuilder(IActionModelBuilder actionModelBuilder)
+        public DefaultControllerModelBuilder(IActionModelBuilder actionModelBuilder, ILoggerFactory loggerFactory)
         {
             _actionModelBuilder = actionModelBuilder;
+            _logger = loggerFactory.Create<DefaultControllerModelBuilder>();
         }
 
         /// <inheritdoc />
@@ -61,24 +67,42 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// </remarks>
         protected virtual bool IsController([NotNull] TypeInfo typeInfo)
         {
-            if (!typeInfo.IsClass ||
-                typeInfo.IsAbstract ||
+            var status = ControllerStatus.IsController;
 
-                // We only consider public top-level classes as controllers. IsPublic returns false for nested
-                // classes, regardless of visibility modifiers.
-                !typeInfo.IsPublic ||
-                typeInfo.ContainsGenericParameters)
+            if (!typeInfo.IsClass)
             {
-                return false;
+                status |= ControllerStatus.IsNotAClass;
             }
-
+            if (typeInfo.IsAbstract)
+            {
+                status |= ControllerStatus.IsAbstract;
+            }
+            // We only consider public top-level classes as controllers. IsPublic returns false for nested
+            // classes, regardless of visibility modifiers
+            if (!typeInfo.IsPublic)
+            {
+                status |= ControllerStatus.IsNotPublicOrTopLevel;
+            }
+            if (typeInfo.ContainsGenericParameters)
+            {
+                status |= ControllerStatus.ContainsGenericParameters;
+            }
             if (typeInfo.Name.Equals("Controller", StringComparison.OrdinalIgnoreCase))
             {
-                return false;
+                status |= ControllerStatus.NameIsController;
             }
-
-            return typeInfo.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase) ||
-                   typeof(Controller).GetTypeInfo().IsAssignableFrom(typeInfo);
+            if (!typeInfo.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase) &&
+                   !typeof(Controller).GetTypeInfo().IsAssignableFrom(typeInfo))
+            {
+                status |= ControllerStatus.DoesNotEndWithControllerAndIsNotAssignable;
+            }
+            if (_logger.IsEnabled(LogLevel.Verbose))
+            {
+                _logger.WriteVerbose(new IsControllerValues(
+                    typeInfo.AsType(),
+                    status));
+            }
+            return status == ControllerStatus.IsController;
         }
 
         /// <summary>
@@ -98,11 +122,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                     typeInfo.Name.Substring(0, typeInfo.Name.Length - "Controller".Length) :
                     typeInfo.Name;
 
-            controllerModel.ActionConstraints.AddRange(attributes.OfType<IActionConstraintMetadata>());
-            controllerModel.Filters.AddRange(attributes.OfType<IFilter>());
-            controllerModel.RouteConstraints.AddRange(attributes.OfType<RouteConstraintAttribute>());
+            AddRange(controllerModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
+            AddRange(controllerModel.Filters, attributes.OfType<IFilter>());
+            AddRange(controllerModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
 
-            controllerModel.AttributeRoutes.AddRange(
+            AddRange(
+                controllerModel.AttributeRoutes,
                 attributes.OfType<IRouteTemplateProvider>().Select(rtp => new AttributeRouteModel(rtp)));
 
             var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
@@ -117,7 +142,30 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 controllerModel.ApiExplorer.GroupName = apiGroupName.GroupName;
             }
 
+            // Controllers can implement action filter and result filter interfaces. We add
+            // a special delegating filter implementation to the pipeline to handle it.
+            //
+            // This is needed because filters are instantiated before the controller.
+            if (typeof(IAsyncActionFilter).GetTypeInfo().IsAssignableFrom(typeInfo) ||
+                typeof(IActionFilter).GetTypeInfo().IsAssignableFrom(typeInfo))
+            {
+                controllerModel.Filters.Add(new ControllerActionFilter());
+            }
+            if (typeof(IAsyncResultFilter).GetTypeInfo().IsAssignableFrom(typeInfo) ||
+                typeof(IResultFilter).GetTypeInfo().IsAssignableFrom(typeInfo))
+            {
+                controllerModel.Filters.Add(new ControllerResultFilter());
+            }
+
             return controllerModel;
+        }
+
+        private static void AddRange<T>(IList<T> list, IEnumerable<T> items)
+        {
+            foreach (var item in items)
+            {
+                list.Add(item);
+            }
         }
     }
 }

@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.PipelineCore.Collections;
 using Moq;
 using Xunit;
 
@@ -377,6 +377,29 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             context.TokenProvider.Verify();
+        }
+
+        [Theory]
+        [InlineData(false, "SAMEORIGIN")]
+        [InlineData(true, null)]
+        public void SetCookieTokenAndHeader_AddsXFrameOptionsHeader(bool suppressXFrameOptions, string expectedHeaderValue)
+        {
+            // Arrange
+            var options = new AntiForgeryOptions()
+            {
+                SuppressXFrameOptionsHeader = suppressXFrameOptions
+            };
+
+            // Genreate a new cookie.
+            var context = GetAntiForgeryWorkerContext(options, useOldCookie: false, isOldCookieValid: false);
+            var worker = GetAntiForgeryWorker(context);
+
+            // Act
+            worker.SetCookieTokenAndHeader(context.HttpContext.Object);
+
+            // Assert
+            var xFrameOptions = context.HttpContext.Object.Response.Headers["X-Frame-Options"];
+            Assert.Equal(expectedHeaderValue, xFrameOptions);
         }
 
         private AntiForgeryWorker GetAntiForgeryWorker(AntiForgeryWorkerContext context)

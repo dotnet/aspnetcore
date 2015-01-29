@@ -8,12 +8,11 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ViewContext : ActionContext
     {
-        private DynamicViewData _viewBag;
-
         // We need a default FormContext if the user uses html <form> instead of an MvcForm
         private readonly FormContext _defaultFormContext = new FormContext();
 
         private FormContext _formContext;
+        private DynamicViewData _viewBag;
 
         public ViewContext(
             [NotNull] ActionContext actionContext,

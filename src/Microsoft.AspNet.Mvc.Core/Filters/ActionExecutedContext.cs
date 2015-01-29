@@ -14,12 +14,16 @@ namespace Microsoft.AspNet.Mvc
 
         public ActionExecutedContext(
             [NotNull] ActionContext actionContext,
-            [NotNull] IList<IFilter> filters)
+            [NotNull] IList<IFilter> filters,
+            object controller)
             : base(actionContext, filters)
         {
+            Controller = controller;
         }
 
         public virtual bool Canceled { get; set; }
+
+        public virtual object Controller { get; }
 
         public virtual Exception Exception
         {

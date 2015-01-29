@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.DependencyInjection;
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     public class FallbackOnTypeBasedMatchController : Controller
     {

@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Test

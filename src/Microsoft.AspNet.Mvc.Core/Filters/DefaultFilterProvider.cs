@@ -32,12 +32,6 @@ namespace Microsoft.AspNet.Mvc.Filters
                 }
             }
 
-            var controllerFilter = context.ActionContext.Controller as IFilter;
-            if (controllerFilter != null)
-            {
-                InsertControllerAsFilter(context, controllerFilter);
-            }
-
             if (callNext != null)
             {
                 callNext();
@@ -71,28 +65,6 @@ namespace Microsoft.AspNet.Mvc.Filters
 
                 ApplyFilterToContainer(filterItem.Filter, filterFactory);
             }
-        }
-
-        private void InsertControllerAsFilter(FilterProviderContext context, IFilter controllerFilter)
-        {
-            var descriptor = new FilterDescriptor(controllerFilter, FilterScope.Controller);
-            var item = new FilterItem(descriptor, controllerFilter);
-
-            // BinarySearch will return the index of where the item _should_be_ in the list.
-            //
-            // If index > 0:
-            //      Other items in the list have the same order and scope - the item was 'found'.
-            //
-            // If index < 0:
-            //      No other items in the list have the same order and scope - the item was not 'found'
-            //      Index will be the bitwise compliment of of the 'right' location.
-            var index = context.Results.BinarySearch(item, FilterItemOrderComparer.Comparer);
-            if (index < 0)
-            {
-                index = ~index;
-            }
-
-            context.Results.Insert(index, item);
         }
 
         private void ApplyFilterToContainer(object actualFilter, IFilter filterMetadata)

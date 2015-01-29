@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.Mvc
             : this(actionContext.HttpContext, actionContext.RouteData, actionContext.ActionDescriptor)
         {
             ModelState = actionContext.ModelState;
-            Controller = actionContext.Controller;
         }
 
         public ActionContext([NotNull] RouteContext routeContext, [NotNull] ActionDescriptor actionDescriptor)
@@ -39,16 +38,5 @@ namespace Microsoft.AspNet.Mvc
         public ModelStateDictionary ModelState { get; private set; }
 
         public ActionDescriptor ActionDescriptor { get; private set; }
-
-        /// <summary>
-        /// Input formatters associated with this context.
-        /// The formatters are populated only after IInputFormattersProvider runs.
-        /// </summary>
-        public IList<IInputFormatter> InputFormatters { get; set; }
-
-        /// <summary>
-        /// The controller is available only after the controller factory runs.
-        /// </summary>
-        public object Controller { get; set; }
     }
 }

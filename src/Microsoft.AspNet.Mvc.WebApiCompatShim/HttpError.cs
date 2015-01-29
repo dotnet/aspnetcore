@@ -29,7 +29,8 @@ namespace System.Web.Http
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpError"/> class containing error message <paramref name="message"/>.
+        /// Initializes a new instance of the <see cref="HttpError"/> class containing error message
+        /// <paramref name="message"/>.
         /// </summary>
         /// <param name="message">The error message to associate with this instance.</param>
         public HttpError([NotNull] string message)
@@ -42,7 +43,9 @@ namespace System.Web.Http
         /// Initializes a new instance of the <see cref="HttpError"/> class for <paramref name="exception"/>.
         /// </summary>
         /// <param name="exception">The exception to use for error information.</param>
-        /// <param name="includeErrorDetail"><c>true</c> to include the exception information in the error; <c>false</c> otherwise</param>
+        /// <param name="includeErrorDetail">
+        /// <c>true</c> to include the exception information in the error;<c>false</c> otherwise.
+        /// </param>
         public HttpError([NotNull] Exception exception, bool includeErrorDetail)
             : this()
         {
@@ -64,7 +67,9 @@ namespace System.Web.Http
         /// Initializes a new instance of the <see cref="HttpError"/> class for <paramref name="modelState"/>.
         /// </summary>
         /// <param name="modelState">The invalid model state to use for error information.</param>
-        /// <param name="includeErrorDetail"><c>true</c> to include exception messages in the error; <c>false</c> otherwise</param>
+        /// <param name="includeErrorDetail">
+        /// <c>true</c> to include exception messages in the error; <c>false</c> otherwise.
+        /// </param>
         public HttpError([NotNull] ModelStateDictionary modelState, bool includeErrorDetail)
             : this()
         {
@@ -105,8 +110,9 @@ namespace System.Web.Http
 
         /// <summary>
         /// The high-level, user-visible message explaining the cause of the error. Information carried in this field
-        /// should be considered public in that it will go over the wire regardless of the value of error detail policy.
-        /// As a result care should be taken not to disclose sensitive information about the server or the application.
+        /// should be considered public in that it will go over the wire regardless of the value of error detail
+        /// policy. As a result care should be taken not to disclose sensitive information about the server or the
+        /// application.
         /// </summary>
         public string Message
         {

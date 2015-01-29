@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 
 namespace ActivatorWebSite
@@ -21,6 +20,9 @@ namespace ActivatorWebSite
                 services.AddInstance(new MyService());
                 services.AddScoped<ViewService, ViewService>();
             });
+
+            // Used to report exceptions that MVC doesn't handle
+            app.UseErrorReporter();
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

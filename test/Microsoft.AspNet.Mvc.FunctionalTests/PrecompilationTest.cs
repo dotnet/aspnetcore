@@ -11,6 +11,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
+using PrecompilationWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -18,8 +19,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class PrecompilationTest
     {
         private static readonly TimeSpan _cacheDelayInterval = TimeSpan.FromSeconds(2);
-        private readonly IServiceProvider _services = TestHelper.CreateServices("PrecompilationWebSite");
-        private readonly Action<IApplicationBuilder> _app = new PrecompilationWebSite.Startup().Configure;
+        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(PrecompilationWebSite));
+        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task PrecompiledView_RendersCorrectly()
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // We will render a view that writes the fully qualified name of the Assembly containing the type of
             // the view. If the view is precompiled, this assembly will be PrecompilationWebsite.
-            var assemblyName = typeof(PrecompilationWebSite.Startup).GetTypeInfo().Assembly.GetName().ToString();
+            var assemblyName = typeof(Startup).GetTypeInfo().Assembly.GetName().ToString();
 
             try
             {
@@ -140,6 +141,30 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 File.WriteAllText(Path.Combine(viewsDirectory, "Index.cshtml"), indexContent);
                 File.WriteAllText(Path.Combine(viewsDirectory, "_ViewStart.cshtml"), viewstartContent);
             }
+        }
+
+        [Fact]
+        public async Task PrecompiledView_UsesCompilationOptionsFromApplication()
+        {
+            // Arrange
+            var assemblyName = typeof(Startup).GetTypeInfo().Assembly.GetName().ToString();
+#if ASPNET50
+            var expected =
+@"Value set inside ASPNET50 " + assemblyName;
+#elif ASPNETCORE50
+            var expected =
+@"Value set inside ASPNETCORE50 " + assemblyName;
+#endif
+
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/PrecompiledViewsCanConsumeCompilationOptions");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(expected, responseContent.Trim());
         }
 
         private static Task TouchFile(string viewsDir, string file)

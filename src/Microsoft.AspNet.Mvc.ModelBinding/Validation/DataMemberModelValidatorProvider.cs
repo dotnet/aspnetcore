@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class DataMemberModelValidatorProvider : AssociatedValidatorProvider
     {
         protected override IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata,
-                                                                      IEnumerable<Attribute> attributes)
+                                                                      IEnumerable<object> attributes)
         {
             // Types cannot be required; only properties can
             if (metadata.ContainerType == null || string.IsNullOrEmpty(metadata.PropertyName))
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return Enumerable.Empty<IModelValidator>();
         }
 
-        internal static bool IsRequiredDataMember(Type containerType, IEnumerable<Attribute> attributes)
+        internal static bool IsRequiredDataMember(Type containerType, IEnumerable<object> attributes)
         {
             var dataMemberAttribute = attributes.OfType<DataMemberAttribute>()
                                                 .FirstOrDefault();

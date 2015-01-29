@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 
-namespace ApiExplorer
+namespace ApiExplorerWebSite
 {
     [Route("ApiExplorerResponseTypeWithoutAttribute/[Action]")]
     public class ApiExplorerResponseTypeWithoutAttributeController : Controller

@@ -5,17 +5,17 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.HttpFeature;
+using Microsoft.AspNet.Http.Interfaces;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Represents an <see cref="ActionResult"/> that when executed will
+    /// An <see cref="ActionResult"/> that when executed will
     /// write a file from disk to the response using mechanisms provided
     /// by the host.
     /// </summary>
@@ -23,16 +23,17 @@ namespace Microsoft.AspNet.Mvc
     {
         private const int DefaultBufferSize = 0x1000;
 
+        private string _fileName;
+
         /// <summary>
         /// Creates a new <see cref="FilePathResult"/> instance with
-        /// the provided <paramref name="fileName"/> and the
-        /// provided <paramref name="contentType"/>.
+        /// the provided <paramref name="fileName"/>
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be an absolute
         /// path. Relative and virtual paths are not supported.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FilePathResult([NotNull] string fileName, [NotNull] string contentType)
-            : base(contentType)
+        public FilePathResult([NotNull] string fileName)
+            : base(contentType: null)
         {
             FileName = fileName;
         }
@@ -45,34 +46,45 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="fileName">The path to the file. The path must be an absolute
         /// path. Relative and virtual paths are not supported.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FilePathResult(
-            [NotNull] string fileName,
-            [NotNull] string contentType,
-            [NotNull] IFileSystem fileSystem)
+        public FilePathResult([NotNull] string fileName, string contentType)
             : base(contentType)
         {
             FileName = fileName;
-            FileSystem = fileSystem;
         }
 
         /// <summary>
-        /// Gets the path to the file that will be sent back as the response.
+        /// Gets or sets the path to the file that will be sent back as the response.
         /// </summary>
-        public string FileName { get; private set; }
+        public string FileName
+        {
+            get
+            {
+                return _fileName;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                _fileName = value;
+            }
+        }
 
         /// <summary>
-        /// Gets the <see cref="IFileSystem"/> used to resolve paths.
+        /// Gets or sets the <see cref="IFileProvider"/> used to resolve paths.
         /// </summary>
-        public IFileSystem FileSystem { get; private set; }
+        public IFileProvider FileProvider { get; set; }
 
         /// <inheritdoc />
         protected override Task WriteFileAsync(HttpResponse response, CancellationToken cancellation)
         {
             var sendFile = response.HttpContext.GetFeature<IHttpSendFileFeature>();
 
-            var fileSystem = GetFileSystem(response.HttpContext.RequestServices);
+            var fileProvider = GetFileProvider(response.HttpContext.RequestServices);
 
-            var filePath = ResolveFilePath(fileSystem);
+            var filePath = ResolveFilePath(fileProvider);
 
             if (sendFile != null)
             {
@@ -88,7 +100,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        internal string ResolveFilePath(IFileSystem fileSystem)
+        internal string ResolveFilePath(IFileProvider fileProvider)
         {
             // Let the file system try to get the file and if it can't,
             // fallback to trying the path directly unless the path starts with '/'.
@@ -105,10 +117,10 @@ namespace Microsoft.AspNet.Mvc
                 return path;
             }
 
-            var fileInfo = fileSystem.GetFileInfo(path);
+            var fileInfo = fileProvider.GetFileInfo(path);
             if (fileInfo.Exists)
             {
-                // The path is relative and IFileSystem found the file, so return the full
+                // The path is relative and IFileProvider found the file, so return the full
                 // path.
                 return fileInfo.PhysicalPath;
             }
@@ -119,7 +131,6 @@ namespace Microsoft.AspNet.Mvc
             throw new FileNotFoundException(message, path);
         }
 
-        // Internal for unit testing purposes only
         /// <summary>
         /// Creates a normalized representation of the given <paramref name="path"/>. The default
         /// implementation doesn't support files with '\' in the file name and treats the '\' as
@@ -128,6 +139,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="path">The path to normalize.</param>
         /// <returns>The normalized path.</returns>
+        // Internal for unit testing purposes only
         protected internal virtual string NormalizePath([NotNull] string path)
         {
             // Unix systems support '\' as part of the file name. So '\' is not
@@ -145,7 +157,7 @@ namespace Microsoft.AspNet.Mvc
             if (path.StartsWith("~\\", StringComparison.Ordinal))
             {
                 // ~\ is not a valid virtual path, and we don't want to replace '\' with '/' as it
-                // ofuscates the error, so just return the original path and throw at a later point
+                // obfuscates the error, so just return the original path and throw at a later point
                 // when we can't find the file.
                 return path;
             }
@@ -153,13 +165,13 @@ namespace Microsoft.AspNet.Mvc
             return path.Replace('\\', '/');
         }
 
-        // Internal for unit testing purposes only
         /// <summary>
         /// Determines if the provided path is absolute or relative. The default implementation considers
         /// paths starting with '/' to be relative.
         /// </summary>
         /// <param name="path">The path to examine.</param>
         /// <returns>True if the path is absolute.</returns>
+        // Internal for unit testing purposes only
         protected internal virtual bool IsPathRooted([NotNull] string path)
         {
             // We consider paths to be rooted if they start with '<<VolumeLetter>>:' and do
@@ -183,19 +195,17 @@ namespace Microsoft.AspNet.Mvc
                 path.StartsWith("\\\\", StringComparison.Ordinal);
         }
 
-        private IFileSystem GetFileSystem(IServiceProvider requestServices)
+        private IFileProvider GetFileProvider(IServiceProvider requestServices)
         {
-            if (FileSystem != null)
+            if (FileProvider != null)
             {
-                return FileSystem;
+                return FileProvider;
             }
 
-            // For right now until we can use IWebRootFileSystemProvider, see
-            // https://github.com/aspnet/Hosting/issues/86 for details.
             var hostingEnvironment = requestServices.GetService<IHostingEnvironment>();
-            FileSystem = new PhysicalFileSystem(hostingEnvironment.WebRoot);
+            FileProvider = hostingEnvironment.WebRootFileProvider;
 
-            return FileSystem;
+            return FileProvider;
         }
 
         private static async Task CopyStreamToResponse(

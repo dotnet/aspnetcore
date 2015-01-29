@@ -19,11 +19,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetValidatorsForPropertyWithLocalAttributes()
         {
             // Arrange
-            IEnumerable<Attribute> callbackAttributes = null;
+            IEnumerable<object> callbackAttributes = null;
             var metadata = _metadataProvider.GetMetadataForProperty(null, typeof(PropertyModel), "LocalAttributes");
             var provider = new Mock<TestableAssociatedValidatorProvider> { CallBase = true };
-            provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<Attribute>>()))
-                    .Callback<ModelMetadata, IEnumerable<Attribute>>((m, attributes) => callbackAttributes = attributes)
+            provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<object>>()))
+                    .Callback<ModelMetadata, IEnumerable<object>>((m, attributes) => callbackAttributes = attributes)
                     .Returns((IEnumerable<IModelValidator>)null)
                     .Verifiable();
 
@@ -39,11 +39,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetValidatorsForPropertyWithMetadataAttributes()
         {
             // Arrange
-            IEnumerable<Attribute> callbackAttributes = null;
+            IEnumerable<object> callbackAttributes = null;
             var metadata = _metadataProvider.GetMetadataForProperty(null, typeof(PropertyModel), "MetadataAttributes");
-            Mock<TestableAssociatedValidatorProvider> provider = new Mock<TestableAssociatedValidatorProvider> { CallBase = true };
-            provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<Attribute>>()))
-                    .Callback<ModelMetadata, IEnumerable<Attribute>>((m, attributes) => callbackAttributes = attributes)
+            var provider = new Mock<TestableAssociatedValidatorProvider> { CallBase = true };
+            provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<object>>()))
+                    .Callback<ModelMetadata, IEnumerable<object>>((m, attributes) => callbackAttributes = attributes)
                     .Returns((IEnumerable<IModelValidator>)null)
                     .Verifiable();
 
@@ -59,11 +59,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetValidatorsForPropertyWithMixedAttributes()
         {
             // Arrange
-            IEnumerable<Attribute> callbackAttributes = null;
+            IEnumerable<object> callbackAttributes = null;
             var metadata = _metadataProvider.GetMetadataForProperty(null, typeof(PropertyModel), "MixedAttributes");
-            Mock<TestableAssociatedValidatorProvider> provider = new Mock<TestableAssociatedValidatorProvider> { CallBase = true };
-            provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<Attribute>>()))
-                    .Callback<ModelMetadata, IEnumerable<Attribute>>((m, attributes) => callbackAttributes = attributes)
+            var provider = new Mock<TestableAssociatedValidatorProvider> { CallBase = true };
+            provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<object>>()))
+                    .Callback<ModelMetadata, IEnumerable<object>>((m, attributes) => callbackAttributes = attributes)
                     .Returns((IEnumerable<IModelValidator>)null)
                     .Verifiable();
 
@@ -91,12 +91,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public abstract class TestableAssociatedValidatorProvider : AssociatedValidatorProvider
         {
-            protected override IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata, IEnumerable<Attribute> attributes)
+            protected override IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata, IEnumerable<object> attributes)
             {
                 return AbstractGetValidators(metadata, attributes);
             }
 
-            public abstract IEnumerable<IModelValidator> AbstractGetValidators(ModelMetadata metadata, IEnumerable<Attribute> attributes);
+            public abstract IEnumerable<IModelValidator> AbstractGetValidators(ModelMetadata metadata, IEnumerable<object> attributes);
         }
     }
 }

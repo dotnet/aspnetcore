@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Web.Http;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
 using Xunit;
 
@@ -165,9 +165,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMetadata = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute() { IsOptional = true },
                     Name = "quantity",
-                    IsOptional = true,
                     ParameterType = typeof(int),
                 },
             };
@@ -307,9 +306,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMetadata = new FromUriAttribute(),
+                    BinderMetadata = new FromUriAttribute() { IsOptional = true },
                     Name = "quantity",
-                    IsOptional = true,
                     ParameterType = typeof(int),
                 },
             };
@@ -430,8 +428,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 },
                 new ParameterDescriptor()
                 {
-                    BinderMetadata = new FromUriAttribute(),
-                    IsOptional = true,
+                    BinderMetadata = new FromUriAttribute() { IsOptional = true },
                     Name = "quantity",
                     ParameterType = typeof(int),
                 },

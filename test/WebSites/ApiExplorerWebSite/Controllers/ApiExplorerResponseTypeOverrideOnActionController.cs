@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace ApiExplorer
+namespace ApiExplorerWebSite
 {
     [Produces("*/*", Type = typeof(Product))]
     [Route("ApiExplorerResponseTypeOverrideOnAction")]

@@ -12,7 +12,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// <summary>
     /// Represents a <see cref="IValueProvider"/> whose values come from a collection of <see cref="IValueProvider"/>s.
     /// </summary>
-    public class CompositeValueProvider : Collection<IValueProvider>, IEnumerableValueProvider, IMetadataAwareValueProvider
+    public class CompositeValueProvider
+        : Collection<IValueProvider>, IEnumerableValueProvider, IMetadataAwareValueProvider
     {
         /// <summary>
         /// Initializes a new instance of <see cref="CompositeValueProvider"/>.
@@ -30,6 +31,33 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public CompositeValueProvider(IEnumerable<IValueProvider> valueProviders)
             : base(valueProviders.ToList())
         {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="CompositeValueProvider"/> from the provided <paramref name="context"/>
+        /// and <paramref name="factories"/>.
+        /// </summary>
+        /// <param name="factories">The set of <see cref="IValueProviderFactory"/> instances.</param>
+        /// <param name="context">The <see cref="ValueProviderFactoryContext"/>.</param>
+        /// <returns>
+        /// A <see cref="CompositeValueProvider"/> containing all <see cref="IValueProvider"/> instances
+        /// created.
+        /// </returns>
+        public static CompositeValueProvider Create(
+            [NotNull] IEnumerable<IValueProviderFactory> factories, 
+            [NotNull] ValueProviderFactoryContext context)
+        {
+            var composite = new CompositeValueProvider();
+            foreach (var valueProvidersFactory in factories)
+            {
+                var valueProvider = valueProvidersFactory.GetValueProvider(context);
+                if (valueProvider != null)
+                {
+                    composite.Add(valueProvider);
+                }
+            }
+
+            return composite;
         }
 
         /// <inheritdoc />

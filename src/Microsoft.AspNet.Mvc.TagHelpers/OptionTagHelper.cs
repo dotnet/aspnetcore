@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -13,11 +14,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <see cref="ITagHelper"/> implementation targeting &lt;option&gt; elements.
     /// </summary>
     /// <remarks>
-    /// This <see cref="ITagHelper"/> works in conjunction with <see cref="SelectTagHelper"/>. It has
-    /// <see cref="ContentBehavior.Modify"/> in order to read element's content but does not modify that content. The
-    /// only modification it makes is to add a <c>selected</c> attribute in some cases.
+    /// This <see cref="ITagHelper"/> works in conjunction with <see cref="SelectTagHelper"/>. It reads elements 
+    /// content but does not modify that content. The only modification it makes is to add a <c>selected</c> attribute 
+    /// in some cases.
     /// </remarks>
-    [ContentBehavior(ContentBehavior.Modify)]
     public class OptionTagHelper : TagHelper
     {
         // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <see cref="ICollection{string}"/> instance. Also does nothing if the associated &lt;option&gt; is already
         /// selected.
         /// </remarks>
-        public override void Process(TagHelperContext context, TagHelperOutput output)
+        public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             // Pass through attributes that are also well-known HTML attributes.
             if (Value != null)
@@ -84,9 +84,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     }
 
                     // Select this <option/> element if value attribute or content matches a selected value. Callers
-                    // encode values as-needed before setting TagHelperOutput.Content. But TagHelperOutput itself
+                    // encode values as-needed while executing child content. But TagHelperOutput itself
                     // encodes attribute values later, when GenerateStartTag() is called.
-                    var text = output.Content;
+                    var text = await context.GetChildContentAsync();
                     var selected = (Value != null) ? selectedValues.Contains(Value) : encodedValues.Contains(text);
                     if (selected)
                     {

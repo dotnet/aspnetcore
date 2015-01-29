@@ -3,8 +3,11 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Text;
 using Xunit;
 
@@ -16,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void MvcRazorHost_EnablesInstrumentationByDefault()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileSystem());
+            var host = new MvcRazorHost(new TestFileProvider());
 
             // Act
             var instrumented = host.EnableInstrumentation;
@@ -29,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void MvcRazorHost_GeneratesTagHelperModelExpressionCode_DesignTime()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileSystem())
+            var host = new MvcRazorHost(new TestFileProvider())
             {
                 DesignTimeMode = true
             };
@@ -48,7 +51,22 @@ namespace Microsoft.AspNet.Mvc.Razor
                                  generatedAbsoluteIndex: 823,
                                  generatedLineIndex: 25,
                                  generatedCharacterIndex: 14,
-                                 contentLength: 85)
+                                 contentLength: 85),
+                BuildLineMapping(documentAbsoluteIndex: 139,
+                                 documentLineIndex: 4,
+                                 documentCharacterIndex: 17,
+                                 generatedAbsoluteIndex: 2105,
+                                 generatedLineIndex: 53,
+                                 generatedCharacterIndex: 95,
+                                 contentLength: 3),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 166,
+                    documentLineIndex: 5,
+                    documentCharacterIndex: 18,
+                    generatedAbsoluteIndex: 2418,
+                    generatedLineIndex: 59,
+                    generatedCharacterIndex: 87,
+                    contentLength: 5),
             };
 
             // Act and Assert
@@ -61,12 +79,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         [InlineData("Basic")]
         [InlineData("Inject")]
         [InlineData("InjectWithModel")]
+        [InlineData("InjectWithSemicolon")]
         [InlineData("Model")]
         [InlineData("ModelExpressionTagHelper")]
         public void MvcRazorHost_ParsesAndGeneratesCodeForBasicScenarios(string scenarioName)
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileSystem());
+            var host = new TestMvcRazorHost(new TestFileProvider());
 
             // Act and Assert
             RunRuntimeTest(host, scenarioName);
@@ -76,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void InjectVisitor_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileSystem())
+            var host = new MvcRazorHost(new TestFileProvider())
             {
                 DesignTimeMode = true
             };
@@ -95,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void InjectVisitorWithModel_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileSystem())
+            var host = new MvcRazorHost(new TestFileProvider())
             {
                 DesignTimeMode = true
             };
@@ -112,10 +131,32 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
+        public void InjectVisitorWithSemicolon_GeneratesCorrectLineMappings()
+        {
+            // Arrange
+            var host = new MvcRazorHost(new TestFileProvider())
+            {
+                DesignTimeMode = true
+            };
+            host.NamespaceImports.Clear();
+            var expectedLineMappings = new[]
+            {
+                BuildLineMapping(7, 0, 7, 222, 6, 7, 7),
+                BuildLineMapping(24, 1, 8, 729, 26, 8, 20),
+                BuildLineMapping(58, 2, 8, 941, 34, 8, 23),
+                BuildLineMapping(93, 3, 8, 1156, 42, 8, 21),
+                BuildLineMapping(129, 4, 8, 1369, 50, 8, 24),
+            };
+
+            // Act and Assert
+            RunDesignTimeTest(host, "InjectWithSemicolon", expectedLineMappings);
+        }
+
+        [Fact]
         public void ModelVisitor_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileSystem())
+            var host = new MvcRazorHost(new TestFileProvider())
             {
                 DesignTimeMode = true
             };
@@ -204,6 +245,69 @@ namespace Microsoft.AspNet.Mvc.Razor
             return new LineMapping(
                 documentLocation: new MappingLocation(documentLocation, contentLength),
                 generatedLocation: new MappingLocation(generatedLocation, contentLength));
+        }
+
+        /// <summary>
+        /// Used when testing Tag Helpers, it disables the unique ID generation feature.
+        /// </summary>
+        private class TestMvcRazorHost : MvcRazorHost
+        {
+            public TestMvcRazorHost(IFileProvider fileProvider)
+                : base(fileProvider)
+            { }
+
+            public override CodeBuilder DecorateCodeBuilder(CodeBuilder incomingBuilder, CodeBuilderContext context)
+            {
+                base.DecorateCodeBuilder(incomingBuilder, context);
+
+                return new TestCSharpCodeBuilder(context,
+                                                 DefaultModel,
+                                                 ActivateAttribute,
+                                                 new GeneratedTagHelperAttributeContext
+                                                 {
+                                                     ModelExpressionTypeName = ModelExpressionType,
+                                                     CreateModelExpressionMethodName = CreateModelExpressionMethod
+                                                 });
+            }
+
+            protected class TestCSharpCodeBuilder : MvcCSharpCodeBuilder
+            {
+                private readonly GeneratedTagHelperAttributeContext _tagHelperAttributeContext;
+
+                public TestCSharpCodeBuilder(CodeBuilderContext context,
+                                             string defaultModel,
+                                             string activateAttribute,
+                                             GeneratedTagHelperAttributeContext tagHelperAttributeContext)
+                    : base(context, defaultModel, activateAttribute, tagHelperAttributeContext)
+                {
+                    _tagHelperAttributeContext = tagHelperAttributeContext;
+                }
+
+                protected override CSharpCodeVisitor CreateCSharpCodeVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
+                {
+                    var visitor = base.CreateCSharpCodeVisitor(writer, context);
+                    visitor.TagHelperRenderer = new NoUniqueIdsTagHelperCodeRenderer(visitor, writer, context)
+                    {
+                        AttributeValueCodeRenderer =
+                            new MvcTagHelperAttributeValueCodeRenderer(_tagHelperAttributeContext)
+                    };
+                    return visitor;
+                }
+
+                private class NoUniqueIdsTagHelperCodeRenderer : CSharpTagHelperCodeRenderer
+                {
+                    public NoUniqueIdsTagHelperCodeRenderer(IChunkVisitor bodyVisitor,
+                                                            CSharpCodeWriter writer,
+                                                            CodeBuilderContext context)
+                        : base(bodyVisitor, writer, context)
+                    { }
+
+                    protected override string GenerateUniqueId()
+                    {
+                        return "test";
+                    }
+                }
+            }
         }
     }
 }

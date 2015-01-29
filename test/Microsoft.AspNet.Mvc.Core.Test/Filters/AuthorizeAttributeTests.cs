@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Security;
 using Microsoft.Framework.DependencyInjection;
@@ -17,11 +15,15 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task Invoke_ValidClaimShouldNotFail()
         {
             // Arrange
-            var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
-            var authorizeAttribute = new AuthorizeAttribute("Permission", "CanViewPage");
+            var authorizeAttribute = new AuthorizeAttribute("CanViewPage");
             var authorizationContext = GetAuthorizationContext(services =>
-                services.AddInstance<IAuthorizationService>(authorizationService)
-                );
+            {
+                services.AddAuthorization(null, options =>
+                {
+                    var policy = new AuthorizationPolicyBuilder().RequiresClaim("Permission", "CanViewPage");
+                    options.AddPolicy("CanViewPage", policy.Build());
+                });
+            });
 
             // Act
             await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
@@ -34,12 +36,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task Invoke_EmptyClaimsShouldRejectAnonymousUser()
         {
             // Arrange
-            var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
+            var authorizationOptions = new AuthorizationOptions();
             var authorizeAttribute = new AuthorizeAttribute();
             var authorizationContext = GetAuthorizationContext(services =>
-                services.AddInstance<IAuthorizationService>(authorizationService),
-                anonymous: true
-                );
+                services.AddAuthorization(),
+                anonymous: true);
 
             // Act
             await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
@@ -52,12 +53,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task Invoke_EmptyClaimsWithAllowAnonymousAttributeShouldNotRejectAnonymousUser()
         {
             // Arrange
-            var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
             var authorizeAttribute = new AuthorizeAttribute();
             var authorizationContext = GetAuthorizationContext(services =>
-                services.AddInstance<IAuthorizationService>(authorizationService),
-                anonymous: true
-                );
+            {
+                services.AddAuthorization();
+                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            },
+                anonymous: true);
 
             authorizationContext.Filters.Add(new AllowAnonymousAttribute());
 
@@ -72,11 +74,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task Invoke_EmptyClaimsShouldAuthorizeAuthenticatedUser()
         {
             // Arrange
-            var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
             var authorizeAttribute = new AuthorizeAttribute();
             var authorizationContext = GetAuthorizationContext(services =>
-                services.AddInstance<IAuthorizationService>(authorizationService)
-                );
+            {
+                services.AddAuthorization();
+                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            });
 
             // Act
             await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
@@ -89,11 +92,16 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public async Task Invoke_SingleValidClaimShouldSucceed()
         {
             // Arrange
-            var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
-            var authorizeAttribute = new AuthorizeAttribute("Permission", "CanViewComment", "CanViewPage");
+            var authorizeAttribute = new AuthorizeAttribute("CanViewCommentOrPage");
             var authorizationContext = GetAuthorizationContext(services =>
-                services.AddInstance<IAuthorizationService>(authorizationService)
-                );
+            {
+                services.AddAuthorization(null, options =>
+                {
+                    var policy = new AuthorizationPolicyBuilder().RequiresClaim("Permission", "CanViewComment", "CanViewPage");
+                    options.AddPolicy("CanViewCommentOrPage", policy.Build());
+                });
+                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            });
 
             // Act
             await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
@@ -103,14 +111,95 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
+        public async Task Invoke_RequireAdminRoleShouldFailWithNoHandlers()
+        {
+            // Arrange
+            var authorizeAttribute = new AuthorizeAttribute { Roles = "Administrator" };
+            var authorizationContext = GetAuthorizationContext(services =>
+            {
+                services.AddOptions();
+                services.AddTransient<IAuthorizationService, DefaultAuthorizationService>();
+            });
+
+            // Act
+            await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.NotNull(authorizationContext.Result);
+        }
+
+        [Fact]
+        public async Task Invoke_RequireAdminAndUserRoleWithNoPolicyShouldSucceed()
+        {
+            // Arrange
+            var authorizeAttribute = new AuthorizeAttribute { Roles = "Administrator,User" };
+            var authorizationContext = GetAuthorizationContext(services =>
+            {
+                services.AddAuthorization();
+                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            });
+
+            // Act
+            await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.Null(authorizationContext.Result);
+        }
+
+        [Fact]
+        public async Task Invoke_RequireUnknownRoleShouldFail()
+        {
+            // Arrange
+            var authorizeAttribute = new AuthorizeAttribute { Roles = "Wut" };
+            var authorizationContext = GetAuthorizationContext(services =>
+            {
+                services.AddAuthorization();
+                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            });
+
+            // Act
+            await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.NotNull(authorizationContext.Result);
+        }
+
+        [Fact]
+        public async Task Invoke_RequireAdminRoleButFailPolicyShouldFail()
+        {
+            // Arrange
+            var authorizeAttribute = new AuthorizeAttribute { Roles = "Administrator", Policy = "Basic" };
+            var authorizationContext = GetAuthorizationContext(services =>
+            {
+                services.AddAuthorization(null, options =>
+                {
+                    var policy = new AuthorizationPolicyBuilder().RequiresClaim("Permission", "CanViewComment");
+                    options.AddPolicy("CanViewComment", policy.Build());
+                });
+                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            });
+
+            // Act
+            await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.NotNull(authorizationContext.Result);
+        }
+
+        [Fact]
         public async Task Invoke_InvalidClaimShouldFail()
         {
             // Arrange
-            var authorizationService = new DefaultAuthorizationService(Enumerable.Empty<IAuthorizationPolicy>());
-            var authorizeAttribute = new AuthorizeAttribute("Permission", "CanViewComment");
+            var authorizeAttribute = new AuthorizeAttribute("CanViewComment");
             var authorizationContext = GetAuthorizationContext(services =>
-                services.AddInstance<IAuthorizationService>(authorizationService)
-                );
+            {
+                services.AddAuthorization(null, options =>
+                {
+                    var policy = new AuthorizationPolicyBuilder().RequiresClaim("Permission", "CanViewComment");
+                    options.AddPolicy("CanViewComment", policy.Build());
+                });
+                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            });
 
             // Act
             await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
@@ -126,16 +215,16 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             bool authorizationServiceIsCalled = false;
             var authorizationService = new Mock<IAuthorizationService>();
             authorizationService
-                .Setup(x => x.AuthorizeAsync(Enumerable.Empty<Claim>(), null, null))
+                .Setup(x => x.AuthorizeAsync("CanViewComment", null, null))
                 .Returns(() =>
                 {
                     authorizationServiceIsCalled = true;
                     return Task.FromResult(true);
                 });
 
-            var authorizeAttribute = new AuthorizeAttribute("Permission", "CanViewComment");
+            var authorizeAttribute = new AuthorizeAttribute("CanViewComment");
             var authorizationContext = GetAuthorizationContext(services =>
-                services.AddInstance<IAuthorizationService>(authorizationService.Object)
+                services.AddInstance(authorizationService.Object)
                 );
 
             authorizationContext.Result = new HttpStatusCodeResult(401);
@@ -148,14 +237,60 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task Invoke_NullPoliciesShouldNotFail()
+        public async Task Invoke_FailWhenLookingForClaimInOtherIdentity()
         {
             // Arrange
-            var authorizationService = new DefaultAuthorizationService(policies: null);
-            var authorizeAttribute = new AuthorizeAttribute("Permission", "CanViewPage");
+            var authorizeAttribute = new AuthorizeAttribute("CanViewComment");
             var authorizationContext = GetAuthorizationContext(services =>
-                services.AddInstance<IAuthorizationService>(authorizationService)
-                );
+            {
+                services.AddAuthorization(null, options =>
+                {
+                    var policy = new AuthorizationPolicyBuilder("Bearer").RequiresClaim("Permission", "CanViewComment");
+                    options.AddPolicy("CanViewComment", policy.Build());
+                });
+                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            });
+
+            // Act
+            await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.NotNull(authorizationContext.Result);
+        }
+
+        [Fact]
+        public async Task Invoke_CanLookingForClaimsInMultipleIdentities()
+        {
+            // Arrange
+            var authorizeAttribute = new AuthorizeAttribute("CanViewCommentCupBearer");
+            var authorizationContext = GetAuthorizationContext(services =>
+            {
+                services.AddAuthorization(null, options =>
+                {
+                    var policy = new AuthorizationPolicyBuilder("Basic", "Bearer")
+                        .RequiresClaim("Permission", "CanViewComment")
+                        .RequiresClaim("Permission", "CupBearer");
+                    options.AddPolicy("CanViewComment", policy.Build());
+                });
+                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            });
+
+            // Act
+            await authorizeAttribute.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.NotNull(authorizationContext.Result);
+        }
+
+        public async Task Invoke_NoPoliciesShouldNotFail()
+        {
+            // Arrange
+            var authorizeAttribute = new AuthorizeAttribute("CanViewPage");
+            var authorizationContext = GetAuthorizationContext(services =>
+            {
+                services.AddAuthorization();
+                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            });
 
             // Act
             await authorizeAttribute.OnAuthorizationAsync(authorizationContext);

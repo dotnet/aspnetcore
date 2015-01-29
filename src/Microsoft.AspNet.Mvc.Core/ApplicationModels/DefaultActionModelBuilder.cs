@@ -233,7 +233,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                  typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0] == methodInfo);
         }
 
-
         /// <summary>
         /// Creates an <see cref="ActionModel"/> for the given <see cref="MethodInfo"/>.
         /// </summary>
@@ -252,13 +251,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             [NotNull] MethodInfo methodInfo,
             [NotNull] IReadOnlyList<object> attributes)
         {
-            var actionModel = new ActionModel(methodInfo, attributes)
-            {
-                IsActionNameMatchRequired = true,
-            };
+            var actionModel = new ActionModel(methodInfo, attributes);
 
-            actionModel.ActionConstraints.AddRange(attributes.OfType<IActionConstraintMetadata>());
-            actionModel.Filters.AddRange(attributes.OfType<IFilter>());
+            AddRange(actionModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
+            AddRange(actionModel.Filters, attributes.OfType<IFilter>());
 
             var actionName = attributes.OfType<ActionNameAttribute>().FirstOrDefault();
             if (actionName?.Name != null)
@@ -283,11 +279,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
 
             var httpMethods = attributes.OfType<IActionHttpMethodProvider>();
-            actionModel.HttpMethods.AddRange(
+            AddRange(actionModel.HttpMethods,
                 httpMethods
                     .Where(a => a.HttpMethods != null)
                     .SelectMany(a => a.HttpMethods)
                     .Distinct());
+
+            AddRange(actionModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
 
             var routeTemplateProvider =
                 attributes
@@ -318,7 +316,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             parameterModel.BinderMetadata = attributes.OfType<IBinderMetadata>().FirstOrDefault();
 
             parameterModel.ParameterName = parameterInfo.Name;
-            parameterModel.IsOptional = parameterInfo.HasDefaultValue;
 
             return parameterModel;
         }
@@ -329,6 +326,14 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 routeTemplateProvider.Template == null &&
                 routeTemplateProvider.Order == null &&
                 routeTemplateProvider.Name == null;
+        }
+
+        private static void AddRange<T>(IList<T> list, IEnumerable<T> items)
+        {
+            foreach (var item in items)
+            {
+                list.Add(item);
+            }
         }
     }
 }

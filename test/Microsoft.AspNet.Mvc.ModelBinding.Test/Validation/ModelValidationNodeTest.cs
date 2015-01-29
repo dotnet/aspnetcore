@@ -356,12 +356,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new DataMemberModelValidatorProvider()
             };
 
-            var provider = new Mock<IModelValidatorProviderProvider>();
-            provider.SetupGet(p => p.ModelValidatorProviders)
-                    .Returns(providers);
-
             return new ModelValidationContext(new EmptyModelMetadataProvider(),
-                                              new CompositeModelValidatorProvider(provider.Object),
+                                              new CompositeModelValidatorProvider(providers),
                                               new ModelStateDictionary(),
                                               metadata,
                                               null);

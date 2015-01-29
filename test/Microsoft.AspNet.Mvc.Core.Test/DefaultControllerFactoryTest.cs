@@ -40,8 +40,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             var controller = new Object();
 
-            // Act + Assert
-            Assert.DoesNotThrow(() => factory.ReleaseController(controller));
+            // Act + Assert (does not throw)
+            factory.ReleaseController(controller);
         }
 
         private class MyController : Controller

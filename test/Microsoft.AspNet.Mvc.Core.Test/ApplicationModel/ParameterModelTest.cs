@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             parameter.Action = new ActionModel(typeof(TestController).GetMethod("Edit"), new List<object>());
             parameter.BinderMetadata = (IBinderMetadata)parameter.Attributes[0];
-            parameter.IsOptional = true;
             parameter.ParameterName = "id";
 
             // Act

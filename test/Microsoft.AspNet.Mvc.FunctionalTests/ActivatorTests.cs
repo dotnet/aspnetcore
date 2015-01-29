@@ -21,12 +21,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
+
             var expectedMessage = "No service for type 'ActivatorWebSite.CannotBeActivatedController+FakeType' " +
                                    "has been registered.";
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync("http://localhost/CannotBeActivated/Index"));
-            Assert.Equal(expectedMessage, ex.Message);
+            var response = await client.GetAsync("http://localhost/CannotBeActivated/Index");
+
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(expectedMessage, exception.ExceptionMessage);
         }
 
         [Fact]
@@ -162,9 +166,34 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                                    "has been registered.";
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => client.GetAsync("http://localhost/View/ConsumeCannotBeActivatedComponent"));
-            Assert.Equal(expectedMessage, ex.Message);
+            var response = await client.GetAsync("http://localhost/View/ConsumeCannotBeActivatedComponent");
+
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(expectedMessage, exception.ExceptionMessage);
+        }
+
+        [Fact]
+        public async Task TagHelperActivation_ActivateHtmlHelper_RendersProperly()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var expected = "<body><h2>Activation Test</h2>" +
+                           Environment.NewLine +
+                           "<div>FakeFakeFake</div>" +
+                           Environment.NewLine + 
+                           "<span>" +
+                           "<input id=\"foo\" name=\"foo\" type=\"hidden\" value=\"test content\" />" +
+                           "</span>" +
+                           Environment.NewLine +
+                           "</body>";
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/View/UseTagHelper");
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         /// <param name="defaultModelType">The type name of the model used by default.</param>
         public SetBaseTypeChunkMerger(string modelType)
         {
-            _modelType = '<' + modelType + '>';
+            _modelType = "<" + modelType + ">";
         }
 
         /// <inheritdoc />

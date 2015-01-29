@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace ApiExplorer
+namespace ApiExplorerWebSite
 {
     [Route("ApiExplorerResponseContentType/[Action]")]
     public class ApiExplorerResponseContentTypeController : Controller

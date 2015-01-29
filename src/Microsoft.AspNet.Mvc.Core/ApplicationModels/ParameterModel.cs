@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Action = other.Action;
             Attributes = new List<object>(other.Attributes);
             BinderMetadata = other.BinderMetadata;
-            IsOptional = other.IsOptional;
             ParameterInfo = other.ParameterInfo;
             ParameterName = other.ParameterName;
         }
@@ -32,8 +31,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public IReadOnlyList<object> Attributes { get; }
 
         public IBinderMetadata BinderMetadata { get; set; }
-
-        public bool IsOptional { get; set; }
 
         public ParameterInfo ParameterInfo { get; private set; }
 

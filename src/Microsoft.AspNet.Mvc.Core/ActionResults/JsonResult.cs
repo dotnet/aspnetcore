@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -56,6 +57,11 @@ namespace Microsoft.AspNet.Mvc
         public IOutputFormatter Formatter { get; set; }
 
         /// <summary>
+        /// Gets or sets the HTTP status code.
+        /// </summary>
+        public int? StatusCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the value to be formatted.
         /// </summary>
         public object Value { get; set; }
@@ -86,7 +92,16 @@ namespace Microsoft.AspNet.Mvc
                 Object = Value,
             };
 
+            // JsonResult expects to always find a formatter, in contrast with ObjectResult, which might return
+            // a 406.
             var formatter = SelectFormatter(objectResult, formatterContext);
+            Debug.Assert(formatter != null);
+
+            if (StatusCode != null)
+            {
+                context.HttpContext.Response.StatusCode = StatusCode.Value;
+            }
+
             await formatter.WriteAsync(formatterContext);
         }
 

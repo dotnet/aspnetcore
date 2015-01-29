@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             services.AddInstance(
                 typeof(ILoggerFactory),
-                NullLoggerFactory.Instance);
+                new LoggerFactory());
 
             if (newServices != null)
             {

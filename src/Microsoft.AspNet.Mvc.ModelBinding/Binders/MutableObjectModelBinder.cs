@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var complexModelDtoMetadata =
                 bindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(() => originalDto,
                                                                                    typeof(ComplexModelDto));
-            var dtoBindingContext = 
+            var dtoBindingContext =
                 new ModelBindingContext(bindingContext, bindingContext.ModelName, complexModelDtoMetadata);
 
             await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(dtoBindingContext);
@@ -263,7 +263,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (bindingContext.Model == null)
             {
-                bindingContext.ModelMetadata.Model = CreateModel(bindingContext);
+                bindingContext.Model = CreateModel(bindingContext);
             }
         }
 
@@ -291,10 +291,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             };
         }
 
-        private static object GetPropertyDefaultValue(PropertyInfo propertyInfo)
+        private static bool TryGetPropertyDefaultValue(PropertyInfo propertyInfo, out object value)
         {
-            var attr = propertyInfo.GetCustomAttribute<DefaultValueAttribute>();
-            return (attr != null) ? attr.Value : null;
+            var attribute = propertyInfo.GetCustomAttribute<DefaultValueAttribute>();
+            if (attribute == null)
+            {
+                value = null;
+                return false;
+            }
+            else
+            {
+                value = attribute.Value;
+                return true;
+            }
         }
 
         internal static PropertyValidationInfo GetPropertyValidationInfo(ModelBindingContext bindingContext)
@@ -345,7 +354,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var validationInfo = GetPropertyValidationInfo(bindingContext);
 
             // Eliminate provided properties from requiredProperties; leaving just *missing* required properties.
-            validationInfo.RequiredProperties.ExceptWith(dto.Results.Select(r => r.Key.PropertyName));
+            var boundProperties = dto.Results.Where(p => p.Value.IsModelBound).Select(p => p.Key.PropertyName);
+            validationInfo.RequiredProperties.ExceptWith(boundProperties);
 
             foreach (var missingRequiredProperty in validationInfo.RequiredProperties)
             {
@@ -407,7 +417,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return;
             }
 
-            var value = dtoResult.Model ?? GetPropertyDefaultValue(property);
+            object value;
+            var hasDefaultValue = false;
+            if (dtoResult.IsModelBound)
+            {
+                value = dtoResult.Model;
+            }
+            else
+            {
+                hasDefaultValue = TryGetPropertyDefaultValue(property, out value);
+            }
+
             propertyMetadata.Model = value;
 
             // 'Required' validators need to run first so that we can provide useful error messages if
@@ -427,6 +447,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         }
                     }
                 }
+            }
+
+            if (!dtoResult.IsModelBound && !hasDefaultValue)
+            {
+                // If we don't have a value, don't set it on the model and trounce a pre-initialized
+                // value.
+                return;
             }
 
             if (value != null || property.PropertyType.AllowsNullValue())

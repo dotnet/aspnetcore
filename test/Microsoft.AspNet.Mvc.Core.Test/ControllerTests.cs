@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Reflection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 #if ASPNET50
@@ -374,6 +373,171 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void Created_WithStringParameter_SetsCreatedLocation()
+        {
+            // Arrange
+            var controller = new Controller();
+            var uri = "http://test/url";
+
+            // Act
+            var result = controller.Created(uri, null);
+
+            // Assert
+            Assert.IsType<CreatedResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Same(uri, result.Location);
+        }
+
+        [Fact]
+        public void Created_WithAbsoluteUriParameter_SetsCreatedLocation()
+        {
+            // Arrange
+            var controller = new Controller();
+            var uri = new Uri("http://test/url");
+
+            // Act
+            var result = controller.Created(uri, null);
+
+            // Assert
+            Assert.IsType<CreatedResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(uri.OriginalString, result.Location);
+        }
+
+        [Fact]
+        public void Created_WithRelativeUriParameter_SetsCreatedLocation()
+        {
+            // Arrange
+            var controller = new Controller();
+            var uri = new Uri("/test/url", UriKind.Relative);
+
+            // Act
+            var result = controller.Created(uri, null);
+
+            // Assert
+            Assert.IsType<CreatedResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(uri.OriginalString, result.Location);
+        }
+
+        [Fact]
+        public void CreatedAtAction_WithParameterActionName_SetsResultActionName()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var result = controller.CreatedAtAction("SampleAction", null);
+
+            // Assert
+            Assert.IsType<CreatedAtActionResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal("SampleAction", result.ActionName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("SampleController")]
+        public void CreatedAtAction_WithActionControllerAndNullRouteValue_SetsSameValue(
+            string controllerName)
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var result = controller.CreatedAtAction("SampleAction", controllerName, null, null);
+
+            // Assert
+            Assert.IsType<CreatedAtActionResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal("SampleAction", result.ActionName);
+            Assert.Equal(controllerName, result.ControllerName);
+        }
+
+        [Fact]
+        public void CreatedAtAction_WithActionControllerRouteValues_SetsSameValues()
+        {
+            // Arrange
+            var controller = new Controller();
+            var expected = new Dictionary<string, object>
+                {
+                    { "test", "case" },
+                    { "sample", "route" },
+                };
+
+            // Act
+            var result = controller.CreatedAtAction(
+                "SampleAction",
+                "SampleController",
+                new RouteValueDictionary(expected), null);
+
+            // Assert
+            Assert.IsType<CreatedAtActionResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal("SampleAction", result.ActionName);
+            Assert.Equal("SampleController", result.ControllerName);
+            Assert.Equal(expected, result.RouteValues);
+        }
+
+        [Fact]
+        public void CreatedAtRoute_WithParameterRouteName_SetsResultSameRouteName()
+        {
+            // Arrange
+            var controller = new Controller();
+            var routeName = "SampleRoute";
+
+            // Act
+            var result = controller.CreatedAtRoute(routeName, null);
+
+            // Assert
+            Assert.IsType<CreatedAtRouteResult>(result);
+            Assert.Same(routeName, result.RouteName);
+        }
+
+        [Fact]
+        public void CreatedAtRoute_WithParameterRouteValues_SetsResultSameRouteValues()
+        {
+            // Arrange
+            var controller = new Controller();
+            var expected = new Dictionary<string, object>
+                {
+                    { "test", "case" },
+                    { "sample", "route" },
+                };
+
+            // Act
+            var result = controller.CreatedAtRoute(new RouteValueDictionary(expected), null);
+
+            // Assert
+            Assert.IsType<CreatedAtRouteResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(expected, result.RouteValues);
+        }
+
+        [Fact]
+        public void CreatedAtRoute_WithParameterRouteNameAndValues_SetsResultSameProperties()
+        {
+            // Arrange
+            var controller = new Controller();
+            var routeName = "SampleRoute";
+            var expected = new Dictionary<string, object>
+                {
+                    { "test", "case" },
+                    { "sample", "route" },
+                };
+
+            // Act
+            var result = controller.CreatedAtRoute(routeName, new RouteValueDictionary(expected), null);
+
+            // Assert
+            Assert.IsType<CreatedAtRouteResult>(result);
+            Assert.Equal(201, result.StatusCode);
+            Assert.Same(routeName, result.RouteName);
+            Assert.Equal(expected, result.RouteValues);
+        }
+
+        [Fact]
         public void File_WithContents()
         {
             // Arrange
@@ -488,6 +652,52 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.IsType<HttpNotFoundResult>(result);
             Assert.Equal(404, result.StatusCode);
+        }
+
+        [Fact]
+        public void BadRequest_SetsStatusCode()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var result = controller.HttpBadRequest();
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
+            Assert.Equal(400, result.StatusCode);
+        }
+
+        [Fact]
+        public void BadRequest_SetsStatusCodeAndValue_Object()
+        {
+            // Arrange
+            var controller = new Controller();
+            var obj = new object();
+
+            // Act
+            var result = controller.HttpBadRequest(obj);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, result.StatusCode);
+            Assert.Equal(obj, result.Value);
+        }
+
+        [Fact]
+        public void BadRequest_SetsStatusCodeAndValue_ModelState()
+        {
+            // Arrange
+            var controller = new Controller();
+
+            // Act
+            var result = controller.HttpBadRequest(new ModelStateDictionary());
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, result.StatusCode);
+            var errors = Assert.IsType<SerializableError>(result.Value);
+            Assert.Equal(0, errors.Count);
         }
 
         [Theory]
@@ -783,17 +993,16 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             binder.Verify();
         }
-       
+
         [Fact]
         public async Task TryUpdateModel_PredicateOverload_UsesPassedArguments()
         {
             // Arrange
             var modelName = "mymodel";
 
-            Func<ModelBindingContext, string, bool> includePredicate = 
-                (context, propertyName) => 
-                                string.Equals(propertyName, "include1", StringComparison.OrdinalIgnoreCase) || 
-                                string.Equals(propertyName, "include2", StringComparison.OrdinalIgnoreCase);
+            Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) =>
+                string.Equals(propertyName, "include1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(propertyName, "include2", StringComparison.OrdinalIgnoreCase);
 
             var binder = new Mock<IModelBinder>();
             var valueProvider = Mock.Of<IValueProvider>();
@@ -1029,83 +1238,118 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public void ControllerExpose_ViewEngine()
+        public void TryValidateModelWithValidModel_ReturnsTrue()
         {
             // Arrange
-            var controller = new Controller();
-
-            var viewEngine = Mock.Of<ICompositeViewEngine>();
-
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider
-                .Setup(s => s.GetService(It.Is<Type>(t => t == typeof(ICompositeViewEngine))))
-                .Returns(viewEngine);
-
-            var httpContext = new Mock<HttpContext>();
-            httpContext
-                .Setup(c => c.RequestServices)
-                .Returns(serviceProvider.Object);
-
-            controller.ActionContext = new ActionContext(httpContext.Object,
-                                                  Mock.Of<RouteData>(),
-                                                  new ActionDescriptor());
+            var binder = new Mock<IModelBinder>();
+            var controller = GetController(binder.Object, provider: null);
+            controller.BindingContext.ValidatorProvider = Mock.Of<IModelValidatorProvider>();
+            var model = new TryValidateModelModel();
 
             // Act
-            var innerViewEngine = controller.ViewEngine;
+            var result = controller.TryValidateModel(model);
 
             // Assert
-            Assert.Same(viewEngine, innerViewEngine);
+            Assert.True(result);
+            Assert.True(controller.ModelState.IsValid);
         }
 
         [Fact]
-        public void ControllerView_UsesControllerViewEngine()
+        public void TryValidateModelWithInvalidModelWithPrefix_ReturnsFalse()
+        {
+            // Arrange
+            var model = new TryValidateModelModel();
+            var validationResult = new []
+            {
+                new ModelValidationResult(string.Empty, "Out of range!")
+            };
+
+            var validator1 = new Mock<IModelValidator>();
+
+            validator1.Setup(v => v.Validate(It.IsAny<ModelValidationContext>()))
+               .Returns(validationResult);
+
+            var provider = new Mock<IModelValidatorProvider>();
+            provider.Setup(v => v.GetValidators(It.IsAny<ModelMetadata>()))
+                .Returns(new[] { validator1.Object });
+
+            var binder = new Mock<IModelBinder>();
+            var controller = GetController(binder.Object, provider: null);
+            controller.BindingContext.ValidatorProvider = provider.Object;
+            
+            // Act
+            var result = controller.TryValidateModel(model, "Prefix");
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(1, controller.ModelState.Count);
+            var error = Assert.Single(controller.ModelState["Prefix.IntegerProperty"].Errors);
+            Assert.Equal("Out of range!", error.ErrorMessage);
+        }
+
+        [Fact]
+        public void TryValidateModelWithInvalidModelNoPrefix_ReturnsFalse()
+        {
+            // Arrange
+            var model = new TryValidateModelModel();
+            var validationResult = new[]
+            {
+                new ModelValidationResult(string.Empty, "Out of range!")
+            };
+
+            var validator1 = new Mock<IModelValidator>();
+
+            validator1.Setup(v => v.Validate(It.IsAny<ModelValidationContext>()))
+               .Returns(validationResult);
+
+            var provider = new Mock<IModelValidatorProvider>();
+            provider.Setup(v => v.GetValidators(It.IsAny<ModelMetadata>()))
+                .Returns(new[] { validator1.Object });
+
+            var binder = new Mock<IModelBinder>();
+            var controller = GetController(binder.Object, provider: null);
+            controller.BindingContext.ValidatorProvider = provider.Object;
+
+            // Act
+            var result = controller.TryValidateModel(model);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(1, controller.ModelState.Count);
+            var error = Assert.Single(controller.ModelState["IntegerProperty"].Errors);
+            Assert.Equal("Out of range!", error.ErrorMessage);
+        }
+
+        [Fact]
+        public void TryValidateModelEmptyBindingContextThrowsException()
         {
             // Arrange
             var controller = new Controller();
+            var model = new TryValidateModelModel();
 
-            var viewEngine = Mock.Of<ICompositeViewEngine>();
-
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider
-                .Setup(s => s.GetService(It.Is<Type>(t => t == typeof(ICompositeViewEngine))))
-                .Returns(viewEngine);
-
-            var httpContext = new Mock<HttpContext>();
-            httpContext
-                .Setup(c => c.RequestServices)
-                .Returns(serviceProvider.Object);
-
-            controller.ActionContext = new ActionContext(httpContext.Object,
-                                                  Mock.Of<RouteData>(),
-                                                  new ActionDescriptor());
-
-            // Act
-            var unsused = controller.ViewEngine;
-            var result = controller.View();
-
-            // Assert
-            Assert.Same(viewEngine, result.ViewEngine);
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => controller.TryValidateModel(model));
+            Assert.Equal("The 'BindingContext' property of 'Microsoft.AspNet.Mvc.Controller' must not be null.", exception.Message);
         }
 
         private static Controller GetController(IModelBinder binder, IValueProvider provider)
         {
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var actionContext = new ActionContext(Mock.Of<HttpContext>(), new RouteData(), new ActionDescriptor());
-            var bindingContext = new ActionBindingContext(actionContext,
-                                                          metadataProvider,
-                                                          binder,
-                                                          provider ?? Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
-            var bindingContextProvider = new Mock<IActionBindingContextProvider>();
-            bindingContextProvider.Setup(b => b.GetActionBindingContextAsync(actionContext))
-                                  .Returns(Task.FromResult(bindingContext));
 
             var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
-            return new Controller
+
+            var bindingContext = new ActionBindingContext()
+            {
+                ModelBinder = binder,
+                ValueProvider = provider,
+            };
+
+            return new Controller()
             {
                 ActionContext = actionContext,
-                BindingContextProvider = bindingContextProvider.Object,
+                BindingContext = bindingContext,
+                MetadataProvider = metadataProvider,
                 ViewData = viewData
             };
         }
@@ -1136,6 +1380,11 @@ namespace Microsoft.AspNet.Mvc.Test
             public string Street { get; set; }
             public string City { get; set; }
             public int Zip { get; set; }
+        }
+
+        private class TryValidateModelModel
+        {
+            public int IntegerProperty { get; set; }
         }
 
         private class DisposableController : Controller

@@ -19,6 +19,8 @@ namespace WebApiCompatShimWebSite
                 services.AddWebApiConventions();
             });
 
+            app.UseErrorReporter();
+
             app.UseMvc(routes =>
             {
                 // This route can't access any of our webapi controllers

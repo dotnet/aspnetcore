@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
     public class StaticControllerModelBuilder : DefaultControllerModelBuilder
     {
         public StaticControllerModelBuilder(params TypeInfo[] controllerTypes)
-            : base(new DefaultActionModelBuilder())
+            : base(new DefaultActionModelBuilder(), new NullLoggerFactory())
         {
             ControllerTypes = new List<TypeInfo>(controllerTypes ?? Enumerable.Empty<TypeInfo>());
         }

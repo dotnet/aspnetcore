@@ -3,9 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Test
@@ -40,28 +40,29 @@ namespace Microsoft.AspNet.Mvc.Test
         public void ProducesAttribute_InvalidContentType_Throws(string content)
         {
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(
+            var ex = Assert.Throws<FormatException>(
                        () => new ProducesAttribute(content));
-            Assert.Equal("Invalid Argument. Content type '" + content + "' could not be parsed.",
+            Assert.Equal("Invalid value '" + (content ?? "<null>") + "'.",
                          ex.Message);
         }
 
         private static void ValidateMediaType(MediaTypeHeaderValue expectedMediaType, MediaTypeHeaderValue actualMediaType)
         {
             Assert.Equal(expectedMediaType.MediaType, actualMediaType.MediaType);
-            Assert.Equal(expectedMediaType.MediaSubType, actualMediaType.MediaSubType);
+            Assert.Equal(expectedMediaType.SubType, actualMediaType.SubType);
             Assert.Equal(expectedMediaType.Charset, actualMediaType.Charset);
-            Assert.Equal(expectedMediaType.MediaTypeRange, actualMediaType.MediaTypeRange);
+            Assert.Equal(expectedMediaType.MatchesAllTypes, actualMediaType.MatchesAllTypes);
+            Assert.Equal(expectedMediaType.MatchesAllSubTypes, actualMediaType.MatchesAllSubTypes);
             Assert.Equal(expectedMediaType.Parameters.Count, actualMediaType.Parameters.Count);
             foreach (var item in expectedMediaType.Parameters)
             {
-                Assert.Equal(item.Value, actualMediaType.Parameters[item.Key]);
+                Assert.Equal(item.Value, NameValueHeaderValue.Find(actualMediaType.Parameters, item.Name).Value);
             }
         }
 
         private static ResultExecutedContext CreateResultExecutedContext(ResultExecutingContext context)
         {
-            return new ResultExecutedContext(context, context.Filters, context.Result);
+            return new ResultExecutedContext(context, context.Filters, context.Result, context.Controller);
         }
 
         private static ResultExecutingContext CreateResultExecutingContext(IFilter filter)
@@ -69,7 +70,8 @@ namespace Microsoft.AspNet.Mvc.Test
             return new ResultExecutingContext(
                 CreateActionContext(),
                 new IFilter[] { filter, },
-                new ObjectResult("Some Value"));
+                new ObjectResult("Some Value"),
+                controller: new object());
         }
 
         private static ActionContext CreateActionContext()

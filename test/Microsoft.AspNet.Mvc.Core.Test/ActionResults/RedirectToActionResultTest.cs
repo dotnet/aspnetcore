@@ -25,8 +25,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var actionContext = new ActionContext(httpContext.Object,
                                                   new RouteData(),
                                                   new ActionDescriptor());
-            IUrlHelper urlHelper = GetMockUrlHelper(expectedUrl);
-            RedirectToActionResult result = new RedirectToActionResult(urlHelper, "SampleAction", null, null);
+            var urlHelper = GetMockUrlHelper(expectedUrl);
+            var result = new RedirectToActionResult("SampleAction", null, null)
+            {
+                UrlHelper = urlHelper,
+            };
 
             // Act
             await result.ExecuteResultAsync(actionContext);
@@ -48,8 +51,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
                                                   new RouteData(),
                                                   new ActionDescriptor());
 
-            IUrlHelper urlHelper = GetMockUrlHelper(returnValue: null);
-            RedirectToActionResult result = new RedirectToActionResult(urlHelper, null, null, null);
+            var urlHelper = GetMockUrlHelper(returnValue: null);
+            var result = new RedirectToActionResult(null, null, null)
+            {
+                UrlHelper = urlHelper,
+            };
 
             // Act & Assert
             ExceptionAssert.ThrowsAsync<InvalidOperationException>(

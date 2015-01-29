@@ -100,9 +100,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
-            Assert.Equal("The anti-forgery token could not be decrypted.", ex.Message);
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal("The anti-forgery token could not be decrypted.", exception.ExceptionMessage);
         }
 
         [Fact]
@@ -127,9 +130,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
-            Assert.Equal("The anti-forgery token could not be decrypted.", ex.Message);
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal("The anti-forgery token could not be decrypted.", exception.ExceptionMessage);
         }
 
         [Fact]
@@ -162,9 +168,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
-            Assert.Equal("The anti-forgery cookie token and form field token do not match.", ex.Message);
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal("The anti-forgery cookie token and form field token do not match.", exception.ExceptionMessage);
         }
 
         [Fact]
@@ -189,9 +198,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
-            Assert.Equal("The required anti-forgery cookie \"__RequestVerificationToken\" is not present.", ex.Message);
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal("The required anti-forgery cookie \"__RequestVerificationToken\" is not present.", exception.ExceptionMessage);
         }
 
         [Fact]
@@ -214,10 +226,66 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var exception = response.GetServerException();
             Assert.Equal("The required anti-forgery form field \"__RequestVerificationToken\" is not present.",
-                         ex.Message);
+                         exception.ExceptionMessage);
+        }
+
+        [Fact]
+        public async Task SetCookieAndHeaderBeforeFlushAsync_GeneratesCookieTokenAndHeader()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Account/FlushAsyncLogin");
+
+            // Assert
+            var header = Assert.Single(response.Headers.GetValues("X-Frame-Options"));
+            Assert.Equal("SAMEORIGIN", header);
+
+            var setCookieHeader = response.Headers.GetValues("Set-Cookie").ToArray();
+
+            var cookie = Assert.Single(setCookieHeader);
+            Assert.True(cookie.StartsWith("__RequestVerificationToken"));
+        }
+
+        [Fact]
+        public async Task SetCookieAndHeaderBeforeFlushAsync_PostToForm()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // do a get response.
+            var getResponse = await client.GetAsync("http://localhost/Account/FlushAsyncLogin");
+            var resposneBody = await getResponse.Content.ReadAsStringAsync();
+
+            var formToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(resposneBody, "Account/FlushAsyncLogin");
+            var cookieToken = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/FlushAsyncLogin");
+            request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
+                new KeyValuePair<string,string>("UserName", "test"),
+                new KeyValuePair<string,string>("Password", "password"),
+            };
+
+            request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("OK", await response.Content.ReadAsStringAsync());
         }
     }
 }

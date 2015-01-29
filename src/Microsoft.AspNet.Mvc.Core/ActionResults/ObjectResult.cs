@@ -5,13 +5,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class ObjectResult : ActionResult
     {
+        public ObjectResult(object value)
+        {
+            Value = value;
+            Formatters = new List<IOutputFormatter>();
+            ContentTypes = new List<MediaTypeHeaderValue>();
+        }
+
         public object Value { get; set; }
 
         public IList<IOutputFormatter> Formatters { get; set; }
@@ -20,12 +29,10 @@ namespace Microsoft.AspNet.Mvc
 
         public Type DeclaredType { get; set; }
 
-        public ObjectResult(object value)
-        {
-            Value = value;
-            Formatters = new List<IOutputFormatter>();
-            ContentTypes = new List<MediaTypeHeaderValue>();
-        }
+        /// <summary>
+        /// Gets or sets the HTTP status code.
+        /// </summary>
+        public int? StatusCode { get; set; }
 
         public override async Task ExecuteResultAsync(ActionContext context)
         {
@@ -45,27 +52,55 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
+            if (StatusCode != null)
+            {
+                context.HttpContext.Response.StatusCode = (int)StatusCode;
+            }
+
+            OnFormatting(context);
             await selectedFormatter.WriteAsync(formatterContext);
         }
 
         public virtual IOutputFormatter SelectFormatter(OutputFormatterContext formatterContext,
                                                        IEnumerable<IOutputFormatter> formatters)
         {
-            var incomingAcceptHeader = HeaderParsingHelpers.GetAcceptHeaders(
-                                                formatterContext.ActionContext.HttpContext.Request.Accept);
-            var sortedAcceptHeaders = SortMediaTypeWithQualityHeaderValues(incomingAcceptHeader)
-                                        .Where(header => header.Quality != HttpHeaderUtilitites.NoMatch)
-                                        .ToArray();
+            var incomingAcceptHeaderMediaTypes = formatterContext.ActionContext.HttpContext.Request.GetTypedHeaders().Accept ??
+                                                    new MediaTypeHeaderValue[] { };
+
+            // By default we want to ignore considering accept headers for content negotiation when
+            // they have a media type like */* in them. Browsers typically have these media types.
+            // In these cases we would want the first formatter in the list of output formatters to
+            // write the response. This default behavior can be changed through options, so checking here.
+            var options = formatterContext.ActionContext.HttpContext
+                                                        .RequestServices
+                                                        .GetRequiredService<IOptions<MvcOptions>>()
+                                                        .Options;
+
+            var respectAcceptHeader = true;
+            if (options.RespectBrowserAcceptHeader == false
+                && incomingAcceptHeaderMediaTypes.Any(mediaType => mediaType.MatchesAllTypes))
+            {
+                respectAcceptHeader = false;
+            }
+            
+            IEnumerable<MediaTypeHeaderValue> sortedAcceptHeaderMediaTypes = null;
+            if (respectAcceptHeader)
+            {
+                sortedAcceptHeaderMediaTypes = SortMediaTypeHeaderValues(incomingAcceptHeaderMediaTypes)
+                                                .Where(header => header.Quality != HeaderQuality.NoMatch);
+            }
 
             IOutputFormatter selectedFormatter = null;
-
             if (ContentTypes == null || ContentTypes.Count == 0)
             {
-                // Select based on sorted accept headers.
-                selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
-                                                                        formatterContext,
-                                                                        formatters,
-                                                                        sortedAcceptHeaders);
+                if (respectAcceptHeader)
+                {
+                    // Select based on sorted accept headers.
+                    selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
+                                                                            formatterContext,
+                                                                            formatters,
+                                                                            sortedAcceptHeaderMediaTypes);
+                }
 
                 if (selectedFormatter == null)
                 {
@@ -113,16 +148,15 @@ namespace Microsoft.AspNet.Mvc
             }
             else
             {
-                // Filter and remove accept headers which cannot support any of the user specified content types.
-                var filteredAndSortedAcceptHeaders = sortedAcceptHeaders
-                                                        .Where(acceptHeader =>
-                                                                ContentTypes
-                                                                    .Any(contentType =>
-                                                                           contentType.IsSubsetOf(acceptHeader)))
-                                                        .ToArray();
-
-                if (filteredAndSortedAcceptHeaders.Length > 0)
+                if (respectAcceptHeader)
                 {
+                    // Filter and remove accept headers which cannot support any of the user specified content types.
+                    var filteredAndSortedAcceptHeaders = sortedAcceptHeaderMediaTypes
+                                                                    .Where(acceptHeader =>
+                                                                            ContentTypes
+                                                                                .Any(contentType =>
+                                                                                       contentType.IsSubsetOf(acceptHeader)));
+
                     selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
                                                                         formatterContext,
                                                                         formatters,
@@ -183,20 +217,14 @@ namespace Microsoft.AspNet.Mvc
             return selectedFormatter;
         }
 
-        private static MediaTypeWithQualityHeaderValue[] SortMediaTypeWithQualityHeaderValues
-                                                    (IEnumerable<MediaTypeWithQualityHeaderValue> headerValues)
+        private static IEnumerable<MediaTypeHeaderValue> SortMediaTypeHeaderValues(
+            IEnumerable<MediaTypeHeaderValue> headerValues)
         {
-            if (headerValues == null)
-            {
-                return new MediaTypeWithQualityHeaderValue[] { };
-            }
-
             // Use OrderBy() instead of Array.Sort() as it performs fewer comparisons. In this case the comparisons
             // are quite expensive so OrderBy() performs better.
             return headerValues.OrderByDescending(headerValue =>
                                                     headerValue,
-                                                    MediaTypeWithQualityHeaderValueComparer.QualityComparer)
-                               .ToArray();
+                                                    MediaTypeHeaderValueComparer.QualityComparer);
         }
 
         private IEnumerable<IOutputFormatter> GetDefaultFormatters(ActionContext context)
@@ -215,6 +243,13 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return formatters;
+        }
+
+        /// <summary>
+        /// This method is called before the formatter writes to the output stream.
+        /// </summary>
+        protected virtual void OnFormatting([NotNull] ActionContext context)
+        {
         }
     }
 }

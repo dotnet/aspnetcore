@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.Security.Claims;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Security;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using MvcSample.Web.Filters;
@@ -25,10 +25,10 @@ namespace MvcSample.Web
         {
             app.UseFileServer();
 #if ASPNET50
-            // We use Path.Combine here so that it works on platforms other than Windows as well.
+            // Set up configuration sources.
             var configuration = new Configuration()
-                                        .AddJsonFile(Path.Combine("App_Data", "config.json"))
-                                        .AddEnvironmentVariables();
+                    .AddJsonFile("config.json")
+                    .AddEnvironmentVariables();
             string diSystem;
 
             if (configuration.TryGet("DependencyInjection", out diSystem) &&
@@ -38,6 +38,19 @@ namespace MvcSample.Web
 
                 app.UseServices(services =>
                 {
+                    services.ConfigureAuthorization(auth =>
+                    {
+                        auth.AddPolicy("CanViewPage", 
+                            new AuthorizationPolicyBuilder()
+                                .RequiresClaim("Permission", "CanViewPage", "CanViewAnything").Build());
+                        auth.AddPolicy("CanViewAnything", 
+                            new AuthorizationPolicyBuilder()
+                                .RequiresClaim("Permission", "CanViewAnything").Build());
+                        // This policy basically requires that the auth type is present
+                        var basicPolicy = new AuthorizationPolicyBuilder("Basic").RequiresClaim(ClaimTypes.NameIdentifier);
+                        auth.AddPolicy("RequireBasic", basicPolicy.Build());
+                    });
+
                     services.AddMvc();
                     services.AddSingleton<PassThroughAttribute>();
                     services.AddSingleton<UserNameService>();
@@ -50,6 +63,8 @@ namespace MvcSample.Web
                     services.Configure<MvcOptions>(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
+
+                        options.AddXmlDataContractSerializerFormatter();
                     });
                     services.Configure<RazorViewEngineOptions>(options =>
                     {
@@ -90,6 +105,7 @@ namespace MvcSample.Web
                     services.Configure<MvcOptions>(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
+                        options.AddXmlDataContractSerializerFormatter();
                     });
                 });
             }

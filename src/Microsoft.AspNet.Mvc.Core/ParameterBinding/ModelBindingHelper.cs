@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc
            where TModel : class
         {
             var includeExpression = GetIncludePredicateExpression(prefix, includeExpressions);
-            Func<ModelBindingContext, string, bool> predicate = includeExpression.Compile();
+            var predicate = includeExpression.Compile();
 
             return TryUpdateModelAsync(
                model,
@@ -246,7 +246,7 @@ namespace Microsoft.AspNet.Mvc
                  StringComparison.OrdinalIgnoreCase);
         }
 
-        private static string CreatePropertyModelName(string prefix, string propertyName)
+        public static string CreatePropertyModelName(string prefix, string propertyName)
         {
             if (string.IsNullOrEmpty(prefix))
             {

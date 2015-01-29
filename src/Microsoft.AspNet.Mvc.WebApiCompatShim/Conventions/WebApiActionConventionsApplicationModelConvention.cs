@@ -52,12 +52,15 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                     var namedAction = action;
 
                     var unnamedAction = new ActionModel(namedAction);
-                    unnamedAction.IsActionNameMatchRequired = false;
+                    unnamedAction.RouteConstraints.Add(new UnnamedActionRouteConstraint());
                     newActions.Add(unnamedAction);
                 }
             }
 
-            controller.Actions.AddRange(newActions);
+            foreach (var action in newActions)
+            {
+                controller.Actions.Add(action);
+            }
         }
 
         private bool IsActionAttributeRouted(ActionModel action)
@@ -90,6 +93,24 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 
             // If no convention matches, then assume POST
             action.HttpMethods.Add("POST");
+        }
+
+        private class UnnamedActionRouteConstraint : IRouteConstraintProvider
+        {
+            public UnnamedActionRouteConstraint()
+            {
+                RouteKey = "action";
+                RouteKeyHandling = RouteKeyHandling.DenyKey;
+                RouteValue = null;
+            }
+
+            public string RouteKey { get; }
+
+            public RouteKeyHandling RouteKeyHandling { get; }
+
+            public string RouteValue { get; }
+
+            public bool BlockNonAttributedActions { get; }
         }
     }
 }

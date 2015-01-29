@@ -57,13 +57,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/ParameterModel/GetParameterIsOptional");
+            var response = await client.GetAsync("http://localhost/ParameterModel/GetParameterMetadata");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal("True", body);
+            Assert.Equal("CoolMetadata", body);
 
         }
     }

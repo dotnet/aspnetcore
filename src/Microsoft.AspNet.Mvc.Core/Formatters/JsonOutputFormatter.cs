@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc

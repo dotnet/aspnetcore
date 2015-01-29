@@ -9,20 +9,31 @@ using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Builder
 {
+    /// <summary>
+    /// Extension methods for <see cref="IApplicationBuilder"/> to add Mvc to the request execution pipeline.
+    /// </summary>
     public static class BuilderExtensions
     {
+        /// <summary>
+        /// Adds Mvc to the <see cref="IApplicationBuilder"/> request execution pipeline.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>The <paramref name="app"/>.</returns>
+        /// <remarks>This method only supports attribute routing. To add conventional routes use
+        /// <see cref="UseMvc(IApplicationBuilder, Action{IRouteBuilder})"/>.</remarks>
         public static IApplicationBuilder UseMvc([NotNull] this IApplicationBuilder app)
         {
             return app.UseMvc(routes =>
             {
-                // Action style actions
-                routes.MapRoute(null, "{controller}/{action}/{id?}", new { controller = "Home", action = "Index" });
-
-                // Rest style actions
-                routes.MapRoute(null, "{controller}/{id?}");
             });
         }
 
+        /// <summary>
+        /// Adds Mvc to the <see cref="IApplicationBuilder"/> request execution pipeline.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
+        /// <param name="configureRoutes">A callback to configure Mvc routes.</param>
+        /// <returns>The <paramref name="app"/>.</returns>
         public static IApplicationBuilder UseMvc(
             [NotNull] this IApplicationBuilder app,
             [NotNull] Action<IRouteBuilder> configureRoutes)
@@ -37,11 +48,13 @@ namespace Microsoft.AspNet.Builder
                 ServiceProvider = app.ApplicationServices
             };
 
-            routes.Routes.Add(AttributeRouting.CreateAttributeMegaRoute(
+            configureRoutes(routes);
+
+            // Adding the attribute route comes after running the user-code because
+            // we want to respect any changes to the DefaultHandler.
+            routes.Routes.Insert(0, AttributeRouting.CreateAttributeMegaRoute(
                 routes.DefaultHandler,
                 app.ApplicationServices));
-
-            configureRoutes(routes);
 
             return app.UseRouter(routes.Build());
         }

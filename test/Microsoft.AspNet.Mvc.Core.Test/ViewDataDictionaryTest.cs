@@ -137,8 +137,11 @@ namespace Microsoft.AspNet.Mvc.Core
             // Arrange
             var vdd = new ViewDataDictionary(new EmptyModelMetadataProvider());
             
-            // Act & Assert
-            Assert.DoesNotThrow(() => { vdd.Model = model; });
+            // Act
+            vdd.Model = model;
+
+            // Assert
+            Assert.Same(model, vdd.Model);
         }
 
         [Fact]
@@ -706,6 +709,11 @@ namespace Microsoft.AspNet.Mvc.Core
 
         private class TestModel
         {
+        }
+
+        private class Person
+        {
+            public string Name { get; set; }
         }
 
         private class TestViewDataDictionary : ViewDataDictionary

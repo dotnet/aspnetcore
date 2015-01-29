@@ -5,9 +5,9 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Mvc
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                       .Returns(ViewEngineResult.NotFound(
-                          "Components/Object/some-view", 
+                          "Components/Object/some-view",
                           new[] { "view-location1", "view-location2" }))
                       .Verifiable();
 

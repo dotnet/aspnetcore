@@ -5,11 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
@@ -17,6 +18,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     public class ValidationSummaryTagHelperTest
     {
+        public void Concstructor_IntializesProperties_AsExpected()
+        {
+            // Arrange & Act
+            var validationSummaryTagHelper = new ValidationSummaryTagHelper();
+
+            // Assert
+            Assert.Null(validationSummaryTagHelper.Generator);
+            Assert.Null(validationSummaryTagHelper.ViewContext);
+            Assert.Equal(ValidationSummary.None, validationSummaryTagHelper.ValidationSummary);
+        }
+
         [Fact]
         public async Task ProcessAsync_GeneratesExpectedOutput()
         {
@@ -25,17 +37,26 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var validationSummaryTagHelper = new ValidationSummaryTagHelper
             {
-                ValidationSummaryValue = "All"
+                ValidationSummary = ValidationSummary.All,
             };
 
-            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
+            var expectedPreContent = "original pre-content";
+            var expectedContent = "original content";
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
                 expectedTagName,
                 attributes: new Dictionary<string, string>
                 {
                     { "class", "form-control" }
-                },
-                content: "Custom Content");
+                })
+            {
+                PreContent = expectedPreContent,
+                Content = expectedContent,
+                PostContent = "Custom Content",
+            };
 
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
             Model model = null;
@@ -52,27 +73,45 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("form-control validation-summary-valid", attribute.Value);
             attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-valmsg-summary"));
             Assert.Equal("true", attribute.Value);
+            Assert.Equal(expectedPreContent, output.PreContent);
+            Assert.Equal(expectedContent, output.Content);
             Assert.Equal("Custom Content<ul><li style=\"display:none\"></li>" + Environment.NewLine + "</ul>",
-                         output.Content);
+                         output.PostContent);
             Assert.Equal(expectedTagName, output.TagName);
         }
 
-        [Fact]
-        public async Task ProcessAsync_CallsIntoGenerateValidationSummaryWithExpectedParameters()
+        [Theory]
+        [InlineData(ValidationSummary.All, false)]
+        [InlineData(ValidationSummary.ModelOnly, true)]
+        public async Task ProcessAsync_CallsIntoGenerateValidationSummaryWithExpectedParameters(
+            ValidationSummary validationSummary,
+            bool expectedExcludePropertyErrors)
         {
             // Arrange
             var validationSummaryTagHelper = new ValidationSummaryTagHelper
             {
-                ValidationSummaryValue = "ModelOnly",
+                ValidationSummary = validationSummary,
             };
+            var expectedPreContent = "original pre-content";
+            var expectedContent = "original content";
+            var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>(),
-                content: "Content of validation summary");
+                attributes: new Dictionary<string, string>())
+            {
+                PreContent = expectedPreContent,
+                Content = expectedContent,
+                PostContent = expectedPostContent,
+            };
             var expectedViewContext = CreateViewContext();
             var generator = new Mock<IHtmlGenerator>();
             generator
-                .Setup(mock => mock.GenerateValidationSummary(expectedViewContext, true, null, null, null))
+                .Setup(mock => mock.GenerateValidationSummary(
+                    expectedViewContext,
+                    expectedExcludePropertyErrors,
+                    null,   // message
+                    null,   // headerTag
+                    null))  // htmlAttributes
                 .Returns(new TagBuilder("div"))
                 .Verifiable();
             validationSummaryTagHelper.ViewContext = expectedViewContext;
@@ -84,7 +123,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             generator.Verify();
             Assert.Equal("div", output.TagName);
             Assert.Empty(output.Attributes);
-            Assert.Equal("Content of validation summary", output.Content);
+            Assert.Equal(expectedPreContent, output.PreContent);
+            Assert.Equal(expectedContent, output.Content);
+            Assert.Equal(expectedPostContent, output.PostContent);
         }
 
         [Fact]
@@ -93,12 +134,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var validationSummaryTagHelper = new ValidationSummaryTagHelper
             {
-                ValidationSummaryValue = "ModelOnly"
+                ValidationSummary = ValidationSummary.ModelOnly,
             };
+            var expectedPreContent = "original pre-content";
+            var expectedContent = "original content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>(),
-                content: "Content of validation summary");
+                attributes: new Dictionary<string, string>())
+            {
+                PreContent = expectedPreContent,
+                Content = expectedContent,
+                PostContent = "Content of validation summary"
+            };
             var tagBuilder = new TagBuilder("span2")
             {
                 InnerHtml = "New HTML"
@@ -133,23 +180,30 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("world", attribute.Value);
             attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("anything"));
             Assert.Equal("something", attribute.Value);
-            Assert.Equal("Content of validation summaryNew HTML", output.Content);
+            Assert.Equal(expectedPreContent, output.PreContent);
+            Assert.Equal(expectedContent, output.Content);
+            Assert.Equal("Content of validation summaryNew HTML", output.PostContent);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData(null)]
-        public async Task ProcessAsync_DoesNothingIfNullOrEmptyValidationSummaryValue(string validationSummaryValue)
+        [Fact]
+        public async Task ProcessAsync_DoesNothingIfValidationSummaryNone()
         {
             // Arrange
             var validationSummaryTagHelper = new ValidationSummaryTagHelper
             {
-                ValidationSummaryValue = validationSummaryValue
+                ValidationSummary = ValidationSummary.None,
             };
+            var expectedPreContent = "original pre-content";
+            var expectedContent = "original content";
+            var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>(),
-                content: "Content of validation message");
+                attributes: new Dictionary<string, string>())
+            {
+                PreContent = expectedPreContent,
+                Content = expectedContent,
+                PostContent = expectedPostContent,
+            };
 
             var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var viewContext = CreateViewContext();
@@ -162,25 +216,31 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Equal("div", output.TagName);
             Assert.Empty(output.Attributes);
-            Assert.Equal("Content of validation message", output.Content);
+            Assert.Equal(expectedPreContent, output.PreContent);
+            Assert.Equal(expectedContent, output.Content);
+            Assert.Equal(expectedPostContent, output.PostContent);
         }
 
         [Theory]
-        [InlineData("All")]
-        [InlineData("all")]
-        [InlineData("ModelOnly")]
-        [InlineData("modelonly")]
-        public async Task ProcessAsync_GeneratesValidationSummaryWhenNotNone_IgnoresCase(string validationSummary)
+        [InlineData(ValidationSummary.All)]
+        [InlineData(ValidationSummary.ModelOnly)]
+        public async Task ProcessAsync_GeneratesValidationSummaryWhenNotNone(ValidationSummary validationSummary)
         {
             // Arrange
             var validationSummaryTagHelper = new ValidationSummaryTagHelper
             {
-                ValidationSummaryValue = validationSummary
+                ValidationSummary = validationSummary,
             };
+            var expectedPreContent = "original pre-content";
+            var expectedContent = "original content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>(),
-                content: "Content of validation message");
+                attributes: new Dictionary<string, string>())
+            {
+                PreContent = expectedPreContent,
+                Content = expectedContent,
+                PostContent = "Content of validation message",
+            };
             var tagBuilder = new TagBuilder("span2")
             {
                 InnerHtml = "New HTML"
@@ -206,61 +266,31 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Equal("div", output.TagName);
             Assert.Empty(output.Attributes);
-            Assert.Equal("Content of validation messageNew HTML", output.Content);
+            Assert.Equal(expectedPreContent, output.PreContent);
+            Assert.Equal(expectedContent, output.Content);
+            Assert.Equal("Content of validation messageNew HTML", output.PostContent);
             generator.Verify();
         }
 
         [Theory]
-        [InlineData("None")]
-        [InlineData("none")]
-        public async Task ProcessAsync_DoesNotGenerateValidationSummaryWhenNone_IgnoresCase(string validationSummary)
+        [InlineData((ValidationSummary)(-1))]
+        [InlineData((ValidationSummary)23)]
+        [InlineData(ValidationSummary.All | ValidationSummary.ModelOnly)]
+        [ReplaceCulture]
+        public void ValidationSummaryProperty_ThrowsWhenSetToInvalidValidationSummaryValue(
+            ValidationSummary validationSummary)
         {
             // Arrange
-            var validationSummaryTagHelper = new ValidationSummaryTagHelper
-            {
-                ValidationSummaryValue = validationSummary
-            };
-            var output = new TagHelperOutput(
-                "div",
-                attributes: new Dictionary<string, string>(),
-                content: "Content of validation message");
-            var tagBuilder = new TagBuilder("span2")
-            {
-                InnerHtml = "New HTML"
-            };
+            var validationSummaryTagHelper = new ValidationSummaryTagHelper();
+            var expectedMessage = string.Format(
+                @"The value of argument 'value' ({0}) is invalid for Enum type 'Microsoft.AspNet.Mvc.ValidationSummary'.
+Parameter name: value",
+                validationSummary);
 
-            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
-
-            // Act
-            await validationSummaryTagHelper.ProcessAsync(context: null, output: output);
-
-            // Assert
-            Assert.Equal("div", output.TagName);
-            Assert.Empty(output.Attributes);
-            Assert.Equal("Content of validation message", output.Content);
-        }
-
-        [Fact]
-        public async Task ProcessAsync_ThrowsWhenInvalidValidationSummaryValue()
-        {
-            // Arrange
-            var validationSummaryTagHelper = new ValidationSummaryTagHelper
-            {
-                ValidationSummaryValue = "Hello World"
-            };
-            var output = new TagHelperOutput(
-                "div",
-                attributes: new Dictionary<string, string>(),
-                content: "Content of validation message");
-            var expectedViewContext = CreateViewContext();
-            var expectedMessage = "Cannot parse 'asp-validation-summary' value 'Hello World' for <div>. Acceptable " +
-                                  "values are 'All', 'ModelOnly' and 'None'.";
-
-            // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => validationSummaryTagHelper.ProcessAsync(context: null, output: output));
-
-            // Assert
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(
+                "value",
+                () => { validationSummaryTagHelper.ValidationSummary = validationSummary; });
             Assert.Equal(expectedMessage, ex.Message);
         }
 

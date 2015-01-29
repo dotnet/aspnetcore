@@ -6,9 +6,10 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
-    public class WebApiCompatShimOptionsSetup : IConfigureOptions<MvcOptions>, IConfigureOptions<WebApiCompatShimOptions>
+    public class WebApiCompatShimOptionsSetup
+        : IConfigureOptions<MvcOptions>, IConfigureOptions<WebApiCompatShimOptions>
     {
-        public readonly static string DefaultAreaName = "api";
+        public static readonly string DefaultAreaName = "api";
 
         public int Order
         {

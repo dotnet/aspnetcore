@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core;
 using Moq;
 using Xunit;
 
@@ -32,7 +33,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [Theory]
         [InlineData("application/x-www-form-urlencoded")]
         [InlineData("application/x-www-form-urlencoded;charset=utf-8")]
-        public void GetValueProvider_ReturnsValueProviderInstaceWithInvariantCulture(string contentType)
+        [InlineData("multipart/form-data")]
+        [InlineData("multipart/form-data;charset=utf-8")]
+        public void GetValueProvider_ReturnsValueProviderInstanceWithInvariantCulture(string contentType)
         {
             // Arrange
             var context = CreateContext(contentType);
@@ -48,10 +51,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
         private static ValueProviderFactoryContext CreateContext(string contentType)
         {
-            var collection = Mock.Of<IReadableStringCollection>();
+            var collection = Mock.Of<IFormCollection>();
             var request = new Mock<HttpRequest>();
-            request.Setup(f => f.GetFormAsync(CancellationToken.None)).Returns(Task.FromResult(collection));
+            request.Setup(f => f.ReadFormAsync(CancellationToken.None)).Returns(Task.FromResult(collection));
             request.SetupGet(r => r.ContentType).Returns(contentType);
+            request.SetupGet(r => r.HasFormContentType).Returns(new FormFeature(request.Object).HasFormContentType);
 
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Request).Returns(request.Object);

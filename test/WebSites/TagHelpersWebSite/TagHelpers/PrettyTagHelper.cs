@@ -8,7 +8,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TagName("*")]
+    [HtmlElementName("*")]
     public class PrettyTagHelper : TagHelper
     {
         private static readonly Dictionary<string, string> PrettyTagStyles =
@@ -33,7 +33,10 @@ namespace TagHelpersWebSite.TagHelpers
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            if (MakePretty.HasValue && !MakePretty.Value)
+            // Need to check if output.TagName == null in-case the ConditionTagHelper calls into SuppressOutput and 
+            // therefore sets the TagName to null.
+            if (MakePretty.HasValue && !MakePretty.Value ||
+                output.TagName == null)
             {
                 return;
             }

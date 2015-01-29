@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             var httpContext = new Mock<HttpContext>();
             var actionContext = GetActionContext(httpContext.Object);
-            var mockContentAccessor = new Mock<IContextAccessor<ActionContext>>();
+            var mockContentAccessor = new Mock<IScopedInstance<ActionContext>>();
             mockContentAccessor.SetupGet(o => o.Value).Returns(actionContext);
             var mockActionSelector = new Mock<IActionSelector>();
             var urlHelper = new UrlHelper(mockContentAccessor.Object, mockActionSelector.Object);

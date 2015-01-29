@@ -127,8 +127,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                                .Value
                                .Substring(typeName.Length);
 
-            Span.CodeGenerator = new InjectParameterGenerator(typeName.Trim(),
-                                                              propertyName.Trim());
+            // ';' is optional
+            propertyName = StringHelper.TrimSpacesAndChars(propertyName, ';');
+            Span.CodeGenerator = new InjectParameterGenerator(typeName.Trim(), propertyName);
 
             // Output the span and finish the block
             CompleteBlock();

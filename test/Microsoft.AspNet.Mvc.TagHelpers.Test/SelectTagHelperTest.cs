@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var originalContent = "original content";
+            var originalPostContent = "original content";
 
             var expectedAttributes = new Dictionary<string, string>(originalAttributes)
             {
@@ -173,7 +173,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "name", nameAndId.Name },
                 { "valid", "from validation attributes" },
             };
-            var expectedContent = originalContent;
+            var expectedPreContent = "original pre-content";
+            var expectedContent = "original content";
+            var expectedPostContent = originalPostContent;
             var expectedTagName = "not-select";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
@@ -182,9 +184,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
             var modelExpression = new ModelExpression(nameAndId.Name, metadata);
 
-            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, expectedContent)
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
+            var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
+                PreContent = expectedPreContent,
+                Content = expectedContent,
+                PostContent = originalPostContent,
                 SelfClosing = true,
             };
 
@@ -208,7 +216,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedPreContent, output.PreContent);
             Assert.Equal(expectedContent, output.Content);
+            Assert.Equal(expectedPostContent, output.PostContent);
             Assert.False(output.SelfClosing);
             Assert.Equal(expectedTagName, output.TagName);
 
@@ -235,7 +245,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var originalContent = "original content";
+            var originalPostContent = "original content";
 
             var expectedAttributes = new Dictionary<string, string>(originalAttributes)
             {
@@ -243,7 +253,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "name", nameAndId.Name },
                 { "valid", "from validation attributes" },
             };
-            var expectedContent = originalContent + expectedOptions;
+            var expectedPreContent = "original pre-content";
+            var expectedContent = "original content";
+            var expectedPostContent = originalPostContent + expectedOptions;
             var expectedTagName = "select";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
@@ -252,9 +264,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
             var modelExpression = new ModelExpression(nameAndId.Name, metadata);
 
-            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>());
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, originalContent)
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
+            var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
+                PreContent = expectedPreContent,
+                Content = expectedContent,
+                PostContent = originalPostContent,
                 SelfClosing = true,
             };
 
@@ -280,7 +298,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedPreContent, output.PreContent);
             Assert.Equal(expectedContent, output.Content);
+            Assert.Equal(expectedPostContent, output.PostContent);
             Assert.False(output.SelfClosing);
             Assert.Equal(expectedTagName, output.TagName);
 
@@ -308,31 +328,33 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "multiple", multiple },
             };
             var originalAttributes = new Dictionary<string, string>();
-            var content = "original content";
             var propertyName = "Property1";
             var expectedTagName = "select";
 
-            var tagHelperContext = new TagHelperContext(contextAttributes);
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
+            var output = new TagHelperOutput(expectedTagName, originalAttributes);
 
-            // TODO: https://github.com/aspnet/Mvc/issues/1253
-            // In real (model => model) scenario, ModelExpression should have name "" and
-            // TemplateInfo.HtmlFieldPrefix should be "Property1" but empty ModelExpression name is not currently
-            // supported, see also #1408.
             var metadataProvider = new EmptyModelMetadataProvider();
             string model = null;
             var metadata = metadataProvider.GetMetadataForType(() => model, typeof(string));
-            var modelExpression = new ModelExpression(propertyName, metadata);
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator.Object, metadataProvider);
+
+            // Simulate a (model => model) scenario. E.g. the calling helper may appear in a low-level template.
+            var modelExpression = new ModelExpression(string.Empty, metadata);
+            viewContext.ViewData.TemplateInfo.HtmlFieldPrefix = propertyName;
+
             ICollection<string> selectedValues = new string[0];
             htmlGenerator
                 .Setup(real => real.GenerateSelect(
                     viewContext,
                     metadata,
                     null,         // optionLabel
-                    propertyName, // name
+                    string.Empty, // name
                     expectedItems,
                     expectedAllowMultiple,
                     null,         // htmlAttributes
@@ -372,12 +394,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var contextAttributes = new Dictionary<string, object>();
             var originalAttributes = new Dictionary<string, string>();
-            var content = "original content";
             var propertyName = "Property1";
             var tagName = "select";
 
-            var tagHelperContext = new TagHelperContext(contextAttributes);
-            var output = new TagHelperOutput(tagName, originalAttributes, content);
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
+            var output = new TagHelperOutput(tagName, originalAttributes);
 
             var metadataProvider = new EmptyModelMetadataProvider();
             var metadata = metadataProvider.GetMetadataForType(() => model, modelType);
@@ -437,12 +461,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var expectedAttributes = new Dictionary<string, string>(originalAttributes);
             expectedAttributes[attributeName] = (string)contextAttributes[attributeName];
+            var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
+            var expectedPostContent = "original post-content";
             var expectedTagName = "select";
 
-            var tagHelperContext = new TagHelperContext(contextAttributes);
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, expectedContent)
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
+            var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
+                PreContent = expectedPreContent,
+                Content = expectedContent,
+                PostContent = expectedPostContent,
                 SelfClosing = true,
             };
 
@@ -456,7 +488,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedPreContent, output.PreContent);
             Assert.Equal(expectedContent, output.Content);
+            Assert.Equal(expectedPostContent, output.PostContent);
             Assert.True(output.SelfClosing);
             Assert.Equal(expectedTagName, output.TagName);
         }
@@ -467,12 +501,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var contextAttributes = new Dictionary<string, object>();
             var originalAttributes = new Dictionary<string, string>();
-            var content = "original content";
             var expectedTagName = "select";
             var expectedMessage = "Cannot determine body for <select>. 'asp-items' must be null if 'asp-for' is null.";
 
-            var tagHelperContext = new TagHelperContext(contextAttributes);
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
+            var output = new TagHelperOutput(expectedTagName, originalAttributes);
             var tagHelper = new SelectTagHelper
             {
                 Items = Enumerable.Empty<SelectListItem>(),
@@ -497,13 +533,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var contextAttributes = new Dictionary<string, object>();
             var originalAttributes = new Dictionary<string, string>();
-            var content = "original content";
             var expectedTagName = "select";
             var expectedMessage = "Cannot parse 'multiple' value '" + multiple +
                 "' for <select>. Acceptable values are 'false', 'true' and 'multiple'.";
 
-            var tagHelperContext = new TagHelperContext(contextAttributes);
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, content);
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
+            var output = new TagHelperOutput(expectedTagName, originalAttributes);
 
             var metadataProvider = new EmptyModelMetadataProvider();
             string model = null;

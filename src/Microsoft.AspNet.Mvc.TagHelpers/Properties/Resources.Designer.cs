@@ -154,6 +154,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_NoProvidedMetadata"), p0, p1, p2, p3);
         }
 
+        /// <summary>
+        /// The value of argument '{0}' ({1}) is invalid for Enum type '{2}'.
+        /// </summary>
+        internal static string InvalidEnumArgument
+        {
+            get { return GetString("InvalidEnumArgument"); }
+        }
+
+        /// <summary>
+        /// The value of argument '{0}' ({1}) is invalid for Enum type '{2}'.
+        /// </summary>
+        internal static string FormatInvalidEnumArgument(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidEnumArgument"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

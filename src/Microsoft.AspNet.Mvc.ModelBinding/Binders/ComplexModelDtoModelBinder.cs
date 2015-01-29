@@ -22,16 +22,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     var propertyModelName = ModelBindingHelper.CreatePropertyModelName(bindingContext.ModelName,
                                                                                        propertyMetadata.PropertyName);
 
-                    var propertyBindingContext = new ModelBindingContext(bindingContext, 
+                    var propertyBindingContext = new ModelBindingContext(bindingContext,
                                                                          propertyModelName,
                                                                          propertyMetadata);
 
                     // bind and propagate the values
-                    // If we can't bind, then leave the result missing (don't add a null).
+                    // If we can't bind then leave the result missing (don't add a null).
                     if (await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(propertyBindingContext))
                     {
-                        var result = new ComplexModelDtoResult(propertyBindingContext.Model,
-                                                               propertyBindingContext.ValidationNode);
+                        var result = ComplexModelDtoResult.FromBindingContext(propertyBindingContext);
                         dto.Results[propertyMetadata] = result;
                     }
                 }

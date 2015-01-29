@@ -21,14 +21,9 @@ namespace System.Web.Http
         public NegotiatedContentResult(HttpStatusCode statusCode, T content)
             : base(content)
         {
-            StatusCode = statusCode;
+            StatusCode = (int)statusCode;
             Content = content;
         }
-
-        /// <summary>
-        /// Gets the HTTP status code for the response message.
-        /// </summary>
-        public HttpStatusCode StatusCode { get; private set; }
 
         /// <summary>
         /// Gets the content value to negotiate and format in the entity body.

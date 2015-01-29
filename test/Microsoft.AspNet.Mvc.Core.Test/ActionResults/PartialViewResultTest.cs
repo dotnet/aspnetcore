@@ -3,8 +3,8 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;

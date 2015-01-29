@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
 using Xunit;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class ApiExplorerTest
     {
         private readonly IServiceProvider _provider = TestHelper.CreateServices("ApiExplorerWebSite");
-        private readonly Action<IApplicationBuilder> _app = new ApiExplorer.Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new ApiExplorerWebSite.Startup().Configure;
 
         [Fact]
         public async Task ApiExplorer_IsVisible_EnabledWithConvention()
@@ -176,9 +177,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("id", parameter.Name);
-            Assert.False(parameter.IsOptional);
+            Assert.False(parameter.RouteInfo.IsOptional);
             Assert.Equal("Path", parameter.Source);
-            Assert.Empty(parameter.ConstraintTypes);
+            Assert.Empty(parameter.RouteInfo.ConstraintTypes);
         }
 
         [Fact]
@@ -201,9 +202,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("integer", parameter.Name);
-            Assert.False(parameter.IsOptional);
+            Assert.False(parameter.RouteInfo.IsOptional);
             Assert.Equal("Path", parameter.Source);
-            Assert.Equal("IntRouteConstraint", Assert.Single(parameter.ConstraintTypes));
+            Assert.Equal("IntRouteConstraint", Assert.Single(parameter.RouteInfo.ConstraintTypes));
         }
 
         [Fact]
@@ -226,7 +227,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("parameter", parameter.Name);
-            Assert.False(parameter.IsOptional);
+            Assert.False(parameter.RouteInfo.IsOptional);
             Assert.Equal("Path", parameter.Source);
         }
 
@@ -252,9 +253,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("integer", parameter.Name);
-            Assert.False(parameter.IsOptional);
+            Assert.False(parameter.RouteInfo.IsOptional);
             Assert.Equal("Path", parameter.Source);
-            Assert.Equal("IntRouteConstraint", Assert.Single(parameter.ConstraintTypes));
+            Assert.Equal("IntRouteConstraint", Assert.Single(parameter.RouteInfo.ConstraintTypes));
         }
 
         [Fact]
@@ -281,19 +282,19 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedRelativePath, description.RelativePath);
 
             var month = Assert.Single(description.ParameterDescriptions, p => p.Name == "month");
-            Assert.False(month.IsOptional);
+            Assert.False(month.RouteInfo.IsOptional);
             Assert.Equal("Path", month.Source);
-            Assert.Equal("RangeRouteConstraint", Assert.Single(month.ConstraintTypes));
+            Assert.Equal("RangeRouteConstraint", Assert.Single(month.RouteInfo.ConstraintTypes));
 
             var day = Assert.Single(description.ParameterDescriptions, p => p.Name == "day");
-            Assert.False(day.IsOptional);
+            Assert.False(day.RouteInfo.IsOptional);
             Assert.Equal("Path", day.Source);
-            Assert.Equal("IntRouteConstraint", Assert.Single(day.ConstraintTypes));
+            Assert.Equal("IntRouteConstraint", Assert.Single(day.RouteInfo.ConstraintTypes));
 
             var year = Assert.Single(description.ParameterDescriptions, p => p.Name == "year");
-            Assert.False(year.IsOptional);
+            Assert.False(year.RouteInfo.IsOptional);
             Assert.Equal("Path", year.Source);
-            Assert.Equal("IntRouteConstraint", Assert.Single(year.ConstraintTypes));
+            Assert.Equal("IntRouteConstraint", Assert.Single(year.RouteInfo.ConstraintTypes));
         }
 
         [Fact]
@@ -319,19 +320,19 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedRelativePath, description.RelativePath);
 
             var month = Assert.Single(description.ParameterDescriptions, p => p.Name == "month");
-            Assert.False(month.IsOptional);
+            Assert.False(month.RouteInfo.IsOptional);
             Assert.Equal("Path", month.Source);
-            Assert.Equal("RangeRouteConstraint", Assert.Single(month.ConstraintTypes));
+            Assert.Equal("RangeRouteConstraint", Assert.Single(month.RouteInfo.ConstraintTypes));
 
             var day = Assert.Single(description.ParameterDescriptions, p => p.Name == "day");
-            Assert.False(day.IsOptional);
-            Assert.Equal("Path", day.Source);
-            Assert.Equal("IntRouteConstraint", Assert.Single(day.ConstraintTypes));
+            Assert.True(day.RouteInfo.IsOptional);
+            Assert.Equal("ModelBinding", day.Source);
+            Assert.Equal("IntRouteConstraint", Assert.Single(day.RouteInfo.ConstraintTypes));
 
             var year = Assert.Single(description.ParameterDescriptions, p => p.Name == "year");
-            Assert.True(year.IsOptional);
-            Assert.Equal("Path", year.Source);
-            Assert.Equal("IntRouteConstraint", Assert.Single(year.ConstraintTypes));
+            Assert.True(year.RouteInfo.IsOptional);
+            Assert.Equal("ModelBinding", year.Source);
+            Assert.Equal("IntRouteConstraint", Assert.Single(year.RouteInfo.ConstraintTypes));
         }
 
         [Fact]
@@ -383,8 +384,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("ApiExplorerRouteAndPathParametersInformation/Optional/{id}", description.RelativePath);
 
             var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
-            Assert.True(id.IsOptional);
-            Assert.Equal("Path", id.Source);
+            Assert.True(id.RouteInfo.IsOptional);
+            Assert.Equal("ModelBinding", id.Source);
         }
 
         [Fact]
@@ -498,9 +499,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("GetProduct", "ApiExplorer.Product")]
+        [InlineData("GetProduct", "ApiExplorerWebSite.Product")]
         [InlineData("GetInt", "System.Int32")]
-        [InlineData("GetTaskOfProduct", "ApiExplorer.Product")]
+        [InlineData("GetTaskOfProduct", "ApiExplorerWebSite.Product")]
         [InlineData("GetTaskOfInt", "System.Int32")]
         public async Task ApiExplorer_ResponseType_KnownWithoutAttribute(string action, string type)
         {
@@ -521,10 +522,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("GetVoid", "ApiExplorer.Customer")]
-        [InlineData("GetObject", "ApiExplorer.Product")]
+        [InlineData("GetVoid", "ApiExplorerWebSite.Customer")]
+        [InlineData("GetObject", "ApiExplorerWebSite.Product")]
         [InlineData("GetIActionResult", "System.String")]
-        [InlineData("GetProduct", "ApiExplorer.Customer")]
+        [InlineData("GetProduct", "ApiExplorerWebSite.Customer")]
         [InlineData("GetTask", "System.Int32")]
         public async Task ApiExplorer_ResponseType_KnownWithAttribute(string action, string type)
         {
@@ -545,8 +546,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("Controller", "ApiExplorer.Product")]
-        [InlineData("Action", "ApiExplorer.Customer")]
+        [InlineData("Controller", "ApiExplorerWebSite.Product")]
+        [InlineData("Action", "ApiExplorerWebSite.Customer")]
         public async Task ApiExplorer_ResponseType_OverrideOnAction(string action, string type)
         {
             // Arrange
@@ -722,6 +723,158 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(formatterType, format.FormatterType);
         }
 
+        [Fact]
+        public async Task ApiExplorer_Parameters_SimpleTypes_Default()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ApiExplorerParameters/SimpleParameters");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            var parameters = description.ParameterDescriptions;
+
+            Assert.Equal(2, parameters.Count);
+
+            var i = Assert.Single(parameters, p => p.Name == "i");
+            Assert.Equal(ApiParameterSource.ModelBinding.Id, i.Source);
+            Assert.Equal(typeof(int).FullName, i.Type);
+
+            var s = Assert.Single(parameters, p => p.Name == "s");
+            Assert.Equal(ApiParameterSource.ModelBinding.Id, s.Source);
+            Assert.Equal(typeof(string).FullName, s.Type);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_Parameters_SimpleTypes_BinderMetadataOnParameters()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ApiExplorerParameters/SimpleParametersWithBinderMetadata");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            var parameters = description.ParameterDescriptions;
+
+            Assert.Equal(2, parameters.Count);
+
+            var i = Assert.Single(parameters, p => p.Name == "i");
+            Assert.Equal(ApiParameterSource.Query.Id, i.Source);
+            Assert.Equal(typeof(int).FullName, i.Type);
+
+            var s = Assert.Single(parameters, p => p.Name == "s");
+            Assert.Equal(ApiParameterSource.Path.Id, s.Source);
+            Assert.Equal(typeof(string).FullName, s.Type);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_ParametersSimpleModel()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ApiExplorerParameters/SimpleModel");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            var parameters = description.ParameterDescriptions;
+
+            Assert.Equal(1, parameters.Count);
+
+            var product = Assert.Single(parameters, p => p.Name == "product");
+            Assert.Equal(ApiParameterSource.ModelBinding.Id, product.Source);
+            Assert.Equal(typeof(ApiExplorerWebSite.Product).FullName, product.Type);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_Parameters_SimpleTypes_SimpleModel_FromBody()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ApiExplorerParameters/SimpleModelFromBody/5");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            var parameters = description.ParameterDescriptions;
+
+            Assert.Equal(2, parameters.Count);
+
+            var id = Assert.Single(parameters, p => p.Name == "id");
+            Assert.Equal(ApiParameterSource.Path.Id, id.Source);
+            Assert.Equal(typeof(int).FullName, id.Type);
+
+            var product = Assert.Single(parameters, p => p.Name == "product");
+            Assert.Equal(ApiParameterSource.Body.Id, product.Source);
+            Assert.Equal(typeof(ApiExplorerWebSite.Product).FullName, product.Type);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_Parameters_SimpleTypes_ComplexModel()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ApiExplorerParameters/ComplexModel");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            var parameters = description.ParameterDescriptions;
+
+            Assert.Equal(6, parameters.Count);
+
+            var customerId = Assert.Single(parameters, p => p.Name == "CustomerId");
+            Assert.Equal(ApiParameterSource.Query.Id, customerId.Source);
+            Assert.Equal(typeof(string).FullName, customerId.Type);
+
+            var referrer = Assert.Single(parameters, p => p.Name == "Referrer");
+            Assert.Equal(ApiParameterSource.Header.Id, referrer.Source);
+            Assert.Equal(typeof(string).FullName, referrer.Type);
+
+            var quantity = Assert.Single(parameters, p => p.Name == "Details.Quantity");
+            Assert.Equal(ApiParameterSource.Form.Id, quantity.Source);
+            Assert.Equal(typeof(int).FullName, quantity.Type);
+
+            var product = Assert.Single(parameters, p => p.Name == "Details.Product");
+            Assert.Equal(ApiParameterSource.Form.Id, product.Source);
+            Assert.Equal(typeof(ApiExplorerWebSite.Product).FullName, product.Type);
+
+            var shippingInstructions = Assert.Single(parameters, p => p.Name == "Comments.ShippingInstructions");
+            Assert.Equal(ApiParameterSource.Query.Id, shippingInstructions.Source);
+            Assert.Equal(typeof(string).FullName, shippingInstructions.Type);
+
+            var feedback = Assert.Single(parameters, p => p.Name == "Comments.Feedback");
+            Assert.Equal(ApiParameterSource.Form.Id, feedback.Source);
+            Assert.Equal(typeof(string).FullName, feedback.Type);
+        }
+
         // Used to serialize data between client and server
         private class ApiExplorerData
         {
@@ -741,15 +894,23 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         // Used to serialize data between client and server
         private class ApiExplorerParameterData
         {
-            public bool IsOptional { get; set; }
-
             public string Name { get; set; }
+
+            public ApiExplorerParameterRouteInfo RouteInfo { get; set; }
 
             public string Source { get; set; }
 
             public string Type { get; set; }
+        }
 
+        // Used to serialize data between client and server
+        private class ApiExplorerParameterRouteInfo
+        {
             public string[] ConstraintTypes { get; set; }
+
+            public object DefaultValue { get; set; }
+
+            public bool IsOptional { get; set; }
         }
 
         // Used to serialize data between client and server

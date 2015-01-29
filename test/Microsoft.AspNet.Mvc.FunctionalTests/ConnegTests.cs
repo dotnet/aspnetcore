@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using ConnegWebsite;
+using ConnegWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using Xunit;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ConnegTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("ConnegWebSite");
+        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(ConnegWebSite));
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
@@ -105,8 +105,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("ContactInfoUsingV3Format", "text/vcard; charset=utf-8; version=v3.0", "BEGIN:VCARD#FN:John Williams#END:VCARD#")]
-        [InlineData("ContactInfoUsingV4Format", "text/vcard; charset=utf-8; version=v4.0", "BEGIN:VCARD#FN:John Williams#GENDER:M#END:VCARD#")]
+        [InlineData("ContactInfoUsingV3Format", "text/vcard; version=v3.0; charset=utf-8", "BEGIN:VCARD#FN:John Williams#END:VCARD#")]
+        [InlineData("ContactInfoUsingV4Format", "text/vcard; version=v4.0; charset=utf-8", "BEGIN:VCARD#FN:John Williams#GENDER:M#END:VCARD#")]
         public async Task ProducesAttribute_WithMediaTypeHavingParameters_IsCaseInsensitiveMatch(
                                                                                             string action,
                                                                                             string expectedMediaType,
@@ -294,6 +294,50 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
+        }
+
+        [Fact]
+        public async Task JsonFormatter_SupportedMediaType_DoesNotChangeAcrossRequests()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
+            var expectedBody = "{\"MethodName\":\"ReturnJsonResult\"}";
+
+            for (int i = 0; i < 5; i++)
+            {
+                // Act and Assert
+                var response = await client.GetAsync("http://localhost/JsonResult/ReturnJsonResult");
+
+                Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+                var body = await response.Content.ReadAsStringAsync();
+                Assert.Equal(expectedBody, body);
+            }
+        }
+
+        [Fact]
+        public async Task XmlFormatter_SupportedMediaType_DoesNotChangeAcrossRequests()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
+            client.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/xml;charset=utf-8");
+            var expectedBody = @"<User xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"" " +
+                                @"xmlns=""http://schemas.datacontract.org/2004/07/ConnegWebSite""><Address>"
+                                + @"One Microsoft Way</Address><Name>John</Name></User>";
+
+            for (int i = 0; i < 5; i++)
+            {
+                // Act and Assert
+                var response = await client.GetAsync("http://localhost/Home/UserInfo");
+
+                Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+                var body = await response.Content.ReadAsStringAsync();
+                Assert.Equal(expectedBody, body);
+            }
         }
 
         [Theory]

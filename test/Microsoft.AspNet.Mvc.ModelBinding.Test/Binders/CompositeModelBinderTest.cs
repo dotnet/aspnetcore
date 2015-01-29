@@ -120,6 +120,97 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
+        public async Task ModelBinder_ReturnsTrue_WithoutSettingValue_SkipsValidation()
+        {
+            // Arrange
+            var validationCalled = false;
+
+            var bindingContext = new ModelBindingContext
+            {
+                FallbackToEmptyPrefix = true,
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(List<int>)),
+                ModelName = "someName",
+                ModelState = new ModelStateDictionary(),
+                ValueProvider = new SimpleHttpValueProvider
+                {
+                    { "someOtherName", "dummyValue" }
+                },
+                OperationBindingContext = new OperationBindingContext
+                {
+                    ValidatorProvider = GetValidatorProvider()
+                }
+            };
+
+            var modelBinder = new Mock<IModelBinder>();
+            modelBinder
+                .Setup(mb => mb.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Callback<ModelBindingContext>(context =>
+                {
+                    context.ValidationNode.Validating += delegate { validationCalled = true; };
+                })
+                .Returns(Task.FromResult(true));
+
+            var composite = CreateCompositeBinder(modelBinder.Object);
+
+            // Act
+            var isBound = await composite.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(isBound);
+
+            Assert.Null(bindingContext.Model);
+            Assert.False(validationCalled);
+            Assert.False(bindingContext.IsModelSet);
+            Assert.True(bindingContext.ModelState.IsValid);
+        }
+
+        [Fact]
+        public async Task ModelBinder_ReturnsTrue_SetsNullValue_RunsValidation()
+        {
+            // Arrange
+            var validationCalled = false;
+
+            var bindingContext = new ModelBindingContext
+            {
+                FallbackToEmptyPrefix = true,
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(List<int>)),
+                ModelName = "someName",
+                ModelState = new ModelStateDictionary(),
+                ValueProvider = new SimpleHttpValueProvider
+                {
+                    { "someOtherName", "dummyValue" }
+                },
+                OperationBindingContext = new OperationBindingContext
+                {
+                    ValidatorProvider = GetValidatorProvider()
+                }
+            };
+
+            var modelBinder = new Mock<IModelBinder>();
+            modelBinder
+                .Setup(mb => mb.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Callback<ModelBindingContext>(context =>
+                {
+                    context.Model = null;
+                    context.ValidationNode.Validating += delegate { validationCalled = true; };
+                })
+                .Returns(Task.FromResult(true));
+
+            var composite = CreateCompositeBinder(modelBinder.Object);
+
+            // Act
+            var isBound = await composite.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(isBound);
+
+            Assert.Null(bindingContext.Model);
+            Assert.True(validationCalled);
+            Assert.True(bindingContext.IsModelSet);
+            Assert.False(bindingContext.ModelState.IsValid);
+        }
+
+        [Fact]
         public async Task BindModel_UnsuccessfulBind_BinderFails_ReturnsNull()
         {
             // Arrange
@@ -343,20 +434,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 new TypeConverterModelBinder(),
                 new MutableObjectModelBinder()
             };
-            var binderProviders = new Mock<IModelBinderProvider>();
-            binderProviders.SetupGet(p => p.ModelBinders)
-                           .Returns(binders);
-            var binder = new CompositeModelBinder(binderProviders.Object);
+
+            var binder = new CompositeModelBinder(binders);
             return binder;
         }
 
         private static CompositeModelBinder CreateCompositeBinder(IModelBinder mockIntBinder)
         {
-            var binderProvider = new Mock<IModelBinderProvider>();
-            binderProvider.SetupGet(p => p.ModelBinders)
-                          .Returns(new[] { mockIntBinder });
-
-            var shimBinder = new CompositeModelBinder(binderProvider.Object);
+            var shimBinder = new CompositeModelBinder(new[] { mockIntBinder });
             return shimBinder;
         }
 

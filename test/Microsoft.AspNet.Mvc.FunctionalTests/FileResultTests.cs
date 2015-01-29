@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var contentDisposition = response.Content.Headers.ContentDisposition.ToString();
             Assert.NotNull(contentDisposition);
-            Assert.Equal("attachment; filename=downloadName.txt", contentDisposition);
+            Assert.Equal("attachment; filename=downloadName.txt; filename*=UTF-8''downloadName.txt", contentDisposition);
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var contentDisposition = response.Content.Headers.ContentDisposition.ToString();
             Assert.NotNull(contentDisposition);
-            Assert.Equal("attachment; filename=downloadName.txt", contentDisposition);
+            Assert.Equal("attachment; filename=downloadName.txt; filename*=UTF-8''downloadName.txt", contentDisposition);
         }
 
         [Fact]
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var contentDisposition = response.Content.Headers.ContentDisposition.ToString();
             Assert.NotNull(contentDisposition);
-            Assert.Equal("attachment; filename=downloadName.txt", contentDisposition);
+            Assert.Equal("attachment; filename=downloadName.txt; filename*=UTF-8''downloadName.txt", contentDisposition);
         }
     }
 }

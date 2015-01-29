@@ -9,7 +9,16 @@ Secondary content
 @{
     WaitService.WaitForClient();
 }
-Final content
+@{
+    await Html.RenderPartialAsync("_PartialWithFlush");
+}
+@using (Html.BeginForm())
+{
+    @Html.TextBox("Name1")
+    @await FlushAsync()
+    WaitService.WaitForClient();
+    @Html.TextBox("Name2")
+}
 @{
     WaitService.NotifyClient();
 }

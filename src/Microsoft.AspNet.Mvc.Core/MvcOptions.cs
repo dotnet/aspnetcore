@@ -125,5 +125,11 @@ namespace Microsoft.AspNet.Mvc
         /// the <see cref="ApplicationModel"/> when discovering actions.
         /// </summary>
         public List<IApplicationModelConvention> ApplicationModelConventions { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the flag which causes content negotiation to ignore Accept header 
+        /// when it contains the media type */*. <see langword="false"/> by default.
+        /// </summary>
+        public bool RespectBrowserAcceptHeader { get; set; } = false;
     }
 }

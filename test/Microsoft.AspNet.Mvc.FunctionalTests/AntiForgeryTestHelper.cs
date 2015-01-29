@@ -25,8 +25,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     {
                         foreach (var input in form.Descendants("input"))
                         {
-                            if (input.Attributes("name").First().Value == "__RequestVerificationToken" &&
-                                input.Attributes("type").First().Value == "hidden")
+                            if (input.Attribute("name") != null &&
+                                input.Attribute("type") != null &&
+                                input.Attribute("name").Value == "__RequestVerificationToken" &&
+                                input.Attribute("type").Value == "hidden")
                             {
                                 return input.Attributes("value").First().Value;
                             }

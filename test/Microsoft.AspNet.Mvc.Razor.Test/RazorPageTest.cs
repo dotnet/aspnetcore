@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PageExecutionInstrumentation;
-using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
@@ -17,7 +17,9 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class RazorPageTest
     {
+#pragma warning disable 1998
         private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = async writer => { };
+#pragma warning restore 1998
 
         [Fact]
         public async Task WritingScopesRedirectContentWrittenToViewContextWriter()
@@ -522,9 +524,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             await page.ExecuteAsync();
             page.IsLayoutBeingRendered = true;
 
-            // Assert
+            // Assert (does not throw)
             var renderAsyncDelegate = page.SectionWriters["test-section"];
-            await Assert.DoesNotThrowAsync(() => renderAsyncDelegate(TextWriter.Null));
+            await renderAsyncDelegate(TextWriter.Null);
         }
 
         [Fact]

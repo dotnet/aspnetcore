@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Framework.Runtime;
 using Moq;
 using Xunit;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Mvc.Core
 {
@@ -32,6 +33,8 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Assert
             Assert.Equal(new[] { "SomeRandomAssembly" }, candidates.Select(a => a.Name));
+
+            var context = new Mock<HttpContext>();
         }
 
         [Fact]

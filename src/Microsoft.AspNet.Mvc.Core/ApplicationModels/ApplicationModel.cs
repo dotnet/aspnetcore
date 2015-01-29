@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Filters = new List<IFilter>();
         }
 
-        public List<ControllerModel> Controllers { get; private set; }
+        public IList<ControllerModel> Controllers { get; private set; }
 
-        public List<IFilter> Filters { get; private set; }
+        public IList<IFilter> Filters { get; private set; }
     }
 }

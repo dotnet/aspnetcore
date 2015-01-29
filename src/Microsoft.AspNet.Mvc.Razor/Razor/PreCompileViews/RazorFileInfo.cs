@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Last modified at compilation time.
         /// </summary>
-        public DateTime LastModified { get; set; }
+        public DateTimeOffset LastModified { get; set; }
 
         /// <summary>
         /// The length of the file in bytes.

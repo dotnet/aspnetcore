@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.AspNet.Security;
 using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
@@ -22,11 +25,13 @@ namespace Microsoft.Framework.DependencyInjection
             services.AddOptions(configuration);
             services.AddDataProtection(configuration);
             services.AddRouting(configuration);
-            services.AddContextAccessor(configuration);
+            services.AddScopedInstance(configuration);
+            services.AddAuthorization(configuration);
             services.Configure<RouteOptions>(routeOptions =>
                                                     routeOptions.ConstraintMap
                                                          .Add("exists",
                                                               typeof(KnownRouteValueConstraint)));
+
         }
     }
 }

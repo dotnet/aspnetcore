@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc
                 HttpContext = new DefaultHttpContext(),
             };
 
-            ModelBindingContext bindingContext = new ModelBindingContext
+            var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(null, modelType),
                 ModelName = "someName",
@@ -106,7 +106,11 @@ namespace Microsoft.AspNet.Mvc
         {
             var actionContext = CreateActionContext(new DefaultHttpContext());
             var inputFormatterSelector = new Mock<IInputFormatterSelector>();
-            inputFormatterSelector.Setup(o => o.SelectFormatter(It.IsAny<InputFormatterContext>())).Returns(inputFormatter);
+            inputFormatterSelector
+                .Setup(o => o.SelectFormatter(
+                    It.IsAny<IReadOnlyList<IInputFormatter>>(),
+                    It.IsAny<InputFormatterContext>()))
+                .Returns(inputFormatter);
 
             if (validator == null)
             {
@@ -117,23 +121,36 @@ namespace Microsoft.AspNet.Mvc
                 validator = mockValidator.Object;
             }
 
-            var bodyValidationPredicatesProvidwer = new Mock<IValidationExcludeFiltersProvider>();
-            bodyValidationPredicatesProvidwer.SetupGet(o => o.ExcludeFilters)
+            var bodyValidationPredicatesProvider = new Mock<IValidationExcludeFiltersProvider>();
+            bodyValidationPredicatesProvider.SetupGet(o => o.ExcludeFilters)
                                              .Returns(new List<IExcludeTypeValidationFilter>());
 
-            var binder = new BodyModelBinder(actionContext,
-                                             inputFormatterSelector.Object,
-                                             validator,
-                                             bodyValidationPredicatesProvidwer.Object);
+            var bindingContext = new ActionBindingContext()
+            {
+                InputFormatters = new List<IInputFormatter>(),
+            };
+
+            var bindingContextAccessor = new MockScopedInstance<ActionBindingContext>()
+            {
+                Value = bindingContext,
+            };
+
+            var binder = new BodyModelBinder(
+                actionContext,
+                bindingContextAccessor,
+                inputFormatterSelector.Object,
+                validator,
+                bodyValidationPredicatesProvider.Object);
+
             return binder;
         }
 
-        private static IContextAccessor<ActionContext> CreateActionContext(HttpContext context)
+        private static IScopedInstance<ActionContext> CreateActionContext(HttpContext context)
         {
             return CreateActionContext(context, (new Mock<IRouter>()).Object);
         }
 
-        private static IContextAccessor<ActionContext> CreateActionContext(HttpContext context, IRouter router)
+        private static IScopedInstance<ActionContext> CreateActionContext(HttpContext context, IRouter router)
         {
             var routeData = new RouteData();
             routeData.Routers.Add(router);
@@ -141,10 +158,15 @@ namespace Microsoft.AspNet.Mvc
             var actionContext = new ActionContext(context,
                                                   routeData,
                                                   new ActionDescriptor());
-            var contextAccessor = new Mock<IContextAccessor<ActionContext>>();
+            var contextAccessor = new Mock<IScopedInstance<ActionContext>>();
             contextAccessor.SetupGet(c => c.Value)
                            .Returns(actionContext);
             return contextAccessor.Object;
+        }
+
+        private class Person
+        {
+            public string Name { get; set; }
         }
     }
 }

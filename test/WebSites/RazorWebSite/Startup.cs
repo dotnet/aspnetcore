@@ -21,6 +21,7 @@ namespace RazorWebSite
                 services.AddMvc(configuration);
                 services.AddTransient<InjectedHelper>();
                 services.AddTransient<TaskReturningService>();
+                services.AddTransient<FrameworkSpecificHelper>();
                 services.Configure<RazorViewEngineOptions>(options =>
                 {
                     var expander = new LanguageViewLocationExpander(
@@ -30,7 +31,12 @@ namespace RazorWebSite
             });
 
             // Add MVC to the request pipeline
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
         }
     }
 }

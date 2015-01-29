@@ -137,6 +137,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </remarks>
         public virtual bool HideSurroundingHtml { get; set; }
 
+        public virtual bool IsCollectionType
+        {
+            get { return TypeHelper.IsCollectionType(ModelType); }
+        }
+
         public virtual bool IsComplexType
         {
             get { return !TypeHelper.HasStringConverter(ModelType); }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Xunit;
@@ -19,13 +20,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
                 "p",
-                attributes: new Dictionary<string, string>(),
-                content: string.Empty);
+                attributes: new Dictionary<string, string>());
             var tagHelperContext = new TagHelperContext(
-                new Dictionary<string, object>(StringComparer.Ordinal)
+                allAttributes: new Dictionary<string, object>(StringComparer.Ordinal)
                 {
                     { attributeName, attributeValue }
-                });
+                },
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var expectedAttribute = new KeyValuePair<string, string>(attributeName, attributeValue);
 
             // Act
@@ -46,14 +48,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new Dictionary<string, string>()
                 {
                     { attributeName, "world2" }
-                },
-                content: string.Empty);
+                });
             var expectedAttribute = new KeyValuePair<string, string>(attributeName, "world2");
             var tagHelperContext = new TagHelperContext(
-                new Dictionary<string, object>(StringComparer.Ordinal)
+                allAttributes: new Dictionary<string, object>(StringComparer.Ordinal)
                 {
                     { attributeName, "world" }
-                });
+                },
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
 
             // Act
             tagHelperOutput.CopyHtmlAttribute(attributeName, tagHelperContext);
@@ -73,8 +76,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "route-Hello", "World" },
                     { "Route-I", "Am" }
-                },
-                content: string.Empty);
+                });
             var expectedAttribute = new KeyValuePair<string, string>("type", "btn");
             tagHelperOutput.Attributes.Add(expectedAttribute);
             var attributes = tagHelperOutput.FindPrefixedAttributes("route-");
@@ -97,8 +99,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "routeHello", "World" },
                     { "Routee-I", "Am" }
-                },
-                content: string.Empty);
+                });
 
             // Act
             var attributes = tagHelperOutput.FindPrefixedAttributes("route-");
@@ -117,8 +118,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
                 "p",
-                attributes: new Dictionary<string, string>(),
-                content: string.Empty);
+                attributes: new Dictionary<string, string>());
             var expectedAttribute = new KeyValuePair<string, string>("type", "btn");
             tagHelperOutput.Attributes.Add(expectedAttribute);
 
@@ -139,8 +139,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
                 "p",
-                attributes: new Dictionary<string, string>(),
-                content: string.Empty);
+                attributes: new Dictionary<string, string>());
             tagHelperOutput.Attributes.Add("class", "Hello");
 
             var tagBuilder = new TagBuilder("p");
@@ -166,8 +165,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
                 "p",
-                attributes: new Dictionary<string, string>(),
-                content: string.Empty);
+                attributes: new Dictionary<string, string>());
             tagHelperOutput.Attributes.Add(originalName, "Hello");
 
             var tagBuilder = new TagBuilder("p");
@@ -187,8 +185,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
                 "p",
-                attributes: new Dictionary<string, string>(),
-                content: string.Empty);
+                attributes: new Dictionary<string, string>());
 
             var tagBuilder = new TagBuilder("p");
             var expectedAttribute = new KeyValuePair<string, string>("visible", "val < 3");
@@ -208,8 +205,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
                 "p",
-                attributes: new Dictionary<string, string>(),
-                content: string.Empty);
+                attributes: new Dictionary<string, string>());
 
             var tagBuilder = new TagBuilder("p");
             var expectedAttribute1 = new KeyValuePair<string, string>("class", "btn");
@@ -234,8 +230,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
                 "p",
-                attributes: new Dictionary<string, string>(),
-                content: string.Empty);
+                attributes: new Dictionary<string, string>());
             var expectedAttribute = new KeyValuePair<string, string>("class", "btn");
             tagHelperOutput.Attributes.Add(expectedAttribute);
 
@@ -255,8 +250,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
                 "p",
-                attributes: new Dictionary<string, string>(),
-                content: string.Empty);
+                attributes: new Dictionary<string, string>());
             var expectedOutputAttribute = new KeyValuePair<string, string>("class", "btn");
             tagHelperOutput.Attributes.Add(expectedOutputAttribute);
 

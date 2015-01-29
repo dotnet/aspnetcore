@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;label&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
-    [ContentBehavior(ContentBehavior.Modify)]
     public class LabelTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";
@@ -31,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         /// <inheritdoc />
         /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
-        public override void Process(TagHelperContext context, TagHelperOutput output)
+        public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             if (For != null)
             {
@@ -48,9 +47,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     // We check for whitespace to detect scenarios such as:
                     // <label for="Name">
                     // </label>
-                    if (string.IsNullOrWhiteSpace(output.Content))
+                    if (!output.ContentSet)
                     {
-                        output.Content = tagBuilder.InnerHtml;
+                        var childContent = await context.GetChildContentAsync();
+
+                        if (string.IsNullOrWhiteSpace(childContent))
+                        {
+                            // Provide default label text since there was nothing useful in the Razor source.
+                            output.Content = tagBuilder.InnerHtml;
+                        }
+                        else
+                        {
+                            output.Content = childContent;
+                        }
                     }
                 }
             }

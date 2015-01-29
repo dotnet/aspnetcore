@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Framework.Runtime.Roslyn;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -12,15 +12,16 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private string _fileFormat;
 
-        protected IReadOnlyList<RazorFileInfo> FileInfos { get; private set; }
-        protected CSharpParseOptions Options { get; private set; }
-
-        public RazorFileInfoCollectionGenerator([NotNull] IReadOnlyList<RazorFileInfo> fileInfos,
-                                                 [NotNull] CSharpParseOptions options)
+        public RazorFileInfoCollectionGenerator([NotNull] IEnumerable<RazorFileInfo> fileInfos,
+                                                [NotNull] CompilationSettings compilationSettings)
         {
             FileInfos = fileInfos;
-            Options = options;
+            CompilationSettings = compilationSettings;
         }
+
+        protected IEnumerable<RazorFileInfo> FileInfos { get; }
+
+        protected CompilationSettings CompilationSettings { get; }
 
         public virtual SyntaxTree GenerateCollection()
         {
@@ -38,16 +39,15 @@ namespace Microsoft.AspNet.Mvc.Razor
             var sourceCode = builder.ToString();
             var syntaxTree = SyntaxTreeGenerator.Generate(sourceCode,
                                                           "__AUTO__GeneratedViewsCollection.cs",
-                                                          Options);
+                                                          CompilationSettings);
 
             return syntaxTree;
         }
 
-
         protected virtual string GenerateFile([NotNull] RazorFileInfo fileInfo)
         {
             return string.Format(FileFormat,
-                                 fileInfo.LastModified.ToFileTimeUtc(),
+                                 fileInfo.LastModified.ToFileTime(),
                                  fileInfo.Length,
                                  fileInfo.RelativePath,
                                  fileInfo.FullTypeName,

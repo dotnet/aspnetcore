@@ -294,7 +294,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Assert
             var action = Assert.Single(actions);
             Assert.Equal("Edit", action.ActionName);
-            Assert.True(action.IsActionNameMatchRequired);
             Assert.Empty(action.HttpMethods);
             Assert.Null(action.AttributeRouteModel);
             Assert.Empty(action.Attributes);
@@ -317,7 +316,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Contains("PATCH", action.HttpMethods);
 
             Assert.Equal("Update", action.ActionName);
-            Assert.True(action.IsActionNameMatchRequired);
             Assert.Null(action.AttributeRouteModel);
             Assert.IsType<CustomHttpMethodsAttribute>(Assert.Single(action.Attributes));
         }
@@ -336,7 +334,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Assert
             var action = Assert.Single(actions);
             Assert.Equal("Delete", action.ActionName);
-            Assert.True(action.IsActionNameMatchRequired);
 
             var httpMethod = Assert.Single(action.HttpMethods);
             Assert.Equal("DELETE", httpMethod);
@@ -361,7 +358,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Contains("GET", action.HttpMethods);
             Assert.Contains("POST", action.HttpMethods);
             Assert.Equal("Details", action.ActionName);
-            Assert.True(action.IsActionNameMatchRequired);
             Assert.Null(action.AttributeRouteModel);
         }
 
@@ -382,7 +378,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Contains("PUT", action.HttpMethods);
             Assert.Contains("POST", action.HttpMethods);
             Assert.Equal("List", action.ActionName);
-            Assert.True(action.IsActionNameMatchRequired);
             Assert.Null(action.AttributeRouteModel);
         }
 
@@ -401,7 +396,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var action = Assert.Single(actions);
 
             Assert.Equal("Edit", action.ActionName);
-            Assert.True(action.IsActionNameMatchRequired);
 
             var httpMethod = Assert.Single(action.HttpMethods);
             Assert.Equal("POST", httpMethod);
@@ -427,7 +421,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var action = Assert.Single(actions);
 
             Assert.Equal("Update", action.ActionName);
-            Assert.True(action.IsActionNameMatchRequired);
 
             Assert.Empty(action.HttpMethods);
 
@@ -452,7 +445,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var action = Assert.Single(actions);
 
             Assert.Equal("List", action.ActionName);
-            Assert.True(action.IsActionNameMatchRequired);
 
             Assert.Equal(new[] { "GET", "HEAD" }, action.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
 
@@ -479,8 +471,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             foreach (var action in actions)
             {
                 Assert.Equal("Index", action.ActionName);
-                Assert.True(action.IsActionNameMatchRequired);
-
                 Assert.NotNull(action.AttributeRouteModel);
             }
 
@@ -510,7 +500,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var action = Assert.Single(actions);
 
             Assert.Equal("Remove", action.ActionName);
-            Assert.True(action.IsActionNameMatchRequired);
 
             Assert.Empty(action.HttpMethods);
 
@@ -535,7 +524,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var action = Assert.Single(actions);
 
             Assert.Equal("Delete", action.ActionName);
-            Assert.True(action.IsActionNameMatchRequired);
 
             Assert.Empty(action.HttpMethods);
 
@@ -562,7 +550,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             foreach (var action in actions)
             {
                 Assert.Equal("Index", action.ActionName);
-                Assert.True(action.IsActionNameMatchRequired);
 
                 var httpMethod = Assert.Single(action.HttpMethods);
                 Assert.Equal("GET", httpMethod);
@@ -589,7 +576,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             // Assert
             var action = Assert.Single(actions);
-            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
             Assert.Equal("Products", action.AttributeRouteModel.Template);
         }
 
@@ -608,10 +595,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Equal(2, actions.Count());
 
             var action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products");
-            Assert.Equal(new string[] { "GET", "POST" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET", "POST" }, action.HttpMethods);
 
             action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "v2/Products");
-            Assert.Equal(new string[] { "GET", "POST" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET", "POST" }, action.HttpMethods);
         }
 
         [Fact]
@@ -629,13 +616,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Equal(3, actions.Count());
 
             var action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products");
-            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
 
             action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "v2/Products");
-            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
 
             action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products/Buy");
-            Assert.Equal(new string[] { "POST" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "POST" }, action.HttpMethods);
         }
 
         [Fact]
@@ -653,10 +640,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Equal(2, actions.Count());
 
             var action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "Products");
-            Assert.Equal(new string[] { "POST" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "POST" }, action.HttpMethods);
 
             action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == null);
-            Assert.Equal(new string[] { "GET" }, action.HttpMethods);
+            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
         }
 
         private class AccessibleActionModelBuilder : DefaultActionModelBuilder

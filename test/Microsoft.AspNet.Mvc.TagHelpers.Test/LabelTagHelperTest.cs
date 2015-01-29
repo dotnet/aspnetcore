@@ -44,45 +44,111 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 return new TheoryData<object, Type, Func<object>, string, TagHelperOutputContent>
                 {
                     { null, typeof(Model), () => null, "Text",
-                        new TagHelperOutputContent(Environment.NewLine, "Text", "Text") },
+                        new TagHelperOutputContent(string.Empty, Environment.NewLine, Environment.NewLine, "Text") },
+                    { null, typeof(Model), () => null, "Text",
+                        new TagHelperOutputContent(Environment.NewLine, string.Empty, "Text", "Text") },
 
                     { modelWithNull, typeof(Model), () => modelWithNull.Text, "Text",
-                        new TagHelperOutputContent(Environment.NewLine, "Text", "Text") },
+                        new TagHelperOutputContent(string.Empty, Environment.NewLine, Environment.NewLine, "Text") },
+                    { modelWithNull, typeof(Model), () => modelWithNull.Text, "Text",
+                        new TagHelperOutputContent(Environment.NewLine, string.Empty, "Text", "Text") },
+                    { modelWithNull, typeof(Model), () => modelWithNull.Text, "Text",
+                        new TagHelperOutputContent(Environment.NewLine, "Hello World", "Hello World", "Text") },
                     { modelWithText, typeof(Model), () => modelWithText.Text, "Text",
-                        new TagHelperOutputContent(Environment.NewLine, "Text", "Text") },
+                        new TagHelperOutputContent(string.Empty, Environment.NewLine, Environment.NewLine, "Text") },
+                    { modelWithText, typeof(Model), () => modelWithText.Text, "Text",
+                        new TagHelperOutputContent(Environment.NewLine, string.Empty, "Text", "Text") },
+                    { modelWithText, typeof(Model), () => modelWithText.Text, "Text",
+                        new TagHelperOutputContent(Environment.NewLine, "Hello World", "Hello World", "Text") },
                     { modelWithText, typeof(Model), () => modelWithNull.Text, "Text",
-                        new TagHelperOutputContent("Hello World", "Hello World", "Text") },
+                        new TagHelperOutputContent(string.Empty, "Hello World", "Hello World", "Text") },
                     { modelWithText, typeof(Model), () => modelWithText.Text, "Text",
-                        new TagHelperOutputContent("Hello World", "Hello World", "Text") },
+                        new TagHelperOutputContent(string.Empty, "Hello World", "Hello World", "Text") },
+                    { modelWithText, typeof(Model), () => modelWithNull.Text, "Text",
+                        new TagHelperOutputContent("Hello World", string.Empty, "Hello World", "Text") },
+                    { modelWithText, typeof(Model), () => modelWithText.Text, "Text",
+                        new TagHelperOutputContent("Hello World", string.Empty, "Hello World", "Text") },
+                    { modelWithText, typeof(Model), () => modelWithNull.Text, "Text",
+                        new TagHelperOutputContent("Hello World1", "Hello World2", "Hello World2", "Text") },
+                    { modelWithText, typeof(Model), () => modelWithText.Text, "Text",
+                        new TagHelperOutputContent("Hello World1", "Hello World2", "Hello World2", "Text") },
 
                     { modelWithNull, typeof(NestedModel), () => modelWithNull.NestedModel.Text, "NestedModel.Text",
-                        new TagHelperOutputContent(Environment.NewLine, "Text", "NestedModel_Text") },
-                    { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text, "NestedModel.Text",
-                        new TagHelperOutputContent(Environment.NewLine, "Text", "NestedModel_Text") },
+                        new TagHelperOutputContent(Environment.NewLine, string.Empty, "Text", "NestedModel_Text") },
                     { modelWithNull, typeof(NestedModel), () => modelWithNull.NestedModel.Text, "NestedModel.Text",
-                        new TagHelperOutputContent("Hello World", "Hello World", "NestedModel_Text") },
+                        new TagHelperOutputContent(Environment.NewLine, "Hello World", "Hello World", "NestedModel_Text") },
+                    { modelWithNull, typeof(NestedModel), () => modelWithNull.NestedModel.Text, "NestedModel.Text",
+                        new TagHelperOutputContent(string.Empty, Environment.NewLine, Environment.NewLine, "NestedModel_Text") },
                     { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text, "NestedModel.Text",
-                        new TagHelperOutputContent("Hello World", "Hello World", "NestedModel_Text") },
+                        new TagHelperOutputContent(Environment.NewLine, string.Empty, "Text", "NestedModel_Text") },
+                    { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text, "NestedModel.Text",
+                        new TagHelperOutputContent(Environment.NewLine, "Hello World", "Hello World", "NestedModel_Text") },
+                    { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text, "NestedModel.Text",
+                        new TagHelperOutputContent(string.Empty, Environment.NewLine, Environment.NewLine, "NestedModel_Text") },
+                    { modelWithNull, typeof(NestedModel), () => modelWithNull.NestedModel.Text, "NestedModel.Text",
+                        new TagHelperOutputContent(string.Empty, "Hello World", "Hello World", "NestedModel_Text") },
+                    { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text, "NestedModel.Text",
+                        new TagHelperOutputContent(string.Empty, "Hello World", "Hello World", "NestedModel_Text") },
+                    { modelWithNull, typeof(NestedModel), () => modelWithNull.NestedModel.Text, "NestedModel.Text",
+                        new TagHelperOutputContent("Hello World", string.Empty, "Hello World", "NestedModel_Text") },
+                    { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text, "NestedModel.Text",
+                        new TagHelperOutputContent("Hello World", string.Empty, "Hello World", "NestedModel_Text") },
+                    { modelWithNull, typeof(NestedModel), () => modelWithNull.NestedModel.Text, "NestedModel.Text",
+                        new TagHelperOutputContent("Hello World1", "Hello World2", "Hello World2", "NestedModel_Text") },
+                    { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text, "NestedModel.Text",
+                        new TagHelperOutputContent("Hello World1", "Hello World2", "Hello World2", "NestedModel_Text") },
 
                     // Note: Tests cases below here will not work in practice due to current limitations on indexing
                     // into ModelExpressions. Will be fixed in https://github.com/aspnet/Mvc/issues/1345.
                     { models, typeof(Model), () => models[0].Text, "[0].Text",
-                        new TagHelperOutputContent(Environment.NewLine, "Text", "z0__Text") },
-                    { models, typeof(Model), () => models[1].Text, "[1].Text",
-                        new TagHelperOutputContent(Environment.NewLine, "Text", "z1__Text") },
+                        new TagHelperOutputContent(Environment.NewLine, string.Empty, "Text", "z0__Text") },
                     { models, typeof(Model), () => models[0].Text, "[0].Text",
-                        new TagHelperOutputContent("Hello World", "Hello World", "z0__Text") },
+                        new TagHelperOutputContent(Environment.NewLine, "Hello World", "Hello World", "z0__Text") },
+                    { models, typeof(Model), () => models[0].Text, "[0].Text",
+                        new TagHelperOutputContent(string.Empty, Environment.NewLine, Environment.NewLine, "z0__Text") },
                     { models, typeof(Model), () => models[1].Text, "[1].Text",
-                        new TagHelperOutputContent("Hello World", "Hello World", "z1__Text") },
+                        new TagHelperOutputContent(Environment.NewLine, string.Empty, "Text", "z1__Text") },
+                    { models, typeof(Model), () => models[1].Text, "[1].Text",
+                        new TagHelperOutputContent(Environment.NewLine, "Hello World", "Hello World", "z1__Text") },
+                    { models, typeof(Model), () => models[1].Text, "[1].Text",
+                        new TagHelperOutputContent(string.Empty, Environment.NewLine, Environment.NewLine, "z1__Text") },
+                    { models, typeof(Model), () => models[0].Text, "[0].Text",
+                        new TagHelperOutputContent(string.Empty, "Hello World", "Hello World", "z0__Text") },
+                    { models, typeof(Model), () => models[1].Text, "[1].Text",
+                        new TagHelperOutputContent(string.Empty, "Hello World", "Hello World", "z1__Text") },
+                    { models, typeof(Model), () => models[0].Text, "[0].Text",
+                        new TagHelperOutputContent("Hello World", string.Empty, "Hello World", "z0__Text") },
+                    { models, typeof(Model), () => models[1].Text, "[1].Text",
+                        new TagHelperOutputContent("Hello World", string.Empty, "Hello World", "z1__Text") },
+                    { models, typeof(Model), () => models[0].Text, "[0].Text",
+                        new TagHelperOutputContent("Hello World1", "Hello World2", "Hello World2", "z0__Text") },
+                    { models, typeof(Model), () => models[1].Text, "[1].Text",
+                        new TagHelperOutputContent("Hello World1", "Hello World2", "Hello World2", "z1__Text") },
 
                     { models, typeof(NestedModel), () => models[0].NestedModel.Text, "[0].NestedModel.Text",
-                        new TagHelperOutputContent(Environment.NewLine, "Text", "z0__NestedModel_Text") },
-                    { models, typeof(NestedModel), () => models[1].NestedModel.Text, "[1].NestedModel.Text",
-                        new TagHelperOutputContent(Environment.NewLine, "Text", "z1__NestedModel_Text") },
+                        new TagHelperOutputContent(Environment.NewLine, string.Empty, "Text", "z0__NestedModel_Text") },
                     { models, typeof(NestedModel), () => models[0].NestedModel.Text, "[0].NestedModel.Text",
-                        new TagHelperOutputContent("Hello World", "Hello World", "z0__NestedModel_Text") },
+                        new TagHelperOutputContent(Environment.NewLine, "Hello World", "Hello World", "z0__NestedModel_Text") },
+                    { models, typeof(NestedModel), () => models[0].NestedModel.Text, "[0].NestedModel.Text",
+                        new TagHelperOutputContent(string.Empty, Environment.NewLine, Environment.NewLine, "z0__NestedModel_Text") },
                     { models, typeof(NestedModel), () => models[1].NestedModel.Text, "[1].NestedModel.Text",
-                        new TagHelperOutputContent("Hello World", "Hello World", "z1__NestedModel_Text") },
+                        new TagHelperOutputContent(Environment.NewLine, string.Empty, "Text", "z1__NestedModel_Text") },
+                    { models, typeof(NestedModel), () => models[1].NestedModel.Text, "[1].NestedModel.Text",
+                        new TagHelperOutputContent(Environment.NewLine, "Hello World", "Hello World", "z1__NestedModel_Text") },
+                    { models, typeof(NestedModel), () => models[1].NestedModel.Text, "[1].NestedModel.Text",
+                        new TagHelperOutputContent(string.Empty, Environment.NewLine, Environment.NewLine, "z1__NestedModel_Text") },
+                    { models, typeof(NestedModel), () => models[0].NestedModel.Text, "[0].NestedModel.Text",
+                        new TagHelperOutputContent(string.Empty, "Hello World", "Hello World", "z0__NestedModel_Text") },
+                    { models, typeof(NestedModel), () => models[1].NestedModel.Text, "[1].NestedModel.Text",
+                        new TagHelperOutputContent(string.Empty, "Hello World", "Hello World", "z1__NestedModel_Text") },
+                    { models, typeof(NestedModel), () => models[0].NestedModel.Text, "[0].NestedModel.Text",
+                        new TagHelperOutputContent("Hello World", string.Empty, "Hello World", "z0__NestedModel_Text") },
+                    { models, typeof(NestedModel), () => models[1].NestedModel.Text, "[1].NestedModel.Text",
+                        new TagHelperOutputContent("Hello World", string.Empty, "Hello World", "z1__NestedModel_Text") },
+                    { models, typeof(NestedModel), () => models[0].NestedModel.Text, "[0].NestedModel.Text",
+                        new TagHelperOutputContent("Hello World1", "Hello World2", "Hello World2", "z0__NestedModel_Text") },
+                    { models, typeof(NestedModel), () => models[1].NestedModel.Text, "[1].NestedModel.Text",
+                        new TagHelperOutputContent("Hello World1", "Hello World2", "Hello World2", "z1__NestedModel_Text") },
                 };
             }
         }
@@ -112,13 +178,30 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 For = modelExpression,
             };
+            var expectedPreContent = "original pre-content";
+            var expectedPostContent = "original post-content";
 
-            var tagHelperContext = new TagHelperContext(allAttributes: new Dictionary<string, object>());
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult(tagHelperOutputContent.OriginalChildContent));
             var htmlAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, htmlAttributes, tagHelperOutputContent.OriginalContent);
+            var output = new TagHelperOutput(expectedTagName, htmlAttributes)
+            {
+                PreContent = expectedPreContent,
+                PostContent = expectedPostContent,
+            };
+
+            // LabelTagHelper checks ContentSet so we don't want to forcibly set it if 
+            // tagHelperOutputContent.OriginalContent is going to be null or empty.
+            if (!string.IsNullOrEmpty(tagHelperOutputContent.OriginalContent))
+            {
+                output.Content = tagHelperOutputContent.OriginalContent;
+            }
+
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
             tagHelper.ViewContext = viewContext;
@@ -129,7 +212,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedPreContent, output.PreContent);
             Assert.Equal(tagHelperOutputContent.ExpectedContent, output.Content);
+            Assert.Equal(expectedPostContent, output.PostContent);
             Assert.False(output.SelfClosing);
             Assert.Equal(expectedTagName, output.TagName);
         }
@@ -142,7 +227,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
+            var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
+            var expectedPostContent = "original post-content";
             var expectedTagName = "label";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
@@ -153,8 +240,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var modelExpression = new ModelExpression(nameof(Model.Text), metadata);
             var tagHelper = new LabelTagHelper();
 
-            var tagHelperContext = new TagHelperContext(allAttributes: new Dictionary<string, object>());
-            var output = new TagHelperOutput(expectedTagName, expectedAttributes, expectedContent);
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
+            var output = new TagHelperOutput(expectedTagName, expectedAttributes)
+            {
+                PreContent = expectedPreContent,
+                Content = expectedContent,
+                PostContent = expectedPostContent,
+            };
 
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
             Model model = null;
@@ -167,18 +262,26 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedPreContent, output.PreContent);
             Assert.Equal(expectedContent, output.Content);
+            Assert.Equal(expectedPostContent, output.PostContent);
             Assert.Equal(expectedTagName, output.TagName);
         }
 
         public class TagHelperOutputContent
         {
-            public TagHelperOutputContent(string outputContent, string expectedContent, string expectedId)
+            public TagHelperOutputContent(string originalChildContent,
+                                          string outputContent,
+                                          string expectedContent,
+                                          string expectedId)
             {
+                OriginalChildContent = originalChildContent;
                 OriginalContent = outputContent;
                 ExpectedContent = expectedContent;
                 ExpectedId = expectedId;
             }
+
+            public string OriginalChildContent { get; set; }
 
             public string OriginalContent { get; set; }
 

@@ -7,7 +7,6 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ViewDataDictionary<TModel> : ViewDataDictionary
     {
-        // References may not show up due to ITypeActivator use in RazorPageActivator.
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewDataDictionary{TModel}"/> class.
         /// </summary>
@@ -15,6 +14,7 @@ namespace Microsoft.AspNet.Mvc
         /// For use when creating a <see cref="ViewDataDictionary{TModel}"/> for a new top-level scope.
         /// </remarks>
         /// <inheritdoc />
+        // References may not show up due to ITypeActivator use in RazorPageActivator.
         public ViewDataDictionary(
             [NotNull] IModelMetadataProvider metadataProvider,
             [NotNull] ModelStateDictionary modelState)
@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Mvc
         {
         }
 
-        // References may not show up due to ITypeActivator use in RazorPageActivator.
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewDataDictionary{TModel}"/> class based in part on an
         /// existing <see cref="ViewDataDictionary"/> instance.
@@ -40,14 +39,12 @@ namespace Microsoft.AspNet.Mvc
         /// </para>
         /// </remarks>
         /// <inheritdoc />
+        // References may not show up due to ITypeActivator use in RazorPageActivator.
         public ViewDataDictionary([NotNull] ViewDataDictionary source)
             : base(source, declaredModelType: typeof(TModel))
         {
         }
 
-        // Model parameter type is object to allow "model: null" calls even when TModel is a value type. A TModel
-        // parameter would likely require IEquatable<TModel> type restrictions to pass expected null value to the base
-        // constructor.
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewDataDictionary{TModel}"/> class based in part on an
         /// existing <see cref="ViewDataDictionary"/> instance. This constructor is careful to avoid exceptions
@@ -64,6 +61,9 @@ namespace Microsoft.AspNet.Mvc
         /// </para>
         /// </remarks>
         /// <inheritdoc />
+        // Model parameter type is object to allow "model: null" calls even when TModel is a value type. A TModel
+        // parameter would likely require IEquatable<TModel> type restrictions to pass expected null value to the base
+        // constructor.
         public ViewDataDictionary([NotNull] ViewDataDictionary source, object model)
             : base(source, model, declaredModelType: typeof(TModel))
         {

@@ -8,10 +8,10 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.PipelineCore;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
@@ -55,7 +55,9 @@ namespace Microsoft.AspNet.Mvc
             Assert.Empty(values.ActionsMatchingActionConstraints);
             Assert.Empty(values.FinalMatches);
             Assert.Null(values.SelectedAction);
-            Assert.DoesNotThrow(() => values.Summary);
+
+            // (does not throw)
+            Assert.NotEmpty(values.Summary);
         }
 
         [Fact]
@@ -146,7 +148,9 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingActionConstraints);
             Assert.Equal<ActionDescriptor>(actions, values.FinalMatches);
             Assert.Null(values.SelectedAction);
-            Assert.DoesNotThrow(() => values.Summary);
+
+            // (does not throw)
+            Assert.NotEmpty(values.Summary);
         }
 
         [Fact]
@@ -735,7 +739,7 @@ namespace Microsoft.AspNet.Mvc
             serviceContainer.AddService(typeof(INestedProviderManager<ActionDescriptorProviderContext>),
                                         descriptorProvider);
 
-            var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer);
+            var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer, new NullLoggerFactory());
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionCollectionDescriptorProvider);
 
             var actionConstraintProvider = new NestedProviderManager<ActionConstraintProviderContext>(
@@ -767,7 +771,8 @@ namespace Microsoft.AspNet.Mvc
                                         assemblyProvider,
                                         modelBuilder,
                                         new TestGlobalFilterProvider(),
-                                        new MockMvcOptionsAccessor());
+                                        new MockMvcOptionsAccessor(),
+                                        new NullLoggerFactory());
         }
 
         private static HttpContext GetHttpContext(string httpMethod)

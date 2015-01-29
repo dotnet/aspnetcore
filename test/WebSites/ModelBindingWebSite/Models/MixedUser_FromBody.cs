@@ -16,7 +16,7 @@ namespace ModelBindingWebSite
         [FromQuery]
         public Address ShippingAddress { get; set; }
 
-        // Should get it from the first value provider which 
+        // Should get it from the first value provider which
         // can provide values for this.
         public Address DefaultAddress { get; set; }
     }

@@ -20,12 +20,12 @@ namespace Microsoft.AspNet.Mvc.Routing
     public class AttributeRoute : IRouter
     {
         private readonly IRouter _next;
+        private readonly LinkGenerationDecisionTree _linkGenerationTree;
         private readonly TemplateRoute[] _matchingRoutes;
         private readonly IDictionary<string, AttributeRouteLinkGenerationEntry> _namedEntries;
 
         private ILogger _logger;
         private ILogger _constraintLogger;
-        private readonly LinkGenerationDecisionTree _linkGenerationTree;
 
         /// <summary>
         /// Creates a new <see cref="AttributeRoute"/>.

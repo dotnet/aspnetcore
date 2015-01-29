@@ -104,7 +104,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (SuppressValidation || !validationContext.ModelState.CanAddErrors)
             {
-                // Short circuit if validation does not need to be applied or if we've reached the max number of validation errors.
+                // Short circuit if validation does not need to be applied or if we've reached the max number of
+                // validation errors.
                 return;
             }
 

@@ -18,30 +18,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </remarks>
     public class CompositeModelBinder : ICompositeModelBinder
     {
-        private readonly IModelBinderProvider _modelBindersProvider;
-        private IReadOnlyList<IModelBinder> _binders;
-
         /// <summary>
         /// Initializes a new instance of the CompositeModelBinder class.
         /// </summary>
-        /// <param name="modelBindersProvider">Provides a collection of <see cref="IModelBinder"/> instances.</param>
-        public CompositeModelBinder(IModelBinderProvider modelBindersProvider)
+        /// <param name="modelBinders">A collection of <see cref="IModelBinder"/> instances.</param>
+        public CompositeModelBinder([NotNull] IEnumerable<IModelBinder> modelBinders)
         {
-            _modelBindersProvider = modelBindersProvider;
+            ModelBinders = new List<IModelBinder>(modelBinders);
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<IModelBinder> ModelBinders
-        {
-            get
-            {
-                if (_binders == null)
-                {
-                    _binders = _modelBindersProvider.ModelBinders;
-                }
-                return _binders;
-            }
-        }
+        public IReadOnlyList<IModelBinder> ModelBinders { get; }
 
         public virtual async Task<bool> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
@@ -67,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Only perform validation at the root of the object graph. ValidationNode will recursively walk the graph.
             // Ignore ComplexModelDto since it essentially wraps the primary object.
-            if (IsBindingAtRootOfObjectGraph(newBindingContext))
+            if (newBindingContext.IsModelSet && IsBindingAtRootOfObjectGraph(newBindingContext))
             {
                 // run validation and return the model
                 // If we fell back to an empty prefix above and are dealing with simple types,
@@ -80,18 +67,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                                                bindingContext.ModelName);
                 }
 
-                var validationContext = new ModelValidationContext(bindingContext.OperationBindingContext.MetadataProvider,
-                                                                   bindingContext.OperationBindingContext.ValidatorProvider,
-                                                                   bindingContext.ModelState,
-                                                                   bindingContext.ModelMetadata,
-                                                                   containerMetadata: null);
+                var validationContext = new ModelValidationContext(
+                    bindingContext.OperationBindingContext.MetadataProvider,
+                    bindingContext.OperationBindingContext.ValidatorProvider,
+                    bindingContext.ModelState,
+                    bindingContext.ModelMetadata,
+                    containerMetadata: null);
 
                 newBindingContext.ValidationNode.Validate(validationContext, parentNode: null);
             }
 
-            bindingContext.OperationBindingContext.BodyBindingState = 
+            bindingContext.OperationBindingContext.BodyBindingState =
                 newBindingContext.OperationBindingContext.BodyBindingState;
-            bindingContext.Model = newBindingContext.Model;
+
+            if (newBindingContext.IsModelSet)
+            {
+                bindingContext.Model = newBindingContext.Model;
+            }
+
             return true;
         }
 
@@ -127,6 +120,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var newBindingContext = new ModelBindingContext
             {
+                IsModelSet = oldBindingContext.IsModelSet,
                 ModelMetadata = oldBindingContext.ModelMetadata,
                 ModelName = modelName,
                 ModelState = oldBindingContext.ModelState,
@@ -147,13 +141,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var metadata = oldBindingContext.ModelMetadata.BinderMetadata as IValueProviderMetadata;
             if (metadata != null)
             {
-                // ValueProvider property might contain a filtered list of value providers. 
+                // ValueProvider property might contain a filtered list of value providers.
                 // While deciding to bind a particular property which is annotated with a IValueProviderMetadata,
-                // instead of refiltering an already filtered list, we need to filter value providers from a global list 
-                // of all value providers. This is so that every artifact that is explicitly marked using an
-                // IValueProviderMetadata can restrict model binding to only use value providers which support this 
+                // instead of refiltering an already filtered list, we need to filter value providers from a global
+                // list of all value providers. This is so that every artifact that is explicitly marked using an
+                // IValueProviderMetadata can restrict model binding to only use value providers which support this
                 // IValueProviderMetadata.
-                var valueProvider = oldBindingContext.OperationBindingContext.ValueProvider as IMetadataAwareValueProvider;
+                var valueProvider =
+                    oldBindingContext.OperationBindingContext.ValueProvider as IMetadataAwareValueProvider;
                 if (valueProvider != null)
                 {
                     newBindingContext.ValueProvider = valueProvider.Filter(metadata);
@@ -171,7 +166,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var currentModelNeedsToReadBody = newIsFormatterBasedMetadataFound || newIsFormBasedMetadataFound;
             var oldState = oldBindingContext.OperationBindingContext.BodyBindingState;
 
-            // We need to throw if there are multiple models which can cause body to be read multiple times. 
+            // We need to throw if there are multiple models which can cause body to be read multiple times.
             // Reading form data multiple times is ok since we cache form data. For the models marked to read using
             // formatters, multiple reads are not allowed.
             if (oldState == BodyBindingState.FormatterBased && currentModelNeedsToReadBody ||
@@ -179,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 throw new InvalidOperationException(Resources.MultipleBodyParametersOrPropertiesAreNotAllowed);
             }
-            
+
             var state = oldBindingContext.OperationBindingContext.BodyBindingState;
             if (newIsFormatterBasedMetadataFound)
             {
@@ -187,7 +182,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             else if (newIsFormBasedMetadataFound && oldState != BodyBindingState.FormatterBased)
             {
-                // Only update the model binding state if we have not discovered formatter based state already. 
+                // Only update the model binding state if we have not discovered formatter based state already.
                 state = BodyBindingState.FormBased;
             }
 

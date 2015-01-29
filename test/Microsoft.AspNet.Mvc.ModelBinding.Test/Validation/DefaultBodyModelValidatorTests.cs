@@ -214,10 +214,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var validationContext = GetModelValidationContext(model, type);
 
-            // Act
-            Assert.DoesNotThrow(() =>
-                new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty)
-            );
+            // Act (does not throw)
+            new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
 
             // Assert
             var actualErrors = new Dictionary<string, string>();
@@ -278,12 +276,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var validationContext = GetModelValidationContext(input, type, excludedTypes);
 
-            // Act & Assert
-            Assert.DoesNotThrow(
-                () =>
-                {
-                    new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
-                });
+            // Act & Assert (does not throw)
+            new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
             Assert.True(validationContext.ModelState.IsValid);
         }
 
@@ -312,10 +306,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var model = new Address() { Street = "Microsoft Way" };
             var validationContext = GetModelValidationContext(model, model.GetType());
 
-            // Act
-            Assert.DoesNotThrow(() =>
-                new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty)
-            );
+            // Act (does not throw)
+            new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
 
             // Assert
             Assert.Contains("Street", validationContext.ModelState.Keys);
@@ -336,22 +328,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 };
             var validationContext = GetModelValidationContext(instance, typeof(TypeThatOverridesEquals[]));
 
-            // Act & Assert
-            Assert.DoesNotThrow(
-                () => new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty));
+            // Act & Assert (does not throw)
+            new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
         }
 
         private ModelValidationContext GetModelValidationContext(
             object model, Type type, List<Type> excludedTypes = null)
         {
             var modelStateDictionary = new ModelStateDictionary();
-            var provider = new Mock<IModelValidatorProviderProvider>();
-            provider.SetupGet(p => p.ModelValidatorProviders)
-                    .Returns(new IModelValidatorProvider[]
-                    {
-                       new DataAnnotationsModelValidatorProvider(),
-                       new DataMemberModelValidatorProvider()
-                    });
+            var providers = new IModelValidatorProvider[]
+            {
+                new DataAnnotationsModelValidatorProvider(),
+                new DataMemberModelValidatorProvider()
+            };
             var modelMetadataProvider = new EmptyModelMetadataProvider();
             var excludedValidationTypesPredicate =
                 new List<IExcludeTypeValidationFilter>();
@@ -367,7 +356,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             return new ModelValidationContext(
                 modelMetadataProvider,
-                new CompositeModelValidatorProvider(provider.Object),
+                new CompositeModelValidatorProvider(providers),
                 modelStateDictionary,
                 new ModelMetadata(
                     provider: modelMetadataProvider,

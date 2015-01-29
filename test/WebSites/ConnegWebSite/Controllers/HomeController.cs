@@ -3,13 +3,18 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace ConnegWebsite
+namespace ConnegWebSite
 {
     public class HomeController : Controller
     {
         public IActionResult Index()
         {
             return new JsonResult("Index Method");
+        }
+
+        public User UserInfo()
+        {
+            return new User() { Name = "John", Address = "One Microsoft Way" };
         }
     }
 }

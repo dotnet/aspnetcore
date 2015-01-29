@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Xunit;
 
@@ -101,11 +102,12 @@ Environment.NewLine +
         private static CodeBuilderContext CreateContext()
         {
             return new CodeBuilderContext(
-                new CodeGeneratorContext(new MvcRazorHost(new TestFileSystem()),
+                new CodeGeneratorContext(new MvcRazorHost(new TestFileProvider()),
                                          "MyClass",
                                          "MyNamespace",
                                          string.Empty,
-                                         shouldGenerateLinePragmas: true));
+                                         shouldGenerateLinePragmas: true),
+                new ParserErrorSink());
         }
     }
 }

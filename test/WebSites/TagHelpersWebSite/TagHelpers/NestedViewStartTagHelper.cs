@@ -6,8 +6,7 @@ using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TagName("nested")]
-    [ContentBehavior(ContentBehavior.Modify)]
+    [HtmlElementName("nested")]
     public class NestedViewStartTagHelper : TagHelper
     {
         public override void Process(TagHelperContext context, TagHelperOutput output)

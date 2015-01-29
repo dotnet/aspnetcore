@@ -11,7 +11,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         IEnumerable<ModelMetadata> GetMetadataForProperties(object container, [NotNull] Type containerType);
 
-        ModelMetadata GetMetadataForProperty(Func<object> modelAccessor, [NotNull] Type containerType, [NotNull] string propertyName);
+        ModelMetadata GetMetadataForProperty(
+            Func<object> modelAccessor,
+            [NotNull] Type containerType,
+            [NotNull] string propertyName);
 
         ModelMetadata GetMetadataForType(Func<object> modelAccessor, [NotNull] Type modelType);
 

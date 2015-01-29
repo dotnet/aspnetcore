@@ -12,6 +12,7 @@ using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -276,7 +277,8 @@ namespace System.Web.Http
             foreach (var action in actions)
             {
                 var parameter = Assert.Single(action.Parameters);
-                Assert.IsType<FromUriAttribute>(parameter.BinderMetadata);
+                var metadata = Assert.IsType<FromUriAttribute>(parameter.BinderMetadata);
+                Assert.False(metadata.IsOptional);
             }
         }
 
@@ -334,6 +336,36 @@ namespace System.Web.Http
             }
         }
 
+        [Theory]
+        [InlineData(nameof(TestControllers.EventsController.GetWithId))]
+        [InlineData(nameof(TestControllers.EventsController.GetWithEmployee))]
+        public void GetActions_Parameters_ImplicitOptional(string name)
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var context = new ActionDescriptorProviderContext();
+            provider.Invoke(context);
+
+            var results = context.Results.Cast<ControllerActionDescriptor>();
+
+            // Assert
+            var controllerType = typeof(TestControllers.EventsController).GetTypeInfo();
+            var actions = results
+                .Where(ad => ad.ControllerTypeInfo == controllerType)
+                .Where(ad => ad.Name == name)
+                .ToArray();
+
+            Assert.NotEmpty(actions);
+            foreach (var action in actions)
+            {
+                var parameter = Assert.Single(action.Parameters);
+                var metadata = Assert.IsType<FromUriAttribute>(parameter.BinderMetadata);
+                Assert.True(metadata.IsOptional);
+            }
+        }
+
         private INestedProviderManager<ActionDescriptorProviderContext> CreateProvider()
         {
             var assemblyProvider = new Mock<IAssemblyProvider>();
@@ -360,7 +392,8 @@ namespace System.Web.Http
                 assemblyProvider.Object,
                 new NamespaceLimitedActionDiscoveryConventions(),
                 filterProvider.Object,
-                optionsAccessor.Object);
+                optionsAccessor.Object,
+                new NullLoggerFactory());
 
             return new NestedProviderManager<ActionDescriptorProviderContext>(
                 new INestedProvider<ActionDescriptorProviderContext>[]
@@ -372,7 +405,7 @@ namespace System.Web.Http
         private class NamespaceLimitedActionDiscoveryConventions : DefaultControllerModelBuilder
         {
             public NamespaceLimitedActionDiscoveryConventions()
-                : base(new DefaultActionModelBuilder())
+                : base(new DefaultActionModelBuilder(), new NullLoggerFactory())
             {
             }
 
@@ -452,6 +485,19 @@ namespace System.Web.Http.TestControllers
 
     public class Employee
     {
+    }
+
+    public class EventsController : ApiController
+    {
+        public IActionResult GetWithId(int id = 0)
+        {
+            return null;
+        }
+
+        public IActionResult GetWithEmployee([FromUri] Employee e = null)
+        {
+            return null;
+        }
     }
 }
 #endif

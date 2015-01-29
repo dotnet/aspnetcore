@@ -8,10 +8,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
 
@@ -294,6 +296,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             filter1.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()), Times.Once());
+            Assert.False(invoker.ControllerFactory.CreateCalled);
         }
 
         [Fact]
@@ -323,10 +326,12 @@ namespace Microsoft.AspNet.Mvc
             filter1.Verify(
                 f => f.OnAuthorizationAsync(It.IsAny<AuthorizationContext>()),
                 Times.Once());
+
+            Assert.False(invoker.ControllerFactory.CreateCalled);
         }
 
         [Fact]
-        public async Task InvokeAction_ExceptionInAuthorizationFilterCannotBeHandledByExceptionFilters()
+        public async Task InvokeAction_ExceptionInAuthorizationFilterCannotBeHandledByOtherFilters()
         {
             // Arrange
             var expected = new InvalidCastException();
@@ -349,6 +354,7 @@ namespace Microsoft.AspNet.Mvc
 
             // None of these filters should run
             var authorizationFilter2 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
+            var resourceFilter = new Mock<IResourceFilter>(MockBehavior.Strict);
             var actionFilter = new Mock<IActionFilter>(MockBehavior.Strict);
             var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
 
@@ -357,6 +363,7 @@ namespace Microsoft.AspNet.Mvc
                 exceptionFilter.Object,
                 authorizationFilter1.Object,
                 authorizationFilter2.Object,
+                resourceFilter.Object,
                 actionFilter.Object,
                 resultFilter.Object,
             });
@@ -1203,6 +1210,653 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter()
+        {
+            // Arrange
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    await next();
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resourceFilter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesResourceFilter()
+        {
+            // Arrange
+            var resourceFilter = new Mock<IResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecuting(It.IsAny<ResourceExecutingContext>()))
+                .Verifiable();
+            resourceFilter
+                .Setup(f => f.OnResourceExecuted(It.IsAny<ResourceExecutedContext>()))
+                .Verifiable();
+
+            var invoker = CreateInvoker(resourceFilter.Object);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resourceFilter.Verify(
+                f => f.OnResourceExecuted(It.IsAny<ResourceExecutedContext>()),
+                Times.Once());
+            resourceFilter.Verify(
+                f => f.OnResourceExecuted(It.IsAny<ResourceExecutedContext>()),
+                Times.Once());
+
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_WithActionResult_FromAction()
+        {
+            // Arrange
+            ResourceExecutedContext context = null;
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(resourceFilter.Object);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Same(_result, context.Result);
+
+            resourceFilter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_WithActionResult_FromActionFilter()
+        {
+            // Arrange
+            var expected = Mock.Of<IActionResult>();
+
+            ResourceExecutedContext context = null;
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                })
+                .Verifiable();
+
+            var actionFilter = new Mock<IActionFilter>(MockBehavior.Strict);
+            actionFilter
+                .Setup(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>()))
+                .Callback<ActionExecutingContext>((c) =>
+                {
+                    c.Result = expected;
+                });
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, actionFilter.Object });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Same(expected, context.Result);
+
+            resourceFilter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_WithActionResult_FromExceptionFilter()
+        {
+            // Arrange
+            var expected = Mock.Of<IActionResult>();
+
+            ResourceExecutedContext context = null;
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                })
+                .Verifiable();
+
+            var exceptionFilter = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            exceptionFilter
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>((c) =>
+                {
+                    c.Result = expected;
+                });
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, exceptionFilter.Object }, actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Same(expected, context.Result);
+            Assert.Null(context.Exception);
+            Assert.Null(context.ExceptionDispatchInfo);
+
+            resourceFilter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_WithActionResult_FromResultFilter()
+        {
+            // Arrange
+            var expected = Mock.Of<IActionResult>();
+
+            ResourceExecutedContext context = null;
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                })
+                .Verifiable();
+
+            var resultFilter = new Mock<IResultFilter>(MockBehavior.Loose);
+            resultFilter
+                .Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()))
+                .Callback<ResultExecutingContext>((c) =>
+                {
+                    c.Result = expected;
+                });
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, resultFilter.Object });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Same(expected, context.Result);
+
+            resourceFilter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_HandleException_FromAction()
+        {
+            // Arrange
+            ResourceExecutedContext context = null;
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                    context.ExceptionHandled = true;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object }, actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Same(_actionException, context.Exception);
+            Assert.Same(_actionException, context.ExceptionDispatchInfo.SourceException);
+
+            resourceFilter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_HandleException_FromActionFilter()
+        {
+            // Arrange
+            var expected = new DataMisalignedException();
+
+            ResourceExecutedContext context = null;
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                    context.ExceptionHandled = true;
+                })
+                .Verifiable();
+
+            var actionFilter = new Mock<IActionFilter>(MockBehavior.Strict);
+            actionFilter
+                .Setup(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>()))
+                .Callback<ActionExecutingContext>((c) =>
+                {
+                    throw expected;
+                });
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, actionFilter.Object });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Same(expected, context.Exception);
+            Assert.Same(expected, context.ExceptionDispatchInfo.SourceException);
+
+            resourceFilter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_HandlesException_FromExceptionFilter()
+        {
+            // Arrange
+            var expected = new DataMisalignedException();
+
+            ResourceExecutedContext context = null;
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                    context.ExceptionHandled = true;
+                })
+                .Verifiable();
+
+            var exceptionFilter = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            exceptionFilter
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>((c) =>
+                {
+                    throw expected;
+                });
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, exceptionFilter.Object }, actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Same(expected, context.Exception);
+            Assert.Same(expected, context.ExceptionDispatchInfo.SourceException);
+
+            resourceFilter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_HandlesException_FromResultFilter()
+        {
+            // Arrange
+            var expected = new DataMisalignedException();
+
+            ResourceExecutedContext context = null;
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                    context.ExceptionHandled = true;
+                })
+                .Verifiable();
+
+            var resultFilter = new Mock<IResultFilter>(MockBehavior.Loose);
+            resultFilter
+                .Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()))
+                .Callback<ResultExecutingContext>((c) =>
+                {
+                    throw expected;
+                });
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, resultFilter.Object });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Same(expected, context.Exception);
+            Assert.Same(expected, context.ExceptionDispatchInfo.SourceException);
+
+            resourceFilter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_HandleException_BySettingNull()
+        {
+            // Arrange
+            ResourceExecutedContext context = null;
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+
+                    Assert.Same(_actionException, context.Exception);
+                    Assert.Same(_actionException, context.ExceptionDispatchInfo.SourceException);
+
+                    context.Exception = null;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object }, actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resourceFilter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_ThrowsUnhandledException()
+        {
+            // Arrange
+            var expected = new DataMisalignedException();
+
+            ResourceExecutedContext context = null;
+            var resourceFilter1 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter1
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                })
+                .Verifiable();
+
+            var resourceFilter2 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter2
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>((c, next) =>
+                {
+                    throw expected;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter1.Object, resourceFilter2.Object }, actionThrows: true);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<DataMisalignedException>(invoker.InvokeAsync);
+
+            // Assert
+            Assert.Same(expected, exception);
+            Assert.Same(expected, context.Exception);
+            Assert.Same(expected, context.ExceptionDispatchInfo.SourceException);
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesResourceFilter_OnResourceExecuting_ThrowsUnhandledException()
+        {
+            // Arrange
+            var expected = new DataMisalignedException();
+
+            ResourceExecutedContext context = null;
+            var resourceFilter1 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter1
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                })
+                .Verifiable();
+
+            var resourceFilter2 = new Mock<IResourceFilter>(MockBehavior.Strict);
+            resourceFilter2
+                .Setup(f => f.OnResourceExecuting(It.IsAny<ResourceExecutingContext>()))
+                .Callback<ResourceExecutingContext>((c) =>
+                {
+                    throw expected;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter1.Object, resourceFilter2.Object }, actionThrows: true);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<DataMisalignedException>(invoker.InvokeAsync);
+
+            // Assert
+            Assert.Same(expected, exception);
+            Assert.Same(expected, context.Exception);
+            Assert.Same(expected, context.ExceptionDispatchInfo.SourceException);
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesResourceFilter_OnResourceExecuted_ThrowsUnhandledException()
+        {
+            // Arrange
+            var expected = new DataMisalignedException();
+
+            ResourceExecutedContext context = null;
+            var resourceFilter1 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter1
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                })
+                .Verifiable();
+
+            var resourceFilter2 = new Mock<IResourceFilter>(MockBehavior.Loose);
+            resourceFilter2
+                .Setup(f => f.OnResourceExecuted(It.IsAny<ResourceExecutedContext>()))
+                .Callback<ResourceExecutedContext>((c) =>
+                {
+                    throw expected;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter1.Object, resourceFilter2.Object }, actionThrows: true);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<DataMisalignedException>(invoker.InvokeAsync);
+
+            // Assert
+            Assert.Same(expected, exception);
+            Assert.Same(expected, context.Exception);
+            Assert.Same(expected, context.ExceptionDispatchInfo.SourceException);
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_ShortCircuit()
+        {
+            // Arrange
+            var expected = new Mock<IActionResult>(MockBehavior.Strict);
+            expected
+                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            ResourceExecutedContext context = null;
+            var resourceFilter1 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter1
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                })
+                .Verifiable();
+
+            var resourceFilter2 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter2
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>((c, next) =>
+                {
+                    c.Result = expected.Object;
+                    return Task.FromResult(true);
+                })
+                .Verifiable();
+
+            var resourceFilter3 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            var exceptionFilter = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            var actionFilter = new Mock<IAsyncActionFilter>(MockBehavior.Strict);
+            var resultFilter = new Mock<IAsyncResultFilter>(MockBehavior.Strict);
+
+            var invoker = CreateInvoker(
+                new IFilter[]
+                {
+                    resourceFilter1.Object, // This filter should see the result retured from resourceFilter2
+                    resourceFilter2.Object, // This filter will short circuit
+                    resourceFilter3.Object, // This shouldn't run - it will throw if it does
+                    exceptionFilter.Object, // This shouldn't run - it will throw if it does
+                    actionFilter.Object, // This shouldn't run - it will throw if it does
+                    resultFilter.Object // This shouldn't run - it will throw if it does
+                },
+                // The action won't run
+                actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Same(expected.Object, context.Result);
+            Assert.True(context.Canceled);
+            Assert.False(invoker.ControllerFactory.CreateCalled);
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesResourceFilter_ShortCircuit()
+        {
+            // Arrange
+            var expected = new Mock<IActionResult>(MockBehavior.Strict);
+            expected
+                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            ResourceExecutedContext context = null;
+            var resourceFilter1 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter1
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                });
+
+            var resourceFilter2 = new Mock<IResourceFilter>(MockBehavior.Strict);
+            resourceFilter2
+                .Setup(f => f.OnResourceExecuting(It.IsAny<ResourceExecutingContext>()))
+                .Callback<ResourceExecutingContext>((c) =>
+                {
+                    c.Result = expected.Object;
+                });
+
+            var resourceFilter3 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            var actionFilter = new Mock<IAsyncActionFilter>(MockBehavior.Strict);
+            var resultFilter = new Mock<IAsyncResultFilter>(MockBehavior.Strict);
+
+            var invoker = CreateInvoker(
+                new IFilter[]
+                {
+                    resourceFilter1.Object, // This filter should see the result retured from resourceFilter2
+                    resourceFilter2.Object,
+                    resourceFilter3.Object, // This shouldn't run - it will throw if it does
+                    actionFilter.Object, // This shouldn't run - it will throw if it does
+                    resultFilter.Object // This shouldn't run - it will throw if it does
+                },
+                // The action won't run
+                actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Same(expected.Object, context.Result);
+            Assert.True(context.Canceled);
+            Assert.False(invoker.ControllerFactory.CreateCalled);
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_InvalidShortCircuit()
+        {
+            // Arrange
+            var message =
+                "If an IAsyncResourceFilter provides a result value by setting the Result property of " +
+                "ResourceExecutingContext to a non-null value, then it cannot call the next filter by invoking " +
+                "ResourceExecutionDelegate.";
+
+            ResourceExecutedContext context = null;
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    // This is not valid.
+                    c.Result = Mock.Of<IActionResult>();
+                    context = await next();
+                });
+
+            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, });
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(invoker.InvokeAsync);
+
+            // Assert
+            Assert.Equal(message, exception.Message);
+        }
+
+        [Fact]
+        public async Task InvokeAction_AuthorizationFilter_ChallengePreventsResourceFiltersFromRunning()
+        {
+            // Arrange
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    await next();
+                })
+                .Verifiable();
+
+            var authorizationFilter = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
+            authorizationFilter
+                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()))
+                .Callback<AuthorizationContext>((c) =>
+                {
+                    c.Result = _result;
+                });
+
+            var invoker = CreateInvoker(new IFilter[] { authorizationFilter.Object, resourceFilter.Object, });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resourceFilter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Never());
+
+            Assert.False(invoker.ControllerFactory.CreateCalled);
+        }
+
+        [Fact]
         public void CreateActionResult_ReturnsSameActionResult()
         {
             // Arrange
@@ -1296,7 +1950,8 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var httpContext = new Mock<HttpContext>(MockBehavior.Loose);
-            var httpResponse = new Mock<HttpResponse>(MockBehavior.Loose);
+            var httpRequest = new DefaultHttpContext().Request;
+            var httpResponse = new DefaultHttpContext().Response;
             var mockFormattersProvider = new Mock<IOutputFormattersProvider>();
             mockFormattersProvider.SetupGet(o => o.OutputFormatters)
                                   .Returns(
@@ -1304,26 +1959,22 @@ namespace Microsoft.AspNet.Mvc
                                         {
                                             new JsonOutputFormatter()
                                         });
-            httpContext.SetupGet(o => o.Request.Accept)
-                       .Returns("");
-            httpContext.SetupGet(c => c.Response).Returns(httpResponse.Object);
+            httpContext.SetupGet(c => c.Request).Returns(httpRequest);
+            httpContext.SetupGet(c => c.Response).Returns(httpResponse);
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
                        .Returns(mockFormattersProvider.Object);
-            httpResponse.SetupGet(r => r.Body).Returns(new MemoryStream());
+            httpResponse.Body = new MemoryStream();
+
+            var options = new Mock<IOptions<MvcOptions>>();
+            options.SetupGet(o => o.Options)
+                       .Returns(new MvcOptions());
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
+                       .Returns(options.Object);
 
             var actionContext = new ActionContext(
                 httpContext: httpContext.Object,
                 routeData: new RouteData(),
                 actionDescriptor: actionDescriptor);
-
-            var controllerFactory = new Mock<IControllerFactory>();
-            controllerFactory.Setup(c => c.CreateController(It.IsAny<ActionContext>())).Returns(this);
-            controllerFactory.Setup(m => m.ReleaseController(this)).Verifiable();
-
-            var actionBindingContextProvider = new Mock<IActionBindingContextProvider>(MockBehavior.Strict);
-            actionBindingContextProvider
-                .Setup(abcp => abcp.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-                .Returns(Task.FromResult(new ActionBindingContext(null, null, null, null, null, null)));
 
             var filterProvider = new Mock<INestedProviderManager<FilterProviderContext>>(MockBehavior.Strict);
             filterProvider
@@ -1337,15 +1988,17 @@ namespace Microsoft.AspNet.Mvc
             var invoker = new TestControllerActionInvoker(
                 actionContext,
                 filterProvider.Object,
-                controllerFactory,
+                new MockControllerFactory(this),
                 actionDescriptor,
                 inputFormattersProvider.Object,
-                Mock.Of<IControllerActionArgumentBinder>());
+                Mock.Of<IControllerActionArgumentBinder>(),
+                new MockModelBinderProvider(),
+                new MockModelValidatorProviderProvider(),
+                new MockValueProviderFactoryProvider(),
+                new MockScopedInstance<ActionBindingContext>());
 
             return invoker;
         }
-
-
 
         [Fact]
         public async Task Invoke_UsesDefaultValuesIfNotBound()
@@ -1354,8 +2007,9 @@ namespace Microsoft.AspNet.Mvc
             var actionDescriptor = new ControllerActionDescriptor
             {
                 MethodInfo = typeof(TestController).GetTypeInfo()
-                                                               .DeclaredMethods
-                                                               .First(m => m.Name.Equals("ActionMethodWithDefaultValues", StringComparison.Ordinal)),
+                    .DeclaredMethods
+                    .First(m => m.Name.Equals("ActionMethodWithDefaultValues", StringComparison.Ordinal)),
+
                 Parameters = new List<ParameterDescriptor>
                 {
                     new ParameterDescriptor
@@ -1368,38 +2022,33 @@ namespace Microsoft.AspNet.Mvc
             };
 
             var binder = new Mock<IModelBinder>();
-            var metadataProvider = new EmptyModelMetadataProvider();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Returns(Task.FromResult(result: false));
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Items)
                    .Returns(new Dictionary<object, object>());
             var routeContext = new RouteContext(context.Object);
-            var actionContext = new ActionContext(routeContext,
-                                                  actionDescriptor);
-            var bindingContext = new ActionBindingContext(actionContext,
-                                                          Mock.Of<IModelMetadataProvider>(),
-                                                          binder.Object,
-                                                          Mock.Of<IValueProvider>(),
-                                                          Mock.Of<IInputFormatterSelector>(),
-                                                          Mock.Of<IModelValidatorProvider>());
 
-            var actionBindingContextProvider = new Mock<IActionBindingContextProvider>();
-            actionBindingContextProvider.Setup(p => p.GetActionBindingContextAsync(It.IsAny<ActionContext>()))
-                                        .Returns(Task.FromResult(bindingContext));
+            var actionContext = new ActionContext(routeContext, actionDescriptor);
+
             var controllerFactory = new Mock<IControllerFactory>();
             controllerFactory.Setup(c => c.CreateController(It.IsAny<ActionContext>()))
                              .Returns(new TestController());
             var inputFormattersProvider = new Mock<IInputFormattersProvider>();
             inputFormattersProvider.SetupGet(o => o.InputFormatters)
                                             .Returns(new List<IInputFormatter>());
-            var invoker = new ControllerActionInvoker(actionContext,
-                                                     Mock.Of<INestedProviderManager<FilterProviderContext>>(),
-                                                     controllerFactory.Object,
-                                                     actionDescriptor,
-                                                     inputFormattersProvider.Object,
-                                                     new DefaultControllerActionArgumentBinder(
-                                                         actionBindingContextProvider.Object));
+
+            var invoker = new ControllerActionInvoker(
+                actionContext,
+                Mock.Of<INestedProviderManager<FilterProviderContext>>(),
+                controllerFactory.Object,
+                actionDescriptor,
+                inputFormattersProvider.Object,
+                new DefaultControllerActionArgumentBinder(new EmptyModelMetadataProvider()),
+                new MockModelBinderProvider() { ModelBinders = new List<IModelBinder>() { binder.Object } },
+                new MockModelValidatorProviderProvider(),
+                new MockValueProviderFactoryProvider(),
+                new MockScopedInstance<ActionBindingContext>());
 
             // Act
             await invoker.InvokeAsync();
@@ -1449,32 +2098,77 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public class TestControllerActionInvoker : ControllerActionInvoker
+        private class MockControllerFactory : IControllerFactory
         {
-            private Mock<IControllerFactory> _factoryMock;
+            private object _controller;
 
+            public MockControllerFactory(object controller)
+            {
+                _controller = controller;
+            }
+
+            public bool CreateCalled { get; private set; }
+
+            public bool ReleaseCalled { get; private set; }
+
+            public object CreateController(ActionContext actionContext)
+            {
+                CreateCalled = true;
+                return _controller;
+            }
+
+            public void ReleaseController(object controller)
+            {
+                Assert.NotNull(controller);
+                Assert.Same(_controller, controller);
+                ReleaseCalled = true;
+            }
+
+            public void Verify()
+            {
+                if (CreateCalled && !ReleaseCalled)
+                {
+                    Assert.False(true, "ReleaseController should have been called.");
+                }
+            }
+        }
+
+        private class TestControllerActionInvoker : ControllerActionInvoker
+        {
             public TestControllerActionInvoker(
                 ActionContext actionContext,
                 INestedProviderManager<FilterProviderContext> filterProvider,
-                Mock<IControllerFactory> controllerFactoryMock,
+                MockControllerFactory controllerFactory,
                 ControllerActionDescriptor descriptor,
                 IInputFormattersProvider inputFormattersProvider,
-                IControllerActionArgumentBinder controllerActionArgumentBinder) :
-                    base(actionContext,
-                        filterProvider,
-                        controllerFactoryMock.Object,
-                        descriptor,
-                        inputFormattersProvider,
-                        controllerActionArgumentBinder)
+                IControllerActionArgumentBinder controllerActionArgumentBinder,
+                IModelBinderProvider modelBinderProvider,
+                IModelValidatorProviderProvider modelValidatorProviderProvider,
+                IValueProviderFactoryProvider valueProviderFactoryProvider,
+                IScopedInstance<ActionBindingContext> actionBindingContext)
+                : base(
+                      actionContext,
+                      filterProvider,
+                      controllerFactory,
+                      descriptor,
+                      inputFormattersProvider,
+                      controllerActionArgumentBinder,
+                      modelBinderProvider,
+                      modelValidatorProviderProvider,
+                      valueProviderFactoryProvider,
+                      actionBindingContext)
             {
-                _factoryMock = controllerFactoryMock;
+                ControllerFactory = controllerFactory;
             }
+
+            public MockControllerFactory ControllerFactory { get; }
 
             public async override Task InvokeAsync()
             {
                 await base.InvokeAsync();
 
-                _factoryMock.Verify();
+                // Make sure that the controller was disposed in every test that creates ones.
+                ControllerFactory.Verify();
             }
         }
     }

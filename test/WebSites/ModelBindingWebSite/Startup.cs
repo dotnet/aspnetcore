@@ -3,9 +3,8 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
+using ModelBindingWebSite.Services;
 
 namespace ModelBindingWebSite
 {
@@ -24,18 +23,25 @@ namespace ModelBindingWebSite
                         {
                             m.MaxModelValidationErrors = 8;
                             m.ModelBinders.Insert(0, typeof(TestMetadataAwareBinder));
+
+                            m.AddXmlDataContractSerializerFormatter();
                         });
 
                 services.AddSingleton<ICalculator, DefaultCalculator>();
                 services.AddSingleton<ITestService, TestService>();
+
+                services.AddTransient<IVehicleService, VehicleService>();
+                services.AddTransient<ILocationService, LocationService>();
             });
+
+            app.UseErrorReporter();
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>
             {
-                routes.MapRoute("ActionAsMethod", "{controller}/{action}",
-                    defaults: new { controller = "Home", action = "Index" });
-
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

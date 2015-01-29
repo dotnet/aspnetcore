@@ -1,0 +1,19 @@
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNet.Mvc;
+
+namespace MvcSample.Web.Components
+{
+    public class SplashViewComponent : ViewComponent
+    {
+        public ViewViewComponentResult Invoke()
+        {
+            var region = (string)ViewData["Locale"];
+            var model = region == "North" ? "NorthWest Store":
+                                            "Nationwide Store";
+
+            return View(model: model);
+        }
+    }
+}

@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var binder = (IModelBinder)_activator.CreateInstance(_serviceProvider, binderType);
                 await binder.BindModelAsync(bindingContext);
 
-                // Was able to resolve a binder type, hence we should tell the model binding system to return 
+                // Was able to resolve a binder type, hence we should tell the model binding system to return
                 // true so that none of the other model binders participate.
                 return true;
             }

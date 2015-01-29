@@ -16,6 +16,9 @@ namespace Microsoft.AspNet.Mvc
         /// which can be used to invoke the action.
         /// </summary>
         /// <param name="context">The action context assoicated with the current action.</param>
-        Task<IDictionary<string, object>> GetActionArgumentsAsync([NotNull] ActionContext context);
+        /// <param name="bindingContext">The <see cref="ActionBindingContext"/>.</param>
+        Task<IDictionary<string, object>> GetActionArgumentsAsync(
+            [NotNull] ActionContext context, 
+            [NotNull] ActionBindingContext bindingContext);
     }
 }

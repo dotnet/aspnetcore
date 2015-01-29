@@ -8,7 +8,7 @@ using System.Net.Http.Headers;
 
 namespace System.Net.Http.Formatting
 {
-    // This type is instanciated by frequently called comparison methods so is very performance sensitive
+    // This type is instantiated by frequently called comparison methods so is very performance sensitive
     internal struct ParsedMediaTypeHeaderValue
     {
         private const char MediaRangeAsterisk = '*';
@@ -22,13 +22,15 @@ namespace System.Net.Http.Formatting
         public ParsedMediaTypeHeaderValue(MediaTypeHeaderValue mediaTypeHeaderValue)
         {
             Debug.Assert(mediaTypeHeaderValue != null);
-            string mediaType = _mediaType = mediaTypeHeaderValue.MediaType;
+            var mediaType = _mediaType = mediaTypeHeaderValue.MediaType;
             _delimiterIndex = mediaType.IndexOf(MediaTypeSubtypeDelimiter);
-            Debug.Assert(_delimiterIndex > 0, "The constructor of the MediaTypeHeaderValue would have failed if there wasn't a type and subtype.");
+            Debug.Assert(
+                _delimiterIndex > 0,
+                "The constructor of the MediaTypeHeaderValue would have failed if there wasn't a type and subtype.");
 
             _isAllMediaRange = false;
             _isSubtypeMediaRange = false;
-            int mediaTypeLength = mediaType.Length;
+            var mediaTypeLength = mediaType.Length;
             if (_delimiterIndex == mediaTypeLength - 2)
             {
                 if (mediaType[mediaTypeLength - 1] == MediaRangeAsterisk)
@@ -58,17 +60,31 @@ namespace System.Net.Http.Formatting
             {
                 return false;
             }
-            return String.Compare(_mediaType, 0, other._mediaType, 0, _delimiterIndex, StringComparison.OrdinalIgnoreCase) == 0;
+
+            return string.Compare(
+                strA: _mediaType,
+                indexA: 0,
+                strB: other._mediaType,
+                indexB: 0,
+                length: _delimiterIndex,
+                comparisonType: StringComparison.OrdinalIgnoreCase) == 0;
         }
 
         public bool SubTypesEqual(ref ParsedMediaTypeHeaderValue other)
         {
-            int _subTypeLength = _mediaType.Length - _delimiterIndex - 1;
+            var _subTypeLength = _mediaType.Length - _delimiterIndex - 1;
             if (_subTypeLength != other._mediaType.Length - other._delimiterIndex - 1)
             {
                 return false;
             }
-            return String.Compare(_mediaType, _delimiterIndex + 1, other._mediaType, other._delimiterIndex + 1, _subTypeLength, StringComparison.OrdinalIgnoreCase) == 0;
+
+            return string.Compare(
+                strA: _mediaType,
+                indexA: _delimiterIndex + 1,
+                strB: other._mediaType,
+                indexB: other._delimiterIndex + 1,
+                length: _subTypeLength,
+                comparisonType: StringComparison.OrdinalIgnoreCase) == 0;
         }
     }
 }

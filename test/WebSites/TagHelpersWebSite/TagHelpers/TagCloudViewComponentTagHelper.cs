@@ -12,9 +12,8 @@ using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace MvcSample.Web.Components
 {
-    [TagName("tag-cloud")]
+    [HtmlElementName("tag-cloud")]
     [ViewComponent(Name = "Tags")]
-    [ContentBehavior(ContentBehavior.Replace)]
     public class TagCloudViewComponentTagHelper : ITagHelper
     {
         private static readonly string[] Tags =

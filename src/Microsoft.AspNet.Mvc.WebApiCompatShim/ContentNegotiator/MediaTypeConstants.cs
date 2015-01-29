@@ -12,13 +12,20 @@ namespace System.Net.Http.Formatting
     /// </summary>
     internal static class MediaTypeConstants
     {
-        private static readonly MediaTypeHeaderValue _defaultApplicationXmlMediaType = new MediaTypeHeaderValue("application/xml");
-        private static readonly MediaTypeHeaderValue _defaultTextXmlMediaType = new MediaTypeHeaderValue("text/xml");
-        private static readonly MediaTypeHeaderValue _defaultApplicationJsonMediaType = new MediaTypeHeaderValue("application/json");
-        private static readonly MediaTypeHeaderValue _defaultTextJsonMediaType = new MediaTypeHeaderValue("text/json");
-        private static readonly MediaTypeHeaderValue _defaultApplicationOctetStreamMediaType = new MediaTypeHeaderValue("application/octet-stream");
-        private static readonly MediaTypeHeaderValue _defaultApplicationFormUrlEncodedMediaType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-        private static readonly MediaTypeHeaderValue _defaultApplicationBsonMediaType = new MediaTypeHeaderValue("application/bson");
+        private static readonly MediaTypeHeaderValue _defaultApplicationXmlMediaType =
+            new MediaTypeHeaderValue("application/xml");
+        private static readonly MediaTypeHeaderValue _defaultTextXmlMediaType =
+            new MediaTypeHeaderValue("text/xml");
+        private static readonly MediaTypeHeaderValue _defaultApplicationJsonMediaType =
+            new MediaTypeHeaderValue("application/json");
+        private static readonly MediaTypeHeaderValue _defaultTextJsonMediaType =
+            new MediaTypeHeaderValue("text/json");
+        private static readonly MediaTypeHeaderValue _defaultApplicationOctetStreamMediaType =
+            new MediaTypeHeaderValue("application/octet-stream");
+        private static readonly MediaTypeHeaderValue _defaultApplicationFormUrlEncodedMediaType =
+            new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+        private static readonly MediaTypeHeaderValue _defaultApplicationBsonMediaType =
+            new MediaTypeHeaderValue("application/bson");
 
         /// <summary>
         /// Gets a <see cref="MediaTypeHeaderValue"/> instance representing <c>application/octet-stream</c>.

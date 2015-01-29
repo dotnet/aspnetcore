@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.FileProviders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -105,7 +105,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         private CompilationFailedException CreateCompilationFailedException()
         {
             var fileContent = ReadContent(File);
-            return new CompilationFailedException(FilePath, fileContent, CompiledContent, Messages);
+            var compilationFailure = new CompilationFailure(FilePath, fileContent, CompiledContent, Messages);
+            return new CompilationFailedException(compilationFailure);
         }
 
         private static string ReadContent(IFileInfo file)

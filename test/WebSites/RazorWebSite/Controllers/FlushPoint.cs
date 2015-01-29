@@ -28,5 +28,15 @@ namespace RazorWebSite
         {
             return View("PageWithSectionInvokedViaRenderSectionAsync");
         }
+
+        public ViewResult PageWithNestedLayout()
+        {
+            return View();
+        }
+
+        public ViewResult PageWithFlushBeforeLayout()
+        {
+            return View();
+        }
     }
 }

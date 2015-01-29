@@ -122,12 +122,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 if (_tagHelperActivator == null)
                 {
-                    _tagHelperActivator = ViewContext.HttpContext.RequestServices.GetRequiredService<ITagHelperActivator>();
+                    _tagHelperActivator =
+                        ViewContext.HttpContext.RequestServices.GetRequiredService<ITagHelperActivator>();
                 }
 
                 return _tagHelperActivator;
             }
         }
+
         /// <summary>
         /// Creates and activates a <see cref="ITagHelper"/>.
         /// </summary>
@@ -154,6 +156,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </remarks>
         public void StartWritingScope()
         {
+            StartWritingScope(new StringWriter());
+        }
+
+        /// <summary>
+        /// Starts a new writing scope with the given <paramref name="writer"/>.
+        /// </summary>
+        /// <remarks>
+        /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will
+        /// be buffered until <see cref="EndWritingScope"/> is called.
+        /// </remarks>
+        public void StartWritingScope(TextWriter writer)
+        {
             // If there isn't a base writer take the ViewContext.Writer
             if (_originalWriter == null)
             {
@@ -162,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // We need to replace the ViewContext's Writer to ensure that all content (including content written
             // from HTML helpers) is redirected.
-            ViewContext.Writer = new StringWriter();
+            ViewContext.Writer = writer;
 
             _writerScopes.Push(ViewContext.Writer);
         }
@@ -546,8 +560,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <returns>A<see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
         /// completion returns a <see cref="HtmlString.Empty"/>.</returns>
-        /// <remarks>The value returned is a token value that allows FlushAsync to succeed. However the
-        /// value does not represent the rendered content.</remarks>
+        /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
+        /// section. However the value does not represent the rendered content.
+        /// This method also writes out headers, so any modifications to headers must be done before FulshAsync is
+        /// called. For example, call <see cref="SetAntiForgeryCookieAndHeader"/> to send anti-forgery cookie token
+        /// and X-Frame-Options header to client before this method flushes headers out. </remarks>
         public async Task<HtmlString> FlushAsync()
         {
             // If there are active writing scopes then we should throw. Cannot flush content that has the potential to
@@ -601,6 +618,20 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void EndContext()
         {
             PageExecutionContext?.EndContext();
+        }
+
+        /// <summary>
+        /// Sets anti-forgery cookie and X-Frame-Options header on the response.
+        /// </summary>
+        /// <returns>A <see cref="HtmlString"/> that returns a <see cref="HtmlString.Empty"/>.</returns>
+        /// <remarks> Call this method to send anti-forgery cookie token and X-Frame-Options header to client
+        /// before <see cref="FlushAsync"/> flushes the headers. </remarks>
+        public virtual HtmlString SetAntiForgeryCookieAndHeader()
+        {
+            var antiForgery = Context.RequestServices.GetRequiredService<AntiForgery>();
+            antiForgery.SetCookieTokenAndHeader(Context);
+
+            return HtmlString.Empty;
         }
 
         private void EnsureMethodCanBeInvoked(string methodName)

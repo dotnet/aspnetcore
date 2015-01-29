@@ -3,40 +3,50 @@
         "warningsAsErrors": "true"
     },
     "dependencies": {
+        "ActionConstraintsWebSite": "1.0.0",
+        "ActionResultsWebSite": "1.0.0",
         "ActivatorWebSite": "1.0.0",
         "AddServicesWebSite": "1.0.0",
         "AntiForgeryWebSite": "1.0.0",
         "ApiExplorerWebSite": "1.0.0",
         "ApplicationModelWebSite": "1.0.0",
         "BasicWebSite": "1.0.0",
-        "CompositeViewEngine": "1.0.0",
+        "CompositeViewEngineWebSite": "1.0.0",
         "ConnegWebSite": "1.0.0",
+        "CustomRouteWebSite": "1.0.0",
+        "ErrorPageMiddlewareWebSite": "1.0.0",
         "FilesWebSite": "1.0.0",
         "FiltersWebSite": "1.0.0",
         "FormatterWebSite": "1.0.0",
         "InlineConstraintsWebSite": "1.0.0",
+        "LoggingWebSite": "1.0.0",
         "ModelBindingWebSite": "1.0.0",
         "MvcSample.Web": "1.0.0",
         "PrecompilationWebSite": "1.0.0",
         "RoutingWebSite": "1.0.0",
         "RazorWebSite": "1.0.0",
         "RazorInstrumentationWebsite": "1.0.0",
+        "RazorViewEngineOptionsWebsite": "1.0.0",
         "RequestServicesWebSite": "1.0.0",
+        "ResponseCacheWebSite": "1.0.0",
         "TagHelperSample.Web": "1.0.0",
         "TagHelpersWebSite": "1.0.0",
         "UrlHelperWebSite": "1.0.0",
-        "ValueProvidersSite": "1.0.0",
+        "ValueProvidersWebSite": "1.0.0",
         "VersioningWebSite": "1.0.0",
         "ViewComponentWebSite": "1.0.0",
         "XmlSerializerWebSite": "1.0.0",
         "WebApiCompatShimWebSite": "1.0.0",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
+        "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
+        "MvcTagHelpersWebSite": "1.0.0",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
-        "Xunit.KRunner": "1.0.0-*"
+        "xunit.runner.kre": "1.0.0-*",
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*"
     },
     "commands": {
-        "test": "Xunit.KRunner"
+        "test": "xunit.runner.kre"
     },
     "frameworks": {
         "aspnet50": {
@@ -44,6 +54,6 @@
                 "AutofacWebSite": "1.0.0"
             }
         },
-        "aspnetcore50": {}
+        "aspnetcore50": { }
     }
 }

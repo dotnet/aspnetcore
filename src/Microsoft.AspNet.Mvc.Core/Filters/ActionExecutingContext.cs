@@ -10,14 +10,18 @@ namespace Microsoft.AspNet.Mvc
         public ActionExecutingContext(
             [NotNull] ActionContext actionContext,
             [NotNull] IList<IFilter> filters,
-            [NotNull] IDictionary<string, object> actionArguments)
+            [NotNull] IDictionary<string, object> actionArguments,
+            object controller)
             : base(actionContext, filters)
         {
             ActionArguments = actionArguments;
+            Controller = controller;
         }
 
         public virtual IActionResult Result { get; set; }
 
-        public virtual IDictionary<string, object> ActionArguments { get; private set; }
+        public virtual IDictionary<string, object> ActionArguments { get; }
+
+        public virtual object Controller { get; }
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             var i = 0;
             while (true)
             {
-                int indexOpen = key.IndexOf('[', i);
+                var indexOpen = key.IndexOf('[', i);
                 if (indexOpen < 0)
                 {
                     // Fast path, no normalization needed.

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -13,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public class ModelBindingContext
     {
-        private static readonly Func<ModelBindingContext, string, bool> 
+        private static readonly Func<ModelBindingContext, string, bool>
             _defaultPropertyFilter = (context, propertyName) => true;
 
         private string _modelName;
@@ -53,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Represents the <see cref="OperationBindingContext"/> associated with this context. 
+        /// Represents the <see cref="OperationBindingContext"/> associated with this context.
         /// </summary>
         public OperationBindingContext OperationBindingContext { get; set; }
 
@@ -72,10 +71,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             set
             {
+                IsModelSet = true;
+
                 EnsureModelMetadata();
                 ModelMetadata.Model = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not the <see cref="Model"/> value has been set.
+        /// 
+        /// This property can be used to distinguish between a model binder which does not find a value and
+        /// the case where a model binder sets the <c>null</c> value.
+        /// </summary>
+        public bool IsModelSet { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata for the model associated with this context.

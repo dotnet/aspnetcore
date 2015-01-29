@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -15,16 +16,19 @@ namespace Microsoft.AspNet.Mvc
     public class BodyModelBinder : MetadataAwareBinder<IFormatterBinderMetadata>
     {
         private readonly ActionContext _actionContext;
+        private readonly IScopedInstance<ActionBindingContext> _bindingContext;
         private readonly IInputFormatterSelector _formatterSelector;
         private readonly IBodyModelValidator _bodyModelValidator;
         private readonly IValidationExcludeFiltersProvider _bodyValidationExcludeFiltersProvider;
 
-        public BodyModelBinder([NotNull] IContextAccessor<ActionContext> context,
+        public BodyModelBinder([NotNull] IScopedInstance<ActionContext> context,
+                               [NotNull] IScopedInstance<ActionBindingContext> bindingContext,
                                [NotNull] IInputFormatterSelector selector,
                                [NotNull] IBodyModelValidator bodyModelValidator,
                                [NotNull] IValidationExcludeFiltersProvider bodyValidationExcludeFiltersProvider)
         {
             _actionContext = context.Value;
+            _bindingContext = bindingContext;
             _formatterSelector = selector;
             _bodyModelValidator = bodyModelValidator;
             _bodyValidationExcludeFiltersProvider = bodyValidationExcludeFiltersProvider;
@@ -34,13 +38,15 @@ namespace Microsoft.AspNet.Mvc
             ModelBindingContext bindingContext,
             IFormatterBinderMetadata metadata)
         {
+            var formatters = _bindingContext.Value.InputFormatters;
+
             var formatterContext = new InputFormatterContext(_actionContext, bindingContext.ModelType);
-            var formatter = _formatterSelector.SelectFormatter(formatterContext);
+            var formatter = _formatterSelector.SelectFormatter(formatters.ToList(), formatterContext);
 
             if (formatter == null)
             {
                 var unsupportedContentType = Resources.FormatUnsupportedContentType(
-                                                    bindingContext.OperationBindingContext.HttpContext.Request.ContentType);
+                    bindingContext.OperationBindingContext.HttpContext.Request.ContentType);
                 bindingContext.ModelState.AddModelError(bindingContext.ModelName, unsupportedContentType);
 
                 // Should always return true so that the model binding process ends here.

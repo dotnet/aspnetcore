@@ -109,7 +109,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var id = Assert.Single(main.Parameters);
 
             Assert.Equal("id", id.Name);
-            Assert.False(id.IsOptional);
             Assert.Null(id.BinderMetadata);
             Assert.Equal(typeof(int), id.ParameterType);
         }
@@ -129,14 +128,12 @@ namespace Microsoft.AspNet.Mvc.Test
             var id = Assert.Single(main.Parameters, p => p.Name == "id");
 
             Assert.Equal("id", id.Name);
-            Assert.False(id.IsOptional);
             Assert.Null(id.BinderMetadata);
             Assert.Equal(typeof(int), id.ParameterType);
 
             var entity = Assert.Single(main.Parameters, p => p.Name == "entity");
 
             Assert.Equal("entity", entity.Name);
-            Assert.False(entity.IsOptional);
             Assert.IsType<FromBodyAttribute>(entity.BinderMetadata);
             Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
         }
@@ -156,47 +153,20 @@ namespace Microsoft.AspNet.Mvc.Test
             var id = Assert.Single(main.Parameters, p => p.Name == "id");
 
             Assert.Equal("id", id.Name);
-            Assert.False(id.IsOptional);
             Assert.Null(id.BinderMetadata);
             Assert.Equal(typeof(int), id.ParameterType);
 
             var upperCaseId = Assert.Single(main.Parameters, p => p.Name == "ID");
 
             Assert.Equal("ID", upperCaseId.Name);
-            Assert.False(upperCaseId.IsOptional);
             Assert.Null(upperCaseId.BinderMetadata);
             Assert.Equal(typeof(int), upperCaseId.ParameterType);
 
             var pascalCaseId = Assert.Single(main.Parameters, p => p.Name == "Id");
 
             Assert.Equal("Id", pascalCaseId.Name);
-            Assert.False(pascalCaseId.IsOptional);
             Assert.Null(id.BinderMetadata);
             Assert.Equal(typeof(int), pascalCaseId.ParameterType);
-        }
-
-        [Theory]
-        [InlineData(nameof(ActionParametersController.OptionalInt), typeof(Nullable<int>))]
-        [InlineData(nameof(ActionParametersController.OptionalChar), typeof(char))]
-        public void GetDescriptors_AddsParametersWithDefaultValues_AsOptionalParameters(
-            string actionName,
-            Type parameterType)
-        {
-            // Arrange & Act
-            var descriptors = GetDescriptors(
-                typeof(ActionParametersController).GetTypeInfo());
-
-            // Assert
-            var optional = Assert.Single(descriptors,
-                d => d.Name.Equals(actionName));
-
-            Assert.NotNull(optional.Parameters);
-            var id = Assert.Single(optional.Parameters);
-
-            Assert.Equal("id", id.Name);
-            Assert.True(id.IsOptional);
-            Assert.Null(id.BinderMetadata);
-            Assert.Equal(parameterType, id.ParameterType);
         }
 
         [Fact]
@@ -216,7 +186,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var entity = Assert.Single(fromBody.Parameters);
 
             Assert.Equal("entity", entity.Name);
-            Assert.False(entity.IsOptional);
             Assert.IsType<FromBodyAttribute>(entity.BinderMetadata);
             Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
         }
@@ -238,7 +207,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var entity = Assert.Single(notFromBody.Parameters);
 
             Assert.Equal("entity", entity.Name);
-            Assert.False(entity.IsOptional);
             Assert.Null(entity.BinderMetadata);
             Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
         }
@@ -475,11 +443,9 @@ namespace Microsoft.AspNet.Mvc.Test
 
             var getPerson = Assert.Single(controller.Actions, a => a.ActionName == "GetPerson");
             Assert.Empty(getPerson.HttpMethods);
-            Assert.True(getPerson.IsActionNameMatchRequired);
 
             var showPeople = Assert.Single(controller.Actions, a => a.ActionName == "ShowPeople");
             Assert.Empty(showPeople.HttpMethods);
-            Assert.True(showPeople.IsActionNameMatchRequired);
         }
 
         [Fact]
@@ -547,7 +513,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 "For action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
                 "MultipleErrorsController.Unknown'" + Environment.NewLine +
                 "Error: While processing template 'stub/[action]/[unknown]', a replacement value for the token 'unknown' " +
-                "could not be found. Available tokens: 'controller, action'." + Environment.NewLine +
+                "could not be found. Available tokens: 'action, controller'." + Environment.NewLine +
                 Environment.NewLine +
                 "Error 2:" + Environment.NewLine +
                 "For action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
@@ -1126,6 +1092,24 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("Store", action.GetProperty<ApiDescriptionActionData>().GroupName);
         }
 
+        [Theory]
+        [InlineData("A", typeof(ApiExplorerEnabledConventionalRoutedController))]
+        [InlineData("A", typeof(ApiExplorerEnabledActionConventionalRoutedController))]
+        public void ApiExplorer_ThrowsForContentionalRouting(string actionName, Type type)
+        {
+            var expected = string.Format(
+                "The action '{0}.{1}' has ApiExplorer enabled, but is using conventional routing. " +
+                "Only actions which use attribute routing support ApiExplorer.",
+                type.FullName, actionName);
+
+            // Arrange
+            var provider = GetProvider(type.GetTypeInfo());
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.GetDescriptors());
+            Assert.Equal(expected, ex.Message);
+        }
+
         // Verifies the sequence of conventions running
         [Fact]
         public void ApplyConventions_RunsInOrderOfDecreasingScope()
@@ -1340,7 +1324,8 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 modelBuilder,
                 new TestGlobalFilterProvider(filters),
-                new MockMvcOptionsAccessor());
+                new MockMvcOptionsAccessor(),
+                new NullLoggerFactory());
 
             return provider;
         }
@@ -1359,7 +1344,8 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 modelBuilder,
                 new TestGlobalFilterProvider(),
-                new MockMvcOptionsAccessor());
+                new MockMvcOptionsAccessor(),
+                new NullLoggerFactory());
 
             return provider;
         }
@@ -1379,7 +1365,8 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 modelBuilder,
                 new TestGlobalFilterProvider(),
-                options);
+                options,
+                new NullLoggerFactory());
         }
 
         private IEnumerable<ActionDescriptor> GetDescriptors(params TypeInfo[] controllerTypeInfos)
@@ -1395,7 +1382,8 @@ namespace Microsoft.AspNet.Mvc.Test
                 assemblyProvider.Object,
                 modelBuilder,
                 new TestGlobalFilterProvider(),
-                new MockMvcOptionsAccessor());
+                new MockMvcOptionsAccessor(),
+                new NullLoggerFactory());
 
             return provider.GetDescriptors();
         }
@@ -1708,10 +1696,6 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             public void RequiredInt(int id) { }
 
-            public void OptionalInt(int? id = 5) { }
-
-            public void OptionalChar(char id = 'c') { }
-
             public void FromBodyParameter([FromBody] TestActionParameter entity) { }
 
             public void NotFromBodyParameter(TestActionParameter entity) { }
@@ -1777,29 +1761,34 @@ namespace Microsoft.AspNet.Mvc.Test
             public int Name { get; set; }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         private class ApiExplorerNotVisibleController
         {
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings()]
         private class ApiExplorerVisibleController
         {
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings(IgnoreApi = true)]
         private class ApiExplorerExplicitlyNotVisibleController
         {
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         private class ApiExplorerExplicitlyNotVisibleOnActionController
         {
             [ApiExplorerSettings(IgnoreApi = true)]
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings(IgnoreApi = true)]
         private class ApiExplorerVisibilityOverrideController
         {
@@ -1809,25 +1798,28 @@ namespace Microsoft.AspNet.Mvc.Test
             public void Create() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings(GroupName = "Store")]
         private class ApiExplorerNameOnControllerController
         {
             public void Edit() { }
         }
 
-
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         private class ApiExplorerNameOnActionController
         {
             [ApiExplorerSettings(GroupName = "Blog")]
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings()]
         private class ApiExplorerNoNameController
         {
             public void Edit() { }
         }
 
+        [Route("AttributeRouting/IsRequired/ForApiExplorer")]
         [ApiExplorerSettings(GroupName = "Store")]
         private class ApiExplorerNameOverrideController
         {
@@ -1884,6 +1876,23 @@ namespace Microsoft.AspNet.Mvc.Test
         [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
         private class ConstraintAttribute : Attribute, IActionConstraintMetadata
         {
+        }
+
+        [ApiExplorerSettings(GroupName = "Default")]
+        private class ApiExplorerEnabledConventionalRoutedController : Controller
+        {
+            public void A()
+            {
+            }
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        private class ApiExplorerEnabledActionConventionalRoutedController : Controller
+        {
+            [ApiExplorerSettings(GroupName = "Default")]
+            public void A()
+            {
+            }
         }
     }
 }

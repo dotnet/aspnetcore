@@ -2,28 +2,38 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc.Description
 {
+    /// <summary>
+    /// A metadata description of an input to an API.
+    /// </summary>
     public class ApiParameterDescription
     {
-        public bool IsOptional { get; set; }
-
+        /// <summary>
+        /// Gets or sets the <see cref="ModelMetadata"/>.
+        /// </summary>
         public ModelMetadata ModelMetadata { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name. 
+        /// </summary>
         public string Name { get; set; }
 
-        public ParameterDescriptor ParameterDescriptor { get; set; }
+        /// <summary>
+        /// Gets or sets the <see cref="ApiParameterRouteInfo"/>.
+        /// </summary>
+        public ApiParameterRouteInfo RouteInfo { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ApiParameterSource"/>.
+        /// </summary>
         public ApiParameterSource Source { get; set; }
 
-        public IEnumerable<IRouteConstraint> Constraints { get; set; }
-
-        public object DefaultValue { get; set; }
-
+        /// <summary>
+        /// Gets or sets the parameter type.
+        /// </summary>
         public Type Type { get; set; }
     }
 }

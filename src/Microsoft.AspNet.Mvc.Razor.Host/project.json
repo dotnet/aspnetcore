@@ -5,7 +5,7 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "Microsoft.AspNet.FileSystems": "1.0.0-*",
+        "Microsoft.AspNet.FileProviders": "1.0.0-*",
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Razor.Runtime": "4.0.0-*"
     },

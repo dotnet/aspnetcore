@@ -10,11 +10,15 @@ namespace Microsoft.AspNet.Mvc
         public ResultExecutingContext(
             [NotNull] ActionContext actionContext,
             [NotNull] IList<IFilter> filters,
-            [NotNull] IActionResult result)
+            [NotNull] IActionResult result,
+            object controller)
             : base(actionContext, filters)
         {
             Result = result;
+            Controller = controller;
         }
+
+        public virtual object Controller { get; }
 
         public virtual IActionResult Result { get; set; }
 

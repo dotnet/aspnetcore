@@ -6,8 +6,7 @@ using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TagName("div", "style", "p")]
-    [ContentBehavior(ContentBehavior.Modify)]
+    [HtmlElementName("div", "style", "p")]
     public class ConditionTagHelper : TagHelper
     {
         public bool? Condition { get; set; }
@@ -17,8 +16,7 @@ namespace TagHelpersWebSite.TagHelpers
             // If a condition is set and evaluates to false, don't render the tag.
             if (Condition.HasValue && !Condition.Value)
             {
-                output.TagName = null;
-                output.Content = null;
+                output.SuppressOutput();
             }
         }
     }
