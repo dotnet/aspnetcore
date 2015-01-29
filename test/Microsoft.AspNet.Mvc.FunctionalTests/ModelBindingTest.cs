@@ -19,7 +19,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ModelBindingTests
+    public class ModelBindingTest
     {
         private readonly IServiceProvider _services = TestHelper.CreateServices("ModelBindingWebSite");
         private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
@@ -1449,6 +1449,85 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Round-tripped value includes descendent instances for all properties with data in the request.
             Assert.Equal("grandFatherName", employee.Parent.Parent.Name);
+        }
+
+        [Fact]
+        public async Task HtmlHelper_DisplayFor_ShowsPropertiesInModelMetadataOrder()
+        {
+            // Arrange
+            var expectedContent = await GetType().GetTypeInfo().Assembly.ReadResourceAsStringAsync(
+                "compiler/resources/ModelBindingWebSite.Vehicle.Details.html");
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/vehicles/42";
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedContent, body);
+        }
+
+        [Fact]
+        public async Task HtmlHelper_EditorFor_ShowsPropertiesInModelMetadataOrder()
+        {
+            // Arrange
+            var expectedContent = await GetType().GetTypeInfo().Assembly.ReadResourceAsStringAsync(
+                "compiler/resources/ModelBindingWebSite.Vehicle.Edit.html");
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/vehicles/42/edit";
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedContent, body);
+        }
+
+        [Fact]
+        public async Task HtmlHelper_EditorFor_ShowsPropertiesAndErrorsInModelMetadataOrder()
+        {
+            // Arrange
+            var expectedContent = await GetType().GetTypeInfo().Assembly.ReadResourceAsStringAsync(
+                "compiler/resources/ModelBindingWebSite.Vehicle.Edit.Invalid.html");
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var url = "http://localhost/vehicles/42/edit";
+            var contentDictionary = new Dictionary<string, string>
+            {
+                { "Make", "Fast Cars" },
+                { "Model", "the Fastener" },
+                { "InspectedDates[0]", "14/10/1979 00:00:00 -08:00" },
+                { "InspectedDates[1]", "16/10/1979 00:00:00 -08:00" },
+                { "InspectedDates[2]", "02/11/1979 00:00:00 -08:00" },
+                { "InspectedDates[3]", "13/11/1979 00:00:00 -08:00" },
+                { "InspectedDates[4]", "05/12/1979 00:00:00 -08:00" },
+                { "InspectedDates[5]", "12/12/1979 00:00:00 -08:00" },
+                { "InspectedDates[6]", "19/12/1979 00:00:00 -08:00" },
+                { "InspectedDates[7]", "26/12/1979 00:00:00 -08:00" },
+                { "InspectedDates[8]", "28/12/1979 00:00:00 -08:00" },
+                { "InspectedDates[9]", "29/12/1979 00:00:00 -08:00" },
+                { "InspectedDates[10]", "01/04/1980 00:00:00 -08:00" },
+                { "Vin", "8765432112345678" },
+                { "Year", "1979" },
+            };
+            var requestContent = new FormUrlEncodedContent(contentDictionary);
+
+            // Act
+            var response = await client.PostAsync(url, requestContent);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedContent, body);
         }
     }
 }

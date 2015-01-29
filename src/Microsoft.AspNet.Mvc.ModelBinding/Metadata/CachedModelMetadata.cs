@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -17,7 +16,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public abstract class CachedModelMetadata<TPrototypeCache> : ModelMetadata
     {
         private bool _convertEmptyStringToNull;
-        private string _nullDisplayText;
         private string _dataTypeName;
         private string _description;
         private string _displayFormatString;
@@ -29,6 +27,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _isReadOnly;
         private bool _isComplexType;
         private bool _isRequired;
+        private string _nullDisplayText;
+        private int _order;
         private bool _showForDisplay;
         private bool _showForEdit;
         private IBinderMetadata _binderMetadata;
@@ -37,7 +37,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private Type _binderType;
 
         private bool _convertEmptyStringToNullComputed;
-        private bool _nullDisplayTextComputed;
         private bool _dataTypeNameComputed;
         private bool _descriptionComputed;
         private bool _displayFormatStringComputed;
@@ -49,6 +48,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _isReadOnlyComputed;
         private bool _isComplexTypeComputed;
         private bool _isRequiredComputed;
+        private bool _nullDisplayTextComputed;
+        private bool _orderComputed;
         private bool _showForDisplayComputed;
         private bool _showForEditComputed;
         private bool _isBinderMetadataComputed;
@@ -378,6 +379,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <inheritdoc />
+        public sealed override int Order
+        {
+            get
+            {
+                if (!_orderComputed)
+                {
+                    _order = ComputeOrder();
+                    _orderComputed = true;
+                }
+
+                return _order;
+            }
+
+            set
+            {
+                _order = value;
+                _orderComputed = true;
+            }
+        }
+
         public sealed override IPropertyBindingPredicateProvider PropertyBindingPredicateProvider
         {
             get
@@ -575,9 +597,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return base.IsComplexType;
         }
 
+        /// <summary>
+        /// Calculate the <see cref="NullDisplayText"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="NullDisplayText"/> value.</returns>
         protected virtual string ComputeNullDisplayText()
         {
             return base.NullDisplayText;
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="Order"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="Order"/> value.</returns>
+        protected virtual int ComputeOrder()
+        {
+            return base.Order;
         }
 
         protected virtual bool ComputeShowForDisplay()

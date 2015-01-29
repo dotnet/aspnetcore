@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 // We want to respect the value set by the parameter (if any), and use the value specifed
                 // on the type as a fallback.
-                // 
+                //
                 // We generalize this process, in case someone adds ordered providers (with count > 2) through
                 // extensibility.
                 foreach (var provider in PrototypeCache.BinderTypeProviders)
@@ -82,13 +82,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return PrototypeCache.DisplayFormat != null
                        ? PrototypeCache.DisplayFormat.ConvertEmptyStringToNull
                        : base.ComputeConvertEmptyStringToNull();
-        }
-
-        protected override string ComputeNullDisplayText()
-        {
-            return PrototypeCache.DisplayFormat != null
-                       ? PrototypeCache.DisplayFormat.NullDisplayText
-                       : base.ComputeNullDisplayText();
         }
 
         /// <summary>
@@ -272,6 +265,38 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected override bool ComputeIsRequired()
         {
             return (PrototypeCache.Required != null) || base.ComputeIsRequired();
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="ModelMetadata.NullDisplayText"/> value based on the presence of a
+        /// <see cref="DisplayFormatAttribute"/> and its <see cref="DisplayFormatAttribute.NullDisplayText"/> value.
+        /// </summary>
+        /// <returns>
+        /// Calculated <see cref="ModelMetadata.NullDisplayText"/> value.
+        /// <see cref="DisplayFormatAttribute.NullDisplayText"/> if a <see cref="DisplayFormatAttribute"/> exists;
+        /// <c>null</c> otherwise.
+        /// </returns>
+        protected override string ComputeNullDisplayText()
+        {
+            return PrototypeCache.DisplayFormat != null
+                       ? PrototypeCache.DisplayFormat.NullDisplayText
+                       : base.ComputeNullDisplayText();
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="ModelMetadata.Order"/> value based on presence of a <see cref="DisplayAttribute"/>
+        /// and its <see cref="DisplayAttribute.Order"/> value.
+        /// </summary>
+        /// <returns>
+        /// Calculated <see cref="ModelMetadata.Order"/> value. <see cref="DisplayAttribute.GetOrder"/> if a
+        /// <see cref="DisplayAttribute"/> exists and its <see cref="DisplayAttribute.Order"/> has been set;
+        /// <c>10000</c> otherwise.
+        /// </returns>
+        protected override int ComputeOrder()
+        {
+            var result = PrototypeCache.Display?.GetOrder();
+
+            return result ?? base.ComputeOrder();
         }
 
         protected override string ComputeSimpleDisplayText()

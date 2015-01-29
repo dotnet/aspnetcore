@@ -3,7 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -13,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core
 {
-    public class DefaultEditorTemplatesTests
+    public class DefaultEditorTemplatesTest
     {
         // Mappings from templateName to expected result when using StubbyHtmlHelper.
         public static TheoryData<string, string> TemplateNameData
@@ -187,9 +190,53 @@ Environment.NewLine;
 
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
             var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            
+
             var metadata = html.ViewData.ModelMetadata.Properties["Property1"];
             metadata.HideSurroundingHtml = true;
+
+            // Act
+            var result = DefaultEditorTemplates.ObjectTemplate(html);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void ObjectTemplate_OrdersProperties_AsExpected()
+        {
+            // Arrange
+            var model = new OrderedModel();
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var expectedProperties = new List<string>
+            {
+                "OrderedProperty3",
+                "OrderedProperty2",
+                "OrderedProperty1",
+                "Property3",
+                "Property1",
+                "Property2",
+                "LastProperty",
+            };
+
+            var stringBuilder = new StringBuilder();
+            foreach (var property in expectedProperties)
+            {
+                var label = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "<div class=\"editor-label\"><label for=\"{0}\">{0}</label></div>",
+                    property);
+                stringBuilder.AppendLine(label);
+
+                var value = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "<div class=\"editor-field\">Model = (null), ModelType = System.String, PropertyName = {0}, " +
+                    "SimpleDisplayText = (null) " +
+                    "<span class=\"field-validation-valid\" data-valmsg-for=\"{0}\" data-valmsg-replace=\"true\">" +
+                    "</span></div>",
+                    property);
+                stringBuilder.AppendLine(value);
+            }
+            var expected = stringBuilder.ToString();
 
             // Act
             var result = DefaultEditorTemplates.ObjectTemplate(html);
@@ -700,6 +747,23 @@ Environment.NewLine;
             // Act & Assert
             html.Editor(expression: string.Empty, templateName: null, htmlFieldName: null, additionalViewData: null);
             viewEngine.Verify();
+        }
+
+        private class OrderedModel
+        {
+            [Display(Order = 10001)]
+            public string LastProperty { get; set; }
+
+            public string Property3 { get; set; }
+            public string Property1 { get; set; }
+            public string Property2 { get; set; }
+
+            [Display(Order = 23)]
+            public string OrderedProperty3 { get; set; }
+            [Display(Order = 23)]
+            public string OrderedProperty2 { get; set; }
+            [Display(Order = 23)]
+            public string OrderedProperty1 { get; set; }
         }
 
         private class StubbyHtmlHelper : IHtmlHelper, ICanHasViewContext

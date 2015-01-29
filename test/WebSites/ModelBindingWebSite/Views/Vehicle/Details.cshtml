@@ -1,0 +1,13 @@
+﻿@model ModelBindingWebSite.ViewModels.VehicleViewModel
+
+<h3>Vehicle details</h3>
+<div class="left">
+    @Html.DisplayFor(m => m)
+    @* DisplayFor ignores properties in complex objects that don't have simple types. Add the collection explicitly. *@
+    <div class="display-label">
+        @Html.NameFor(m => m.InspectedDates)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(m => m.InspectedDates)
+    </div>
+</div>

@@ -229,6 +229,61 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(expectedResult, result);
         }
 
+        public static TheoryData<DisplayAttribute, int> DisplayAttribute_OverridesOrderData
+        {
+            get
+            {
+                return new TheoryData<DisplayAttribute, int>
+                {
+                    {
+                        new DisplayAttribute(), ModelMetadata.DefaultOrder
+                    },
+                    {
+                        new DisplayAttribute { Order = int.MinValue }, int.MinValue
+                    },
+                    {
+                        new DisplayAttribute { Order = -100 }, -100
+                    },
+                    {
+                        new DisplayAttribute { Order = -1 }, -1
+                    },
+                    {
+                        new DisplayAttribute { Order = 0 }, 0
+                    },
+                    {
+                        new DisplayAttribute { Order = 1 }, 1
+                    },
+                    {
+                        new DisplayAttribute { Order = 200 }, 200
+                    },
+                    {
+                        new DisplayAttribute { Order = int.MaxValue }, int.MaxValue
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DisplayAttribute_OverridesOrderData))]
+        public void DisplayAttribute_OverridesOrder(DisplayAttribute attribute, int expectedOrder)
+        {
+            // Arrange
+            var attributes = new[] { attribute };
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = new CachedDataAnnotationsModelMetadata(
+                provider,
+                containerType: null,
+                modelType: typeof(object),
+                propertyName: null,
+                attributes: attributes);
+
+            // Act
+            var result = metadata.Order;
+
+            // Assert
+            Assert.Equal(expectedOrder, result);
+        }
+
         [Fact]
         public void BinderMetadataIfPresent_Overrides_DefaultBinderMetadata()
         {

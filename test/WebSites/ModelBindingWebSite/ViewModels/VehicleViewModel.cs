@@ -10,22 +10,28 @@ namespace ModelBindingWebSite.ViewModels
 {
     public class VehicleViewModel : IValidatableObject
     {
+        // Placed using default Order (10000).
         [Required]
         [StringLength(8)]
         public string Vin { get; set; }
 
+        [Display(Order = 1)]
         public string Make { get; set; }
 
+        [Display(Order = 0)]
         public string Model { get; set; }
 
+        // Placed using default Order (10000).
         [Range(1980, 2034)]
         [CustomValidation(typeof(VehicleViewModel), nameof(ValidateYear))]
         public int Year { get; set; }
 
+        [Display(Order = 20000)]
         [Required]
         [MaxLength(10)]
         public DateTimeOffset[] InspectedDates { get; set; }
 
+        [Display(Order = 20000)]
         public string LastUpdatedTrackingId { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

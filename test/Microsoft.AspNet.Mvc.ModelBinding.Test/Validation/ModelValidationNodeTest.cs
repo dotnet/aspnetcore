@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if ASPNET50
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNet.Testing;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -166,6 +164,97 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(expected, log);
         }
 
+        // Validation order is primarily important when MaxAllowedErrors has been overridden.
+        [Fact]
+        public void Validate_OrdersUsingModelMetadata()
+        {
+            // Proper order of invocation:
+            // 1. OnValidating()
+            // 2. Child validators -- ordered using ModelMetadata.Order.
+            // 3. OnValidated()
+
+            // Arrange
+            var expected = new[]
+            {
+                "In OnValidating()",
+                "In LoggingValidatonAttribute.IsValid(OrderedProperty3)",
+                "In LoggingValidatonAttribute.IsValid(OrderedProperty2)",
+                "In LoggingValidatonAttribute.IsValid(OrderedProperty1)",
+                "In LoggingValidatonAttribute.IsValid(Property3)",
+                "In LoggingValidatonAttribute.IsValid(Property1)",
+                "In LoggingValidatonAttribute.IsValid(Property2)",
+                "In LoggingValidatonAttribute.IsValid(LastProperty)",
+                "In OnValidated()"
+            };
+
+            var log = new List<string>();
+            var model = new LoggingNonValidatableObject(log);
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var modelMetadata = provider.GetMetadataForType(() => model, model.GetType());
+            var node = new ModelValidationNode(modelMetadata, "theKey")
+            {
+                ValidateAllProperties = true,
+            };
+            node.Validating += (sender, e) => log.Add("In OnValidating()");
+            node.Validated += (sender, e) => log.Add("In OnValidated()");
+            var context = CreateContext(modelMetadata, provider);
+
+            // Act
+            node.Validate(context);
+
+            // Assert
+            Assert.Equal(expected, log);
+        }
+
+        [Fact]
+        public void Validate_ChildNodes_OverridesOrdering()
+        {
+            // Proper order of invocation:
+            // 1. OnValidating()
+            // 2. Child validators -- ordered using ChildNodes, then ModelMetadata.Order.
+            // 3. OnValidated()
+
+            // Arrange
+            var expected = new[]
+            {
+                "In OnValidating()",
+                "In LoggingValidatonAttribute.IsValid(LastProperty)",
+                "In LoggingValidatonAttribute.IsValid(OrderedProperty3)",
+                "In LoggingValidatonAttribute.IsValid(OrderedProperty2)",
+                "In LoggingValidatonAttribute.IsValid(OrderedProperty1)",
+                "In LoggingValidatonAttribute.IsValid(Property3)",
+                "In LoggingValidatonAttribute.IsValid(Property1)",
+                "In LoggingValidatonAttribute.IsValid(Property2)",
+                "In OnValidated()"
+            };
+
+            var log = new List<string>();
+            var model = new LoggingNonValidatableObject(log);
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var modelMetadata = provider.GetMetadataForType(() => model, model.GetType());
+            var childMetadata = modelMetadata.Properties.FirstOrDefault(
+                property => property.PropertyName == "LastProperty");
+            Assert.NotNull(childMetadata);  // Guard
+
+            var node = new ModelValidationNode(modelMetadata, "theKey")
+            {
+                ChildNodes =
+                {
+                    new ModelValidationNode(childMetadata, "theKey.LastProperty")
+                },
+                ValidateAllProperties = true,
+            };
+            node.Validating += (sender, e) => log.Add("In OnValidating()");
+            node.Validated += (sender, e) => log.Add("In OnValidated()");
+            var context = CreateContext(modelMetadata, provider);
+
+            // Act
+            node.Validate(context);
+
+            // Assert
+            Assert.Equal(expected, log);
+        }
+
         [Fact]
         public void Validate_SkipsRemainingValidationIfModelStateIsInvalid()
         {
@@ -291,13 +380,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             node.Validate(context);
 
             // Assert
-            Assert.False(context.ModelState.ContainsKey("theKey.RequiredString"));
-            Assert.Equal("existing Error Text",
-                         context.ModelState["theKey.RequiredString.Dummy"].Errors[0].ErrorMessage);
-            Assert.Equal("The field RangedInt must be between 10 and 30.",
-                         context.ModelState["theKey.RangedInt"].Errors[0].ErrorMessage);
-            Assert.False(context.ModelState.ContainsKey("theKey.ValidString"));
-            Assert.False(context.ModelState.ContainsKey("theKey"));
+            var modelState = context.ModelState["theKey.RequiredString.Dummy"];
+            Assert.NotNull(modelState);
+            var error = Assert.Single(modelState.Errors);
+            Assert.Equal("existing Error Text", error.ErrorMessage);
+
+            modelState = context.ModelState["theKey.RangedInt"];
+            Assert.NotNull(modelState);
+            error = Assert.Single(modelState.Errors);
+            Assert.Equal("The field RangedInt must be between 10 and 30.", error.ErrorMessage);
+
+            Assert.DoesNotContain("theKey.RequiredString", context.ModelState.Keys);
+            Assert.DoesNotContain("theKey.ValidString", context.ModelState.Keys);
+            Assert.DoesNotContain("theKey", context.ModelState.Keys);
         }
 
         [Fact]
@@ -311,6 +406,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 RangedInt = 0 /* error */,
                 ValidString = "cat"  /* error */
             };
+            var expectedMessage = ValidationAttributeUtil.GetRequiredErrorMessage("RequiredString");
 
             var modelMetadata = GetModelMetadata(model);
             var node = new ModelValidationNode(modelMetadata, "theKey")
@@ -326,11 +422,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(3, context.ModelState.Count);
-            Assert.IsType<TooManyModelErrorsException>(context.ModelState[""].Errors[0].Exception);
-            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("RequiredString"),
-                        context.ModelState["theKey.RequiredString"].Errors[0].ErrorMessage);
-            Assert.False(context.ModelState.ContainsKey("theKey.RangedInt"));
-            Assert.False(context.ModelState.ContainsKey("theKey.ValidString"));
+            var modelState = context.ModelState[string.Empty];
+            Assert.NotNull(modelState);
+            var error = Assert.Single(modelState.Errors);
+            Assert.IsType<TooManyModelErrorsException>(error.Exception);
+
+            // RequiredString is validated first due to ModelMetadata.Properties ordering (Reflection-based).
+            modelState = context.ModelState["theKey.RequiredString"];
+            Assert.NotNull(modelState);
+            error = Assert.Single(modelState.Errors);
+            Assert.Equal(expectedMessage, error.ErrorMessage);
+
+            // No room for the other validation errors.
+            Assert.DoesNotContain("theKey.RangedInt", context.ModelState.Keys);
+            Assert.DoesNotContain("theKey.ValidString", context.ModelState.Keys);
         }
 
         private static ModelMetadata GetModelMetadata()
@@ -338,9 +443,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(object));
         }
 
-        private static ModelMetadata GetModelMetadata(object o)
+        private static ModelMetadata GetModelMetadata(object model)
         {
-            return new DataAnnotationsModelMetadataProvider().GetMetadataForType(() => o, o.GetType());
+            return new DataAnnotationsModelMetadataProvider().GetMetadataForType(() => model, model.GetType());
         }
 
         private static ModelMetadata GetModelMetadata(Type type)
@@ -348,15 +453,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new DataAnnotationsModelMetadataProvider().GetMetadataForType(modelAccessor: null, modelType: type);
         }
 
-        private static ModelValidationContext CreateContext(ModelMetadata metadata = null)
+        private static ModelValidationContext CreateContext(
+            ModelMetadata metadata = null,
+            IModelMetadataProvider metadataProvider = null)
         {
             var providers = new IModelValidatorProvider[]
             {
                 new DataAnnotationsModelValidatorProvider(),
                 new DataMemberModelValidatorProvider()
             };
+            if (metadataProvider == null)
+            {
+                metadataProvider = new EmptyModelMetadataProvider();
+            }
 
-            return new ModelValidationContext(new EmptyModelMetadataProvider(),
+            return new ModelValidationContext(metadataProvider,
                                               new CompositeModelValidatorProvider(providers),
                                               new ModelStateDictionary(),
                                               metadata,
@@ -378,6 +489,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
             {
+                Assert.Null(validationContext.MemberName);
                 _log.Add("In IValidatableObject.Validate()");
                 yield return new ValidationResult("Sample error message", new[] { "InvalidStringProperty" });
             }
@@ -386,8 +498,56 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 protected override ValidationResult IsValid(object value, ValidationContext validationContext)
                 {
-                    LoggingValidatableObject lvo = (LoggingValidatableObject)value;
-                    lvo._log.Add("In LoggingValidatonAttribute.IsValid()");
+                    var validatableObject = Assert.IsType<LoggingValidatableObject>(value);
+                    Assert.NotNull(validationContext);
+                    Assert.Equal("ValidStringProperty", validationContext.MemberName);
+                    validatableObject._log.Add("In LoggingValidatonAttribute.IsValid()");
+                    return ValidationResult.Success;
+                }
+            }
+        }
+
+        private sealed class LoggingNonValidatableObject
+        {
+            private readonly IList<string> _log;
+
+            public LoggingNonValidatableObject(IList<string> log)
+            {
+                _log = log;
+            }
+
+            [LoggingValidation]
+            [Display(Order = 10001)]
+            public string LastProperty { get; set; }
+
+            [LoggingValidation]
+            public string Property3 { get; set; }
+            [LoggingValidation]
+            public string Property1 { get; set; }
+            [LoggingValidation]
+            public string Property2 { get; set; }
+
+            [LoggingValidation]
+            [Display(Order = 23)]
+            public string OrderedProperty3 { get; set; }
+            [LoggingValidation]
+            [Display(Order = 23)]
+            public string OrderedProperty2 { get; set; }
+            [LoggingValidation]
+            [Display(Order = 23)]
+            public string OrderedProperty1 { get; set; }
+
+            private sealed class LoggingValidationAttribute : ValidationAttribute
+            {
+                protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+                {
+                    Assert.Null(value);
+                    Assert.NotNull(validationContext);
+                    var nonValidatableObject =
+                        Assert.IsType<LoggingNonValidatableObject>(validationContext.ObjectInstance);
+
+                    nonValidatableObject._log.Add(
+                        string.Format("In LoggingValidatonAttribute.IsValid({0})", validationContext.MemberName));
                     return ValidationResult.Success;
                 }
             }
@@ -406,4 +566,3 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
     }
 }
-#endif

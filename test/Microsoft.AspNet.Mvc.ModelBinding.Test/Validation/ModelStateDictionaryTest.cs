@@ -382,14 +382,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             dictionary.AddModelError("key3", new Exception());
             dictionary.AddModelError("key4", "error4");
             dictionary.AddModelError("key5", "error5");
-            dictionary.AddModelError("key6", "error6");
 
             // Act and Assert
             Assert.True(dictionary.HasReachedMaxErrors);
             Assert.Equal(5, dictionary.ErrorCount);
-            var error = Assert.Single(dictionary[""].Errors);
+            var error = Assert.Single(dictionary[string.Empty].Errors);
             Assert.IsType<TooManyModelErrorsException>(error.Exception);
             Assert.Equal(expected, error.Exception.Message);
+
+            // TooManyModelErrorsException added instead of key5 error.
+            Assert.DoesNotContain("key5", dictionary.Keys);
         }
 
         [Fact]
@@ -403,25 +405,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             };
 
             // Act and Assert
+            Assert.False(dictionary.HasReachedMaxErrors);
             var result = dictionary.TryAddModelError("key1", "error1");
             Assert.True(result);
 
+            Assert.False(dictionary.HasReachedMaxErrors);
             result = dictionary.TryAddModelError("key2", new Exception());
             Assert.True(result);
 
+            Assert.False(dictionary.HasReachedMaxErrors); // Still room for TooManyModelErrorsException.
             result = dictionary.TryAddModelError("key3", "error3");
             Assert.False(result);
 
-            result = dictionary.TryAddModelError("key4", "error4");
+            Assert.True(dictionary.HasReachedMaxErrors);
+            result = dictionary.TryAddModelError("key4", "error4"); // no-op
             Assert.False(result);
 
             Assert.True(dictionary.HasReachedMaxErrors);
             Assert.Equal(3, dictionary.ErrorCount);
             Assert.Equal(3, dictionary.Count);
 
-            var error = Assert.Single(dictionary[""].Errors);
+            var error = Assert.Single(dictionary[string.Empty].Errors);
             Assert.IsType<TooManyModelErrorsException>(error.Exception);
             Assert.Equal(expected, error.Exception.Message);
+
+            // TooManyModelErrorsException added instead of key3 error.
+            Assert.DoesNotContain("key3", dictionary.Keys);
+
+            // Last addition did nothing.
+            Assert.DoesNotContain("key4", dictionary.Keys);
         }
 
         [Fact]
@@ -437,16 +449,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             dictionary.AddModelError("key2", "error2");
             dictionary.AddModelError("key3", "error3");
             dictionary.AddModelError("key3", new Exception());
-            dictionary.AddModelError("key4", new InvalidOperationException());
-            dictionary.AddModelError("key5", new FormatException());
 
             // Act and Assert
             Assert.True(dictionary.HasReachedMaxErrors);
             Assert.Equal(4, dictionary.ErrorCount);
             Assert.Equal(4, dictionary.Count);
-            var error = Assert.Single(dictionary[""].Errors);
+            var error = Assert.Single(dictionary[string.Empty].Errors);
             Assert.IsType<TooManyModelErrorsException>(error.Exception);
             Assert.Equal(expected, error.Exception.Message);
+
+            // Second key3 model error resulted in TooManyModelErrorsException instead.
+            error = Assert.Single(dictionary["key3"].Errors);
+            Assert.Null(error.Exception);
+            Assert.Equal("error3", error.ErrorMessage);
         }
 
         [Fact]
@@ -470,7 +485,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.False(result);
 
             Assert.Equal(3, dictionary.Count);
-            var error = Assert.Single(dictionary[""].Errors);
+            var error = Assert.Single(dictionary[string.Empty].Errors);
             Assert.IsType<TooManyModelErrorsException>(error.Exception);
             Assert.Equal(expected, error.Exception.Message);
         }
@@ -494,7 +509,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(3, copy.Count);
-            var error = Assert.Single(copy[""].Errors);
+            var error = Assert.Single(copy[string.Empty].Errors);
             Assert.IsType<TooManyModelErrorsException>(error.Exception);
             Assert.Equal(expected, error.Exception.Message);
         }

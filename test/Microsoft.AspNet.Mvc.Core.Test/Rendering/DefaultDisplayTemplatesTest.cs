@@ -2,7 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -144,6 +148,48 @@ namespace Microsoft.AspNet.Mvc.Core
 
             var metadata = html.ViewData.ModelMetadata.Properties["Property1"];
             metadata.HideSurroundingHtml = true;
+
+            // Act
+            var result = DefaultDisplayTemplates.ObjectTemplate(html);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void ObjectTemplate_OrdersProperties_AsExpected()
+        {
+            // Arrange
+            var model = new OrderedModel();
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var expectedProperties = new List<string>
+            {
+                "OrderedProperty3",
+                "OrderedProperty2",
+                "OrderedProperty1",
+                "Property3",
+                "Property1",
+                "Property2",
+                "LastProperty",
+            };
+
+            var stringBuilder = new StringBuilder();
+            foreach (var property in expectedProperties)
+            {
+                var label = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "<div class=\"display-label\">{0}</div>",
+                    property);
+                stringBuilder.AppendLine(label);
+
+                var value = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "<div class=\"display-field\">Model = (null), ModelType = System.String, PropertyName = {0}, " +
+                    "SimpleDisplayText = (null)</div>",
+                    property);
+                stringBuilder.AppendLine(value);
+            }
+            var expected = stringBuilder.ToString();
 
             // Act
             var result = DefaultDisplayTemplates.ObjectTemplate(html);
@@ -308,6 +354,23 @@ namespace Microsoft.AspNet.Mvc.Core
             // Act & Assert
             html.Display(expression: string.Empty, templateName: null, htmlFieldName: null, additionalViewData: null);
             viewEngine.Verify();
+        }
+
+        private class OrderedModel
+        {
+            [Display(Order = 10001)]
+            public string LastProperty { get; set; }
+
+            public string Property3 { get; set; }
+            public string Property1 { get; set; }
+            public string Property2 { get; set; }
+
+            [Display(Order = 23)]
+            public string OrderedProperty3 { get; set; }
+            [Display(Order = 23)]
+            public string OrderedProperty2 { get; set; }
+            [Display(Order = 23)]
+            public string OrderedProperty1 { get; set; }
         }
     }
 }

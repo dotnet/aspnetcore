@@ -1,0 +1,19 @@
+﻿@model ModelBindingWebSite.ViewModels.VehicleViewModel
+
+<div class="left">
+    @using (Html.BeginForm())
+    {
+        @Html.ValidationSummary()
+        @Html.EditorFor(m => m)
+
+        @* EditorFor ignores properties in complex objects that don't have simple types. Add the collection explicitly. *@
+        <div class="editor-label">
+            @Html.LabelFor(m => m.InspectedDates)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(m => m.InspectedDates)
+        </div>
+
+        <input type="submit" value="Update" />
+    }
+</div>
