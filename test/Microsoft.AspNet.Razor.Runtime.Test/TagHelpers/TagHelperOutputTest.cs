@@ -9,39 +9,65 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     public class TagHelperOutputTest
     {
         [Fact]
-        public void TagName_CannotSetToNullInCtor()
+        public void TagName_CanSetToNullInCtor()
         {
             // Arrange & Act
             var tagHelperOutput = new TagHelperOutput(null);
 
             // Assert
-            Assert.Empty(tagHelperOutput.TagName);
+            Assert.Null(tagHelperOutput.TagName);
         }
 
         [Fact]
-        public void TagName_CannotSetToNull()
+        public void TagName_CanSetToNull()
         {
-            // Arrange
-            var tagHelperOutput = new TagHelperOutput("p");
-
-            // Act
-            tagHelperOutput.TagName = null;
+            // Arrange & Act
+            var tagHelperOutput = new TagHelperOutput("p")
+            {
+                TagName = null
+            };
 
             // Assert
-            Assert.Empty(tagHelperOutput.TagName);
+            Assert.Null(tagHelperOutput.TagName);
         }
 
         [Fact]
-        public void Content_CannotSetToNull()
+        public void Content_CanSetToNull()
         {
-            // Arrange
-            var tagHelperOutput = new TagHelperOutput("p");
-
-            // Act
-            tagHelperOutput.Content = null;
+            // Arrange & Act
+            var tagHelperOutput = new TagHelperOutput("p")
+            {
+                Content = null
+            };
 
             // Assert
-            Assert.Empty(tagHelperOutput.Content);
+            Assert.Null(tagHelperOutput.Content);
+        }
+
+        [Fact]
+        public void PreContent_CanSetToNull()
+        {
+            // Arrange & Act
+            var tagHelperOutput = new TagHelperOutput("p")
+            {
+                PreContent = null
+            };
+
+            // Assert
+            Assert.Null(tagHelperOutput.PreContent);
+        }
+
+        [Fact]
+        public void PostContent_CanSetToNull()
+        {
+            // Arrange & Act
+            var tagHelperOutput = new TagHelperOutput("p")
+            {
+                PostContent = null
+            };
+
+            // Assert
+            Assert.Null(tagHelperOutput.PostContent);
         }
 
         [Fact]
@@ -119,9 +145,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 {
                     { "class", "btn" },
                     { "something", "   spaced    " }
-                });
-
-            tagHelperOutput.SelfClosing = true;
+                })
+            {
+                SelfClosing = true
+            };
 
             // Act
             var output = tagHelperOutput.GenerateStartTag();
@@ -135,9 +162,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void GenerateEndTag_ReturnsNothingIfWhitespaceTagName()
         {
             // Arrange
-            var tagHelperOutput = new TagHelperOutput(" "); ;
-
-            tagHelperOutput.Content = "Hello World";
+            var tagHelperOutput = new TagHelperOutput(" ")
+            {
+                Content = "Hello World"
+            };
 
             // Act
             var output = tagHelperOutput.GenerateEndTag();
@@ -147,12 +175,46 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
+        public void GeneratePreContent_ReturnsPreContent()
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput("p")
+            {
+                PreContent = "Hello World"
+            };
+
+            // Act
+            var output = tagHelperOutput.GeneratePreContent();
+
+            // Assert
+            Assert.Equal("Hello World", output);
+        }
+
+        [Fact]
+        public void GeneratePreContent_ReturnsNothingIfSelfClosing()
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput("p")
+            {
+                SelfClosing = true,
+                PreContent = "Hello World"
+            };
+
+            // Act
+            var output = tagHelperOutput.GeneratePreContent();
+
+            // Assert
+            Assert.Empty(output);
+        }
+
+        [Fact]
         public void GenerateContent_ReturnsContent()
         {
             // Arrange
-            var tagHelperOutput = new TagHelperOutput("p");
-
-            tagHelperOutput.Content = "Hello World";
+            var tagHelperOutput = new TagHelperOutput("p")
+            {
+                Content = "Hello World"
+            };
 
             // Act
             var output = tagHelperOutput.GenerateContent();
@@ -168,13 +230,45 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Arrange
             var tagHelperOutput = new TagHelperOutput("p")
             {
-                SelfClosing = true
+                SelfClosing = true,
+                Content = "Hello World"
             };
-
-            tagHelperOutput.Content = "Hello World";
 
             // Act
             var output = tagHelperOutput.GenerateContent();
+
+            // Assert
+            Assert.Empty(output);
+        }
+
+        [Fact]
+        public void GeneratePostContent_ReturnsPostContent()
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput("p")
+            {
+                PostContent = "Hello World"
+            };
+
+            // Act
+            var output = tagHelperOutput.GeneratePostContent();
+
+            // Assert
+            Assert.Equal("Hello World", output);
+        }
+
+        [Fact]
+        public void GeneratePostContent_ReturnsNothingIfSelfClosing()
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput("p")
+            {
+                SelfClosing = true,
+                PostContent = "Hello World"
+            };
+
+            // Act
+            var output = tagHelperOutput.GeneratePostContent();
 
             // Assert
             Assert.Empty(output);
@@ -207,6 +301,54 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(output);
+        }
+
+        [Fact]
+        public void SuppressOutput_Sets_TagName_Content_PreContent_PostContent_ToNull()
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput("p")
+            {
+                PreContent = "Pre Content",
+                Content = "Content",
+                PostContent = "Post Content"
+            };
+
+            // Act
+            tagHelperOutput.SuppressOutput();
+
+            // Assert
+            Assert.Null(tagHelperOutput.TagName);
+            Assert.Null(tagHelperOutput.PreContent);
+            Assert.Null(tagHelperOutput.Content);
+            Assert.Null(tagHelperOutput.PostContent);
+        }
+
+        [Fact]
+        public void SuppressOutput_PreventsTagOutput()
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput("p",
+                attributes: new Dictionary<string, string>
+                {
+                    { "class", "btn" },
+                    { "something", "   spaced    " }
+                })
+            {
+                PreContent = "Pre Content",
+                Content = "Content",
+                PostContent = "Post Content"
+            };
+
+            // Act
+            tagHelperOutput.SuppressOutput();
+
+            // Assert
+            Assert.Empty(tagHelperOutput.GenerateStartTag());
+            Assert.Null(tagHelperOutput.GeneratePreContent());
+            Assert.Null(tagHelperOutput.GenerateContent());
+            Assert.Null(tagHelperOutput.GeneratePostContent());
+            Assert.Empty(tagHelperOutput.GenerateEndTag());
         }
 
         [Theory]

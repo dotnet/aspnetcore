@@ -16,12 +16,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </summary>
         internal TagHelperDescriptor([NotNull] string tagName,
                                      [NotNull] string typeName,
-                                     [NotNull] string assemblyName,
-                                     ContentBehavior contentBehavior)
+                                     [NotNull] string assemblyName)
             : this(tagName,
                    typeName,
                    assemblyName,
-                   contentBehavior,
                    Enumerable.Empty<TagHelperAttributeDescriptor>())
         {
         }
@@ -34,21 +32,17 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <see cref="TagHelperDescriptor"/> which applies to every HTML tag.</param>
         /// <param name="typeName">The full name of the tag helper class.</param>
         /// <param name="assemblyName">The name of the assembly containing the tag helper class.</param>
-        /// <param name="contentBehavior">The <see cref="TagHelpers.ContentBehavior"/>
-        /// of the tag helper.</param>
         /// <param name="attributes">
         /// The <see cref="TagHelperAttributeDescriptor"/>s to request from the HTML tag.
         /// </param>
         public TagHelperDescriptor([NotNull] string tagName,
                                    [NotNull] string typeName,
                                    [NotNull] string assemblyName,
-                                   ContentBehavior contentBehavior,
                                    [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes)
         {
             TagName = tagName;
             TypeName = typeName;
             AssemblyName = assemblyName;
-            ContentBehavior = contentBehavior;
             Attributes = new List<TagHelperAttributeDescriptor>(attributes);
         }
 
@@ -66,11 +60,6 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// The name of the assembly containing the tag helper class.
         /// </summary>
         public string AssemblyName { get; private set; }
-
-        /// <summary>
-        /// The <see cref="TagHelpers.ContentBehavior"/> of the tag helper.
-        /// </summary>
-        public ContentBehavior ContentBehavior { get; private set; }
 
         /// <summary>
         /// The list of attributes the tag helper expects.

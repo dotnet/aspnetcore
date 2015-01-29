@@ -33,7 +33,6 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __PTagHelper = CreateTagHelper<PTagHelper>();
-            __PTagHelper = CreateTagHelper<PTagHelper>();
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
             __InputTagHelper.Type = "text";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
@@ -42,7 +41,12 @@ namespace TestOutput
             __InputTagHelper.Type = "checkbox";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
             __InputTagHelper2.Type = __InputTagHelper.Type;
+#line 7 "BasicTagHelpers.cshtml"
             __InputTagHelper2.Checked = true;
+
+#line default
+#line hidden
+            __PTagHelper = CreateTagHelper<PTagHelper>();
         }
         #pragma warning restore 1998
     }

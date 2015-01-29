@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// The "@" character must be followed by a ":", "(", or a C# identifier.  If you intended to switch to markup, use an HTML start tag, for example:
-        ///
+        /// 
         /// @if(isLoggedIn) {
         ///     &lt;p&gt;Hello, @user!&lt;/p&gt;
         /// }
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// The "@" character must be followed by a ":", "(", or a C# identifier.  If you intended to switch to markup, use an HTML start tag, for example:
-        ///
+        /// 
         /// @if(isLoggedIn) {
         ///     &lt;p&gt;Hello, @user!&lt;/p&gt;
         /// }
@@ -228,7 +228,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Sections cannot be empty.  The "@section" keyword must be followed by a block of markup surrounded by "{}".  For example:
-        ///
+        /// 
         /// @section Sidebar {
         ///    &lt;!-- Markup and text goes here --&gt;
         /// }
@@ -240,7 +240,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Sections cannot be empty.  The "@section" keyword must be followed by a block of markup surrounded by "{}".  For example:
-        ///
+        /// 
         /// @section Sidebar {
         ///    &lt;!-- Markup and text goes here --&gt;
         /// }
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Namespace imports and type aliases cannot be placed within code blocks.  They must immediately follow an "@" character in markup.  It is recommended that you put them at the top of the page, as in the following example:
-        ///
+        /// 
         /// @using System.Drawing;
         /// @{
         ///     // OK here to use types from System.Drawing in the page.
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Namespace imports and type aliases cannot be placed within code blocks.  They must immediately follow an "@" character in markup.  It is recommended that you put them at the top of the page, as in the following example:
-        ///
+        /// 
         /// @using System.Drawing;
         /// @{
         ///     // OK here to use types from System.Drawing in the page.
@@ -278,12 +278,12 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Expected a "{0}" but found a "{1}".  Block statements must be enclosed in "{{" and "}}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
-        ///
+        /// 
         /// @if(isLoggedIn)
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
-        ///
+        /// 
         /// Instead, wrap the contents of the block in "{{}}":
-        ///
+        /// 
         /// @if(isLoggedIn) {{
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
         /// }}
@@ -295,12 +295,12 @@ namespace Microsoft.AspNet.Razor
 
         /// <summary>
         /// Expected a "{0}" but found a "{1}".  Block statements must be enclosed in "{{" and "}}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
-        ///
+        /// 
         /// @if(isLoggedIn)
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
-        ///
+        /// 
         /// Instead, wrap the contents of the block in "{{}}":
-        ///
+        /// 
         /// @if(isLoggedIn) {{
         ///     &lt;p&gt;Hello, @user&lt;/p&gt;
         /// }}
@@ -391,38 +391,6 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Unknown option: "{0}".
-        /// </summary>
-        internal static string ParseError_UnknownOption
-        {
-            get { return GetString("ParseError_UnknownOption"); }
-        }
-
-        /// <summary>
-        /// Unknown option: "{0}".
-        /// </summary>
-        internal static string FormatParseError_UnknownOption(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_UnknownOption"), p0);
-        }
-
-        /// <summary>
-        /// The "{0}" block was not terminated.  All "{0}" statements must be terminated with a matching "{1}".
-        /// </summary>
-        internal static string ParseError_BlockNotTerminated
-        {
-            get { return GetString("ParseError_BlockNotTerminated"); }
-        }
-
-        /// <summary>
-        /// The "{0}" block was not terminated.  All "{0}" statements must be terminated with a matching "{1}".
-        /// </summary>
-        internal static string FormatParseError_BlockNotTerminated(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_BlockNotTerminated"), p0, p1);
-        }
-
-        /// <summary>
         /// @section Header { ... }
         /// </summary>
         internal static string SectionExample_CS
@@ -452,22 +420,6 @@ namespace Microsoft.AspNet.Razor
         internal static string FormatParseError_TextTagCannotContainAttributes()
         {
             return GetString("ParseError_TextTagCannotContainAttributes");
-        }
-
-        /// <summary>
-        /// The "Imports" keyword must be followed by a namespace or a type alias on the same line.
-        /// </summary>
-        internal static string ParseError_NamespaceOrTypeAliasExpected
-        {
-            get { return GetString("ParseError_NamespaceOrTypeAliasExpected"); }
-        }
-
-        /// <summary>
-        /// The "Imports" keyword must be followed by a namespace or a type alias on the same line.
-        /// </summary>
-        internal static string FormatParseError_NamespaceOrTypeAliasExpected()
-        {
-            return GetString("ParseError_NamespaceOrTypeAliasExpected");
         }
 
         /// <summary>
@@ -999,22 +951,6 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Unexpected "{0}"
-        /// </summary>
-        internal static string ParseError_Unexpected
-        {
-            get { return GetString("ParseError_Unexpected"); }
-        }
-
-        /// <summary>
-        /// Unexpected "{0}"
-        /// </summary>
-        internal static string FormatParseError_Unexpected(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Unexpected"), p0);
-        }
-
-        /// <summary>
         /// Unexpected "{" after "@" character. Once inside the body of a code block (@if {}, @{}, etc.) you do not need to use "@{" to switch to code.
         /// </summary>
         internal static string ParseError_Unexpected_Nested_CodeBlock
@@ -1140,38 +1076,6 @@ namespace Microsoft.AspNet.Razor
         internal static string FormatLanguage_Does_Not_Support_RazorComment()
         {
             return GetString("Language_Does_Not_Support_RazorComment");
-        }
-
-        /// <summary>
-        /// Missing value for session state directive.
-        /// </summary>
-        internal static string ParserEror_SessionDirectiveMissingValue
-        {
-            get { return GetString("ParserEror_SessionDirectiveMissingValue"); }
-        }
-
-        /// <summary>
-        /// Missing value for session state directive.
-        /// </summary>
-        internal static string FormatParserEror_SessionDirectiveMissingValue()
-        {
-            return GetString("ParserEror_SessionDirectiveMissingValue");
-        }
-
-        /// <summary>
-        /// Cannot call CreateCodeWriter, a CodeWriter was not provided to the Create method
-        /// </summary>
-        internal static string CreateCodeWriter_NoCodeWriter
-        {
-            get { return GetString("CreateCodeWriter_NoCodeWriter"); }
-        }
-
-        /// <summary>
-        /// Cannot call CreateCodeWriter, a CodeWriter was not provided to the Create method
-        /// </summary>
-        internal static string FormatCreateCodeWriter_NoCodeWriter()
-        {
-            return GetString("CreateCodeWriter_NoCodeWriter");
         }
 
         /// <summary>
@@ -1431,7 +1335,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Tag Helper attributes must have a name.
+        /// Tag Helper '{0}'s attributes must have names.
         /// </summary>
         internal static string TagHelpers_AttributesMustHaveAName
         {
@@ -1439,15 +1343,15 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Tag Helper attributes must have a name.
+        /// Tag Helper '{0}'s attributes must have names.
         /// </summary>
-        internal static string FormatTagHelpers_AttributesMustHaveAName()
+        internal static string FormatTagHelpers_AttributesMustHaveAName(object p0)
         {
-            return GetString("TagHelpers_AttributesMustHaveAName");
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_AttributesMustHaveAName"), p0);
         }
 
         /// <summary>
-        /// Tag Helpers cannot have C# in an HTML tag element's attribute declaration area.
+        /// The tag helper '{0}' must not have C# in the element's attribute declaration area.
         /// </summary>
         internal static string TagHelpers_CannotHaveCSharpInTagDeclaration
         {
@@ -1455,11 +1359,11 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Tag Helpers cannot have C# in an HTML tag element's attribute declaration area.
+        /// The tag helper '{0}' must not have C# in the element's attribute declaration area.
         /// </summary>
-        internal static string FormatTagHelpers_CannotHaveCSharpInTagDeclaration()
+        internal static string FormatTagHelpers_CannotHaveCSharpInTagDeclaration(object p0)
         {
-            return GetString("TagHelpers_CannotHaveCSharpInTagDeclaration");
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_CannotHaveCSharpInTagDeclaration"), p0);
         }
 
         /// <summary>
@@ -1476,22 +1380,6 @@ namespace Microsoft.AspNet.Razor
         internal static string FormatTagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock()
         {
             return GetString("TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock");
-        }
-
-        /// <summary>
-        /// TagHelper attributes that do not expect strings must not have @ symbols within them. Found attribute '{0}' with an invalid value.
-        /// </summary>
-        internal static string TagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols
-        {
-            get { return GetString("TagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols"); }
-        }
-
-        /// <summary>
-        /// TagHelper attributes that do not expect strings must not have @ symbols within them. Found attribute '{0}' with an invalid value.
-        /// </summary>
-        internal static string FormatTagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols"), p0);
         }
 
         /// <summary>
@@ -1540,6 +1428,106 @@ namespace Microsoft.AspNet.Razor
         internal static string FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_FoundMalformedTagHelper"), p0);
+        }
+
+        /// <summary>
+        /// Missing close angle for tag helper '{0}'.
+        /// </summary>
+        internal static string TagHelpersParseTreeRewriter_MissingCloseAngle
+        {
+            get { return GetString("TagHelpersParseTreeRewriter_MissingCloseAngle"); }
+        }
+
+        /// <summary>
+        /// Missing close angle for tag helper '{0}'.
+        /// </summary>
+        internal static string FormatTagHelpersParseTreeRewriter_MissingCloseAngle(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_MissingCloseAngle"), p0);
+        }
+
+        /// <summary>
+        /// TagHelper attributes must be welformed.
+        /// </summary>
+        internal static string TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed
+        {
+            get { return GetString("TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed"); }
+        }
+
+        /// <summary>
+        /// TagHelper attributes must be welformed.
+        /// </summary>
+        internal static string FormatTagHelperBlockRewriter_TagHelperAttributesMustBeWelformed()
+        {
+            return GetString("TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed");
+        }
+
+        /// <summary>
+        /// Non-string tag helper attribute values must not be empty. Add an expression to this attribute value.
+        /// </summary>
+        internal static string TagHelpers_AttributeExpressionRequired
+        {
+            get { return GetString("TagHelpers_AttributeExpressionRequired"); }
+        }
+
+        /// <summary>
+        /// Non-string tag helper attribute values must not be empty. Add an expression to this attribute value.
+        /// </summary>
+        internal static string FormatTagHelpers_AttributeExpressionRequired()
+        {
+            return GetString("TagHelpers_AttributeExpressionRequired");
+        }
+
+        /// <summary>
+        /// Code blocks (e.g. @{{var variable = 23;}}) must not appear in non-string tag helper attribute values.
+        ///  Already in an expression (code) context. If necessary an explicit expression (e.g. @(@readonly)) may be used.
+        /// </summary>
+        internal static string TagHelpers_CodeBlocks_NotSupported_InAttributes
+        {
+            get { return GetString("TagHelpers_CodeBlocks_NotSupported_InAttributes"); }
+        }
+
+        /// <summary>
+        /// Code blocks (e.g. @{{var variable = 23;}}) must not appear in non-string tag helper attribute values.
+        ///  Already in an expression (code) context. If necessary an explicit expression (e.g. @(@readonly)) may be used.
+        /// </summary>
+        internal static string FormatTagHelpers_CodeBlocks_NotSupported_InAttributes()
+        {
+            return GetString("TagHelpers_CodeBlocks_NotSupported_InAttributes");
+        }
+
+        /// <summary>
+        /// @'{0}' directives must not appear in non-string tag helper attribute values.
+        /// </summary>
+        internal static string TagHelpers_Directives_NotSupported_InAttributes
+        {
+            get { return GetString("TagHelpers_Directives_NotSupported_InAttributes"); }
+        }
+
+        /// <summary>
+        /// @'{0}' directives must not appear in non-string tag helper attribute values.
+        /// </summary>
+        internal static string FormatTagHelpers_Directives_NotSupported_InAttributes(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_Directives_NotSupported_InAttributes"), p0);
+        }
+
+        /// <summary>
+        /// Inline markup blocks (e.g. @&lt;p&gt;content&lt;/p&gt;) must not appear in non-string tag helper attribute values.
+        ///  Expected a '{0}' attribute value, not a string.
+        /// </summary>
+        internal static string TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes
+        {
+            get { return GetString("TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes"); }
+        }
+
+        /// <summary>
+        /// Inline markup blocks (e.g. @&lt;p&gt;content&lt;/p&gt;) must not appear in non-string tag helper attribute values.
+        ///  Expected a '{0}' attribute value, not a string.
+        /// </summary>
+        internal static string FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

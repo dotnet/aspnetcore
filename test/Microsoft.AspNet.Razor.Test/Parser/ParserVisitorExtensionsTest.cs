@@ -19,9 +19,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void VisitThrowsOnNullVisitor()
         {
             ParserVisitor target = null;
+            var errorSink = new ParserErrorSink();
             var results = new ParserResults(new BlockBuilder() { Type = BlockType.Comment }.Build(),
                                             Enumerable.Empty<TagHelperDescriptor>(),
-                                            parserErrors: new List<RazorError>());
+                                            errorSink);
 
             Assert.Throws<ArgumentNullException>("self", () => target.Visit(results));
         }
@@ -39,9 +40,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Arrange
             Mock<ParserVisitor> targetMock = new Mock<ParserVisitor>();
             var root = new BlockBuilder() { Type = BlockType.Comment }.Build();
+            var errorSink = new ParserErrorSink();
             var results = new ParserResults(root,
                                             Enumerable.Empty<TagHelperDescriptor>(),
-                                            parserErrors: new List<RazorError>());
+                                            errorSink);
 
             // Act
             targetMock.Object.Visit(results);
@@ -56,11 +58,17 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Arrange
             Mock<ParserVisitor> targetMock = new Mock<ParserVisitor>();
             var root = new BlockBuilder() { Type = BlockType.Comment }.Build();
-            List<RazorError> errors = new List<RazorError>() {
+            var errorSink = new ParserErrorSink();
+            List<RazorError> errors = new List<RazorError>
+            {
                 new RazorError("Foo", 1, 0, 1),
-                new RazorError("Bar", 2, 0, 2)
+                new RazorError("Bar", 2, 0, 2),
             };
-            var results = new ParserResults(root, Enumerable.Empty<TagHelperDescriptor>(), errors);
+            foreach (var error in errors)
+            {
+                errorSink.OnError(error);
+            }
+            var results = new ParserResults(root, Enumerable.Empty<TagHelperDescriptor>(), errorSink);
 
             // Act
             targetMock.Object.Visit(results);
@@ -76,11 +84,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Arrange
             Mock<ParserVisitor> targetMock = new Mock<ParserVisitor>();
             var root = new BlockBuilder() { Type = BlockType.Comment }.Build();
-            List<RazorError> errors = new List<RazorError>() {
-                new RazorError("Foo", 1, 0, 1),
-                new RazorError("Bar", 2, 0, 2)
-            };
-            var results = new ParserResults(root, Enumerable.Empty<TagHelperDescriptor>(), errors);
+            var errorSink = new ParserErrorSink();
+            errorSink.OnError(new RazorError("Foo", 1, 0, 1));
+            errorSink.OnError(new RazorError("Bar", 2, 0, 2));
+            var results = new ParserResults(root, Enumerable.Empty<TagHelperDescriptor>(), errorSink);
 
             // Act
             targetMock.Object.Visit(results);

@@ -113,10 +113,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             {
                 Visit((ChunkBlock)chunk);
             }
-            else if (chunk is SessionStateChunk)
-            {
-                Visit((SessionStateChunk)chunk);
-            }
         }
 
         protected abstract void Visit(LiteralChunk chunk);
@@ -138,6 +134,5 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         protected abstract void Visit(TemplateChunk chunk);
         protected abstract void Visit(SetLayoutChunk chunk);
         protected abstract void Visit(ExpressionBlockChunk chunk);
-        protected abstract void Visit(SessionStateChunk chunk);
     }
 }

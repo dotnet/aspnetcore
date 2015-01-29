@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.Internal.Web.Utils;
 
@@ -27,6 +28,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             : base(source.Type, source.Children, source.CodeGenerator)
         {
             TagName = source.TagName;
+            Descriptors = source.Descriptors;
             Attributes = new Dictionary<string, SyntaxTreeNode>(source.Attributes);
             _start = source.Start;
 
@@ -37,6 +39,11 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                 attributeChildren.Parent = this;
             }
         }
+
+        /// <summary>
+        /// <see cref="TagHelperDescriptor"/>s for the HTML element.
+        /// </summary>
+        public IEnumerable<TagHelperDescriptor> Descriptors { get; }
 
         /// <summary>
         /// The HTML attributes.

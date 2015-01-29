@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -206,21 +206,12 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="ParseError_Unterminated_String_Literal" xml:space="preserve">
     <value>Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.</value>
   </data>
-  <data name="ParseError_UnknownOption" xml:space="preserve">
-    <value>Unknown option: "{0}".</value>
-  </data>
-  <data name="ParseError_BlockNotTerminated" xml:space="preserve">
-    <value>The "{0}" block was not terminated.  All "{0}" statements must be terminated with a matching "{1}".</value>
-  </data>
   <data name="SectionExample_CS" xml:space="preserve">
     <value>@section Header { ... }</value>
     <comment>In CSHTML, the @section keyword is case-sensitive and lowercase (as with all C# keywords)</comment>
   </data>
   <data name="ParseError_TextTagCannotContainAttributes" xml:space="preserve">
     <value>"&lt;text&gt;" and "&lt;/text&gt;" tags cannot contain attributes.</value>
-  </data>
-  <data name="ParseError_NamespaceOrTypeAliasExpected" xml:space="preserve">
-    <value>The "Imports" keyword must be followed by a namespace or a type alias on the same line.</value>
   </data>
   <data name="ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS" xml:space="preserve">
     <value>A space or line break was encountered after the "@" character.  Only valid identifiers, keywords, comments, "(" and "{" are valid at the start of a code block and they must occur immediately following "@" with no space in between.</value>
@@ -321,9 +312,6 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="TokenizerView_CannotPutBack" xml:space="preserve">
     <value>In order to put a symbol back, it must have been the symbol which ended at the current position. The specified symbol ends at {0}, but the current position is {1}</value>
   </data>
-  <data name="ParseError_Unexpected" xml:space="preserve">
-    <value>Unexpected "{0}"</value>
-  </data>
   <data name="ParseError_Unexpected_Nested_CodeBlock" xml:space="preserve">
     <value>Unexpected "{" after "@" character. Once inside the body of a code block (@if {}, @{}, etc.) you do not need to use "@{" to switch to code.</value>
   </data>
@@ -347,13 +335,6 @@ Instead, wrap the contents of the block in "{{}}":
   </data>
   <data name="Language_Does_Not_Support_RazorComment" xml:space="preserve">
     <value>Cannot use built-in RazorComment handler, language characteristics does not define the CommentStart, CommentStar and CommentBody known symbol types or parser does not override TokenizerBackedParser.OutputSpanBeforeRazorComment</value>
-  </data>
-  <data name="ParserEror_SessionDirectiveMissingValue" xml:space="preserve">
-    <value>Missing value for session state directive.</value>
-  </data>
-  <data name="CreateCodeWriter_NoCodeWriter" xml:space="preserve">
-    <value>Cannot call CreateCodeWriter, a CodeWriter was not provided to the Create method</value>
-    <comment>This error should not be seen by users, it should only appear to internal developers, but I'm putting it in resources just in case</comment>
   </data>
   <data name="Trace_BackgroundThreadShutdown" xml:space="preserve">
     <value>[BG][{0}] Shutdown</value>
@@ -404,16 +385,13 @@ Instead, wrap the contents of the block in "{{}}":
     <value>Section blocks ("{0}") cannot be nested.  Only one level of section blocks are allowed.</value>
   </data>
   <data name="TagHelpers_AttributesMustHaveAName" xml:space="preserve">
-    <value>Tag Helper attributes must have a name.</value>
+    <value>Tag Helper '{0}'s attributes must have names.</value>
   </data>
   <data name="TagHelpers_CannotHaveCSharpInTagDeclaration" xml:space="preserve">
-    <value>Tag Helpers cannot have C# in an HTML tag element's attribute declaration area.</value>
+    <value>The tag helper '{0}' must not have C# in the element's attribute declaration area.</value>
   </data>
   <data name="TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock" xml:space="preserve">
     <value>A TagHelperCodeGenerator must only be used with TagHelperBlocks.</value>
-  </data>
-  <data name="TagHelpers_AttributesThatAreNotStringsMustNotContainAtSymbols" xml:space="preserve">
-    <value>TagHelper attributes that do not expect strings must not have @ symbols within them. Found attribute '{0}' with an invalid value.</value>
   </data>
   <data name="ParseError_DirectiveMustHaveValue" xml:space="preserve">
     <value>Directive '{0}' must have a value.</value>
@@ -423,5 +401,25 @@ Instead, wrap the contents of the block in "{{}}":
   </data>
   <data name="TagHelpersParseTreeRewriter_FoundMalformedTagHelper" xml:space="preserve">
     <value>Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self closing.</value>
+  </data>
+  <data name="TagHelpersParseTreeRewriter_MissingCloseAngle" xml:space="preserve">
+    <value>Missing close angle for tag helper '{0}'.</value>
+  </data>
+  <data name="TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed" xml:space="preserve">
+    <value>TagHelper attributes must be welformed.</value>
+  </data>
+  <data name="TagHelpers_AttributeExpressionRequired" xml:space="preserve">
+    <value>Non-string tag helper attribute values must not be empty. Add an expression to this attribute value.</value>
+  </data>
+  <data name="TagHelpers_CodeBlocks_NotSupported_InAttributes" xml:space="preserve">
+    <value>Code blocks (e.g. @{{var variable = 23;}}) must not appear in non-string tag helper attribute values.
+ Already in an expression (code) context. If necessary an explicit expression (e.g. @(@readonly)) may be used.</value>
+  </data>
+  <data name="TagHelpers_Directives_NotSupported_InAttributes" xml:space="preserve">
+    <value>@'{0}' directives must not appear in non-string tag helper attribute values.</value>
+  </data>
+  <data name="TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes" xml:space="preserve">
+    <value>Inline markup blocks (e.g. @&lt;p&gt;content&lt;/p&gt;) must not appear in non-string tag helper attribute values.
+ Expected a '{0}' attribute value, not a string.</value>
   </data>
 </root>

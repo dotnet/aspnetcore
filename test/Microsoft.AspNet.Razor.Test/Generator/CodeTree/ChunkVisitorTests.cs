@@ -4,6 +4,7 @@
 #if !ASPNETCORE50
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Parser;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -34,7 +35,8 @@ namespace Microsoft.AspNet.Razor
                 "myclass",
                 "myns",
                 string.Empty,
-                shouldGenerateLinePragmas: false);
+                shouldGenerateLinePragmas: false,
+                errorSink: new ParserErrorSink());
             var writer = Mock.Of<CodeWriter>();
             return new Mock<ChunkVisitor<CodeWriter>>(writer, codeBuilderContext);
         }

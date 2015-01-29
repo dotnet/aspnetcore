@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Razor
             generator.DesignTimeMode = Host.DesignTimeMode;
             generator.Visit(results);
 
-            var codeBuilderContext = new CodeBuilderContext(generator.Context);
+            var codeBuilderContext = new CodeBuilderContext(generator.Context, results.ErrorSink);
             codeBuilderContext.Checksum = checksum;
             var builder = CreateCodeBuilder(codeBuilderContext);
             var builderResult = builder.Build();

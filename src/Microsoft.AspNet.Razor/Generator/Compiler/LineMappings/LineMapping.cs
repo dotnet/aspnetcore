@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
+
 namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
     public class LineMapping
@@ -39,6 +41,11 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         public static bool operator !=(LineMapping left, LineMapping right)
         {
             return !left.Equals(right);
+        }
+
+        public override string ToString()
+        {
+            return string.Format(CultureInfo.CurrentUICulture, "{0} -> {1}", DocumentLocation, GeneratedLocation);
         }
     }
 }

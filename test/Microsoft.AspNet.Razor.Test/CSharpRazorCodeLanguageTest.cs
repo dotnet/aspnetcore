@@ -54,7 +54,8 @@ namespace Microsoft.AspNet.Razor.Test
                 "myclass",
                 "myns",
                 string.Empty,
-                shouldGenerateLinePragmas: false);
+                shouldGenerateLinePragmas: false,
+                errorSink: new ParserErrorSink());
 
             // Act
             var generator = language.CreateCodeBuilder(codeBuilderContext);

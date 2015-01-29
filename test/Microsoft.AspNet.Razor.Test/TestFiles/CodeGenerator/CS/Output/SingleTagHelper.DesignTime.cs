@@ -31,7 +31,11 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __PTagHelper = CreateTagHelper<PTagHelper>();
-            __PTagHelper.Age = 1337;
+#line 3 "SingleTagHelper.cshtml"
+         __PTagHelper.Age = 1337;
+
+#line default
+#line hidden
         }
         #pragma warning restore 1998
     }

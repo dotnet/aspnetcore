@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             var rewritten = rewritingContext.SyntaxTree;
 
             // Assert
-            Assert.Equal(0, results.ParserErrors.Count);
+            Assert.Equal(0, results.ParserErrors.Count());
             EvaluateParseTree(rewritten,
                 new MarkupBlock(
                     new MarkupTagBlock(
@@ -277,7 +277,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             var rewritten = rewritingContext.SyntaxTree;
 
             // Assert
-            Assert.Equal(0, results.ParserErrors.Count);
+            Assert.Equal(0, results.ParserErrors.Count());
             Assert.Equal(rewritten.Children.Count(), results.Document.Children.Count());
         }
 

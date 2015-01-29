@@ -17,9 +17,15 @@ namespace Microsoft.AspNet.Razor.Generator
             RunnerRunAsyncMethodName = "RunAsync";
             ScopeManagerBeginMethodName = "Begin";
             ScopeManagerEndMethodName = "End";
+            OutputContentSetPropertyName = "ContentSet";
             OutputGenerateStartTagMethodName = "GenerateStartTag";
+            OutputGeneratePreContentMethodName = "GeneratePreContent";
             OutputGenerateContentMethodName = "GenerateContent";
+            OutputGeneratePostContentMethodName = "GeneratePostContent";
             OutputGenerateEndTagMethodName = "GenerateEndTag";
+            ExecutionContextChildContentRetrievedPropertyName = "ChildContentRetrieved";
+            ExecutionContextExecuteChildContentAsyncMethodName = "ExecuteChildContentAsync";
+            ExecutionContextGetChildContentAsyncMethodName = "GetChildContentAsync";
             ExecutionContextAddMethodName = "Add";
             ExecutionContextAddTagHelperAttributeMethodName = "AddTagHelperAttribute";
             ExecutionContextAddHtmlAttributeMethodName = "AddHtmlAttribute";
@@ -52,9 +58,19 @@ namespace Microsoft.AspNet.Razor.Generator
         public string ScopeManagerEndMethodName { get; set; }
 
         /// <summary>
+        /// The name of the property used to determine if a tag helper output's content was set.
+        /// </summary>
+        public string OutputContentSetPropertyName { get; set; }
+
+        /// <summary>
         /// The name of the method used to generate a tag helper output's start tag.
         /// </summary>
         public string OutputGenerateStartTagMethodName { get; set; }
+
+        /// <summary>
+        /// The name of the method used to generate a tag helper output's pre content.
+        /// </summary>
+        public string OutputGeneratePreContentMethodName { get; set; }
 
         /// <summary>
         /// The name of the method used to generate a tag helper output's content.
@@ -62,9 +78,30 @@ namespace Microsoft.AspNet.Razor.Generator
         public string OutputGenerateContentMethodName { get; set; }
 
         /// <summary>
+        /// The name of the method used to generate a tag helper output's post-content.
+        /// </summary>
+        public string OutputGeneratePostContentMethodName { get; set; }
+
+        /// <summary>
         /// The name of the method used to generate a tag helper output's end tag.
         /// </summary>
         public string OutputGenerateEndTagMethodName { get; set; }
+
+        /// <summary>
+        /// The name of the <see cref="ExecutionContextTypeName"/> method used to get a 
+        /// <see cref="System.Threading.Tasks.Task"/> that executes tag helper child content.
+        /// </summary>
+        public string ExecutionContextChildContentRetrievedPropertyName { get; set; }
+
+        /// <summary>
+        /// </summary>
+        public string ExecutionContextExecuteChildContentAsyncMethodName { get; set; }
+
+        /// <summary>
+        /// The name of the <see cref="ExecutionContextTypeName"/> method used to execute and retrieve tag helper 
+        /// child content.
+        /// </summary>
+        public string ExecutionContextGetChildContentAsyncMethodName { get; set; }
 
         /// <summary>
         /// The name of the <see cref="ExecutionContextTypeName"/> method used to add tag helper attributes.

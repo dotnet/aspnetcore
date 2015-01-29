@@ -114,14 +114,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             public TestTagHelperTypeResolver(IEnumerable<Type> assemblyTypes)
             {
                 _assemblyTypeInfos = assemblyTypes.Select(type => type.GetTypeInfo());
-                OnGetLibraryDefinedTypes = (_) => { };
+                OnGetExportedTypes = (_) => { };
             }
 
-            public Action<AssemblyName> OnGetLibraryDefinedTypes { get; set; }
+            public Action<AssemblyName> OnGetExportedTypes { get; set; }
 
-            internal override IEnumerable<TypeInfo> GetLibraryDefinedTypes(AssemblyName assemblyName)
+            protected override IEnumerable<TypeInfo> GetExportedTypes(AssemblyName assemblyName)
             {
-                OnGetLibraryDefinedTypes(assemblyName);
+                OnGetExportedTypes(assemblyName);
 
                 return _assemblyTypeInfos;
             }

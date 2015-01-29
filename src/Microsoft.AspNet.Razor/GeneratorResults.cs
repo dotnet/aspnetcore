@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Razor
                                 [NotNull] CodeTree codeTree)
             : this(parserResults.Document,
                    parserResults.TagHelperDescriptors,
-                   parserResults.ParserErrors,
+                   parserResults.ErrorSink,
                    codeBuilderResult,
                    codeTree)
         {
@@ -34,35 +35,21 @@ namespace Microsoft.AspNet.Razor
         /// Instantiates a new <see cref="GeneratorResults"/> instance.
         /// </summary>
         /// <param name="document">The <see cref="Block"/> for the syntax tree.</param>
-        /// <param name="tagHelperDescriptors"><see cref="TagHelperDescriptor"/>s for the document.</param>
-        /// <param name="parserErrors"><see cref="RazorError"/>s encountered when parsing the document.</param>
+        /// <param name="tagHelperDescriptors">
+        /// The <see cref="TagHelperDescriptor"/>s that apply to the current Razor document.
+        /// </param>
+        /// <param name="errorSink">
+        /// The <see cref="ParserErrorSink"/> used to collect <see cref="RazorError"/>s encountered when parsing the
+        /// current Razor document.
+        /// </param>
         /// <param name="codeBuilderResult">The results of generating code for the document.</param>
         /// <param name="codeTree">A <see cref="CodeTree"/> for the document.</param>
         public GeneratorResults([NotNull] Block document,
                                 [NotNull] IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
-                                [NotNull] IList<RazorError> parserErrors,
+                                [NotNull] ParserErrorSink errorSink,
                                 [NotNull] CodeBuilderResult codeBuilderResult,
                                 [NotNull] CodeTree codeTree)
-            : this(parserErrors.Count == 0, document, tagHelperDescriptors, parserErrors, codeBuilderResult, codeTree)
-        {
-        }
-
-        /// <summary>
-        /// Instantiates a new <see cref="GeneratorResults"/> instance.
-        /// </summary>
-        /// <param name="success"><c>true</c> if parsing was successful, <c>false</c> otherwise.</param>
-        /// <param name="document">The <see cref="Block"/> for the syntax tree.</param>
-        /// <param name="tagHelperDescriptors"><see cref="TagHelperDescriptor"/>s for the document.</param>
-        /// <param name="parserErrors"><see cref="RazorError"/>s encountered when parsing the document.</param>
-        /// <param name="codeBuilderResult">The results of generating code for the document.</param>
-        /// <param name="codeTree">A <see cref="CodeTree"/> for the document.</param>
-        protected GeneratorResults(bool success,
-                                   [NotNull] Block document,
-                                   [NotNull] IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
-                                   [NotNull] IList<RazorError> parserErrors,
-                                   [NotNull] CodeBuilderResult codeBuilderResult,
-                                   [NotNull] CodeTree codeTree)
-            : base(success, document, tagHelperDescriptors, parserErrors)
+            : base(document, tagHelperDescriptors, errorSink)
         {
             GeneratedCode = codeBuilderResult.Code;
             DesignTimeLineMappings = codeBuilderResult.DesignTimeLineMappings;

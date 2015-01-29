@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
@@ -78,6 +80,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 _tagHelperDescriptors = tagHelperDescriptors;
             }
 
+            protected internal override CodeBuilder CreateCodeBuilder(CodeBuilderContext context)
+            {
+                return Host.DecorateCodeBuilder(new TestCSharpCodeBuilder(context), context);
+            }
+
             protected internal override RazorParser CreateParser(string fileName)
             {
                 var parser = base.CreateParser(fileName);
@@ -85,6 +92,38 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 return new RazorParser(parser.CodeParser,
                                        parser.MarkupParser,
                                        new CustomTagHelperDescriptorResolver(_tagHelperDescriptors));
+            }
+        }
+
+        protected class TestCSharpCodeBuilder : CSharpCodeBuilder
+        {
+            public TestCSharpCodeBuilder(CodeBuilderContext context)
+                : base(context)
+            {
+
+            }
+
+            protected override CSharpCodeVisitor CreateCSharpCodeVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
+            {
+                var visitor = base.CreateCSharpCodeVisitor(writer, context);
+                visitor.TagHelperRenderer = new NoUniqueIdsTagHelperCodeRenderer(visitor, writer, context);
+                return visitor;
+            }
+
+            private class NoUniqueIdsTagHelperCodeRenderer : CSharpTagHelperCodeRenderer
+            {
+                public NoUniqueIdsTagHelperCodeRenderer(IChunkVisitor bodyVisitor,
+                                                        CSharpCodeWriter writer,
+                                                        CodeBuilderContext context)
+                    : base(bodyVisitor, writer, context)
+                {
+
+                }
+
+                protected override string GenerateUniqueId()
+                {
+                    return "test";
+                }
             }
         }
     }

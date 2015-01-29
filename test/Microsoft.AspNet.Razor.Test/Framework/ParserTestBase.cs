@@ -434,28 +434,30 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             collector.AddError("{0} - FAILED :: Actual: << Null >>", expected);
         }
 
-        public static void EvaluateRazorErrors(IList<RazorError> actualErrors, IList<RazorError> expectedErrors)
+        public static void EvaluateRazorErrors(IEnumerable<RazorError> actualErrors, IList<RazorError> expectedErrors)
         {
+            var realCount = actualErrors.Count();
+
             // Evaluate the errors
             if (expectedErrors == null || expectedErrors.Count == 0)
             {
-                Assert.True(actualErrors.Count == 0,
+                Assert.True(realCount == 0,
                             String.Format("Expected that no errors would be raised, but the following errors were:\r\n{0}", FormatErrors(actualErrors)));
             }
             else
             {
-                Assert.True(expectedErrors.Count == actualErrors.Count,
+                Assert.True(expectedErrors.Count == realCount,
                             String.Format("Expected that {0} errors would be raised, but {1} errors were.\r\nExpected Errors: \r\n{2}\r\nActual Errors: \r\n{3}",
                                           expectedErrors.Count,
-                                          actualErrors.Count,
+                                          realCount,
                                           FormatErrors(expectedErrors),
                                           FormatErrors(actualErrors)));
-                Assert.Equal(expectedErrors.ToArray(), actualErrors.ToArray());
+                Assert.Equal(expectedErrors, actualErrors);
             }
             WriteTraceLine("Expected Errors were raised:\r\n{0}", FormatErrors(expectedErrors));
         }
 
-        public static string FormatErrors(IList<RazorError> errors)
+        public static string FormatErrors(IEnumerable<RazorError> errors)
         {
             if (errors == null)
             {

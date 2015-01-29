@@ -25,10 +25,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             get
             {
-                return new TagHelperDescriptor("Valid_Plain",
+                return new TagHelperDescriptor("valid_plain",
                                                Valid_PlainTagHelperType.FullName,
-                                               AssemblyName,
-                                               ContentBehavior.None);
+                                               AssemblyName);
             }
         }
 
@@ -36,10 +35,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             get
             {
-                return new TagHelperDescriptor("Valid_Inherited",
+                return new TagHelperDescriptor("valid_inherited",
                                                Valid_InheritedTagHelperType.FullName,
-                                               AssemblyName,
-                                               ContentBehavior.None);
+                                               AssemblyName);
             }
         }
 
@@ -75,8 +73,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 var stringTagHelperDescriptor =
                     new TagHelperDescriptor("string",
                                             "System.String",
-                                            assemblyB,
-                                            ContentBehavior.None);
+                                            assemblyB);
 
                 return new TheoryData<Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
                                       IEnumerable<TagHelperDirectiveDescriptor>, // directiveDescriptors
@@ -230,8 +227,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 var stringTagHelperDescriptor =
                     new TagHelperDescriptor("string",
                                             "System.String",
-                                            assemblyB,
-                                            ContentBehavior.None);
+                                            assemblyB);
 
                 return new TheoryData<Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
                                       IEnumerable<TagHelperDirectiveDescriptor>> // directiveDescriptors
@@ -358,7 +354,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Arrange
             var tagHelperTypeResolver = new TestTagHelperTypeResolver(TestableTagHelpers)
             {
-                OnGetLibraryDefinedTypes = (assemblyName) =>
+                OnGetExportedTypes = (assemblyName) =>
                 {
                     Assert.Equal("MyAssembly", assemblyName.Name);
                 }
@@ -523,7 +519,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 _lookupValues = lookupValues;
             }
 
-            internal override IEnumerable<TypeInfo> GetLibraryDefinedTypes(AssemblyName assemblyName)
+            protected override IEnumerable<TypeInfo> GetExportedTypes(AssemblyName assemblyName)
             {
                 IEnumerable<Type> types;
 

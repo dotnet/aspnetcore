@@ -29,15 +29,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <c>false</c> otherwise.</returns>
         /// <remarks>
         /// Determines equality based on <see cref="TagHelperDescriptor.TypeName"/>,
-        /// <see cref="TagHelperDescriptor.AssemblyName"/>, <see cref="TagHelperDescriptor.TagName"/> and
-        /// <see cref="TagHelperDescriptor.ContentBehavior"/>.
+        /// <see cref="TagHelperDescriptor.AssemblyName"/> and <see cref="TagHelperDescriptor.TagName"/>.
         /// </remarks>
         public bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
         {
             return string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal) &&
                    string.Equals(descriptorX.TagName, descriptorY.TagName, StringComparison.OrdinalIgnoreCase) &&
-                   string.Equals(descriptorX.AssemblyName, descriptorY.AssemblyName, StringComparison.Ordinal) &&
-                   descriptorX.ContentBehavior == descriptorY.ContentBehavior;
+                   string.Equals(descriptorX.AssemblyName, descriptorY.AssemblyName, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -51,7 +49,6 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                    .Add(descriptor.TagName, StringComparer.OrdinalIgnoreCase)
                                    .Add(descriptor.TypeName, StringComparer.Ordinal)
                                    .Add(descriptor.AssemblyName, StringComparer.Ordinal)
-                                   .Add(descriptor.ContentBehavior)
                                    .CombinedHash;
         }
     }

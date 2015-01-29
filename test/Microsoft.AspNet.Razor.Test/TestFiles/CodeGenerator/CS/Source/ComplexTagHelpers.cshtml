@@ -18,5 +18,18 @@
                 <input type='@if(true) { <text>checkbox</text> } else { <text>anything</text> }' />
             }
         </p>
+        <p age="@DateTimeOffset.Now.Year - 1970">
+            @{ var @object = false;}
+            <input checked="@(@object)" />
+        </p>
+        <p age="-1970 + @DateTimeOffset.Now.Year">
+            <input checked="@(DateTimeOffset.Now.Year > 2014)" />
+        </p>
+        <p age="DateTimeOffset.Now.Year - 1970">
+            <input checked="DateTimeOffset.Now.Year > 2014" />
+        </p>
+        <p age="@("My age is this long.".Length)">
+            <input checked="   @(  DateTimeOffset.Now.Year  ) > 2014   " />
+        </p>
     </div>
 }

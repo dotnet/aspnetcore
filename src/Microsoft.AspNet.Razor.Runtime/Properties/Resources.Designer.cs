@@ -81,17 +81,17 @@ namespace Microsoft.AspNet.Razor.Runtime
         /// <summary>
         /// Parameter {0} must not contain null tag names.
         /// </summary>
-        internal static string TagNameAttribute_AdditionalTagsCannotContainNull
+        internal static string HtmlElementNameAttribute_AdditionalTagsCannotContainNull
         {
-            get { return GetString("TagNameAttribute_AdditionalTagsCannotContainNull"); }
+            get { return GetString("HtmlElementNameAttribute_AdditionalTagsCannotContainNull"); }
         }
 
         /// <summary>
         /// Parameter {0} must not contain null tag names.
         /// </summary>
-        internal static string FormatTagNameAttribute_AdditionalTagsCannotContainNull(object p0)
+        internal static string FormatHtmlElementNameAttribute_AdditionalTagsCannotContainNull(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagNameAttribute_AdditionalTagsCannotContainNull"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("HtmlElementNameAttribute_AdditionalTagsCannotContainNull"), p0);
         }
 
         /// <summary>

@@ -26,40 +26,22 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     new TagHelperDescriptor("p",
                                             "PTagHelper",
                                             "SomeAssembly",
-                                            ContentBehavior.None,
                                             new [] {
                                                 new TagHelperAttributeDescriptor("age", pAgePropertyInfo)
                                             }),
                     new TagHelperDescriptor("input",
                                             "InputTagHelper",
                                             "SomeAssembly",
-                                            ContentBehavior.None,
                                             new TagHelperAttributeDescriptor[] {
                                                 new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                                             }),
                     new TagHelperDescriptor("input",
                                             "InputTagHelper2",
                                             "SomeAssembly",
-                                            ContentBehavior.None,
                                             new TagHelperAttributeDescriptor[] {
                                                 new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                                                 new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
                                             })
-                };
-            }
-        }
-
-        private static IEnumerable<TagHelperDescriptor> ContentBehaviorTagHelperDescriptors
-        {
-            get
-            {
-                return new[]
-                {
-                    new TagHelperDescriptor("modify", "ModifyTagHelper", "SomeAssembly", ContentBehavior.Modify),
-                    new TagHelperDescriptor("none", "NoneTagHelper", "SomeAssembly", ContentBehavior.None),
-                    new TagHelperDescriptor("append", "AppendTagHelper", "SomeAssembly", ContentBehavior.Append),
-                    new TagHelperDescriptor("prepend", "PrependTagHelper", "SomeAssembly", ContentBehavior.Prepend),
-                    new TagHelperDescriptor("replace", "ReplaceTagHelper", "SomeAssembly", ContentBehavior.Replace)
                 };
             }
         }
@@ -110,13 +92,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         false
                     },
                     {
-                        "ContentBehaviorTagHelpers",
-                        "ContentBehaviorTagHelpers",
-                        ContentBehaviorTagHelperDescriptors,
-                        ContentBehaviorTagHelperDescriptors,
-                        false
-                    },
-                    {
                         "ComplexTagHelpers",
                         "ComplexTagHelpers",
                         PAndInputTagHelperDescriptors,
@@ -144,7 +119,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             bool designTimeMode)
         {
             RunTagHelperTest(
-                testName, 
+                testName,
                 baseLineName: baselineName,
                 tagHelperDescriptors: tagHelperDescriptors,
                 onResults: (results) =>
@@ -174,7 +149,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                              generatedAbsoluteIndex: 475,
                                              generatedLineIndex: 15,
                                              characterOffsetIndex: 14,
-                                             contentLength: 11)
+                                             contentLength: 11),
+                            BuildLineMapping(documentAbsoluteIndex: 57,
+                                             documentLineIndex: 2,
+                                             generatedAbsoluteIndex: 958,
+                                             generatedLineIndex: 34,
+                                             characterOffsetIndex: 28,
+                                             contentLength: 4)
                         }
                     },
                     {
@@ -188,21 +169,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                              generatedAbsoluteIndex: 475,
                                              generatedLineIndex: 15,
                                              characterOffsetIndex: 14,
-                                             contentLength: 11)
-                        }
-                    },
-                    {
-                        "ContentBehaviorTagHelpers",
-                        "ContentBehaviorTagHelpers.DesignTime",
-                        ContentBehaviorTagHelperDescriptors,
-                        new List<LineMapping>
-                        {
-                            BuildLineMapping(documentAbsoluteIndex: 14,
-                                             documentLineIndex: 0,
-                                             generatedAbsoluteIndex: 495,
-                                             generatedLineIndex: 15,
-                                             characterOffsetIndex: 14,
-                                             contentLength: 11)
+                                             contentLength: 11),
+                            BuildLineMapping(documentAbsoluteIndex: 189,
+                                             documentLineIndex: 6,
+                                             generatedAbsoluteIndex: 1574,
+                                             generatedLineIndex: 44,
+                                             characterOffsetIndex: 40,
+                                             contentLength: 4)
                         }
                     },
                     {
@@ -213,17 +186,32 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         {
                             BuildLineMapping(14, 0, 479, 15, 14, 11),
                             BuildLineMapping(30, 2, 1, 995, 35, 0, 48),
-                            BuildLineMapping(157, 7, 32, 1177, 45, 6, 12),
-                            BuildLineMapping(205, 9, 1260, 50, 0, 12),
-                            BuildLineMapping(218, 9, 13, 1356, 56, 12, 27),
-                            BuildLineMapping(346, 12, 1754, 68, 0, 48),
-                            BuildLineMapping(440, 15, 46, 2004, 78, 6, 8),
-                            BuildLineMapping(501, 16, 31, 2384, 88, 6, 30),
-                            BuildLineMapping(568, 17, 30, 2733, 97, 0, 10),
-                            BuildLineMapping(601, 17, 63, 2815, 103, 0, 8),
-                            BuildLineMapping(632, 17, 94, 2895, 109, 0, 1),
-                            BuildLineMapping(639, 18, 3149, 118, 0, 15),
-                            BuildLineMapping(680, 21, 3234, 124, 0, 1)
+                            BuildLineMapping(205, 9, 1113, 44, 0, 12),
+                            BuildLineMapping(218, 9, 13, 1209, 50, 12, 27),
+                            BuildLineMapping(346, 12, 1607, 62, 0, 48),
+                            BuildLineMapping(440, 15, 46, 1798, 71, 6, 8),
+                            BuildLineMapping(457, 15, 2121, 79, 63, 4),
+                            BuildLineMapping(501, 16, 31, 2328, 86, 6, 30),
+                            BuildLineMapping(568, 17, 30, 2677, 95, 0, 10),
+                            BuildLineMapping(601, 17, 63, 2759, 101, 0, 8),
+                            BuildLineMapping(632, 17, 94, 2839, 107, 0, 1),
+                            BuildLineMapping(639, 18, 3093, 116, 0, 15),
+                            BuildLineMapping(157, 7, 32, 3242, 123, 6, 12),
+                            BuildLineMapping(719, 21, 3325, 128, 0, 12),
+                            BuildLineMapping(733, 21, 3423, 134, 14, 21),
+                            BuildLineMapping(787, 22, 30, 3680, 142, 28, 7),
+                            BuildLineMapping(685, 20, 17, 3836, 148, 19, 23),
+                            BuildLineMapping(708, 20, 40, 3859, 148, 42, 7),
+                            BuildLineMapping(897, 25, 30, 4101, 155, 28, 30),
+                            BuildLineMapping(831, 24, 16, 4280, 161, 19, 8),
+                            BuildLineMapping(840, 24, 25, 4288, 161, 27, 23),
+                            BuildLineMapping(1026, 28, 4546, 168, 28, 30),
+                            BuildLineMapping(964, 27, 16, 4725, 174, 19, 30),
+                            BuildLineMapping(1156, 31, 4990, 181, 28, 3),
+                            BuildLineMapping(1161, 31, 33, 4993, 181, 31, 27),
+                            BuildLineMapping(1189, 31, 61, 5020, 181, 58, 10),
+                            BuildLineMapping(1094, 30, 18, 5179, 187, 19, 29),
+                            BuildLineMapping(1231, 34, 5279, 192, 0, 1),
                         }
                     }
                 };
@@ -256,7 +244,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     { "SingleTagHelper", PAndInputTagHelperDescriptors },
                     { "BasicTagHelpers", PAndInputTagHelperDescriptors },
                     { "BasicTagHelpers.RemoveTagHelper", PAndInputTagHelperDescriptors },
-                    { "ContentBehaviorTagHelpers", ContentBehaviorTagHelperDescriptors },
                     { "ComplexTagHelpers", PAndInputTagHelperDescriptors },
                 };
             }
@@ -312,7 +299,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             RunTagHelperTest("AddTagHelperDirective",
                              designTimeMode: true,
                              tagHelperDescriptors: new[] {
-                                new TagHelperDescriptor("p", "pTagHelper", "SomeAssembly", ContentBehavior.None)
+                                new TagHelperDescriptor("p", "pTagHelper", "SomeAssembly")
                              });
         }
 
@@ -328,12 +315,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 new TagHelperDescriptor("MyTagHelper",
                                         "MyTagHelper",
                                         "SomeAssembly",
-                                        ContentBehavior.None,
                                         new [] {
                                             new TagHelperAttributeDescriptor("BoundProperty",
                                                                              propertyInfo)
                                         }),
-                new TagHelperDescriptor("NestedTagHelper", "NestedTagHelper", "SomeAssembly", ContentBehavior.Modify)
+                new TagHelperDescriptor("NestedTagHelper", "NestedTagHelper", "SomeAssembly")
             };
 
             // Act & Assert

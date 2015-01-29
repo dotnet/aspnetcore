@@ -66,8 +66,5 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         protected override void Visit(SetLayoutChunk chunk)
         {
         }
-        protected override void Visit(SessionStateChunk chunk)
-        {
-        }
     }
 }

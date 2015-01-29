@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             IEnumerable<TypeInfo> libraryTypes;
             try
             {
-                libraryTypes = GetLibraryDefinedTypes(assemblyName);
+                libraryTypes = GetExportedTypes(assemblyName);
             }
             catch (Exception ex)
             {
@@ -72,8 +72,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return validTagHelpers.Select(type => type.AsType());
         }
 
-        // Internal for testing, don't want to be loading assemblies during a test.
-        internal virtual IEnumerable<TypeInfo> GetLibraryDefinedTypes(AssemblyName assemblyName)
+        /// <summary>
+        /// Returns all exported types from the given <paramref name="assemblyName"/>
+        /// </summary>
+        /// <param name="assemblyName">The <see cref="AssemblyName"/> to get <see cref="TypeInfo"/>s from.</param>
+        /// <returns>
+        /// An <see cref="IEnumerable{TypeInfo}"/> of types exported from the given <paramref name="assemblyName"/>.
+        /// </returns>
+        protected virtual IEnumerable<TypeInfo> GetExportedTypes(AssemblyName assemblyName)
         {
             var assembly = Assembly.Load(assemblyName);
 

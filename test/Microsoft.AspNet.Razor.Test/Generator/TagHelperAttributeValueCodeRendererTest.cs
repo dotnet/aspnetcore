@@ -23,18 +23,16 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             var checkedPropertyInfo = typeof(TestType).GetProperty("Checked");
             var tagHelperDescriptors = new TagHelperDescriptor[]
             {
-                new TagHelperDescriptor("p", "PTagHelper", "SomeAssembly", ContentBehavior.None),
+                new TagHelperDescriptor("p", "PTagHelper", "SomeAssembly"),
                 new TagHelperDescriptor("input",
                                         "InputTagHelper",
                                         "SomeAssembly",
-                                        ContentBehavior.None,
                                         new TagHelperAttributeDescriptor[] {
                                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                                         }),
                 new TagHelperDescriptor("input",
                                         "InputTagHelper2",
                                         "SomeAssembly",
-                                        ContentBehavior.None,
                                         new TagHelperAttributeDescriptor[] {
                                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                                             new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
@@ -65,7 +63,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             }
         }
 
-        private class AttributeCodeGeneratorReplacingCodeBuilder : CSharpCodeBuilder
+        private class AttributeCodeGeneratorReplacingCodeBuilder : TestCSharpCodeBuilder
         {
             public AttributeCodeGeneratorReplacingCodeBuilder(CodeBuilderContext context)
                 : base(context)
@@ -88,11 +86,12 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             public override void RenderAttributeValue([NotNull] TagHelperAttributeDescriptor attributeInfo,
                                                       [NotNull] CSharpCodeWriter writer,
                                                       [NotNull] CodeBuilderContext context,
-                                                      [NotNull] Action<CSharpCodeWriter> renderAttributeValue)
+                                                      [NotNull] Action<CSharpCodeWriter> renderAttributeValue,
+                                                      bool complexValue)
             {
                 writer.Write("**From custom attribute code renderer**: ");
 
-                base.RenderAttributeValue(attributeInfo, writer, context, renderAttributeValue);
+                base.RenderAttributeValue(attributeInfo, writer, context, renderAttributeValue, complexValue);
             }
         }
 

@@ -34,9 +34,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 // Runtime fields aren't useful during design time.
                 if (!Context.Host.DesignTimeMode)
                 {
+                    // Need to disable the warning "X is assigned to but never used." for the value buffer since
+                    // whether it's used depends on how a TagHelper is used.
+                    Writer.WritePragma("warning disable 0414");
                     WritePrivateField(typeof(TextWriter).FullName,
                                       CSharpTagHelperCodeRenderer.StringValueBufferVariableName,
                                       value: null);
+                    Writer.WritePragma("warning restore 0414");
 
                     WritePrivateField(_tagHelperContext.ExecutionContextTypeName,
                                       CSharpTagHelperCodeRenderer.ExecutionContextVariableName,

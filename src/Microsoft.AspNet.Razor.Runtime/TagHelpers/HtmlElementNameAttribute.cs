@@ -11,29 +11,29 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// Used to override a <see cref="ITagHelper"/>'s default tag name target.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public sealed class TagNameAttribute : Attribute
+    public sealed class HtmlElementNameAttribute : Attribute
     {
         /// <summary>
-        /// Instantiates a new instance of the <see cref="TagNameAttribute"/> class.
+        /// Instantiates a new instance of the <see cref="HtmlElementNameAttribute"/> class.
         /// </summary>
         /// <param name="tag">The HTML tag name for the <see cref="TagHelper"/> to target.</param>
-        public TagNameAttribute([NotNull] string tag)
+        public HtmlElementNameAttribute([NotNull] string tag)
         {
             Tags = new[] { tag };
         }
 
         /// <summary>
-        /// Instantiates a new instance of the <see cref="TagNameAttribute"/> class.
+        /// Instantiates a new instance of the <see cref="HtmlElementNameAttribute"/> class.
         /// </summary>
         /// <param name="tag">The HTML tag name for the <see cref="TagHelper"/> to target.</param>
         /// <param name="additionalTags">Additional HTML tag names for the <see cref="TagHelper"/> to target.</param>
-        public TagNameAttribute([NotNull] string tag, [NotNull] params string[] additionalTags)
+        public HtmlElementNameAttribute([NotNull] string tag, [NotNull] params string[] additionalTags)
         {
             if (additionalTags.Contains(null))
             {
                 throw new ArgumentNullException(
                     nameof(additionalTags),
-                    Resources.FormatTagNameAttribute_AdditionalTagsCannotContainNull(nameof(additionalTags)));
+                    Resources.FormatHtmlElementNameAttribute_AdditionalTagsCannotContainNull(nameof(additionalTags)));
             };
 
             var allTags = new List<string>(additionalTags);

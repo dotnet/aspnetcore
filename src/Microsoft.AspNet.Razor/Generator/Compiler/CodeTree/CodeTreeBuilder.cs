@@ -145,14 +145,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             }, association, topLevel: true);
         }
 
-        public void AddSessionStateChunk(string value, SyntaxTreeNode association)
-        {
-            AddChunk(new SessionStateChunk
-            {
-                Value = value
-            }, association, topLevel: true);
-        }
-
         public T StartChunkBlock<T>(SyntaxTreeNode association) where T : ChunkBlock, new()
         {
             return StartChunkBlock<T>(association, topLevel: false);

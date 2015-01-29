@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Razor.Parser;
+
 namespace Microsoft.AspNet.Razor.Generator
 {
     /// <summary>
@@ -12,9 +14,14 @@ namespace Microsoft.AspNet.Razor.Generator
         /// Instantiates a new instance of the <see cref="CodeBuilderContext"/> object.
         /// </summary>
         /// <param name="generatorContext">A <see cref="CodeGeneratorContext"/> to copy information from.</param>
-        public CodeBuilderContext(CodeGeneratorContext generatorContext)
+        /// <param name="errorSink">
+        /// The <see cref="ParserErrorSink"/> used to collect <see cref="Parser.SyntaxTree.RazorError"/>s encountered
+        /// when parsing the current Razor document.
+        /// </param>
+        public CodeBuilderContext(CodeGeneratorContext generatorContext, ParserErrorSink errorSink)
             : base(generatorContext)
         {
+            ErrorSink = errorSink;
             ExpressionRenderingMode = ExpressionRenderingMode.WriteToOutput;
         }
 
@@ -23,9 +30,11 @@ namespace Microsoft.AspNet.Razor.Generator
                                     string className,
                                     string rootNamespace,
                                     string sourceFile,
-                                    bool shouldGenerateLinePragmas)
+                                    bool shouldGenerateLinePragmas,
+                                    ParserErrorSink errorSink)
             : base(host, className, rootNamespace, sourceFile, shouldGenerateLinePragmas)
         {
+            ErrorSink = errorSink;
             ExpressionRenderingMode = ExpressionRenderingMode.WriteToOutput;
         }
 
@@ -56,5 +65,10 @@ namespace Microsoft.AspNet.Razor.Generator
         /// <see cref="CodeGeneratorContext.SourceFile"/>.
         /// </summary>
         public string Checksum { get; set; }
+
+        /// <summary>
+        /// Used to aggregate <see cref="Parser.SyntaxTree.RazorError"/>s.
+        /// </summary>
+        public ParserErrorSink ErrorSink { get; }
     }
 }

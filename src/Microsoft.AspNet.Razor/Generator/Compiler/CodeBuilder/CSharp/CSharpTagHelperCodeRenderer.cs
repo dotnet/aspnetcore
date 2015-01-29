@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
@@ -57,14 +58,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             var tagHelperDescriptors = chunk.Descriptors;
 
-            // Find the first content behavior that doesn't have a content behavior of None.
-            // The resolver restricts content behavior collisions so the first one that's not None will be
-            // the content behavior we need to abide by. None can work in unison with other ContentBehaviors.
-            var contentBehavior = tagHelperDescriptors.Select(descriptor => descriptor.ContentBehavior)
-                                                      .FirstOrDefault(
-                                                            behavior => behavior != ContentBehavior.None);
-
-            RenderBeginTagHelperScope(chunk.TagName);
+            RenderBeginTagHelperScope(chunk.TagName, chunk.Children);
 
             RenderTagHelpersCreation(chunk);
 
@@ -77,42 +71,15 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             RenderUnboundHTMLAttributes(unboundHTMLAttributes);
 
-            switch (contentBehavior)
-            {
-                case ContentBehavior.None:
-                    RenderRunTagHelpers(bufferedBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-                    RenderTagHelperBody(chunk.Children, bufferBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
-                    break;
-                case ContentBehavior.Append:
-                    RenderRunTagHelpers(bufferedBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-                    RenderTagHelperBody(chunk.Children, bufferBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
-                    break;
-                case ContentBehavior.Prepend:
-                    RenderRunTagHelpers(bufferedBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName);
-                    RenderTagHelperBody(chunk.Children, bufferBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
-                    break;
-                case ContentBehavior.Replace:
-                    RenderRunTagHelpers(bufferedBody: false);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
-                    break;
-                case ContentBehavior.Modify:
-                    RenderTagHelperBody(chunk.Children, bufferBody: true);
-                    RenderRunTagHelpers(bufferedBody: true);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName);
-                    RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
-                    break;
-            }
+            RenderRunTagHelpers();
+
+            RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
+            RenderTagOutput(_tagHelperContext.OutputGeneratePreContentMethodName);
+
+            RenderTagHelperContent();
+
+            RenderTagOutput(_tagHelperContext.OutputGeneratePostContentMethodName);
+            RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
 
             RenderEndTagHelpersScope();
         }
@@ -122,11 +89,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return "__" + descriptor.TypeName.Replace('.', '_');
         }
 
-        private void RenderBeginTagHelperScope(string tagName)
+        private void RenderBeginTagHelperScope(string tagName, IList<Chunk> children)
         {
             // Scopes/execution contexts are a runtime feature.
             if (_designTimeMode)
             {
+                // Render all of the tag helper children inline for IntelliSense.
+                _bodyVisitor.Accept(children);
                 return;
             }
 
@@ -135,8 +104,48 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             _writer.WriteStartAssignment(ExecutionContextVariableName)
                    .WriteStartInstanceMethodInvocation(ScopeManagerVariableName,
                                                        _tagHelperContext.ScopeManagerBeginMethodName);
+
+            // Assign a unique ID for this instance of the source HTML tag. This must be unique
+            // per call site, e.g. if the tag is on the view twice, there should be two IDs.
             _writer.WriteStringLiteral(tagName)
+                   .WriteParameterSeparator()
+                   .WriteStringLiteral(GenerateUniqueId())
+                   .WriteParameterSeparator();
+
+            // We remove the target writer so TagHelper authors can retrieve content.
+            var oldWriter = _context.TargetWriterName;
+            _context.TargetWriterName = null;
+
+            // Disabling instrumentation inside TagHelper bodies since we never know if it's accurate
+            var oldInstrumentation = _context.Host.EnableInstrumentation;
+            _context.Host.EnableInstrumentation = false;
+
+            using (_writer.BuildAsyncLambda(endLine: false))
+            {
+                // Render all of the tag helper children.
+                _bodyVisitor.Accept(children);
+            }
+
+            _context.Host.EnableInstrumentation = oldInstrumentation;
+
+            _context.TargetWriterName = oldWriter;
+
+            _writer.WriteParameterSeparator()
+                   .Write(_tagHelperContext.StartWritingScopeMethodName)
+                   .WriteParameterSeparator()
+                   .Write(_tagHelperContext.EndWritingScopeMethodName)
                    .WriteEndMethodInvocation();
+        }
+
+        /// <summary>
+        /// Generates a unique ID for an HTML element.
+        /// </summary>
+        /// <returns>
+        /// A globally unique ID.
+        /// </returns>
+        protected virtual string GenerateUniqueId()
+        {
+            return Guid.NewGuid().ToString("N");
         }
 
         private void RenderTagHelpersCreation(TagHelperChunk chunk)
@@ -213,47 +222,66 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                                                       tagHelperVariableName,
                                                       attributeDescriptor.PropertyName);
 
-                    _writer.WriteStartAssignment(valueAccessor);
-
                     // If we haven't recorded this attribute value before then we need to record its value.
                     if (!attributeValueRecorded)
                     {
                         // We only need to create attribute values once per HTML element (not once per tag helper).
-                        // We're saving the value accessor so we can retrieve it later if there are more tag helpers that
-                        // need the value.
+                        // We're saving the value accessor so we can retrieve it later if there are more tag
+                        // helpers that need the value.
                         htmlAttributeValues.Add(attributeDescriptor.Name, valueAccessor);
 
                         if (bufferableAttribute)
                         {
-                            // If the attribute is bufferable but has a plain text value that means the value
-                            // is a string which needs to be surrounded in quotes.
+                            _writer.WriteStartAssignment(valueAccessor);
+
                             if (isPlainTextValue)
                             {
+                                // If the attribute is bufferable but has a plain text value that means the value
+                                // is a string which needs to be surrounded in quotes.
                                 RenderQuotedAttributeValue(textValue, attributeDescriptor);
                             }
                             else
                             {
-                                // The value contains more than plain text. e.g. someAttribute="Time: @DateTime.Now"
+                                // The value contains more than plain text e.g.
+                                // stringAttribute ="Time: @DateTime.Now"
                                 RenderBufferedAttributeValue(attributeDescriptor);
                             }
+
+                            _writer.WriteLine(";");
                         }
                         else
                         {
-                            // TODO: Make complex types in non-bufferable attributes work in
-                            // https://github.com/aspnet/Razor/issues/129
-                            if (!isPlainTextValue)
+                            // Write out simple assignment for non-string property value. Try to keep the whole
+                            // statement together and the #line pragma correct to make debugging possible.
+                            using (var lineMapper = new CSharpLineMappingWriter(
+                                _writer,
+                                attributeValueChunk.Association.Start,
+                                _context.SourceFile))
                             {
+                                // Place the assignment LHS to align RHS with original attribute value's indentation.
+                                // Unfortunately originalIndent is incorrect if original line contains tabs. Unable to
+                                // use a CSharpPaddingBuilder because the Association has no Previous node; lost the
+                                // original Span sequence when the parse tree was rewritten.
+                                var originalIndent = attributeValueChunk.Start.CharacterIndex;
+                                var generatedLength = valueAccessor.Length + " = ".Length;
+                                var newIndent = originalIndent - generatedLength;
+                                if (newIndent > 0)
+                                {
+                                    _writer.Indent(newIndent);
+                                }
+
+                                _writer.WriteStartAssignment(valueAccessor);
+                                lineMapper.MarkLineMappingStart();
+
+                                // Write out bare expression for this attribute value. Property is not a string.
+                                // So quoting or buffering are not helpful.
+                                RenderRawAttributeValue(attributeValueChunk, attributeDescriptor, isPlainTextValue);
+
+                                // End the assignment to the attribute.
+                                lineMapper.MarkLineMappingEnd();
                                 _writer.WriteLine(";");
-                                return;
                             }
-
-                            // We aren't a bufferable attribute which means we have no Razor code in our value.
-                            // Therefore we can just use the "textValue" as the attribute value.
-                            RenderRawAttributeValue(textValue, attributeDescriptor);
                         }
-
-                        // End the assignment to the attribute.
-                        _writer.WriteLine(";");
 
                         // Execution contexts are a runtime feature.
                         if (_designTimeMode)
@@ -262,20 +290,23 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                         }
 
                         // We need to inform the context of the attribute value.
-                        _writer.WriteStartInstanceMethodInvocation(
-                            ExecutionContextVariableName,
-                            _tagHelperContext.ExecutionContextAddTagHelperAttributeMethodName);
-
-                        _writer.WriteStringLiteral(attributeDescriptor.Name)
-                               .WriteParameterSeparator()
-                               .Write(valueAccessor)
-                               .WriteEndMethodInvocation();
+                        _writer
+                            .WriteStartInstanceMethodInvocation(
+                                ExecutionContextVariableName,
+                                _tagHelperContext.ExecutionContextAddTagHelperAttributeMethodName)
+                            .WriteStringLiteral(attributeDescriptor.Name)
+                            .WriteParameterSeparator()
+                            .Write(valueAccessor)
+                            .WriteEndMethodInvocation();
                     }
                     else
                     {
-                        // The attribute value has already been recorded, lets retrieve it from the stored value accessors.
-                        _writer.Write(htmlAttributeValues[attributeDescriptor.Name])
-                               .WriteLine(";");
+                        // The attribute value has already been recorded, lets retrieve it from the stored value
+                        // accessors.
+                        _writer
+                            .WriteStartAssignment(valueAccessor)
+                            .Write(htmlAttributeValues[attributeDescriptor.Name])
+                            .WriteLine(";");
                     }
                 }
             }
@@ -323,18 +354,74 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             }
         }
 
-        private void RenderTagHelperBody(IList<Chunk> children, bool bufferBody)
+        private void RenderTagHelperContent()
         {
-            // If we want to buffer the body we need to create a writing scope to capture the body content.
-            if (bufferBody)
+            // Rendering output is a runtime feature.
+            if (_designTimeMode)
             {
-                // Render all of the tag helper children in a buffered writing scope.
-                BuildBufferedWritingScope(children);
+                return;
             }
-            else
+
+            _writer.Write("if (")
+                   .Write(ExecutionContextVariableName)
+                   .Write(".")
+                   .Write(_tagHelperContext.ExecutionContextOutputPropertyName)
+                   .Write(".")
+                   .Write(_tagHelperContext.OutputContentSetPropertyName)
+                   .WriteLine(")");
+
+            // At this point in the codegen, TagHelperOutput.Content is set. We need to use this to render the Content 
+            // instead of executing the child content
+            using (_writer.BuildScope())
             {
-                // Render all of the tag helper children.
-                _bodyVisitor.Accept(children);
+                RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName);
+            }
+
+            _writer.Write("else if (")
+                   .Write(ExecutionContextVariableName)
+                   .Write(".")
+                   .Write(_tagHelperContext.ExecutionContextChildContentRetrievedPropertyName)
+                   .WriteLine(")");
+
+            // Render the body of the else if statement, at this point in the codegen the GetChildContentAsync method 
+            // was invoked but the TagHelperOutput's Content was not set. Call into GetChildContentAsync to retrieve
+            // the cached value of the content so we don't execute the child content twice.
+            using (_writer.BuildScope())
+            {
+                CSharpCodeVisitor.RenderPreWriteStart(_writer, _context);
+
+                _writer.WriteInstanceMethodInvocation(ExecutionContextVariableName,
+                                                      _tagHelperContext.ExecutionContextGetChildContentAsyncMethodName,
+                                                      endLine: false);
+
+                _writer.Write(".Result")
+                       .WriteEndMethodInvocation();
+            }
+
+            _writer.WriteLine("else");
+
+            // Render the body of the else statement, at this point in the codegen the GetChildContentAsync method 
+            // was not invoked and the TagHelperOutput's Content was not set. Call into ExecuteChildContentAsync to
+            // to execute and render child content.
+            using (_writer.BuildScope())
+            {
+                if (!string.IsNullOrEmpty(_context.TargetWriterName))
+                {
+                    _writer.WriteMethodInvocation(
+                        _tagHelperContext.StartWritingScopeMethodName,
+                        _context.TargetWriterName);
+                }
+
+                _writer.WriteInstanceMethodInvocation(
+                    ExecutionContextVariableName,
+                    _tagHelperContext.ExecutionContextExecuteChildContentAsyncMethodName,
+                    endLine: false);
+                _writer.WriteLine(".Wait();");
+
+                if (!string.IsNullOrEmpty(_context.TargetWriterName))
+                {
+                    _writer.WriteMethodInvocation(_tagHelperContext.EndWritingScopeMethodName);
+                }
             }
         }
 
@@ -369,7 +456,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                    .WriteEndMethodInvocation();
         }
 
-        private void RenderRunTagHelpers(bool bufferedBody)
+        private void RenderRunTagHelpers()
         {
             // No need to run anything in design time mode.
             if (_designTimeMode)
@@ -383,36 +470,38 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                    .Write(" = ")
                    .WriteStartInstanceMethodInvocation(RunnerVariableName,
                                                        _tagHelperContext.RunnerRunAsyncMethodName);
-            _writer.Write(ExecutionContextVariableName);
 
-            if (bufferedBody)
-            {
-                _writer.WriteParameterSeparator()
-                       .Write(StringValueBufferVariableName);
-            }
-
-            _writer.WriteEndMethodInvocation(endLine: false)
+            _writer.Write(ExecutionContextVariableName)
+                   .WriteEndMethodInvocation(endLine: false)
                    .WriteLine(".Result;");
         }
 
         private void RenderBufferedAttributeValue(TagHelperAttributeDescriptor attributeDescriptor)
         {
+            // Pass complexValue: false because variable.ToString() replaces any original complexity in the expression.
             RenderAttributeValue(
                 attributeDescriptor,
                 valueRenderer: (writer) =>
                 {
                     RenderBufferedAttributeValueAccessor(writer);
-                });
+                },
+                complexValue: false);
         }
 
-        private void RenderRawAttributeValue(string value, TagHelperAttributeDescriptor attributeDescriptor)
+        private void RenderRawAttributeValue(
+            Chunk attributeValueChunk,
+            TagHelperAttributeDescriptor attributeDescriptor,
+            bool isPlainTextValue)
         {
             RenderAttributeValue(
                 attributeDescriptor,
                 valueRenderer: (writer) =>
                 {
-                    writer.Write(value);
-                });
+                    var visitor =
+                        new CSharpTagHelperAttributeValueVisitor(writer, _context, attributeDescriptor.TypeName);
+                    visitor.Accept(attributeValueChunk);
+                },
+                complexValue: !isPlainTextValue);
         }
 
         private void RenderQuotedAttributeValue(string value, TagHelperAttributeDescriptor attributeDescriptor)
@@ -422,7 +511,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 valueRenderer: (writer) =>
                 {
                     writer.WriteStringLiteral(value);
-                });
+                },
+                complexValue: false);
         }
 
         private void BuildBufferedWritingScope(Chunk htmlAttributeChunk)
@@ -473,9 +563,15 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         }
 
         private void RenderAttributeValue(TagHelperAttributeDescriptor attributeDescriptor,
-                                          Action<CSharpCodeWriter> valueRenderer)
+                                          Action<CSharpCodeWriter> valueRenderer,
+                                          bool complexValue)
         {
-            AttributeValueCodeRenderer.RenderAttributeValue(attributeDescriptor, _writer, _context, valueRenderer);
+            AttributeValueCodeRenderer.RenderAttributeValue(
+                attributeDescriptor,
+                _writer,
+                _context,
+                valueRenderer,
+                complexValue);
         }
 
         private void RenderBufferedAttributeValueAccessor(CSharpCodeWriter writer)

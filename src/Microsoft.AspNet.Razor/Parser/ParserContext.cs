@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.Razor.Parser
                                      // TagHelperDescriptors are not found by default. The RazorParser is responsible 
                                      // for identifying TagHelperDescriptors and rebuilding ParserResults.
                                      tagHelperDescriptors: Enumerable.Empty<TagHelperDescriptor>(),
-                                     parserErrors: _errorSink.Errors.ToList());
+                                     errorSink: _errorSink);
         }
 
         [Conditional("DEBUG")]

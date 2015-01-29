@@ -66,23 +66,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal("True", output.Attributes["foo"]);
         }
 
-        [Fact]
-        public async Task RunAsync_WithContentSetsOutputsContent()
-        {
-            // Arrange
-            var runner = new TagHelperRunner();
-            var executionContext = new TagHelperExecutionContext("p");
-            var tagHelper = new ExecutableTagHelper();
-            var contentWriter = new StringWriter(new StringBuilder("Hello World"));
-
-            // Act
-            executionContext.Add(tagHelper);
-            var output = await runner.RunAsync(executionContext, contentWriter);
-
-            // Assert
-            Assert.Equal(output.Content, "Hello World");
-        }
-
         private class ExecutableTagHelper : TagHelper
         {
             public bool Processed { get; set; }
