@@ -128,7 +128,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Accept", data);
             data = Assert.Single(response.Headers.GetValues("Cache-control"));
             Assert.Equal("public, max-age=10", data);
-            Assert.Throws<InvalidOperationException>(() => response.Headers.GetValues("Pragma"));
+            IEnumerable<string> pragmaValues;
+            response.Headers.TryGetValues("Pragma", out pragmaValues);
+            Assert.Null(pragmaValues);
         }
 
         [Fact]
@@ -154,8 +156,111 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                     () => client.GetAsync("http://localhost/CacheHeaders/ThrowsWhenDurationIsNotSet"));
+            Assert.Equal(
+                "If the 'NoStore' property is not set to true, 'Duration' property must be specified.",
+                ex.Message);
+        }
+
+        // Cache Profiles
+        [Fact]
+        public async Task ResponseCache_SetsAllHeaders_FromCacheProfile()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/CacheProfiles/PublicCache30Sec");
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("public, max-age=30", data);
+        }
+
+        [Fact]
+        public async Task ResponseCache_SetsAllHeaders_ChosesTheRightProfile()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/CacheProfiles/PrivateCache30Sec");
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("max-age=30, private", data);
+        }
+
+        [Fact]
+        public async Task ResponseCache_SetsNoCacheHeaders()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/CacheProfiles/NoCache");
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("no-store, no-cache", data);
+            data = Assert.Single(response.Headers.GetValues("Pragma"));
+            Assert.Equal("no-cache", data);
+        }
+
+        [Fact]
+        public async Task ResponseCache_AddsHeaders()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/CacheProfiles/CacheProfileAddParameter");
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("public, max-age=30", data);
+            data = Assert.Single(response.Headers.GetValues("Vary"));
+            Assert.Equal("Accept", data);
+        }
+
+        [Fact]
+        public async Task ResponseCache_ModifiesHeaders()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/CacheProfiles/CacheProfileOverride");
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("public, max-age=10", data);
+        }
+
+        [Fact]
+        public async Task ResponseCacheAttribute_OnAction_OverridesTheValuesOnClass()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ClassLevelNoStore/CacheThisActionWithProfileSettings");
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("Vary"));
+            Assert.Equal("Accept", data);
+            data = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("public, max-age=30", data);
+            IEnumerable<string> pragmaValues;
+            response.Headers.TryGetValues("Pragma", out pragmaValues);
+            Assert.Null(pragmaValues);
         }
     }
 }

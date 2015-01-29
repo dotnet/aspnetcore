@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
@@ -79,11 +80,11 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// Gets a list of <see cref="ExcludeValidationDescriptor"/> which are used to construct a list
-        /// of exclude filters by <see cref="IValidationExcludeFiltersProvider"/>,
+        /// of exclude filters by <see cref="IValidationExcludeFiltersProvider"/>.
         /// </summary>
         public List<ExcludeValidationDescriptor> ValidationExcludeFilters { get; }
             = new List<ExcludeValidationDescriptor>();
-
+        
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further
         /// errors are ignored.
@@ -139,5 +140,12 @@ namespace Microsoft.AspNet.Mvc
         /// when it contains the media type */*. <see langword="false"/> by default.
         /// </summary>
         public bool RespectBrowserAcceptHeader { get; set; } = false;
+        
+        /// <summary>
+        /// Gets a Dictionary of CacheProfile Names, <see cref="CacheProfile"/> which are pre-defined settings for
+        /// <see cref="ResponseCacheFilter"/>.
+        /// </summary>
+        public Dictionary<string, CacheProfile> CacheProfiles { get; }
+            = new Dictionary<string, CacheProfile>(StringComparer.OrdinalIgnoreCase);
     }
 }

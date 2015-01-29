@@ -1,26 +1,28 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
-using System.Linq;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// An <see cref="ActionFilterAttribute"/> which sets the appropriate headers related to Response caching.
+    /// Specifies the parameters necessary for setting appropriate headers in response caching.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class ResponseCacheAttribute : ActionFilterAttribute, IResponseCacheFilter
+    public class ResponseCacheAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
         // A nullable-int cannot be used as an Attribute parameter.
         // Hence this nullable-int is present to back the Duration property.
+        // The same goes for nullable-ResponseCacheLocation and nullable-bool.
         private int? _duration;
+        private ResponseCacheLocation? _location;
+        private bool? _noStore;
 
         /// <summary>
         /// Gets or sets the duration in seconds for which the response is cached.
-        /// This is a required parameter.
         /// This sets "max-age" in "Cache-control" header.
         /// </summary>
         public int Duration
@@ -38,97 +40,85 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets or sets the location where the data from a particular URL must be cached.
         /// </summary>
-        public ResponseCacheLocation Location { get; set; }
+        public ResponseCacheLocation Location
+        {
+            get
+            {
+                return _location ?? ResponseCacheLocation.Any;
+            }
+            set
+            {
+                _location = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the value which determines whether the data should be stored or not.
-        /// When set to true, it sets "Cache-control" header to "no-store".
+        /// When set to <see langword="true"/>, it sets "Cache-control" header to "no-store".
         /// Ignores the "Location" parameter for values other than "None".
         /// Ignores the "duration" parameter.
         /// </summary>
-        public bool NoStore { get; set; }
+        public bool NoStore
+        {
+            get
+            {
+                return _noStore ?? false;
+            }
+            set
+            {
+                _noStore = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the value for the Vary response header.
         /// </summary>
         public string VaryByHeader { get; set; }
 
-        // <inheritdoc />
-        public override void OnActionExecuting([NotNull] ActionExecutingContext context)
+        /// <summary>
+        /// Gets or sets the value of the cache profile name.
+        /// </summary>
+        public string CacheProfileName { get; set; }
+
+        /// <summary>
+        /// The order of the filter.
+        /// </summary>
+        public int Order { get; set; }
+
+        public IFilter CreateInstance([NotNull] IServiceProvider serviceProvider)
         {
-            // If there are more filters which can override the values written by this filter,
-            // then skip execution of this filter.
-            if (IsOverridden(context))
+            var optionsAccessor = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();
+
+            CacheProfile selectedProfile = null;
+            if (CacheProfileName != null)
             {
-                return;
-            }
-
-            var headers = context.HttpContext.Response.Headers;
-
-            // Clear all headers
-            headers.Remove("Vary");
-            headers.Remove("Cache-control");
-            headers.Remove("Pragma");
-
-            if (!string.IsNullOrEmpty(VaryByHeader))
-            {
-                headers.Set("Vary", VaryByHeader);
-            }
-
-            if (NoStore)
-            {
-                headers.Set("Cache-control", "no-store");
-
-                // Cache-control: no-store, no-cache is valid.
-                if (Location == ResponseCacheLocation.None)
+                optionsAccessor.Options.CacheProfiles.TryGetValue(CacheProfileName, out selectedProfile);
+                if (selectedProfile == null)
                 {
-                    headers.Append("Cache-control", "no-cache");
-                    headers.Set("Pragma", "no-cache");
+                    throw new InvalidOperationException(Resources.FormatCacheProfileNotFound(CacheProfileName));
                 }
             }
-            else
-            {
-                if (_duration == null)
+
+            // If the ResponseCacheAttribute parameters are set,
+            // then it must override the values from the Cache Profile.
+            // The below expression first checks if the duration is set by the attribute's parameter.
+            // If absent, it checks the selected cache profile (Note: There can be no cache profile as well)
+            // The same is the case for other properties.
+            _duration = _duration ?? selectedProfile?.Duration;
+            _noStore = _noStore ?? selectedProfile?.NoStore;
+            _location = _location ?? selectedProfile?.Location;
+            VaryByHeader = VaryByHeader ?? selectedProfile?.VaryByHeader;
+            
+            // ResponseCacheFilter cannot take any null values. Hence, if there are any null values,
+            // the properties convert them to their defaults and are passed on.
+            return new ResponseCacheFilter(
+                new CacheProfile
                 {
-                    throw new InvalidOperationException(
-                        Resources.FormatResponseCache_SpecifyDuration(nameof(NoStore), nameof(Duration)));
-                }
-
-                string cacheControlValue = null;
-                switch (Location)
-                {
-                    case ResponseCacheLocation.Any:
-                        cacheControlValue = "public";
-                        break;
-                    case ResponseCacheLocation.Client:
-                        cacheControlValue = "private";
-                        break;
-                    case ResponseCacheLocation.None:
-                        cacheControlValue = "no-cache";
-                        headers.Set("Pragma", "no-cache");
-                        break;
-                }
-
-                cacheControlValue = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}{1}max-age={2}",
-                    cacheControlValue,
-                    cacheControlValue != null? "," : null,
-                    Duration);
-
-                if (cacheControlValue != null)
-                {
-                    headers.Set("Cache-control", cacheControlValue);
-                }
-            }
-        }
-
-        // internal for Unit Testing purposes.
-        internal bool IsOverridden([NotNull] ActionExecutingContext context)
-        {
-            // Return true if there are any filters which are after the current filter. In which case the current
-            // filter should be skipped.
-            return context.Filters.OfType<IResponseCacheFilter>().Last() != this;
+                    Duration = _duration,
+                    Location = _location,
+                    NoStore = _noStore,
+                    VaryByHeader = VaryByHeader
+                });
         }
     }
 }

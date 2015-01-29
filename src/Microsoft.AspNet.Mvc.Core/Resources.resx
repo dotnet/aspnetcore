@@ -450,7 +450,7 @@
   </data>
   <data name="ApiExplorer_UnsupportedAction" xml:space="preserve">
     <value>The action '{0}' has ApiExplorer enabled, but is using conventional routing. Only actions which use attribute routing support ApiExplorer.</value>
-    </data>
+  </data>
   <data name="FormatterMappings_NotValidMediaType" xml:space="preserve">
     <value>The media type "{0}" is not valid. MediaTypes containing wildcards (*) are not allowed in formatter mappings.</value>
   </data>
@@ -462,5 +462,8 @@
   </data>
   <data name="RemoteAttribute_RemoteValidationFailed" xml:space="preserve">
     <value>'{0}' is invalid.</value>
+  </data>
+  <data name="CacheProfileNotFound" xml:space="preserve">
+    <value>The '{0}' cache profile is not defined.</value>
   </data>
 </root>

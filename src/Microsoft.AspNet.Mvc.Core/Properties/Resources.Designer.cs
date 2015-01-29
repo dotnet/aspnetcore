@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.Core
             = new ResourceManager("Microsoft.AspNet.Mvc.Core.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The argument '{0}' is invalid. Media types containing wildcards (*) are not supported.
+        /// The argument '{0}' is invalid. Media types which match all types or match all subtypes are not supported.
         /// </summary>
         internal static string MatchAllContentTypeIsNotAllowed
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The argument '{0}' is invalid. Media types containing wildcards (*) are not supported.
+        /// The argument '{0}' is invalid. Media types which match all types or match all subtypes are not supported.
         /// </summary>
         internal static string FormatMatchAllContentTypeIsNotAllowed(object p0)
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The content-type '{0}' added in the '{1}' property is invalid. Media types containing wildcards (*) are not supported.
+        /// The content-type '{0}' added in the '{1}' property is invalid. Media types which match all types or match all subtypes are not supported.
         /// </summary>
         internal static string ObjectResult_MatchAllContentType
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The content-type '{0}' added in the '{1}' property is invalid. Media types containing wildcards (*) are not supported.
+        /// The content-type '{0}' added in the '{1}' property is invalid. Media types which match all types or match all subtypes are not supported.
         /// </summary>
         internal static string FormatObjectResult_MatchAllContentType(object p0, object p1)
         {
@@ -560,24 +560,6 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string Common_ValueNotValidForProperty
         {
             get { return GetString("Common_ValueNotValidForProperty"); }
-        }
-
-        /// <summary>
-        /// The media type "{0}" is not valid. MediaTypes containing wildcards (*) are not allowed in formatter 
-        /// mappings.
-        /// </summary>
-        internal static string FormatterMappings_NotValidMediaType
-        {
-            get { return GetString("FormatterMappings_NotValidMediaType"); }
-        }
-
-        /// <summary>
-        /// The format provided is invalid '{0}'. A format must be a non-empty file-extension, optionally prefixed 
-        /// with a '.' character.
-        /// </summary>
-        internal static string Format_NotValid
-        {
-            get { return GetString("Format_NotValid"); }
         }
 
         /// <summary>
@@ -1757,6 +1739,38 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// The media type "{0}" is not valid. MediaTypes containing wildcards (*) are not allowed in formatter mappings.
+        /// </summary>
+        internal static string FormatterMappings_NotValidMediaType
+        {
+            get { return GetString("FormatterMappings_NotValidMediaType"); }
+        }
+
+        /// <summary>
+        /// The media type "{0}" is not valid. MediaTypes containing wildcards (*) are not allowed in formatter mappings.
+        /// </summary>
+        internal static string FormatFormatterMappings_NotValidMediaType(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FormatterMappings_NotValidMediaType"), p0);
+        }
+
+        /// <summary>
+        /// The format provided is invalid '{0}'. A format must be a non-empty file-extension, optionally prefixed with a '.' character.
+        /// </summary>
+        internal static string Format_NotValid
+        {
+            get { return GetString("Format_NotValid"); }
+        }
+
+        /// <summary>
+        /// The format provided is invalid '{0}'. A format must be a non-empty file-extension, optionally prefixed with a '.' character.
+        /// </summary>
+        internal static string FormatFormat_NotValid(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Format_NotValid"), p0);
+        }
+
+        /// <summary>
         /// No URL for remote validation could be found.
         /// </summary>
         internal static string RemoteAttribute_NoUrlFound
@@ -1786,6 +1800,22 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatRemoteAttribute_RemoteValidationFailed(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("RemoteAttribute_RemoteValidationFailed"), p0);
+        }
+
+        /// <summary>
+        /// The '{0}' cache profile is not defined.
+        /// </summary>
+        internal static string CacheProfileNotFound
+        {
+            get { return GetString("CacheProfileNotFound"); }
+        }
+
+        /// <summary>
+        /// The '{0}' cache profile is not defined.
+        /// </summary>
+        internal static string FormatCacheProfileNotFound(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CacheProfileNotFound"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

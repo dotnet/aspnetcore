@@ -7,36 +7,42 @@ namespace ResponseCacheWebSite
 {
     public class CacheHeadersController : Controller
     {
+        [HttpGet("/CacheHeaders/Index")]
         [ResponseCache(Duration = 100, Location = ResponseCacheLocation.Any, VaryByHeader = "Accept")]
         public IActionResult Index()
         {
             return Content("Hello World!");
         }
 
+        [HttpGet("/CacheHeaders/PublicCache")]
         [ResponseCache(Duration = 100, Location = ResponseCacheLocation.Any)]
         public IActionResult PublicCache()
         {
             return Content("Hello World!");
         }
 
+        [HttpGet("/CacheHeaders/ClientCache")]
         [ResponseCache(Duration = 100, Location = ResponseCacheLocation.Client)]
         public IActionResult ClientCache()
         {
             return Content("Hello World!");
         }
 
+        [HttpGet("/CacheHeaders/NoStore")]
         [ResponseCache(NoStore = true, Duration = 0)]
         public IActionResult NoStore()
         {
             return Content("Hello World!");
         }
 
+        [HttpGet("/CacheHeaders/NoCacheAtAll")]
         [ResponseCache(NoStore = true, Duration = 0, Location = ResponseCacheLocation.None)]
         public IActionResult NoCacheAtAll()
         {
             return Content("Hello World!");
         }
 
+        [HttpGet("/CacheHeaders/SetHeadersInAction")]
         [ResponseCache(Duration = 40)]
         public IActionResult SetHeadersInAction()
         {
@@ -44,12 +50,14 @@ namespace ResponseCacheWebSite
             return Content("Hello World!");
         }
 
+        [HttpGet("/CacheHeaders/SetsCacheControlPublicByDefault")]
         [ResponseCache(Duration = 40)]
         public IActionResult SetsCacheControlPublicByDefault()
         {
             return Content("Hello World!");
         }
 
+        [HttpGet("/CacheHeaders/ThrowsWhenDurationIsNotSet")]
         [ResponseCache(VaryByHeader = "Accept")]
         public IActionResult ThrowsWhenDurationIsNotSet()
         {
