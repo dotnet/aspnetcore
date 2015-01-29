@@ -6,8 +6,8 @@ using Microsoft.AspNet.Routing.Template;
 namespace Microsoft.AspNet.Mvc.Routing
 {
     /// <summary>
-    /// Used to build an <see cref="AttributeRoute"/>. Represents an individual URL-matching route that will be
-    /// aggregated into the <see cref="AttributeRoute"/>.
+    /// Used to build an <see cref="InnerAttributeRoute"/>. Represents an individual URL-matching route that will be
+    /// aggregated into the <see cref="InnerAttributeRoute"/>.
     /// </summary>
     public class AttributeRouteMatchingEntry
     {

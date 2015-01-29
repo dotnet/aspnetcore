@@ -4,7 +4,10 @@
 #if ASPNET50
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -29,12 +32,14 @@ namespace Microsoft.AspNet.Mvc.Routing
                 "and can occur only at the start of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate";
 
-            var router = CreateRouter();
+            var handler = CreateRouter();
             var services = CreateServices(action);
 
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(
-                () => { AttributeRouting.CreateAttributeMegaRoute(router, services); });
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+				AttributeRouting.CreateAttributeMegaRoute(handler, services);
+            });
 
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -53,12 +58,14 @@ namespace Microsoft.AspNet.Mvc.Routing
                 "Error: The attribute route '{foo}/{action}' cannot contain a parameter named '{foo}'. " +
                 "Use '[foo]' in the route template to insert the value 'bleh'.";
 
-            var router = CreateRouter();
+            var handler = CreateRouter();
             var services = CreateServices(action);
 
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(
-                () => { AttributeRouting.CreateAttributeMegaRoute(router, services); });
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+				AttributeRouting.CreateAttributeMegaRoute(handler, services);
+            });
 
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -84,18 +91,20 @@ namespace Microsoft.AspNet.Mvc.Routing
                 "Error: The attribute route 'cool/{action}' cannot contain a parameter named '{action}'. " +
                 "Use '[action]' in the route template to insert the value 'hey'.";
 
-            var router = CreateRouter();
+            var handler = CreateRouter();
             var services = CreateServices(action1, action2);
 
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(
-                () => { AttributeRouting.CreateAttributeMegaRoute(router, services); });
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+				AttributeRouting.CreateAttributeMegaRoute(handler, services);
+			});
 
             Assert.Equal(expectedMessage, ex.Message);
         }
 
         [Fact]
-        public void AttributeRouting_WithReflectedActionDescriptor()
+        public void AttributeRouting_WithControllerActionDescriptor()
         {
             // Arrange
             var controllerType = typeof(HomeController);
@@ -121,12 +130,14 @@ namespace Microsoft.AspNet.Mvc.Routing
                 "Error: The attribute route '{controller}/{action}' cannot contain a parameter named '{controller}'. " +
                 "Use '[controller]' in the route template to insert the value 'Home'.";
 
-            var router = CreateRouter();
+            var handler = CreateRouter();
             var services = CreateServices(action);
 
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(
-                () => { AttributeRouting.CreateAttributeMegaRoute(router, services); });
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+				AttributeRouting.CreateAttributeMegaRoute(handler, services);
+			});
 
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -171,6 +182,10 @@ namespace Microsoft.AspNet.Mvc.Routing
             services
                 .Setup(s => s.GetService(typeof(IInlineConstraintResolver)))
                 .Returns(new DefaultInlineConstraintResolver(routeOptions.Object));
+
+            services
+                .Setup(s => s.GetService(typeof(ILoggerFactory)))
+                .Returns(NullLoggerFactory.Instance);
 
             return services.Object;
         }
