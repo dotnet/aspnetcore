@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -133,13 +134,18 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 errors.Add(upperError);
             }
+            var result = await valid.ValidateAsync(manager, null, input);
             if (errors.Count == 0)
             {
-                IdentityResultAssert.IsSuccess(await valid.ValidateAsync(manager, null, input));
+                IdentityResultAssert.IsSuccess(result);
             }
             else
             {
-                IdentityResultAssert.IsFailure(await valid.ValidateAsync(manager, null, input), string.Join(" ", errors));
+                IdentityResultAssert.IsFailure(result);
+                foreach (var error in errors)
+                {
+                    Assert.True(result.Errors.Any(e => e.Description == error));
+                }
             }
         }
     }

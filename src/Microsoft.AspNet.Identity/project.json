@@ -7,7 +7,8 @@
     "Microsoft.AspNet.Security.DataProtection": "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection" : "1.0.0-*",
-    "Microsoft.Framework.OptionsModel": "1.0.0-*"
+    "Microsoft.Framework.OptionsModel": "1.0.0-*",
+    "Microsoft.Framework.Logging": "1.0.0-*"
   },
   "frameworks": {
     "aspnet50": {},

@@ -76,23 +76,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             var role = new IdentityRole("UpdateRoleName");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             Assert.Null(await manager.FindByNameAsync("New"));
-            role.Name = "New";
+            IdentityResultAssert.IsSuccess(await manager.SetRoleNameAsync(role, "New"));
             IdentityResultAssert.IsSuccess(await manager.UpdateAsync(role));
             Assert.NotNull(await manager.FindByNameAsync("New"));
             Assert.Null(await manager.FindByNameAsync("UpdateAsync"));
         }
-
-        [Fact]
-        public async Task CanSetUserName()
-        {
-            var manager = TestIdentityFactory.CreateRoleManager();
-            var role = new IdentityRole("UpdateRoleName");
-            IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
-            Assert.Null(await manager.FindByNameAsync("New"));
-            IdentityResultAssert.IsSuccess(await manager.SetRoleNameAsync(role, "New"));
-            Assert.NotNull(await manager.FindByNameAsync("New"));
-            Assert.Null(await manager.FindByNameAsync("UpdateAsync"));
-        }
-
     }
 }

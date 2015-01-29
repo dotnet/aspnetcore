@@ -5,23 +5,23 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Update;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
     public class UserStore : UserStore<IdentityUser>
     {
-        public UserStore(DbContext context) : base(context) { }
+        public UserStore(DbContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
     public class UserStore<TUser> : UserStore<TUser, IdentityRole, DbContext>
         where TUser : IdentityUser, new()
     {
-        public UserStore(DbContext context) : base(context) { }
+        public UserStore(DbContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
     public class UserStore<TUser, TRole, TContext> : UserStore<TUser, TRole, TContext, string>
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         where TRole : IdentityRole, new()
         where TContext : DbContext
     {
-        public UserStore(TContext context) : base(context) { }
+        public UserStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
     public class UserStore<TUser, TRole, TContext, TKey> :
@@ -49,18 +49,24 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         where TKey : IEquatable<TKey>
     {
 
-        public UserStore(TContext context)
+        public UserStore(TContext context, IdentityErrorDescriber describer = null)
         {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
             }
             Context = context;
+            ErrorDescriber = describer ?? new IdentityErrorDescriber();
         }
 
         private bool _disposed;
 
         public TContext Context { get; private set; }
+
+        /// <summary>
+        ///     Used to generate public API error messages
+        /// </summary>
+        public IdentityErrorDescriber ErrorDescriber { get; set; }
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync
@@ -72,15 +78,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return AutoSaveChanges ? Context.SaveChangesAsync(cancellationToken) : Task.FromResult(0);
         }
 
-        protected virtual Task<TUser> GetUserAggregate(Expression<Func<TUser, bool>> filter, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return Users.FirstOrDefaultAsync(filter, cancellationToken);
-            // TODO: .Include(u => u.Roles)
-            //.Include(u => u.Claims)
-            //.Include(u => u.Logins);
-        }
-
-        public Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -91,7 +89,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(ConvertIdToString(user.Id));
         }
 
-        public Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -102,7 +100,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(user.UserName);
         }
 
-        public Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -114,7 +112,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(0);
         }
 
-        public Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -125,7 +123,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(user.NormalizedUserName);
         }
 
-        public Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -137,7 +135,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(0);
         }
 
-        public async virtual Task CreateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -147,9 +145,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
             await Context.AddAsync(user, cancellationToken);
             await SaveChanges(cancellationToken);
+            return IdentityResult.Success;
         }
 
-        public async virtual Task UpdateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> UpdateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -157,11 +156,22 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
+
+            Context.Attach(user);
+            user.ConcurrencyStamp = Guid.NewGuid().ToString();
             Context.Update(user);
-            await SaveChanges(cancellationToken);
+            try
+            {
+                await SaveChanges(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
+            }
+            return IdentityResult.Success;
         }
 
-        public async virtual Task DeleteAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> DeleteAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -169,8 +179,17 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
+
             Context.Remove(user);
-            await SaveChanges(cancellationToken);
+            try
+            {
+                await SaveChanges(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
+            }
+            return IdentityResult.Success;
         }
 
         /// <summary>
@@ -184,7 +203,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
             var id = ConvertIdFromString(userId);
-            return GetUserAggregate(u => u.Id.Equals(id), cancellationToken);
+            return Users.FirstOrDefaultAsync(u => u.Id.Equals(id), cancellationToken);
         }
 
         public virtual TKey ConvertIdFromString(string id)
@@ -215,7 +234,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return GetUserAggregate(u => u.NormalizedUserName == normalizedUserName, cancellationToken);
+            return Users.FirstOrDefaultAsync(u => u.NormalizedUserName == normalizedUserName, cancellationToken);
         }
 
         public IQueryable<TUser> Users
@@ -290,16 +309,13 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentException(Resources.ValueCannotBeNullOrEmpty, "roleName");
             }
-            var roleEntity = await Roles.SingleOrDefaultAsync(r => r.Name.ToUpper() == roleName.ToUpper());
+            var roleEntity = await Roles.SingleOrDefaultAsync(r => r.Name.ToUpper() == roleName.ToUpper(), cancellationToken);
             if (roleEntity == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.RoleNotFound, roleName));
             }
             var ur = new IdentityUserRole<TKey> { UserId = user.Id, RoleId = roleEntity.Id };
-            // TODO: rely on fixup?
             await UserRoles.AddAsync(ur);
-            user.Roles.Add(ur);
-            roleEntity.Users.Add(ur);
         }
 
         /// <summary>
@@ -321,14 +337,13 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentException(Resources.ValueCannotBeNullOrEmpty, "roleName");
             }
-            var roleEntity = await Roles.SingleOrDefaultAsync(r => r.Name.ToUpper() == roleName.ToUpper());
+            var roleEntity = await Roles.SingleOrDefaultAsync(r => r.Name.ToUpper() == roleName.ToUpper(), cancellationToken);
             if (roleEntity != null)
             {
-                var userRole = await UserRoles.FirstOrDefaultAsync(r => roleEntity.Id.Equals(r.RoleId) && r.UserId.Equals(user.Id));
+                var userRole = await UserRoles.FirstOrDefaultAsync(r => roleEntity.Id.Equals(r.RoleId) && r.UserId.Equals(user.Id), cancellationToken);
                 if (userRole != null)
                 {
                     UserRoles.Remove(userRole);
-                    user.Roles.Remove(userRole);
                 }
             }
         }
@@ -339,7 +354,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -348,12 +363,11 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("user");
             }
             var userId = user.Id;
-// TODO:            var query = from userRole in UserRoles
-            var query = from userRole in user.Roles
+            var query = from userRole in UserRoles
                         join role in Roles on userRole.RoleId equals role.Id
+                        where userRole.UserId.Equals(userId)
                         select role.Name;
-            //return await query.ToListAsync();
-            return Task.FromResult<IList<string>>(query.ToList());
+            return await query.ToListAsync();
         }
 
         /// <summary>
@@ -371,18 +385,16 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
-            if (String.IsNullOrWhiteSpace(roleName))
+            if (string.IsNullOrWhiteSpace(roleName))
             {
                 throw new ArgumentException(Resources.ValueCannotBeNullOrEmpty, "roleName");
             }
-            var role = await Roles.SingleOrDefaultAsync(r => r.Name.ToUpper() == roleName.ToUpper());
+            var role = await Roles.SingleOrDefaultAsync(r => r.Name.ToUpper() == roleName.ToUpper(), cancellationToken);
             if (role != null)
             {
                 var userId = user.Id;
                 var roleId = role.Id;
-                return user.Roles.Any(ur => ur.RoleId.Equals(roleId));
-                //return await UserRoles.AnyAsync(ur => ur.RoleId.Equals(roleId) && ur.UserId.Equals(userId));
-                //return UserRoles.Any(ur => ur.RoleId.Equals(roleId) && ur.UserId.Equals(userId));
+                return await UserRoles.AnyAsync(ur => ur.RoleId.Equals(roleId) && ur.UserId.Equals(userId));
             }
             return false;
         }
@@ -408,7 +420,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         private DbSet<IdentityUserRole<TKey>> UserRoles { get { return Context.Set<IdentityUserRole<TKey>>(); } }
         private DbSet<IdentityUserLogin<TKey>> UserLogins { get { return Context.Set<IdentityUserLogin<TKey>>(); } }
 
-        public async Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -416,10 +428,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("user");
             }
 
-            return await UserClaims.Where(uc => uc.UserId.Equals(user.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToListAsync();
+            return await UserClaims.Where(uc => uc.UserId.Equals(user.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToListAsync(cancellationToken);
         }
 
-        public async Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -432,11 +444,11 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
             foreach (var claim in claims)
             {
-               await UserClaims.AddAsync(new IdentityUserClaim<TKey> { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+                await UserClaims.AddAsync(new IdentityUserClaim<TKey> { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value }, cancellationToken);
             }
         }
 
-        public async Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -452,15 +464,15 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("newClaim");
             }
 
-            var matchedClaims = await UserClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync();
-            foreach(var matchedClaim in matchedClaims)
+            var matchedClaims = await UserClaims.Where(uc => uc.UserId.Equals(user.Id) && uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync(cancellationToken);
+            foreach (var matchedClaim in matchedClaims)
             {
                 matchedClaim.ClaimValue = newClaim.Value;
                 matchedClaim.ClaimType = newClaim.Type;
             }
         }
 
-        public async Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -471,8 +483,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("claims");
             }
-            foreach (var claim in claims) {
-                var matchedClaims = await UserClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync();
+            foreach (var claim in claims)
+            {
+                var matchedClaims = await UserClaims.Where(uc => uc.UserId.Equals(user.Id) && uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync(cancellationToken);
                 foreach (var c in matchedClaims)
                 {
                     UserClaims.Remove(c);
@@ -502,7 +515,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             };
             // TODO: fixup so we don't have to update both
             await UserLogins.AddAsync(l);
-            user.Logins.Add(l);
         }
 
         public virtual async Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
@@ -515,12 +527,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("user");
             }
             var userId = user.Id;
-            // todo: ensure logins loaded
-            var entry = await UserLogins.SingleOrDefaultAsync(l => l.UserId.Equals(userId) && l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
+            var entry = await UserLogins.SingleOrDefaultAsync(l => l.UserId.Equals(userId) && l.LoginProvider == loginProvider && l.ProviderKey == providerKey, cancellationToken);
             if (entry != null)
             {
                 UserLogins.Remove(entry);
-                user.Logins.Remove(entry);
             }
         }
 
@@ -532,13 +542,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
-            // todo: ensure logins loaded
-            //IList<UserLoginInfo> result = user.Logins
-            //    .Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName)).ToList();
             var userId = user.Id;
-
             return await UserLogins.Where(l => l.UserId.Equals(userId))
-                .Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName)).ToListAsync();
+                .Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName)).ToListAsync(cancellationToken);
         }
 
         public async virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,
@@ -546,12 +552,11 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            // todo: ensure logins loaded
             var userLogin = await
-                UserLogins.FirstOrDefaultAsync(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
+                UserLogins.FirstOrDefaultAsync(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey, cancellationToken);
             if (userLogin != null)
             {
-                return await GetUserAggregate(u => u.Id.Equals(userLogin.UserId), cancellationToken);
+                return await Users.FirstOrDefaultAsync(u => u.Id.Equals(userLogin.UserId), cancellationToken);
             }
             return null;
         }
@@ -628,19 +633,40 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Task.FromResult(user.Email);
         }
 
+        public virtual Task<string> GetNormalizedEmailAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            return Task.FromResult(user.NormalizedEmail);
+        }
+
+        public virtual Task SetNormalizedEmailAsync(TUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            user.NormalizedEmail = normalizedEmail;
+            return Task.FromResult(0);
+        }
+
         /// <summary>
         ///     Find an user by email
         /// </summary>
         /// <param name="email"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TUser> FindByEmailAsync(string email, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return GetUserAggregate(u => u.Email == email, cancellationToken);
-            // todo: ToUpper blows up with Null Ref
-            //return GetUserAggregate(u => u.Email.ToUpper() == email.ToUpper(), cancellationToken);
+            return Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken);
         }
 
         /// <summary>
@@ -912,6 +938,59 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("user");
             }
             return Task.FromResult(user.TwoFactorEnabled);
+        }
+
+        /// <summary>
+        ///     Get all users with given claim
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async virtual Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (claim == null)
+            {
+                throw new ArgumentNullException("claim");
+            }
+
+            var query = from userclaims in UserClaims
+                        join user in Users on userclaims.UserId equals user.Id
+                        where userclaims.ClaimValue == claim.Value
+                        && userclaims.ClaimType == claim.Type
+                        select user;
+
+            return await query.ToListAsync(cancellationToken);
+        }
+
+        /// <summary>
+        ///     Get all users in given role
+        /// </summary>
+        /// <param name="roleName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async virtual Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (String.IsNullOrEmpty(roleName))
+            {
+                throw new ArgumentNullException("role");
+            }
+
+            var role = await Roles.Where(x => x.Name.Equals(roleName)).FirstOrDefaultAsync(cancellationToken);
+
+            if (role != null)
+            {
+                var query = from userrole in UserRoles
+                            join user in Users on userrole.UserId equals user.Id
+                            where userrole.RoleId.Equals(role.Id)
+                            select user;
+
+                return await query.ToListAsync(cancellationToken);
+            }
+            return new List<TUser>();
         }
     }
 }

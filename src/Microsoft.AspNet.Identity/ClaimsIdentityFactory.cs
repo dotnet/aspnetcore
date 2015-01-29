@@ -5,19 +5,29 @@ using System;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Creates a ClaimsIdentity from a User
+    /// Provides methods to create a claims identity for a given user.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
+    /// <typeparam name="TUser">The type used to represent a user.</typeparam>
+    /// <typeparam name="TRole">The type used to represent a role.</typeparam>
     public class ClaimsIdentityFactory<TUser, TRole> : IClaimsIdentityFactory<TUser>
         where TUser : class
         where TRole : class
     {
-        public ClaimsIdentityFactory(UserManager<TUser> userManager, RoleManager<TRole> roleManager, 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClaimsIdentityFactory"/> class.
+        /// </summary>
+        /// <param name="userManager">The <see cref="UserManager{TUser}"/> to retrieve user information from.</param>
+        /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> to retrieve a user's roles from.</param>
+        /// <param name="optionsAccessor">The configured <see cref="IdentityOptions"/>.</param>
+        public ClaimsIdentityFactory(
+            UserManager<TUser> userManager, 
+            RoleManager<TRole> roleManager, 
             IOptions<IdentityOptions> optionsAccessor)
         {
             if (userManager == null)
@@ -37,19 +47,38 @@ namespace Microsoft.AspNet.Identity
             Options = optionsAccessor.Options;
         }
 
+        /// <summary>
+        /// Gets the <see cref="UserManager{TUser}"/> for this factory.
+        /// </summary>
+        /// <value>
+        /// The current <see cref="UserManager{TUser}"/> for this factory instance.
+        /// </value>
         public UserManager<TUser> UserManager { get; private set; }
+
+        /// <summary>
+        /// Gets the <see cref="RoleManager{TRole}"/> for this factory.
+        /// </summary>
+        /// <value>
+        /// The current <see cref="RoleManager{TRole}"/> for this factory instance.
+        /// </value>
         public RoleManager<TRole> RoleManager { get; private set; }
+
+        /// <summary>
+        /// Gets the <see cref="IdentityOptions"/> for this factory.
+        /// </summary>
+        /// <value>
+        /// The current <see cref="IdentityOptions"/> for this factory instance.
+        /// </value>
         public IdentityOptions Options { get; private set; }
 
         /// <summary>
-        ///     CreateAsync a ClaimsIdentity from a user
+        /// Creates a populated <see cref="ClaimsIdentity"/> for the specified <paramref name="user"/>.
         /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="user"></param>
-        /// <param name="authenticationType"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual async Task<ClaimsIdentity> CreateAsync(TUser user,
+        /// <param name="user">The user instance to create claims on.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the tasks to complete.</param>
+        /// <returns>A <see cref="Task{TResult}"/> that represents the started task.</returns>
+        public virtual async Task<ClaimsIdentity> CreateAsync(
+            TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             if (user == null)

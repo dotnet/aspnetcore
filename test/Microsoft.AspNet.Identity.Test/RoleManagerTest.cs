@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -13,12 +14,103 @@ namespace Microsoft.AspNet.Identity.Test
     public class RoleManagerTest
     {
         [Fact]
+        public async Task CreateCallsStore()
+        {
+            // Setup
+            var store = new Mock<IRoleStore<TestRole>>();
+            var role = new TestRole { Name = "Foo" };
+            store.Setup(s => s.CreateAsync(role, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            store.Setup(s => s.GetRoleNameAsync(role, CancellationToken.None)).Returns(Task.FromResult(role.Name)).Verifiable();
+            store.Setup(s => s.SetNormalizedRoleNameAsync(role, role.Name.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            var roleManager = MockHelpers.TestRoleManager(store.Object);
+
+            // Act
+            var result = await roleManager.CreateAsync(role);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task UpdateCallsStore()
+        {
+            // Setup
+            var store = new Mock<IRoleStore<TestRole>>();
+            var role = new TestRole { Name = "Foo" };
+            store.Setup(s => s.UpdateAsync(role, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            store.Setup(s => s.GetRoleNameAsync(role, CancellationToken.None)).Returns(Task.FromResult(role.Name)).Verifiable();
+            store.Setup(s => s.SetNormalizedRoleNameAsync(role, role.Name.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            var roleManager = MockHelpers.TestRoleManager(store.Object);
+
+            // Act
+            var result = await roleManager.UpdateAsync(role);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
         public void RolesQueryableFailWhenStoreNotImplemented()
         {
             var manager = CreateRoleManager(new NoopRoleStore());
             Assert.False(manager.SupportsQueryableRoles);
             Assert.Throws<NotSupportedException>(() => manager.Roles.Count());
         }
+
+        [Fact]
+        public async Task FindByNameCallsStoreWithNormalizedName()
+        {
+            // Setup
+            var store = new Mock<IRoleStore<TestRole>>();
+            var role = new TestRole { Name = "Foo" };
+            store.Setup(s => s.FindByNameAsync("FOO", CancellationToken.None)).Returns(Task.FromResult(role)).Verifiable();
+            var manager = MockHelpers.TestRoleManager(store.Object);
+
+            // Act
+            var result = await manager.FindByNameAsync(role.Name);
+
+            // Assert
+            Assert.Equal(role, result);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CanFindByNameCallsStoreWithoutNormalizedName()
+        {
+            // Setup
+            var store = new Mock<IRoleStore<TestRole>>();
+            var role = new TestRole { Name = "Foo" };
+            store.Setup(s => s.FindByNameAsync(role.Name, CancellationToken.None)).Returns(Task.FromResult(role)).Verifiable();
+            var manager = MockHelpers.TestRoleManager(store.Object);
+            manager.KeyNormalizer = null;
+
+            // Act
+            var result = await manager.FindByNameAsync(role.Name);
+
+            // Assert
+            Assert.Equal(role, result);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task RoleExistsCallsStoreWithNormalizedName()
+        {
+            // Setup
+            var store = new Mock<IRoleStore<TestRole>>();
+            var role = new TestRole { Name = "Foo" };
+            store.Setup(s => s.FindByNameAsync("FOO", CancellationToken.None)).Returns(Task.FromResult(role)).Verifiable();
+            var manager = MockHelpers.TestRoleManager(store.Object);
+
+            // Act
+            var result = await manager.RoleExistsAsync(role.Name);
+
+            // Assert
+            Assert.True(result);
+            store.VerifyAll();
+        }
+
 
         [Fact]
         public void DisposeAfterDisposeDoesNotThrow()
@@ -32,7 +124,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task RoleManagerPublicNullChecks()
         {
             Assert.Throws<ArgumentNullException>("store",
-                () => new RoleManager<TestRole>(null, null));
+                () => new RoleManager<TestRole>(null, null, null));
             var manager = CreateRoleManager(new NotImplementedStore());
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.CreateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.UpdateAsync(null));
@@ -58,22 +150,22 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var v = new List<IRoleValidator<TestRole>>();
             v.Add(new RoleValidator<TestRole>());
-            return new RoleManager<TestRole>(roleStore, v);
+            return new RoleManager<TestRole>(roleStore);
         }
 
         private class NotImplementedStore : IRoleStore<TestRole>
         {
-            public Task CreateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> CreateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task UpdateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> UpdateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task DeleteAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> DeleteAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -104,6 +196,16 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetNormalizedRoleNameAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetNormalizedRoleNameAsync(TestRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

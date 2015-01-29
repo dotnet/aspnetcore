@@ -30,44 +30,29 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 {
                     b.Key(u => u.Id);
                     b.ForRelational().Table("AspNetUsers");
+                    b.Property(u => u.ConcurrencyStamp).ConcurrencyToken();
                 });
 
             builder.Entity<TRole>(b =>
                 {
                     b.Key(r => r.Id);
                     b.ForRelational().Table("AspNetRoles");
+                    b.Property(r => r.ConcurrencyStamp).ConcurrencyToken();
                 });
 
             builder.Entity<IdentityUserClaim<TKey>>(b =>
                 {
                     b.Key(uc => uc.Id);
-                    b.ManyToOne<TUser>().ForeignKey(uc => uc.UserId);
+                    b.HasOne<TUser>().WithMany().ForeignKey(uc => uc.UserId);
                     b.ForRelational().Table("AspNetUserClaims");
                 });
 
             builder.Entity<IdentityRoleClaim<TKey>>(b =>
                 {
                     b.Key(rc => rc.Id);
-                    b.ManyToOne<TRole>().ForeignKey(rc => rc.RoleId);
+                    b.HasOne<TRole>().WithMany().ForeignKey(rc => rc.RoleId);
                     b.ForRelational().Table("AspNetRoleClaims");
                 });
-
-            var userType = builder.Model.GetEntityType(typeof(TUser));
-            var roleType = builder.Model.GetEntityType(typeof(TRole));
-            var userClaimType = builder.Model.GetEntityType(typeof(IdentityUserClaim<TKey>));
-            var roleClaimType = builder.Model.GetEntityType(typeof(IdentityRoleClaim<TKey>));
-            var userRoleType = builder.Model.GetEntityType(typeof(IdentityUserRole<TKey>));
-            //var ucfk = userClaimType.GetOrAddForeignKey(userType.GetPrimaryKey(), new[] { userClaimType.GetProperty("UserId") });
-            //userType.AddNavigation(new Navigation(ucfk, "Claims", false));
-            //userClaimType.AddNavigation(new Navigation(ucfk, "User", true));
-            //var urfk = userRoleType.GetOrAddForeignKey(userType.GetPrimaryKey(), new[] { userRoleType.GetProperty("UserId") });
-            //userType.AddNavigation(new Navigation(urfk, "Roles", false));
-
-            //var urfk2 = userRoleType.GetOrAddForeignKey(roleType.GetPrimaryKey(), new[] { userRoleType.GetProperty("RoleId") });
-            //roleType.AddNavigation(new Navigation(urfk2, "Users", false));
-
-            var rcfk = roleClaimType.GetOrAddForeignKey(new[] { roleClaimType.GetProperty("RoleId") }, roleType.GetPrimaryKey());
-            roleType.AddNavigation("Claims", rcfk, false);
 
             builder.Entity<IdentityUserRole<TKey>>(b =>
                 {
@@ -81,7 +66,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<IdentityUserLogin<TKey>>(b =>
                 {
                     b.Key(l => new { l.LoginProvider, l.ProviderKey });
-                    b.ManyToOne<TUser>().ForeignKey(uc => uc.UserId);
+                    b.HasOne<TUser>().WithMany().ForeignKey(uc => uc.UserId);
                     b.ForRelational().Table("AspNetUserLogins");
                 });
         }

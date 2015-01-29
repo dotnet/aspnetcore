@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Framework.DependencyInjection;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddInstance<IUserStore<IdentityUser>>(new InMemoryUserStore<IdentityUser, InMemoryContext>((InMemoryContext)context));
+            services.AddInstance<IUserStore<IdentityUser>>(new UserStore<IdentityUser>((InMemoryContext)context));
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)

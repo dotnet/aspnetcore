@@ -4,15 +4,15 @@
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Used to normalize a user name
+    ///     Used to normalize keys for consistent lookups
     /// </summary>
-    public interface IUserNameNormalizer
+    public interface ILookupNormalizer
     {
         /// <summary>
-        /// Returns the normalized user name
+        /// Returns the normalized key
         /// </summary>
-        /// <param name="userName"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        string Normalize(string userName);
+        string Normalize(string key);
     }
 }

@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.Identity
             = new ResourceManager("Microsoft.AspNet.Identity.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Optimistic concurrency failure, object has been modified.
+        /// </summary>
+        internal static string ConcurrencyFailure
+        {
+            get { return GetString("ConcurrencyFailure"); }
+        }
+
+        /// <summary>
+        /// Optimistic concurrency failure, object has been modified.
+        /// </summary>
+        internal static string FormatConcurrencyFailure()
+        {
+            return GetString("ConcurrencyFailure");
+        }
+
+        /// <summary>
         /// Your security code is: {0}
         /// </summary>
         internal static string DefaultEmailTokenProviderBodyFormat
@@ -43,7 +59,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Security Code
+        /// Security code
         /// </summary>
         internal static string DefaultEmailTokenProviderSubject
         {
@@ -51,7 +67,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Security Code
+        /// Security code
         /// </summary>
         internal static string FormatDefaultEmailTokenProviderSubject()
         {
@@ -107,7 +123,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// DefaultTokenProvider
+        /// Default Token Provider
         /// </summary>
         internal static string DefaultTokenProvider
         {
@@ -115,7 +131,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// DefaultTokenProvider
+        /// Default Token Provider
         /// </summary>
         internal static string FormatDefaultTokenProvider()
         {
@@ -139,35 +155,35 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Name {0} is already taken.
+        /// Role name '{0}' is already taken.
         /// </summary>
-        internal static string DuplicateName
+        internal static string DuplicateRoleName
         {
-            get { return GetString("DuplicateName"); }
+            get { return GetString("DuplicateRoleName"); }
         }
 
         /// <summary>
-        /// Name {0} is already taken.
+        /// Role name '{0}' is already taken.
         /// </summary>
-        internal static string FormatDuplicateName(object p0)
+        internal static string FormatDuplicateRoleName(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("DuplicateName"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("DuplicateRoleName"), p0);
         }
 
         /// <summary>
-        /// A user with that external login already exists.
+        /// User name '{0}' is already taken.
         /// </summary>
-        internal static string ExternalLoginExists
+        internal static string DuplicateUserName
         {
-            get { return GetString("ExternalLoginExists"); }
+            get { return GetString("DuplicateUserName"); }
         }
 
         /// <summary>
-        /// A user with that external login already exists.
+        /// User name '{0}' is already taken.
         /// </summary>
-        internal static string FormatExternalLoginExists()
+        internal static string FormatDuplicateUserName(object p0)
         {
-            return GetString("ExternalLoginExists");
+            return string.Format(CultureInfo.CurrentCulture, GetString("DuplicateUserName"), p0);
         }
 
         /// <summary>
@@ -219,6 +235,22 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
+        /// Role name '{0}' is invalid.
+        /// </summary>
+        internal static string InvalidRoleName
+        {
+            get { return GetString("InvalidRoleName"); }
+        }
+
+        /// <summary>
+        /// Role name '{0}' is invalid.
+        /// </summary>
+        internal static string FormatInvalidRoleName(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidRoleName"), p0);
+        }
+
+        /// <summary>
         /// Invalid token.
         /// </summary>
         internal static string InvalidToken
@@ -235,7 +267,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// User name {0} is invalid, can only contain letters or digits.
+        /// User name '{0}' is invalid, can only contain letters or digits.
         /// </summary>
         internal static string InvalidUserName
         {
@@ -243,7 +275,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// User name {0} is invalid, can only contain letters or digits.
+        /// User name '{0}' is invalid, can only contain letters or digits.
         /// </summary>
         internal static string FormatInvalidUserName(object p0)
         {
@@ -251,19 +283,19 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Lockout is not enabled for this user.
+        /// A user with this login already exists.
         /// </summary>
-        internal static string LockoutNotEnabled
+        internal static string LoginAlreadyAssociated
         {
-            get { return GetString("LockoutNotEnabled"); }
+            get { return GetString("LoginAlreadyAssociated"); }
         }
 
         /// <summary>
-        /// Lockout is not enabled for this user.
+        /// A user with this login already exists.
         /// </summary>
-        internal static string FormatLockoutNotEnabled()
+        internal static string FormatLoginAlreadyAssociated()
         {
-            return GetString("LockoutNotEnabled");
+            return GetString("LoginAlreadyAssociated");
         }
 
         /// <summary>
@@ -317,65 +349,65 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         /// Passwords must have at least one digit ('0'-'9').
         /// </summary>
-        internal static string PasswordRequireDigit
+        internal static string PasswordRequiresDigit
         {
-            get { return GetString("PasswordRequireDigit"); }
+            get { return GetString("PasswordRequiresDigit"); }
         }
 
         /// <summary>
         /// Passwords must have at least one digit ('0'-'9').
         /// </summary>
-        internal static string FormatPasswordRequireDigit()
+        internal static string FormatPasswordRequiresDigit()
         {
-            return GetString("PasswordRequireDigit");
+            return GetString("PasswordRequiresDigit");
         }
 
         /// <summary>
         /// Passwords must have at least one lowercase ('a'-'z').
         /// </summary>
-        internal static string PasswordRequireLower
+        internal static string PasswordRequiresLower
         {
-            get { return GetString("PasswordRequireLower"); }
+            get { return GetString("PasswordRequiresLower"); }
         }
 
         /// <summary>
         /// Passwords must have at least one lowercase ('a'-'z').
         /// </summary>
-        internal static string FormatPasswordRequireLower()
+        internal static string FormatPasswordRequiresLower()
         {
-            return GetString("PasswordRequireLower");
+            return GetString("PasswordRequiresLower");
         }
 
         /// <summary>
         /// Passwords must have at least one non letter and non digit character.
         /// </summary>
-        internal static string PasswordRequireNonLetterOrDigit
+        internal static string PasswordRequiresNonLetterAndDigit
         {
-            get { return GetString("PasswordRequireNonLetterOrDigit"); }
+            get { return GetString("PasswordRequiresNonLetterAndDigit"); }
         }
 
         /// <summary>
         /// Passwords must have at least one non letter and non digit character.
         /// </summary>
-        internal static string FormatPasswordRequireNonLetterOrDigit()
+        internal static string FormatPasswordRequiresNonLetterAndDigit()
         {
-            return GetString("PasswordRequireNonLetterOrDigit");
+            return GetString("PasswordRequiresNonLetterAndDigit");
         }
 
         /// <summary>
         /// Passwords must have at least one uppercase ('A'-'Z').
         /// </summary>
-        internal static string PasswordRequireUpper
+        internal static string PasswordRequiresUpper
         {
-            get { return GetString("PasswordRequireUpper"); }
+            get { return GetString("PasswordRequiresUpper"); }
         }
 
         /// <summary>
         /// Passwords must have at least one uppercase ('A'-'Z').
         /// </summary>
-        internal static string FormatPasswordRequireUpper()
+        internal static string FormatPasswordRequiresUpper()
         {
-            return GetString("PasswordRequireUpper");
+            return GetString("PasswordRequiresUpper");
         }
 
         /// <summary>
@@ -392,22 +424,6 @@ namespace Microsoft.AspNet.Identity
         internal static string FormatPasswordTooShort(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("PasswordTooShort"), p0);
-        }
-
-        /// <summary>
-        /// {0} cannot be null or empty.
-        /// </summary>
-        internal static string PropertyTooShort
-        {
-            get { return GetString("PropertyTooShort"); }
-        }
-
-        /// <summary>
-        /// {0} cannot be null or empty.
-        /// </summary>
-        internal static string FormatPropertyTooShort(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyTooShort"), p0);
         }
 
         /// <summary>
@@ -651,7 +667,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// User already in role.
+        /// User already in role '{0}'.
         /// </summary>
         internal static string UserAlreadyInRole
         {
@@ -659,11 +675,43 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// User already in role.
+        /// User already in role '{0}'.
         /// </summary>
-        internal static string FormatUserAlreadyInRole()
+        internal static string FormatUserAlreadyInRole(object p0)
         {
-            return GetString("UserAlreadyInRole");
+            return string.Format(CultureInfo.CurrentCulture, GetString("UserAlreadyInRole"), p0);
+        }
+
+        /// <summary>
+        /// User is locked out.
+        /// </summary>
+        internal static string UserLockedOut
+        {
+            get { return GetString("UserLockedOut"); }
+        }
+
+        /// <summary>
+        /// User is locked out.
+        /// </summary>
+        internal static string FormatUserLockedOut()
+        {
+            return GetString("UserLockedOut");
+        }
+
+        /// <summary>
+        /// Lockout is not enabled for this user.
+        /// </summary>
+        internal static string UserLockoutNotEnabled
+        {
+            get { return GetString("UserLockoutNotEnabled"); }
+        }
+
+        /// <summary>
+        /// Lockout is not enabled for this user.
+        /// </summary>
+        internal static string FormatUserLockoutNotEnabled()
+        {
+            return GetString("UserLockoutNotEnabled");
         }
 
         /// <summary>
@@ -683,7 +731,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// User is not in role.
+        /// User is not in role '{0}'.
         /// </summary>
         internal static string UserNotInRole
         {
@@ -691,11 +739,91 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// User is not in role.
+        /// User is not in role '{0}'.
         /// </summary>
-        internal static string FormatUserNotInRole()
+        internal static string FormatUserNotInRole(object p0)
         {
-            return GetString("UserNotInRole");
+            return string.Format(CultureInfo.CurrentCulture, GetString("UserNotInRole"), p0);
+        }
+
+        /// <summary>
+        /// {0} : Failed : {1}
+        /// </summary>
+        internal static string LogIdentityResultFailure
+        {
+            get { return GetString("LogIdentityResultFailure"); }
+        }
+
+        /// <summary>
+        /// {0} : Failed : {1}
+        /// </summary>
+        internal static string FormatLogIdentityResultFailure(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("LogIdentityResultFailure"), p0, p1);
+        }
+
+        /// <summary>
+        /// {0} : Success
+        /// </summary>
+        internal static string LogIdentityResultSuccess
+        {
+            get { return GetString("LogIdentityResultSuccess"); }
+        }
+
+        /// <summary>
+        /// {0} : Success
+        /// </summary>
+        internal static string FormatLogIdentityResultSuccess(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("LogIdentityResultSuccess"), p0);
+        }
+
+        /// <summary>
+        /// {0} : Result : {1}
+        /// </summary>
+        internal static string LoggingSigninResult
+        {
+            get { return GetString("LoggingSigninResult"); }
+        }
+
+        /// <summary>
+        /// {0} : Result : {1}
+        /// </summary>
+        internal static string FormatLoggingSigninResult(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("LoggingSigninResult"), p0, p1);
+        }
+
+        /// <summary>
+        /// {0} for user: {1}
+        /// </summary>
+        internal static string LoggingResultMessage
+        {
+            get { return GetString("LoggingResultMessage"); }
+        }
+
+        /// <summary>
+        /// {0} for user: {1}
+        /// </summary>
+        internal static string FormatLoggingResultMessage(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("LoggingResultMessage"), p0, p1);
+        }
+
+        /// <summary>
+        /// {0} for role: {1}
+        /// </summary>
+        internal static string LoggingResultMessageForRole
+        {
+            get { return GetString("LoggingResultMessageForRole"); }
+        }
+
+        /// <summary>
+        /// {0} for role: {1}
+        /// </summary>
+        internal static string FormatLoggingResultMessageForRole(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("LoggingResultMessageForRole"), p0, p1);
         }
 
         private static string GetString(string name, params string[] formatterNames)

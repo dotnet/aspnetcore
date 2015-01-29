@@ -24,14 +24,14 @@ namespace Microsoft.AspNet.Identity.Test
             return Task.FromResult(0);
         }
 
-        public Task CreateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> CreateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
-        public Task UpdateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> UpdateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
         public Task<TestUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
@@ -48,9 +48,9 @@ namespace Microsoft.AspNet.Identity.Test
         {
         }
 
-        public Task DeleteAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> DeleteAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
         public Task<string> GetNormalizedUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))

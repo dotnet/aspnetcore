@@ -35,6 +35,12 @@ namespace Microsoft.AspNet.Identity
             return AddScoped(typeof(IRoleValidator<>).MakeGenericType(RoleType), typeof(T));
         }
 
+        public IdentityBuilder AddErrorDescriber<TDescriber>() where TDescriber : IdentityErrorDescriber
+        {
+            Services.AddScoped<IdentityErrorDescriber, TDescriber>();
+            return this;
+        }
+
         public IdentityBuilder AddPasswordValidator<T>() where T : class
         {
             return AddScoped(typeof(IPasswordValidator<>).MakeGenericType(UserType), typeof(T));
@@ -75,6 +81,16 @@ namespace Microsoft.AspNet.Identity
             return AddTokenProvider(typeof(DataProtectorTokenProvider<>).MakeGenericType(UserType))
                 .AddTokenProvider(typeof(PhoneNumberTokenProvider<>).MakeGenericType(UserType))
                 .AddTokenProvider(typeof(EmailTokenProvider<>).MakeGenericType(UserType));
+        }
+
+        public IdentityBuilder AddUserManager<TUserManager>() where TUserManager : class
+        {
+            return AddScoped(typeof(UserManager<>).MakeGenericType(UserType), typeof(TUserManager));
+        }
+
+        public IdentityBuilder AddRoleManager<TRoleManager>() where TRoleManager : class
+        {
+            return AddScoped(typeof(RoleManager<>).MakeGenericType(RoleType), typeof(TRoleManager));
         }
     }
 }

@@ -10,7 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
-using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Identity.Test
 {
@@ -63,6 +63,28 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
+        public void CanOverrideUserManager()
+        {
+            var services = new ServiceCollection();
+            services.AddIdentity<TestUser, TestRole>()
+                .AddUserStore<NoopUserStore>()
+                .AddUserManager<MyUserManager>();
+            var myUserManager = services.BuildServiceProvider().GetRequiredService(typeof(UserManager<TestUser>)) as MyUserManager;
+            Assert.NotNull(myUserManager);
+        }
+
+        [Fact]
+        public void CanOverrideRoleManager()
+        {
+            var services = new ServiceCollection();
+            services.AddIdentity<TestUser, TestRole>()
+                    .AddRoleStore<NoopRoleStore>()
+                    .AddRoleManager<MyRoleManager>();
+            var myRoleManager = services.BuildServiceProvider().GetRequiredService<RoleManager<TestRole>>() as MyRoleManager;
+            Assert.NotNull(myRoleManager);
+        }
+
+        [Fact]
         public void EnsureDefaultServices()
         {
             var services = new ServiceCollection();
@@ -92,22 +114,22 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class MyUberThingy : IUserValidator<IdentityUser>, IPasswordValidator<IdentityUser>, IRoleValidator<IdentityRole>, IUserStore<IdentityUser>, IRoleStore<IdentityRole>
         {
-            public Task CreateAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> CreateAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task CreateAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> CreateAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task DeleteAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> DeleteAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task DeleteAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> DeleteAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -123,6 +145,11 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public Task<IdentityUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetNormalizedRoleNameAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -152,6 +179,11 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
+            public Task SetNormalizedRoleNameAsync(IdentityRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
             public Task SetNormalizedUserNameAsync(IdentityUser user, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
@@ -167,12 +199,12 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task UpdateAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> UpdateAsync(IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task UpdateAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> UpdateAsync(IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -203,5 +235,18 @@ namespace Microsoft.AspNet.Identity.Test
             }
         }
 
+        private class MyUserManager : UserManager<TestUser>
+        {
+            public MyUserManager(IUserStore<TestUser> store) : base(store) { }
+        }
+
+        private class MyRoleManager : RoleManager<TestRole>
+        {
+            public MyRoleManager(IRoleStore<TestRole> store,
+                IEnumerable<IRoleValidator<TestRole>> roleValidators) : base(store)
+            {
+
+            }
+        }
     }
 }

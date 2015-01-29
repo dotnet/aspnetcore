@@ -51,5 +51,13 @@ namespace Microsoft.AspNet.Identity
         /// <returns></returns>
         Task<bool> IsInRoleAsync(TUser user, string roleName,
             CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        ///     Returns all users in given role
+        /// </summary>
+        /// <param name="roleName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +14,13 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     public class PasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : class
     {
+        public PasswordValidator(IdentityErrorDescriber errors = null)
+        {
+            Describer = errors ?? new IdentityErrorDescriber();
+        }
+
+        public IdentityErrorDescriber Describer { get; private set; }
+
         /// <summary>
         ///     Ensures that the password is of the required length and meets the configured requirements
         /// </summary>
@@ -33,33 +39,32 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("manager");
             }
-            var errors = new List<string>();
+            var errors = new List<IdentityError>();
             var options = manager.Options.Password;
             if (string.IsNullOrWhiteSpace(password) || password.Length < options.RequiredLength)
             {
-                errors.Add(String.Format(CultureInfo.CurrentCulture, Resources.PasswordTooShort, 
-                    options.RequiredLength));
+                errors.Add(Describer.PasswordTooShort(options.RequiredLength));
             }
             if (options.RequireNonLetterOrDigit && password.All(IsLetterOrDigit))
             {
-                errors.Add(Resources.PasswordRequireNonLetterOrDigit);
+                errors.Add(Describer.PasswordRequiresNonLetterAndDigit());
             }
             if (options.RequireDigit && !password.Any(IsDigit))
             {
-                errors.Add(Resources.PasswordRequireDigit);
+                errors.Add(Describer.PasswordRequiresDigit());
             }
             if (options.RequireLowercase && !password.Any(IsLower))
             {
-                errors.Add(Resources.PasswordRequireLower);
+                errors.Add(Describer.PasswordRequiresLower());
             }
             if (options.RequireUppercase && !password.Any(IsUpper))
             {
-                errors.Add(Resources.PasswordRequireUpper);
+                errors.Add(Describer.PasswordRequiresUpper());
             }
             return
                 Task.FromResult(errors.Count == 0
                     ? IdentityResult.Success
-                    : IdentityResult.Failed(String.Join(" ", errors)));
+                    : IdentityResult.Failed(errors.ToArray()));
         }
 
         /// <summary>

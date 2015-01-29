@@ -3,12 +3,9 @@
 
 namespace Microsoft.AspNet.Identity
 {
-    public enum SignInStatus
+    public class IdentityError
     {
-        Success,
-        LockedOut,
-        RequiresVerification,
-        NotAllowed,
-        Failure
+        public string Code { get; set; }
+        public string Description { get; set; }
     }
 }

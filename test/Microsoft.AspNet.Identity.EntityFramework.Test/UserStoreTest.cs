@@ -266,18 +266,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [Fact]
-        public async Task EnsureRoleClaimNavigationProperty()
-        {
-            var context = CreateContext();
-            var roleManager = CreateRoleManager(context);
-            var r = new IdentityRole("EnsureRoleClaimNavigationProperty");
-            IdentityResultAssert.IsSuccess(await roleManager.CreateAsync(r));
-            var c = new Claim("a", "b");
-            IdentityResultAssert.IsSuccess(await roleManager.AddClaimAsync(r, c));
-            Assert.NotNull(r.Claims.Single(cl => cl.ClaimValue == c.Value && cl.ClaimType == c.Type));
-        }
-
-        [Fact]
         public async Task AddUserToUnknownRoleFails()
         {
             var manager = CreateManager();
@@ -285,6 +273,157 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(u));
             await Assert.ThrowsAsync<InvalidOperationException>(
                 async () => await manager.AddToRoleAsync(u, "bogus"));
+        }
+
+        [Fact]
+        public async Task ConcurrentUpdatesWillFail()
+        {
+            var user = CreateTestUser();
+            using (var db = CreateContext())
+            {
+                var manager = CreateManager(db);
+                IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            }
+            using (var db = CreateContext())
+            using (var db2 = CreateContext())
+            {
+                var manager1 = CreateManager(db);
+                var manager2 = CreateManager(db2);
+                var user1 = await manager1.FindByIdAsync(user.Id);
+                var user2 = await manager2.FindByIdAsync(user.Id);
+                Assert.NotNull(user1);
+                Assert.NotNull(user2);
+                Assert.NotSame(user1, user2);
+                user1.UserName = Guid.NewGuid().ToString();
+                user2.UserName = Guid.NewGuid().ToString();
+                IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(user1));
+                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(user2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+            }
+        }
+
+        [Fact]
+        public async Task ConcurrentUpdatesWillFailWithDetachedUser()
+        {
+            var user = CreateTestUser();
+            using (var db = CreateContext())
+            {
+                var manager = CreateManager(db);
+                IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            }
+            using (var db = CreateContext())
+            using (var db2 = CreateContext())
+            {
+                var manager1 = CreateManager(db);
+                var manager2 = CreateManager(db2);
+                var user2 = await manager2.FindByIdAsync(user.Id);
+                Assert.NotNull(user2);
+                Assert.NotSame(user, user2);
+                user.UserName = Guid.NewGuid().ToString();
+                user2.UserName = Guid.NewGuid().ToString();
+                IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(user));
+                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(user2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+            }
+        }
+
+        [Fact]
+        public async Task DeleteAModifiedUserWillFail()
+        {
+            var user = CreateTestUser();
+            using (var db = CreateContext())
+            {
+                var manager = CreateManager(db);
+                IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            }
+            using (var db = CreateContext())
+            using (var db2 = CreateContext())
+            {
+                var manager1 = CreateManager(db);
+                var manager2 = CreateManager(db2);
+                var user1 = await manager1.FindByIdAsync(user.Id);
+                var user2 = await manager2.FindByIdAsync(user.Id);
+                Assert.NotNull(user1);
+                Assert.NotNull(user2);
+                Assert.NotSame(user1, user2);
+                user1.UserName = Guid.NewGuid().ToString();
+                IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(user1));
+                IdentityResultAssert.IsFailure(await manager2.DeleteAsync(user2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+            }
+        }
+
+        [Fact]
+        public async Task ConcurrentRoleUpdatesWillFail()
+        {
+            var role = new IdentityRole(Guid.NewGuid().ToString());
+            using (var db = CreateContext())
+            {
+                var manager = CreateRoleManager(db);
+                IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
+            }
+            using (var db = CreateContext())
+            using (var db2 = CreateContext())
+            {
+                var manager1 = CreateRoleManager(db);
+                var manager2 = CreateRoleManager(db2);
+                var role1 = await manager1.FindByIdAsync(role.Id);
+                var role2 = await manager2.FindByIdAsync(role.Id);
+                Assert.NotNull(role1);
+                Assert.NotNull(role2);
+                Assert.NotSame(role1, role2);
+                role1.Name = Guid.NewGuid().ToString();
+                role2.Name = Guid.NewGuid().ToString();
+                IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(role1));
+                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(role2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+            }
+        }
+
+        [Fact]
+        public async Task ConcurrentRoleUpdatesWillFailWithDetachedRole()
+        {
+            var role = new IdentityRole(Guid.NewGuid().ToString());
+            using (var db = CreateContext())
+            {
+                var manager = CreateRoleManager(db);
+                IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
+            }
+            using (var db = CreateContext())
+            using (var db2 = CreateContext())
+            {
+                var manager1 = CreateRoleManager(db);
+                var manager2 = CreateRoleManager(db2);
+                var role2 = await manager2.FindByIdAsync(role.Id);
+                Assert.NotNull(role);
+                Assert.NotNull(role2);
+                Assert.NotSame(role, role2);
+                role.Name = Guid.NewGuid().ToString();
+                role2.Name = Guid.NewGuid().ToString();
+                IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(role));
+                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(role2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+            }
+        }
+
+        [Fact]
+        public async Task DeleteAModifiedRoleWillFail()
+        {
+            var role = new IdentityRole(Guid.NewGuid().ToString());
+            using (var db = CreateContext())
+            {
+                var manager = CreateRoleManager(db);
+                IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
+            }
+            using (var db = CreateContext())
+            using (var db2 = CreateContext())
+            {
+                var manager1 = CreateRoleManager(db);
+                var manager2 = CreateRoleManager(db2);
+                var role1 = await manager1.FindByIdAsync(role.Id);
+                var role2 = await manager2.FindByIdAsync(role.Id);
+                Assert.NotNull(role1);
+                Assert.NotNull(role2);
+                Assert.NotSame(role1, role2);
+                role1.Name = Guid.NewGuid().ToString();
+                IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(role1));
+                IdentityResultAssert.IsFailure(await manager2.DeleteAsync(role2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+            }
         }
 
         // TODO: can we move these to UserManagerTestBase?

@@ -3,92 +3,31 @@
 
 using System;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Metadata;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 {
     public class InMemoryContext :
-        InMemoryContext<IdentityUser, IdentityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
+        InMemoryContext<IdentityUser, IdentityRole, string>
     {
-        public InMemoryContext() { }
-        public InMemoryContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
     }
 
     public class InMemoryContext<TUser> :
-        InMemoryContext<TUser, IdentityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
+        InMemoryContext<TUser, IdentityRole, string>
         where TUser : IdentityUser
     {
-        public InMemoryContext() { }
-        public InMemoryContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
     }
 
-    public class InMemoryContext<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim> : DbContext
+    public class InMemoryContext<TUser, TRole, TKey> : IdentityDbContext<TUser,TRole,TKey>
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
-        where TUserLogin : IdentityUserLogin<TKey>
-        where TUserRole : IdentityUserRole<TKey>
-        where TUserClaim : IdentityUserClaim<TKey>
         where TKey : IEquatable<TKey>
     {
-
-        public DbSet<TUser> Users { get; set; }
-        public DbSet<TRole> Roles { get; set; }
-        public DbSet<IdentityRoleClaim> RoleClaims { get; set; }
-
-        public InMemoryContext(IServiceProvider serviceProvider)
-        : base(serviceProvider) { }
-
         public InMemoryContext() { }
 
         protected override void OnConfiguring(DbContextOptions builder)
         {
             // Want fresh in memory store for tests always for now
             builder.UseInMemoryStore(persist: false);
-        }
-
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            builder.Entity<TUser>(b =>
-            {
-                b.Key(u => u.Id);
-                b.Property(u => u.UserName);
-                b.ForRelational().Table("AspNetUsers");
-            });
-
-            builder.Entity<TRole>(b =>
-            {
-                b.Key(r => r.Id);
-                b.ForRelational().Table("AspNetRoles");
-            });
-
-            builder.Entity<TUserRole>(b =>
-            {
-                b.Key(r => new { r.UserId, r.RoleId });
-                b.ForeignKey<TUser>(f => f.UserId);
-                b.ForeignKey<TRole>(f => f.RoleId);
-                b.ForRelational().Table("AspNetUserRoles");
-            });
-
-            builder.Entity<TUserLogin>(b =>
-            {
-                b.Key(l => new { l.LoginProvider, l.ProviderKey, l.UserId });
-                b.ForeignKey<TUser>(f => f.UserId);
-                b.ForRelational().Table("AspNetUserLogins");
-            });
-
-            builder.Entity<TUserClaim>(b =>
-            {
-                b.Key(c => c.Id);
-                b.ForeignKey<TUser>(f => f.UserId);
-                b.ForRelational().Table("AspNetUserClaims");
-            });
-
-            builder.Entity<IdentityRoleClaim<TKey>>(b =>
-            {
-                b.Key(c => c.Id);
-                b.ForeignKey<TRole>(f => f.RoleId);
-                b.ForRelational().Table("AspNetRoleClaims");
-            });
         }
     }
 }

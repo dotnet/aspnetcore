@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal(ClaimTypes.Role, options.ClaimsIdentity.RoleClaimType);
             Assert.Equal(ClaimTypes.Name, options.ClaimsIdentity.UserNameClaimType);
             Assert.Equal(ClaimTypes.NameIdentifier, options.ClaimsIdentity.UserIdClaimType);
-            Assert.Equal(ClaimsIdentityOptions.DefaultSecurityStampClaimType, options.ClaimsIdentity.SecurityStampClaimType);
+            Assert.Equal("AspNet.Identity.SecurityStamp", options.ClaimsIdentity.SecurityStampClaimType);
         }
 
         [Theory]

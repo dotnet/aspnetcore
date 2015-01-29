@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.OptionsModel;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -21,10 +20,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             public IUserStore<TestUser> StorePublic { get { return Store; } }
 
-            public TestManager(IUserStore<TestUser> store, IOptions<IdentityOptions> optionsAccessor,
-                IPasswordHasher<TestUser> passwordHasher, IEnumerable<IUserValidator<TestUser>> userValidator,
-                IEnumerable<IPasswordValidator<TestUser>> passwordValidator)
-                : base(store, optionsAccessor, passwordHasher, userValidator, passwordValidator, null, null, null) { }
+            public TestManager(IUserStore<TestUser> store) : base(store) { }
         }
 
         [Fact]
@@ -36,8 +32,6 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddIdentity<TestUser, IdentityRole>();
             var manager = services.BuildServiceProvider().GetRequiredService<TestManager>();
             Assert.NotNull(manager.PasswordHasher);
-            Assert.Equal(1, manager.PasswordValidators.Count);
-            Assert.Equal(1, manager.UserValidators.Count);
             Assert.NotNull(manager.StorePublic);
             Assert.NotNull(manager.Options);
         }
@@ -48,7 +42,30 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            store.Setup(s => s.CreateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.CreateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
+            store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+
+            // Act
+            var result = await userManager.CreateAsync(user);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CreateCallsUpdateEmailStore()
+        {
+            // Setup
+            var store = new Mock<IUserEmailStore<TestUser>>();
+            var user = new TestUser { UserName = "Foo", Email = "Foo@foo.com" };
+            store.Setup(s => s.CreateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
+            store.Setup(s => s.GetEmailAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.Email)).Verifiable();
+            store.Setup(s => s.SetNormalizedEmailAsync(user, user.Email.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
 
             // Act
@@ -65,8 +82,8 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            store.Setup(s => s.DeleteAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            store.Setup(s => s.DeleteAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.DeleteAsync(user);
@@ -82,8 +99,31 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
+            store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
+
+            // Act
+            var result = await userManager.UpdateAsync(user);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task UpdateWillUpdateNormalizedEmail()
+        {
+            // Setup
+            var store = new Mock<IUserEmailStore<TestUser>>();
+            var user = new TestUser { UserName = "Foo", Email = "email" };
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
+            store.Setup(s => s.GetEmailAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.Email)).Verifiable();
+            store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.SetNormalizedEmailAsync(user, user.Email.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.UpdateAsync(user);
@@ -99,8 +139,11 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
             var user = new TestUser();
-            store.Setup(s => s.SetUserNameAsync(user, It.IsAny<string>(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            store.Setup(s => s.SetUserNameAsync(user, "foo", CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult("foo")).Verifiable();
+            store.Setup(s => s.SetNormalizedUserNameAsync(user, "FOO", CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.SetUserNameAsync(user, "foo");
@@ -132,7 +175,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser {UserName="Foo"};
+            var user = new TestUser { UserName = "Foo" };
             store.Setup(s => s.FindByNameAsync(user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
             var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
 
@@ -149,13 +192,48 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser {UserName="Foo"};
+            var user = new TestUser { UserName = "Foo" };
             store.Setup(s => s.FindByNameAsync(user.UserName, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
-            userManager.UserNameNormalizer = null;
+            var userManager = MockHelpers.TestUserManager(store.Object);
+            userManager.KeyNormalizer = null;
 
             // Act
             var result = await userManager.FindByNameAsync(user.UserName);
+
+            // Assert
+            Assert.Equal(user, result);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task FindByEmailCallsStoreWithNormalizedEmail()
+        {
+            // Setup
+            var store = new Mock<IUserEmailStore<TestUser>>();
+            var user = new TestUser { Email = "Foo" };
+            store.Setup(s => s.FindByEmailAsync(user.Email.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
+
+            // Act
+            var result = await userManager.FindByEmailAsync(user.Email);
+
+            // Assert
+            Assert.Equal(user, result);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CanFindByEmailCallsStoreWithoutNormalizedEmail()
+        {
+            // Setup
+            var store = new Mock<IUserEmailStore<TestUser>>();
+            var user = new TestUser { Email = "Foo" };
+            store.Setup(s => s.FindByEmailAsync(user.Email, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
+            userManager.KeyNormalizer = null;
+
+            // Act
+            var result = await userManager.FindByEmailAsync(user.Email);
 
             // Assert
             Assert.Equal(user, result);
@@ -168,7 +246,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserRoleStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            var roles = new string[] {"A", "B", "C"};
+            var roles = new string[] { "A", "B", "C" };
             store.Setup(s => s.AddToRoleAsync(user, "A", CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
@@ -178,7 +256,7 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.AddToRoleAsync(user, "C", CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
-            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
             store.Setup(s => s.GetRolesAsync(user, CancellationToken.None)).ReturnsAsync(new List<string>()).Verifiable();
             var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
 
@@ -207,7 +285,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await userManager.AddToRolesAsync(user, roles);
 
             // Assert
-            IdentityResultAssert.IsFailure(result, "User already in role.");
+            IdentityResultAssert.IsFailure(result, IdentityErrorDescriber.Default.UserAlreadyInRole("B"));
             store.VerifyAll();
         }
 
@@ -227,7 +305,7 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.RemoveFromRoleAsync(user, "C", CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
-            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
             store.Setup(s => s.IsInRoleAsync(user, "A", CancellationToken.None))
                 .Returns(Task.FromResult(true))
                 .Verifiable();
@@ -269,7 +347,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await userManager.RemoveFromRolesAsync(user, roles);
 
             // Assert
-            IdentityResultAssert.IsFailure(result, "User is not in role.");
+            IdentityResultAssert.IsFailure(result, IdentityErrorDescriber.Default.UserNotInRole("B"));
             store.VerifyAll();
         }
 
@@ -283,8 +361,8 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.AddClaimsAsync(user, claims, CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
-            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.AddClaimsAsync(user, claims);
@@ -304,8 +382,8 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.AddClaimsAsync(user, It.IsAny<IEnumerable<Claim>>(), CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
-            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.AddClaimAsync(user, claim);
@@ -326,7 +404,8 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.ReplaceClaimAsync(user, It.IsAny<Claim>(), It.IsAny<Claim>(), CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.ReplaceClaimAsync(user, claim, newClaim);
@@ -334,6 +413,34 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.True(result.Succeeded);
             store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CheckPasswordWillRehashPasswordWhenNeeded()
+        {
+            // Setup
+            var store = new Mock<IUserPasswordStore<TestUser>>();
+            var hasher = new Mock<IPasswordHasher<TestUser>>();
+            var user = new TestUser { UserName = "Foo" };
+            var pwd = "password";
+            var hashed = "hashed";
+            var rehashed = "rehashed";
+            
+            store.Setup(s => s.GetPasswordHashAsync(user, CancellationToken.None))
+                .ReturnsAsync(hashed)
+                .Verifiable();
+            hasher.Setup(s => s.VerifyHashedPassword(user, hashed, pwd)).Returns(PasswordVerificationResult.SuccessRehashNeeded).Verifiable();
+            hasher.Setup(s => s.HashPassword(user, pwd)).Returns(rehashed).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
+            userManager.PasswordHasher = hasher.Object;
+
+            // Act
+            var result = await userManager.CheckPasswordAsync(user, pwd);
+
+            // Assert
+            Assert.True(result);
+            store.VerifyAll();
+            hasher.VerifyAll();
         }
 
         [Fact]
@@ -346,8 +453,8 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.RemoveClaimsAsync(user, claims, CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
-            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.RemoveClaimsAsync(user, claims);
@@ -367,7 +474,7 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.RemoveClaimsAsync(user, It.IsAny<IEnumerable<Claim>>(), CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
-            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
             var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
 
             // Act
@@ -533,17 +640,11 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ManagerPublicNullChecks()
         {
             var store = new NotImplementedStore();
-            var optionsAccessor = new OptionsManager<IdentityOptions>(null);
-            var passwordHasher = new PasswordHasher<TestUser>(new PasswordHasherOptionsAccessor());
 
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>(null, null, null, null, null, null, null, null));
-            Assert.Throws<ArgumentNullException>("optionsAccessor",
-                () => new UserManager<TestUser>(store, null, null, null, null, null, null, null));
-            Assert.Throws<ArgumentNullException>("passwordHasher",
-                () => new UserManager<TestUser>(store, optionsAccessor, null, null, null, null, null, null));
+                () => new UserManager<TestUser>(null, null));
 
-            var manager = new UserManager<TestUser>(store, optionsAccessor, passwordHasher, null, null, null, null, null);
+            var manager = new UserManager<TestUser>(store);
 
             Assert.Throws<ArgumentNullException>("value", () => manager.PasswordHasher = null);
             Assert.Throws<ArgumentNullException>("value", () => manager.Options = null);
@@ -581,7 +682,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.AddClaimAsync(null, new Claim("a", "b")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.AddLoginAsync(null, new UserLoginInfo("","","")));
+                async () => await manager.AddLoginAsync(null, new UserLoginInfo("", "", "")));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.AddPasswordAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -714,7 +815,7 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class BadPasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : class
         {
-            public const string ErrorMessage = "I'm Bad.";
+            public static readonly IdentityError ErrorMessage = new IdentityError { Description = "I'm Bad." };
 
             public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password, CancellationToken cancellationToken = default(CancellationToken))
             {
@@ -842,19 +943,19 @@ namespace Microsoft.AspNet.Identity.Test
                 return Task.FromResult(0);
             }
 
-            public Task CreateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> CreateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return Task.FromResult(0);
+                return Task.FromResult(IdentityResult.Success);
             }
 
-            public Task UpdateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> UpdateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return Task.FromResult(0);
+                return Task.FromResult(IdentityResult.Success);
             }
 
-            public Task DeleteAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> DeleteAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return Task.FromResult(0);
+                return Task.FromResult(IdentityResult.Success);
             }
 
             public Task<TestUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
@@ -958,6 +1059,26 @@ namespace Microsoft.AspNet.Identity.Test
             }
 
             public Task SetNormalizedUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task<IList<TestUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult<IList<TestUser>>(new List<TestUser>());
+            }
+
+            public Task<IList<TestUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult<IList<TestUser>>(new List<TestUser>());
+            }
+
+            public Task<string> GetNormalizedEmailAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult("");
+            }
+
+            public Task SetNormalizedEmailAsync(TestUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
@@ -1119,21 +1240,6 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task CreateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task UpdateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task DeleteAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                throw new NotImplementedException();
-            }
-
             public Task<TestUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
@@ -1218,6 +1324,87 @@ namespace Microsoft.AspNet.Identity.Test
             {
                 throw new NotImplementedException();
             }
+
+            public Task<IList<TestUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IList<TestUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            Task<IdentityResult> IUserStore<TestUser>.CreateAsync(TestUser user, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            Task<IdentityResult> IUserStore<TestUser>.UpdateAsync(TestUser user, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            Task<IdentityResult> IUserStore<TestUser>.DeleteAsync(TestUser user, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetNormalizedEmailAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetNormalizedEmailAsync(TestUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
         }
+
+        [Fact]
+        public async Task CanCustomizeUserValidatorErrors()
+        {
+            var services = new ServiceCollection();
+            var store = new Mock<IUserEmailStore<TestUser>>();
+            var describer = new TestErrorDescriber();
+            services.AddInstance<IdentityErrorDescriber>(describer)
+                .AddInstance<IUserStore<TestUser>>(store.Object)
+                .AddIdentity<TestUser, IdentityRole>();
+
+            var manager = services.BuildServiceProvider().GetRequiredService<UserManager<TestUser>>();
+
+            manager.Options.User.RequireUniqueEmail = true;
+            var user = new TestUser() { UserName = "dupeEmail", Email = "dupe@email.com" };
+            var user2 = new TestUser() { UserName = "dupeEmail2", Email = "dupe@email.com" };
+            store.Setup(s => s.FindByEmailAsync("DUPE@EMAIL.COM", CancellationToken.None))
+                .Returns(Task.FromResult(user2))
+                .Verifiable();
+            store.Setup(s => s.GetUserIdAsync(user2, CancellationToken.None))
+                .Returns(Task.FromResult(user2.Id))
+                .Verifiable();
+            store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None))
+                .Returns(Task.FromResult(user.UserName))
+                .Verifiable();
+            store.Setup(s => s.GetEmailAsync(user, CancellationToken.None))
+                .Returns(Task.FromResult(user.Email))
+                .Verifiable();
+
+            Assert.Same(describer, manager.ErrorDescriber);
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(user), describer.DuplicateEmail(user.Email));
+
+            store.VerifyAll();
+        }
+
+        public class TestErrorDescriber : IdentityErrorDescriber
+        {
+            public static string Code = "Error";
+            public static string FormatError = "FormatError {0}";
+
+            public override IdentityError DuplicateEmail(string email)
+            {
+                return new IdentityError { Code = Code, Description = string.Format(FormatError, email) };
+            }
+        }
+
     }
 }

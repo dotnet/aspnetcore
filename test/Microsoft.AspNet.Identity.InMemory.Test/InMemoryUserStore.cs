@@ -10,6 +10,30 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity.InMemory
 {
+    public class InMemoryUser : IdentityUser
+    {
+        public InMemoryUser() { }
+
+        public InMemoryUser(string userName) : base(userName) { }
+
+
+        /// <summary>
+        ///     Roles for the user
+        /// </summary>
+        public virtual ICollection<IdentityUserRole> Roles { get; } = new List<IdentityUserRole>();
+
+        /// <summary>
+        ///     Claims for the user
+        /// </summary>
+        public virtual ICollection<IdentityUserClaim> Claims { get; } = new List<IdentityUserClaim>();
+
+        /// <summary>
+        ///     Associated logins for the user
+        /// </summary>
+        public virtual ICollection<IdentityUserLogin> Logins { get; } = new List<IdentityUserLogin>();
+
+    }
+
     public class InMemoryUserStore<TUser> :
         IUserLoginStore<TUser>,
         IUserRoleStore<TUser>,
@@ -21,7 +45,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         IUserPhoneNumberStore<TUser>,
         IQueryableUserStore<TUser>,
         IUserTwoFactorStore<TUser>
-        where TUser : IdentityUser
+        where TUser : InMemoryUser
     {
         private readonly Dictionary<string, TUser> _logins = new Dictionary<string, TUser>();
 
@@ -42,7 +66,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             foreach (var claim in claims)
             {
-                user.Claims.Add(new IdentityUserClaim<string> { ClaimType = claim.Type, ClaimValue = claim.Value, UserId = user.Id });
+                user.Claims.Add(new IdentityUserClaim { ClaimType = claim.Type, ClaimValue = claim.Value, UserId = user.Id });
             }
             return Task.FromResult(0);
         }
@@ -50,7 +74,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         public Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
         {
             var matchedClaims = user.Claims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToList();
-            foreach(var matchedClaim in matchedClaims)
+            foreach (var matchedClaim in matchedClaims)
             {
                 matchedClaim.ClaimValue = newClaim.Value;
                 matchedClaim.ClaimType = newClaim.Type;
@@ -84,6 +108,18 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(user.Email);
         }
 
+        public Task<string> GetNormalizedEmailAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(user.NormalizedEmail);
+        }
+
+        public Task SetNormalizedEmailAsync(TUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            user.NormalizedEmail = normalizedEmail;
+            return Task.FromResult(0);
+        }
+
+
         public Task<bool> GetEmailConfirmedAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(user.EmailConfirmed);
@@ -99,7 +135,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             return
                 Task.FromResult(
-                    Users.FirstOrDefault(u => String.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase)));
+                    Users.FirstOrDefault(u => u.NormalizedEmail == email));
         }
 
         public Task<DateTimeOffset?> GetLockoutEndDateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
@@ -149,7 +185,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         public virtual Task AddLoginAsync(TUser user, UserLoginInfo login,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            user.Logins.Add(new IdentityUserLogin<string>
+            user.Logins.Add(new IdentityUserLogin
             {
                 UserId = user.Id,
                 ProviderKey = login.ProviderKey,
@@ -209,16 +245,16 @@ namespace Microsoft.AspNet.Identity.InMemory
             return Task.FromResult(0);
         }
 
-        public Task CreateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             _users[user.Id] = user;
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
-        public Task UpdateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> UpdateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             _users[user.Id] = user;
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
         public Task<TUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
@@ -238,17 +274,17 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             return
                 Task.FromResult(
-                    Users.FirstOrDefault(u => String.Equals(u.UserName, userName, StringComparison.OrdinalIgnoreCase)));
+                    Users.FirstOrDefault(u => u.NormalizedUserName == userName));
         }
 
-        public Task DeleteAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> DeleteAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (user == null || !_users.ContainsKey(user.Id))
             {
                 throw new InvalidOperationException("Unknown user");
             }
             _users.Remove(user.Id);
-            return Task.FromResult(0);
+            return Task.FromResult(IdentityResult.Success);
         }
 
         public Task SetPasswordHashAsync(TUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken))
@@ -292,7 +328,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         // RoleId == roleName for InMemory
         public Task AddToRoleAsync(TUser user, string role, CancellationToken cancellationToken = default(CancellationToken))
         {
-            user.Roles.Add(new IdentityUserRole<string> { RoleId = role, UserId = user.Id });
+            user.Roles.Add(new IdentityUserRole { RoleId = role, UserId = user.Id });
             return Task.FromResult(0);
         }
 
@@ -348,6 +384,31 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             user.NormalizedUserName = userName;
             return Task.FromResult(0);
+        }
+
+        // RoleId == rolename for inmemory store tests
+        public Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (String.IsNullOrEmpty(roleName))
+            {
+                throw new ArgumentNullException("role");
+            }
+
+            return Task.FromResult<IList<TUser>>(Users.Where(u => (u.Roles.Where(x => x.RoleId == roleName).Count() > 0)).Select(x => x).ToList());
+        }
+
+        public Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (claim == null)
+            {
+                throw new ArgumentNullException("claim");
+            }
+
+            var query = from user in Users
+                        where user.Claims.Where(x => x.ClaimType == claim.Type && x.ClaimValue == claim.Value).FirstOrDefault() != null
+                        select user;
+
+            return Task.FromResult<IList<TUser>>(query.ToList());
         }
     }
 }

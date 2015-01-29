@@ -4,47 +4,53 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Update;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
     public class RoleStore<TRole> : RoleStore<TRole, DbContext, string>
         where TRole : IdentityRole
     {
-        public RoleStore(DbContext context) : base(context) { }
+        public RoleStore(DbContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
     public class RoleStore<TRole, TContext> : RoleStore<TRole, TContext, string>
         where TRole : IdentityRole
         where TContext : DbContext
     {
-        public RoleStore(TContext context) : base(context) { }
+        public RoleStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
-    public class RoleStore<TRole, TContext, TKey> : 
-        IQueryableRoleStore<TRole>, 
+    public class RoleStore<TRole, TContext, TKey> :
+        IQueryableRoleStore<TRole>,
         IRoleClaimStore<TRole>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
         where TContext : DbContext
     {
-        public RoleStore(TContext context)
+        public RoleStore(TContext context, IdentityErrorDescriber describer = null)
         {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
             }
             Context = context;
+            ErrorDescriber = describer ?? new IdentityErrorDescriber();
         }
 
         private bool _disposed;
 
 
         public TContext Context { get; private set; }
+
+        /// <summary>
+        ///     Used to generate public API error messages
+        /// </summary>
+        public IdentityErrorDescriber ErrorDescriber { get; set; }
 
         /// <summary>
         ///     If true will call SaveChanges after CreateAsync/UpdateAsync/DeleteAsync
@@ -59,12 +65,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
         }
 
-        public virtual Task<TRole> GetRoleAggregate(Expression<Func<TRole, bool>> filter, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return Roles.FirstOrDefaultAsync(filter);
-        }
-
-        public async virtual Task CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -74,9 +75,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
             await Context.AddAsync(role, cancellationToken);
             await SaveChanges(cancellationToken);
+            return IdentityResult.Success;
         }
 
-        public async virtual Task UpdateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> UpdateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -84,11 +86,21 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("role");
             }
+            Context.Attach(role);
+            role.ConcurrencyStamp = Guid.NewGuid().ToString();
             Context.Update(role);
-            await SaveChanges(cancellationToken);
+            try
+            {
+                await SaveChanges(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
+            }
+            return IdentityResult.Success;
         }
 
-        public async virtual Task DeleteAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> DeleteAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -97,7 +109,15 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("role");
             }
             Context.Remove(role);
-            await SaveChanges(cancellationToken);
+            try
+            {
+                await SaveChanges(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
+            }
+            return IdentityResult.Success;
         }
 
         public Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
@@ -163,20 +183,43 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
             var roleId = ConvertIdFromString(id);
-            return GetRoleAggregate(u => u.Id.Equals(roleId), cancellationToken);
+            return Roles.FirstOrDefaultAsync(u => u.Id.Equals(roleId), cancellationToken);
         }
 
         /// <summary>
-        ///     Find a role by name
+        ///     Find a role by normalized name
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="normalizedName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TRole> FindByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TRole> FindByNameAsync(string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return GetRoleAggregate(u => u.Name.ToUpper() == name.ToUpper(), cancellationToken);
+            return Roles.FirstOrDefaultAsync(r => r.NormalizedName == normalizedName, cancellationToken);
+        }
+
+        public virtual Task<string> GetNormalizedRoleNameAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
+            return Task.FromResult(role.NormalizedName);
+        }
+
+        public virtual Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
+            role.NormalizedName = normalizedName;
+            return Task.FromResult(0);
         }
 
         private void ThrowIfDisposed()
@@ -203,7 +246,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("role");
             }
 
-            return await RoleClaims.Where(rc => rc.RoleId.Equals(role.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToListAsync();
+            return await RoleClaims.Where(rc => rc.RoleId.Equals(role.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToListAsync(cancellationToken);
         }
 
         public Task AddClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
@@ -218,7 +261,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("claim");
             }
 
-            return RoleClaims.AddAsync(new IdentityRoleClaim<TKey> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+            return RoleClaims.AddAsync(new IdentityRoleClaim<TKey> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value }, cancellationToken);
         }
 
         public async Task RemoveClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
@@ -232,7 +275,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("claim");
             }
-            var claims = await RoleClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync();
+            var claims = await RoleClaims.Where(uc => uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type).ToListAsync(cancellationToken);
             foreach (var c in claims)
             {
                 RoleClaims.Remove(c);

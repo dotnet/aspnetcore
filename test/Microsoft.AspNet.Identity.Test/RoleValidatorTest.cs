@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var validator = new RoleValidator<TestRole>();
-            var manager = new RoleManager<TestRole>(new NoopRoleStore(), null);
+            var manager = new RoleManager<TestRole>(new NoopRoleStore());
 
             // Act
             // Assert
@@ -29,14 +29,14 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var validator = new RoleValidator<TestRole>();
-            var manager = new RoleManager<TestRole>(new NoopRoleStore(), null);
+            var manager = new RoleManager<TestRole>(new NoopRoleStore());
             var user = new TestRole {Name = input};
 
             // Act
             var result = await validator.ValidateAsync(manager, user);
 
             // Assert
-            IdentityResultAssert.IsFailure(result, "Name cannot be null or empty.");
+            IdentityResultAssert.IsFailure(result, IdentityErrorDescriber.Default.InvalidRoleName(input));
         }
     }
 }

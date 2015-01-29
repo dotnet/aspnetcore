@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -37,6 +36,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         public virtual string Email { get; set; }
 
+        public virtual string NormalizedEmail { get; set; }
+
         /// <summary>
         ///     True if the email is confirmed, default is false
         /// </summary>
@@ -51,6 +52,11 @@ namespace Microsoft.AspNet.Identity
         /// A random value that should change whenever a users credentials change (password changed, login removed)
         /// </summary>
         public virtual string SecurityStamp { get; set; }
+
+        /// <summary>
+        /// A random value that should change whenever a user is persisted to the store
+        /// </summary>
+        public virtual string ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         ///     PhoneNumber for the user
@@ -81,20 +87,5 @@ namespace Microsoft.AspNet.Identity
         ///     Used to record failures for the purposes of lockout
         /// </summary>
         public virtual int AccessFailedCount { get; set; }
-
-        /// <summary>
-        ///     Roles for the user
-        /// </summary>
-        public virtual ICollection<IdentityUserRole<TKey>> Roles { get; } = new List<IdentityUserRole<TKey>>();
-
-        /// <summary>
-        ///     Claims for the user
-        /// </summary>
-        public virtual ICollection<IdentityUserClaim<TKey>> Claims { get; } = new List<IdentityUserClaim<TKey>>();
-
-        /// <summary>
-        ///     Associated logins for the user
-        /// </summary>
-        public virtual ICollection<IdentityUserLogin<TKey>> Logins { get; } = new List<IdentityUserLogin<TKey>>();
     }
 }
