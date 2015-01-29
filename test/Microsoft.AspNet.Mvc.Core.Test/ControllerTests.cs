@@ -12,6 +12,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.AspNet.WebUtilities;
 #if ASPNET50
 using Moq;
 #endif
@@ -384,7 +385,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<CreatedResult>(result);
-            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
             Assert.Same(uri, result.Location);
         }
 
@@ -400,7 +401,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<CreatedResult>(result);
-            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
             Assert.Equal(uri.OriginalString, result.Location);
         }
 
@@ -416,7 +417,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<CreatedResult>(result);
-            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
             Assert.Equal(uri.OriginalString, result.Location);
         }
 
@@ -431,7 +432,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<CreatedAtActionResult>(result);
-            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
             Assert.Equal("SampleAction", result.ActionName);
         }
 
@@ -450,7 +451,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<CreatedAtActionResult>(result);
-            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
             Assert.Equal("SampleAction", result.ActionName);
             Assert.Equal(controllerName, result.ControllerName);
         }
@@ -474,7 +475,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<CreatedAtActionResult>(result);
-            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
             Assert.Equal("SampleAction", result.ActionName);
             Assert.Equal("SampleController", result.ControllerName);
             Assert.Equal(expected, result.RouteValues);
@@ -511,7 +512,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<CreatedAtRouteResult>(result);
-            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
             Assert.Equal(expected, result.RouteValues);
         }
 
@@ -532,7 +533,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<CreatedAtRouteResult>(result);
-            Assert.Equal(201, result.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
             Assert.Same(routeName, result.RouteName);
             Assert.Equal(expected, result.RouteValues);
         }
@@ -651,7 +652,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<HttpNotFoundResult>(result);
-            Assert.Equal(404, result.StatusCode);
+            Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
         }
 
         [Fact]
@@ -665,7 +666,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<BadRequestResult>(result);
-            Assert.Equal(400, result.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
         }
 
         [Fact]
@@ -680,7 +681,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(400, result.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
             Assert.Equal(obj, result.Value);
         }
 
@@ -695,7 +696,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(400, result.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
             var errors = Assert.IsType<SerializableError>(result.Value);
             Assert.Equal(0, errors.Count);
         }

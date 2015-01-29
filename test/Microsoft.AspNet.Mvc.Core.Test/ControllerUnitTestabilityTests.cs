@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Microsoft.AspNet.WebUtilities;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -100,7 +101,7 @@ namespace Microsoft.AspNet.Mvc
             var createdResult = Assert.IsType<CreatedResult>(result);
             Assert.Equal(uri, createdResult.Location);
             Assert.Equal(content, createdResult.Value);
-            Assert.Equal(201, createdResult.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, createdResult.StatusCode);
         }
 
         [Theory]
@@ -206,7 +207,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(result);
 
             var httpNotFoundResult = Assert.IsType<HttpNotFoundResult>(result);
-            Assert.Equal(404, httpNotFoundResult.StatusCode);
+            Assert.Equal(StatusCodes.Status404NotFound, httpNotFoundResult.StatusCode);
         }
 
         [Fact]
@@ -222,7 +223,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(result);
 
             var httpBadRequest = Assert.IsType<BadRequestResult>(result);
-            Assert.Equal(400, httpBadRequest.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, httpBadRequest.StatusCode);
         }
 
         [Fact]
@@ -239,7 +240,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(result);
 
             var httpBadRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(400, httpBadRequest.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, httpBadRequest.StatusCode);
             Assert.Same(error, httpBadRequest.Value);
 
             // Arrange
@@ -252,7 +253,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(result);
 
             httpBadRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(400, httpBadRequest.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, httpBadRequest.StatusCode);
             Assert.Null(httpBadRequest.Value);
         }
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.WebUtilities;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -14,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
             var notFound = new HttpNotFoundResult();
 
             // Assert
-            Assert.Equal(404, notFound.StatusCode);
+            Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
         }
     }
 }

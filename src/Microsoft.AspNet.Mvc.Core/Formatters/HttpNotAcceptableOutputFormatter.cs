@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.WebUtilities;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
         public Task WriteAsync(OutputFormatterContext context)
         {
             var response = context.ActionContext.HttpContext.Response;
-            response.StatusCode = 406;
+            response.StatusCode = StatusCodes.Status406NotAcceptable;
             return Task.FromResult(true);
         }
     }

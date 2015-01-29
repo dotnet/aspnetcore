@@ -4,11 +4,12 @@
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.WebUtilities;
 
 namespace System.Web.Http
 {
     /// <summary>
-    /// An action result that returns a <see cref="System.Net.HttpStatusCode.BadRequest"/> response and performs
+    /// An action result that returns a <see cref="StatusCodes.Status400BadRequest"/> response and performs
     /// content negotiation on an <see cref="HttpError"/> with a <see cref="HttpError.Message"/>.
     /// </summary>
     public class BadRequestErrorMessageResult : ObjectResult
@@ -29,7 +30,7 @@ namespace System.Web.Http
         /// <inheritdoc />
         public override async Task ExecuteResultAsync(ActionContext context)
         {
-            context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            context.HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             await base.ExecuteResultAsync(context);
         }
     }

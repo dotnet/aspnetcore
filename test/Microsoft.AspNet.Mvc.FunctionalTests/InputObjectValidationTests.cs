@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.AspNet.WebUtilities;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -27,17 +28,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             {
                 yield return new object[] {
                     "{\"ByteProperty\":1, \"NullableByteProperty\":5, \"ByteArrayProperty\":[1,2,3]}",
-                    400,
+                    StatusCodes.Status400BadRequest,
                     "The field ByteProperty must be between 2 and 8."};
 
                 yield return new object[] {
                     "{\"ByteProperty\":8, \"NullableByteProperty\":1, \"ByteArrayProperty\":[1,2,3]}",
-                    400,
+                    StatusCodes.Status400BadRequest,
                     "The field NullableByteProperty must be between 2 and 8."};
 
                 yield return new object[] {
                     "{\"ByteProperty\":8, \"NullableByteProperty\":2, \"ByteArrayProperty\":[1]}",
-                    400,
+                    StatusCodes.Status400BadRequest,
                     "The field ByteArrayProperty must be a string or array type with a minimum length of '2'."};
             }
         }
@@ -130,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var response = await client.PostAsync("http://localhost/Validation/CreateProject", content);
 
             //Assert
-            Assert.Equal(400, (int)response.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, (int)response.StatusCode);
 
             var responseContent = await response.Content.ReadAsStringAsync();
             var responseObject = JsonConvert.DeserializeObject<Dictionary<string, ErrorCollection>>(responseContent);

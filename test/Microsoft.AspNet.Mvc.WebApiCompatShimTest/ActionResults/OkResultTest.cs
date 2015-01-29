@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.WebUtilities;
 using Xunit;
 
 namespace System.Web.Http
@@ -22,7 +23,7 @@ namespace System.Web.Http
             await result.ExecuteResultAsync(context);
 
             // Assert
-            Assert.Equal(200, context.HttpContext.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status200OK, context.HttpContext.Response.StatusCode);
         }
     }
 }

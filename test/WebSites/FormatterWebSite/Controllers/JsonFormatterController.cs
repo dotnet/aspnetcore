@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.WebUtilities;
 using Newtonsoft.Json;
 
 namespace FormatterWebSite.Controllers
@@ -33,7 +34,7 @@ namespace FormatterWebSite.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return new HttpStatusCodeResult(400);
+                return new HttpStatusCodeResult(StatusCodes.Status400BadRequest);
             }
             return Content(dummyObject.SampleInt.ToString());
         }

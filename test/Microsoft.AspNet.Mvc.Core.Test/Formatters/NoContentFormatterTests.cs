@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.WebUtilities;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -125,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.Test
             await formatter.WriteAsync(formatterContext);
 
             // Assert
-            Assert.Equal(204, defaultHttpContext.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status204NoContent, defaultHttpContext.Response.StatusCode);
         }
 
         [Fact]
@@ -137,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.Test
             {
                 Object = null,
                 ActionContext = new ActionContext(defaultHttpContext, new RouteData(), new ActionDescriptor()),
-                StatusCode = 201
+                StatusCode = StatusCodes.Status201Created
             };
 
             var formatter = new HttpNoContentOutputFormatter();
@@ -146,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.Test
             await formatter.WriteAsync(formatterContext);
 
             // Assert
-            Assert.Equal(201, defaultHttpContext.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, defaultHttpContext.Response.StatusCode);
         }
     }
 }

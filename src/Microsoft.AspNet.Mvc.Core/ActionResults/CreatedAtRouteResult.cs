@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
         {
             RouteName = routeName;
             RouteValues = TypeHelper.ObjectToDictionary(routeValues);
-            StatusCode = 201;
+            StatusCode = StatusCodes.Status201Created;
         }
 
         /// <summary>

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.WebUtilities;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -44,7 +45,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var response = context.ActionContext.HttpContext.Response;
             response.ContentLength = 0;
-            response.StatusCode = context.StatusCode ?? 204;
+            response.StatusCode = context.StatusCode ?? StatusCodes.Status204NoContent;
             return Task.FromResult(true);
         }
     }

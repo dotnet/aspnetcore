@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
             if (selectedFormatter == null)
             {
                 // No formatter supports this.
-                context.HttpContext.Response.StatusCode = 406;
+                context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
                 return;
             }
 

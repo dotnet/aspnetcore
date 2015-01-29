@@ -10,6 +10,7 @@ using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            Assert.Equal(201, httpContext.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, httpContext.Response.StatusCode);
             Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
         }
 

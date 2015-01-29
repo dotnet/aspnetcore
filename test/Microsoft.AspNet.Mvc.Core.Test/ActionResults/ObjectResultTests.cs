@@ -11,6 +11,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
@@ -401,7 +402,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
 
             // Assert
             // Asserts that content type is not text/custom.
-            httpResponse.VerifySet(r => r.StatusCode = 406);
+            httpResponse.VerifySet(r => r.StatusCode = StatusCodes.Status406NotAcceptable);
         }
 
         [Fact]
@@ -436,7 +437,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         {
             // Arrange
             var stream = new MemoryStream();
-            var expectedStatusCode = 201;
+            var expectedStatusCode = StatusCodes.Status201Created;
             var httpResponse = new Mock<HttpResponse>();
             httpResponse.SetupGet(r => r.Body).Returns(stream);
 

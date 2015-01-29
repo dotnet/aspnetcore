@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Elm;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.WebUtilities;
 using Newtonsoft.Json;
 
 namespace LoggingWebSite
@@ -25,7 +26,7 @@ namespace LoggingWebSite
 
             var logActivities = GetLogDetails(elmStore);
 
-            context.Response.StatusCode = 200;
+            context.Response.StatusCode = StatusCodes.Status200OK;
             context.Response.ContentType = "application/json";
 
             var serializer = JsonSerializer.Create();

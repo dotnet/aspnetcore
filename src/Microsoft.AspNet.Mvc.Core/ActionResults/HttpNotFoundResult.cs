@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.WebUtilities;
+
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
@@ -12,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Creates a new <see cref="HttpNotFoundResult"/> instance.
         /// </summary>
-        public HttpNotFoundResult() : base(404)
+        public HttpNotFoundResult() : base(StatusCodes.Status404NotFound)
         {
         }
     }

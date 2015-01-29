@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.WebUtilities;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.Mvc
             // body correctly.
             if (!string.Equals(filterContext.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
             {
-                filterContext.Result = new HttpStatusCodeResult(403);
+                filterContext.Result = new HttpStatusCodeResult(StatusCodes.Status403Forbidden);
             }
             else
             {

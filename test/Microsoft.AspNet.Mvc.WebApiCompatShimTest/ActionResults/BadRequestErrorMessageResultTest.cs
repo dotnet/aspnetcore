@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -33,7 +34,7 @@ namespace System.Web.Http
             await result.ExecuteResultAsync(context);
 
             // Assert
-            Assert.Equal(400, context.HttpContext.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, context.HttpContext.Response.StatusCode);
         }
 
         [Fact]

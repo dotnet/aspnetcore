@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.WebUtilities;
 
 namespace BasicWebSite.Controllers
 {
@@ -37,14 +38,14 @@ namespace BasicWebSite.Controllers
 
         public IActionResult NoContentResult()
         {
-            return new HttpStatusCodeResult(204);
+            return new HttpStatusCodeResult(StatusCodes.Status204NoContent);
         }
 
         [AcceptVerbs("GET", "POST")]
         [RequireHttps]
         public IActionResult HttpsOnlyAction()
         {
-            return new HttpStatusCodeResult(200);
+            return new HttpStatusCodeResult(StatusCodes.Status200OK);
         }
 
         public Task ActionReturningTask()

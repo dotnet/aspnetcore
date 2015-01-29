@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Net;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.WebUtilities;
 using ModelBindingWebSite.Services;
 using ModelBindingWebSite.ViewModels;
 
@@ -133,7 +133,7 @@ namespace ModelBindingWebSite
 
         public IDictionary<string, IEnumerable<string>> SerializeModelState()
         {
-            Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            Response.StatusCode = StatusCodes.Status400BadRequest;
 
             return ModelState.Where(item => item.Value.Errors.Count > 0)
                              .ToDictionary(item => item.Key, item => item.Value.Errors.Select(e => e.ErrorMessage));

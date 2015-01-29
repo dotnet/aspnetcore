@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.WebUtilities;
 
 namespace FormatterWebSite
 {
@@ -11,7 +12,10 @@ namespace FormatterWebSite
         {
             if (!context.ModelState.IsValid)
             {
-                context.Result = new ObjectResult(context.ModelState) { StatusCode = 400 };
+                context.Result = new ObjectResult(context.ModelState)
+                {
+                    StatusCode = StatusCodes.Status400BadRequest
+                };
             }
         }
     }

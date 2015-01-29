@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.WebUtilities;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
         public void HttpStatusCodeResult_ExecuteResultSetsResponseStatusCode()
         {
             // Arrange
-            var result = new HttpStatusCodeResult(404);
+            var result = new HttpStatusCodeResult(StatusCodes.Status404NotFound);
 
             var httpContext = new DefaultHttpContext();
             var routeData = new RouteData();
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.Mvc
             result.ExecuteResult(context);
 
             // Assert
-            Assert.Equal(404, httpContext.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
         }
     }
 }

@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Security;
+using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
@@ -227,7 +228,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 services.AddInstance(authorizationService.Object)
                 );
 
-            authorizationContext.Result = new HttpStatusCodeResult(401);
+            authorizationContext.Result = new HttpStatusCodeResult(StatusCodes.Status401Unauthorized);
 
             // Act
             await authorizeAttribute.OnAuthorizationAsync(authorizationContext);

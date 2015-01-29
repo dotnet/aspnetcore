@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Xunit;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.WebUtilities;
+using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNet.Mvc
             var badRequestObjecResult = new BadRequestObjectResult(obj);
 
             // Assert
-            Assert.Equal(400, badRequestObjecResult.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjecResult.StatusCode);
             Assert.Equal(obj, badRequestObjecResult.Value);
         }
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
             var badRequestObjecResult = new BadRequestObjectResult(new ModelStateDictionary());
 
             // Assert
-            Assert.Equal(400, badRequestObjecResult.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjecResult.StatusCode);
             var errors = Assert.IsType<SerializableError>(badRequestObjecResult.Value);
             Assert.Equal(0, errors.Count);
         }

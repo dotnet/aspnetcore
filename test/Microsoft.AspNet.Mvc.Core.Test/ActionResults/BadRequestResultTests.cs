@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.WebUtilities;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -14,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
             var badRequest = new BadRequestResult();
 
             // Assert
-            Assert.Equal(400, badRequest.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequest.StatusCode);
         }
     }
 }

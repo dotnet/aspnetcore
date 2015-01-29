@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.WebUtilities;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
 
         protected virtual void Fail([NotNull] AuthorizationContext context)
         {
-            context.Result = new HttpStatusCodeResult(401);
+            context.Result = new HttpStatusCodeResult(StatusCodes.Status401Unauthorized);
         }
     }
 }

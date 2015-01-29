@@ -4,6 +4,7 @@
 using System;
 using System.Text;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.WebUtilities;
 
 namespace ActionResultsWebSite
 {
@@ -80,7 +81,7 @@ namespace ActionResultsWebSite
         public IActionResult GetObjectResultWithNoContent()
         {
             var result = new ObjectResult(null);
-            result.StatusCode = 201;
+            result.StatusCode = StatusCodes.Status201Created;
             return result;
         }
 

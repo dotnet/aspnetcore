@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.WebUtilities;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -120,7 +121,7 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             Assert.NotNull(authContext.Result);
             var result = Assert.IsType<HttpStatusCodeResult>(authContext.Result);
-            Assert.Equal(403, result.StatusCode);
+            Assert.Equal(StatusCodes.Status403Forbidden, result.StatusCode);
         }
 
         [Fact]
@@ -138,14 +139,14 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             var result = Assert.IsType<HttpStatusCodeResult>(authContext.Result);
-            Assert.Equal(404, result.StatusCode);
+            Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
         }
 
         private class CustomRequireHttpsAttribute : RequireHttpsAttribute
         {
             protected override void HandleNonHttpsRequest(AuthorizationContext filterContext)
             {
-                filterContext.Result = new HttpStatusCodeResult(404);
+                filterContext.Result = new HttpStatusCodeResult(StatusCodes.Status404NotFound);
             }
         }
 
