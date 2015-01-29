@@ -3,19 +3,14 @@ param(
   [string] $Command,
   [string] $Proxy,
   [switch] $Verbosity = $false,
-  [alias("g")][switch] $Global = $false,
   [alias("p")][switch] $Persistent = $false,
   [alias("f")][switch] $Force = $false,
   [alias("r")][string] $Runtime,
+
   [alias("arch")][string] $Architecture,
   [switch] $X86 = $false,
-  [switch] $Amd64 = $false,
-  #deprecated
-  [switch] $X64 = $false,
-  #deprecated
-  [switch] $Svr50 = $false,
-  #deprecated
-  [switch] $Svrc50 = $false,
+  [alias("amd64")][switch] $X64 = $false,
+
   [alias("w")][switch] $Wait = $false,
   [alias("a")]
   [string] $Alias = $null,
@@ -27,29 +22,44 @@ param(
   [switch] $AssumeElevated
 )
 
-# "Constants" (in as much as PowerShell will allow)
-$RuntimePackageName = "dotnet"
-$RuntimeFriendlyName = ".NET Runtime"
-$RuntimeProgramFilesName = "Microsoft .NET Cross-Platform Runtime"
-$RuntimeFolderName = ".dotnet"
-$DefaultFeed = "https://www.myget.org/F/aspnetvnext/api/v2"
-$CrossGenCommand = "k-crossgen"
+# Constants
+Set-Variable -Option Constant "BuildNumber" "10308"
+Set-Variable -Option Constant "RuntimePackageName" "kre"
+Set-Variable -Option Constant "RuntimeFriendlyName" "K Runtime"
+Set-Variable -Option Constant "RuntimeShortName" "KRE"
+Set-Variable -Option Constant "RuntimeFolderName" ".k"
+Set-Variable -Option Constant "CommandName" "kvm"
+Set-Variable -Option Constant "VersionManagerName" "K Version Manager"
+Set-Variable -Option Constant "DefaultFeed" "https://www.myget.org/F/aspnetvnext/api/v2"
+Set-Variable -Option Constant "CrossGenCommand" "k-crossgen"
+Set-Variable -Option Constant "HomeEnvVar" "KRE_HOME"
+Set-Variable -Option Constant "UserHomeEnvVar" "KRE_USER_HOME"
+Set-Variable -Option Constant "FeedEnvVar" "KRE_FEED"
+
 
 $selectedArch=$null;
 $defaultArch="x86"
 $selectedRuntime=$null
 $defaultRuntime="clr"
 
-# Get or calculate userDotNetPath
-$userDotNetPath = $env:DOTNET_USER_PATH
-if(!$userDotNetPath) { $userDotNetPath = $env:USERPROFILE + "\$RuntimeFolderName" }
-$userDotNetRuntimesPath = $userDotNetPath + "\runtimes"
+function getenv($name) {
+  if(Test-Path "env:\$name") {
+    cat "env:\$name"
+  }
+}
 
-# Get or calculate globalDotNetPath
-$globalDotNetPath = $env:DOTNET_GLOBAL_PATH
-if(!$globalDotNetPath) { $globalDotNetPath = $env:ProgramFiles + "\$RuntimeProgramFilesName" }
-$globalDotNetRuntimesPath = $globalDotNetPath + "\runtimes"
-$feed = $env:DOTNET_FEED
+# Get or calculate userHome
+$userHome = (getenv $UserHomeEnvVar)
+if(!$userHome) { $userHome = $env:USERPROFILE + "\$RuntimeFolderName" }
+$userRuntimesPath = $userHome + "\runtimes"
+
+# Get the feed from the environment variable or set it to the default value
+$feed = (getenv $FeedEnvVar)
+if (!$feed)
+{
+    $feed = $DefaultFeed;
+}
+$feed = $feed.TrimEnd("/")
 
 # In some environments, like Azure Websites, the Write-* cmdlets don't work
 $useHostOutputMethods = $true
@@ -58,122 +68,116 @@ function String-IsEmptyOrWhitespace([string]$str) {
      return [string]::IsNullOrEmpty($str) -or $str.Trim().length -eq 0
 }
 
-if (!$feed)
-{
-    $feed = $DefaultFeed;
-}
-
-$feed = $feed.TrimEnd("/")
-
 $scriptPath = $myInvocation.MyCommand.Definition
 
-function DotNetSdk-Help {
+function _Help {
 @"
-.NET SDK Manager - Build 10206
+$VersionManagerName - Build $BuildNumber
 
-USAGE: dotnetsdk <command> [options]
+USAGE: $CommandName <command> [options]
 
-dotnetsdk upgrade [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR] [-g|-Global] [-f|-Force] [-Proxy <ADDRESS>] [-NoNative]
-  install latest .NET Runtime from feed
+$CommandName upgrade [-X86|-X64] [-r|-Runtime CLR|CoreCLR] [-g|-Global] [-f|-Force] [-Proxy <ADDRESS>] [-NoNative]
+  install latest $RuntimeShortName from feed
   set 'default' alias to installed version
-  add KRE bin to user PATH environment variable
+  add $RuntimeShortName bin to user PATH environment variable
   -g|-Global        install to machine-wide location
   -f|-Force         upgrade even if latest is already installed
   -Proxy <ADDRESS>  use given address as proxy when accessing remote server (e.g. https://username:password@proxyserver:8080/). Alternatively set proxy using http_proxy environment variable.
   -NoNative         Do not generate native images (Effective only for CoreCLR flavors)
 
-dotnetsdk install <semver>|<alias>|<nupkg>|latest [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR] [-a|-Alias <alias>] [-g|-Global] [-f|-Force] [-Proxy <ADDRESS>] [-NoNative]
-  <semver>|<alias>  install requested .NET Runtime from feed
-  <nupkg>           install requested .NET Runtime from package on local filesystem
-  latest            install latest .NET Runtime from feed
-  add .NET Runtime bin to path of current command line
-  -p|-Persistent    add .NET Runtime bin to PATH environment variables persistently
-  -a|-Alias <alias> set alias <alias> for requested .NET Runtime on install
-  -g|-Global        install to machine-wide location
+$CommandName install <semver>|<alias>|<nupkg>|latest [-X86|-X64] [-r|-Runtime CLR|CoreCLR] [-a|-Alias <alias>] [-f|-Force] [-Proxy <ADDRESS>] [-NoNative]
+  <semver>|<alias>  install requested $RuntimeShortName from feed
+  <nupkg>           install requested $RuntimeShortName from package on local filesystem
+  latest            install latest $RuntimeShortName from feed
+  add $RuntimeShortName bin to path of current command line
+  -p|-Persistent    add $RuntimeShortName bin to PATH environment variables persistently
+  -a|-Alias <alias> set alias <alias> for requested $RuntimeShortName on install
   -f|-Force         install even if specified version is already installed
   -Proxy <ADDRESS>  use given address as proxy when accessing remote server (e.g. https://username:password@proxyserver:8080/). Alternatively set proxy using http_proxy environment variable.
   -NoNative         Do not generate native images (Effective only for CoreCLR flavors)
 
-dotnetsdk use <semver>|<alias>|<package>|none [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR] [-p|-Persistent] [-g|-Global]
-  <semver>|<alias>|<package>  add .NET Runtime bin to path of current command line
-  none                        remove .NET Runtime bin from path of current command line
-  -p|-Persistent              add .NET Runtime bin to PATH environment variables persistently
-  -g|-Global                  combined with -p to change machine PATH instead of user PATH
+$CommandName use <semver>|<alias>|<package>|none [-X86|-X64] [-r|-Runtime CLR|CoreCLR] [-p|-Persistent]
+  <semver>|<alias>|<package>  add $RuntimeShortName bin to path of current command line
+  none                        remove $RuntimeShortName bin from path of current command line
+  -p|-Persistent              add $RuntimeShortName bin to PATH environment variable across all processes run by the current user
 
-dotnetsdk list
-  list .NET Runtime versions installed
+$CommandName list
+  list $RuntimeShortName versions installed
 
-dotnetsdk alias
-  list .NET Runtime aliases which have been defined
+$CommandName alias
+  list $RuntimeShortName aliases which have been defined
 
-dotnetsdk alias <alias>
+$CommandName alias <alias>
   display value of the specified alias
 
-dotnetsdk alias <alias> <semver>|<alias>|<package> [-X86][-Amd64] [-r|-Runtime CLR|CoreCLR]
+$CommandName alias <alias> <semver>|<alias>|<package> [-X86|-X64] [-r|-Runtime CLR|CoreCLR]
   <alias>                      the name of the alias to set
-  <semver>|<alias>|<package>   the .NET Runtime version to set the alias to. Alternatively use the version of the specified alias
+  <semver>|<alias>|<package>   the $RuntimeShortName version to set the alias to. Alternatively use the version of the specified alias
 
-dotnetsdk unalias <alias>
+$CommandName unalias <alias>
   remove the specified alias
 
 "@ -replace "`n","`r`n" | Console-Write
 }
 
-function DotNetSdk-Global-Setup {
-  $dotnetsdkBinPath = "$userDotNetPath\bin"
+function _Global-Setup {
+  # Sets up the version manager tool and adds the user-local runtime install directory to the home variable
+  # Note: We no longer do global install via this tool. The MSI handles global install of runtimes AND will set
+  # the machine level home value.
+
+  # In this configuration, the user-level path will OVERRIDE the global path because it is placed first.
+
+  $cmdBinPath = "$userHome\bin"
 
   If (Needs-Elevation)
   {
-    $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' setup -global -wait"
+    $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' setup -wait"
     Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
-    Console-Write "Adding $dotnetsdkBinPath to process PATH"
-    Set-Path (Change-Path $env:Path $dotnetsdkBinPath ($dotnetsdkBinPath))
-    Console-Write "Adding $globalDotNetPath;%USERPROFILE%\$RuntimeFolderName to process DOTNET_HOME"
-    $envDotNetHome = $env:DOTNET_HOME
-    $envDotNetHome = Change-Path $envDotNetHome "%USERPROFILE%\$RuntimeFolderName" ("%USERPROFILE%\$RuntimeFolderName")
-    $envDotNetHome = Change-Path $envDotNetHome $globalDotNetPath ($globalDotNetPath)
-    $env:DOTNET_HOME = $envDotNetHome
+    Console-Write "Adding $cmdBinPath to process PATH"
+    Set-Path (Change-Path $env:Path $cmdBinPath ($cmdBinPath))
+    Console-Write "Adding %USERPROFILE%\$RuntimeFolderName to process $HomeEnvVar"
+    $envRuntimeHome = (getenv $HomeEnvVar)
+    $envRuntimeHome = Change-Path $envRuntimeHome "%USERPROFILE%\$RuntimeFolderName" ("%USERPROFILE%\$RuntimeFolderName")
+    Set-Content "env:\$HomeEnvVar" $envRuntimeHome
     Console-Write "Setup complete"
     break
   }
 
   $scriptFolder = [System.IO.Path]::GetDirectoryName($scriptPath)
 
-  Console-Write "Copying file $dotnetsdkBinPath\dotnetsdk.ps1"
-  md $dotnetsdkBinPath -Force | Out-Null
-  copy "$scriptFolder\dotnetsdk.ps1" "$dotnetsdkBinPath\dotnetsdk.ps1"
+  Console-Write "Copying file $cmdBinPath\$CommandName.ps1"
+  md $cmdBinPath -Force | Out-Null
+  copy "$scriptFolder\$CommandName.ps1" "$cmdBinPath\$CommandName.ps1"
 
-  Console-Write "Copying file $dotnetsdkBinPath\dotnetsdk.cmd"
-  copy "$scriptFolder\dotnetsdk.cmd" "$dotnetsdkBinPath\dotnetsdk.cmd"
+  Console-Write "Copying file $cmdBinPath\$CommandName.cmd"
+  copy "$scriptFolder\$CommandName.cmd" "$cmdBinPath\$CommandName.cmd"
 
-  Console-Write "Adding $dotnetsdkBinPath to process PATH"
-  Set-Path (Change-Path $env:Path $dotnetsdkBinPath ($dotnetsdkBinPath))
+  Console-Write "Adding $cmdBinPath to process PATH"
+  Set-Path (Change-Path $env:Path $cmdBinPath ($cmdBinPath))
 
-  Console-Write "Adding $dotnetsdkBinPath to user PATH"
+  Console-Write "Adding $cmdBinPath to user PATH"
   $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
-  $userPath = Change-Path $userPath $dotnetsdkBinPath ($dotnetsdkBinPath)
+  $userPath = Change-Path $userPath $cmdBinPath ($cmdBinPath)
   [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
 
-  Console-Write "Adding $globalDotNetPath;%USERPROFILE%\$RuntimeFolderName to process DOTNET_HOME"
-  $envDotNetHome = $env:DOTNET_HOME
-  $envDotNetHome = Change-Path $envDotNetHome "%USERPROFILE%\$RuntimeFolderName" ("%USERPROFILE%\$RuntimeFolderName")
-  $envDotNetHome = Change-Path $envDotNetHome $globalDotNetPath ($globalDotNetPath)
-  $env:DOTNET_HOME = $envDotNetHome
+  Console-Write "Adding %USERPROFILE%\$RuntimeFolderName to process $HomeEnvVar"
+  $envRuntimeHome = (getenv $HomeEnvVar)
+  $envRuntimeHome = Change-Path $envRuntimeHome "%USERPROFILE%\$RuntimeFolderName" ("%USERPROFILE%\$RuntimeFolderName")
+  Set-Content "env:\$HomeEnvVar" $envRuntimeHome
 
-  Console-Write "Adding $globalDotNetPath;%USERPROFILE%\$RuntimeFolderName to machine DOTNET_HOME"
-  $machineDotNetHome = [Environment]::GetEnvironmentVariable("DOTNET_HOME", [System.EnvironmentVariableTarget]::Machine)
-  $machineDotNetHome = Change-Path $machineDotNetHome "%USERPROFILE%\$RuntimeFolderName" ("%USERPROFILE%\$RuntimeFolderName")
-  $machineDotNetHome = Change-Path $machineDotNetHome $globalDotNetPath ($globalDotNetPath)
-  [Environment]::SetEnvironmentVariable("DOTNET_HOME", $machineDotNetHome, [System.EnvironmentVariableTarget]::Machine)
+  Console-Write "Adding %USERPROFILE%\$RuntimeFolderName to machine $HomeEnvVar"
+  $machineruntimeHome = [Environment]::GetEnvironmentVariable($HomeEnvVar, [System.EnvironmentVariableTarget]::Machine)
+  $machineruntimeHome = Change-Path $machineruntimeHome "%USERPROFILE%\$RuntimeFolderName" ("%USERPROFILE%\$RuntimeFolderName")
+  [Environment]::SetEnvironmentVariable($HomeEnvVar, $machineruntimeHome, [System.EnvironmentVariableTarget]::Machine)
 }
 
-function DotNetSdk-Upgrade {
+function _Upgrade {
 param(
   [boolean] $isGlobal
 )
   $Persistent = $true
   $Alias="default"
-  DotNetSdk-Install "latest" $isGlobal
+  _Install "latest" $isGlobal
 }
 
 function Add-Proxy-If-Specified {
@@ -195,7 +199,7 @@ param(
   }
 }
 
-function DotNetSdk-Find-Latest {
+function _Find-Latest {
 param(
   [string] $platform,
   [string] $architecture
@@ -206,6 +210,7 @@ param(
 
   $wc = New-Object System.Net.WebClient
   Add-Proxy-If-Specified($wc)
+  Write-Verbose "Downloading $url ..."
   [xml]$xml = $wc.DownloadString($url)
 
   $version = Select-Xml "//d:Version" -Namespace @{d='http://schemas.microsoft.com/ado/2007/08/dataservices'} $xml
@@ -217,7 +222,7 @@ param(
   return $version
 }
 
-function Do-DotNetSdk-Download {
+function Do-Download {
 param(
   [string] $runtimeFullName,
   [string] $runtimesFolder
@@ -252,9 +257,10 @@ param(
 
   $wc = New-Object System.Net.WebClient
   Add-Proxy-If-Specified($wc)
+  Write-Verbose "Downloading $url ..."
   $wc.DownloadFile($url, $tempDownloadFile)
 
-  Do-DotNetSdk-Unpack $tempDownloadFile $runtimeTempDownload
+  Do-Unpack $tempDownloadFile $runtimeTempDownload
 
   md $runtimeFolder -Force | Out-Null
   Console-Write "Installing to $runtimeFolder"
@@ -262,7 +268,7 @@ param(
   Remove-Item "$runtimeTempDownload" -Force | Out-Null
 }
 
-function Do-DotNetSdk-Unpack {
+function Do-Unpack {
 param(
   [string] $runtimeFile,
   [string] $runtimeFolder
@@ -270,7 +276,7 @@ param(
   Console-Write "Unpacking to $runtimeFolder"
 
   $compressionLib = [System.Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem')
-    
+
   if($compressionLib -eq $null) {
       try {
           # Shell will not recognize nupkg as a zip and throw, so rename it to zip
@@ -299,15 +305,18 @@ param(
   If (Test-Path ($runtimeFolder + "\package\")) {
     Remove-Item ($runtimeFolder + "\package\") -Force -Recurse
   }
+
+  # Clean up the package file itself.
+  Remove-Item $runtimeFile -Force
 }
 
-function DotNetSdk-Install {
+function _Install {
 param(
   [string] $versionOrAlias,
   [boolean] $isGlobal
 )
   if ($versionOrAlias -eq "latest") {
-    $versionOrAlias = DotNetSdk-Find-Latest (Requested-Platform $defaultRuntime) (Requested-Architecture $defaultArch)
+    $versionOrAlias = _Find-Latest (Requested-Platform $defaultRuntime) (Requested-Architecture $defaultArch)
   }
 
   if ($versionOrAlias.EndsWith(".nupkg")) {
@@ -316,17 +325,7 @@ param(
     $runtimeFullName =  Requested-VersionOrAlias $versionOrAlias
   }
 
-  if ($isGlobal) {
-    if (Needs-Elevation) {
-      $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' install '$versionOrAlias' -global $(Requested-Switches) -wait"
-      Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
-      DotNetSdk-Use $runtimeFullName
-      break
-    }
-    $packageFolder = $globalDotNetRuntimesPath
-  } else {
-    $packageFolder = $userDotNetRuntimesPath
-  }
+  $packageFolder = $userRuntimesPath
 
   if ($versionOrAlias.EndsWith(".nupkg")) {
     Set-Variable -Name "selectedArch" -Value (Package-Arch $runtimeFullName) -Scope Script
@@ -353,7 +352,7 @@ param(
       }
       copy $versionOrAlias $tempDownloadFile
 
-      Do-DotNetSdk-Unpack $tempDownloadFile $tempUnpackFolder
+      Do-Unpack $tempDownloadFile $tempUnpackFolder
       md $runtimeFolder -Force | Out-Null
       Console-Write "Installing to $runtimeFolder"
       mv "$tempUnpackFolder\*" $runtimeFolder
@@ -361,18 +360,18 @@ param(
     }
 
     $packageVersion = Package-Version $runtimeFullName
-    
-    DotNetSdk-Use $packageVersion
+
+    _Use $packageVersion
     if (!$(String-IsEmptyOrWhitespace($Alias))) {
-        DotNetSdk-Alias-Set $Alias $packageVersion
+        _Alias-Set $Alias $packageVersion
     }
   }
   else
   {
-    Do-DotNetSdk-Download $runtimeFullName $packageFolder
-    DotNetSdk-Use $versionOrAlias
+    Do-Download $runtimeFullName $packageFolder
+    _Use $versionOrAlias
     if (!$(String-IsEmptyOrWhitespace($Alias))) {
-        DotNetSdk-Alias-Set "$Alias" $versionOrAlias
+        _Alias-Set "$Alias" $versionOrAlias
     }
   }
 
@@ -388,20 +387,20 @@ param(
   }
 }
 
-function DotNetSdk-List {
-  $dotnetHome = $env:DOTNET_HOME
-  if (!$dotnetHome) {
-    $dotnetHome = "$globalDotNetPath;$userDotNetPath"
+function _List {
+  $runtimeHome = (getenv $HomeEnvVar)
+  if (!$runtimeHome) {
+    $runtimeHome = "$userHome"
   }
 
-  md ($userDotNetPath + "\alias\") -Force | Out-Null
-  $aliases = Get-ChildItem ($userDotNetPath + "\alias\") | Select @{label='Alias';expression={$_.BaseName}}, @{label='Name';expression={Get-Content $_.FullName }}
+  md ($userHome + "\alias\") -Force | Out-Null
+  $aliases = Get-ChildItem ($userHome + "\alias\") | Select @{label='Alias';expression={$_.BaseName}}, @{label='Name';expression={Get-Content $_.FullName }}
 
   $items = @()
-  foreach($portion in $dotnetHome.Split(';')) {
+  foreach($portion in $runtimeHome.Split(';')) {
     $path = [System.Environment]::ExpandEnvironmentVariables($portion)
     if (Test-Path("$path\runtimes")) {
-      $items += Get-ChildItem ("$path\runtimes\dotnet-*") | List-Parts $aliases
+      $items += Get-ChildItem ("$path\runtimes\$RuntimePackageName-*") | List-Parts $aliases
     }
   }
 
@@ -448,59 +447,20 @@ filter List-Parts {
   }
 }
 
-function DotNetSdk-Global-Use {
-param(
-  [string] $versionOrAlias
-)
-  Validate-Full-Package-Name-Arguments-Combination $versionOrAlias
-
-  If (Needs-Elevation) {
-    $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' use '$versionOrAlias' -global $(Requested-Switches) -wait"
-    Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
-    DotNetSdk-Use $versionOrAlias
-    break
-  }
-
-  DotNetSdk-Use "$versionOrAlias"
-
-  if ($versionOrAlias -eq "none") {
-    if ($Persistent) {
-      Console-Write "Removing .NET Runtime from machine PATH"
-      $machinePath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
-      $machinePath = Change-Path $machinePath "" ($globalDotNetRuntimesPath, $userDotNetRuntimesPath)
-      [Environment]::SetEnvironmentVariable("Path", $machinePath, [System.EnvironmentVariableTarget]::Machine)
-    }
-    return;
-  }
-
-  $runtimeFullName = Requested-VersionOrAlias "$versionOrAlias"
-  $runtimeBin = Locate-DotNetBinFromFullName $runtimeFullName
-  if ($runtimeBin -eq $null) {
-    throw "Cannot find $runtimeFullName, do you need to run 'dotnetsdk install $versionOrAlias'?"
-  }
-
-  if ($Persistent) {
-    Console-Write "Adding $runtimeBin to machine PATH"
-    $machinePath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
-    $machinePath = Change-Path $machinePath $runtimeBin ($globalDotNetRuntimesPath, $userDotNetRuntimesPath)
-    [Environment]::SetEnvironmentVariable("Path", $machinePath, [System.EnvironmentVariableTarget]::Machine)
-  }
-}
-
-function DotNetSdk-Use {
+function _Use {
 param(
   [string] $versionOrAlias
 )
   Validate-Full-Package-Name-Arguments-Combination $versionOrAlias
 
   if ($versionOrAlias -eq "none") {
-    Console-Write "Removing .NET Runtime from process PATH"
-    Set-Path (Change-Path $env:Path "" ($globalDotNetRuntimesPath, $userDotNetRuntimesPath))
+    Console-Write "Removing $RuntimeShortName from process PATH"
+    Set-Path (Change-Path $env:Path "" ($userRuntimesPath))
 
     if ($Persistent) {
-      Console-Write "Removing .NET Runtime from user PATH"
+      Console-Write "Removing $RuntimeShortName from user PATH"
       $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
-      $userPath = Change-Path $userPath "" ($globalDotNetRuntimesPath, $userDotNetRuntimesPath)
+      $userPath = Change-Path $userPath "" ($userRuntimesPath)
       [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
     }
     return;
@@ -508,61 +468,61 @@ param(
 
   $runtimeFullName = Requested-VersionOrAlias $versionOrAlias
 
-  $runtimeBin = Locate-DotNetBinFromFullName $runtimeFullName
+  $runtimeBin = Locate-RuntimeBinFromFullName $runtimeFullName
   if ($runtimeBin -eq $null) {
-    throw "Cannot find $runtimeFullName, do you need to run 'dotnetsdk install $versionOrAlias'?"
+    throw "Cannot find $runtimeFullName, do you need to run '$CommandName install $versionOrAlias'?"
   }
 
   Console-Write "Adding $runtimeBin to process PATH"
-  Set-Path (Change-Path $env:Path $runtimeBin ($globalDotNetRuntimesPath, $userDotNetRuntimesPath))
+  Set-Path (Change-Path $env:Path $runtimeBin ($userRuntimesPath))
 
   if ($Persistent) {
     Console-Write "Adding $runtimeBin to user PATH"
     $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
-    $userPath = Change-Path $userPath $runtimeBin ($globalDotNetRuntimesPath, $userDotNetRuntimesPath)
+    $userPath = Change-Path $userPath $runtimeBin ($userRuntimesPath)
     [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
   }
 }
 
-function DotNetSdk-Alias-List {
-  md ($userDotNetPath + "\alias\") -Force | Out-Null
+function _Alias-List {
+  md ($userHome + "\alias\") -Force | Out-Null
 
-  Get-ChildItem ($userDotNetPath + "\alias\") | Select @{label='Alias';expression={$_.BaseName}}, @{label='Name';expression={Get-Content $_.FullName }} | Format-Table -AutoSize
+  Get-ChildItem ($userHome + "\alias\") | Select @{label='Alias';expression={$_.BaseName}}, @{label='Name';expression={Get-Content $_.FullName }} | Format-Table -AutoSize
 }
 
-function DotNetSdk-Alias-Get {
+function _Alias-Get {
 param(
   [string] $name
 )
-  md ($userDotNetPath + "\alias\") -Force | Out-Null
-  $aliasFilePath=$userDotNetPath + "\alias\" + $name + ".txt"
+  md ($userHome + "\alias\") -Force | Out-Null
+  $aliasFilePath=$userHome + "\alias\" + $name + ".txt"
   if (!(Test-Path $aliasFilePath)) {
     Console-Write "Alias '$name' does not exist"
     $script:exitCode = 1 # Return non-zero exit code for scripting
   } else {
-    $aliasValue = (Get-Content ($userDotNetPath + "\alias\" + $name + ".txt"))
-    Console-Write "Alias '$name' is set to $aliasValue" 
+    $aliasValue = (Get-Content ($userHome + "\alias\" + $name + ".txt"))
+    Console-Write "Alias '$name' is set to $aliasValue"
   }
 }
 
-function DotNetSdk-Alias-Set {
+function _Alias-Set {
 param(
   [string] $name,
   [string] $value
 )
   $runtimeFullName = Requested-VersionOrAlias $value
-  $aliasFilePath = $userDotNetPath + "\alias\" + $name + ".txt"
+  $aliasFilePath = $userHome + "\alias\" + $name + ".txt"
   $action = if (Test-Path $aliasFilePath) { "Updating" } else { "Setting" }
   Console-Write "$action alias '$name' to '$runtimeFullName'"
-  md ($userDotNetPath + "\alias\") -Force | Out-Null
+  md ($userHome + "\alias\") -Force | Out-Null
   $runtimeFullName | Out-File ($aliasFilePath) ascii
 }
 
-function DotNetSdk-Unalias {
+function _Unalias {
 param(
   [string] $name
 )
-  $aliasPath=$userDotNetPath + "\alias\" + $name + ".txt"
+  $aliasPath=$userHome + "\alias\" + $name + ".txt"
   if (Test-Path -literalPath "$aliasPath") {
       Console-Write "Removing alias $name"
       Remove-Item -literalPath $aliasPath
@@ -572,15 +532,15 @@ param(
   }
 }
 
-function Locate-DotNetBinFromFullName() {
+function Locate-RuntimeBinFromFullName() {
 param(
   [string] $runtimeFullName
 )
-  $dotnetHome = $env:DOTNET_HOME
-  if (!$dotnetHome) {
-    $dotnetHome = "$globalDotNetPath;$userDotNetPath"
+  $runtimeHome = (getenv $HomeEnvVar)
+  if (!$runtimeHome) {
+    $runtimeHome = $userHome
   }
-  foreach($portion in $dotnetHome.Split(';')) {
+  foreach($portion in $runtimeHome.Split(';')) {
     $path = [System.Environment]::ExpandEnvironmentVariables($portion)
     $runtimeBin = "$path\runtimes\$runtimeFullName\bin"
     if (Test-Path "$runtimeBin") {
@@ -601,14 +561,14 @@ function Package-Platform() {
 param(
   [string] $runtimeFullName
 )
-  return $runtimeFullName -replace 'dotnet-([^-]*).*', '$1'
+  return $runtimeFullName -replace "$RuntimePackageName-([^-]*).*", '$1'
 }
 
 function Package-Arch() {
 param(
   [string] $runtimeFullName
 )
-  return $runtimeFullName -replace 'dotnet-[^-]*-[^-]*-([^.]*).*', '$1'
+  return $runtimeFullName -replace "$RuntimePackageName-[^-]*-[^-]*-([^.]*).*", '$1'
 }
 
 
@@ -618,19 +578,19 @@ param(
 )
   Validate-Full-Package-Name-Arguments-Combination $versionOrAlias
 
-  $runtimeBin = Locate-DotNetBinFromFullName $versionOrAlias
+  $runtimeBin = Locate-RuntimeBinFromFullName $versionOrAlias
 
   # If the name specified is an existing package, just use it as is
   if ($runtimeBin -ne $null) {
     return $versionOrAlias
   }
 
-  If (Test-Path ($userDotNetPath + "\alias\" + $versionOrAlias + ".txt")) {
-    $aliasValue = Get-Content ($userDotNetPath + "\alias\" + $versionOrAlias + ".txt")
-    # Split dotnet-coreclr-win-x86.1.0.0-beta3-10922 into version and name sections
+  If (Test-Path ($userHome + "\alias\" + $versionOrAlias + ".txt")) {
+    $aliasValue = Get-Content ($userHome + "\alias\" + $versionOrAlias + ".txt")
+    # Split runtime-coreclr-win-x86.1.0.0-beta3-10922 into version and name sections
     $parts = $aliasValue.Split('.', 2)
     $pkgVersion = $parts[1]
-    # dotnet-coreclr-win-x86
+    # runtime-coreclr-win-x86
     $parts = $parts[0].Split('-', 4)
     $pkgPlatform = Requested-Platform $parts[1]
     $pkgArchitecture = Requested-Architecture $parts[3]
@@ -668,7 +628,7 @@ param(
   foreach($portion in $existingPaths.Split(';')) {
     $skip = $portion -eq ""
     foreach($removePath in $removePaths) {
-      if ($portion.StartsWith($removePath)) {
+      if ($removePath -and ($portion.StartsWith($removePath))) {
         $skip = $true
       }
     }
@@ -683,11 +643,11 @@ function Set-Path() {
 param(
   [string] $newPath
 )
-  md $userDotNetPath -Force | Out-Null
+  md $userHome -Force | Out-Null
   $env:Path = $newPath
 @"
 SET "PATH=$newPath"
-"@ | Out-File ($userDotNetPath + "\temp-set-envvars.cmd") ascii
+"@ | Out-File ($userHome + "\temp-set-envvars.cmd") ascii
 }
 
 function Needs-Elevation() {
@@ -703,8 +663,6 @@ function Needs-Elevation() {
 function Requested-Switches() {
   $arguments = ""
   if ($X86) {$arguments = "$arguments -x86"}
-  if ($Amd64) {$arguments = "$arguments -amd64"}
-  #deprecated
   if ($X64) {$arguments = "$arguments -x64"}
   if ($selectedRuntime) {$arguments = "$arguments -runtime $selectedRuntime"}
   if ($Persistent) {$arguments = "$arguments -persistent"}
@@ -715,37 +673,24 @@ function Requested-Switches() {
 
 function Validate-And-Santitize-Switches()
 {
-  if ($Svr50 -and $Runtime) {throw "You cannot select both the -runtime switch and the -svr50 runtimes"}
-  if ($Svrc50 -and $Runtime) {throw "You cannot select both the -runtime switch and the -svrc50 runtimes"}
-  if ($X86 -and $Amd64) {throw "You cannot select both x86 and amd64 architectures"}
   if ($X86 -and $X64) {throw "You cannot select both x86 and x64 architectures"}
-  if ($X64 -and $Amd64) {throw "You cannot select both x64 and amd64 architectures"}
 
   if ($Runtime) {
-    $validRuntimes = "CoreCLR", "CLR", "svr50", "svrc50"
+    $validRuntimes = "CoreCLR", "CLR"
     $match = $validRuntimes | ? { $_ -like $Runtime } | Select -First 1
     if (!$match) {throw "'$runtime' is not a valid runtime"}
     Set-Variable -Name "selectedRuntime" -Value $match.ToLowerInvariant() -Scope Script
-  } elseif ($Svr50) {
-    Console-Write "Warning: -svr50 is deprecated, use -runtime CLR for new packages."
-    Set-Variable -Name "selectedRuntime" -Value "svr50" -Scope Script
-  } elseif ($Svrc50) {
-    Console-Write "Warning: -svrc50 is deprecated, use -runtime CoreCLR for new packages."
-    Set-Variable -Name "selectedRuntime" -Value "svrc50" -Scope Script
   }
 
   if($Architecture) {
-    $validArchitectures = "amd64", "x86"
+    $validArchitectures = "x64", "x86"
     $match = $validArchitectures | ? { $_ -like $Architecture } | Select -First 1
     if(!$match) {throw "'$architecture' is not a valid architecture"}
     Set-Variable -Name "selectedArch" -Value $match.ToLowerInvariant() -Scope Script
   }
   else {
     if ($X64) {
-      Console-Write "Warning: -x64 is deprecated, use -amd64 for new packages."
       Set-Variable -Name "selectedArch" -Value "x64" -Scope Script
-    } elseif ($Amd64) {
-      Set-Variable -Name "selectedArch" -Value "amd64" -Scope Script
     } elseif ($X86) {
       Set-Variable -Name "selectedArch" -Value "x86" -Scope Script
     }
@@ -776,7 +721,7 @@ param(
     }
     else {
       [Console]::WriteLine($message)
-    }  
+    }
   }
 }
 
@@ -796,50 +741,40 @@ param(
   }
   else {
    [Console]::Error.WriteLine($message)
-  }  
+  }
 }
 
 function Validate-Full-Package-Name-Arguments-Combination() {
 param(
-	[string] $versionOrAlias
+  [string] $versionOrAlias
 )
-	if ($versionOrAlias -like "dotnet-*" -and
-	    ($selectedArch -or $selectedRuntime)) {
-		throw "Runtime or architecture cannot be specified when using the full package name."
+  if ($versionOrAlias -like "$RuntimePackageName-*" -and
+      ($selectedArch -or $selectedRuntime)) {
+    throw "Runtime or architecture cannot be specified when using the full package name."
   }
 }
 
 $script:exitCode = 0
 try {
   Validate-And-Santitize-Switches
-  if ($Global) {
-    switch -wildcard ($Command + " " + $Args.Count) {
-      "setup 0"           {DotNetSdk-Global-Setup}
-      "upgrade 0"         {DotNetSdk-Upgrade $true}
-      "install 1"         {DotNetSdk-Install $Args[0] $true}
-      "use 1"             {DotNetSdk-Global-Use $Args[0]}
-      default             {throw "Unknown command, or global switch not supported"};
-    }
-  } else {
-    switch -wildcard ($Command + " " + $Args.Count) {
-      "setup 0"           {DotNetSdk-Global-Setup}
-      "upgrade 0"         {DotNetSdk-Upgrade $false}
-      "install 1"         {DotNetSdk-Install $Args[0] $false}
-      "list 0"            {DotNetSdk-List}
-      "use 1"             {DotNetSdk-Use $Args[0]}
-      "alias 0"           {DotNetSdk-Alias-List}
-      "alias 1"           {DotNetSdk-Alias-Get $Args[0]}
-      "alias 2"           {DotNetSdk-Alias-Set $Args[0] $Args[1]}
-      "unalias 1"         {DotNetSdk-Unalias $Args[0]}
-      "help 0"            {DotNetSdk-Help}
-      " 0"                {DotNetSdk-Help}
-      default             {throw "Unknown command"};
-    }
+  switch -wildcard ($Command + " " + $Args.Count) {
+    "setup 0"           {_Global-Setup}
+    "upgrade 0"         {_Upgrade $false}
+    "install 1"         {_Install $Args[0] $false}
+    "list 0"            {_List}
+    "use 1"             {_Use $Args[0]}
+    "alias 0"           {_Alias-List}
+    "alias 1"           {_Alias-Get $Args[0]}
+    "alias 2"           {_Alias-Set $Args[0] $Args[1]}
+    "unalias 1"         {_Unalias $Args[0]}
+    "help 0"            {_Help}
+    " 0"                {_Help}
+    default             {throw "Unknown command"};
   }
 }
 catch {
   Console-Write-Error $_
-  Console-Write "Type 'dotnetsdk help' for help on how to use dotnetsdk."
+  Console-Write "Type '$CommandName help' for help on how to use $CommandName."
   $script:exitCode = -1
 }
 if ($Wait) {
