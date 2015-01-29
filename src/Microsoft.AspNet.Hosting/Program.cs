@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Hosting
@@ -52,6 +53,7 @@ namespace Microsoft.AspNet.Hosting
             };
 
             var engine = services.GetRequiredService<IHostingEngine>();
+            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
             var appShutdownService = _serviceProvider.GetRequiredService<IApplicationShutdown>();
             var shutdownHandle = new ManualResetEvent(false);
 
@@ -59,7 +61,15 @@ namespace Microsoft.AspNet.Hosting
 
             appShutdownService.ShutdownRequested.Register(() =>
             {
-                serverShutdown.Dispose();
+                try
+                {
+                    serverShutdown.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    var logger = loggerFactory.Create<Program>();
+                    logger.WriteError("TODO: Dispose threw an exception", ex);
+                }
                 shutdownHandle.Set();
             });
 

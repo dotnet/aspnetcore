@@ -9,8 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
+using Microsoft.AspNet.Http.Interfaces;
 using Xunit;
 
 namespace Microsoft.AspNet.TestHost
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.TestHost
                 Assert.Equal("example.com", context.Request.Host.Value);
 
                 return Task.FromResult(0);
-            }, new PathString("/A/Path"));
+            }, new PathString("/A/Path/"));
             var httpClient = new HttpClient(handler);
             return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
         }

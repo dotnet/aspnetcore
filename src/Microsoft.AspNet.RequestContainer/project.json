@@ -8,6 +8,10 @@
   },
   "frameworks": {
     "aspnet50": {},
-    "aspnetcore50": {}
+    "aspnetcore50": {
+      "dependencies": {
+        "System.Threading": "4.0.10-beta-*"
+      }
+    },
   }
 }

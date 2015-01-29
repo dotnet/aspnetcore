@@ -12,8 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.HttpFeature;
-using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Http.Core;
+using Microsoft.AspNet.Http.Interfaces;
 
 namespace Microsoft.AspNet.TestHost
 {
@@ -38,6 +38,12 @@ namespace Microsoft.AspNet.TestHost
             }
 
             _next = next;
+
+            // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
+            if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
+            {
+                pathBase = new PathString(pathBase.Value.Substring(0, pathBase.Value.Length - 1));
+            }
             _pathBase = pathBase;
         }
 

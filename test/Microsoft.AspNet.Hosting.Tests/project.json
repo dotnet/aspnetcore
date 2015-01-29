@@ -2,13 +2,13 @@
     "dependencies": {
         "Microsoft.AspNet.Hosting": "1.0.0-*",
         "Microsoft.AspNet.RequestContainer": "1.0.0-*",
-        "Xunit.KRunner": "1.0.0-*"
+        "xunit.runner.kre": "1.0.0-*"
     },
     "frameworks": {
         "aspnet50": { }
     },
     "commands": {
-        "test": "Xunit.KRunner"
+        "test": "xunit.runner.kre"
     },
     "webroot": "testroot"
 }

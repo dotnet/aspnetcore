@@ -23,8 +23,8 @@ namespace Microsoft.AspNet.TestHost
             // Arrange
             var services = HostingServices.Create().BuildServiceProvider();
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => TestServer.Create(services, app => { }));
+            // Act & Assert (Does not throw)
+            TestServer.Create(services, app => { });
         }
 
         [Fact]
@@ -35,6 +35,23 @@ namespace Microsoft.AspNet.TestHost
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => TestServer.Create(services, new Startup().Configuration));
+        }
+
+        [Fact]
+        public async Task CanAccessHttpContext()
+        {
+            var services = new ServiceCollection().BuildServiceProvider();
+            TestServer server = TestServer.Create(app =>
+            {
+                app.Run(context =>
+                {
+                    var accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
+                    return context.Response.WriteAsync("HasContext:"+(accessor.Value != null));
+                });
+            });
+
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("HasContext:True", result);
         }
 
         [Fact]

@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Hosting
             public HostingManifest(IServiceProvider fallback)
             {
                 var manifest = fallback.GetRequiredService<IServiceManifest>();
-                Services = new Type[] { typeof(ITypeActivator), typeof(IHostingEnvironment), typeof(ILoggerFactory) }
+                Services = new Type[] { typeof(ITypeActivator), typeof(IHostingEnvironment), typeof(ILoggerFactory), typeof(IHttpContextAccessor) }
                     .Concat(manifest.Services).Distinct();
             }
 

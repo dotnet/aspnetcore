@@ -12,7 +12,6 @@ namespace Microsoft.AspNet.RequestContainer
         public RequestServicesContainer(
             HttpContext context,
             IServiceScopeFactory scopeFactory,
-            IContextAccessor<HttpContext> appContextAccessor,
             IServiceProvider appServiceProvider)
         {
             if (scopeFactory == null)
@@ -23,12 +22,6 @@ namespace Microsoft.AspNet.RequestContainer
             {
                 throw new ArgumentNullException(nameof(context));
             }
-            if (appContextAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(appContextAccessor));
-            }
-
-            AppContextAccessor = appContextAccessor;
 
             Context = context;
             PriorAppServices = context.ApplicationServices;
@@ -36,23 +29,16 @@ namespace Microsoft.AspNet.RequestContainer
 
             // Begin the scope
             Scope = scopeFactory.CreateScope();
-            ScopeContextAccessor = Scope.ServiceProvider.GetRequiredService<IContextAccessor<HttpContext>>();
 
             Context.ApplicationServices = appServiceProvider;
             Context.RequestServices = Scope.ServiceProvider;
-
-            PriorAppHttpContext = AppContextAccessor.SetValue(context);
-            PriorScopeHttpContext = ScopeContextAccessor.SetValue(context);
         }
 
         private HttpContext Context { get; set; }
         private IServiceProvider PriorAppServices { get; set; }
         private IServiceProvider PriorRequestServices { get; set; }
-        private HttpContext PriorAppHttpContext { get; set; }
-        private HttpContext PriorScopeHttpContext { get; set; }
         private IServiceScope Scope { get; set; }
-        private IContextAccessor<HttpContext> ScopeContextAccessor { get; set; }
-        private IContextAccessor<HttpContext> AppContextAccessor { get; set; }
+
 
         // CONSIDER: this could be an extension method on HttpContext instead
         public static RequestServicesContainer EnsureRequestServices(HttpContext httpContext, IServiceProvider services)
@@ -64,7 +50,6 @@ namespace Microsoft.AspNet.RequestContainer
             }
 
             var serviceProvider = httpContext.ApplicationServices ?? services;
-
             if (serviceProvider == null)
             {
                 throw new InvalidOperationException("TODO: services and httpContext.ApplicationServices are both null!");
@@ -72,10 +57,7 @@ namespace Microsoft.AspNet.RequestContainer
 
             // Matches constructor of RequestContainer
             var rootServiceProvider = serviceProvider.GetRequiredService<IServiceProvider>();
-            var rootHttpContextAccessor = serviceProvider.GetRequiredService<IContextAccessor<HttpContext>>();
             var rootServiceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-
-            rootHttpContextAccessor.SetContextSource(ContainerMiddleware.AccessRootHttpContext, ContainerMiddleware.ExchangeRootHttpContext);
 
             // Pre Scope setup
             var priorApplicationServices = serviceProvider;
@@ -83,21 +65,19 @@ namespace Microsoft.AspNet.RequestContainer
 
             var appServiceProvider = rootServiceProvider;
             var appServiceScopeFactory = rootServiceScopeFactory;
-            var appHttpContextAccessor = rootHttpContextAccessor;
 
             if (priorApplicationServices != null &&
                 priorApplicationServices != appServiceProvider)
             {
                 appServiceProvider = priorApplicationServices;
                 appServiceScopeFactory = priorApplicationServices.GetRequiredService<IServiceScopeFactory>();
-                appHttpContextAccessor = priorApplicationServices.GetRequiredService<IContextAccessor<HttpContext>>();
             }
 
             // Creates the scope and does the service swaps
-            return new RequestServicesContainer(httpContext, appServiceScopeFactory, appHttpContextAccessor, appServiceProvider);
+            return new RequestServicesContainer(httpContext, appServiceScopeFactory, appServiceProvider);
         }
 
-        #region IDisposable Support
+#region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -106,9 +86,6 @@ namespace Microsoft.AspNet.RequestContainer
             {
                 if (disposing)
                 {
-                    ScopeContextAccessor.SetValue(PriorScopeHttpContext);
-                    AppContextAccessor.SetValue(PriorAppHttpContext);
-
                     Context.RequestServices = PriorRequestServices;
                     Context.ApplicationServices = PriorAppServices;
                 }
@@ -122,10 +99,6 @@ namespace Microsoft.AspNet.RequestContainer
                 Context = null;
                 PriorAppServices = null;
                 PriorRequestServices = null;
-                ScopeContextAccessor = null;
-                AppContextAccessor = null;
-                PriorAppHttpContext = null;
-                PriorScopeHttpContext = null;
 
                 disposedValue = true;
             }
@@ -137,8 +110,6 @@ namespace Microsoft.AspNet.RequestContainer
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
         }
-        #endregion
-
+#endregion
     }
-
 }
