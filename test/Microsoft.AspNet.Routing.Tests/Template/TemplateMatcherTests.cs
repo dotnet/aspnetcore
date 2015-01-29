@@ -101,6 +101,103 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.Equal("default p2", rd["p2"]);
         }
 
+        [Theory]
+        [InlineData("moo/{p1}.{p2?}", "moo/foo.bar", "foo", "bar")]        
+        [InlineData("moo/{p1?}", "moo/foo", "foo", null)]
+        [InlineData("moo/{p1?}", "moo", null, null)]
+        [InlineData("moo/{p1}.{p2?}", "moo/foo", "foo", null)]
+        [InlineData("moo/{p1}.{p2?}", "moo/foo..bar", "foo.", "bar")]
+        [InlineData("moo/{p1}.{p2?}", "moo/foo.moo.bar", "foo.moo", "bar")]
+        [InlineData("moo/{p1}.{p2}", "moo/foo.bar", "foo", "bar")]
+        [InlineData("moo/foo.{p1}.{p2?}", "moo/foo.moo.bar", "moo", "bar")]
+        [InlineData("moo/foo.{p1}.{p2?}", "moo/foo.moo", "moo", null)]
+        [InlineData("moo/.{p2?}", "moo/.foo", null, "foo")]
+        [InlineData("moo/.{p2?}", "moo", null, null)]
+        [InlineData("moo/{p1}.{p2?}", "moo/....", "..", ".")]
+        [InlineData("moo/{p1}.{p2?}", "moo/.bar", ".bar", null)]
+        public void MatchRoute_OptionalParameter_FollowedByPeriod_Valid(
+            string template, 
+            string path, 
+            string p1, 
+            string p2)
+        {
+            // Arrange
+            var matcher = CreateMatcher(template);
+
+            // Act
+            var rd = matcher.Match(path);
+
+            // Assert
+            if (p1 != null)
+            {
+                Assert.Equal(p1, rd["p1"]);
+            }
+            if (p2 != null)
+            {
+                Assert.Equal(p2, rd["p2"]);
+            }
+        }
+
+        [Theory]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo.moo.bar", "foo", "moo", "bar")]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo.moo", "foo", "moo", null)]
+        [InlineData("moo/{p1}.{p2}.{p3}.{p4?}", "moo/foo.moo.bar", "foo", "moo", "bar")]
+        [InlineData("{p1}.{p2?}/{p3}", "foo.moo/bar", "foo", "moo", "bar")]
+        [InlineData("{p1}.{p2?}/{p3}", "foo/bar", "foo", null, "bar")]        
+        [InlineData("{p1}.{p2?}/{p3}", ".foo/bar", ".foo", null, "bar")]
+        public void MatchRoute_OptionalParameter_FollowedByPeriod_3Parameters_Valid(
+            string template, 
+            string path, 
+            string p1, 
+            string p2, 
+            string p3)
+        {
+            // Arrange
+            var matcher = CreateMatcher(template);
+
+            // Act
+            var rd = matcher.Match(path);
+
+            // Assert
+            
+            Assert.Equal(p1, rd["p1"]);
+            
+            if (p2 != null)
+            {
+                Assert.Equal(p2, rd["p2"]);
+            }
+
+            if (p3 != null)
+            {
+                Assert.Equal(p3, rd["p3"]);
+            }
+        }
+
+        [Theory]        
+        [InlineData("moo/{p1}.{p2?}", "moo/foo.")]
+        [InlineData("moo/{p1}.{p2?}", "moo/.")]        
+        [InlineData("moo/{p1}.{p2}", "foo.")]
+        [InlineData("moo/{p1}.{p2}", "foo")]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo.moo.")]
+        [InlineData("moo/foo.{p2}.{p3?}", "moo/bar.foo.moo")]
+        [InlineData("moo/foo.{p2}.{p3?}", "moo/kungfoo.moo.bar")]
+        [InlineData("moo/foo.{p2}.{p3?}", "moo/kungfoo.moo")]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo")]
+        [InlineData("{p1}.{p2?}/{p3}", "foo./bar")]        
+        [InlineData("moo/.{p2?}", "moo/.")]
+        [InlineData("{p1}.{p2}/{p3}", ".foo/bar")]
+        public void MatchRoute_OptionalParameter_FollowedByPeriod_Invalid(string template, string path)
+        {
+            // Arrange
+            var matcher = CreateMatcher(template);
+
+            // Act
+            var rd = matcher.Match(path);
+
+            // Assert
+            Assert.Null(rd);
+        }
+
         [Fact]
         public void MatchRouteWithOnlyLiterals()
         {
@@ -183,7 +280,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Assert
             Assert.Null(rd);
         }
-
+        
         [Fact]
         public void NoMatchLongerUrl()
         {

@@ -197,6 +197,131 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 "language/axx-yy");
         }
 
+        public static IEnumerable<object[]> OptionalParamValues
+        {
+            get
+            {
+                return new object[][]
+                {
+                    // defaults
+                    // ambient values
+                    // values
+                    new object[]
+                    {
+                        "Test/{val1}/{val2}.{val3?}",
+                        new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2"}),
+                        new RouteValueDictionary(new {val3 = "someval3"}),
+                        new RouteValueDictionary(new {val3 = "someval3"}),
+                        "Test/someval1/someval2.someval3",
+                    },
+                    new object[]
+                    {
+                        "Test/{val1}/{val2}.{val3?}",
+                        new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2"}),
+                        new RouteValueDictionary(new {val3 = "someval3a"}),
+                        new RouteValueDictionary(new {val3 = "someval3v"}),
+                        "Test/someval1/someval2.someval3v",
+                    },
+                    new object[]
+                    {
+                        "Test/{val1}/{val2}.{val3?}",
+                        new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2"}),
+                        new RouteValueDictionary(new {val3 = "someval3a"}),
+                        new RouteValueDictionary(),
+                        "Test/someval1/someval2.someval3a",
+                    },                    
+                    new object[]
+                    {
+                        "Test/{val1}/{val2}.{val3?}",
+                        new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2"}),
+                        new RouteValueDictionary(),
+                        new RouteValueDictionary(new {val3 = "someval3v"}),
+                        "Test/someval1/someval2.someval3v",
+                    },
+                    new object[]
+                    {
+                        "Test/{val1}/{val2}.{val3?}",
+                        new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2"}),
+                        new RouteValueDictionary(),
+                        new RouteValueDictionary(),
+                        "Test/someval1/someval2",
+                    },                    
+                    new object[]
+                    {
+                        "Test/{val1}.{val2}.{val3}.{val4?}",
+                        new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2" }),
+                        new RouteValueDictionary(),
+                        new RouteValueDictionary(new {val4 = "someval4", val3 = "someval3" }),
+                        "Test/someval1.someval2.someval3.someval4",
+                    },
+                    new object[]
+                    {
+                        "Test/{val1}.{val2}.{val3}.{val4?}",
+                        new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2" }),
+                        new RouteValueDictionary(),
+                        new RouteValueDictionary(new {val3 = "someval3" }),
+                        "Test/someval1.someval2.someval3",
+                    },
+                    new object[]
+                    {
+                        "Test/.{val2?}",
+                        new RouteValueDictionary(new { }),
+                        new RouteValueDictionary(),
+                        new RouteValueDictionary(new {val2 = "someval2" }),
+                        "Test/.someval2",
+                    },
+                    new object[]
+                    {
+                        "Test/{val1}.{val2}",
+                        new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2" }),
+                        new RouteValueDictionary(),
+                        new RouteValueDictionary(new {val3 = "someval3" }),
+                        "Test/someval1.someval2?val3=someval3",
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData("OptionalParamValues")]
+        public void GetVirtualPathWithMultiSegmentWithOptionalParam(
+            string template,
+            IReadOnlyDictionary<string, object> defaults,
+            IDictionary<string, object> ambientValues,
+            IDictionary<string, object> values,
+            string expected)
+        {
+            // Arrange
+            var binder = new TemplateBinder(
+                TemplateParser.Parse(template),
+                defaults);
+
+            // Act & Assert
+            var result = binder.GetValues(ambientValues: ambientValues, values: values);
+            if (result == null)
+            {
+                if (expected == null)
+                {
+                    return;
+                }
+                else
+                {
+                    Assert.NotNull(result);
+                }
+            }
+
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
+            if (expected == null)
+            {
+                Assert.Null(boundTemplate);
+            }
+            else
+            {
+                Assert.NotNull(boundTemplate);
+                Assert.Equal(expected, boundTemplate);
+            }
+        }
+        
         [Fact]
         public void GetVirtualPathWithMultiSegmentParamsOnNeitherEndMatches()
         {

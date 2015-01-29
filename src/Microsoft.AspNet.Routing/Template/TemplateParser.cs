@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Routing.Template
         private const char EqualsSign = '=';
         private const char QuestionMark = '?';
         private const char Asterisk = '*';
+        private const string PeriodString = ".";
 
         public static RouteTemplate Parse(string routeTemplate)
         {
@@ -318,18 +319,40 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
-            // if a segment has multiple parts, then the parameters can't be optional
+            // if a segment has multiple parts, then only the last one parameter can be optional 
+            // if it is following a optional seperator. 
             for (var i = 0; i < segment.Parts.Count; i++)
             {
                 var part = segment.Parts[i];
+
                 if (part.IsParameter && part.IsOptional && segment.Parts.Count > 1)
                 {
-                    context.Error = Resources.TemplateRoute_CannotHaveOptionalParameterInMultiSegment;
-                    return false;
+                    // This is the last part
+                    if (i == segment.Parts.Count - 1)
+                    {
+                        Debug.Assert(segment.Parts[i - 1].IsLiteral);
+
+                        if (segment.Parts[i - 1].Text == PeriodString)
+                        {
+                            segment.Parts[i - 1].IsOptionalSeperator = true;
+                        }
+                        else
+                        {
+                            context.Error = 
+                                Resources.TemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator;
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        context.Error = 
+                            Resources.TemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator;
+                        return false;
+                    }
                 }
             }
 
-            // A segment cannot containt two consecutive parameters
+            // A segment cannot contain two consecutive parameters
             var isLastSegmentParameter = false;
             for (var i = 0; i < segment.Parts.Count; i++)
             {

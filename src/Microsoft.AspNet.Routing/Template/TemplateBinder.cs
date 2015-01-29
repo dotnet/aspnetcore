@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNet.Http.Extensions;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -220,14 +220,29 @@ namespace Microsoft.AspNet.Routing.Template
                             // we won't necessarily add it to the URI we generate.
                             if (!context.Buffer(converted))
                             {
-                                return null;
+                                    return null;
                             }
                         }
                         else
                         {
+                            // If the value is not accepted, it is null or empty value in the 
+                            // middle of the segment. We accept this if the parameter is an
+                            // optional parameter and it is preceded by an optional seperator.
+                            // I this case, we need to remove the optional seperator that we
+                            // have added to the URI
+                            // Example: template = {id}.{format?}. parameters: id=5
+                            // In this case after we have generated "5.", we wont find any value 
+                            // for format, so we remove '.' and generate 5.
                             if (!context.Accept(converted))
                             {
-                                return null;
+                                if (j != 0 && part.IsOptional && segment.Parts[j - 1].IsOptionalSeperator)
+                                {
+                                    context.Remove(segment.Parts[j - 1].Text);
+                                }
+                                else
+                                {
+                                    return null;
+                                }
                             }
                         }
                     }
@@ -470,6 +485,11 @@ namespace Microsoft.AspNet.Routing.Template
 
                 _uri.Append(value);
                 return true;
+            }
+
+            public void Remove(string literal)
+            {
+                _uri.Length -= literal.Length;
             }
 
             public bool Buffer(string value)

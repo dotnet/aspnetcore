@@ -205,17 +205,17 @@ namespace Microsoft.AspNet.Routing
         /// <summary>
         /// A path segment that contains more than one section, such as a literal section or a parameter, cannot contain an optional parameter.
         /// </summary>
-        internal static string TemplateRoute_CannotHaveOptionalParameterInMultiSegment
+        internal static string TemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator
         {
-            get { return GetString("TemplateRoute_CannotHaveOptionalParameterInMultiSegment"); }
+            get { return GetString("TemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator"); }
         }
 
         /// <summary>
         /// A path segment that contains more than one section, such as a literal section or a parameter, cannot contain an optional parameter.
         /// </summary>
-        internal static string FormatTemplateRoute_CannotHaveOptionalParameterInMultiSegment()
+        internal static string FormatTemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator()
         {
-            return GetString("TemplateRoute_CannotHaveOptionalParameterInMultiSegment");
+            return GetString("TemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator");
         }
 
         /// <summary>

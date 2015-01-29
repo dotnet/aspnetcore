@@ -3,10 +3,10 @@
         "warningsAsErrors": "true"
     },
     "dependencies": {
-        "Microsoft.AspNet.PipelineCore": "1.0.0-*",
+        "Microsoft.AspNet.Http.Core": "1.0.0-*",
         "Microsoft.AspNet.Routing": "1.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Xunit.KRunner": "1.0.0-*"
+        "xunit.runner.kre": "1.0.0-*"
     },
     "frameworks": {
         "aspnetcore50": {},
@@ -17,6 +17,6 @@
         }
     },
     "commands": {
-        "test": "Xunit.KRunner"
+        "test": "xunit.runner.kre"
     }
 }
