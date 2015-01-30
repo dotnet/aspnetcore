@@ -91,6 +91,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                 {
                     ProtocolMessage = openIdConnectMessage
                 };
+
                 await Options.Notifications.RedirectToIdentityProvider(notification);
 
                 if (!notification.HandledResponse)
@@ -98,8 +99,9 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                     string redirectUri = notification.ProtocolMessage.CreateLogoutRequestUrl();
                     if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
                     {
-                        _logger.WriteWarning("The logout redirect URI is malformed: " + redirectUri);
+                        _logger.WriteWarning("The logout redirect URI is malformed: {0}", (redirectUri ?? "null"));
                     }
+
                     Response.Redirect(redirectUri);
                 }
             }
@@ -116,7 +118,13 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
         /// <returns></returns>
         protected override async Task ApplyResponseChallengeAsync()
         {
-            if ((Response.StatusCode != 401) || (ChallengeContext == null))
+            if (Response.StatusCode != 401)
+            {
+                return;
+            }
+
+            // Active middleware should redirect on 401 even if there wasn't an explicit challenge.
+            if (ChallengeContext == null && Options.AuthenticationMode == AuthenticationMode.Passive)
             {
                 return;
             }
@@ -124,7 +132,16 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
             // order for redirect_uri
             // 1. challenge.Properties.RedirectUri
             // 2. CurrentUri
-            AuthenticationProperties properties = new AuthenticationProperties(ChallengeContext.Properties);
+            AuthenticationProperties properties;
+            if (ChallengeContext == null)
+            {
+                properties = new AuthenticationProperties();
+            }
+            else
+            {
+                properties = new AuthenticationProperties(ChallengeContext.Properties);
+            }
+
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
                 properties.RedirectUri = CurrentUri;
@@ -154,7 +171,6 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                 State = OpenIdConnectAuthenticationDefaults.AuthenticationPropertiesKey + "=" + Uri.EscapeDataString(Options.StateDataFormat.Protect(properties))
             };
 
-            // TODO - brentschmaltz, if INonceCache is set should we even consider if ProtocolValidator is set?
             if (Options.ProtocolValidator.RequireNonce)
             {
                 openIdConnectMessage.Nonce = Options.ProtocolValidator.GenerateNonce();
@@ -179,7 +195,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                 string redirectUri = notification.ProtocolMessage.CreateAuthenticationRequestUrl();
                 if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
                 {
-                    _logger.WriteWarning("The authenticate redirect URI is malformed: " + redirectUri);
+                    _logger.WriteWarning("Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: {0}", (redirectUri ?? "null"));
                 }
 
                 Response.Redirect(redirectUri);
@@ -327,7 +343,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                     throw new InvalidOperationException("No SecurityTokenValidator found for token: " + openIdConnectMessage.IdToken);
                 }
 
-                ticket = new AuthenticationTicket(principal, properties, Options.AuthenticationType);
+                ticket = new AuthenticationTicket(principal.Identity as ClaimsIdentity, properties);
                 if (!string.IsNullOrWhiteSpace(openIdConnectMessage.SessionState))
                 {
                     ticket.Properties.Dictionary[OpenIdConnectSessionProperties.SessionState] = openIdConnectMessage.SessionState;
