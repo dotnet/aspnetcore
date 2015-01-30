@@ -48,7 +48,7 @@ namespace MusicStore.Controllers
                     order.OrderDate = DateTime.Now;
 
                     //Add the Order
-                    await _dbContext.Orders.AddAsync(order, Context.RequestAborted);
+                    _dbContext.Orders.Add(order);
 
                     //Process the order
                     var cart = ShoppingCart.GetCart(_dbContext, Context);

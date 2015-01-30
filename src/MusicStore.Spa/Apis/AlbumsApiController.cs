@@ -99,7 +99,7 @@ namespace MusicStore.Apis
 
             // Save the changes to the DB
             var dbAlbum = new Album();
-            await _storeContext.Albums.AddAsync(SimpleMapper.Map(album, dbAlbum));
+            _storeContext.Albums.Add(SimpleMapper.Map(album, dbAlbum));
             await _storeContext.SaveChangesAsync();
 
             // TODO: Handle missing record, key violations, concurrency issues, etc.

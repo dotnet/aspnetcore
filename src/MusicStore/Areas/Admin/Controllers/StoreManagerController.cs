@@ -89,7 +89,7 @@ namespace MusicStore.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _dbContext.Albums.AddAsync(album, Context.RequestAborted);
+                _dbContext.Albums.Add(album);
                 await _dbContext.SaveChangesAsync(Context.RequestAborted);
 
                 var albumData = new AlbumData
