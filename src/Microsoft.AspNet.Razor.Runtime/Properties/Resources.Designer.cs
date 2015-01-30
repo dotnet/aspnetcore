@@ -11,9 +11,7 @@ namespace Microsoft.AspNet.Razor.Runtime
             = new ResourceManager("Microsoft.AspNet.Razor.Runtime.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Invalid tag helper directive look up text '{0}'. The correct look up text formats are:
-        /// "assemblyName"
-        /// "typeName, assemblyName"
+        /// Invalid tag helper directive look up text '{0}'. The correct look up text format is: "typeName, assemblyName".
         /// </summary>
         internal static string TagHelperDescriptorResolver_InvalidTagHelperLookupText
         {
@@ -21,9 +19,7 @@ namespace Microsoft.AspNet.Razor.Runtime
         }
 
         /// <summary>
-        /// Invalid tag helper directive look up text '{0}'. The correct look up text formats are:
-        /// "assemblyName"
-        /// "typeName, assemblyName"
+        /// Invalid tag helper directive look up text '{0}'. The correct look up text format is: "typeName, assemblyName".
         /// </summary>
         internal static string FormatTagHelperDescriptorResolver_InvalidTagHelperLookupText(object p0)
         {

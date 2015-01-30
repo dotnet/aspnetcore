@@ -118,9 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TagHelperDescriptorResolver_InvalidTagHelperLookupText" xml:space="preserve">
-    <value>Invalid tag helper directive look up text '{0}'. The correct look up text formats are:
-"assemblyName"
-"typeName, assemblyName"</value>
+    <value>Invalid tag helper directive look up text '{0}'. The correct look up text format is: "typeName, assemblyName".</value>
   </data>
   <data name="TagHelperTypeResolver_CannotResolveTagHelperAssembly" xml:space="preserve">
     <value>Cannot resolve TagHelper containing assembly '{0}'. Error: {1}</value>
