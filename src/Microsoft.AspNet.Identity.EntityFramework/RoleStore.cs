@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("role");
             }
-            await Context.AddAsync(role, cancellationToken);
+            Context.Add(role);
             await SaveChanges(cancellationToken);
             return IdentityResult.Success;
         }
@@ -261,7 +261,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new ArgumentNullException("claim");
             }
 
-            return RoleClaims.AddAsync(new IdentityRoleClaim<TKey> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value }, cancellationToken);
+            RoleClaims.Add(new IdentityRoleClaim<TKey> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+
+            return Task.FromResult(false);
         }
 
         public async Task RemoveClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))

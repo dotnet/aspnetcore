@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 throw new ArgumentNullException("user");
             }
-            await Context.AddAsync(user, cancellationToken);
+            Context.Add(user);
             await SaveChanges(cancellationToken);
             return IdentityResult.Success;
         }
@@ -315,7 +315,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.RoleNotFound, roleName));
             }
             var ur = new IdentityUserRole<TKey> { UserId = user.Id, RoleId = roleEntity.Id };
-            await UserRoles.AddAsync(ur);
+            UserRoles.Add(ur);
         }
 
         /// <summary>
@@ -431,7 +431,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return await UserClaims.Where(uc => uc.UserId.Equals(user.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToListAsync(cancellationToken);
         }
 
-        public async virtual Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThrowIfDisposed();
             if (user == null)
@@ -444,8 +444,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
             foreach (var claim in claims)
             {
-                await UserClaims.AddAsync(new IdentityUserClaim<TKey> { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value }, cancellationToken);
+                UserClaims.Add(new IdentityUserClaim<TKey> { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
             }
+            return Task.FromResult(false);
         }
 
         public async virtual Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
@@ -493,7 +494,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
         }
 
-        public virtual async Task AddLoginAsync(TUser user, UserLoginInfo login,
+        public virtual Task AddLoginAsync(TUser user, UserLoginInfo login,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -514,7 +515,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                 ProviderDisplayName = login.ProviderDisplayName
             };
             // TODO: fixup so we don't have to update both
-            await UserLogins.AddAsync(l);
+            UserLogins.Add(l);
+            return Task.FromResult(false);
         }
 
         public virtual async Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
