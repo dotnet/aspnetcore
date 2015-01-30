@@ -716,8 +716,7 @@ namespace Microsoft.AspNet.Mvc
             var accessorMock = new Mock<IOptions<RouteOptions>>();
             accessorMock.SetupGet(o => o.Options).Returns(new RouteOptions());
             serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
-                               .Returns(new DefaultInlineConstraintResolver(serviceProviderMock.Object,
-                                                                            accessorMock.Object));
+                               .Returns(new DefaultInlineConstraintResolver(accessorMock.Object));
 
             rt.ServiceProvider = serviceProviderMock.Object;
             rt.MapRoute(string.Empty,

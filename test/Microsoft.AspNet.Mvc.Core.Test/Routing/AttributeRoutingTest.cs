@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             services
                 .Setup(s => s.GetService(typeof(IInlineConstraintResolver)))
-                .Returns(new DefaultInlineConstraintResolver(services.Object, routeOptions.Object));
+                .Returns(new DefaultInlineConstraintResolver(routeOptions.Object));
 
             return services.Object;
         }

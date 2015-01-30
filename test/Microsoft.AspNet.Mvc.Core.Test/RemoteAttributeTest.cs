@@ -577,11 +577,8 @@ namespace Microsoft.AspNet.Mvc
                 .SetupGet(options => options.Options)
                 .Returns(routeOptions);
 
-            // DefaultInlineConstraintResolver constructor does not currently check its serviceProvider parameter (e.g.
-            // for null) and the class does not look up any services.
-            serviceCollection.AddInstance<IInlineConstraintResolver>(new DefaultInlineConstraintResolver(
-                serviceProvider: null,
-                routeOptions: accessor.Object));
+            serviceCollection.AddInstance<IInlineConstraintResolver>(
+                new DefaultInlineConstraintResolver(accessor.Object));
 
             return serviceCollection;
         }

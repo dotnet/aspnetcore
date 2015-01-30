@@ -1448,13 +1448,11 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         private static DefaultInlineConstraintResolver CreateConstraintResolver()
         {
-            var services = Mock.Of<IServiceProvider>();
-
             var options = new RouteOptions();
             var optionsMock = new Mock<IOptions<RouteOptions>>();
             optionsMock.SetupGet(o => o.Options).Returns(options);
 
-            return new DefaultInlineConstraintResolver(services, optionsMock.Object);
+            return new DefaultInlineConstraintResolver(optionsMock.Object);
         }
 
         private static AttributeRoute CreateAttributeRoute(AttributeRouteLinkGenerationEntry entry)
