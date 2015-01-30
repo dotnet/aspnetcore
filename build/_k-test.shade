@@ -56,5 +56,5 @@ projectFile=''
     }
 }
 
-macro name='K' command='string' workingdir='string' dotnetsdkUse='string'
+macro name='K' command='string' workingdir='string' kvmUse='string'
     k
