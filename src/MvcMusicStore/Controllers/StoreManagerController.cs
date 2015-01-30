@@ -73,7 +73,7 @@ namespace MvcMusicStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                _storeContext.Entry(album).SetState(EntityState.Modified);
+                _storeContext.Update(album);
                 
                 await _storeContext.SaveChangesAsync();
                 
