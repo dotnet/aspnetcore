@@ -18,12 +18,15 @@ namespace Microsoft.AspNet.Routing
     public class DefaultInlineConstraintResolver : IInlineConstraintResolver
     {
         private readonly IDictionary<string, Type> _inlineConstraintMap;
-        private readonly IServiceProvider _serviceProvider;
 
-        public DefaultInlineConstraintResolver(IServiceProvider serviceProvider,
-                                               IOptions<RouteOptions> routeOptions)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultInlineConstraintResolver"/> class.
+        /// </summary>
+        /// <param name="routeOptions">
+        /// Accessor for <see cref="RouteOptions"/> containing the constraints of interest.
+        /// </param>
+        public DefaultInlineConstraintResolver(IOptions<RouteOptions> routeOptions)
         {
-            _serviceProvider = serviceProvider;
             _inlineConstraintMap = routeOptions.Options.ConstraintMap;
         }
 

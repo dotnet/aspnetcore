@@ -179,14 +179,12 @@ namespace Microsoft.AspNet.Routing
 
         private static RouteConstraintBuilder CreateBuilder(string template)
         {
-            var services = new Mock<IServiceProvider>(MockBehavior.Strict);
-
             var options = new Mock<IOptions<RouteOptions>>(MockBehavior.Strict);
             options
                 .SetupGet(o => o.Options)
                 .Returns(new RouteOptions());
 
-            var inlineConstraintResolver = new DefaultInlineConstraintResolver(services.Object, options.Object);
+            var inlineConstraintResolver = new DefaultInlineConstraintResolver(options.Object);
             return new RouteConstraintBuilder(inlineConstraintResolver, template);
         }
     }

@@ -302,10 +302,7 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             var optionsAccessor = new Mock<IOptions<RouteOptions>>();
             optionsAccessor.SetupGet(o => o.Options).Returns(routeOptions);
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(o => o.GetService(It.Is<Type>(type => type == typeof(ITypeActivator))))
-                           .Returns(new TypeActivator());
-            return new DefaultInlineConstraintResolver(serviceProvider.Object, optionsAccessor.Object);
+            return new DefaultInlineConstraintResolver(optionsAccessor.Object);
         }
 
         private class MultiConstructorRouteConstraint : IRouteConstraint

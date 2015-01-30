@@ -929,7 +929,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var services = new ServiceCollection().AddOptions();
             var serviceProvider = services.BuildServiceProvider();
             var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            return new DefaultInlineConstraintResolver(serviceProvider, accessor);
+            return new DefaultInlineConstraintResolver(accessor);
         }
     }
 }

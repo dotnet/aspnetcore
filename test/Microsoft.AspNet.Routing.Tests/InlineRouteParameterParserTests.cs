@@ -300,7 +300,7 @@ namespace Microsoft.AspNet.Routing.Tests
                                 .Add("test", typeof(TestRouteConstraint)));
             var serviceProvider = services.BuildServiceProvider();
             var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            return new DefaultInlineConstraintResolver(serviceProvider, accessor);
+            return new DefaultInlineConstraintResolver(accessor);
         }
 
         private class TestRouteConstraint : IRouteConstraint
