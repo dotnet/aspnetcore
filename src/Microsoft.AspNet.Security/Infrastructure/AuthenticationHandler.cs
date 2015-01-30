@@ -77,9 +77,12 @@ namespace Microsoft.AspNet.Security.Infrastructure
             if (BaseOptions.AuthenticationMode == AuthenticationMode.Active)
             {
                 AuthenticationTicket ticket = await AuthenticateAsync();
-                if (ticket != null && ticket.Identity != null)
+                if (ticket != null)
                 {
-                    SecurityHelper.AddUserIdentity(Context, ticket.Identity);
+                    if ( ticket.Identity != null)
+                        SecurityHelper.AddUserIdentity(Context, ticket.Identity);
+                    else if (ticket.Principal != null)
+                        SecurityHelper.AddUserIdentity(Context, ticket.Principal.Identity);
                 }
             }
         }
