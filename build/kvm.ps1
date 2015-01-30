@@ -23,7 +23,7 @@ param(
 )
 
 # Constants
-Set-Variable -Option Constant "BuildNumber" "10308"
+Set-Variable -Option Constant "BuildNumber" "10318"
 Set-Variable -Option Constant "RuntimePackageName" "kre"
 Set-Variable -Option Constant "RuntimeFriendlyName" "K Runtime"
 Set-Variable -Option Constant "RuntimeShortName" "KRE"

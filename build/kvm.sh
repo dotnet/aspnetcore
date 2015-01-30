@@ -2,14 +2,14 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_KVM_BUILDNUMBER="10308"
+_KVM_BUILDNUMBER="10318"
 _KVM_RUNTIME_PACKAGE_NAME="kre"
 _KVM_RUNTIME_FRIENDLY_NAME="K Runtime"
 _KVM_RUNTIME_SHORT_NAME="KRE"
 _KVM_RUNTIME_FOLDER_NAME=".k"
 _KVM_COMMAND_NAME="kvm"
 _KVM_VERSION_MANAGER_NAME="K Version Manager"
-_KVM_DEFAULT_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
+_KVM_DEFAULT_FEED="https://www.myget.org/F/aspnetrelease/api/v2"
 _KVM_HOME_VAR_NAME="KRE_HOME"
 
 __kvm_has() {
@@ -22,14 +22,14 @@ if __kvm_has "unsetopt"; then
 fi
 
 if [ -z "$KVM_USER_HOME" ]; then
-    eval KVM_USER_HOME="~/$K_DIR_NAME"
+    eval KVM_USER_HOME="~/$_KVM_RUNTIME_FOLDER_NAME"
 fi
 
 _KVM_USER_PACKAGES="$KVM_USER_HOME/runtimes"
 _KVM_ALIAS_DIR="$KVM_USER_HOME/alias"
 
 if [ -z "$KRE_FEED" ]; then
-    KRE_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
+    KRE_FEED="$_KVM_DEFAULT_FEED"
 fi
 
 __kvm_find_latest() {
