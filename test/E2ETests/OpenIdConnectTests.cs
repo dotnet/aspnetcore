@@ -11,22 +11,22 @@ namespace E2ETests
     {
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.IISExpress, DotnetFlavor.DesktopClr, DotnetArchitecture.x86, "http://localhost:5001/")]
-        public void OpenIdConnect_OnX86(ServerType serverType, DotnetFlavor dotnetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
+        public void OpenIdConnect_OnX86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
-            OpenIdConnectTestSuite(serverType, dotnetFlavor, architecture, applicationBaseUrl);
+            OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
         // Fails due to https://github.com/aspnet/XRE/issues/1129. 
-        [InlineData(ServerType.Kestrel, DotnetFlavor.Mono, DotnetArchitecture.x86, "http://localhost:5004/")]
-        public void OpenIdConnect_OnMono(ServerType serverType, DotnetFlavor dotnetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/")]
+        public void OpenIdConnect_OnMono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
-            OpenIdConnectTestSuite(serverType, dotnetFlavor, architecture, applicationBaseUrl);
+            OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
-        private void OpenIdConnectTestSuite(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        private void OpenIdConnectTestSuite(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             using (_logger.BeginScope("OpenIdConnectTestSuite"))
             {
@@ -36,8 +36,8 @@ namespace E2ETests
                 _startParameters = new StartParameters
                 {
                     ServerType = serverType,
-                    DotnetFlavor = donetFlavor,
-                    DotnetArchitecture = architecture,
+                    RuntimeFlavor = donetFlavor,
+                    RuntimeArchitecture = architecture,
                     EnvironmentName = "OpenIdConnectTesting"
                 };
 
