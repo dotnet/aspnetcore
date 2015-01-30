@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_KVM_BUILDNUMBER="10318"
+_KVM_BUILDNUMBER="10319"
 _KVM_RUNTIME_PACKAGE_NAME="kre"
 _KVM_RUNTIME_FRIENDLY_NAME="K Runtime"
 _KVM_RUNTIME_SHORT_NAME="KRE"
