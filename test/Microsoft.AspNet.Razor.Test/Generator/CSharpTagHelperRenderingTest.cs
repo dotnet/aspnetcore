@@ -149,10 +149,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                              generatedAbsoluteIndex: 475,
                                              generatedLineIndex: 15,
                                              characterOffsetIndex: 14,
-                                             contentLength: 11),
-                            BuildLineMapping(documentAbsoluteIndex: 57,
+                                             contentLength: 17),
+                            BuildLineMapping(documentAbsoluteIndex: 63,
                                              documentLineIndex: 2,
-                                             generatedAbsoluteIndex: 958,
+                                             generatedAbsoluteIndex: 964,
                                              generatedLineIndex: 34,
                                              characterOffsetIndex: 28,
                                              contentLength: 4)
@@ -169,10 +169,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                              generatedAbsoluteIndex: 475,
                                              generatedLineIndex: 15,
                                              characterOffsetIndex: 14,
-                                             contentLength: 11),
-                            BuildLineMapping(documentAbsoluteIndex: 189,
+                                             contentLength: 17),
+                            BuildLineMapping(documentAbsoluteIndex: 195,
                                              documentLineIndex: 6,
-                                             generatedAbsoluteIndex: 1574,
+                                             generatedAbsoluteIndex: 1580,
                                              generatedLineIndex: 44,
                                              characterOffsetIndex: 40,
                                              contentLength: 4)
@@ -184,34 +184,34 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         PAndInputTagHelperDescriptors,
                         new List<LineMapping>
                         {
-                            BuildLineMapping(14, 0, 479, 15, 14, 11),
-                            BuildLineMapping(30, 2, 1, 995, 35, 0, 48),
-                            BuildLineMapping(205, 9, 1113, 44, 0, 12),
-                            BuildLineMapping(218, 9, 13, 1209, 50, 12, 27),
-                            BuildLineMapping(346, 12, 1607, 62, 0, 48),
-                            BuildLineMapping(440, 15, 46, 1798, 71, 6, 8),
-                            BuildLineMapping(457, 15, 2121, 79, 63, 4),
-                            BuildLineMapping(501, 16, 31, 2328, 86, 6, 30),
-                            BuildLineMapping(568, 17, 30, 2677, 95, 0, 10),
-                            BuildLineMapping(601, 17, 63, 2759, 101, 0, 8),
-                            BuildLineMapping(632, 17, 94, 2839, 107, 0, 1),
-                            BuildLineMapping(639, 18, 3093, 116, 0, 15),
-                            BuildLineMapping(157, 7, 32, 3242, 123, 6, 12),
-                            BuildLineMapping(719, 21, 3325, 128, 0, 12),
-                            BuildLineMapping(733, 21, 3423, 134, 14, 21),
-                            BuildLineMapping(787, 22, 30, 3680, 142, 28, 7),
-                            BuildLineMapping(685, 20, 17, 3836, 148, 19, 23),
-                            BuildLineMapping(708, 20, 40, 3859, 148, 42, 7),
-                            BuildLineMapping(897, 25, 30, 4101, 155, 28, 30),
-                            BuildLineMapping(831, 24, 16, 4280, 161, 19, 8),
-                            BuildLineMapping(840, 24, 25, 4288, 161, 27, 23),
-                            BuildLineMapping(1026, 28, 4546, 168, 28, 30),
-                            BuildLineMapping(964, 27, 16, 4725, 174, 19, 30),
-                            BuildLineMapping(1156, 31, 4990, 181, 28, 3),
-                            BuildLineMapping(1161, 31, 33, 4993, 181, 31, 27),
-                            BuildLineMapping(1189, 31, 61, 5020, 181, 58, 10),
-                            BuildLineMapping(1094, 30, 18, 5179, 187, 19, 29),
-                            BuildLineMapping(1231, 34, 5279, 192, 0, 1),
+                            BuildLineMapping(14, 0, 479, 15, 14, 17),
+                            BuildLineMapping(36, 2, 1, 1001, 35, 0, 48),
+                            BuildLineMapping(211, 9, 1119, 44, 0, 12),
+                            BuildLineMapping(224, 9, 13, 1215, 50, 12, 27),
+                            BuildLineMapping(352, 12, 1613, 62, 0, 48),
+                            BuildLineMapping(446, 15, 46, 1804, 71, 6, 8),
+                            BuildLineMapping(463, 15, 2127, 79, 63, 4),
+                            BuildLineMapping(507, 16, 31, 2334, 86, 6, 30),
+                            BuildLineMapping(574, 17, 30, 2683, 95, 0, 10),
+                            BuildLineMapping(607, 17, 63, 2765, 101, 0, 8),
+                            BuildLineMapping(638, 17, 94, 2845, 107, 0, 1),
+                            BuildLineMapping(645, 18, 3099, 116, 0, 15),
+                            BuildLineMapping(163, 7, 32, 3248, 123, 6, 12),
+                            BuildLineMapping(725, 21, 3331, 128, 0, 12),
+                            BuildLineMapping(739, 21, 3429, 134, 14, 21),
+                            BuildLineMapping(793, 22, 30, 3686, 142, 28, 7),
+                            BuildLineMapping(691, 20, 17, 3842, 148, 19, 23),
+                            BuildLineMapping(714, 20, 40, 3865, 148, 42, 7),
+                            BuildLineMapping(903, 25, 30, 4107, 155, 28, 30),
+                            BuildLineMapping(837, 24, 16, 4286, 161, 19, 8),
+                            BuildLineMapping(846, 24, 25, 4294, 161, 27, 23),
+                            BuildLineMapping(1032, 28, 4552, 168, 28, 30),
+                            BuildLineMapping(970, 27, 16, 4731, 174, 19, 30),
+                            BuildLineMapping(1162, 31, 4996, 181, 28, 3),
+                            BuildLineMapping(1167, 31, 33, 4999, 181, 31, 27),
+                            BuildLineMapping(1195, 31, 61, 5026, 181, 58, 10),
+                            BuildLineMapping(1100, 30, 18, 5185, 187, 19, 29),
+                            BuildLineMapping(1237, 34, 5285, 192, 0, 1),
                         }
                     },
                     {
@@ -306,7 +306,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                                      generatedAbsoluteIndex: 442,
                                                      generatedLineIndex: 14,
                                                      characterOffsetIndex: 17,
-                                                     contentLength: 11)
+                                                     contentLength: 17)
                              });
         }
 
@@ -323,7 +323,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                                      generatedAbsoluteIndex: 433,
                                                      generatedLineIndex: 14,
                                                      characterOffsetIndex: 14,
-                                                     contentLength: 11)
+                                                     contentLength: 17)
                              });
         }
 

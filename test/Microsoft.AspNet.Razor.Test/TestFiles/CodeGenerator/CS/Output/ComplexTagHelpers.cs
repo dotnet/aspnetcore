@@ -1,4 +1,4 @@
-#pragma checksum "ComplexTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "7158abc69d261099393d49d82670ec64a94d9770"
+#pragma checksum "ComplexTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "b7d9a4dd63a71dcfc8c97a5ee7598214e387e1b6"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -25,7 +25,7 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            Instrumentation.BeginContext(27, 2, true);
+            Instrumentation.BeginContext(33, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
 #line 3 "ComplexTagHelpers.cshtml"
@@ -37,7 +37,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(78, 55, true);
+            Instrumentation.BeginContext(84, 55, true);
             WriteLiteral("    <div class=\"randomNonTagHelperAttribute\">\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test", async() => {
@@ -311,7 +311,7 @@ Write(DateTime.Now);
             WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(666, 10, true);
+            Instrumentation.BeginContext(672, 10, true);
             WriteLiteral("\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test", async() => {
@@ -389,7 +389,7 @@ __PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
             WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(813, 10, true);
+            Instrumentation.BeginContext(819, 10, true);
             WriteLiteral("\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test", async() => {
@@ -454,7 +454,7 @@ __PTagHelper.Age = -1970 + DateTimeOffset.Now.Year;
             WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(946, 10, true);
+            Instrumentation.BeginContext(952, 10, true);
             WriteLiteral("\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test", async() => {
@@ -519,7 +519,7 @@ __PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
             WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(1074, 10, true);
+            Instrumentation.BeginContext(1080, 10, true);
             WriteLiteral("\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test", async() => {
@@ -584,7 +584,7 @@ __PTagHelper.Age = "My age is this long.".Length;
             WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(1217, 14, true);
+            Instrumentation.BeginContext(1223, 14, true);
             WriteLiteral("\r\n    </div>\r\n");
             Instrumentation.EndContext();
 #line 35 "ComplexTagHelpers.cshtml"

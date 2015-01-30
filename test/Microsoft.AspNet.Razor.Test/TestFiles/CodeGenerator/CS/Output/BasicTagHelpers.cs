@@ -1,4 +1,4 @@
-#pragma checksum "BasicTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "897cb2042003c7f319b5265ba8e1878fb3043e8e"
+#pragma checksum "BasicTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "15cf58241a278a7bfadfefa9ef44742b3fd1074e"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -25,7 +25,7 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            Instrumentation.BeginContext(27, 49, true);
+            Instrumentation.BeginContext(33, 49, true);
             WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test", async() => {
@@ -141,7 +141,7 @@ namespace TestOutput
             WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(206, 8, true);
+            Instrumentation.BeginContext(212, 8, true);
             WriteLiteral("\r\n</div>");
             Instrumentation.EndContext();
         }

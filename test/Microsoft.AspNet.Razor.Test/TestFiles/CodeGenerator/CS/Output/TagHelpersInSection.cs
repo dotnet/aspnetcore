@@ -1,4 +1,4 @@
-#pragma checksum "TagHelpersInSection.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "2571c1678f925672aa18f5e7ae50916089e8f5cb"
+#pragma checksum "TagHelpersInSection.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "f7dda6348dbd0043f1421eacbbdce3d3c4f21d75"
 namespace TestOutput
 {
     using System;
@@ -23,7 +23,7 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            Instrumentation.BeginContext(27, 2, true);
+            Instrumentation.BeginContext(33, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
 #line 3 "TagHelpersInSection.cshtml"
@@ -33,11 +33,11 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(63, 4, true);
+            Instrumentation.BeginContext(69, 4, true);
             WriteLiteral("\r\n\r\n");
             Instrumentation.EndContext();
             DefineSection("MySection", async(__razor_template_writer) => {
-                Instrumentation.BeginContext(87, 21, true);
+                Instrumentation.BeginContext(93, 21, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n    <div>\r\n        ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper", "test", async() => {
@@ -115,7 +115,7 @@ Write(DateTime.Now);
                 WriteLiteralTo(__razor_template_writer, __tagHelperExecutionContext.Output.GeneratePostContent());
                 WriteLiteralTo(__razor_template_writer, __tagHelperExecutionContext.Output.GenerateEndTag());
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                Instrumentation.BeginContext(353, 14, true);
+                Instrumentation.BeginContext(359, 14, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n    </div>\r\n");
                 Instrumentation.EndContext();
             }

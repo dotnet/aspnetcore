@@ -1,4 +1,4 @@
-#pragma checksum "TagHelpersInHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "864bdf0afabc2aecf57904d5793a20bb6d12a6a3"
+#pragma checksum "TagHelpersInHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "daf9e656da8fef546fe782b39687a5029a852c48"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -21,7 +21,7 @@ MyHelper(string val)
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(62, 19, true);
+            Instrumentation.BeginContext(68, 19, true);
             WriteLiteralTo(__razor_helper_writer, "    <div>\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper", "test", async() => {
@@ -99,7 +99,7 @@ Write(DateTime.Now);
             WriteLiteralTo(__razor_helper_writer, __tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteralTo(__razor_helper_writer, __tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(336, 14, true);
+            Instrumentation.BeginContext(342, 14, true);
             WriteLiteralTo(__razor_helper_writer, "\r\n    </div>\r\n");
             Instrumentation.EndContext();
 #line 11 "TagHelpersInHelper.cshtml"
@@ -132,7 +132,7 @@ Write(DateTime.Now);
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            Instrumentation.BeginContext(27, 2, true);
+            Instrumentation.BeginContext(33, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper", "test", async() => {
@@ -192,7 +192,7 @@ Write(MyHelper(item => new Template((__razor_template_writer) => {
             WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(439, 2, true);
+            Instrumentation.BeginContext(445, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
         }

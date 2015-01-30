@@ -13,7 +13,7 @@ namespace TestOutput
             string __tagHelperDirectiveSyntaxHelper = null;
             __tagHelperDirectiveSyntaxHelper = 
 #line 1 "SingleTagHelper.cshtml"
-              "something"
+              "something, nice"
 
 #line default
 #line hidden
