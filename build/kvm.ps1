@@ -23,14 +23,14 @@ param(
 )
 
 # Constants
-Set-Variable -Option Constant "BuildNumber" "10318"
+Set-Variable -Option Constant "BuildNumber" "10319"
 Set-Variable -Option Constant "RuntimePackageName" "kre"
 Set-Variable -Option Constant "RuntimeFriendlyName" "K Runtime"
 Set-Variable -Option Constant "RuntimeShortName" "KRE"
 Set-Variable -Option Constant "RuntimeFolderName" ".k"
 Set-Variable -Option Constant "CommandName" "kvm"
 Set-Variable -Option Constant "VersionManagerName" "K Version Manager"
-Set-Variable -Option Constant "DefaultFeed" "https://www.myget.org/F/aspnetvnext/api/v2"
+Set-Variable -Option Constant "DefaultFeed" "https://www.myget.org/F/aspnetrelease/api/v2"
 Set-Variable -Option Constant "CrossGenCommand" "k-crossgen"
 Set-Variable -Option Constant "HomeEnvVar" "KRE_HOME"
 Set-Variable -Option Constant "UserHomeEnvVar" "KRE_USER_HOME"
