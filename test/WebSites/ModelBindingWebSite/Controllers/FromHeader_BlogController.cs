@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -11,6 +12,17 @@ namespace ModelBindingWebSite.Controllers
     [Route("Blog")]
     public class FromHeader_BlogController : Controller
     {
+        [HttpGet("BindToProperty/CustomName")]
+        public object BindToProperty(BlogWithHeaderOnProperty blogWithHeader)
+        {
+            return new Result()
+            {
+                HeaderValue = blogWithHeader.Title,
+                HeaderValues = blogWithHeader.Tags,
+                ModelStateErrors = ModelState.Where(kvp => kvp.Value.Errors.Count > 0).Select(kvp => kvp.Key).ToArray(),
+            };
+        }
+
         // Echo back the header value
         [HttpGet("BindToStringParameter")]
         public object BindToStringParameter([FromHeader] string transactionId)
@@ -104,6 +116,18 @@ namespace ModelBindingWebSite.Controllers
             public string Title { get; set; }
 
             [FromHeader]
+            public string[] Tags { get; set; }
+
+            public string Author { get; set; }
+        }
+
+        public class BlogWithHeaderOnProperty
+        {
+            [FromHeader(Name = "BlogTitle")]
+            [Required]
+            public string Title { get; set; }
+
+            [FromHeader(Name = "BlogTags")]
             public string[] Tags { get; set; }
 
             public string Author { get; set; }

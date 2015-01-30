@@ -44,6 +44,57 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected, result.HeaderValue);
         }
 
+        [Fact]
+        public async Task FromHeader_BindHeader_ToString_OnProperty_CustomName()
+        {
+            // Arrange
+            var title = "How to make really really good soup.";
+            var tags = new string[] { "Cooking", "Recipes", "Awesome" };
+
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToProperty/CustomName");
+            request.Headers.TryAddWithoutValidation("BlogTitle", title);
+            request.Headers.TryAddWithoutValidation("BlogTags", string.Join(", ", tags));
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<Result>(body);
+            Assert.Equal(title, result.HeaderValue);
+            Assert.Equal<string>(tags, result.HeaderValues);
+            Assert.Empty(result.ModelStateErrors);
+        }
+
+        [Fact]
+        public async Task FromHeader_NonExistingHeaderAddsValidationErrors_OnProperty_CustomName()
+        {
+            // Arrange
+            var tags = new string[] { "Cooking", "Recipes", "Awesome" };
+
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToProperty/CustomName");
+            request.Headers.TryAddWithoutValidation("BlogTags", string.Join(", ", tags));
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<Result>(body);
+            Assert.Equal<string>(tags, result.HeaderValues);
+            var error = Assert.Single(result.ModelStateErrors);
+            Assert.Equal("Title", error);
+        }
         // The action that this test hits will echo back the model-bound value
         [Fact]
         public async Task FromHeader_BindHeader_ToString_OnParameter_CustomName()
