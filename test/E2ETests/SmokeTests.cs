@@ -27,32 +27,32 @@ namespace E2ETests
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.IISExpress, DotnetFlavor.DesktopClr, DotnetArchitecture.x86, "http://localhost:5001/")]
-        [InlineData(ServerType.WebListener, DotnetFlavor.DesktopClr, DotnetArchitecture.x86, "http://localhost:5002/")]
-        [InlineData(ServerType.Kestrel, DotnetFlavor.DesktopClr, DotnetArchitecture.x86, "http://localhost:5004/")]
-        [InlineData(ServerType.IISExpress, DotnetFlavor.CoreClr, DotnetArchitecture.x86, "http://localhost:5001/")]
-        [InlineData(ServerType.WebListener, DotnetFlavor.CoreClr, DotnetArchitecture.x86, "http://localhost:5002/")]
-        [InlineData(ServerType.Kestrel, DotnetFlavor.CoreClr, DotnetArchitecture.x86, "http://localhost:5004/")]
-        public void SmokeTestSuite_OnX86(ServerType serverType, DotnetFlavor dotnetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5002/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5004/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5002/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5004/")]
+        public void SmokeTestSuite_OnX86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
-            SmokeTestSuite(serverType, dotnetFlavor, architecture, applicationBaseUrl);
+            SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [SkipOn32BitOS]
-        [InlineData(ServerType.WebListener, DotnetFlavor.DesktopClr, DotnetArchitecture.amd64, "http://localhost:5002/")]
-        [InlineData(ServerType.IISExpress, DotnetFlavor.CoreClr, DotnetArchitecture.amd64, "http://localhost:5001/")]
-        [InlineData(ServerType.Kestrel, DotnetFlavor.CoreClr, DotnetArchitecture.amd64, "http://localhost:5004/")]
-        public void SmokeTestSuite_OnAMD64(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.WebListener, RuntimeFlavor.DesktopClr, RuntimeArchitecture.amd64, "http://localhost:5002/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5001/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5004/")]
+        public void SmokeTestSuite_OnAMD64(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
-        [InlineData(ServerType.Kestrel, DotnetFlavor.Mono, DotnetArchitecture.x86, "http://localhost:5004/")]
-        public void SmokeTestSuite_OnMono(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/")]
+        public void SmokeTestSuite_OnMono(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
@@ -61,8 +61,8 @@ namespace E2ETests
         [SkipIfNativeModuleNotInstalled]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
-        [InlineData(ServerType.IISNativeModule, DotnetFlavor.CoreClr, DotnetArchitecture.x86, "http://localhost:5005/")]
-        public void SmokeTestSuite_On_NativeModule_X86(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5005/")]
+        public void SmokeTestSuite_On_NativeModule_X86(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
@@ -72,8 +72,8 @@ namespace E2ETests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
         [SkipOn32BitOS]
-        [InlineData(ServerType.IISNativeModule, DotnetFlavor.CoreClr, DotnetArchitecture.amd64, "http://localhost:5005/")]
-        public void SmokeTestSuite_On_NativeModule_AMD64(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5005/")]
+        public void SmokeTestSuite_On_NativeModule_AMD64(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
@@ -81,13 +81,13 @@ namespace E2ETests
         // [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Unix)]
-        [InlineData(ServerType.IIS, DotnetFlavor.CoreClr, DotnetArchitecture.x86, "http://localhost:5005/")]
-        public void SmokeTestSuite_On_IIS_X86(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5005/")]
+        public void SmokeTestSuite_On_IIS_X86(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
 
-        private void SmokeTestSuite(ServerType serverType, DotnetFlavor donetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        private void SmokeTestSuite(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             using (_logger.BeginScope("SmokeTestSuite"))
             {
@@ -97,8 +97,8 @@ namespace E2ETests
                 _startParameters = new StartParameters
                 {
                     ServerType = serverType,
-                    DotnetFlavor = donetFlavor,
-                    DotnetArchitecture = architecture,
+                    RuntimeFlavor = donetFlavor,
+                    RuntimeArchitecture = architecture,
                     EnvironmentName = "SocialTesting"
                 };
 

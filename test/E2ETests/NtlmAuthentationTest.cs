@@ -12,21 +12,21 @@ namespace E2ETests
     {
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Unix | OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, DotnetFlavor.CoreClr, DotnetArchitecture.x86, "http://localhost:5001/")]
-        [InlineData(ServerType.IISExpress, DotnetFlavor.DesktopClr, DotnetArchitecture.amd64, "http://localhost:5001/")]
-        [InlineData(ServerType.WebListener, DotnetFlavor.CoreClr, DotnetArchitecture.amd64, "http://localhost:5002/")]
-        public void NtlmAuthenticationTest(ServerType serverType, DotnetFlavor dotnetFlavor, DotnetArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.amd64, "http://localhost:5001/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5002/")]
+        public void NtlmAuthenticationTest(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             using (_logger.BeginScope("NtlmAuthenticationTest"))
             {
-                _logger.WriteInformation("Variation Details : HostType = {0}, DotnetFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}",
-                    serverType, dotnetFlavor, architecture, applicationBaseUrl);
+                _logger.WriteInformation("Variation Details : HostType = {0}, RuntimeFlavor = {1}, Architecture = {2}, applicationBaseUrl = {3}",
+                    serverType, runtimeFlavor, architecture, applicationBaseUrl);
 
                 _startParameters = new StartParameters
                 {
                     ServerType = serverType,
-                    DotnetFlavor = dotnetFlavor,
-                    DotnetArchitecture = architecture,
+                    RuntimeFlavor = runtimeFlavor,
+                    RuntimeArchitecture = architecture,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'
                     ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("NtlmAuthentation.config") : null,
                     SiteName = "MusicStoreNtlmAuthentication" //This is configured in the NtlmAuthentication.config

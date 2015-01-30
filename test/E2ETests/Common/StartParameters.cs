@@ -7,9 +7,9 @@
     {
         public ServerType ServerType { get; set; }
 
-        public DotnetFlavor DotnetFlavor { get; set; }
+        public RuntimeFlavor RuntimeFlavor { get; set; }
 
-        public DotnetArchitecture DotnetArchitecture { get; set; }
+        public RuntimeArchitecture RuntimeArchitecture { get; set; }
 
         public string EnvironmentName { get; set; }
 
@@ -25,7 +25,7 @@
 
         public string BundledApplicationRootPath { get; set; }
 
-        public string Dotnet { get; set; }
+        public string Runtime { get; set; }
 
         public IISApplication IISApplication { get; set; }
     }

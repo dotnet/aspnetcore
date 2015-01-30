@@ -15,13 +15,13 @@ namespace E2ETests
 {
     internal class DeploymentUtility
     {
-        private static string GetIISExpressPath(DotnetArchitecture architecture)
+        private static string GetIISExpressPath(RuntimeArchitecture architecture)
         {
             // Get path to program files
             var iisExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "IIS Express", "iisexpress.exe");
 
             // Get path to 64 bit of IIS Express
-            if (architecture == DotnetArchitecture.amd64)
+            if (architecture == RuntimeArchitecture.amd64)
             {
                 iisExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "IIS Express", "iisexpress.exe");
 
@@ -67,9 +67,9 @@ namespace E2ETests
         {
             startParameters.ApplicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
 
-            //To avoid the DOTNET_DEFAULT_LIB of the test process flowing into Helios, set it to empty
-            var backupDotnetDefaultLibPath = Environment.GetEnvironmentVariable("DOTNET_DEFAULT_LIB");
-            Environment.SetEnvironmentVariable("DOTNET_DEFAULT_LIB", string.Empty);
+            //To avoid the KRE_DEFAULT_LIB of the test process flowing into Helios, set it to empty
+            var backupRuntimeDefaultLibPath = Environment.GetEnvironmentVariable("KRE_DEFAULT_LIB");
+            Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", string.Empty);
 
             if (!string.IsNullOrWhiteSpace(startParameters.EnvironmentName))
             {
@@ -88,16 +88,16 @@ namespace E2ETests
 
             Process hostProcess = null;
 
-            if (startParameters.DotnetFlavor == DotnetFlavor.Mono)
+            if (startParameters.RuntimeFlavor == RuntimeFlavor.Mono)
             {
                 hostProcess = StartMonoHost(startParameters, logger);
             }
             else
             {
-                //Tweak the %PATH% to the point to the right DOTNETFLAVOR
-                startParameters.Dotnet = SwitchPathToDotnetFlavor(startParameters.DotnetFlavor, startParameters.DotnetArchitecture, logger);
+                //Tweak the %PATH% to the point to the right RUNTIMEFLAVOR
+                startParameters.Runtime = SwitchPathToRuntimeFlavor(startParameters.RuntimeFlavor, startParameters.RuntimeArchitecture, logger);
 
-                //Reason to do pack here instead of in a common place is use the right Dotnet to do the packing. Previous line switches to use the right Dotnet.
+                //Reason to do pack here instead of in a common place is use the right runtime to do the packing. Previous line switches to use the right runtime.
                 if (startParameters.BundleApplicationBeforeStart)
                 {
                     if (startParameters.ServerType == ServerType.IISNativeModule ||
@@ -162,8 +162,8 @@ namespace E2ETests
                 }
             }
 
-            //Restore the DOTNET_DEFAULT_LIB after starting the host process
-            Environment.SetEnvironmentVariable("DOTNET_DEFAULT_LIB", backupDotnetDefaultLibPath);
+            //Restore the KRE_DEFAULT_LIB after starting the host process
+            Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", backupRuntimeDefaultLibPath);
             Environment.SetEnvironmentVariable("ASPNET_ENV", string.Empty);
             return hostProcess;
         }
@@ -171,33 +171,33 @@ namespace E2ETests
         private static Process StartMonoHost(StartParameters startParameters, ILogger logger)
         {
             var path = Environment.GetEnvironmentVariable("PATH");
-            var dotnetBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).
-                Where(c => c.Contains("dotnet-mono")).FirstOrDefault();
+            var runtimeBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).
+                Where(c => c.Contains("kre-mono")).FirstOrDefault();
 
-            if (string.IsNullOrWhiteSpace(dotnetBin))
+            if (string.IsNullOrWhiteSpace(runtimeBin))
             {
-                throw new Exception("Dotnet not detected on the machine.");
+                throw new Exception("Runtime not detected on the machine.");
             }
 
             if (startParameters.BundleApplicationBeforeStart)
             {
-                // We use full path to Dotnet to pack.
-                startParameters.Dotnet = new DirectoryInfo(dotnetBin).Parent.FullName;
+                // We use full path to runtime to pack.
+                startParameters.Runtime = new DirectoryInfo(runtimeBin).Parent.FullName;
                 KpmBundle(startParameters, logger);
             }
 
             //Mono now supports --appbase 
-            Environment.SetEnvironmentVariable("DOTNET_APPBASE", startParameters.ApplicationPath);
+            Environment.SetEnvironmentVariable("KRE_APPBASE", startParameters.ApplicationPath);
             logger.WriteInformation("Setting the --appbase to", startParameters.ApplicationPath);
 
-            var dotnet = "dotnet";
+            var bootstrapper = "klr";
 
             var commandName = startParameters.ServerType == ServerType.Kestrel ? "kestrel" : string.Empty;
-            logger.WriteInformation(string.Format("Executing command: {0} {1} {2}", dotnet, startParameters.ApplicationPath, commandName));
+            logger.WriteInformation(string.Format("Executing command: {0} {1} {2}", bootstrapper, startParameters.ApplicationPath, commandName));
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = dotnet,
+                FileName = bootstrapper,
                 Arguments = string.Format("{0} {1}", startParameters.ApplicationPath, commandName),
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -241,7 +241,7 @@ namespace E2ETests
                             string.Format("/port:5001 /path:{0}", webroot) :
                             string.Format("/site:{0} /config:{1}", startParameters.SiteName, startParameters.ApplicationHostConfigLocation);
 
-            var iisExpressPath = GetIISExpressPath(startParameters.DotnetArchitecture);
+            var iisExpressPath = GetIISExpressPath(startParameters.RuntimeArchitecture);
 
             logger.WriteInformation("Executing command : {0} {1}", iisExpressPath, parameters);
 
@@ -262,11 +262,11 @@ namespace E2ETests
         private static Process StartSelfHost(StartParameters startParameters, string identityDbName, ILogger logger)
         {
             var commandName = startParameters.ServerType == ServerType.WebListener ? "web" : "kestrel";
-            logger.WriteInformation("Executing dotnet.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName);
+            logger.WriteInformation("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName);
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = "dotnet.exe",
+                FileName = "klr.exe",
                 Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName),
                 UseShellExecute = true,
                 CreateNoWindow = true
@@ -290,38 +290,38 @@ namespace E2ETests
             return hostProcess;
         }
 
-        private static string SwitchPathToDotnetFlavor(DotnetFlavor dotnetFlavor, DotnetArchitecture dotnetArchitecture, ILogger logger)
+        private static string SwitchPathToRuntimeFlavor(RuntimeFlavor runtimeFlavor, RuntimeArchitecture runtimeArchitecture, ILogger logger)
         {
             var pathValue = Environment.GetEnvironmentVariable("PATH");
             logger.WriteInformation(string.Empty);
             logger.WriteInformation("Current %PATH% value : {0}", pathValue);
 
             var replaceStr = new StringBuilder().
-                Append("dotnet").
-                Append((dotnetFlavor == DotnetFlavor.CoreClr) ? "-coreclr" : "-clr").
+                Append("kre").
+                Append((runtimeFlavor == RuntimeFlavor.CoreClr) ? "-coreclr" : "-clr").
                 Append("-win").
-                Append((dotnetArchitecture == DotnetArchitecture.x86) ? "-x86" : "-x64").
+                Append((runtimeArchitecture == RuntimeArchitecture.x86) ? "-x86" : "-x64").
                 ToString();
 
-            pathValue = Regex.Replace(pathValue, "dotnet-(clr|coreclr)-win-(x86|x64)", replaceStr, RegexOptions.IgnoreCase);
+            pathValue = Regex.Replace(pathValue, "kre-(clr|coreclr)-win-(x86|x64)", replaceStr, RegexOptions.IgnoreCase);
 
-            var startIndex = pathValue.IndexOf(replaceStr); // First instance of this Dotnet name.
-            var dotnetName = pathValue.Substring(startIndex, pathValue.IndexOf(';', startIndex) - startIndex);
-            dotnetName = dotnetName.Substring(0, dotnetName.IndexOf('\\')); // Trim the \bin from the path.
+            var startIndex = pathValue.IndexOf(replaceStr); // First instance of this runtime name.
+            var runtimeName = pathValue.Substring(startIndex, pathValue.IndexOf(';', startIndex) - startIndex);
+            runtimeName = runtimeName.Substring(0, runtimeName.IndexOf('\\')); // Trim the \bin from the path.
 
-            // Tweak the %PATH% to the point to the right DOTNETFLAVOR.
+            // Tweak the %PATH% to the point to the right RUNTIMEFLAVOR.
             Environment.SetEnvironmentVariable("PATH", pathValue);
 
             logger.WriteInformation(string.Empty);
-            logger.WriteInformation("Changing to use DOTNET : {0}", dotnetName);
-            return dotnetName;
+            logger.WriteInformation("Changing to use runtime : {0}", runtimeName);
+            return runtimeName;
         }
 
         private static void KpmBundle(StartParameters startParameters, ILogger logger, string bundleRoot = null)
         {
             startParameters.BundledApplicationRootPath = Path.Combine(bundleRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            var parameters = string.Format("bundle {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.BundledApplicationRootPath, startParameters.Dotnet);
+            var parameters = string.Format("bundle {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.BundledApplicationRootPath, startParameters.Runtime);
             logger.WriteInformation("Executing command kpm {0}", parameters);
 
             var startInfo = new ProcessStartInfo
