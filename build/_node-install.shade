@@ -10,16 +10,16 @@ default nodeVer = '0.10.28'
 default npmVer = '1.4.9'
 default nodeExeSha = '628FFD6C3577068C00CEC9F6F897F0EC8F5212D9'
 default nodeInstallDir = '${Path.Combine(binDir, "nodejs")}'
-default nodeGloballyInstalled = '${ !Directory.Exists(nodeInstallDir) && TestCommand("node" , "--version") }'
 
 var nodeExe = 'node.exe'
 var npmZip = 'npm-${npmVer}.zip'
 var nodeDist = 'http://nodejs.org/dist/'
 var nodeUrl = '${nodeDist}v${nodeVer}/${nodeExe}'
 var npmUrl = '${nodeDist}npm/${npmZip}'
-var doInstall = '${!nodeGloballyInstalled && !Directory.Exists(nodeInstallDir)}'
 var nodeInstallExePath = '${Path.Combine(nodeInstallDir, nodeExe)}'
 var npmInstallZipPath = '${Path.Combine(nodeInstallDir, npmZip)}'
+
+var doInstall = '${ !File.Exists(nodeInstallExePath) && !TestCommand("node", "--version") }'
 
 @{
   if (doInstall) {
