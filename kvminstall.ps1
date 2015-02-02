@@ -1,5 +1,5 @@
-if(!$Branch) { $Branch = "release" }
-if(!$Repository) { $Repository = "aspnet/Home" }
+if(!$Branch) { Set-Variable Branch "release" }
+if(!$Repository) { Set-Variable Repository "aspnet/Home" }
 
 $tempPath = Join-Path $env:TEMP "kvminstall"
 $kvmPs1Path = Join-Path $tempPath "kvm.ps1"
