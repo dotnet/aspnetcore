@@ -224,7 +224,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
             // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
             if (string.Equals(Request.Method, "POST", StringComparison.OrdinalIgnoreCase)
               && !string.IsNullOrWhiteSpace(Request.ContentType)
-                // May have media/type; charset=utf-8, allow partial match.
+              // May have media/type; charset=utf-8, allow partial match.
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
               && Request.Body.CanRead)
             {
@@ -343,7 +343,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                     throw new InvalidOperationException("No SecurityTokenValidator found for token: " + openIdConnectMessage.IdToken);
                 }
 
-                ticket = new AuthenticationTicket(principal.Identity as ClaimsIdentity, properties);
+                ticket = new AuthenticationTicket(principal, properties, Options.AuthenticationType);
                 if (!string.IsNullOrWhiteSpace(openIdConnectMessage.SessionState))
                 {
                     ticket.Properties.Dictionary[OpenIdConnectSessionProperties.SessionState] = openIdConnectMessage.SessionState;
