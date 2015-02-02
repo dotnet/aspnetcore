@@ -69,13 +69,13 @@ To install KVM and the correct version of Mono on OS X using [Homebrew](http://b
 Installing KVM need `curl`. Do verify if that is installed on the machine. Next install KVM on Linux run the following command:
 
 ```
-curl -sSL https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.sh | sh && source ~/.kre/kvm/kvm.sh
+curl -sSL https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.sh | sh && source ~/.k/kvm/kvm.sh
 ```
 
 If you want to run on the bleeding edge and install the latest development version of KVM, use this command:
 
 ```
-curl -sSL https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.sh | KVM_BRANCH=dev sh && source ~/.kre/kvm/kvm.sh
+curl -sSL https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.sh | KVM_BRANCH=dev sh && source ~/.k/kvm/kvm.sh
 ```
 
 Note that on Linux you need to also install [Mono](http://mono-project.com) 3.4.1 or later.

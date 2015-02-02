@@ -21,7 +21,7 @@ _kvmsetup_update_profile() {
 }
 
 if [ -z "$KRE_USER_HOME" ]; then
-    eval KRE_USER_HOME=~/.kre
+    eval KRE_USER_HOME=~/.k
 fi
 
 if ! _kvmsetup_has "curl"; then
