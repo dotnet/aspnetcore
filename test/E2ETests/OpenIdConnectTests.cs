@@ -9,9 +9,9 @@ namespace E2ETests
 {
     public partial class SmokeTests
     {
-        // [ConditionalTheory]
+        [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
         public void OpenIdConnect_OnX86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);

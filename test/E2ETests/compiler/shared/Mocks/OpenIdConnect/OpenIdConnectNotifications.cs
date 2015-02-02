@@ -28,9 +28,9 @@ namespace MusicStore.Mocks.OpenIdConnect
         internal static async Task SecurityTokenValidated(SecurityTokenValidatedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions> context)
         {
             Helpers.ThrowIfConditionFailed(() => context.AuthenticationTicket != null, "context.AuthenticationTicket is null.");
-            Helpers.ThrowIfConditionFailed(() => context.AuthenticationTicket.Identity != null, "context.AuthenticationTicket.Identity is null.");
-            Helpers.ThrowIfConditionFailed(() => !string.IsNullOrWhiteSpace(context.AuthenticationTicket.Identity.Name),
-                "context.AuthenticationTicket.Identity.Name is null.");
+            Helpers.ThrowIfConditionFailed(() => context.AuthenticationTicket.Principal != null, "context.AuthenticationTicket.Principal is null.");
+            Helpers.ThrowIfConditionFailed(() => context.AuthenticationTicket.Principal.Identity != null, "context.AuthenticationTicket.Principal.Identity is null.");
+            Helpers.ThrowIfConditionFailed(() => !string.IsNullOrWhiteSpace(context.AuthenticationTicket.Principal.Identity.Name), "context.AuthenticationTicket.Principal.Identity.Name is null.");
             notificationsFired.Add(nameof(SecurityTokenValidated));
             await Task.FromResult(0);
         }
@@ -48,7 +48,7 @@ namespace MusicStore.Mocks.OpenIdConnect
                 notificationsFired.Contains(nameof(SecurityTokenValidated)) &&
                 notificationsFired.Contains(nameof(AuthorizationCodeReceived)))
             {
-                context.AuthenticationTicket.Identity.AddClaim(new Claim("ManageStore", "Allowed"));
+                ((ClaimsIdentity)context.AuthenticationTicket.Principal.Identity).AddClaim(new Claim("ManageStore", "Allowed"));
             }
 
             await Task.FromResult(0);

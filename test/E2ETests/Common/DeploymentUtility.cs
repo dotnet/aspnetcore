@@ -187,8 +187,7 @@ namespace E2ETests
             }
 
             //Mono now supports --appbase 
-            Environment.SetEnvironmentVariable("KRE_APPBASE", startParameters.ApplicationPath);
-            logger.WriteInformation("Setting the --appbase to", startParameters.ApplicationPath);
+            logger.WriteInformation("Setting the --appbase to {0}", startParameters.ApplicationPath);
 
             var bootstrapper = "klr";
 
