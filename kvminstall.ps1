@@ -1,6 +1,5 @@
-param(
-    [Parameter(Mandatory=$false, Position=0)]$Branch = "master",
-    [Parameter(Mandatory=$false, Position=1)]$Repository = "aspnet/Home")
+if(!$Branch) { $Branch = "release" }
+if(!$Repository) { $Repository = "aspnet/Home" }
 
 $tempPath = Join-Path $env:TEMP "kvminstall"
 $kvmPs1Path = Join-Path $tempPath "kvm.ps1"
