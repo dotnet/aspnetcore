@@ -41,6 +41,8 @@ else
     echo "Downloading kvm as script to '$KRE_USER_HOME/kvm'"
 fi
 
+echo "Downloading kvm from '$KVM_SOURCE'"
+
 curl -s "$KVM_SOURCE" -o "$KRE_USER_HOME/kvm/kvm.sh" || {
     echo >&2 "Failed to download '$KVM_SOURCE'.."
     return 1
