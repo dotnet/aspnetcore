@@ -186,4 +186,7 @@
   <data name="RazorHash_UnsupportedHashAlgorithm" xml:space="preserve">
     <value>Unsupported hash algorithm.</value>
   </data>
+  <data name="RazorFileInfoCollection_ResourceCouldNotBeFound" xml:space="preserve">
+    <value>The resource '{0}' specified by '{1}' could not be found.</value>
+  </data>
 </root>

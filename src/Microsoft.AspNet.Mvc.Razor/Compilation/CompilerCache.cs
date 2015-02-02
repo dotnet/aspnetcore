@@ -8,6 +8,7 @@ using System.Reflection;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -16,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class CompilerCache : ICompilerCache
     {
+        private static readonly TypeInfo RazorFileInfoCollectionType = typeof(RazorFileInfoCollection).GetTypeInfo();
         private readonly IFileProvider _fileProvider;
         private readonly IMemoryCache _cache;
 
@@ -23,27 +25,30 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Initializes a new instance of <see cref="CompilerCache"/> populated with precompiled views
         /// discovered using <paramref name="provider"/>.
         /// </summary>
-        /// <param name="provider">
-        /// An <see cref="IAssemblyProvider"/> representing the assemblies
-        /// used to search for pre-compiled views.
-        /// </param>
+        /// <param name="assemblyProvider">The <see cref="IAssemblyProvider"/> that provides assemblies
+        /// for precompiled view discovery.</param>
+        /// <param name="loaderContextAccessor">The <see cref="IAssemblyLoadContextAccessor"/>.</param>
         /// <param name="optionsAccessor">An accessor to the <see cref="RazorViewEngineOptions"/>.</param>
-        public CompilerCache(IAssemblyProvider provider,
+        public CompilerCache(IAssemblyProvider assemblyProvider,
+                             IAssemblyLoadContextAccessor loadContextAccessor,
                              IOptions<RazorViewEngineOptions> optionsAccessor)
-            : this(GetFileInfos(provider.CandidateAssemblies), optionsAccessor.Options.FileProvider)
+            : this(GetFileInfos(assemblyProvider.CandidateAssemblies),
+                  loadContextAccessor.GetLoadContext(RazorFileInfoCollectionType.Assembly),
+                  optionsAccessor.Options.FileProvider)
         {
         }
 
-        // Internal for unit testing
-        internal CompilerCache(IEnumerable<RazorFileInfoCollection> razorFileInfoCollection,
+        internal CompilerCache(IEnumerable<RazorFileInfoCollection> razorFileInfoCollections,
+                               IAssemblyLoadContext loadContext,
                                IFileProvider fileProvider)
         {
             _fileProvider = fileProvider;
             _cache = new MemoryCache(new MemoryCacheOptions { ListenForMemoryPressure = false });
+
             var cacheEntries = new List<CompilerCacheEntry>();
-            foreach (var viewCollection in razorFileInfoCollection)
+            foreach (var viewCollection in razorFileInfoCollections)
             {
-                var containingAssembly = viewCollection.GetType().GetTypeInfo().Assembly;
+                var containingAssembly = viewCollection.LoadAssembly(loadContext);
                 foreach (var fileInfo in viewCollection.FileInfos)
                 {
                     var viewType = containingAssembly.GetType(fileInfo.FullTypeName);
@@ -247,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     .Select(c => (RazorFileInfoCollection)Activator.CreateInstance(c));
         }
 
-        private static bool Match(Type t)
+        internal static bool Match(Type t)
         {
             var inAssemblyType = typeof(RazorFileInfoCollection);
             if (inAssemblyType.IsAssignableFrom(t))
@@ -261,7 +266,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             return false;
         }
-
 
         private class GetOrAddResult
         {

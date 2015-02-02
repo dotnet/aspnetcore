@@ -5,12 +5,12 @@ using System;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.Runtime;
 
-namespace MvcSample.Web
+namespace TagHelperSample.Web
 {
-    public class RazorPreCompilation : RazorPreCompileModule
+    public class TagHelperPrecompilation : RazorPreCompileModule
     {
-        public RazorPreCompilation(IServiceProvider provider,
-                                   IApplicationEnvironment applicationEnvironment)
+        public TagHelperPrecompilation(IServiceProvider provider,
+                                       IApplicationEnvironment applicationEnvironment)
             : base(provider)
         {
             GenerateSymbols = string.Equals(applicationEnvironment.Configuration,

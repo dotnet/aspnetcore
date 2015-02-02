@@ -378,6 +378,22 @@ namespace Microsoft.AspNet.Mvc.Razor
             return GetString("RazorHash_UnsupportedHashAlgorithm");
         }
 
+        /// <summary>
+        /// The resource '{0}' specified by '{1}' could not be found.
+        /// </summary>
+        internal static string RazorFileInfoCollection_ResourceCouldNotBeFound
+        {
+            get { return GetString("RazorFileInfoCollection_ResourceCouldNotBeFound"); }
+        }
+
+        /// <summary>
+        /// The resource '{0}' specified by '{1}' could not be found.
+        /// </summary>
+        internal static string FormatRazorFileInfoCollection_ResourceCouldNotBeFound(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RazorFileInfoCollection_ResourceCouldNotBeFound"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
