@@ -115,8 +115,7 @@ namespace Microsoft.AspNet.Mvc
         private static IUrlHelper GetMockUrlHelper(string returnValue)
         {
             var urlHelper = new Mock<IUrlHelper>();
-            urlHelper.Setup(o => o.RouteUrl(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<string>(),
-                It.IsAny<string>(), It.IsAny<string>())).Returns(returnValue);
+            urlHelper.Setup(o => o.RouteUrl(It.IsAny<UrlRouteContext>())).Returns(returnValue);
 
             return urlHelper.Object;
         }

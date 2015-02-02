@@ -40,24 +40,18 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public virtual string Action(
-            string action,
-            string controller,
-            object values,
-            string protocol,
-            string host,
-            string fragment)
+        public virtual string Action(UrlActionContext actionContext)
         {
-            var valuesDictionary = TypeHelper.ObjectToDictionary(values);
+            var valuesDictionary = TypeHelper.ObjectToDictionary(actionContext.Values);
 
-            if (action != null)
+            if (actionContext.Action != null)
             {
-                valuesDictionary["action"] = action;
+                valuesDictionary["action"] = actionContext.Action;
             }
 
-            if (controller != null)
+            if (actionContext.Controller != null)
             {
-                valuesDictionary["controller"] = controller;
+                valuesDictionary["controller"] = actionContext.Controller;
             }
 
             var path = GeneratePathFromRoute(valuesDictionary);
@@ -66,7 +60,7 @@ namespace Microsoft.AspNet.Mvc
                 return null;
             }
 
-            return GenerateUrl(protocol, host, path, fragment);
+            return GenerateUrl(actionContext.Protocol, actionContext.Host, path, actionContext.Fragment);
         }
 
         /// <inheritdoc />
@@ -76,17 +70,17 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public virtual string RouteUrl(string routeName, object values, string protocol, string host, string fragment)
+        public virtual string RouteUrl(UrlRouteContext routeContext)
         {
-            var valuesDictionary = TypeHelper.ObjectToDictionary(values);
+            var valuesDictionary = TypeHelper.ObjectToDictionary(routeContext.Values);
 
-            var path = GeneratePathFromRoute(routeName, valuesDictionary);
+            var path = GeneratePathFromRoute(routeContext.RouteName, valuesDictionary);
             if (path == null)
             {
                 return null;
             }
 
-            return GenerateUrl(protocol, host, path, fragment);
+            return GenerateUrl(routeContext.Protocol, routeContext.Host, path, routeContext.Fragment);
         }
 
         private string GeneratePathFromRoute(IDictionary<string, object> values)

@@ -177,13 +177,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);
             urlHelper
-                .Setup(realHelper => realHelper.Action(
-                    actionName,
-                    controllerName,
-                    routeValues,
-                    null,   // protocol
-                    null,   // host
-                    null))  // fragment
+                .Setup(realHelper => realHelper.Action(It.Is<UrlActionContext>((context) =>
+                    string.Equals(context.Action, actionName) &&
+                    string.Equals(context.Controller, controllerName) &&
+                    context.Values == routeValues
+                )))
                 .Returns(expectedAction)
                 .Verifiable();
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(urlHelper.Object);
@@ -221,12 +219,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);
             urlHelper
-                .Setup(realHelper => realHelper.RouteUrl(
-                    routeName,
-                    routeValues,
-                    null,   // protocol
-                    null,   // host
-                    null))  // fragment
+                .Setup(realHelper => realHelper.RouteUrl(It.Is<UrlRouteContext>(context =>
+                    string.Equals(context.RouteName, routeName) &&
+                    context.Values == routeValues &&
+                    context.Protocol == null &&
+                    context.Host == null &&
+                    context.Fragment == null)))
                 .Returns(expectedAction)
                 .Verifiable();
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(urlHelper.Object);

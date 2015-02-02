@@ -69,8 +69,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         private static IUrlHelper GetMockUrlHelper(string returnValue)
         {
             var urlHelper = new Mock<IUrlHelper>();
-            urlHelper.Setup(o => o.Action(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object>(),
-                    It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(returnValue);
+            urlHelper.Setup(o => o.Action(It.IsAny<UrlActionContext>())).Returns(returnValue);
 
             return urlHelper.Object;
         }

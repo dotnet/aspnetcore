@@ -47,13 +47,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper
-                .Setup(mock => mock.Action(It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>()))
-                .Returns("home/index");
+                .Setup(mock => mock.Action(It.IsAny<UrlActionContext>())).Returns("home/index");
 
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider, urlHelper.Object);
             var viewContext = TestableHtmlGenerator.GetViewContext(model: null,

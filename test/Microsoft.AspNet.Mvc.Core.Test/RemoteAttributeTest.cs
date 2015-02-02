@@ -596,13 +596,7 @@ namespace Microsoft.AspNet.Mvc
 
             public object RouteValues { get; private set; }
 
-            public string Action(
-                string action,
-                string controller,
-                object values,
-                string protocol,
-                string host,
-                string fragment)
+            public string Action(UrlActionContext actionContext)
             {
                 throw new NotImplementedException();
             }
@@ -617,14 +611,14 @@ namespace Microsoft.AspNet.Mvc
                 throw new NotImplementedException();
             }
 
-            public string RouteUrl(string routeName, object values, string protocol, string host, string fragment)
+            public string RouteUrl(UrlRouteContext routeContext)
             {
-                Assert.Equal(_routeName, routeName);
-                Assert.Null(protocol);
-                Assert.Null(host);
-                Assert.Null(fragment);
+                Assert.Equal(_routeName, routeContext.RouteName);
+                Assert.Null(routeContext.Protocol);
+                Assert.Null(routeContext.Host);
+                Assert.Null(routeContext.Fragment);
 
-                RouteValues = values;
+                RouteValues = routeContext.Values;
 
                 return _url;
             }

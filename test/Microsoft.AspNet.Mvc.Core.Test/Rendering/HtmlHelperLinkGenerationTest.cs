@@ -55,23 +55,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                                                 GetHtmlAttributesAsString(htmlAttributes));
 
             var urlHelper = new Mock<IUrlHelper>();
-            urlHelper.Setup(
-                            h => h.Action(
-                                    It.IsAny<string>(),
-                                    It.IsAny<string>(),
-                                    It.IsAny<object>(),
-                                    It.IsAny<string>(),
-                                    It.IsAny<string>(),
-                                    It.IsAny<string>()))
-                     .Returns<string, string, object, string, string, string>(
-                            (actn, cntrlr, rvalues, prtcl, hname, frgmt) =>
-                                    string.Format("{0}{1}{2}{3}{4}{5}",
-                                    prtcl,
-                                    hname,
-                                    cntrlr,
-                                    actn,
-                                    GetRouteValuesAsString(rvalues),
-                                    frgmt));
+            urlHelper.Setup(h => h.Action(It.IsAny<UrlActionContext>()))
+                .Returns<UrlActionContext>((actionContext) =>
+                    string.Format("{0}{1}{2}{3}{4}{5}",
+                    actionContext.Protocol,
+                    actionContext.Host,
+                    actionContext.Controller,
+                    actionContext.Action,
+                    GetRouteValuesAsString(actionContext.Values),
+                    actionContext.Fragment));
 
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(urlHelper.Object);
 
@@ -129,19 +121,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper
                 .Setup(
-                    h => h.RouteUrl(
-                            It.IsAny<string>(),
-                            It.IsAny<object>(),
-                            It.IsAny<string>(),
-                            It.IsAny<string>(),
-                            It.IsAny<string>()))
-                .Returns<string, object, string, string, string>(
-                    (rname, rvalues, prtcl, hname, frgmt) =>
+                    h => h.RouteUrl(It.IsAny<UrlRouteContext>())).Returns<UrlRouteContext>((context) =>
                         string.Format("{0}{1}{2}{3}",
-                            prtcl,
-                            hname,
-                            GetRouteValuesAsString(rvalues),
-                            frgmt));
+                        context.Protocol,
+                        context.Host,
+                        GetRouteValuesAsString(context.Values),
+                        context.Fragment));
 
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(urlHelper.Object);
 

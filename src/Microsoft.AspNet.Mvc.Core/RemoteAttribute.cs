@@ -193,7 +193,12 @@ namespace Microsoft.AspNet.Mvc
         protected virtual string GetUrl([NotNull] ClientModelValidationContext context)
         {
             var urlHelper = context.RequestServices.GetRequiredService<IUrlHelper>();
-            var url = urlHelper.RouteUrl(RouteName, values: RouteData, protocol: null, host: null, fragment: null);
+            var url = urlHelper.RouteUrl(new UrlRouteContext()
+            {
+                RouteName = this.RouteName,
+                Values = RouteData,
+            });
+
             if (url == null)
             {
                 throw new InvalidOperationException(Resources.RemoteAttribute_NoUrlFound);

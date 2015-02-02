@@ -9,17 +9,12 @@ namespace Microsoft.AspNet.Mvc
     public interface IUrlHelper
     {
         /// <summary>
-        /// Generates a fully qualified or absolute URL for an action method by using the specified action name,
-        /// controller name, route values, protocol to use, host name and fragment.
+        /// Generates a fully qualified or absolute URL specified by <see cref="Mvc.UrlActionContext"/> for an action
+        /// method, which contains action name, controller name, route values, protocol to use, host name, and fragment.
         /// </summary>
-        /// <param name="action">The name of the action method.</param>
-        /// <param name="controller">The name of the controller.</param>
-        /// <param name="values">An object that contains the parameters for a route.</param>
-        /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
-        /// <param name="host">The host name for the URL.</param>
-        /// <param name="fragment">The fragment for the URL.</param>
+        /// <param name="actionContext">The context object for the generated URLs for an action method.</param>
         /// <returns>The fully qualified or absolute URL to an action method.</returns>
-        string Action(string action, string controller, object values, string protocol, string host, string fragment);
+        string Action([NotNull] UrlActionContext actionContext);
 
         /// <summary>
         /// Converts a virtual (relative) path to an application absolute path.
@@ -54,15 +49,11 @@ namespace Microsoft.AspNet.Mvc
         bool IsLocalUrl(string url);
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for the specified route values by
-        /// using the specified route name, protocol to use, host name and fragment.
+        /// Generates a fully qualified or absolute URL specified by <see cref="Mvc.UrlRouteContext"/>, which
+        /// contains the route name, the route values, protocol to use, host name and fragment.
         /// </summary>
-        /// <param name="routeName">The name of the route that is used to generate URL.</param>
-        /// <param name="values">An object that contains the parameters for a route.</param>
-        /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
-        /// <param name="host">The host name for the URL.</param>
-        /// <param name="fragment">The fragment for the URL.</param>
+        /// <param name="routeContext">The context object for the generated URLs for a route.</param>
         /// <returns>The fully qualified or absolute URL.</returns>
-        string RouteUrl(string routeName, object values, string protocol, string host, string fragment);
+        string RouteUrl([NotNull] UrlRouteContext routeContext);
     }
 }

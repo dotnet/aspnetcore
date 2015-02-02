@@ -46,14 +46,14 @@ namespace UrlHelperWebSite
             return ConvertToLowercaseUrl(base.Content(contentPath));
         }
 
-        public override string RouteUrl(string routeName, object values, string protocol, string host, string fragment)
+        public override string RouteUrl(UrlRouteContext routeContext)
         {
-            return ConvertToLowercaseUrl(base.RouteUrl(routeName, values, protocol, host, fragment));
+            return ConvertToLowercaseUrl(base.RouteUrl(routeContext));
         }
 
-        public override string Action(string action, string controller, object values, string protocol, string host, string fragment)
+        public override string Action(UrlActionContext actionContext)
         {
-            return ConvertToLowercaseUrl(base.Action(action, controller, values, protocol, host, fragment));
+            return ConvertToLowercaseUrl(base.Action(actionContext));
         }
 
         private string ConvertToLowercaseUrl(string url)

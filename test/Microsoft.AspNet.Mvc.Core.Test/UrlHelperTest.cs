@@ -59,8 +59,8 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(expectedPath, path);
         }
 
-        // UrlHelper.IsLocalUrl depends on the UrlUtility.IsLocalUrl method. 
-        // To avoid duplicate tests, all the tests exercising IsLocalUrl verify  
+        // UrlHelper.IsLocalUrl depends on the UrlUtility.IsLocalUrl method.
+        // To avoid duplicate tests, all the tests exercising IsLocalUrl verify
         // both of UrlHelper.IsLocalUrl and UrlUtility.IsLocalUrl
         [Theory]
         [InlineData(null)]
@@ -544,6 +544,56 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
+        public void RouteUrlWithUrlRouteContext_ReturnsExpectedResult()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            var routeContext = new UrlRouteContext()
+            {
+                RouteName = "namedroute",
+                Values = new
+                {
+                    Action = "newaction",
+                    Controller = "home2",
+                    id = "someid"
+                },
+                Fragment = "somefragment",
+                Host = "remotetown",
+                Protocol = "ftp"
+            };
+
+            // Act
+            var url = urlHelper.RouteUrl(routeContext);
+
+            // Assert
+            Assert.Equal("ftp://remotetown/app/named/home2/newaction/someid#somefragment", url);
+        }
+
+        [Fact]
+        public void RouteUrlWithAllParameters_ReturnsExpectedResult()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.RouteUrl(
+                routeName: "namedroute",
+                values: new
+                {
+                    Action = "newaction",
+                    Controller = "home2",
+                    id = "someid"
+                },
+                fragment: "somefragment",
+                host: "remotetown",
+                protocol: "https");
+
+            // Assert
+            Assert.Equal("https://remotetown/app/named/home2/newaction/someid#somefragment", url);
+        }
+
+        [Fact]
         public void UrlAction_RouteValuesAsDictionary_CaseSensitive()
         {
             // Arrange
@@ -614,6 +664,49 @@ namespace Microsoft.AspNet.Mvc
             Assert.Same(controller, dict["Controller"]);
             Assert.Same(id, dict["ID"]);
             Assert.Equal("/app/named/home/contact/suppliedid", url);
+        }
+
+        [Fact]
+        public void UrlActionWithUrlActionContext_ReturnsExpectedResult()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            var actionContext = new UrlActionContext()
+            {
+                Action = "contact",
+                Controller = "home3",
+                Values = new { id = "idone" },
+                Protocol = "ftp",
+                Host = "remotelyhost",
+                Fragment = "somefragment"
+            };
+
+            // Act
+            var url = urlHelper.Action(actionContext);
+
+            // Assert
+            Assert.Equal("ftp://remotelyhost/app/home3/contact/idone#somefragment", url);
+        }
+
+        [Fact]
+        public void UrlActionWithAllParameters_ReturnsExpectedResult()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+
+            // Act
+            var url = urlHelper.Action(
+                controller: "home3",
+                action: "contact",
+                values: null,
+                protocol: "https",
+                host: "remotelyhost",
+                fragment: "somefragment"
+                );
+
+            // Assert
+            Assert.Equal("https://remotelyhost/app/home3/contact#somefragment", url);
         }
 
         private static HttpContext CreateHttpContext(string appRoot, ILoggerFactory factory = null)
