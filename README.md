@@ -47,10 +47,10 @@ To install KVM on Windows run the following command, which will download and run
 
 ```
 
-If you want to run on the bleeding edge and install the latest development version of KVM, download the `kvminstall.ps1` file locally and invoke it in powershell with the following arguments:
+If you want to run on the bleeding edge and install the latest development version of KVM, run the following command:
 
-```powershell
-& C:\Path\To\kvminstall.ps1 dev
+```
+@powershell -NoProfile -ExecutionPolicy unrestricted -Command "&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.ps1'))}"
 ```
 
 After the script has run open a new command prompt to start using KVM.
