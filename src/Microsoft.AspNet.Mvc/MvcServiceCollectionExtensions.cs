@@ -13,7 +13,14 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class MvcServiceCollectionExtensions
     {
-        public static IServiceCollection AddMvc(this IServiceCollection services, IConfiguration configuration = null)
+        public static IServiceCollection AddMvc([NotNull] this IServiceCollection services)
+        {
+            return AddMvc(services, configuration: null);
+        }
+
+        public static IServiceCollection AddMvc(
+            [NotNull] this IServiceCollection services,
+            IConfiguration configuration)
         {
             ConfigureDefaultServices(services, configuration);
             services.TryAdd(MvcServices.GetDefaultServices(configuration));
