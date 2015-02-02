@@ -1,3 +1,7 @@
+param(
+    [Parameter(Mandatory=$false, Position=0)]$Branch = "master",
+    [Parameter(Mandatory=$false, Position=1)]$Repository = "aspnet/Home")
+
 $tempPath = Join-Path $env:TEMP "kvminstall"
 $kvmPs1Path = Join-Path $tempPath "kvm.ps1"
 $kvmCmdPath = Join-Path $tempPath "kvm.cmd"
@@ -8,8 +12,8 @@ if (!(Test-Path $tempPath)) { md $tempPath | Out-Null }
 
 $webClient = New-Object System.Net.WebClient
 Write-Host "Downloading KVM.ps1 to $kvmPs1Path"
-$webClient.DownloadFile('https://raw.githubusercontent.com/aspnet/Home/release/kvm.ps1', $kvmPs1Path)
+$webClient.DownloadFile("https://raw.githubusercontent.com/$Repository/$Branch/kvm.ps1", $kvmPs1Path)
 Write-Host "Downloading KVM.cmd to $kvmCmdPath"
-$webClient.DownloadFile('https://raw.githubusercontent.com/aspnet/Home/release/kvm.cmd', $kvmCmdPath)
+$webClient.DownloadFile("https://raw.githubusercontent.com/$Repository/$Branch/kvm.cmd", $kvmCmdPath)
 Write-Host "Installing KVM"
 & $kvmCmdPath setup

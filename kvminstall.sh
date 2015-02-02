@@ -1,5 +1,8 @@
 #!/bin/bash
 
+[ -z "$KVM_REPO" ] && KVM_REPO="aspnet/Home"
+[ -z "$KVM_BRANCH" ] && KVM_BRANCH="master"
+
 _kvmsetup_has() {
     type "$1" > /dev/null 2>&1
     return $?
@@ -27,7 +30,7 @@ if ! _kvmsetup_has "curl"; then
 fi
 
 if [ -z "$KVM_SOURCE" ]; then
-    KVM_SOURCE="https://raw.githubusercontent.com/aspnet/Home/master/kvm.sh"
+    KVM_SOURCE="https://raw.githubusercontent.com/$KVM_REPO/$KVM_BRANCH/kvm.sh"
 fi
 
 # Downloading to $KVM_DIR

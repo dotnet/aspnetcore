@@ -1,6 +1,6 @@
 # ASP.NET vNext Home
-Latest dev version: [![dev version](http://img.shields.io/myget/aspnetvnext/v/KRE-CLR-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetvnext)<br>
-Latest master version: [![master version](http://img.shields.io/myget/aspnetmaster/v/KRE-CLR-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetmaster)
+Latest dev version: [![dev version](http://img.shields.io/myget/aspnetvnext/v/kre-clr-win-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetvnext)<br>
+Latest master version: [![master version](http://img.shields.io/myget/aspnetmaster/v/kre-clr-win-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetmaster)
 
 The Home repository is the starting point for people to learn about ASP.NET vNext. This repo contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what's coming in ASP.NET vNext.
 
@@ -40,11 +40,17 @@ That said, you can also try out ASP.NET vNext with just a command-prompt and a t
 The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager). We use the K Version Manager to install different versions of the ASP.NET vNext runtime and switch between them.
 
 #### Windows
-To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges for Powershell):
+To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges for Powershell). This will use the currently released version of `kvm` (from the `release` branch of this repo).
 
 ```
 @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.ps1'))"
 
+```
+
+If you want to run on the bleeding edge and install the latest development version of KVM, download the `kvminstall.ps1` file locally and invoke it in powershell with the following arguments:
+
+```powershell
+& C:\Path\To\kvminstall.ps1 dev
 ```
 
 After the script has run open a new command prompt to start using KVM.
@@ -64,6 +70,12 @@ Installing KVM need `curl`. Do verify if that is installed on the machine. Next 
 
 ```
 curl -sSL https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.sh | sh && source ~/.kre/kvm/kvm.sh
+```
+
+If you want to run on the bleeding edge and install the latest development version of KVM, use this command:
+
+```
+curl -sSL https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.sh | KVM_BRANCH=dev sh && source ~/.kre/kvm/kvm.sh
 ```
 
 Note that on Linux you need to also install [Mono](http://mono-project.com) 3.4.1 or later.
@@ -115,7 +127,7 @@ The community standup is held every week and streamed live to YouTube. You can v
 
 If you have questions you can also jump online during the next standup and have them answered live.
 
-### [Wiki Documentation] (https://github.com/aspnet/Home/wiki)
+### [Wiki Documentation](https://github.com/aspnet/Home/wiki)
 We have some useful documentation on the wiki of this Repo. This wiki is a central spot for docs from any part of the stack.
 
 If you see errors, or want some extra content, then feel free to create an issue or send a pull request (see feedback section below).
