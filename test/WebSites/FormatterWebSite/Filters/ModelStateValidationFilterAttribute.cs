@@ -11,7 +11,7 @@ namespace FormatterWebSite
         {
             if (!context.ModelState.IsValid)
             {
-                context.Result = new CustomObjectResult(context.ModelState, 400);
+                context.Result = new ObjectResult(context.ModelState) { StatusCode = 400 };
             }
         }
     }
