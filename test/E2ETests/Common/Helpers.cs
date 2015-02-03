@@ -22,6 +22,7 @@ namespace E2ETests
             {
                 try
                 {
+                    logger.WriteWarning("Retry count {0}..", retry + 1);
                     retryBlock();
                     break; //Went through successfully
                 }
@@ -30,8 +31,8 @@ namespace E2ETests
                     if (exception.InnerException is HttpRequestException || exception.InnerException is WebException)
                     {
                         logger.WriteWarning("Failed to complete the request.", exception);
-                        logger.WriteWarning("Retrying request..");
-                        Thread.Sleep(1 * 1000); //Wait for a second before retry
+                        var waitTimeInMilliSeconds = (RunningOnMono ? 6 : 1) * 1000;
+                        Thread.Sleep(waitTimeInMilliSeconds); //Wait for a second before retry
                     }
                 }
             }
