@@ -57,18 +57,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
-        protected internal ILoggerFactory LoggerFactory { get; set; }
-        
+        protected internal ILogger<LinkTagHelper> Logger { get; set; }
+
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            var logger = LoggerFactory.Create<LinkTagHelper>();
-
-            if (!context.AllRequiredAttributesArePresent(RequiredAttributes, logger))
+            if (!context.AllRequiredAttributesArePresent(RequiredAttributes, Logger))
             {
-                if (logger.IsEnabled(LogLevel.Verbose))
+                if (Logger.IsEnabled(LogLevel.Verbose))
                 {
-                    logger.WriteVerbose("Skipping processing for {0} {1}", nameof(LinkTagHelper), context.UniqueId);
+                    Logger.WriteVerbose("Skipping processing for {0} {1}", nameof(LinkTagHelper), context.UniqueId);
                 }
                 return;
             }
@@ -101,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                  JavaScriptUtility.JavaScriptStringEncode(FallbackTestValue),
                                  JavaScriptUtility.JavaScriptStringEncode(FallbackHref));
             content.Append("</script>");
-            
+
             output.Content = content.ToString();
         }
     }

@@ -26,12 +26,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
                     { "asp-fallback-test-value", "hidden" },
                 });
             var output = MakeTagHelperOutput("link");
-            var loggerFactory = new Mock<ILoggerFactory>();
+            var logger = new Mock<ILogger<LinkTagHelper>>();
 
             // Act
             var helper = new LinkTagHelper
             {
-                LoggerFactory = loggerFactory.Object,
+                Logger = logger.Object,
                 FallbackHref = "test.css",
                 FallbackTestClass = "hidden",
                 FallbackTestProperty = "visible",
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
             Assert.NotNull(output.Content);
             Assert.True(output.ContentSet);
         }
-        
+
         [Fact]
         public void PreservesOrderOfSourceAttributesWhenRun()
         {
@@ -67,12 +67,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
                     { "data-extra", "something"},
                     { "href", "test.css"}
                 });
-            var loggerFactory = new Mock<ILoggerFactory>();
+            var logger = new Mock<ILogger<LinkTagHelper>>();
 
             // Act
             var helper = new LinkTagHelper
             {
-                LoggerFactory = loggerFactory.Object,
+                Logger = logger.Object,
                 FallbackHref = "test.css",
                 FallbackTestClass = "hidden",
                 FallbackTestProperty = "visible",
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
             // Assert
             Assert.StartsWith("<link rel=\"stylesheet\" data-extra=\"something\" href=\"test.css\"", output.Content);
         }
-        
+
         [Fact]
         public void DoesNotRunWhenARequiredAttributeIsMissing()
         {
@@ -97,14 +97,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
                     { "asp-fallback-test-value", "hidden" },
                 });
             var output = MakeTagHelperOutput("link");
-            var logger = new Mock<ILogger>();
-            var loggerFactory = new Mock<ILoggerFactory>();
-            loggerFactory.Setup(f => f.Create(It.IsAny<string>())).Returns(logger.Object);
+            var logger = new Mock<ILogger<LinkTagHelper>>();
 
             // Act
             var helper = new LinkTagHelper
             {
-                LoggerFactory = loggerFactory.Object,
+                Logger = logger.Object,
                 // This is commented out on purpose: FallbackHref = "test.css",
                 FallbackTestClass = "hidden",
                 FallbackTestProperty = "visible",
@@ -116,21 +114,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
             Assert.NotNull(output.TagName);
             Assert.False(output.ContentSet);
         }
-        
+
         [Fact]
         public void DoesNotRunWhenAllRequiredAttributesAreMissing()
         {
             // Arrange
             var context = MakeTagHelperContext();
             var output = MakeTagHelperOutput("link");
-            var logger = new Mock<ILogger>();
-            var loggerFactory = new Mock<ILoggerFactory>();
-            loggerFactory.Setup(f => f.Create(It.IsAny<string>())).Returns(logger.Object);
+            var logger = new Mock<ILogger<LinkTagHelper>>();
 
             // Act
             var helper = new LinkTagHelper
             {
-                LoggerFactory = loggerFactory.Object
+                Logger = logger.Object
             };
             helper.Process(context, output);
 
@@ -138,7 +134,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
             Assert.NotNull(output.TagName);
             Assert.False(output.ContentSet);
         }
-        
+
         private TagHelperContext MakeTagHelperContext(
             IDictionary<string, object> attributes = null,
             string content = null)
