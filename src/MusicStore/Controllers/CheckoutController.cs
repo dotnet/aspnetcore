@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using MusicStore.Models;
@@ -11,16 +12,16 @@ namespace MusicStore.Controllers
     public class CheckoutController : Controller
     {
         private const string PromoCode = "FREE";
-        private readonly MusicStoreContext _dbContext;
 
-        public CheckoutController(MusicStoreContext dbContext)
+        [FromServices]
+        public MusicStoreContext DbContext
         {
-            _dbContext = dbContext;
-        }
+            get;
+            set;
+        } 
 
         //
         // GET: /Checkout/
-
         public IActionResult AddressAndPayment()
         {
             return View();
@@ -31,7 +32,7 @@ namespace MusicStore.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddressAndPayment(Order order)
+        public async Task<IActionResult> AddressAndPayment(Order order, CancellationToken requestAborted)
         {
             var formCollection = await Context.Request.ReadFormAsync();
 
@@ -48,14 +49,14 @@ namespace MusicStore.Controllers
                     order.OrderDate = DateTime.Now;
 
                     //Add the Order
-                    _dbContext.Orders.Add(order);
+                    DbContext.Orders.Add(order);
 
                     //Process the order
-                    var cart = ShoppingCart.GetCart(_dbContext, Context);
+                    var cart = ShoppingCart.GetCart(DbContext, Context);
                     await cart.CreateOrder(order);
 
                     // Save all changes
-                    await _dbContext.SaveChangesAsync(Context.RequestAborted);
+                    await DbContext.SaveChangesAsync(requestAborted);
 
                     return RedirectToAction("Complete", new { id = order.OrderId });
                 }
@@ -73,7 +74,7 @@ namespace MusicStore.Controllers
         public async Task<IActionResult> Complete(int id)
         {
             // Validate customer owns this order
-            bool isValid = await _dbContext.Orders.AnyAsync(
+            bool isValid = await DbContext.Orders.AnyAsync(
                 o => o.OrderId == id &&
                 o.Username == Context.User.Identity.GetUserName());
 

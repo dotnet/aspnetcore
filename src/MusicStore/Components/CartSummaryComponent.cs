@@ -8,11 +8,11 @@ namespace MusicStore.Components
     [ViewComponent(Name = "CartSummary")]
     public class CartSummaryComponent : ViewComponent
     {
-        private readonly MusicStoreContext _dbContext;
-
-        public CartSummaryComponent(MusicStoreContext dbContext)
+        [Activate]
+        public MusicStoreContext DbContext
         {
-            _dbContext = dbContext;
+            get;
+            set;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
@@ -27,7 +27,7 @@ namespace MusicStore.Components
 
         private async Task<IOrderedEnumerable<string>> GetCartItems()
         {
-            var cart = ShoppingCart.GetCart(_dbContext, Context);
+            var cart = ShoppingCart.GetCart(DbContext, Context);
 
             return (await cart.GetCartItems())
                 .Select(a => a.Album.Title)

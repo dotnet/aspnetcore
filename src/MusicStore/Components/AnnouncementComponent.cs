@@ -10,18 +10,23 @@ namespace MusicStore.Components
     [ViewComponent(Name = "Announcement")]
     public class AnnouncementComponent : ViewComponent
     {
-        private readonly MusicStoreContext _dbContext;
-        private readonly IMemoryCache _cache;
-
-        public AnnouncementComponent(MusicStoreContext dbContext, IMemoryCache memoryCache)
+        [Activate]
+        public MusicStoreContext DbContext
         {
-            _dbContext = dbContext;
-            _cache = memoryCache;
+            get;
+            set;
+        }
+
+        [Activate]
+        public IMemoryCache Cache
+        {
+            get;
+            set;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var latestAlbum = await _cache.GetOrSet("latestAlbum", async context =>
+            var latestAlbum = await Cache.GetOrSet("latestAlbum", async context =>
             {
                 context.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
                 return await GetLatestAlbum();
@@ -32,7 +37,7 @@ namespace MusicStore.Components
 
         private Task<Album> GetLatestAlbum()
         {
-            var latestAlbum = _dbContext.Albums
+            var latestAlbum = DbContext.Albums
                 .OrderByDescending(a => a.Created)
                 .Where(a => (a.Created - DateTime.UtcNow).TotalDays <= 2)
                 .FirstOrDefaultAsync();

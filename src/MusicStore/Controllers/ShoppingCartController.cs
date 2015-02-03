@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.DependencyInjection;
@@ -9,19 +10,18 @@ namespace MusicStore.Controllers
 {
     public class ShoppingCartController : Controller
     {
-        private readonly MusicStoreContext _dbContext;
-
-        public ShoppingCartController(MusicStoreContext dbContext)
+        [FromServices]
+        public MusicStoreContext DbContext
         {
-            _dbContext = dbContext;
+            get;
+            set;
         }
 
         //
         // GET: /ShoppingCart/
-
         public async Task<IActionResult> Index()
         {
-            var cart = ShoppingCart.GetCart(_dbContext, Context);
+            var cart = ShoppingCart.GetCart(DbContext, Context);
 
             // Set up our ViewModel
             var viewModel = new ShoppingCartViewModel
@@ -37,18 +37,18 @@ namespace MusicStore.Controllers
         //
         // GET: /ShoppingCart/AddToCart/5
 
-        public async Task<IActionResult> AddToCart(int id)
+        public async Task<IActionResult> AddToCart(int id, CancellationToken requestAborted)
         {
             // Retrieve the album from the database
-            var addedAlbum = _dbContext.Albums
+            var addedAlbum = DbContext.Albums
                 .Single(album => album.AlbumId == id);
 
             // Add it to the shopping cart
-            var cart = ShoppingCart.GetCart(_dbContext, Context);
+            var cart = ShoppingCart.GetCart(DbContext, Context);
 
             cart.AddToCart(addedAlbum);
 
-            await _dbContext.SaveChangesAsync(Context.RequestAborted);
+            await DbContext.SaveChangesAsync(requestAborted);
 
             // Go back to the main store page for more shopping
             return RedirectToAction("Index");
@@ -57,7 +57,7 @@ namespace MusicStore.Controllers
         //
         // AJAX: /ShoppingCart/RemoveFromCart/5
         [HttpPost]
-        public async Task<IActionResult> RemoveFromCart(int id)
+        public async Task<IActionResult> RemoveFromCart(int id, CancellationToken requestAborted)
         {
             var formParameters = await Context.Request.ReadFormAsync();
             var requestVerification = formParameters["RequestVerificationToken"];
@@ -79,10 +79,10 @@ namespace MusicStore.Controllers
             antiForgery.Validate(Context, new AntiForgeryTokenSet(formToken, cookieToken));
 
             // Retrieve the current user's shopping cart
-            var cart = ShoppingCart.GetCart(_dbContext, Context);
+            var cart = ShoppingCart.GetCart(DbContext, Context);
 
             // Get the name of the album to display confirmation
-            var cartItem = await _dbContext.CartItems
+            var cartItem = await DbContext.CartItems
                 .Where(item => item.CartItemId == id)
                 .Include(c => c.Album)
                 .SingleOrDefaultAsync();
@@ -90,7 +90,7 @@ namespace MusicStore.Controllers
             // Remove from cart
             int itemCount = cart.RemoveFromCart(id);
 
-            await _dbContext.SaveChangesAsync(Context.RequestAborted);
+            await DbContext.SaveChangesAsync(requestAborted);
 
             string removed = (itemCount > 0) ? " 1 copy of " : string.Empty;
 

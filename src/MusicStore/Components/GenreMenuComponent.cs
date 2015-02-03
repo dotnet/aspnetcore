@@ -9,11 +9,11 @@ namespace MusicStore.Components
     [ViewComponent(Name = "GenreMenu")]
     public class GenreMenuComponent : ViewComponent
     {
-        private readonly MusicStoreContext _dbContext;
-
-        public GenreMenuComponent(MusicStoreContext dbContext)
+        [Activate]
+        public MusicStoreContext DbContext
         {
-            _dbContext = dbContext;
+            get;
+            set;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
@@ -34,7 +34,7 @@ namespace MusicStore.Components
             //.Take(9)
             //.ToList();
 
-            return await _dbContext.Genres.Take(9).ToListAsync();
+            return await DbContext.Genres.Take(9).ToListAsync();
         }
     }
 }

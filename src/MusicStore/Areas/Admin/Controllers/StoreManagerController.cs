@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -17,26 +18,42 @@ namespace MusicStore.Areas.Admin.Controllers
     [Microsoft.AspNet.Mvc.Authorize("ManageStore")]
     public class StoreManagerController : Controller
     {
-        private readonly MusicStoreContext _dbContext;
-        private readonly IMemoryCache _cache;
+        private IConnectionManager _connectionManager;
         private IHubContext _announcementHub;
 
-        public StoreManagerController(
-            MusicStoreContext dbContext,
-            IConnectionManager connectionManager,
-            IMemoryCache memoryCache)
+        [FromServices]
+        public MusicStoreContext DbContext
         {
-            _dbContext = dbContext;
-            _announcementHub = connectionManager.GetHubContext<AnnouncementHub>();
-            _cache = memoryCache;
+            get;
+            set;
+        }
+
+        [FromServices]
+        public IMemoryCache Cache
+        {
+            get;
+            set;
+        }
+
+        [FromServices]
+        public IConnectionManager ConnectionManager
+        {
+            get
+            {
+                return _connectionManager;
+            }
+            set
+            {
+                _connectionManager = value;
+                _announcementHub = _connectionManager.GetHubContext<AnnouncementHub>();
+            }
         }
 
         //
         // GET: /StoreManager/
-
         public async Task<IActionResult> Index()
         {
-            var albums = await _dbContext.Albums
+            var albums = await DbContext.Albums
                 .Include(a => a.Genre)
                 .Include(a => a.Artist)
                 .ToListAsync();
@@ -46,18 +63,17 @@ namespace MusicStore.Areas.Admin.Controllers
 
         //
         // GET: /StoreManager/Details/5
-
         public async Task<IActionResult> Details(int id)
         {
             var cacheKey = GetCacheKey(id);
 
-            var album = await _cache.GetOrSet(cacheKey, async context =>
+            var album = await Cache.GetOrSet(cacheKey, async context =>
             {
                 //Remove it from cache if not retrieved in last 10 minutes.
                 context.SetSlidingExpiration(TimeSpan.FromMinutes(10));
 
                 //If this returns null how do we prevent the cache to store this.
-                return await _dbContext.Albums
+                return await DbContext.Albums
                     .Where(a => a.AlbumId == id)
                     .Include(a => a.Artist)
                     .Include(a => a.Genre)
@@ -66,7 +82,7 @@ namespace MusicStore.Areas.Admin.Controllers
 
             if (album == null)
             {
-                _cache.Remove(cacheKey);
+                Cache.Remove(cacheKey);
                 return View(album);
             }
 
@@ -77,20 +93,20 @@ namespace MusicStore.Areas.Admin.Controllers
         // GET: /StoreManager/Create
         public IActionResult Create()
         {
-            ViewBag.GenreId = new SelectList(_dbContext.Genres, "GenreId", "Name");
-            ViewBag.ArtistId = new SelectList(_dbContext.Artists, "ArtistId", "Name");
+            ViewBag.GenreId = new SelectList(DbContext.Genres, "GenreId", "Name");
+            ViewBag.ArtistId = new SelectList(DbContext.Artists, "ArtistId", "Name");
             return View();
         }
 
         // POST: /StoreManager/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Album album)
+        public async Task<IActionResult> Create(Album album, CancellationToken requestAborted)
         {
             if (ModelState.IsValid)
             {
-                _dbContext.Albums.Add(album);
-                await _dbContext.SaveChangesAsync(Context.RequestAborted);
+                DbContext.Albums.Add(album);
+                await DbContext.SaveChangesAsync(requestAborted);
 
                 var albumData = new AlbumData
                 {
@@ -99,12 +115,12 @@ namespace MusicStore.Areas.Admin.Controllers
                 };
 
                 _announcementHub.Clients.All.announcement(albumData);
-                _cache.Remove("latestAlbum");
+                Cache.Remove("latestAlbum");
                 return RedirectToAction("Index");
             }
 
-            ViewBag.GenreId = new SelectList(_dbContext.Genres, "GenreId", "Name", album.GenreId);
-            ViewBag.ArtistId = new SelectList(_dbContext.Artists, "ArtistId", "Name", album.ArtistId);
+            ViewBag.GenreId = new SelectList(DbContext.Genres, "GenreId", "Name", album.GenreId);
+            ViewBag.ArtistId = new SelectList(DbContext.Artists, "ArtistId", "Name", album.ArtistId);
             return View(album);
         }
 
@@ -112,7 +128,7 @@ namespace MusicStore.Areas.Admin.Controllers
         // GET: /StoreManager/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var album = await _dbContext.Albums.
+            var album = await DbContext.Albums.
                 Where(a => a.AlbumId == id).
                 FirstOrDefaultAsync();
 
@@ -121,8 +137,8 @@ namespace MusicStore.Areas.Admin.Controllers
                 return View(album);
             }
 
-            ViewBag.GenreId = new SelectList(_dbContext.Genres, "GenreId", "Name", album.GenreId);
-            ViewBag.ArtistId = new SelectList(_dbContext.Artists, "ArtistId", "Name", album.ArtistId);
+            ViewBag.GenreId = new SelectList(DbContext.Genres, "GenreId", "Name", album.GenreId);
+            ViewBag.ArtistId = new SelectList(DbContext.Artists, "ArtistId", "Name", album.ArtistId);
             return View(album);
         }
 
@@ -130,19 +146,19 @@ namespace MusicStore.Areas.Admin.Controllers
         // POST: /StoreManager/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Album album)
+        public async Task<IActionResult> Edit(Album album, CancellationToken requestAborted)
         {
             if (ModelState.IsValid)
             {
-                _dbContext.Update(album);
-                await _dbContext.SaveChangesAsync(Context.RequestAborted);
+                DbContext.Update(album);
+                await DbContext.SaveChangesAsync(requestAborted);
                 //Invalidate the cache entry as it is modified
-                _cache.Remove(GetCacheKey(album.AlbumId));
+                Cache.Remove(GetCacheKey(album.AlbumId));
                 return RedirectToAction("Index");
             }
 
-            ViewBag.GenreId = new SelectList(_dbContext.Genres, "GenreId", "Name", album.GenreId);
-            ViewBag.ArtistId = new SelectList(_dbContext.Artists, "ArtistId", "Name", album.ArtistId);
+            ViewBag.GenreId = new SelectList(DbContext.Genres, "GenreId", "Name", album.GenreId);
+            ViewBag.ArtistId = new SelectList(DbContext.Artists, "ArtistId", "Name", album.ArtistId);
             return View(album);
         }
 
@@ -150,23 +166,23 @@ namespace MusicStore.Areas.Admin.Controllers
         // GET: /StoreManager/RemoveAlbum/5
         public async Task<IActionResult> RemoveAlbum(int id)
         {
-            var album = await _dbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefaultAsync();
+            var album = await DbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefaultAsync();
             return View(album);
         }
 
         //
         // POST: /StoreManager/RemoveAlbum/5
         [HttpPost, ActionName("RemoveAlbum")]
-        public async Task<IActionResult> RemoveAlbumConfirmed(int id)
+        public async Task<IActionResult> RemoveAlbumConfirmed(int id, CancellationToken requestAborted)
         {
-            var album = await _dbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefaultAsync();
+            var album = await DbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefaultAsync();
 
             if (album != null)
             {
-                _dbContext.Albums.Remove(album);
-                await _dbContext.SaveChangesAsync(Context.RequestAborted);
+                DbContext.Albums.Remove(album);
+                await DbContext.SaveChangesAsync(requestAborted);
                 //Remove the cache entry as it is removed
-                _cache.Remove(GetCacheKey(id));
+                Cache.Remove(GetCacheKey(id));
             }
 
             return RedirectToAction("Index");
@@ -184,7 +200,7 @@ namespace MusicStore.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAlbumIdFromName(string albumName)
         {
-            var album = await _dbContext.Albums.Where(a => a.Title == albumName).FirstOrDefaultAsync();
+            var album = await DbContext.Albums.Where(a => a.Title == albumName).FirstOrDefaultAsync();
 
             if (album == null)
             {
