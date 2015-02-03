@@ -44,6 +44,7 @@ namespace Microsoft.AspNet.Mvc
             // Set up default output formatters.
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
             options.OutputFormatters.Add(new StringOutputFormatter());
+            options.OutputFormatters.Add(new StreamOutputFormatter());
             options.OutputFormatters.Add(new JsonOutputFormatter());
 
             // Set up default mapping for json extensions to content type

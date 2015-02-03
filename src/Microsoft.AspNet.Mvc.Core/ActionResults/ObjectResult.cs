@@ -69,6 +69,14 @@ namespace Microsoft.AspNet.Mvc
         public virtual IOutputFormatter SelectFormatter(OutputFormatterContext formatterContext,
                                                        IEnumerable<IOutputFormatter> formatters)
         {
+            if (ContentTypes.Count == 1)
+            {
+                // There is only one content type specified so we can skip looking at the accept headers.
+                return SelectFormatterUsingAnyAcceptableContentType(formatterContext,
+                                                                    formatters,
+                                                                    ContentTypes);
+            }
+
             var incomingAcceptHeaderMediaTypes = formatterContext.ActionContext.HttpContext.Request.GetTypedHeaders().Accept ??
                                                     new MediaTypeHeaderValue[] { };
 
@@ -142,14 +150,6 @@ namespace Microsoft.AspNet.Mvc
                         }
                     }
                 }
-            }
-            else if (ContentTypes.Count == 1)
-            {
-                // There is only one value that can be supported.
-                selectedFormatter = SelectFormatterUsingAnyAcceptableContentType(
-                                                                            formatterContext,
-                                                                            formatters,
-                                                                            ContentTypes);
             }
             else
             {
