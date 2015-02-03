@@ -51,7 +51,7 @@ namespace E2ETests
                 Assert.Contains("Login", responseContent, StringComparison.OrdinalIgnoreCase);
             }
 
-            Assert.Contains("mvcmusicstore.codeplex.com", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("www.github.com/aspnet/MusicStore", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("/Images/home-showcase.png", responseContent, StringComparison.OrdinalIgnoreCase);
             _logger.WriteInformation("Application initialization successful.");
         }
@@ -202,7 +202,7 @@ namespace E2ETests
                 Assert.Contains("ASP.NET MVC Music Store", responseContent, StringComparison.OrdinalIgnoreCase);
                 Assert.Contains("Register", responseContent, StringComparison.OrdinalIgnoreCase);
                 Assert.Contains("Login", responseContent, StringComparison.OrdinalIgnoreCase);
-                Assert.Contains("mvcmusicstore.codeplex.com", responseContent, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("www.github.com/aspnet/MusicStore", responseContent, StringComparison.OrdinalIgnoreCase);
                 Assert.Contains("/Images/home-showcase.png", responseContent, StringComparison.OrdinalIgnoreCase);
                 //Verify cookie cleared on logout
                 Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
