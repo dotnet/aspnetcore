@@ -128,6 +128,29 @@ namespace Microsoft.AspNet.Mvc.Test
                 ex.Message);
         }
 
+        [Fact]
+        public void ProducesAttribute_WithTypeOnly_SetsTypeProperty()
+        {
+            // Arrange
+            var personType = typeof(Person);
+            var producesAttribute = new ProducesAttribute(personType);
+
+            // Act and Assert
+            Assert.NotNull(producesAttribute.Type);
+            Assert.Same(personType, producesAttribute.Type);
+        }
+
+        [Fact]
+        public void ProducesAttribute_WithTypeOnly_DoesNotSetContentTypes()
+        {
+            // Arrange
+            var producesAttribute = new ProducesAttribute(typeof(Person));
+
+            // Act and Assert
+            Assert.NotNull(producesAttribute.ContentTypes);
+            Assert.Empty(producesAttribute.ContentTypes);
+        }
+
         private static void ValidateMediaType(MediaTypeHeaderValue expectedMediaType, MediaTypeHeaderValue actualMediaType)
         {
             Assert.Equal(expectedMediaType.MediaType, actualMediaType.MediaType);
@@ -159,6 +182,13 @@ namespace Microsoft.AspNet.Mvc.Test
         private static ActionContext CreateActionContext()
         {
             return new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+        }
+
+        private class Person
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
         }
     }
 }

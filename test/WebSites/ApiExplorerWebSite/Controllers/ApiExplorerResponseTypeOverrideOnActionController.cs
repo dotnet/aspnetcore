@@ -15,7 +15,7 @@ namespace ApiExplorerWebSite
         }
 
         [HttpGet("Action")]
-        [ProducesType(typeof(Customer))]
+        [Produces(typeof(Customer))]
         public object GetAction()
         {
             return null;

@@ -17,6 +17,21 @@ namespace Microsoft.AspNet.Mvc
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class ProducesAttribute : ResultFilterAttribute, IApiResponseMetadataProvider
     {
+        /// <summary>
+        /// Initializes an instance of <see cref="ProducesAttribute"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
+        public ProducesAttribute([NotNull] Type type)
+        {
+            Type = type;
+            ContentTypes = new List<MediaTypeHeaderValue>();
+        }
+
+        /// <summary>
+        /// Initializes an instance of <see cref="ProducesAttribute"/> with allowed content types.
+        /// </summary>
+        /// <param name="contentType">The allowed content type for a response.</param>
+        /// <param name="additionalContentTypes">Additional allowed content types for a response.</param>
         public ProducesAttribute([NotNull] string contentType, params string[] additionalContentTypes)
         {
             ContentTypes = GetContentTypes(contentType, additionalContentTypes);

@@ -10,7 +10,7 @@ namespace ApiExplorerWebSite
     public class ApiExplorerResponseTypeWithAttributeController : Controller
     {
         [HttpGet]
-        [ProducesType(typeof(Customer))]
+        [Produces(typeof(Customer))]
         public void GetVoid()
         {
         }
@@ -37,7 +37,7 @@ namespace ApiExplorerWebSite
         }
 
         [HttpGet]
-        [ProducesType(typeof(Customer))] // It's possible to lie about what type you return
+        [Produces(typeof(Customer))] // It's possible to lie about what type you return
         public Product GetProduct()
         {
             return null;
