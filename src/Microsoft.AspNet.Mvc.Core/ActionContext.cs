@@ -13,6 +13,17 @@ namespace Microsoft.AspNet.Mvc
     public class ActionContext
     {
         /// <summary>
+        /// Creates a empty <see cref="ActionContext"/>.
+        /// </summary>
+        /// <remarks>
+        /// The default constructor is provided for unit test purposes only.
+        /// </remarks>
+        public ActionContext()
+        {
+            ModelState = new ModelStateDictionary();
+        }
+
+        /// <summary>
         /// Creates a new <see cref="ActionContext"/>.
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/> to copy.</param>
@@ -56,23 +67,44 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Gets the <see cref="Mvc.ActionDescriptor"/> for the selected action.
+        /// Gets or sets the <see cref="Mvc.ActionDescriptor"/> for the selected action.
         /// </summary>
-        public ActionDescriptor ActionDescriptor { get; }
+        /// <remarks>
+        /// The property setter is provided for unit test purposes only.
+        /// </remarks>
+        public ActionDescriptor ActionDescriptor
+        {
+            get; set;
+        }
 
         /// <summary>
-        /// Gets the <see cref="Http.HttpContext"/> for the current request.
+        /// Gets or sets the <see cref="Http.HttpContext"/> for the current request.
         /// </summary>
-        public HttpContext HttpContext { get; }
+        /// <remarks>
+        /// The property setter is provided for unit test purposes only.
+        /// </remarks>
+        public HttpContext HttpContext
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Gets the <see cref="ModelStateDictionary"/>.
         /// </summary>
-        public ModelStateDictionary ModelState { get; }
+        public ModelStateDictionary ModelState
+        {
+            get;
+        }
 
         /// <summary>
-        /// Gets the <see cref="AspNet.Routing.RouteData"/> for the current request.
+        /// Gets or sets the <see cref="AspNet.Routing.RouteData"/> for the current request.
         /// </summary>
-        public RouteData RouteData { get; }
+        /// <remarks>
+        /// The property setter is provided for unit test purposes only.
+        /// </remarks>
+        public RouteData RouteData
+        {
+            get; set;
+        }
     }
 }

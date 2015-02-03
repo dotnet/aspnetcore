@@ -1277,7 +1277,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var binder = new Mock<IModelBinder>();
             var controller = GetController(binder.Object, provider: null);
             controller.BindingContext.ValidatorProvider = provider.Object;
-            
+
             // Act
             var result = controller.TryValidateModel(model, "Prefix");
 

@@ -5,7 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.WebUtilities;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -422,6 +426,83 @@ namespace Microsoft.AspNet.Mvc
 
             // Act && Assert
             Assert.Throws<ArgumentException>(() => controller.Redirect_Action(null));
+        }
+
+        [Fact]
+        public void ControllerActionContext_ReturnsNotNull()
+        {
+            // Arrange && Act
+            var controller = new TestabilityController();
+
+            // Assert
+            Assert.NotNull(controller.ActionContext);
+            Assert.NotNull(controller.ActionContext.ModelState);
+            Assert.Null(controller.ActionContext.ActionDescriptor);
+            Assert.Null(controller.ActionContext.HttpContext);
+            Assert.Null(controller.ActionContext.RouteData);
+        }
+
+        [Fact]
+        public void ActionContextDefaultConstructor_CanBeUsedForControllerActionContext()
+        {
+            // Arrange
+            var actionContext = new ActionContext();
+            var controller = new TestabilityController();
+
+            // Act
+            controller.ActionContext = actionContext;
+
+            // Assert
+            Assert.Equal(actionContext.HttpContext, controller.Context);
+            Assert.Equal(actionContext.RouteData, controller.RouteData);
+            Assert.Equal(actionContext.ModelState, controller.ModelState);
+        }
+
+        [Fact]
+        public void ActionContextSetters_CanBeUsedWithControllerActionContext()
+        {
+            // Arrange
+            var actionDescriptor = new Mock<ActionDescriptor>();
+            var httpContext = new Mock<HttpContext>();
+            var routeData = new Mock<RouteData>();
+
+            var actionContext = new ActionContext()
+            {
+                ActionDescriptor = actionDescriptor.Object,
+                HttpContext = httpContext.Object,
+                RouteData = routeData.Object,
+            };
+
+            var controller = new TestabilityController();
+
+            // Act
+            controller.ActionContext = actionContext;
+
+            // Assert
+            Assert.Equal(httpContext.Object, controller.Context);
+            Assert.Equal(routeData.Object, controller.RouteData);
+            Assert.Equal(actionContext.ModelState, controller.ModelState);
+            Assert.Equal(actionDescriptor.Object, actionContext.ActionDescriptor);
+        }
+
+        [Fact]
+        public void ActionContextModelState_ShouldBeSameAsViewDataAndControllerModelState()
+        {
+            // Arrange
+            var actionContext = new ActionContext();
+            var controller1 = new Controller();
+            var controller2 = new Controller();
+
+            // Act
+            controller2.ActionContext = actionContext;
+
+            // Assert
+            Assert.Equal(controller1.ModelState, controller1.ActionContext.ModelState);
+            Assert.Equal(controller1.ModelState, controller1.ViewData.ModelState);
+
+            Assert.Equal(actionContext.ModelState, controller2.ModelState);
+            Assert.Equal(actionContext.ModelState, controller2.ActionContext.ModelState);
+            Assert.Equal(actionContext.ModelState, controller2.ViewData.ModelState);
         }
 
         public static IEnumerable<object[]> TestabilityViewTestData
