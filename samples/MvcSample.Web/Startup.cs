@@ -60,13 +60,13 @@ namespace MvcSample.Web
                     // sample's assemblies are loaded. This prevents loading controllers from other assemblies
                     // when the sample is used in the Functional Tests.
                     services.AddTransient<IAssemblyProvider, TestAssemblyProvider<Startup>>();
-                    services.Configure<MvcOptions>(options =>
+                    services.ConfigureMvcOptions(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
                         options.AddXmlDataContractSerializerFormatter();                        
                         options.Filters.Add(new FormatFilterAttribute());
                     });
-                    services.Configure<RazorViewEngineOptions>(options =>
+                    services.ConfigureRazorViewEngineOptions(options =>
                     {
                         var expander = new LanguageViewLocationExpander(
                             context => context.HttpContext.Request.Query["language"]);
@@ -103,7 +103,7 @@ namespace MvcSample.Web
                     // when the sample is used in the Functional Tests.
                     services.AddTransient<IAssemblyProvider, TestAssemblyProvider<Startup>>();
 
-                    services.Configure<MvcOptions>(options =>
+                    services.ConfigureMvcOptions(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
                         options.AddXmlDataContractSerializerFormatter();

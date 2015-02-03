@@ -259,5 +259,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var responseData = await response.Content.ReadAsStringAsync();
             Assert.Contains(expectedLink, responseData, StringComparison.OrdinalIgnoreCase);
         }
+
+        [Fact]
+        public async Task ConfigureMvcOptionsAddsOptionsProperly()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = new HttpClient(server.CreateHandler(), false);
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/GetApplicationDescription");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var responseData = await response.Content.ReadAsStringAsync();
+            Assert.Equal("This is a basic website.", responseData);
+        }
     }
 }

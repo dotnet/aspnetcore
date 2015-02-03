@@ -57,5 +57,11 @@ namespace BasicWebSite.Controllers
         {
             return View();
         }
+        
+        public string GetApplicationDescription()
+        {
+            var actionDescriptor = (ControllerActionDescriptor)ActionContext.ActionDescriptor;
+            return actionDescriptor.Properties["description"].ToString();
+        }
     }
 }
