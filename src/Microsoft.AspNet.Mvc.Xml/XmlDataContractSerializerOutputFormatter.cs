@@ -7,6 +7,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Xml
@@ -161,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             var innerStream = context.ActionContext.HttpContext.Response.Body;
 
-            using (var outputStream = new DelegatingStream(innerStream))
+            using (var outputStream = new NonDisposableStream(innerStream))
             using (var xmlWriter = CreateXmlWriter(outputStream, tempWriterSettings))
             {
                 var obj = context.Object;

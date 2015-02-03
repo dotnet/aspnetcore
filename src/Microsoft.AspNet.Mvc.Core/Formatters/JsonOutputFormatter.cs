@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 
@@ -68,8 +69,8 @@ namespace Microsoft.AspNet.Mvc
             var response = context.ActionContext.HttpContext.Response;
             var selectedEncoding = context.SelectedEncoding;
 
-            using (var delegatingStream = new DelegatingStream(response.Body))
-            using (var writer = new StreamWriter(delegatingStream, selectedEncoding, 1024, leaveOpen: true))
+            using (var nonDisposableStream = new NonDisposableStream(response.Body))
+            using (var writer = new StreamWriter(nonDisposableStream, selectedEncoding, 1024, leaveOpen: true))
             {
                 WriteObject(writer, context.Object);
             }

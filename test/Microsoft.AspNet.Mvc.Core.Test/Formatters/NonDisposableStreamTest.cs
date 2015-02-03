@@ -7,19 +7,19 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Internal
 {
-    public class DelegatingStreamTests
+    public class NonDisposableStreamTest
     {
         [Fact]
         public void InnerStreamIsOpenOnClose()
         {
             // Arrange
             var innerStream = new MemoryStream();
-            var delegatingStream = new DelegatingStream(innerStream);
+            var nonDisposableStream = new NonDisposableStream(innerStream);
 
             // Act
-            delegatingStream.Close();
+            nonDisposableStream.Close();
 
             // Assert
             Assert.True(innerStream.CanRead);
@@ -30,10 +30,10 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var innerStream = new MemoryStream();
-            var delegatingStream = new DelegatingStream(innerStream);
+            var nonDisposableStream = new NonDisposableStream(innerStream);
 
             // Act
-            delegatingStream.Dispose();
+            nonDisposableStream.Dispose();
 
             // Assert
             Assert.True(innerStream.CanRead);
@@ -43,10 +43,10 @@ namespace Microsoft.AspNet.Mvc
         public void InnerStreamIsNotFlushedOnDispose()
         {
             var stream = FlushReportingStream.GetThrowingStream();
-            var delegatingStream = new DelegatingStream(stream);
+            var nonDisposableStream = new NonDisposableStream(stream);
 
             // Act & Assert
-            delegatingStream.Dispose();
+            nonDisposableStream.Dispose();
         }
 
         [Fact]
@@ -55,10 +55,10 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var stream = FlushReportingStream.GetThrowingStream();
 
-            var delegatingStream = new DelegatingStream(stream);
+            var nonDisposableStream = new NonDisposableStream(stream);
 
             // Act & Assert
-            delegatingStream.Close();
+            nonDisposableStream.Close();
         }
 
         [Fact]
@@ -67,10 +67,10 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var stream = FlushReportingStream.GetThrowingStream();
 
-            var delegatingStream = new DelegatingStream(stream);
+            var nonDisposableStream = new NonDisposableStream(stream);
 
             // Act & Assert
-            delegatingStream.Flush();
+            nonDisposableStream.Flush();
         }
 
         [Fact]
@@ -79,10 +79,10 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var stream = FlushReportingStream.GetThrowingStream();
 
-            var delegatingStream = new DelegatingStream(stream);
+            var nonDisposableStream = new NonDisposableStream(stream);
 
             // Act & Assert
-            await delegatingStream.FlushAsync();
+            await nonDisposableStream.FlushAsync();
         }
     }
 }

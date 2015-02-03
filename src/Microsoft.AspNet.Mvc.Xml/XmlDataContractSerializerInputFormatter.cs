@@ -10,6 +10,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Xml
@@ -168,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.Xml
         {
             var request = context.ActionContext.HttpContext.Request;
 
-            using (var xmlReader = CreateXmlReader(new DelegatingStream(request.Body)))
+            using (var xmlReader = CreateXmlReader(new NonDisposableStream(request.Body)))
             {
                 var type = GetSerializableType(context.ModelType);
 

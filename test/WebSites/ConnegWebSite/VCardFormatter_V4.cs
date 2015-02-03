@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ConnegWebSite.Models;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace ConnegWebSite
@@ -41,7 +42,7 @@ namespace ConnegWebSite
             builder.AppendLine();
             builder.AppendLine("END:VCARD");
 
-            var responseStream = new DelegatingStream(context.ActionContext.HttpContext.Response.Body);
+            var responseStream = new NonDisposableStream(context.ActionContext.HttpContext.Response.Body);
             using (var writer = new StreamWriter(responseStream, context.SelectedEncoding, bufferSize: 1024))
             {
                 await writer.WriteAsync(builder.ToString());

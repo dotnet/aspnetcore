@@ -8,22 +8,22 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Internal
 {
     /// <summary>
     /// Stream that delegates to an inner stream.
     /// This Stream is present so that the inner stream is not closed
     /// even when Close() or Dispose() is called.
     /// </summary>
-    public class DelegatingStream : Stream
+    public class NonDisposableStream : Stream
     {
         private readonly Stream _innerStream;
 
         /// <summary>
-        /// Initializes a new <see cref="DelegatingStream"/>.
+        /// Initializes a new <see cref="NonDisposableStream"/>.
         /// </summary>
         /// <param name="innerStream">The stream which should not be closed or flushed.</param>
-        public DelegatingStream([NotNull] Stream innerStream)
+        public NonDisposableStream([NotNull] Stream innerStream)
         {
             _innerStream = innerStream;
         }
