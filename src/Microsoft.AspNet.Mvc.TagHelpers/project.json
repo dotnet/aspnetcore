@@ -14,8 +14,5 @@
     "frameworks": {
         "aspnet50": { },
         "aspnetcore50": { }
-    },
-    "scripts": {
-        "prebuild": [ "npm install", "grunt" ]
     }
 }
