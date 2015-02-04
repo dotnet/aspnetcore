@@ -31,7 +31,7 @@ namespace E2ETests
                     if (exception.InnerException is HttpRequestException || exception.InnerException is WebException)
                     {
                         logger.WriteWarning("Failed to complete the request.", exception);
-                        var waitTimeInMilliSeconds = (RunningOnMono ? 6 : 1) * 1000;
+                        var waitTimeInMilliSeconds = (RunningOnMono ? 7 : 1) * 1000;
                         Thread.Sleep(waitTimeInMilliSeconds); //Wait for a second before retry
                     }
                 }
