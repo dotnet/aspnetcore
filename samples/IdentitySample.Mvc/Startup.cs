@@ -7,6 +7,8 @@ using Microsoft.AspNet.Routing;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Console;
 using System.Threading.Tasks;
 using System.Threading;
 
@@ -62,8 +64,10 @@ namespace IdentitySamples
             services.AddMvc();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
+	    loggerFactory.AddConsole();
+
             app.UseErrorPage(ErrorPageOptions.ShowAll)
                .UseStaticFiles()
                .UseIdentity()
