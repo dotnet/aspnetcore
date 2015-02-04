@@ -27,6 +27,32 @@ default Configuration='${E("Configuration")}'
   }
 }
 
+#restore-npm-modules
+  -// Find all dirs that contain a package.json file
+  var npmDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json")}'
+  npm npmCommand='install ${E("npm_install_options")}' each='var npmDir in npmDirs'
+
+#restore-bower-components
+  -// Find all dirs that contain a bower.json file
+  var bowerDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "bower.json")}'
+  bower each='var bowerDir in bowerDirs' bowerCommand='install ${E("bower_install_options")}'
+
+#run-grunt .restore-npm-modules .restore-bower-components target='initialize'
+  -// Find all dirs that contain a gruntfile.js file
+  var gruntDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "gruntfile.js")}'
+  grunt each='var gruntDir in gruntDirs'
+  @{
+      if (!IsMono)
+      {
+           CallTarget("clean-npm-modules");
+      }
+  }
+
+#clean-npm-modules if='!IsMono'
+  -// Find all dirs that contain a package.json file
+  var npmDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json").Select(d => Path.Combine(d, "node_modules"))}'
+  robocopy-delete dir='${npmDir}' each='var npmDir in npmDirs'
+
 #repo-initialize target='initialize'
   k-restore
 
@@ -91,32 +117,6 @@ default Configuration='${E("Configuration")}'
         UpdateResx(file);
      }
    }
-
-#restore-npm-modules
-  -// Find all dirs that contain a package.json file
-  var npmDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json")}'
-  npm npmCommand='install ${E("npm_install_options")}' each='var npmDir in npmDirs'
-
-#restore-bower-components
-  -// Find all dirs that contain a bower.json file
-  var bowerDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "bower.json")}'
-  bower each='var bowerDir in bowerDirs' bowerCommand='install ${E("bower_install_options")}'
-
-#run-grunt .restore-npm-modules .restore-bower-components target='compile'
-  -// Find all dirs that contain a gruntfile.js file
-  var gruntDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "gruntfile.js")}'
-  grunt each='var gruntDir in gruntDirs'
-  @{
-      if (!IsMono)
-      {
-           CallTarget("clean-npm-modules");
-      }
-  }
-
-#clean-npm-modules if='!IsMono'
-  -// Find all dirs that contain a package.json file
-  var npmDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json").Select(d => Path.Combine(d, "node_modules"))}'
-  robocopy-delete dir='${npmDir}' each='var npmDir in npmDirs'
 
 #--quiet
   @{
