@@ -54,6 +54,10 @@ namespace E2ETests
             Assert.Contains("www.github.com/aspnet/MusicStore", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("/Images/home-showcase.png", responseContent, StringComparison.OrdinalIgnoreCase);
             _logger.WriteInformation("Application initialization successful.");
+
+            _logger.WriteInformation("Application runtime information");
+            var runtimeInfo = _httpClient.GetAsync("runtimeinfo").Result.Content.ReadAsStringAsync().Result;
+            _logger.WriteInformation(runtimeInfo);
         }
 
         private string PrefixBaseAddress(string url)

@@ -4,7 +4,6 @@ using System.Security.Principal;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
-using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security;
 using Microsoft.AspNet.Server.WebListener;
 using Microsoft.Framework.Cache.Memory;
@@ -43,6 +42,33 @@ namespace MusicStore
 
         public IConfiguration Configuration { get; private set; }
 
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add EF services to the services container
+            services.AddEntityFramework(Configuration)
+                    .AddSqlServer()
+                    .AddDbContext<MusicStoreContext>();
+
+            // Add MVC services to the services container
+            services.AddMvc();
+
+            //Add all SignalR related services to IoC.
+            services.AddSignalR();
+
+            //Add InMemoryCache
+            services.AddSingleton<IMemoryCache, MemoryCache>();
+
+            // Add session related services.
+            services.AddCachingServices();
+            services.AddSessionServices();
+
+            // Configure Auth
+            services.Configure<AuthorizationOptions>(options =>
+            {
+                options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("ManageStore", "Allowed").Build());
+            });
+        }
+
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
@@ -55,6 +81,17 @@ namespace MusicStore
                 serverInformation.Listener.AuthenticationManager.AuthenticationTypes = AuthenticationTypes.NTLM;
             }
 
+            //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
+            //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
+            app.UseErrorPage(ErrorPageOptions.ShowAll);
+
+            app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
+
+            // Add the runtime information page that can be used by developers
+            // to see what packages are used by the application
+            // default path is: /runtimeinfo
+            app.UseRuntimeInfoPage();
+
             app.Use(async (context, next) =>
             {
                 //Who will get admin access? For demo sake I'm listing the currently logged on user as the application administrator. But this can be changed to suit the needs.
@@ -66,39 +103,6 @@ namespace MusicStore
                 }
 
                 await next.Invoke();
-            });
-
-            //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
-            //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
-            app.UseErrorPage(ErrorPageOptions.ShowAll);
-
-            app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
-
-            app.UseServices(services =>
-            {
-                // Add EF services to the services container
-                services.AddEntityFramework(Configuration)
-                        .AddSqlServer()
-                        .AddDbContext<MusicStoreContext>();
-
-                // Add MVC services to the services container
-                services.AddMvc();
-
-                //Add all SignalR related services to IoC.
-                services.AddSignalR();
-
-                //Add InMemoryCache
-                services.AddSingleton<IMemoryCache, MemoryCache>();
-
-                // Add session related services.
-                services.AddCachingServices();
-                services.AddSessionServices();
-
-                // Configure Auth
-                services.Configure<AuthorizationOptions>(options =>
-                {
-                    options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("ManageStore", "Allowed").Build());
-                });
             });
 
             // Configure Session.

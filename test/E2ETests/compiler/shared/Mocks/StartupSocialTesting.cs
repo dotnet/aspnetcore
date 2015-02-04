@@ -6,7 +6,6 @@ using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Security;
 using Microsoft.AspNet.Security.Facebook;
 using Microsoft.AspNet.Security.Google;
@@ -46,6 +45,72 @@ namespace MusicStore
 
         public IConfiguration Configuration { get; private set; }
 
+        public void ConfigureServices(IServiceCollection services)
+        {
+            //Sql client not available on mono
+            string value;
+            var useInMemoryStore = Configuration.TryGet("UseInMemoryStore", out value) && value == "true" ?
+                true :
+                Type.GetType("Mono.Runtime") != null;
+
+            // Add EF services to the services container
+            if (useInMemoryStore)
+            {
+                services.AddEntityFramework(Configuration)
+                        .AddInMemoryStore()
+                        .AddDbContext<MusicStoreContext>();
+            }
+            else
+            {
+                services.AddEntityFramework(Configuration)
+                        .AddSqlServer()
+                        .AddDbContext<MusicStoreContext>();
+            }
+
+            // Add Identity services to the services container
+            services.AddIdentity<ApplicationUser, IdentityRole>(Configuration)
+                    .AddEntityFrameworkStores<MusicStoreContext>()
+                    .AddDefaultTokenProviders()
+                    .AddMessageProvider<EmailMessageProvider>()
+                    .AddMessageProvider<SmsMessageProvider>();
+
+            services.ConfigureFacebookAuthentication(options =>
+            {
+                options.AppId = "[AppId]";
+                options.AppSecret = "[AppSecret]";
+                options.Notifications = new FacebookAuthenticationNotifications()
+                {
+                    OnAuthenticated = FacebookNotifications.OnAuthenticated,
+                    OnReturnEndpoint = FacebookNotifications.OnReturnEndpoint,
+                    OnApplyRedirect = FacebookNotifications.OnApplyRedirect
+                };
+                options.BackchannelHttpHandler = new FacebookMockBackChannelHttpHandler();
+                options.StateDataFormat = new CustomStateDataFormat();
+                options.Scope.Add("email");
+                options.Scope.Add("read_friendlists");
+                options.Scope.Add("user_checkins");
+            });
+
+            // Add MVC services to the services container
+            services.AddMvc();
+
+            //Add all SignalR related services to IoC.
+            services.AddSignalR();
+
+            //Add InMemoryCache
+            services.AddSingleton<IMemoryCache, MemoryCache>();
+
+            // Add session related services.
+            services.AddCachingServices();
+            services.AddSessionServices();
+
+            // Configure Auth
+            services.Configure<AuthorizationOptions>(options =>
+            {
+                options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("ManageStore", "Allowed").Build());
+            });
+        }
+
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
@@ -56,71 +121,10 @@ namespace MusicStore
 
             app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
 
-            app.UseServices(services =>
-            {
-                //Sql client not available on mono
-                string value;
-                var useInMemoryStore = Configuration.TryGet("UseInMemoryStore", out value) && value == "true" ?
-                    true :
-                    Type.GetType("Mono.Runtime") != null;
-
-                // Add EF services to the services container
-                if (useInMemoryStore)
-                {
-                    services.AddEntityFramework(Configuration)
-                            .AddInMemoryStore()
-                            .AddDbContext<MusicStoreContext>();
-                }
-                else
-                {
-                    services.AddEntityFramework(Configuration)
-                            .AddSqlServer()
-                            .AddDbContext<MusicStoreContext>();
-                }
-
-                // Add Identity services to the services container
-                services.AddIdentity<ApplicationUser, IdentityRole>(Configuration)
-                        .AddEntityFrameworkStores<MusicStoreContext>()
-                        .AddDefaultTokenProviders()
-                        .AddMessageProvider<EmailMessageProvider>()
-                        .AddMessageProvider<SmsMessageProvider>();
-
-                services.ConfigureFacebookAuthentication(options =>
-                {
-                    options.AppId = "[AppId]";
-                    options.AppSecret = "[AppSecret]";
-                    options.Notifications = new FacebookAuthenticationNotifications()
-                    {
-                        OnAuthenticated = FacebookNotifications.OnAuthenticated,
-                        OnReturnEndpoint = FacebookNotifications.OnReturnEndpoint,
-                        OnApplyRedirect = FacebookNotifications.OnApplyRedirect
-                    };
-                    options.BackchannelHttpHandler = new FacebookMockBackChannelHttpHandler();
-                    options.StateDataFormat = new CustomStateDataFormat();
-                    options.Scope.Add("email");
-                    options.Scope.Add("read_friendlists");
-                    options.Scope.Add("user_checkins");
-                });
-
-                // Add MVC services to the services container
-                services.AddMvc();
-
-                //Add all SignalR related services to IoC.
-                services.AddSignalR();
-
-                //Add InMemoryCache
-                services.AddSingleton<IMemoryCache, MemoryCache>();
-
-                // Add session related services.
-                services.AddCachingServices();
-                services.AddSessionServices();
-
-                // Configure Auth
-                services.Configure<AuthorizationOptions>(options =>
-                {
-                    options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("ManageStore", "Allowed").Build());
-                });
-            });
+            // Add the runtime information page that can be used by developers
+            // to see what packages are used by the application
+            // default path is: /runtimeinfo
+            app.UseRuntimeInfoPage();
 
             // Configure Session.
             app.UseSession();
