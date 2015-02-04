@@ -7,22 +7,12 @@
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>1236f93a-ac5c-4a77-9477-c88f040151ca</ProjectGuid>
-    <RootNamespace>
-    </RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">..\..\artifacts\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">..\..\artifacts\bin\$(MSBuildProjectName)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AssemblyName>SelfHostServer</AssemblyName>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SchemaVersion>2.0</SchemaVersion>
     <DevelopmentServerPort>59517</DevelopmentServerPort>
-    <CommandLineArguments />
-    <DebugTarget>web</DebugTarget>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
