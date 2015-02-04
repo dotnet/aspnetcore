@@ -34,12 +34,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new DictionaryModelBinder<int, string>();
 
             // Act
-            bool retVal = await binder.BindModelAsync(bindingContext);
+            var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(retVal);
+            Assert.NotNull(retVal);
 
-            var dictionary = Assert.IsAssignableFrom<IDictionary<int, string>>(bindingContext.Model);
+            var dictionary = Assert.IsAssignableFrom<IDictionary<int, string>>(retVal.Model);
             Assert.NotNull(dictionary);
             Assert.Equal(2, dictionary.Count);
             Assert.Equal("forty-two", dictionary[42]);
@@ -56,10 +56,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     var value = await mbc.ValueProvider.GetValueAsync(mbc.ModelName);
                     if (value != null)
                     {
-                        mbc.Model = value.ConvertTo(mbc.ModelType);
-                        return true;
+                        var model = value.ConvertTo(mbc.ModelType);
+                        return new ModelBindingResult(model, key: null, isModelSet: true);
                     }
-                    return false;
+                    return null;
                 });
             return mockKvpBinder.Object;
         }

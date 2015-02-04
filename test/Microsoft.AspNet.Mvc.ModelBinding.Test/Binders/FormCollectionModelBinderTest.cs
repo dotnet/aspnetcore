@@ -34,8 +34,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result);
-            var form = Assert.IsAssignableFrom<IFormCollection>(bindingContext.Model);
+            Assert.NotNull(result);
+            var form = Assert.IsAssignableFrom<IFormCollection>(result.Model);
             Assert.Equal(2, form.Count);
             Assert.Equal("value1", form["field1"]);
             Assert.Equal("value2", form["field2"]);
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(result);
+            Assert.Null(result);
         }
 
         [Fact]
@@ -73,9 +73,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result);
-            Assert.IsType(typeof(FormCollection), bindingContext.Model);
-            Assert.Empty((FormCollection)bindingContext.Model);
+            Assert.NotNull(result);
+            Assert.IsType(typeof(FormCollection), result.Model);
+            Assert.Empty((FormCollection)result.Model);
         }
 
         [Fact]
@@ -95,8 +95,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result);
-            var form = Assert.IsAssignableFrom<IFormCollection>(bindingContext.Model);
+            Assert.NotNull(result);
+            var form = Assert.IsAssignableFrom<IFormCollection>(result.Model);
             Assert.Equal(2, form.Count);
             Assert.Equal("value1", form["field1"]);
             Assert.Equal("value2", form["field2"]);

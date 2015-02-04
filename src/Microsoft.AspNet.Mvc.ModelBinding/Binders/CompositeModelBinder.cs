@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -30,97 +31,86 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <inheritdoc />
         public IReadOnlyList<IModelBinder> ModelBinders { get; }
 
-        public virtual async Task<bool> BindModelAsync([NotNull] ModelBindingContext bindingContext)
+        public virtual async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
             var newBindingContext = CreateNewBindingContext(bindingContext,
-                                                            bindingContext.ModelName,
-                                                            reuseValidationNode: true);
+                                                            bindingContext.ModelName);
 
-            var boundSuccessfully = await TryBind(newBindingContext);
-            if (!boundSuccessfully && !string.IsNullOrEmpty(bindingContext.ModelName)
+            var modelBindingResult = await TryBind(newBindingContext);
+            if (modelBindingResult == null && !string.IsNullOrEmpty(bindingContext.ModelName)
                 && bindingContext.FallbackToEmptyPrefix)
             {
                 // fallback to empty prefix?
                 newBindingContext = CreateNewBindingContext(bindingContext,
-                                                            modelName: string.Empty,
-                                                            reuseValidationNode: false);
-                boundSuccessfully = await TryBind(newBindingContext);
+                                                            modelName: string.Empty);
+                modelBindingResult = await TryBind(newBindingContext);
             }
 
-            if (!boundSuccessfully)
+            if (modelBindingResult == null)
             {
-                return false; // something went wrong
-            }
-
-            // Only perform validation at the root of the object graph. ValidationNode will recursively walk the graph.
-            // Ignore ComplexModelDto since it essentially wraps the primary object.
-            if (newBindingContext.IsModelSet && IsBindingAtRootOfObjectGraph(newBindingContext))
-            {
-                // run validation and return the model
-                // If we fell back to an empty prefix above and are dealing with simple types,
-                // propagate the non-blank model name through for user clarity in validation errors.
-                // Complex types will reveal their individual properties as model names and do not require this.
-                if (!newBindingContext.ModelMetadata.IsComplexType &&
-                    string.IsNullOrEmpty(newBindingContext.ModelName))
-                {
-                    newBindingContext.ValidationNode = new ModelValidationNode(newBindingContext.ModelMetadata,
-                                                                               bindingContext.ModelName);
-                }
-
-                var validationContext = new ModelValidationContext(
-                    bindingContext.OperationBindingContext.MetadataProvider,
-                    bindingContext.OperationBindingContext.ValidatorProvider,
-                    bindingContext.ModelState,
-                    bindingContext.ModelMetadata,
-                    containerMetadata: null);
-
-                newBindingContext.ValidationNode.Validate(validationContext, parentNode: null);
+                return null; // something went wrong
             }
 
             bindingContext.OperationBindingContext.BodyBindingState =
                 newBindingContext.OperationBindingContext.BodyBindingState;
 
-            if (newBindingContext.IsModelSet)
+            if (modelBindingResult.IsModelSet)
             {
-                bindingContext.Model = newBindingContext.Model;
+                bindingContext.ModelMetadata.Model = modelBindingResult.Model;
+
+                // Update the model state key if we are bound using an empty prefix and it is a complex type.
+                // This is needed as validation uses the model state key to log errors. The client validation expects
+                // the errors with property names rather than the full name.
+                if (newBindingContext.ModelMetadata.IsComplexType && string.IsNullOrEmpty(modelBindingResult.Key))
+                {
+                    // For non-complex types, if we fell back to the empty prefix, we should still be using the name
+                    // of the parameter/property. Complex types have their own property names which acts as model
+                    // state keys and do not need special treatment.
+                    // For example :
+                    //
+                    // public class Model
+                    // {
+                    //     public int SimpleType { get; set; }
+                    // }
+                    // public void Action(int id, Model model)
+                    // {
+                    // }
+                    //
+                    // In this case, for the model parameter the key would be SimpleType instead of model.SimpleType. 
+                    // (i.e here the prefix for the model key is empty).
+                    // For the id parameter the key would be id.
+                    return modelBindingResult;
+                }
             }
 
-            return true;
+            return new ModelBindingResult(
+                modelBindingResult.Model,
+                bindingContext.ModelName,
+                modelBindingResult.IsModelSet);
         }
 
-        private async Task<bool> TryBind(ModelBindingContext bindingContext)
+        private async Task<ModelBindingResult> TryBind(ModelBindingContext bindingContext)
         {
             RuntimeHelpers.EnsureSufficientExecutionStack();
 
             foreach (var binder in ModelBinders)
             {
-                if (await binder.BindModelAsync(bindingContext))
+                var result = await binder.BindModelAsync(bindingContext);
+                if (result != null)
                 {
-                    return true;
+                    return result;
                 }
             }
 
             // Either we couldn't find a binder, or the binder couldn't bind. Distinction is not important.
-            return false;
-        }
-
-        private static bool IsBindingAtRootOfObjectGraph(ModelBindingContext bindingContext)
-        {
-            // We're at the root of the object graph if the model does does not have a container.
-            // This statement is true for complex types at the root twice over - once with the actual model
-            // and once when when it is represented by a ComplexModelDto. Ignore the latter case.
-
-            return bindingContext.ModelMetadata.ContainerType == null &&
-                   bindingContext.ModelMetadata.ModelType != typeof(ComplexModelDto);
+            return null;
         }
 
         private static ModelBindingContext CreateNewBindingContext(ModelBindingContext oldBindingContext,
-                                                                   string modelName,
-                                                                   bool reuseValidationNode)
+                                                                   string modelName)
         {
             var newBindingContext = new ModelBindingContext
             {
-                IsModelSet = oldBindingContext.IsModelSet,
                 ModelMetadata = oldBindingContext.ModelMetadata,
                 ModelName = modelName,
                 ModelState = oldBindingContext.ModelState,
@@ -128,12 +118,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 OperationBindingContext = oldBindingContext.OperationBindingContext,
                 PropertyFilter = oldBindingContext.PropertyFilter,
             };
-
-            // validation is expensive to create, so copy it over if we can
-            if (reuseValidationNode)
-            {
-                newBindingContext.ValidationNode = oldBindingContext.ValidationNode;
-            }
 
             newBindingContext.OperationBindingContext.BodyBindingState = GetBodyBindingState(oldBindingContext);
 

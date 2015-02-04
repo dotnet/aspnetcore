@@ -13,6 +13,8 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNet.Http.Core;
+using Microsoft.Framework.DependencyInjection;
 #if ASPNET50
 using Moq;
 #endif
@@ -917,7 +919,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.True(context.PropertyFilter(context, "Property1"));
                       Assert.True(context.PropertyFilter(context, "Property2"));
                   })
-                  .Returns(Task.FromResult(false))
+                  .Returns(Task.FromResult<ModelBindingResult>(null))
                   .Verifiable();
 
             var controller = GetController(binder.Object, valueProvider);
@@ -950,7 +952,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.True(context.PropertyFilter(context, "Property1"));
                       Assert.True(context.PropertyFilter(context, "Property2"));
                   })
-                  .Returns(Task.FromResult(false))
+                  .Returns(Task.FromResult<ModelBindingResult>(null))
                   .Verifiable();
 
             var controller = GetController(binder.Object, valueProvider);
@@ -982,7 +984,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.True(context.PropertyFilter(context, "Property1"));
                       Assert.True(context.PropertyFilter(context, "Property2"));
                   })
-                  .Returns(Task.FromResult(false))
+                  .Returns(Task.FromResult<ModelBindingResult>(null))
                   .Verifiable();
 
             var controller = GetController(binder.Object, provider: null);
@@ -1019,7 +1021,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.False(context.PropertyFilter(context, "exclude1"));
                       Assert.False(context.PropertyFilter(context, "exclude2"));
                   })
-                  .Returns(Task.FromResult(true))
+                  .Returns(Task.FromResult<ModelBindingResult>(null))
                   .Verifiable();
 
             var controller = GetController(binder.Object, valueProvider);
@@ -1056,7 +1058,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.False(context.PropertyFilter(context, "exclude1"));
                       Assert.False(context.PropertyFilter(context, "exclude2"));
                   })
-                  .Returns(Task.FromResult(true))
+                  .Returns(Task.FromResult<ModelBindingResult>(null))
                   .Verifiable();
 
             var controller = GetController(binder.Object, provider: null);
@@ -1090,7 +1092,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.False(context.PropertyFilter(context, "exclude1"));
                       Assert.False(context.PropertyFilter(context, "exclude2"));
                   })
-                  .Returns(Task.FromResult(true))
+                  .Returns(Task.FromResult<ModelBindingResult>(null))
                   .Verifiable();
 
 
@@ -1125,7 +1127,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.False(context.PropertyFilter(context, "exclude1"));
                       Assert.False(context.PropertyFilter(context, "exclude2"));
                   })
-                  .Returns(Task.FromResult(true))
+                  .Returns(Task.FromResult<ModelBindingResult>(null))
                   .Verifiable();
 
             var controller = GetController(binder.Object, provider: null);
@@ -1336,7 +1338,8 @@ namespace Microsoft.AspNet.Mvc.Test
         private static Controller GetController(IModelBinder binder, IValueProvider provider)
         {
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var actionContext = new ActionContext(Mock.Of<HttpContext>(), new RouteData(), new ActionDescriptor());
+            var httpContext = new DefaultHttpContext();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
 
@@ -1344,6 +1347,7 @@ namespace Microsoft.AspNet.Mvc.Test
             {
                 ModelBinder = binder,
                 ValueProvider = provider,
+                ValidatorProvider = new DataAnnotationsModelValidatorProvider()
             };
 
             return new TestableController()
@@ -1351,7 +1355,8 @@ namespace Microsoft.AspNet.Mvc.Test
                 ActionContext = actionContext,
                 BindingContext = bindingContext,
                 MetadataProvider = metadataProvider,
-                ViewData = viewData
+                ViewData = viewData,
+                ObjectValidator = new DefaultObjectValidator(Mock.Of<IValidationExcludeFiltersProvider>(), metadataProvider)
             };
         }
 

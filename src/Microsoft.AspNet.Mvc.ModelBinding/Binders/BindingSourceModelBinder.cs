@@ -58,10 +58,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <returns>
         /// A <see cref="Task"/> which will complete when model binding has completed.
         /// </returns>
-        protected abstract Task BindModelCoreAsync([NotNull] ModelBindingContext bindingContext);
+        protected abstract Task<ModelBindingResult> BindModelCoreAsync([NotNull] ModelBindingContext bindingContext);
 
         /// <inheritdoc />
-        public async Task<bool> BindModelAsync(ModelBindingContext context)
+        public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext context)
         {
             var bindingSourceMetadata = context.ModelMetadata.BinderMetadata as IBindingSourceMetadata;
             var allowedBindingSource = bindingSourceMetadata?.BindingSource;
@@ -70,14 +70,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 // Binding Sources are opt-in. This model either didn't specify one or specified something
                 // incompatible so let other binders run.
-                return false;
+                return null;
             }
 
-            await BindModelCoreAsync(context);
+            var result = await BindModelCoreAsync(context);
+
+            var modelBindingResult = 
+                result != null ? 
+                    new ModelBindingResult(result.Model, result.Key, result.IsModelSet) :
+                    new ModelBindingResult(null, context.ModelName, false);
 
             // Prevent other model binders from running because this model binder is the only handler for
             // its binding source.
-            return true;
+            return modelBindingResult;
         }
     }
 }

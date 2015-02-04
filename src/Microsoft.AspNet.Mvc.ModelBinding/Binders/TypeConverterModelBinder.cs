@@ -9,20 +9,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public sealed class TypeConverterModelBinder : IModelBinder
     {
-        public async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+        public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
 
             if (!TypeHelper.HasStringConverter(bindingContext.ModelType))
             {
                 // this type cannot be converted
-                return false;
+                return null;
             }
 
             var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
             if (valueProviderResult == null)
             {
-                return false; // no entry
+                return null; // no entry
             }
 
             object newModel;
@@ -31,14 +31,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 newModel = valueProviderResult.ConvertTo(bindingContext.ModelType);
                 ModelBindingHelper.ReplaceEmptyStringWithNull(bindingContext.ModelMetadata, ref newModel);
-                bindingContext.Model = newModel;
+                return new ModelBindingResult(newModel, bindingContext.ModelName, true);
             }
             catch (Exception ex)
             {
                 bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex);
             }
 
-            return true;
+            return new ModelBindingResult(null, bindingContext.ModelName, false);
         }
     }
 }

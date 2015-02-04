@@ -13,11 +13,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class ByteArrayModelBinder : IModelBinder
     {
         /// <inheritdoc />
-        public async Task<bool> BindModelAsync([NotNull] ModelBindingContext bindingContext)
+        public async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
             if (bindingContext.ModelType != typeof(byte[]))
             {
-                return false;
+                return null;
             }
 
             var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // case 1: there was no <input ... /> element containing this data
             if (valueProviderResult == null)
             {
-                return false;
+                return null;
             }
 
             var value = valueProviderResult.AttemptedValue;
@@ -33,19 +33,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // case 2: there was an <input ... /> element but it was left blank
             if (string.IsNullOrEmpty(value))
             {
-                return false;
+                return null;
             }
 
             try
             {
-                bindingContext.Model = Convert.FromBase64String(value);
+                var model = Convert.FromBase64String(value);
+                return new ModelBindingResult(model, bindingContext.ModelName, true);
             }
             catch (Exception ex)
             {
                 bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex);
             }
 
-            return true;
+            return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
         }
     }
 }

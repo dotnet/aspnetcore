@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private string _modelName;
         private ModelStateDictionary _modelState;
-        private ModelValidationNode _validationNode;
         private Func<ModelBindingContext, string, bool> _propertyFilter;
 
         /// <summary>
@@ -54,36 +53,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Represents the <see cref="OperationBindingContext"/> associated with this context.
         /// </summary>
         public OperationBindingContext OperationBindingContext { get; set; }
-
-        /// <summary>
-        /// Gets or sets the model associated with this context.
-        /// </summary>
-        /// <remarks>
-        /// The <see cref="ModelMetadata"/> property must be set to access this property.
-        /// </remarks>
-        public object Model
-        {
-            get
-            {
-                EnsureModelMetadata();
-                return ModelMetadata.Model;
-            }
-            set
-            {
-                IsModelSet = true;
-
-                EnsureModelMetadata();
-                ModelMetadata.Model = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether or not the <see cref="Model"/> value has been set.
-        /// 
-        /// This property can be used to distinguish between a model binder which does not find a value and
-        /// the case where a model binder sets the <c>null</c> value.
-        /// </summary>
-        public bool IsModelSet { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata for the model associated with this context.
@@ -162,23 +131,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return _propertyFilter;
             }
             set { _propertyFilter = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the <see cref="ModelValidationNode"/> instance used as a container for
-        /// validation information.
-        /// </summary>
-        public ModelValidationNode ValidationNode
-        {
-            get
-            {
-                if (_validationNode == null)
-                {
-                    _validationNode = new ModelValidationNode(ModelMetadata, ModelName);
-                }
-                return _validationNode;
-            }
-            set { _validationNode = value; }
         }
 
         private void EnsureModelMetadata()

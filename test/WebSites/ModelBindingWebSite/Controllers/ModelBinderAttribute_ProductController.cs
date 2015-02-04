@@ -81,7 +81,7 @@ namespace ModelBindingWebSite.Controllers
 
         private class OrderStatusBinder : IModelBinder
         {
-            public Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
                 if (typeof(OrderStatus).IsAssignableFrom(bindingContext.ModelType))
                 {
@@ -90,21 +90,17 @@ namespace ModelBindingWebSite.Controllers
                     // Doing something slightly different here to make sure we don't get accidentally bound
                     // by the type converter binder.
                     OrderStatus model;
-                    if (Enum.TryParse<OrderStatus>("Status" + request.Query.Get("status"), out model))
-                    {
-                        bindingContext.Model = model;
-                    }
-
-                    return Task.FromResult(true);
+                    var isModelSet = Enum.TryParse<OrderStatus>("Status" + request.Query.Get("status"), out model);
+                    return Task.FromResult(new ModelBindingResult(model, "status", isModelSet));
                 }
 
-                return Task.FromResult(false);
+                return Task.FromResult<ModelBindingResult>(null);
             }
         }
 
         private class ProductModelBinder : IModelBinder
         {
-            public async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+            public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
                 if (typeof(Product).IsAssignableFrom(bindingContext.ModelType))
                 {
@@ -120,11 +116,10 @@ namespace ModelBindingWebSite.Controllers
                     var value = await bindingContext.ValueProvider.GetValueAsync(key);
                     model.ProductId = (int)value.ConvertTo(typeof(int));
 
-                    bindingContext.Model = model;
-                    return true;
+                    return new ModelBindingResult(model, key, true);
                 }
 
-                return false;
+                return null;
             }
         }
 

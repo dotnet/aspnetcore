@@ -9,15 +9,15 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
     public class HttpRequestMessageModelBinder : IModelBinder
     {
-        public Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext.ModelType == typeof(HttpRequestMessage))
             {
-                bindingContext.Model = bindingContext.OperationBindingContext.HttpContext.GetHttpRequestMessage();
-                return Task.FromResult(true);
+                var model = bindingContext.OperationBindingContext.HttpContext.GetHttpRequestMessage();
+                return Task.FromResult(new ModelBindingResult(model, bindingContext.ModelName, true));
             }
 
-            return Task.FromResult(false);
+            return Task.FromResult<ModelBindingResult>(null);
         }
     }
 }

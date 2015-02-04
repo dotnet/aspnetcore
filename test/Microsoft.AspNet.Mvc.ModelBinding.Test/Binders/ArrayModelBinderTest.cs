@@ -26,9 +26,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(retVal);
+            Assert.NotNull(retVal);
 
-            int[] array = bindingContext.Model as int[];
+            int[] array = retVal.Model as int[];
             Assert.Equal(new[] { 42, 84 }, array);
         }
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bound = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(bound);
+            Assert.Null(bound);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bound = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(bound);
+            Assert.Null(bound);
         }
 
         private static IModelBinder CreateIntBinder()
@@ -75,10 +75,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     var value = await mbc.ValueProvider.GetValueAsync(mbc.ModelName);
                     if (value != null)
                     {
-                        mbc.Model = value.ConvertTo(mbc.ModelType);
-                        return true;
+                        var model = value.ConvertTo(mbc.ModelType);
+                        return new ModelBindingResult(model, key: null, isModelSet: true);
                     }
-                    return false;
+                    return null;
                 });
             return mockIntBinder.Object;
         }

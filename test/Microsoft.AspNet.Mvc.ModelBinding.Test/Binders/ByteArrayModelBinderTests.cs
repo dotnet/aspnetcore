@@ -30,8 +30,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(binderResult);
-            Assert.Null(bindingContext.Model);
+            Assert.Null(binderResult);
         }
 
         [Fact]
@@ -50,8 +49,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(binderResult);
-            var bytes = Assert.IsType<byte[]>(bindingContext.Model);
+            Assert.NotNull(binderResult);
+            var bytes = Assert.IsType<byte[]>(binderResult.Model);
             Assert.Equal(new byte[] { 23, 43, 53 }, bytes);
         }
 
@@ -75,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(binderResult);
+            Assert.NotNull(binderResult);
             Assert.False(bindingContext.ModelState.IsValid);
             var error = Assert.Single(bindingContext.ModelState["foo"].Errors);
             Assert.Equal(expected, error.ErrorMessage);
@@ -97,7 +96,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(binderResult);
+            Assert.Null(binderResult);
         }
 
         [Fact]
@@ -111,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(binderResult);
+            Assert.Null(binderResult);
         }
 
         private static ModelBindingContext GetBindingContext(IValueProvider valueProvider, Type modelType)

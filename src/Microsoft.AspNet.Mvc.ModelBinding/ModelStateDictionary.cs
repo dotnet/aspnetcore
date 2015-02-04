@@ -132,10 +132,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             get { return _innerDictionary.Values; }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets a value that indicates whether any model state values in this model state dictionary is invalid or not validated.
+        /// </summary>
         public bool IsValid
         {
-            get { return ValidationState == ModelValidationState.Valid; }
+            get
+            {
+                return ValidationState == ModelValidationState.Valid || ValidationState == ModelValidationState.Skipped;
+            }
         }
 
         /// <inheritdoc />
@@ -285,6 +290,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
+        /// Returns <see cref="ModelValidationState"/> for the <paramref name="key"/>.
+        /// </summary>
+        /// <param name="key">The key to look up model state errors for.</param>
+        /// <returns>Returns <see cref="ModelValidationState.Unvalidated"/> if no entry is found for the specified
+        /// key, <see cref="ModelValidationState.Invalid"/> if an instance is found with one or more model
+        /// state errors; <see cref="ModelValidationState.Valid"/> otherwise.</returns>
+        public ModelValidationState GetValidationState([NotNull] string key)
+        {
+            ModelState validationState;
+            if (TryGetValue(key, out validationState))
+            {
+                return validationState.ValidationState;
+            }
+
+            return ModelValidationState.Unvalidated;
+        }
+
+        /// <summary>
         /// Marks the <see cref="ModelState.ValidationState"/> for the entry with the specified <paramref name="key"/>
         /// as <see cref="ModelValidationState.Valid"/>.
         /// </summary>
@@ -298,6 +321,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             modelState.ValidationState = ModelValidationState.Valid;
+        }
+
+        /// <summary>
+        /// Marks the <see cref="ModelState.ValidationState"/> for the entry with the specified <paramref name="key"/>
+        /// as <see cref="ModelValidationState.Skipped"/>.
+        /// </summary>
+        /// <param name="key">The key of the <see cref="ModelState"/> to mark as skipped.</param>
+        public void MarkFieldSkipped([NotNull] string key)
+        {
+            var modelState = GetModelStateForKey(key);
+            if (modelState.ValidationState == ModelValidationState.Invalid)
+            {
+                throw new InvalidOperationException(Resources.Validation_InvalidFieldCannotBeReset_ToSkipped);
+            }
+
+            modelState.ValidationState = ModelValidationState.Skipped;
         }
 
         /// <summary>

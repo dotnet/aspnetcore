@@ -147,28 +147,46 @@ namespace Microsoft.AspNet.Mvc
             setup.Configure(mvcOptions);
 
             // Assert
-            Assert.Equal(5, mvcOptions.ValidationExcludeFilters.Count);
+            Assert.Equal(8, mvcOptions.ValidationExcludeFilters.Count);
+            var i = 0;
 
             // Verify if the delegates registered by default exclude the given types.
-            Assert.Equal(typeof(SimpleTypesExcludeFilter), mvcOptions.ValidationExcludeFilters[0].OptionType);
-            Assert.Equal(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[1].OptionType);
+            Assert.Equal(typeof(SimpleTypesExcludeFilter), mvcOptions.ValidationExcludeFilters[i++].OptionType);
+            Assert.Equal(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i].OptionType);
             var xObjectFilter 
-                       = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[1].Instance);
+                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++].Instance);
             Assert.Equal(xObjectFilter.ExcludedType, typeof(XObject));
 
-            Assert.Equal(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[2].OptionType);
-            var typeFilter = 
-                        Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[2].Instance);
+            Assert.Equal(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i].OptionType);
+            var typeFilter
+                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++].Instance);
             Assert.Equal(typeFilter.ExcludedType, typeof(Type));
 
-            Assert.Equal(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[3].OptionType);
+            Assert.Equal(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i].OptionType);
             var jTokenFilter 
-                        = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[3].Instance);
+                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++].Instance);
             Assert.Equal(jTokenFilter.ExcludedType, typeof(JToken));
 
-            Assert.Equal(typeof(DefaultTypeNameBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[4].OptionType);
+            Assert.Equal(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i].OptionType);
+            var cancellationTokenFilter
+                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++].Instance);
+            Assert.Equal(cancellationTokenFilter.ExcludedType, typeof(System.Threading.CancellationToken));
+
+            Assert.Equal(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i].OptionType);
+            var formFileFilter
+                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++].Instance);
+            Assert.Equal(formFileFilter.ExcludedType, typeof(Http.IFormFile));
+
+            Assert.Equal(
+                typeof(DefaultTypeBasedExcludeFilter),
+                mvcOptions.ValidationExcludeFilters[i].OptionType);
+            var formCollectionFilter
+                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++].Instance);
+            Assert.Equal(formCollectionFilter.ExcludedType, typeof(Http.IFormCollection));
+
+            Assert.Equal(typeof(DefaultTypeNameBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i].OptionType);
             var xmlNodeFilter = 
-                     Assert.IsType<DefaultTypeNameBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[4].Instance);
+                     Assert.IsType<DefaultTypeNameBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++].Instance);
             Assert.Equal(xmlNodeFilter.ExcludedTypeName, "System.Xml.XmlNode");
         }
     }

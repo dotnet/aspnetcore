@@ -18,33 +18,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class FormFileModelBinder : IModelBinder
     {
         /// <inheritdoc />
-        public async Task<bool> BindModelAsync([NotNull] ModelBindingContext bindingContext)
+        public async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
             if (bindingContext.ModelType == typeof(IFormFile))
             {
                 var postedFiles = await GetFormFilesAsync(bindingContext);
                 var value = postedFiles.FirstOrDefault();
-                if (value != null)
-                {
-                    bindingContext.Model = value;
-                }
-
-                return true;
+                return new ModelBindingResult(value, bindingContext.ModelName, value != null);
             }
             else if (typeof(IEnumerable<IFormFile>).GetTypeInfo().IsAssignableFrom(
                     bindingContext.ModelType.GetTypeInfo()))
             {
                 var postedFiles = await GetFormFilesAsync(bindingContext);
                 var value = ModelBindingHelper.ConvertValuesToCollectionType(bindingContext.ModelType, postedFiles);
-                if (value != null)
-                {
-                    bindingContext.Model = value;
-                }
-
-                return true;
+                return new ModelBindingResult(value, bindingContext.ModelName, value != null);
             }
 
-            return false;
+            return null;
         }
 
         private async Task<List<IFormFile>> GetFormFilesAsync(ModelBindingContext bindingContext)

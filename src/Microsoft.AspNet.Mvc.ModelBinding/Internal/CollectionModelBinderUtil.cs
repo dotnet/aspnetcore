@@ -19,25 +19,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
                     indexNames = indexes;
                 }
             }
+
             return indexNames;
-        }
-
-        public static void CreateOrReplaceCollection<TElement>(ModelBindingContext bindingContext,
-                                                               IEnumerable<TElement> incomingElements,
-                                                               Func<ICollection<TElement>> creator)
-        {
-            var collection = bindingContext.Model as ICollection<TElement>;
-            if (collection == null || collection.IsReadOnly)
-            {
-                collection = creator();
-                bindingContext.Model = collection;
-            }
-
-            collection.Clear();
-            foreach (var element in incomingElements)
-            {
-                collection.Add(element);
-            }
         }
     }
 }

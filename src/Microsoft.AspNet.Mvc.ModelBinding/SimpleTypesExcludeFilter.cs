@@ -40,7 +40,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             foreach (var actualType in actualTypes)
             {
                 var underlyingType = Nullable.GetUnderlyingType(actualType) ?? actualType;
-
                 if (!IsSimpleType(underlyingType))
                 {
                     return false;

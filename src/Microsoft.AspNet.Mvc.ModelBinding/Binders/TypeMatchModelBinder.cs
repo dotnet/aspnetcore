@@ -8,21 +8,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public sealed class TypeMatchModelBinder : IModelBinder
     {
-        public async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+        public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
             var valueProviderResult = await GetCompatibleValueProviderResult(bindingContext);
             if (valueProviderResult == null)
             {
                 // conversion would have failed
-                return false;
+                return null;
             }
 
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
             var model = valueProviderResult.RawValue;
             ModelBindingHelper.ReplaceEmptyStringWithNull(bindingContext.ModelMetadata, ref model);
-            bindingContext.Model = model;
-
-            return true;
+            return new ModelBindingResult(model, bindingContext.ModelName, true);
         }
 
         internal static async Task<ValueProviderResult> GetCompatibleValueProviderResult(ModelBindingContext context)

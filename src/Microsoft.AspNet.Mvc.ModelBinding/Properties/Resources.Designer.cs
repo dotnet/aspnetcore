@@ -43,6 +43,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
+        /// A value is required.
+        /// </summary>
+        internal static string KeyValuePair_BothKeyAndValueMustBePresent
+        {
+            get { return GetString("KeyValuePair_BothKeyAndValueMustBePresent"); }
+        }
+
+        /// <summary>
+        /// A value is required.
+        /// </summary>
+        internal static string FormatKeyValuePair_BothKeyAndValueMustBePresent()
+        {
+            return GetString("KeyValuePair_BothKeyAndValueMustBePresent");
+        }
+
+        /// <summary>
         /// The property {0}.{1} could not be found.
         /// </summary>
         internal static string Common_PropertyNotFound
@@ -328,6 +344,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         internal static string FormatValidation_InvalidFieldCannotBeReset()
         {
             return GetString("Validation_InvalidFieldCannotBeReset");
+        }
+
+        /// <summary>
+        /// A field previously marked invalid should not be marked skipped.
+        /// </summary>
+        internal static string Validation_InvalidFieldCannotBeReset_ToSkipped
+        {
+            get { return GetString("Validation_InvalidFieldCannotBeReset_ToSkipped"); }
+        }
+
+        /// <summary>
+        /// A field previously marked invalid should not be marked skipped.
+        /// </summary>
+        internal static string FormatValidation_InvalidFieldCannotBeReset_ToSkipped()
+        {
+            return GetString("Validation_InvalidFieldCannotBeReset_ToSkipped");
         }
 
         /// <summary>

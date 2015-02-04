@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -15,11 +16,11 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class DefaultBodyModelValidatorTests
+    public class DefaultObjectValidatorTests
     {
         private static Person LonelyPerson;
 
-        static DefaultBodyModelValidatorTests()
+        static DefaultObjectValidatorTests()
         {
             LonelyPerson = new Person() { Name = "Reallllllllly Long Name" };
             LonelyPerson.Friend = LonelyPerson;
@@ -212,14 +213,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ExpectedValidationErrorsRaised(object model, Type type, Dictionary<string, string> expectedErrors)
         {
             // Arrange
-            var validationContext = GetModelValidationContext(model, type);
+            var testValidationContext = GetModelValidationContext(model, type);
 
             // Act (does not throw)
-            new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
+            new DefaultObjectValidator(
+                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ModelMetadataProvider)
+                .Validate(testValidationContext.ModelValidationContext);
 
             // Assert
             var actualErrors = new Dictionary<string, string>();
-            foreach (var keyStatePair in validationContext.ModelState)
+            foreach (var keyStatePair in testValidationContext.ModelValidationContext.ModelState)
             {
                 foreach (var error in keyStatePair.Value.Errors)
                 {
@@ -237,17 +241,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         [Fact]
         [ReplaceCulture]
-        public void BodyValidator_Throws_IfPropertyAccessorThrows()
+        public void Validator_Throws_IfPropertyAccessorThrows()
         {
             // Arrange
-            var validationContext = GetModelValidationContext(new Uri("/api/values", UriKind.Relative), typeof(Uri));
+            var testValidationContext = GetModelValidationContext(new Uri("/api/values", UriKind.Relative), typeof(Uri));
 
             // Act & Assert
             Assert.Throws(
                 typeof(InvalidOperationException),
                 () =>
                 {
-                    new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
+                    new DefaultObjectValidator(
+                        testValidationContext.ExcludeFiltersProvider,
+                        testValidationContext.ModelMetadataProvider)
+                        .Validate(testValidationContext.ModelValidationContext);
                 });
         }
 
@@ -270,30 +277,37 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [Theory]
         [MemberData(nameof(ObjectsWithPropertiesWhichThrowOnGet))]
         [ReplaceCulture]
-        public void BodyValidator_DoesNotThrow_IfExcludedPropertyAccessorsThrow(
+        public void Validator_DoesNotThrow_IfExcludedPropertyAccessorsThrow(
             object input, Type type, List<Type> excludedTypes)
         {
             // Arrange
-            var validationContext = GetModelValidationContext(input, type, excludedTypes);
+            var testValidationContext = GetModelValidationContext(input, type, string.Empty, excludedTypes);
 
             // Act & Assert (does not throw)
-            new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
-            Assert.True(validationContext.ModelState.IsValid);
+            new DefaultObjectValidator(
+                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ModelMetadataProvider)
+                .Validate(testValidationContext.ModelValidationContext);
+            Assert.True(testValidationContext.ModelValidationContext.ModelState.IsValid);
         }
 
         [Fact]
         [ReplaceCulture]
-        public void BodyValidator_Throws_IfPropertyGetterThrows()
+        public void Validator_Throws_IfPropertyGetterThrows()
         {
             // Arrange
-            var validationContext = GetModelValidationContext(
-                new Uri("/api/values", UriKind.Relative), typeof(Uri), new List<Type>());
+            var testValidationContext = GetModelValidationContext(
+                new Uri("/api/values", UriKind.Relative), typeof(Uri));
+            var validationContext = testValidationContext.ModelValidationContext;
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(
                 () =>
                 {
-                    new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
+                    new DefaultObjectValidator(
+                        testValidationContext.ExcludeFiltersProvider,
+                        testValidationContext.ModelMetadataProvider)
+                        .Validate(validationContext);
                 });
             Assert.True(validationContext.ModelState.IsValid);
         }
@@ -304,10 +318,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var model = new Address() { Street = "Microsoft Way" };
-            var validationContext = GetModelValidationContext(model, model.GetType());
+            var testValidationContext = GetModelValidationContext(model, model.GetType());
+            var validationContext = testValidationContext.ModelValidationContext;
 
             // Act (does not throw)
-            new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
+            new DefaultObjectValidator(
+                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ModelMetadataProvider)
+                .Validate(validationContext);
 
             // Assert
             Assert.Contains("Street", validationContext.ModelState.Keys);
@@ -326,14 +344,146 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     new TypeThatOverridesEquals { Funny = "hehe" },
                     new TypeThatOverridesEquals { Funny = "hehe" }
                 };
-            var validationContext = GetModelValidationContext(instance, typeof(TypeThatOverridesEquals[]));
+            var testValidationContext = GetModelValidationContext(instance, typeof(TypeThatOverridesEquals[]));
 
             // Act & Assert (does not throw)
-            new DefaultBodyModelValidator().Validate(validationContext, keyPrefix: string.Empty);
+            new DefaultObjectValidator(
+                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ModelMetadataProvider)
+                .Validate(testValidationContext.ModelValidationContext);
         }
 
-        private ModelValidationContext GetModelValidationContext(
-            object model, Type type, List<Type> excludedTypes = null)
+        [Fact]
+        public void Validation_ShortCircuit_WhenMaxErrorCountIsSet()
+        {
+            // Arrange
+            var user = new User()
+            {
+                Password = "password-val",
+                ConfirmPassword = "not-password-val"
+            };
+
+            var testValidationContext = GetModelValidationContext(
+                user,
+                typeof(User),
+                "user",
+                new List<Type> { typeof(string) });
+
+            var validationContext = testValidationContext.ModelValidationContext;
+            validationContext.ModelState.MaxAllowedErrors = 2;
+            validationContext.ModelState.AddModelError("key1", "error1");
+            var validator = new DefaultObjectValidator(
+                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ModelMetadataProvider);
+
+            // Act
+            validator.Validate(validationContext);
+
+            // Assert
+            Assert.Equal(new[] { "key1", "user.Password", "", "user.ConfirmPassword" },
+                validationContext.ModelState.Keys.ToArray());
+            var modelState = validationContext.ModelState["user.ConfirmPassword"];
+            Assert.Empty(modelState.Errors);
+            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+            
+            var error = Assert.Single(validationContext.ModelState[""].Errors);
+            Assert.IsType<TooManyModelErrorsException>(error.Exception);
+        }
+
+        [Fact]
+        public void ForExcludedNonModelBoundType_Properties_NotMarkedAsSkiped()
+        {
+            // Arrange
+            var user = new User()
+            {
+                Password = "password-val",
+                ConfirmPassword = "not-password-val"
+            };
+
+            var testValidationContext = GetModelValidationContext(
+                user,
+                typeof(User),
+                "user",
+                new List<Type> { typeof(User) });
+            var validationContext = testValidationContext.ModelValidationContext;
+            var validator = new DefaultObjectValidator(
+                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ModelMetadataProvider);
+
+            // Act
+            validator.Validate(validationContext);
+
+            // Assert
+            Assert.False(validationContext.ModelState.ContainsKey("user.Password"));
+            Assert.False(validationContext.ModelState.ContainsKey("user.ConfirmPassword"));
+            var modelState = validationContext.ModelState["user"];
+            Assert.Empty(modelState.Errors);
+            Assert.Equal(modelState.ValidationState, ModelValidationState.Valid);
+        }
+
+        [Fact]
+        public void ForExcludedModelBoundTypes_Properties_MarkedAsSkipped()
+        {
+            // Arrange
+            var user = new User()
+            {
+                Password = "password-val",
+                ConfirmPassword = "not-password-val"
+            };
+
+            var testValidationContext = GetModelValidationContext(
+                user,
+                typeof(User),
+                "user",
+                new List<Type> { typeof(User) });
+            var validationContext = testValidationContext.ModelValidationContext;
+
+            // Set the value on model state as a model binder would.
+            validationContext.ModelState.SetModelValue(
+                "user.Password",
+                Mock.Of<ValueProviderResult>());
+            var validator = new DefaultObjectValidator(
+                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ModelMetadataProvider);
+
+            // Act
+            validator.Validate(validationContext);
+
+            // Assert
+            var modelState = validationContext.ModelState["user.Password"];
+            Assert.Empty(modelState.Errors);
+            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+
+            modelState = validationContext.ModelState["user.ConfirmPassword"];
+            Assert.Empty(modelState.Errors);
+            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+        }
+
+        [Fact]
+        public void NonRequestBoundModel_MarkedAsSkipped()
+        {
+            // Arrange
+            var testValidationContext = GetModelValidationContext(
+                new TestServiceProvider(),
+                typeof(TestServiceProvider),
+                "serviceProvider");
+
+            var validationContext = testValidationContext.ModelValidationContext;
+            var validator = new DefaultObjectValidator(
+                testValidationContext.ExcludeFiltersProvider, 
+                testValidationContext.ModelMetadataProvider);
+
+            // Act
+            validator.Validate(validationContext);
+
+            // Assert
+            var modelState = validationContext.ModelState["serviceProvider.TestService"];
+            Assert.Empty(modelState.Errors);
+            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+        }
+
+        private TestModelValidationContext GetModelValidationContext(
+            object model, Type type, string key = "", List<Type> excludedTypes = null)
         {
             var modelStateDictionary = new ModelStateDictionary();
             var providers = new IModelValidatorProvider[]
@@ -341,9 +491,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new DataAnnotationsModelValidatorProvider(),
                 new DataMemberModelValidatorProvider()
             };
-            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var modelMetadataProvider = new DataAnnotationsModelMetadataProvider();
             var excludedValidationTypesPredicate =
                 new List<IExcludeTypeValidationFilter>();
+          
             if (excludedTypes != null)
             {
                 var mockExcludeTypeFilter = new Mock<IExcludeTypeValidationFilter>();
@@ -354,18 +505,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 excludedValidationTypesPredicate.Add(mockExcludeTypeFilter.Object);
             }
 
-            return new ModelValidationContext(
-                modelMetadataProvider,
-                new CompositeModelValidatorProvider(providers),
-                modelStateDictionary,
-                new ModelMetadata(
-                    provider: modelMetadataProvider,
-                    containerType: typeof(object),
-                    modelAccessor: () => model,
-                    modelType: type,
-                    propertyName: null),
-                containerMetadata: null,
-                excludeFromValidationFilters: excludedValidationTypesPredicate);
+            var mockValidationExcludeFiltersProvider = new Mock<IValidationExcludeFiltersProvider>();
+            mockValidationExcludeFiltersProvider.SetupGet(o => o.ExcludeFilters)
+                                             .Returns(excludedValidationTypesPredicate);
+            return new TestModelValidationContext
+            {
+                ModelValidationContext = new ModelValidationContext(
+                    key,
+                    new CompositeModelValidatorProvider(providers),
+                    modelStateDictionary,
+                    new ModelMetadata(
+                        provider: modelMetadataProvider,
+                        containerType: typeof(object),
+                        modelAccessor: () => model,
+                        modelType: type,
+                        propertyName: null),
+                    containerMetadata: null),
+                ModelMetadataProvider = modelMetadataProvider,
+                ExcludeFiltersProvider = mockValidationExcludeFiltersProvider.Object
+            };
         }
 
         public class Person
@@ -467,6 +625,42 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public Team Dev { get; set; }
 
             public Team Test { get; set; }
+        }
+
+        private class User : IValidatableObject
+        {
+            public string Password { get; set; }
+
+            [Compare("Password")]
+            public string ConfirmPassword { get; set; }
+
+            public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+            {
+                if (Password == "password")
+                {
+                    yield return new ValidationResult("Password does not meet complexity requirements.");
+                }
+            }
+        }
+
+        public class TestServiceProvider
+        {
+            [FromServices]
+            [Required]
+            public ITestService TestService { get; set; }
+        }
+
+        public interface ITestService
+        {
+        }
+
+        private class TestModelValidationContext
+        {
+            public ModelValidationContext ModelValidationContext { get; set; }
+
+            public IModelMetadataProvider ModelMetadataProvider { get; set; }
+
+            public IValidationExcludeFiltersProvider ExcludeFiltersProvider { get; set; }
         }
     }
 }

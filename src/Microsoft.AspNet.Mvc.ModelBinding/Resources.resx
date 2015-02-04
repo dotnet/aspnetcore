@@ -123,6 +123,9 @@
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or empty.</value>
   </data>
+  <data name="KeyValuePair_BothKeyAndValueMustBePresent" xml:space="preserve">
+    <value>A value is required.</value>
+  </data>
   <data name="Common_PropertyNotFound" xml:space="preserve">
     <value>The property {0}.{1} could not be found.</value>
   </data>
@@ -176,6 +179,9 @@
   </data>
   <data name="Validation_InvalidFieldCannotBeReset" xml:space="preserve">
     <value>A field previously marked invalid should not be marked valid.</value>
+  </data>
+  <data name="Validation_InvalidFieldCannotBeReset_ToSkipped" xml:space="preserve">
+    <value>A field previously marked invalid should not be marked skipped.</value>
   </data>
   <data name="Validation_ValueNotFound" xml:space="preserve">
     <value>A value is required but was not present in the request.</value>

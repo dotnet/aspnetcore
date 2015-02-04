@@ -32,8 +32,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result);
-            var files = Assert.IsAssignableFrom<IList<IFormFile>>(bindingContext.Model);
+            Assert.NotNull(result);
+            var files = Assert.IsAssignableFrom<IList<IFormFile>>(result.Model);
             Assert.Equal(2, files.Count);
         }
 
@@ -52,8 +52,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result);
-            var files = Assert.IsAssignableFrom<IList<IFormFile>>(bindingContext.Model);
+            Assert.NotNull(result);
+            var files = Assert.IsAssignableFrom<IList<IFormFile>>(result.Model);
             Assert.Equal(2, files.Count);
         }
 
@@ -72,8 +72,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result);
-            var file = Assert.IsAssignableFrom<IFormFile>(bindingContext.Model);
+            Assert.NotNull(result);
+            var file = Assert.IsAssignableFrom<IFormFile>(result.Model);
             Assert.Equal("form-data; name=file; filename=file1.txt",
                          file.ContentDisposition);
         }
@@ -91,8 +91,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result);
-            Assert.Null(bindingContext.Model);
+            Assert.NotNull(result);
+            Assert.Null(result.Model);
         }
 
         [Fact]
@@ -109,8 +109,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result);
-            Assert.Null(bindingContext.Model);
+            Assert.NotNull(result);
+            Assert.Null(result.Model);
         }
 
         [Fact]
@@ -127,8 +127,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result);
-            Assert.Null(bindingContext.Model);
+            Assert.NotNull(result);
+            Assert.Null(result.Model);
         }
 
         [Fact]
@@ -145,8 +145,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result);
-            Assert.Null(bindingContext.Model);
+            Assert.NotNull(result);
+            Assert.Null(result.Model);
         }
 
         private static ModelBindingContext GetBindingContext(Type modelType, HttpContext httpContext)

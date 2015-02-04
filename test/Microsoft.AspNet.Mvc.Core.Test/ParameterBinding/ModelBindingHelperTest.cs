@@ -24,25 +24,26 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var metadataProvider = new Mock<IModelMetadataProvider>();
-            metadataProvider.Setup(m => m.GetMetadataForType(null, It.IsAny<Type>()))
+            metadataProvider.Setup(m => m.GetMetadataForType(It.IsAny<Func<object>>(), It.IsAny<Type>()))
                             .Returns(new ModelMetadata(metadataProvider.Object, null, null, typeof(MyModel), null))
                             .Verifiable();
 
             var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(Task.FromResult(false));
+                  .Returns(Task.FromResult<ModelBindingResult>(null));
             var model = new MyModel();
-
+            
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    null,
-                                                    Mock.Of<HttpContext>(),
-                                                    new ModelStateDictionary(),
-                                                    metadataProvider.Object,
-                                                    GetCompositeBinder(binder.Object),
-                                                    Mock.Of<IValueProvider>(),
-                                                    Mock.Of<IModelValidatorProvider>());
+                model,
+                null,
+                Mock.Of<HttpContext>(),
+                new ModelStateDictionary(),
+                metadataProvider.Object,
+                GetCompositeBinder(binder.Object),
+                Mock.Of<IValueProvider>(),
+                new DefaultObjectValidator(Mock.Of<IValidationExcludeFiltersProvider>(), metadataProvider.Object),
+                Mock.Of<IModelValidatorProvider>());
 
             // Assert
             Assert.False(result);
@@ -71,17 +72,19 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 { "", null }
             };
             var valueProvider = new TestValueProvider(values);
+            var modelMetadataProvider = new DataAnnotationsModelMetadataProvider();
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    "",
-                                                    Mock.Of<HttpContext>(),
-                                                    modelStateDictionary,
-                                                    new DataAnnotationsModelMetadataProvider(),
-                                                    GetCompositeBinder(binders),
-                                                    valueProvider,
-                                                    validator);
+                model,
+                "",
+                Mock.Of<HttpContext>(),
+                modelStateDictionary,
+                modelMetadataProvider,
+                GetCompositeBinder(binders),
+                valueProvider,
+                new DefaultObjectValidator(Mock.Of<IValidationExcludeFiltersProvider>(), modelMetadataProvider),
+                validator);
 
             // Assert
             Assert.False(result);
@@ -109,17 +112,19 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 { "MyProperty", "MyPropertyValue" }
             };
             var valueProvider = new TestValueProvider(values);
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    "",
-                                                    Mock.Of<HttpContext>(),
-                                                    modelStateDictionary,
-                                                    new DataAnnotationsModelMetadataProvider(),
-                                                    GetCompositeBinder(binders),
-                                                    valueProvider,
-                                                    validator);
+                model,
+                "",
+                Mock.Of<HttpContext>(),
+                modelStateDictionary,
+                metadataProvider,
+                GetCompositeBinder(binders),
+                valueProvider,
+                new DefaultObjectValidator(Mock.Of<IValidationExcludeFiltersProvider>(), metadataProvider),
+                validator);
 
             // Assert
             Assert.True(result);
@@ -131,27 +136,28 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var metadataProvider = new Mock<IModelMetadataProvider>();
-            metadataProvider.Setup(m => m.GetMetadataForType(null, It.IsAny<Type>()))
+            metadataProvider.Setup(m => m.GetMetadataForType(It.IsAny<Func<object>>(), It.IsAny<Type>()))
                             .Returns(new ModelMetadata(metadataProvider.Object, null, null, typeof(MyModel), null))
                             .Verifiable();
 
             var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(Task.FromResult(false));
+                  .Returns(Task.FromResult<ModelBindingResult>(null));
             var model = new MyModel();
             Func<ModelBindingContext, string, bool> includePredicate =
                (context, propertyName) => true;
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    null,
-                                                    Mock.Of<HttpContext>(),
-                                                    new ModelStateDictionary(),
-                                                    metadataProvider.Object,
-                                                    GetCompositeBinder(binder.Object),
-                                                    Mock.Of<IValueProvider>(),
-                                                    Mock.Of<IModelValidatorProvider>(),
-                                                    includePredicate);
+                model,
+                null,
+                Mock.Of<HttpContext>(),
+                new ModelStateDictionary(),
+                metadataProvider.Object,
+                GetCompositeBinder(binder.Object),
+                Mock.Of<IValueProvider>(),
+                Mock.Of<IObjectModelValidator>(),
+                Mock.Of<IModelValidatorProvider>(),
+                includePredicate);
 
             // Assert
             Assert.False(result);
@@ -194,18 +200,20 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                 string.Equals(propertyName, "MyProperty", StringComparison.OrdinalIgnoreCase);
 
             var valueProvider = new TestValueProvider(values);
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    "",
-                                                    Mock.Of<HttpContext>(),
-                                                    modelStateDictionary,
-                                                    new DataAnnotationsModelMetadataProvider(),
-                                                    GetCompositeBinder(binders),
-                                                    valueProvider,
-                                                    validator,
-                                                    includePredicate);
+                model,
+                "",
+                Mock.Of<HttpContext>(),
+                modelStateDictionary,
+                metadataProvider,
+                GetCompositeBinder(binders),
+                valueProvider,
+                new DefaultObjectValidator(Mock.Of<IValidationExcludeFiltersProvider>(), metadataProvider),
+                validator,
+                includePredicate);
 
             // Assert
             Assert.True(result);
@@ -219,13 +227,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var metadataProvider = new Mock<IModelMetadataProvider>();
-            metadataProvider.Setup(m => m.GetMetadataForType(null, It.IsAny<Type>()))
+            metadataProvider.Setup(m => m.GetMetadataForType(It.IsAny<Func<object>>(), It.IsAny<Type>()))
                             .Returns(new ModelMetadata(metadataProvider.Object, null, null, typeof(MyModel), null))
                             .Verifiable();
 
             var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(Task.FromResult(false));
+                  .Returns(Task.FromResult<ModelBindingResult>(null));
             var model = new MyModel();
 
             // Act
@@ -237,6 +245,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                                     metadataProvider.Object,
                                                     GetCompositeBinder(binder.Object),
                                                     Mock.Of<IValueProvider>(),
+                                                    Mock.Of<IObjectModelValidator>(),
                                                     Mock.Of<IModelValidatorProvider>(),
                                                     m => m.IncludedProperty );
 
@@ -277,19 +286,21 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             };
 
             var valueProvider = new TestValueProvider(values);
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    "",
-                                                    Mock.Of<HttpContext>(),
-                                                    modelStateDictionary,
-                                                    new DataAnnotationsModelMetadataProvider(),
-                                                    GetCompositeBinder(binders),
-                                                    valueProvider,
-                                                    validator,
-                                                    m => m.IncludedProperty,
-                                                    m => m.MyProperty);
+                model,
+                "",
+                Mock.Of<HttpContext>(),
+                modelStateDictionary,
+                new DataAnnotationsModelMetadataProvider(),
+                GetCompositeBinder(binders),
+                valueProvider,
+                new DefaultObjectValidator(Mock.Of<IValidationExcludeFiltersProvider>(), metadataProvider),
+                validator,
+                m => m.IncludedProperty,
+                m => m.MyProperty);
 
             // Assert
             Assert.True(result);
@@ -327,17 +338,19 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             };
 
             var valueProvider = new TestValueProvider(values);
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    "",
-                                                    Mock.Of<HttpContext>(),
-                                                    modelStateDictionary,
-                                                    new DataAnnotationsModelMetadataProvider(),
-                                                    GetCompositeBinder(binders),
-                                                    valueProvider,
-                                                    validator);
+                model,
+                "",
+                Mock.Of<HttpContext>(),
+                modelStateDictionary,
+                metadataProvider,
+                GetCompositeBinder(binders),
+                valueProvider,
+                new DefaultObjectValidator(Mock.Of<IValidationExcludeFiltersProvider>(), metadataProvider),
+                validator);
 
             // Assert
             // Includes everything.

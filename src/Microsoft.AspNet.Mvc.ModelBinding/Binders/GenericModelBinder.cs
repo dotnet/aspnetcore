@@ -12,20 +12,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class GenericModelBinder : IModelBinder
     {
-        public async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+        public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
             var binderType = ResolveBinderType(bindingContext.ModelType);
             if (binderType != null)
             {
                 var binder = (IModelBinder)Activator.CreateInstance(binderType);
-                await binder.BindModelAsync(bindingContext);
+                var result = await binder.BindModelAsync(bindingContext);
+
+                var modelBindingResult = result != null ?
+                    new ModelBindingResult(result.Model, result.Key, result.IsModelSet) :
+                    new ModelBindingResult(null, bindingContext.ModelName, false);
 
                 // Was able to resolve a binder type, hence we should tell the model binding system to return
                 // true so that none of the other model binders participate.
-                return true;
+                return modelBindingResult;
             }
 
-            return false;
+            return null;
         }
 
         private static Type ResolveBinderType(Type modelType)

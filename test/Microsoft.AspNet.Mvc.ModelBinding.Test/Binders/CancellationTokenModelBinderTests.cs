@@ -22,8 +22,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bound = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(bound);
-            Assert.Equal(bindingContext.OperationBindingContext.HttpContext.RequestAborted, bindingContext.Model);
+            Assert.NotNull(bound);
+            Assert.Equal(bindingContext.OperationBindingContext.HttpContext.RequestAborted, bound.Model);
         }
 
         [Theory]
@@ -40,8 +40,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bound = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(bound);
-            Assert.Null(bindingContext.Model);
+            Assert.Null(bound);
         }
 
         private static ModelBindingContext GetBindingContext(Type modelType)

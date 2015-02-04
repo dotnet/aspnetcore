@@ -54,6 +54,10 @@ namespace System.Web.Http
         [FromServices]
         public IModelMetadataProvider MetadataProvider { get; set; }
 
+
+        [FromServices]
+        public IObjectModelValidator ObjectValidator { get; set; }
+
         /// <summary>
         /// Gets model state after the model binding process. This ModelState will be empty before model binding
         /// happens.
@@ -417,18 +421,14 @@ namespace System.Web.Http
         {
             var modelMetadata = MetadataProvider.GetMetadataForType(() => entity, typeof(TEntity));
 
-            var bodyValidationExcludeFiltersProvider = Context.RequestServices
-                                                              .GetRequiredService<IValidationExcludeFiltersProvider>();
-            var validator = Context.RequestServices.GetRequiredService<IBodyModelValidator>();
-
             var modelValidationContext = new ModelValidationContext(
-                MetadataProvider,
+                keyPrefix,
                 BindingContext.ValidatorProvider,
                 ModelState,
                 modelMetadata,
-                containerMetadata: null,
-                excludeFromValidationFilters: bodyValidationExcludeFiltersProvider.ExcludeFilters);
-            validator.Validate(modelValidationContext, keyPrefix);
+                containerMetadata: null);
+
+            ObjectValidator.Validate(modelValidationContext);
         }
 
         protected virtual void Dispose(bool disposing)

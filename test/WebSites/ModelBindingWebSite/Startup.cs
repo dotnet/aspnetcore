@@ -30,6 +30,7 @@ namespace ModelBindingWebSite
                             m.ModelBinders.Insert(0, typeof(TestBindingSourceModelBinder));
 
                             m.AddXmlDataContractSerializerFormatter();
+                            m.ValidationExcludeFilters.Add(typeof(Address));
                         });
 
                 services.AddSingleton<ICalculator, DefaultCalculator>();

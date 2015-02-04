@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             ModelMetadata = modelMetadata;
             PropertyMetadata = new Collection<ModelMetadata>(propertyMetadata.ToList());
-            Results = new Dictionary<ModelMetadata, ComplexModelDtoResult>();
+            Results = new Dictionary<ModelMetadata, ModelBindingResult>();
         }
 
         public ModelMetadata ModelMetadata { get; private set; }
@@ -26,6 +26,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // attempted. If binding failed, the entry's value will be null. If binding
         // was never attempted, this dictionary will not contain a corresponding
         // entry.
-        public IDictionary<ModelMetadata, ComplexModelDtoResult> Results { get; private set; }
+        public IDictionary<ModelMetadata, ModelBindingResult> Results { get; private set; }
     }
 }

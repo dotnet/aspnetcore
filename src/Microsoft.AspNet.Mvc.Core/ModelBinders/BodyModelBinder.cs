@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private readonly ActionContext _actionContext;
         private readonly IScopedInstance<ActionBindingContext> _bindingContext;
         private readonly IInputFormatterSelector _formatterSelector;
-        private readonly IBodyModelValidator _bodyModelValidator;
         private readonly IValidationExcludeFiltersProvider _bodyValidationExcludeFiltersProvider;
 
         /// <summary>
@@ -28,26 +27,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="context">An accessor to the <see cref="ActionContext"/>.</param>
         /// <param name="bindingContext">An accessor to the <see cref="ActionBindingContext"/>.</param>
         /// <param name="selector">The <see cref="IInputFormatterSelector"/>.</param>
-        /// <param name="bodyModelValidator">The <see cref="IBodyModelValidator"/>.</param>
         /// <param name="bodyValidationExcludeFiltersProvider">
         /// The <see cref="IValidationExcludeFiltersProvider"/>.
         /// </param>
         public BodyModelBinder([NotNull] IScopedInstance<ActionContext> context,
                                [NotNull] IScopedInstance<ActionBindingContext> bindingContext,
                                [NotNull] IInputFormatterSelector selector,
-                               [NotNull] IBodyModelValidator bodyModelValidator,
                                [NotNull] IValidationExcludeFiltersProvider bodyValidationExcludeFiltersProvider)
             : base(BindingSource.Body)
         {
             _actionContext = context.Value;
             _bindingContext = bindingContext;
             _formatterSelector = selector;
-            _bodyModelValidator = bodyModelValidator;
             _bodyValidationExcludeFiltersProvider = bodyValidationExcludeFiltersProvider;
         }
 
         /// <inheritdoc />
-        protected async override Task BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
+        protected async override Task<ModelBindingResult> BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
         {
             var formatters = _bindingContext.Value.InputFormatters;
 
@@ -59,20 +55,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var unsupportedContentType = Resources.FormatUnsupportedContentType(
                     bindingContext.OperationBindingContext.HttpContext.Request.ContentType);
                 bindingContext.ModelState.AddModelError(bindingContext.ModelName, unsupportedContentType);
-                return;
+                return new ModelBindingResult(null, bindingContext.ModelName, isModelSet: false);
             }
 
-            bindingContext.Model = await formatter.ReadAsync(formatterContext);
-
-            // Validate the deserialized object
-            var validationContext = new ModelValidationContext(
-                bindingContext.OperationBindingContext.MetadataProvider,
-                bindingContext.OperationBindingContext.ValidatorProvider,
-                bindingContext.ModelState,
-                bindingContext.ModelMetadata,
-                containerMetadata: null,
-                excludeFromValidationFilters: _bodyValidationExcludeFiltersProvider.ExcludeFilters);
-            _bodyModelValidator.Validate(validationContext, bindingContext.ModelName);
+            var model = await formatter.ReadAsync(formatterContext);
+            return new ModelBindingResult(model, bindingContext.ModelName, isModelSet: true);
         }
     }
 }

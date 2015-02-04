@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(retVal);
+            Assert.Null(retVal);
         }
 
         [Theory]
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(retVal);
+            Assert.NotNull(retVal);
         }
 
         [Fact]
@@ -84,8 +84,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(retVal);
-            Assert.Null(bindingContext.Model);
+            Assert.NotNull(retVal);
+            Assert.Null(retVal.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
             Assert.Equal(message, error.ErrorMessage);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(retVal, "BindModel should have returned null.");
+            Assert.Null(retVal);
             Assert.Empty(bindingContext.ModelState);
         }
 
@@ -122,8 +122,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(retVal);
-            Assert.Null(bindingContext.Model);
+            Assert.NotNull(retVal);
+            Assert.Null(retVal.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
@@ -143,8 +143,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(retVal);
-            Assert.Equal(42, bindingContext.Model);
+            Assert.NotNull(retVal);
+            Assert.Equal(42, retVal.Model);;
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 

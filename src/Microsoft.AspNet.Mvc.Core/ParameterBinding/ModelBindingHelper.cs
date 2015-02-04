@@ -29,6 +29,8 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
+        /// bound values.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
         /// on the model instance.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
@@ -40,6 +42,7 @@ namespace Microsoft.AspNet.Mvc
                 [NotNull] IModelMetadataProvider metadataProvider,
                 [NotNull] IModelBinder modelBinder,
                 [NotNull] IValueProvider valueProvider,
+                [NotNull] IObjectModelValidator objectModelValidator,
                 [NotNull] IModelValidatorProvider validatorProvider)
             where TModel : class
         {
@@ -52,6 +55,7 @@ namespace Microsoft.AspNet.Mvc
                 metadataProvider,
                 modelBinder,
                 valueProvider,
+                objectModelValidator,
                 validatorProvider,
                 predicate: (context, propertyName) => true);
         }
@@ -71,6 +75,8 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
+        /// bound values.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
         /// on the model
         /// instance.</param>
@@ -85,6 +91,7 @@ namespace Microsoft.AspNet.Mvc
                [NotNull] IModelMetadataProvider metadataProvider,
                [NotNull] IModelBinder modelBinder,
                [NotNull] IValueProvider valueProvider,
+               [NotNull] IObjectModelValidator objectModelValidator,
                [NotNull] IModelValidatorProvider validatorProvider,
                [NotNull] params Expression<Func<TModel, object>>[] includeExpressions)
            where TModel : class
@@ -100,6 +107,7 @@ namespace Microsoft.AspNet.Mvc
                metadataProvider,
                modelBinder,
                valueProvider,
+               objectModelValidator,
                validatorProvider,
                predicate: predicate);
         }
@@ -119,6 +127,8 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
+        /// bound values.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
         /// on the model instance.</param>
         /// <param name="predicate">A predicate which can be used to
@@ -132,12 +142,13 @@ namespace Microsoft.AspNet.Mvc
                [NotNull] IModelMetadataProvider metadataProvider,
                [NotNull] IModelBinder modelBinder,
                [NotNull] IValueProvider valueProvider,
+               [NotNull] IObjectModelValidator objectModelValidator,
                [NotNull] IModelValidatorProvider validatorProvider,
                [NotNull] Func<ModelBindingContext, string, bool> predicate)
            where TModel : class
         {
             var modelMetadata = metadataProvider.GetMetadataForType(
-                modelAccessor: null,
+                modelAccessor: () => model,
                 modelType: model.GetType());
 
             var operationBindingContext = new OperationBindingContext
@@ -152,7 +163,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 ModelMetadata = modelMetadata,
                 ModelName = prefix,
-                Model = model,
                 ModelState = modelState,
                 ValueProvider = valueProvider,
                 FallbackToEmptyPrefix = true,
@@ -160,8 +170,12 @@ namespace Microsoft.AspNet.Mvc
                 PropertyFilter = predicate
             };
 
-            if (await modelBinder.BindModelAsync(modelBindingContext))
+            var modelBindingResult = await modelBinder.BindModelAsync(modelBindingContext);
+            if (modelBindingResult != null)
             {
+                var modelValidationContext = new ModelValidationContext(modelBindingContext, modelMetadata);
+                modelValidationContext.RootPrefix = prefix;
+                objectModelValidator.Validate(modelValidationContext);
                 return modelState.IsValid;
             }
 

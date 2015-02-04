@@ -23,19 +23,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        protected override Task BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
+        protected override Task<ModelBindingResult> BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
         {
             var request = bindingContext.OperationBindingContext.HttpContext.Request;
             var modelMetadata = bindingContext.ModelMetadata;
 
             // Property name can be null if the model metadata represents a type (rahter than a property or parameter).
             var headerName = modelMetadata.BinderModelName ?? modelMetadata.PropertyName ?? bindingContext.ModelName;
+            object model = null;
             if (bindingContext.ModelType == typeof(string))
             {
                 var value = request.Headers.Get(headerName);
                 if (value != null)
                 {
-                    bindingContext.Model = value;
+                    model = value;
                 }
             }
             else if (typeof(IEnumerable<string>).GetTypeInfo().IsAssignableFrom(
@@ -44,14 +45,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var values = request.Headers.GetCommaSeparatedValues(headerName);
                 if (values != null)
                 {
-                    bindingContext.Model = ModelBindingHelper.ConvertValuesToCollectionType(
+                    model = ModelBindingHelper.ConvertValuesToCollectionType(
                         bindingContext.ModelType,
                         values);
                 }
             }
 
-            // Always return true as header model binder is supposed to always handle IHeaderBinderMetadata.
-            return Task.FromResult(true);
+            return Task.FromResult(new ModelBindingResult(model, bindingContext.ModelName, model != null));
         }
     }
 }

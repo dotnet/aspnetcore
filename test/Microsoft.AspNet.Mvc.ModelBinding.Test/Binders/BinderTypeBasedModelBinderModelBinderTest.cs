@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(binderResult);
+            Assert.Null(binderResult);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(binderResult);
+            Assert.NotNull(binderResult);
         }
 
         [Fact]
@@ -67,8 +67,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            var p = (Person)bindingContext.Model;
-            Assert.True(binderResult);
+            var p = (Person)binderResult.Model;
             Assert.Equal(model.Age, p.Age);
             Assert.Equal(model.Name, p.Name);
         }
@@ -95,8 +94,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            var p = (Person)bindingContext.Model;
-            Assert.True(binderResult);
+            var p = (Person)binderResult.Model;
             Assert.Equal(model.Age, p.Age);
             Assert.Equal(model.Name, p.Name);
         }
@@ -152,9 +150,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
         private class FalseModelBinder : IModelBinder
         {
-            public Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
-                return Task.FromResult(false);
+                return Task.FromResult<ModelBindingResult>(null);
             }
         }
 
@@ -167,10 +165,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 _model = new Person();
             }
 
-            public Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
-                bindingContext.Model = _model;
-                return Task.FromResult(true);
+                return Task.FromResult(new ModelBindingResult(_model, bindingContext.ModelName, true));
             }
         }
 

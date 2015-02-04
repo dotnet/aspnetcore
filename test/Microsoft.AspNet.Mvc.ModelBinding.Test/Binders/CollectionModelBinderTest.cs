@@ -34,7 +34,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.Equal(new[] { 42, 0, 200 }, boundCollection.ToArray());
-            Assert.Equal(new[] { "someName[foo]", "someName[baz]" }, bindingContext.ValidationNode.ChildNodes.Select(o => o.ModelStateKey).ToArray());
         }
 
         [Fact]
@@ -55,7 +54,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.Equal(new[] { 42, 100 }, boundCollection.ToArray());
-            Assert.Equal(new[] { "someName[0]", "someName[1]" }, bindingContext.ValidationNode.ChildNodes.Select(o => o.ModelStateKey).ToArray());
         }
 
         [Fact]
@@ -73,10 +71,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            bool retVal = await binder.BindModelAsync(bindingContext);
+            var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Equal(new[] { 42, 100, 200 }, ((List<int>)bindingContext.Model).ToArray());
+            Assert.Equal(new[] { 42, 100, 200 }, ((List<int>)retVal.Model).ToArray());
         }
 
         [Fact]
@@ -91,11 +89,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            bool retVal = await binder.BindModelAsync(bindingContext);
+            var retVal = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(retVal);
-            Assert.Equal(new[] { 42, 100, 200 }, ((List<int>)bindingContext.Model).ToArray());
+            Assert.NotNull(retVal);
+            Assert.Equal(new[] { 42, 100, 200 }, ((List<int>)retVal.Model).ToArray());
         }
 #endif
 
@@ -134,15 +132,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var culture = new CultureInfo("fr-FR");
             var bindingContext = GetModelBindingContext(new SimpleHttpValueProvider());
 
-            ModelValidationNode childValidationNode = null;
             Mock.Get<IModelBinder>(bindingContext.OperationBindingContext.ModelBinder)
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns((ModelBindingContext mbc) =>
                 {
                     Assert.Equal("someName", mbc.ModelName);
-                    childValidationNode = mbc.ValidationNode;
-                    mbc.Model = 42;
-                    return Task.FromResult(true);
+                    return Task.FromResult(new ModelBindingResult(42, mbc.ModelName, true));
                 });
             var modelBinder = new CollectionModelBinder<int>();
 
@@ -151,7 +146,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.Equal(new[] { 42 }, boundCollection.ToArray());
-            Assert.Equal(new[] { childValidationNode }, bindingContext.ValidationNode.ChildNodes.ToArray());
         }
 
         private static ModelBindingContext GetModelBindingContext(IValueProvider valueProvider)
@@ -181,10 +175,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     var value = await mbc.ValueProvider.GetValueAsync(mbc.ModelName);
                     if (value != null)
                     {
-                        mbc.Model = value.ConvertTo(mbc.ModelType);
-                        return true;
+                        var model = value.ConvertTo(mbc.ModelType);
+                        return new ModelBindingResult(model, mbc.ModelName, true);
                     }
-                    return false;
+
+                    return null;
                 });
             return mockIntBinder.Object;
         }

@@ -21,13 +21,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                new ConcurrentDictionary<Type, ObjectFactory>();
 
 
-        public async Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+        public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext.ModelMetadata.BinderType == null)
             {
-                // Return false so that we are able to continue with the default set of model binders,
+                // Return null so that we are able to continue with the default set of model binders,
                 // if there is no specific model binder provided.
-                return false;
+                return null;
             }
 
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
@@ -52,11 +52,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            await modelBinder.BindModelAsync(bindingContext);
+            var result = await modelBinder.BindModelAsync(bindingContext);
 
-            // return true here, because this binder will handle all cases where the model binder is
-            // specified by metadata.
-            return true;
+            var modelBindingResult = result != null ? 
+                new ModelBindingResult(result.Model, result.Key, result.IsModelSet) :
+                new ModelBindingResult(null, bindingContext.ModelName, false);
+
+            // return a non null modelbinding result here, because this binder will handle all cases where the
+            //  model binder is specified by metadata.
+            return modelBindingResult;
         }
     }
 }

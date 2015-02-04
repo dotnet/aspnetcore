@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
 
         private class TestModelBinder : IModelBinder
         {
-            public Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
                 throw new NotImplementedException();
             }

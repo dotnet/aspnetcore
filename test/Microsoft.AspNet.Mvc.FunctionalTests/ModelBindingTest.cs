@@ -26,6 +26,45 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly IServiceProvider _services = TestHelper.CreateServices("ModelBindingWebSite");
         private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
 
+        [Fact]
+        public async Task TypeBasedExclusion_ForBodyAndNonBodyBoundModels()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Make sure the body object gets created with an invalid zip.
+            var input = "{\"OfficeAddress.Zip\":\"45\"}";
+            var content = new StringContent(input, Encoding.UTF8, "application/json");
+
+            // Act
+            // Make sure the non body based object gets created with an invalid zip.
+            var response = await client.PostAsync(
+                "http://localhost/Validation/SkipValidation?ShippingAddresses[0].Zip=45&HomeAddress.Zip=46", content);
+
+            // Assert
+            var stringValue = await response.Content.ReadAsStringAsync();
+            var isModelStateValid = JsonConvert.DeserializeObject<bool>(stringValue);
+            Assert.True(isModelStateValid);
+        }
+
+        [Fact]
+        public async Task ModelValidation_DoesNotValidate_AnAlreadyValidatedObject()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync(
+                "http://localhost/Validation/AvoidRecursive?Name=selfish");
+
+            // Assert
+            var stringValue = await response.Content.ReadAsStringAsync();
+            var isModelStateValid = JsonConvert.DeserializeObject<bool>(stringValue);
+            Assert.True(isModelStateValid);
+        }
+
         [Theory]
         [InlineData("RestrictValueProvidersUsingFromRoute", "valueFromRoute")]
         [InlineData("RestrictValueProvidersUsingFromQuery", "valueFromQuery")]
@@ -1012,7 +1051,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Act
             var response = await client.GetStringAsync("http://localhost/TryUpdateModel/" +
                 "CreateAndUpdateUser" +
-                "?RegisterationMonth=March");
+                "?RegistedeburationMonth=March");
 
             // Assert
             var result = JsonConvert.DeserializeObject<bool>(response);

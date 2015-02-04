@@ -15,17 +15,17 @@ namespace ModelBindingWebSite
         {
         }
 
-        protected override Task BindModelCoreAsync(ModelBindingContext bindingContext)
+        protected override Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
         {
             var metadata = (FromTestAttribute)bindingContext.ModelMetadata.BinderMetadata;
-            bindingContext.Model = metadata.Value;
-
+            var model = metadata.Value;
             if (!IsSimpleType(bindingContext.ModelType))
             {
-                bindingContext.Model = Activator.CreateInstance(bindingContext.ModelType);
+                model = Activator.CreateInstance(bindingContext.ModelType);
+                return Task.FromResult(new ModelBindingResult(model, bindingContext.ModelName, true));
             }
 
-            return Task.FromResult(true);
+            return Task.FromResult(new ModelBindingResult(null, bindingContext.ModelName, false));
         }
 
         private bool IsSimpleType(Type type)

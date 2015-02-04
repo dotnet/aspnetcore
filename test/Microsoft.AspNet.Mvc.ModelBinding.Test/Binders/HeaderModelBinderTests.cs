@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(modelBindingContext);
 
             // Assert
-            Assert.True(result);
+            Assert.NotNull(result);
         }
 
         [Fact]
@@ -47,8 +47,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(modelBindingContext);
 
             // Assert
-            Assert.True(result);
-            Assert.Equal(headerValue.Split(','), modelBindingContext.Model);
+            Assert.NotNull(result);
+            Assert.Equal(headerValue.Split(','), result.Model);
         }
 
         [Fact]
@@ -68,8 +68,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(modelBindingContext);
 
             // Assert
-            Assert.True(result);
-            Assert.Equal(headerValue, modelBindingContext.Model);
+            Assert.NotNull(result);
+            Assert.Equal(headerValue, result.Model);
         }
 
         private static ModelBindingContext GetBindingContext(Type modelType)

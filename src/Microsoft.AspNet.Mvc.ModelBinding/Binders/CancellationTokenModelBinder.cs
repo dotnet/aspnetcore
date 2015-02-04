@@ -12,15 +12,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class CancellationTokenModelBinder : IModelBinder
     {
         /// <inheritdoc />
-        public Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext.ModelType == typeof(CancellationToken))
             {
-                bindingContext.Model = bindingContext.OperationBindingContext.HttpContext.RequestAborted;
-                return Task.FromResult(true);
+                var model = bindingContext.OperationBindingContext.HttpContext.RequestAborted;
+                return Task.FromResult(new ModelBindingResult(model, bindingContext.ModelName, true));
             }
 
-            return Task.FromResult(false);
+            return Task.FromResult<ModelBindingResult>(null);
         }
     }
 }

@@ -135,6 +135,9 @@ namespace Microsoft.AspNet.Mvc
         [FromServices]
         public IUrlHelper Url { get; set; }
 
+        [FromServices]
+        public IObjectModelValidator ObjectValidator { get; set; }
+
         /// <summary>
         /// Gets or sets the <see cref="ClaimsPrincipal"/> for user associated with the executing action.
         /// </summary>
@@ -938,6 +941,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 valueProvider,
+                ObjectValidator,
                 BindingContext.ValidatorProvider);
         }
 
@@ -975,6 +979,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 BindingContext.ValueProvider,
+                ObjectValidator,
                 BindingContext.ValidatorProvider,
                 includeExpressions);
         }
@@ -1012,6 +1017,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 BindingContext.ValueProvider,
+                ObjectValidator,
                 BindingContext.ValidatorProvider,
                 predicate);
         }
@@ -1052,6 +1058,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 valueProvider,
+                ObjectValidator,
                 BindingContext.ValidatorProvider,
                 includeExpressions);
         }
@@ -1091,6 +1098,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 valueProvider,
+                ObjectValidator,
                 BindingContext.ValidatorProvider,
                 predicate);
         }
@@ -1128,21 +1136,15 @@ namespace Microsoft.AspNet.Mvc
                modelAccessor: () => model,
                modelType: model.GetType());
 
+            var modelName = prefix ?? string.Empty;
             var validationContext = new ModelValidationContext(
-                MetadataProvider,
+                modelName,
                 BindingContext.ValidatorProvider,
                 ModelState,
                 modelMetadata,
                 containerMetadata: null);
 
-            var modelName = prefix ?? string.Empty;
-
-            var validationNode = new ModelValidationNode(modelMetadata, modelName)
-            {
-                ValidateAllProperties = true
-            };
-            validationNode.Validate(validationContext);
-
+            ObjectValidator.Validate(validationContext);
             return ModelState.IsValid;
         }
 

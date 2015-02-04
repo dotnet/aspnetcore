@@ -18,13 +18,16 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly MvcOptions _options;
+        private readonly IObjectModelValidator _validator;
 
         public DefaultControllerActionArgumentBinder(
             IModelMetadataProvider modelMetadataProvider,
+            IObjectModelValidator validator,
             IOptions<MvcOptions> optionsAccessor)
         {
             _modelMetadataProvider = modelMetadataProvider;
             _options = optionsAccessor.Options;
+            _validator = validator;
         }
 
         public async Task<IDictionary<string, object>> GetActionArgumentsAsync(
@@ -91,15 +94,21 @@ namespace Microsoft.AspNet.Mvc
 
             var modelState = actionContext.ModelState;
             modelState.MaxAllowedErrors = _options.MaxModelValidationErrors;
-
             foreach (var parameter in parameterMetadata)
             {
                 var parameterType = parameter.ModelType;
                 var modelBindingContext = GetModelBindingContext(parameter, modelState, operationBindingContext);
-                if (await bindingContext.ModelBinder.BindModelAsync(modelBindingContext) &&
-                    modelBindingContext.IsModelSet)
+                var modelBindingResult = await bindingContext.ModelBinder.BindModelAsync(modelBindingContext);
+                if (modelBindingResult != null && modelBindingResult.IsModelSet)
                 {
-                    arguments[parameter.PropertyName] = modelBindingContext.Model;
+                    arguments[parameter.PropertyName] = modelBindingResult.Model;
+                    var validationContext = new ModelValidationContext(
+                    modelBindingResult.Key,
+                    bindingContext.ValidatorProvider,
+                    actionContext.ModelState,
+                    parameter,
+                    containerMetadata: null);
+                    _validator.Validate(validationContext);
                 }
             }
         }
