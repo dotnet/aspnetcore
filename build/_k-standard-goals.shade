@@ -42,10 +42,20 @@ default Configuration='${E("Configuration")}'
   var gruntDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "gruntfile.js")}'
   grunt each='var gruntDir in gruntDirs'
 
-#clean-npm-modules if='!IsMono'
+#clean-bin-folder
+  rimraf rimrafDir='bin' if='Directory.Exists("bin")'
+
+#clean-npm-modules
   -// Find all dirs that contain a package.json file
-  var npmDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json").Select(d => Path.Combine(d, "node_modules"))}'
-  robocopy-delete dir='${npmDir}' each='var npmDir in npmDirs'
+  var npmDirs = '${
+    GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json")
+      .Select(directory => Path.Combine(directory, "node_modules"))
+      .Where(directory => Directory.Exists(directory))
+  }'
+  rimraf each='var rimrafDir in npmDirs'
+
+-// Target order is important because clean-npm-modules may (re)create bin folder.
+#deep-clean .clean-npm-modules .clean-bin-folder description='Clean folders that may cause problems for `git clean`.'
 
 #repo-initialize target='initialize'
   k-restore

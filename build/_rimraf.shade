@@ -1,0 +1,16 @@
+default currentDir = '${Directory.GetCurrentDirectory()}'
+default workingDir = '${ currentDir }'
+default nodeDir = '${Path.Combine(currentDir, "bin", "nodejs")}'
+default rimrafLibrary = '${ Path.Combine(nodeDir, "node_modules", "rimraf", "bin.js") }'
+var rimrafInstalled = '${ File.Exists(Path.Combine(rimrafLibrary)) }'
+
+default rimrafGloballyInstalled = '${ !rimrafInstalled && TestCommand("rimraf", "::") }'
+var rimrafCmd = '${ rimrafGloballyInstalled ? "rimraf" : rimrafLibrary }'
+
+- // Install rimraf locally if not already installed either globally or locally; creates rimrafLibrary file if run
+npm npmCommand='install ${E("npm_install_options")} --prefix ${nodeDir} rimraf' if='!(rimrafGloballyInstalled || rimrafInstalled)' once='installRimraf'
+
+- // Run rimraf
+exec program='cmd' commandline='/C ${rimrafCmd} ${rimrafDir}' workingdir='${workingDir}' if='rimrafGloballyInstalled && !IsLinux'
+exec program='${rimrafCmd}' commandline='${rimrafDir}' workingdir='${workingDir}' if='rimrafGloballyInstalled && IsLinux'
+node nodeCommand='${rimrafCmd} ${rimrafDir}' workingdir='${workingDir}' if='!rimrafGloballyInstalled'
