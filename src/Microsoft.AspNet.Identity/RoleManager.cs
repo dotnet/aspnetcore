@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Identity
             IEnumerable<IRoleValidator<TRole>> roleValidators = null,
             ILookupNormalizer keyNormalizer = null,
             IdentityErrorDescriber errors = null,
-            ILoggerFactory loggerFactory = null)
+            ILogger<RoleManager<TRole>> logger = null)
         {
             if (store == null)
             {
@@ -46,8 +46,7 @@ namespace Microsoft.AspNet.Identity
                 }
             }
 
-            loggerFactory = loggerFactory ?? new LoggerFactory();
-            Logger = loggerFactory.Create(nameof(RoleManager<TRole>));
+            Logger = logger ?? new Logger<RoleManager<TRole>>(new LoggerFactory());
         }
 
         /// <summary>
@@ -68,7 +67,7 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Used to log results
         /// </summary>
-        public ILogger Logger { get; set; }
+        public ILogger<RoleManager<TRole>> Logger { get; set; }
 
         /// <summary>
         ///     Used to normalize user names, role names, emails for uniqueness

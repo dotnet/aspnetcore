@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var result = SignInResult.Success;
             var logMessage = new StringBuilder();
-            var logger = MockHelpers.MockILogger(logMessage);
+            var logger = MockHelpers.MockILogger<SignInResultTest>(logMessage);
 
             result.Log(logger.Object, "Operation");
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var result = SignInResult.LockedOut;
             var logMessage = new StringBuilder();
-            var logger = MockHelpers.MockILogger(logMessage);
+            var logger = MockHelpers.MockILogger<SignInResultTest>(logMessage);
 
             result.Log(logger.Object, "Operation");
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var result = SignInResult.NotAllowed;
             var logMessage = new StringBuilder();
-            var logger = MockHelpers.MockILogger(logMessage);
+            var logger = MockHelpers.MockILogger<SignInResultTest>(logMessage);
 
             result.Log(logger.Object, "Operation");
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var result = SignInResult.TwoFactorRequired;
             var logMessage = new StringBuilder();
-            var logger = MockHelpers.MockILogger(logMessage);
+            var logger = MockHelpers.MockILogger<SignInResultTest>(logMessage);
 
             result.Log(logger.Object, "Operation");
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var result = SignInResult.Failed;
             var logMessage = new StringBuilder();
-            var logger = MockHelpers.MockILogger(logMessage);
+            var logger = MockHelpers.MockILogger<SignInResultTest>(logMessage);
 
             result.Log(logger.Object, "Operation");
 

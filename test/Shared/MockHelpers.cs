@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 using Microsoft.Framework.Logging;
 using Moq;
-using System.Text;
 
 namespace Microsoft.AspNet.Identity.Test
 {
@@ -29,37 +29,21 @@ namespace Microsoft.AspNet.Identity.Test
             store = store ?? new Mock<IRoleStore<TRole>>().Object;
             var roles = new List<IRoleValidator<TRole>>();
             roles.Add(new RoleValidator<TRole>());
-            return new Mock<RoleManager<TRole>>(store, roles, null, null,null);
+            return new Mock<RoleManager<TRole>>(store, roles, null, null, null);
         }
 
-        public static Mock<ILogger> MockILogger(StringBuilder logStore = null)
+        public static Mock<ILogger<T>> MockILogger<T>(StringBuilder logStore = null) where T : class
         {
             logStore = logStore ?? LogMessage;
-            var logger = new Mock<ILogger>();
+            var logger = new Mock<ILogger<T>>();
             logger.Setup(x => x.Write(It.IsAny<LogLevel>(), It.IsAny<int>(), It.IsAny<object>(),
                 It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
                 .Callback((LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter) =>
-                            { logStore.Append(state.ToString()); });
+                { logStore.Append(state.ToString()); });
             logger.Setup(x => x.IsEnabled(LogLevel.Information)).Returns(true);
             logger.Setup(x => x.IsEnabled(LogLevel.Warning)).Returns(true);
 
             return logger;
-        }
-
-        public static Mock<ILoggerFactory> MockILoggerFactory(ILogger logger = null)
-        {
-            logger = logger ?? MockILogger().Object;
-            var loggerFactory = new Mock<ILoggerFactory>();
-            loggerFactory.Setup(x => x.Create(It.IsAny<string>())).Returns(logger);
-            return loggerFactory;
-        }
-
-        public static UserManager<TUser> UserManagerWithMockLogger<TUser>(ILoggerFactory loggerFactory = null) where TUser : class
-        {
-            var userstore = new Mock<IUserStore<TUser>>().Object;
-            var userManager = new UserManager<TUser>(userstore, loggerFactory: loggerFactory ?? MockILoggerFactory().Object);
-
-            return userManager;
         }
 
         public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser> store = null) where TUser : class

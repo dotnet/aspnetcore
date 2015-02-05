@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var result = IdentityResult.Success;
             var logMessage = new StringBuilder();
-            var logger = MockHelpers.MockILogger(logMessage);
+            var logger = MockHelpers.MockILogger<IdentityResult>(logMessage);
 
             result.Log(logger.Object, "Operation");
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var result = IdentityResult.Failed(new IdentityError() { Code = "Foo" }, new IdentityError() { Code = "Bar" });
             var logMessage = new StringBuilder();
-            var logger = MockHelpers.MockILogger(logMessage);
+            var logger = MockHelpers.MockILogger<IdentityResult>(logMessage);
 
             result.Log(logger.Object, "Operation");
 

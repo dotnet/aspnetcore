@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Identity
             IdentityErrorDescriber errors = null,
             IEnumerable<IUserTokenProvider<TUser>> tokenProviders = null,
             IEnumerable<IIdentityMessageProvider> msgProviders = null,
-            ILoggerFactory loggerFactory = null)
+            ILogger<UserManager<TUser>> logger = null)
         {
             if (store == null)
             {
@@ -79,8 +79,7 @@ namespace Microsoft.AspNet.Identity
                 }
             }
 
-            loggerFactory = loggerFactory ?? new LoggerFactory();
-            Logger = loggerFactory.Create(nameof(UserManager<TUser>));
+            Logger = logger ?? new Logger<UserManager<TUser>>(new LoggerFactory());
 
             if (tokenProviders != null)
             {
@@ -149,7 +148,7 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Used to log IdentityResult
         /// </summary>
-        public ILogger Logger { get; set; }
+        public ILogger<UserManager<TUser>> Logger { get; set; }
 
         public IdentityOptions Options
         {

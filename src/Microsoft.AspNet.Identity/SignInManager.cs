@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Identity
             IHttpContextAccessor contextAccessor,
             IClaimsIdentityFactory<TUser> claimsFactory,
             IOptions<IdentityOptions> optionsAccessor = null,
-            ILoggerFactory loggerFactory = null)
+            ILogger<SignInManager<TUser>> logger = null)
         {
             if (userManager == null)
             {
@@ -46,15 +46,14 @@ namespace Microsoft.AspNet.Identity
             ClaimsFactory = claimsFactory;
             Options = optionsAccessor?.Options ?? new IdentityOptions();
 
-            loggerFactory = loggerFactory ?? new LoggerFactory();
-            Logger = loggerFactory.Create(nameof(SignInManager<TUser>));
+            Logger = logger ?? new Logger<SignInManager<TUser>>(new LoggerFactory());
         }
 
         public UserManager<TUser> UserManager { get; private set; }
         public HttpContext Context { get; private set; }
         public IClaimsIdentityFactory<TUser> ClaimsFactory { get; private set; }
         public IdentityOptions Options { get; private set; }
-        public ILogger Logger { get; set; }
+        public ILogger<SignInManager<TUser>> Logger { get; set; }
 
         // Should this be a func?
         public virtual async Task<ClaimsIdentity> CreateUserIdentityAsync(TUser user,
