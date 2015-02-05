@@ -41,12 +41,6 @@ default Configuration='${E("Configuration")}'
   -// Find all dirs that contain a gruntfile.js file
   var gruntDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "gruntfile.js")}'
   grunt each='var gruntDir in gruntDirs'
-  @{
-      if (!IsMono)
-      {
-           CallTarget("clean-npm-modules");
-      }
-  }
 
 #clean-npm-modules if='!IsMono'
   -// Find all dirs that contain a package.json file
