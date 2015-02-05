@@ -58,7 +58,7 @@ namespace E2ETests
                 applicationPool.ManagedRuntimeVersion = NATIVE_MODULE_MANAGED_RUNTIME_VERSION;
             }
             applicationPool.Enable32BitAppOnWin64 = (_startParameters.RuntimeArchitecture == RuntimeArchitecture.x86);
-            _logger.WriteInformation("Created {0} application pool '{1}' with runtime version '{2}'.",
+            _logger.WriteInformation("Created {bit} application pool '{name}' with runtime version '{runtime}'.",
                 _startParameters.RuntimeArchitecture, applicationPool.Name,
                 applicationPool.ManagedRuntimeVersion ?? "default");
             return applicationPool;
@@ -66,14 +66,14 @@ namespace E2ETests
 
         public void StopAndDeleteAppPool()
         {
-            _logger.WriteInformation("Stopping application pool '{0}' and deleting application.", _applicationPool.Name);
+            _logger.WriteInformation("Stopping application pool '{name}' and deleting application.", _applicationPool.Name);
             _applicationPool.Stop();
             // Remove the application from website.
             _application = Website.Applications.Where(a => a.Path == _application.Path).FirstOrDefault();
             Website.Applications.Remove(_application);
             _serverManager.ApplicationPools.Remove(_serverManager.ApplicationPools[_applicationPool.Name]);
             _serverManager.CommitChanges();
-            _logger.WriteInformation("Successfully stopped application pool '{0}' and deleted application from IIS.", _applicationPool.Name);
+            _logger.WriteInformation("Successfully stopped application pool '{name}' and deleted application from IIS.", _applicationPool.Name);
         }
     }
 }

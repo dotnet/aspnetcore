@@ -22,7 +22,7 @@ namespace E2ETests
             {
                 try
                 {
-                    logger.WriteWarning("Retry count {0}..", retry + 1);
+                    logger.WriteWarning("Retry count {retryCount}..", retry + 1);
                     retryBlock();
                     break; //Went through successfully
                 }

@@ -192,7 +192,7 @@ namespace E2ETests
             var bootstrapper = "klr";
 
             var commandName = startParameters.ServerType == ServerType.Kestrel ? "kestrel" : string.Empty;
-            logger.WriteInformation(string.Format("Executing command: {0} {1} {2}", bootstrapper, startParameters.ApplicationPath, commandName));
+            logger.WriteInformation("Executing command: {klr} {appPath} {command}", bootstrapper, startParameters.ApplicationPath, commandName);
 
             var startInfo = new ProcessStartInfo
             {
@@ -240,7 +240,7 @@ namespace E2ETests
 
             var iisExpressPath = GetIISExpressPath(startParameters.RuntimeArchitecture);
 
-            logger.WriteInformation("Executing command : {0} {1}", iisExpressPath, parameters);
+            logger.WriteInformation("Executing command : {iisExpress} {args}", iisExpressPath, parameters);
 
             var startInfo = new ProcessStartInfo
             {
@@ -251,7 +251,7 @@ namespace E2ETests
             };
 
             var hostProcess = Process.Start(startInfo);
-            logger.WriteInformation("Started iisexpress. Process Id : {0}", hostProcess.Id);
+            logger.WriteInformation("Started iisexpress. Process Id : {processId}", hostProcess.Id);
 
             return hostProcess;
         }
@@ -259,7 +259,7 @@ namespace E2ETests
         private static Process StartSelfHost(StartParameters startParameters, string identityDbName, ILogger logger)
         {
             var commandName = startParameters.ServerType == ServerType.WebListener ? "web" : "kestrel";
-            logger.WriteInformation("Executing klr.exe --appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName);
+            logger.WriteInformation("Executing klr.exe --appbase {appPath} \"Microsoft.Framework.ApplicationHost\" {command}", startParameters.ApplicationPath, commandName);
 
             var startInfo = new ProcessStartInfo
             {
@@ -275,7 +275,7 @@ namespace E2ETests
 
             try
             {
-                logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
+                logger.WriteInformation("Started {fileName}. Process Id : {processId}", hostProcess.MainModule.FileName, hostProcess.Id);
             }
             catch (Win32Exception win32Exception)
             {
@@ -310,7 +310,7 @@ namespace E2ETests
             Environment.SetEnvironmentVariable("PATH", pathValue);
 
             logger.WriteInformation(string.Empty);
-            logger.WriteInformation("Changing to use runtime : {0}", runtimeName);
+            logger.WriteInformation("Changing to use runtime : {runtime}", runtimeName);
             return runtimeName;
         }
 
@@ -319,7 +319,7 @@ namespace E2ETests
             startParameters.BundledApplicationRootPath = Path.Combine(bundleRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
             var parameters = string.Format("bundle {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.BundledApplicationRootPath, startParameters.Runtime);
-            logger.WriteInformation("Executing command kpm {0}", parameters);
+            logger.WriteInformation("Executing command kpm {args}", parameters);
 
             var startInfo = new ProcessStartInfo
             {
@@ -339,7 +339,7 @@ namespace E2ETests
                 Path.Combine(startParameters.BundledApplicationRootPath, "wwwroot") :
                 Path.Combine(startParameters.BundledApplicationRootPath, "approot", "src", "MusicStore");
 
-            logger.WriteInformation("kpm bundle finished with exit code : {0}", hostProcess.ExitCode);
+            logger.WriteInformation("kpm bundle finished with exit code : {exitCode}", hostProcess.ExitCode);
         }
 
         //In case of self-host application activation happens immediately unlike iis where activation happens on first request.
@@ -350,11 +350,11 @@ namespace E2ETests
             var identityDBFullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), identityDbName + ".mdf");
             if (File.Exists(identityDBFullPath))
             {
-                logger.WriteWarning("Database file '{0}' exists. Proceeding with the tests.", identityDBFullPath);
+                logger.WriteWarning("Database file '{mdf}' exists. Proceeding with the tests.", identityDBFullPath);
                 return;
             }
 
-            logger.WriteInformation("Watching for the DB file '{0}'", identityDBFullPath);
+            logger.WriteInformation("Watching for the DB file '{mdf}'", identityDBFullPath);
             var dbWatch = new FileSystemWatcher(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), identityDbName + ".mdf");
             dbWatch.EnableRaisingEvents = true;
 
@@ -368,11 +368,11 @@ namespace E2ETests
                     {
                         //This event is fired immediately after the localdb file is created. Give it a while to finish populating data and start the application.
                         Thread.Sleep(5 * 1000);
-                        logger.WriteInformation("Database file created '{0}'. Proceeding with the tests.", identityDBFullPath);
+                        logger.WriteInformation("Database file created '{mdf}'. Proceeding with the tests.", identityDBFullPath);
                     }
                     else
                     {
-                        logger.WriteWarning("Database file '{0}' not created", identityDBFullPath);
+                        logger.WriteWarning("Database file '{mdf}' not created", identityDBFullPath);
                     }
                 }
             }
@@ -404,11 +404,11 @@ namespace E2ETests
                 hostProcess.WaitForExit(5 * 1000);
                 if (!hostProcess.HasExited)
                 {
-                    logger.WriteWarning("Unable to terminate the host process with process Id '{0}", hostProcess.Id);
+                    logger.WriteWarning("Unable to terminate the host process with process Id '{processId}", hostProcess.Id);
                 }
                 else
                 {
-                    logger.WriteInformation("Successfully terminated host process with process Id '{0}'", hostProcess.Id);
+                    logger.WriteInformation("Successfully terminated host process with process Id '{processId}'", hostProcess.Id);
                 }
             }
             else
@@ -434,7 +434,7 @@ namespace E2ETests
                     catch (Exception exception)
                     {
                         //Ignore delete failures - just write a log
-                        logger.WriteWarning("Failed to delete '{0}'. Exception : {1}", startParameters.ApplicationHostConfigLocation, exception.Message);
+                        logger.WriteWarning("Failed to delete '{config}'. Exception : {exception}", startParameters.ApplicationHostConfigLocation, exception.Message);
                     }
                 }
             }
