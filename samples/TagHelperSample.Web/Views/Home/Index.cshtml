@@ -1,10 +1,27 @@
-﻿
+﻿@*
+    Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+    Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+*@
 @using TagHelperSample.Web.Models
 @model IList<User>
 
 <environment names="development">
     Hello, you're in Development
 </environment>
+
+<script src="~/originalXX.js" asp-fallback-src="~/fallback.js" asp-fallback-test="window.foo">
+    // 1. By removing the src attribute, the script below will execute and prevent fallback from running
+    // 2. Alternatively fix the type in the value of the src attribute
+    function foo() {
+        return 1;
+    }
+
+    function bar() {
+        document.write("<p>foo is from page</p>");
+    }
+</script>
+
+<script>bar();</script>
 
 <h2>Index</h2>
 @if (Model != null && Model.Count() != 0)

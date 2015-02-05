@@ -41,6 +41,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("Environment", null)]
         // Testing the LinkTagHelper
         [InlineData("Link", null)]
+        // Testing the ScriptTagHelper
+        [InlineData("Script", null)]
         public async Task MvcTagHelpers_GeneratesExpectedResults(string action, string antiForgeryPath)
         {
             // Arrange
@@ -67,6 +69,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 var forgeryToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(responseContent, antiForgeryPath);
                 expectedContent = string.Format(expectedContent, forgeryToken);
             }
+
             Assert.Equal(expectedContent.Trim(), responseContent.Trim());
         }
 

@@ -9,7 +9,7 @@ using Microsoft.Framework.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers.Test
+namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     public class LinkTagHelperTest
     {
