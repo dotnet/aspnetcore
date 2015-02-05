@@ -9,27 +9,29 @@ default binDir = '${Path.Combine(Directory.GetCurrentDirectory(), "bin")}'
 default nodeVer = '0.10.28'
 default npmVer = '1.4.9'
 default nodeExeSha = '628FFD6C3577068C00CEC9F6F897F0EC8F5212D9'
-default nodeInstallDir = '${Path.Combine(binDir, "nodejs")}'
+default nodeDir = '${Path.Combine(binDir, "nodejs")}'
 
 var nodeExe = 'node.exe'
 var npmZip = 'npm-${npmVer}.zip'
 var nodeDist = 'http://nodejs.org/dist/'
 var nodeUrl = '${nodeDist}v${nodeVer}/${nodeExe}'
 var npmUrl = '${nodeDist}npm/${npmZip}'
-var nodeInstallExePath = '${Path.Combine(nodeInstallDir, nodeExe)}'
-var npmInstallZipPath = '${Path.Combine(nodeInstallDir, npmZip)}'
+var nodeInstallExePath = '${Path.Combine(nodeDir, nodeExe)}'
+var npmInstallZipPath = '${Path.Combine(nodeDir, npmZip)}'
+var nodeInstalled = '${ File.Exists(nodeInstallExePath) }'
 
-var doInstall = '${ !File.Exists(nodeInstallExePath) && !TestCommand("node", "--version") }'
+default nodeGloballyInstalled = '${ !nodeInstalled && TestCommand("node", "--version") }'
+var doInstall = '${ !(nodeGloballyInstalled || nodeInstalled) }'
 
 @{
   if (doInstall) {
     Log.Info("Installing nodejs locally");
 
-    if (Directory.Exists(nodeInstallDir))
+    if (Directory.Exists(nodeDir))
     {
-        Directory.Delete(nodeInstallDir, recursive: true);
+        Directory.Delete(nodeDir, recursive: true);
     }
-    Directory.CreateDirectory(nodeInstallDir);
+    Directory.CreateDirectory(nodeDir);
 
     // Download node
     var wc = new WebClient();
@@ -41,8 +43,8 @@ var doInstall = '${ !File.Exists(nodeInstallExePath) && !TestCommand("node", "--
     wc.DownloadFile(npmUrl, npmInstallZipPath);
 
     // Unzip npm
-    Log.Info(string.Format("Unzipping npm to {0}", nodeInstallDir));
-    ZipFile.ExtractToDirectory(npmInstallZipPath, nodeInstallDir);
+    Log.Info(string.Format("Unzipping npm to {0}", nodeDir));
+    ZipFile.ExtractToDirectory(npmInstallZipPath, nodeDir);
   }
 }
 

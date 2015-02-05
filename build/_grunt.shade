@@ -1,9 +1,9 @@
 default currentDir = '${Directory.GetCurrentDirectory()}'
 default nodeDir = '${Path.Combine(currentDir, "bin", "nodejs")}'
-
 var gruntCliLibrary = '${ Path.Combine(nodeDir, "node_modules", "grunt-cli", "bin", "grunt") }'
 var gruntCliInstalled = '${ File.Exists(gruntCliLibrary) }'
-var gruntCliGloballyInstalled = '${ !gruntCliInstalled && TestCommand("grunt", "--version") }'
+
+default gruntCliGloballyInstalled = '${ !gruntCliInstalled && TestCommand("grunt", "--version") }'
 var gruntCmd = '${ gruntCliGloballyInstalled ? "grunt" : gruntCliLibrary }'
 
 - // Install grunt-cli locally if not already installed either globally or locally; creates gruntCliLibrary file if run
