@@ -11,28 +11,29 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets or sets the duration in seconds for which the response is cached.
         /// If this property is set to a non null value,
-        /// the "max-age" in "Cache-control" header is set in the <see cref="HttpContext.Response" />.
+        /// the "max-age" in "Cache-control" header is set in the 
+        /// <see cref="Microsoft.AspNet.Http.HttpContext.Response" />.
         /// </summary>
         public int? Duration { get; set; }
 
         /// <summary>
         /// Gets or sets the location where the data from a particular URL must be cached.
         /// If this property is set to a non null value,
-        /// the "Cache-control" header is set in the <see cref="HttpContext.Response" />.
+        /// the "Cache-control" header is set in the <see cref="Microsoft.AspNet.Http.HttpContext.Response" />.
         /// </summary>
         public ResponseCacheLocation? Location { get; set; }
 
         /// <summary>
         /// Gets or sets the value which determines whether the data should be stored or not.
         /// When set to <see langword="true"/>, it sets "Cache-control" header in
-        /// <see cref="HttpContext.Response" /> to "no-store".
+        /// <see cref="Microsoft.AspNet.Http.HttpContext.Response" /> to "no-store".
         /// Ignores the "Location" parameter for values other than "None".
         /// Ignores the "Duration" parameter.
         /// </summary>
         public bool? NoStore { get; set; }
 
         /// <summary>
-        /// Gets or sets the value for the Vary header in <see cref="HttpContext.Response" />.
+        /// Gets or sets the value for the Vary header in <see cref="Microsoft.AspNet.Http.HttpContext.Response" />.
         /// </summary>
         public string VaryByHeader { get; set; }
     }
