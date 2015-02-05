@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
+using Microsoft.Data.Entity.Internal;
 using Microsoft.Data.Entity.Relational;
 using Microsoft.Data.Entity.Relational.Migrations;
 using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
@@ -86,8 +87,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                                 {
                                     var databaseExists = dbContext.Database.AsRelational().Exists();
 
-                                    var databaseInternals = (IMigrationsEnabledDatabaseInternals)dbContext.Database;
-                                    var migrator = databaseInternals.Migrator;
+                                    var migrator = ((IAccessor<Migrator>)dbContext.Database).Service;
 
                                     var pendingMigrations = migrator.GetPendingMigrations().Select(m => m.GetMigrationId());
 
