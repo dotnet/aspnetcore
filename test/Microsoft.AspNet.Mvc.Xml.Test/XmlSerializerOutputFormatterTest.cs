@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             // Assert
             Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
             outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            Assert.Equal(expectedOutput,
+            XmlAssert.Equal(expectedOutput,
                 new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8)
                         .ReadToEnd());
             Assert.True(outputFormatterContext.ActionContext.HttpContext.Response.Body.CanRead);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.NotNull(responseStream);
             responseStream.Position = 0;
             var actualOutput = new StreamReader(responseStream, Encoding.UTF8).ReadToEnd();
-            Assert.Equal(expectedOutput, actualOutput);
+            XmlAssert.Equal(expectedOutput, actualOutput);
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             // Assert
             Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
             outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            Assert.Equal("<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            XmlAssert.Equal("<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                 "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><SampleInt>10</SampleInt></DummyClass>",
                 new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8)
                         .ReadToEnd());
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             // Assert
             Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
             outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            Assert.Equal("<TestLevelTwo xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            XmlAssert.Equal("<TestLevelTwo xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                             "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><SampleString>TestString</SampleString>" +
                             "<TestOne><sampleString>TestLevelOne string</sampleString>" +
                             "<SampleInt>10</SampleInt></TestOne></TestLevelTwo>",
@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             // Assert
             Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
             outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            Assert.Equal("<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+            XmlAssert.Equal("<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
                             "<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                             "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><SampleInt>10</SampleInt></DummyClass>",
                         new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8)
@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             // Assert
             Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
             outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            Assert.Equal("<?xml version=\"1.0\" encoding=\"utf-16\"?>" +
+            XmlAssert.Equal("<?xml version=\"1.0\" encoding=\"utf-16\"?>" +
                             "<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                             "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><SampleInt>10</SampleInt></DummyClass>",
                         new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body,
@@ -224,7 +224,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
             var outputString = new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body,
                 Encoding.UTF8).ReadToEnd();
-            Assert.Equal("<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            XmlAssert.Equal("<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                 "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\r\n  <SampleInt>10</SampleInt>\r\n</DummyClass>",
                 outputString);
         }

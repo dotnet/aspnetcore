@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.AspNet.TestHost;
 using Xunit;
 
@@ -85,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 // Assert
                 Assert.NotNull(response);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal("<User xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=" +
+                XmlAssert.Equal("<User xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=" +
                 "\"http://schemas.datacontract.org/2004/07/MvcSample.Web.Models\"><About>I like playing Football" +
                 "</About><Address>My address</Address><Age>13</Age><Alive>true</Alive><Dependent><About i:nil=\"true\" />" +
                 "<Address>Dependents address</Address><Age>0</Age><Alive>false</Alive><Dependent i:nil=\"true\" />" +

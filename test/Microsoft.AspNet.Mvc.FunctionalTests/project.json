@@ -1,4 +1,8 @@
 {
+    "code": [
+        "**/*.cs",
+        "../Microsoft.AspNet.Mvc.Xml.Test/XmlAssert.cs"
+    ],
     "compilationOptions": {
         "warningsAsErrors": "true"
     },

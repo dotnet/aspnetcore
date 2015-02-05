@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.AspNet.TestHost;
 using Xunit;
 
@@ -61,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("application/xml; charset=utf-8", response.Content.Headers.ContentType.ToString());
             var responseData = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedResponseData, responseData);
+            XmlAssert.Equal(expectedResponseData, responseData);
         }
 
         [Theory]
