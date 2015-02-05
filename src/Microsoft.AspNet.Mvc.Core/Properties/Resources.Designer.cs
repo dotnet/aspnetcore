@@ -1706,6 +1706,14 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("CacheProfileNotFound"), p0);
         }
 
+        /// <summary>
+        /// The model type '{0}' does not match the '{1}' type parameter.
+        /// </summary>
+        internal static string FormatModelType_WrongType(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelType_WrongType"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

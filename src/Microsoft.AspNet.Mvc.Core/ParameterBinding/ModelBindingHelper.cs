@@ -128,14 +128,14 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
-        /// /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
+        /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
         /// bound values.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
         /// on the model instance.</param>
         /// <param name="predicate">A predicate which can be used to
         /// filter properties(for inclusion/exclusion) at runtime.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
-        public static async Task<bool> TryUpdateModelAsync<TModel>(
+        public static Task<bool> TryUpdateModelAsync<TModel>(
                [NotNull] TModel model,
                [NotNull] string prefix,
                [NotNull] HttpContext httpContext,
@@ -148,9 +148,113 @@ namespace Microsoft.AspNet.Mvc
                [NotNull] Func<ModelBindingContext, string, bool> predicate)
            where TModel : class
         {
+            return TryUpdateModelAsync(
+               model,
+               typeof(TModel),
+               prefix,
+               httpContext,
+               modelState,
+               metadataProvider,
+               modelBinder,
+               valueProvider,
+               objectModelValidator,
+               validatorProvider,
+               predicate: predicate);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the specified <paramref name="modelBinder"/>
+        /// and the specified <paramref name="valueProvider"/> and executes validation using the specified
+        /// <paramref name="validatorProvider"/>.
+        /// </summary>
+        /// <param name="model">The model instance to update and validate.</param>
+        /// <param name="modelType">The type of model instance to update and validate.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
+        /// </param>
+        /// <param name="httpContext">The <see cref="HttpContext"/> for the current executing request.</param>
+        /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
+        /// results of model-binding validation.</param>
+        /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
+        /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
+        /// bound values.</param>
+        /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
+        /// on the model instance.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        public static Task<bool> TryUpdateModelAsync(
+                [NotNull] object model,
+                [NotNull] Type modelType,
+                [NotNull] string prefix,
+                [NotNull] HttpContext httpContext,
+                [NotNull] ModelStateDictionary modelState,
+                [NotNull] IModelMetadataProvider metadataProvider,
+                [NotNull] IModelBinder modelBinder,
+                [NotNull] IValueProvider valueProvider,
+                [NotNull] IObjectModelValidator objectModelValidator,
+                [NotNull] IModelValidatorProvider validatorProvider)
+        {
+            // Includes everything by default.
+            return TryUpdateModelAsync(
+                model,
+                modelType,
+                prefix,
+                httpContext,
+                modelState,
+                metadataProvider,
+                modelBinder,
+                valueProvider,
+                objectModelValidator,
+                validatorProvider,
+                predicate: (context, propertyName) => true);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the specified <paramref name="modelBinder"/>
+        /// and the specified <paramref name="valueProvider"/> and executes validation using the specified
+        /// <paramref name="validatorProvider"/>.
+        /// </summary>
+        /// <param name="model">The model instance to update and validate.</param>
+        /// <param name="modelType">The type of model instance to update and validate.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
+        /// </param>
+        /// <param name="httpContext">The <see cref="HttpContext"/> for the current executing request.</param>
+        /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
+        /// results of model-binding validation.</param>
+        /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
+        /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
+        /// bound values.</param>
+        /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
+        /// on the model instance.</param>
+        /// <param name="predicate">A predicate which can be used to
+        /// filter properties(for inclusion/exclusion) at runtime.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        public static async Task<bool> TryUpdateModelAsync(
+               [NotNull] object model,
+               [NotNull] Type modelType,
+               [NotNull] string prefix,
+               [NotNull] HttpContext httpContext,
+               [NotNull] ModelStateDictionary modelState,
+               [NotNull] IModelMetadataProvider metadataProvider,
+               [NotNull] IModelBinder modelBinder,
+               [NotNull] IValueProvider valueProvider,
+               [NotNull] IObjectModelValidator objectModelValidator,
+               [NotNull] IModelValidatorProvider validatorProvider,
+               [NotNull] Func<ModelBindingContext, string, bool> predicate)
+        {
+            if (!modelType.IsAssignableFrom(model.GetType()))
+            {
+                var message = Resources.FormatModelType_WrongType(
+                    model.GetType().FullName,
+                    modelType.FullName);
+                throw new ArgumentException(message, nameof(modelType));
+            }
+
             var modelMetadata = metadataProvider.GetMetadataForType(
                 modelAccessor: () => model,
-                modelType: model.GetType());
+                modelType: modelType);
 
             var operationBindingContext = new OperationBindingContext
             {

@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using System.Collections.Generic;
+using Microsoft.AspNet.Http.Core.Collections;
+using Microsoft.AspNet.Http;
 
 namespace ModelBindingWebSite.Controllers
 {
@@ -100,12 +104,58 @@ namespace ModelBindingWebSite.Controllers
 
         public async Task<Employee> GetEmployeeAsync_BindToBaseDeclaredType()
         {
-            var employee = new Employee();
-            await TryUpdateModelAsync<Person>(
-                employee,
-                prefix: string.Empty);
+            var backingStore = new ReadableStringCollection(
+            new Dictionary<string, string[]>
+            {
+                { "Parent.Name", new[] { "fatherName"} },
+                { "Parent.Parent.Name", new[] {"grandFatherName" } },
+                { "Department", new[] {"Sales" } }
+            });
 
-            return employee;
+            Person employee = new Employee();
+            await TryUpdateModelAsync(
+                employee,
+                employee.GetType(),
+                prefix: string.Empty,
+                valueProvider: new ReadableStringCollectionValueProvider(
+                    BindingSource.Query,
+                    backingStore,
+                    CultureInfo.CurrentCulture),
+                predicate: (content, propertyName) => true);
+
+            return (Employee)employee;
+        }
+
+        public async Task<User> GetUserAsync_ModelType_IncludeAll(int id)
+        {
+            var backingStore = new ReadableStringCollection(
+            new Dictionary<string, string[]>
+            {
+                { "Key", new[] { "123"} },
+                { "RegisterationMonth", new[] {"March" } },
+                { "UserName", new[] {"SomeName" } }
+            });
+
+            var user = GetUser(id);
+
+            await TryUpdateModelAsync(user,
+                typeof(User),
+                prefix: string.Empty,
+                valueProvider: new ReadableStringCollectionValueProvider(
+                    BindingSource.Query,
+                    backingStore,
+                    CultureInfo.CurrentCulture),
+                predicate: (content, propertyName) => true);
+
+            return user;
+        }
+
+        public async Task<User> GetUserAsync_ModelType_IncludeAllByDefault(int id)
+        {
+            var user = GetUser(id);
+
+            await TryUpdateModelAsync(user, user.GetType(), prefix: string.Empty);
+            return user;
         }
 
         private User GetUser(int id)

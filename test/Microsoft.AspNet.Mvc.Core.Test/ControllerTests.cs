@@ -1140,6 +1140,110 @@ namespace Microsoft.AspNet.Mvc.Test
             binder.Verify();
         }
 
+        [Fact]
+        public async Task TryUpdateModelNonGeneric_PredicateWithValueProviderOverload_UsesPassedArguments()
+        {
+            // Arrange
+            var modelName = "mymodel";
+
+            Func<ModelBindingContext, string, bool> includePredicate =
+               (context, propertyName) => string.Equals(propertyName, "include1", StringComparison.OrdinalIgnoreCase) ||
+                                          string.Equals(propertyName, "include2", StringComparison.OrdinalIgnoreCase);
+
+            var binder = new Mock<IModelBinder>();
+            var valueProvider = Mock.Of<IValueProvider>();
+            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                  .Callback((ModelBindingContext context) =>
+                  {
+                      Assert.Equal(modelName, context.ModelName);
+                      Assert.Same(valueProvider, context.ValueProvider);
+
+                      Assert.True(context.PropertyFilter(context, "include1"));
+                      Assert.True(context.PropertyFilter(context, "include2"));
+
+                      Assert.False(context.PropertyFilter(context, "exclude1"));
+                      Assert.False(context.PropertyFilter(context, "exclude2"));
+                  })
+                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Verifiable();
+
+            var controller = GetController(binder.Object, provider: null);
+
+            var model = new MyModel();
+
+            // Act
+            await controller.TryUpdateModelAsync(model, model.GetType(), modelName, valueProvider, includePredicate);
+
+            // Assert
+            binder.Verify();
+        }
+
+        [Fact]
+        public async Task TryUpdateModelNonGeneric_ModelTypeOverload_UsesPassedArguments()
+        {
+            // Arrange
+            var modelName = "mymodel";
+
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var valueProvider = Mock.Of<IValueProvider>();
+            var binder = new Mock<IModelBinder>();
+            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                  .Callback((ModelBindingContext context) =>
+                  {
+                      Assert.Equal(modelName, context.ModelName);
+                      Assert.Same(valueProvider, context.ValueProvider);
+
+                      // Include and exclude should be null, resulting in property
+                      // being included.
+                      Assert.True(context.PropertyFilter(context, "Property1"));
+                      Assert.True(context.PropertyFilter(context, "Property2"));
+                  })
+                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Verifiable();
+
+            var controller = GetController(binder.Object, valueProvider);
+            var model = new MyModel();
+
+            // Act
+            var result = await controller.TryUpdateModelAsync(model, model.GetType(), modelName);
+
+            // Assert
+            binder.Verify();
+        }
+
+        [Fact]
+        public async Task TryUpdateModelNonGeneric_BindToBaseDeclaredType_ModelTypeOverload()
+        {
+            // Arrange
+            var modelName = "mymodel";
+
+            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var valueProvider = Mock.Of<IValueProvider>();
+            var binder = new Mock<IModelBinder>();
+            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                  .Callback((ModelBindingContext context) =>
+                  {
+                      Assert.Equal(modelName, context.ModelName);
+                      Assert.Same(valueProvider, context.ValueProvider);
+
+                      // Include and exclude should be null, resulting in property
+                      // being included.
+                      Assert.True(context.PropertyFilter(context, "Property1"));
+                      Assert.True(context.PropertyFilter(context, "Property2"));
+                  })
+                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Verifiable();
+
+            var controller = GetController(binder.Object, valueProvider);
+            MyModel model = new MyDerivedModel();
+
+            // Act
+            var result = await controller.TryUpdateModelAsync(model, model.GetType(), modelName);
+
+            // Assert
+            binder.Verify();
+        }
+
 #endif
 
         [Fact]
@@ -1364,6 +1468,11 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             public string Property1 { get; set; }
             public string Property2 { get; set; }
+        }
+
+        private class MyDerivedModel : MyModel
+        {
+            public string Property3 { get; set; }
         }
 
         private class User

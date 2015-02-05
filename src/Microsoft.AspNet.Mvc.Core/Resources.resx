@@ -445,4 +445,7 @@
   <data name="CacheProfileNotFound" xml:space="preserve">
     <value>The '{0}' cache profile is not defined.</value>
   </data>
+  <data name="ModelType_WrongType" xml:space="preserve">
+    <value>The model's runtime type '{0}' is not assignable to the type '{1}'.</value>
+  </data>
 </root>
