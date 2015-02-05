@@ -79,7 +79,9 @@ namespace Microsoft.AspNet.Mvc
 
             // Dataflow - ModelBinding, Validation and Formatting
 
-            yield return describe.Transient<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
+            // The DataAnnotationsModelMetadataProvider does significant caching of reflection/attributes
+            // and thus needs to be singleton. 
+            yield return describe.Singleton<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
 
             yield return describe.Transient<IInputFormatterSelector, DefaultInputFormatterSelector>();
             yield return describe.Scoped<IInputFormattersProvider, DefaultInputFormattersProvider>();
