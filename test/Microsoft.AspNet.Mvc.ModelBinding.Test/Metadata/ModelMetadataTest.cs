@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 using Xunit;
@@ -76,6 +75,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new ModelMetadata(provider, typeof(Exception), () => "model", typeof(string), "propertyName");
 
             // Assert
+            Assert.NotNull(metadata.AdditionalValues);
+            Assert.Empty(metadata.AdditionalValues);
             Assert.Equal(typeof(Exception), metadata.ContainerType);
             Assert.Null(metadata.Container);
 
@@ -112,6 +113,58 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Null(metadata.BinderType);
             Assert.Null(metadata.BinderMetadata);
             Assert.Null(metadata.PropertyBindingPredicateProvider);
+        }
+
+
+        // AdditionalValues
+
+        [Fact]
+        public void AdditionalValues_CreatedOnce()
+        {
+
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(
+                provider,
+                containerType: null,
+                modelAccessor: () => null,
+                modelType: typeof(object),
+                propertyName: null);
+
+            // Act
+            var result1 = metadata.AdditionalValues;
+            var result2 = metadata.AdditionalValues;
+
+            // Assert
+            Assert.Same(result1, result2);
+        }
+
+        [Fact]
+        public void AdditionalValues_ChangesPersist()
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = new ModelMetadata(
+                provider,
+                containerType: null,
+                modelAccessor: () => null,
+                modelType: typeof(object),
+                propertyName: null);
+            var valuesDictionary = new Dictionary<string, object>
+            {
+                { "key1", new object() },
+                { "key2", "value2" },
+                { "key3", new object() },
+            };
+
+            // Act
+            foreach (var keyValuePair in valuesDictionary)
+            {
+                metadata.AdditionalValues.Add(keyValuePair);
+            }
+
+            // Assert
+            Assert.Equal(valuesDictionary, metadata.AdditionalValues);
         }
 
         // IsComplexType
@@ -304,7 +357,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             get
             {
-                // ModelMetadata does not reorder properties Reflection returns without an Order override.
+                // ModelMetadata does not reorder properties the provider returns without an Order override.
                 return new TheoryData<IEnumerable<string>, IEnumerable<string>>
                 {
                     {
@@ -329,7 +382,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         [Theory]
         [MemberData(nameof(PropertyNamesTheoryData))]
-        public void PropertiesProperty_WithDefaultOrder_OrdersPropertyNamesAlphabetically(
+        public void PropertiesProperty_WithDefaultOrder_OrdersPropertyNamesAsProvided(
             IEnumerable<string> originalNames,
             IEnumerable<string> expectedNames)
         {
@@ -418,7 +471,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         [Theory]
         [MemberData(nameof(PropertyNamesAndOrdersTheoryData))]
-        public void PropertiesProperty_OrdersPropertyNamesUsingOrder_ThenAlphabetically(
+        public void PropertiesProperty_OrdersPropertyNamesUsingOrder_ThenAsProvided(
             IEnumerable<KeyValuePair<string, int>> originalNamesAndOrders,
             IEnumerable<string> expectedNames)
         {

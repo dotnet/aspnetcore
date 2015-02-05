@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
 using ModelBindingWebSite.Services;
 
@@ -17,6 +18,10 @@ namespace ModelBindingWebSite
             // Set up application services
             app.UseServices(services =>
             {
+                // Override the IModelMetadataProvider AddMvc would normally use. Make service a singleton though
+                // AddMvc would configure DataAnnotationsModelMetadataProvider as transient.
+                services.AddSingleton<IModelMetadataProvider, AdditionalValuesMetadataProvider>();
+
                 // Add MVC services to the services container
                 services.AddMvc(configuration)
                         .Configure<MvcOptions>(m =>

@@ -48,6 +48,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
+        /// Gets a collection of additional information about the model.
+        /// </summary>
+        public virtual IDictionary<string, object> AdditionalValues { get; }
+            = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
         /// Gets or sets the name of a model if specified explicitly using <see cref="IModelNameProvider"/>.
         /// </summary>
         public virtual string BinderModelName { get; set; }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -80,6 +81,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             : base(provider, containerType, modelAccessor: null, modelType: modelType, propertyName: propertyName)
         {
             PrototypeCache = prototypeCache;
+        }
+
+        // Sealing for consistency with other properties.
+        // ModelMetadata already caches the collection and we have no use case for a ComputeAdditionalValues() method.
+        /// <inheritdoc />
+        public sealed override IDictionary<string, object> AdditionalValues
+        {
+            get
+            {
+                return base.AdditionalValues;
+            }
         }
 
         /// <inheritdoc />
@@ -416,6 +428,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 _propertyBindingPredicateProvider = value;
                 _propertyBindingPredicateProviderComputed = true;
+            }
+        }
+
+        // Sealing for consistency with other properties.
+        // ModelMetadata already caches the collection and we have no use case for a ComputeProperties() method.
+        /// <inheritdoc />
+        public override ModelPropertyCollection Properties
+        {
+            get
+            {
+                return base.Properties;
             }
         }
 

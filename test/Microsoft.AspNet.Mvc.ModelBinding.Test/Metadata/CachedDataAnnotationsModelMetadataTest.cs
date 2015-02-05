@@ -29,11 +29,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 attributes: attributes);
 
             // Assert
+            Assert.NotNull(metadata.AdditionalValues);
+            Assert.Empty(metadata.AdditionalValues);
+            Assert.Null(metadata.Container);
+            Assert.Null(metadata.ContainerType);
+
             Assert.True(metadata.ConvertEmptyStringToNull);
             Assert.False(metadata.HasNonDefaultEditFormat);
             Assert.False(metadata.HideSurroundingHtml);
             Assert.True(metadata.HtmlEncode);
+            Assert.False(metadata.IsCollectionType);
             Assert.True(metadata.IsComplexType);
+            Assert.False(metadata.IsNullableValueType);
             Assert.False(metadata.IsReadOnly);
             Assert.False(metadata.IsRequired);
             Assert.True(metadata.ShowForDisplay);
@@ -47,6 +54,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Null(metadata.NullDisplayText);
             Assert.Null(metadata.SimpleDisplayText);
             Assert.Null(metadata.TemplateHint);
+
+            Assert.Null(metadata.Model);
+            Assert.Equal(typeof(object), metadata.ModelType);
+            Assert.Equal(typeof(object), metadata.RealModelType);
+            Assert.Null(metadata.PropertyName);
 
             Assert.Equal(ModelMetadata.DefaultOrder, metadata.Order);
 

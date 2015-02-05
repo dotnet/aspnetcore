@@ -15,10 +15,10 @@ namespace ModelBindingWebSite.ViewModels
         [StringLength(8)]
         public string Vin { get; set; }
 
-        [Display(Order = 1)]
+        [Display(Order = 1, GroupName = "MakeAndModelGroup")]
         public string Make { get; set; }
 
-        [Display(Order = 0)]
+        [Display(Order = 0, GroupName = "MakeAndModelGroup")]
         public string Model { get; set; }
 
         // Placed using default Order (10000).
@@ -31,7 +31,7 @@ namespace ModelBindingWebSite.ViewModels
         [MaxLength(10)]
         public DateTimeOffset[] InspectedDates { get; set; }
 
-        [Display(Order = 20000)]
+        [Display(Order = 20000, GroupName = "TrackingIdGroup")]
         public string LastUpdatedTrackingId { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
