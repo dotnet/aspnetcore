@@ -17,7 +17,7 @@ namespace E2ETests
             _logger.WriteInformation("Fetching favicon.ico..");
             var response = _httpClient.GetAsync("favicon.ico").Result;
             ThrowIfResponseStatusNotOk(response);
-            _logger.WriteInformation("Etag received: {0}", response.Headers.ETag.Tag);
+            _logger.WriteInformation("Etag received: {etag}", response.Headers.ETag.Tag);
 
             //Check if you receive a NotModified on sending an etag
             _logger.WriteInformation("Sending an IfNoneMatch header with e-tag");
@@ -81,7 +81,7 @@ namespace E2ETests
 
         private void AccessStoreWithoutPermissions(string email = null)
         {
-            _logger.WriteInformation("Trying to access StoreManager that needs ManageStore claim with the current user : {0}", email ?? "Anonymous");
+            _logger.WriteInformation("Trying to access StoreManager that needs ManageStore claim with the current user : {email}", email ?? "Anonymous");
             var response = _httpClient.GetAsync("Admin/StoreManager/").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
@@ -111,7 +111,7 @@ namespace E2ETests
             ValidateLayoutPage(responseContent);
 
             var generatedEmail = Guid.NewGuid().ToString().Replace("-", string.Empty) + "@test.com";
-            _logger.WriteInformation("Creating a new user with name '{0}'", generatedEmail);
+            _logger.WriteInformation("Creating a new user with name '{email}'", generatedEmail);
             var formParameters = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("Email", generatedEmail),
@@ -125,7 +125,7 @@ namespace E2ETests
             responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
             Assert.Contains("<div class=\"validation-summary-errors text-danger\" data-valmsg-summary=\"true\"><ul><li>The password and confirmation password do not match.</li>", responseContent, StringComparison.OrdinalIgnoreCase);
-            _logger.WriteInformation("Server side model validator rejected the user '{0}''s registration as passwords do not match.", generatedEmail);
+            _logger.WriteInformation("Server side model validator rejected the user '{email}''s registration as passwords do not match.", generatedEmail);
         }
 
         private string RegisterValidUser()
@@ -136,7 +136,7 @@ namespace E2ETests
             ValidateLayoutPage(responseContent);
 
             var generatedEmail = Guid.NewGuid().ToString().Replace("-", string.Empty) + "@test.com";
-            _logger.WriteInformation("Creating a new user with name '{0}'", generatedEmail);
+            _logger.WriteInformation("Creating a new user with name '{email}'", generatedEmail);
             var formParameters = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("Email", generatedEmail),
@@ -165,11 +165,11 @@ namespace E2ETests
 
         private void RegisterExistingUser(string email)
         {
-            _logger.WriteInformation("Trying to register a user with name '{0}' again", email);
+            _logger.WriteInformation("Trying to register a user with name '{email}' again", email);
             var response = _httpClient.GetAsync("Account/Register").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
-            _logger.WriteInformation("Creating a new user with name '{0}'", email);
+            _logger.WriteInformation("Creating a new user with name '{email}'", email);
             var formParameters = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("Email", email),
@@ -182,12 +182,12 @@ namespace E2ETests
             response = _httpClient.PostAsync("Account/Register", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains(string.Format("User name &#39;{0}&#39; is already taken.", email), responseContent, StringComparison.OrdinalIgnoreCase);
-            _logger.WriteInformation("Identity threw a valid exception that user '{0}' already exists in the system", email);
+            _logger.WriteInformation("Identity threw a valid exception that user '{email}' already exists in the system", email);
         }
 
         private void SignOutUser(string email)
         {
-            _logger.WriteInformation("Signing out from '{0}''s session", email);
+            _logger.WriteInformation("Signing out from '{email}''s session", email);
             var response = _httpClient.GetAsync(string.Empty).Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
@@ -210,7 +210,7 @@ namespace E2ETests
                 Assert.Contains("/Images/home-showcase.png", responseContent, StringComparison.OrdinalIgnoreCase);
                 //Verify cookie cleared on logout
                 Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-                _logger.WriteInformation("Successfully signed out of '{0}''s session", email);
+                _logger.WriteInformation("Successfully signed out of '{email}''s session", email);
             }
             else
             {
@@ -225,7 +225,7 @@ namespace E2ETests
             var response = _httpClient.GetAsync("Account/Login").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
-            _logger.WriteInformation("Signing in with user '{0}'", email);
+            _logger.WriteInformation("Signing in with user '{email}'", email);
             var formParameters = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("Email", email),
@@ -247,7 +247,7 @@ namespace E2ETests
             var response = _httpClient.GetAsync("Account/Login").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
-            _logger.WriteInformation("Signing in with user '{0}'", email);
+            _logger.WriteInformation("Signing in with user '{email}'", email);
             var formParameters = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("Email", email),
@@ -262,7 +262,7 @@ namespace E2ETests
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
             Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-            _logger.WriteInformation("Successfully signed in with user '{0}'", email);
+            _logger.WriteInformation("Successfully signed in with user '{email}'", email);
         }
 
         private void ChangePassword(string email)
@@ -283,7 +283,7 @@ namespace E2ETests
             responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains("Your password has been changed.", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-            _logger.WriteInformation("Successfully changed the password for user '{0}'", email);
+            _logger.WriteInformation("Successfully changed the password for user '{email}'", email);
         }
 
         private string CreateAlbum()
@@ -294,7 +294,7 @@ namespace E2ETests
             var hubConnection = new HubConnection(_applicationBaseUrl + "SignalR");
             hubConnection.Received += (data) =>
             {
-                _logger.WriteVerbose("Data received by SignalR client: {0}", data);
+                _logger.WriteVerbose("Data received by SignalR client: {receivedData}", data);
                 dataFromHub = data;
                 OnReceivedEvent.Set();
             };
@@ -302,7 +302,7 @@ namespace E2ETests
             IHubProxy proxy = hubConnection.CreateHubProxy("Announcement");
             hubConnection.Start().Wait();
 
-            _logger.WriteInformation("Trying to create an album with name '{0}'", albumName);
+            _logger.WriteInformation("Trying to create an album with name '{album}'", albumName);
             var response = _httpClient.GetAsync("Admin/StoreManager/create").Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
@@ -326,23 +326,23 @@ namespace E2ETests
             OnReceivedEvent.WaitOne(TimeSpan.FromSeconds(10));
             dataFromHub = dataFromHub ?? "No relevant data received from Hub";
             Assert.Contains(albumName, dataFromHub);
-            _logger.WriteInformation("Successfully created an album with name '{0}' in the store", albumName);
+            _logger.WriteInformation("Successfully created an album with name '{album}' in the store", albumName);
             return albumName;
         }
 
         private string FetchAlbumIdFromName(string albumName)
         {
-            _logger.WriteInformation("Fetching the album id of '{0}'", albumName);
+            _logger.WriteInformation("Fetching the album id of '{album}'", albumName);
             var response = _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
             ThrowIfResponseStatusNotOk(response);
             var albumId = response.Content.ReadAsStringAsync().Result;
-            _logger.WriteInformation("Album id for album '{0}' is '{1}'", albumName, albumId);
+            _logger.WriteInformation("Album id for album '{album}' is '{id}'", albumName, albumId);
             return albumId;
         }
 
         private void VerifyAlbumDetails(string albumId, string albumName)
         {
-            _logger.WriteInformation("Getting details of album with Id '{0}'", albumId);
+            _logger.WriteInformation("Getting details of album with Id '{id}'", albumId);
             var response = _httpClient.GetAsync(string.Format("Admin/StoreManager/Details?id={0}", albumId)).Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
@@ -355,7 +355,7 @@ namespace E2ETests
         // This gets the view that non-admin users get to see.
         private void GetAlbumDetailsFromStore(string albumId, string albumName)
         {
-            _logger.WriteInformation("Getting details of album with Id '{0}'", albumId);
+            _logger.WriteInformation("Getting details of album with Id '{id}'", albumId);
             var response = _httpClient.GetAsync(string.Format("Store/Details/{0}", albumId)).Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
@@ -364,7 +364,7 @@ namespace E2ETests
 
         private void AddAlbumToCart(string albumId, string albumName)
         {
-            _logger.WriteInformation("Adding album id '{0}' to the cart", albumId);
+            _logger.WriteInformation("Adding album id '{albumId}' to the cart", albumId);
             var response = _httpClient.GetAsync(string.Format("ShoppingCart/AddToCart?id={0}", albumId)).Result;
             ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
@@ -404,7 +404,7 @@ namespace E2ETests
 
         private void DeleteAlbum(string albumId, string albumName)
         {
-            _logger.WriteInformation("Deleting album '{0}' from the store..", albumName);
+            _logger.WriteInformation("Deleting album '{album}' from the store..", albumName);
 
             var formParameters = new List<KeyValuePair<string, string>>
                 {
@@ -415,10 +415,10 @@ namespace E2ETests
             var response = _httpClient.PostAsync("Admin/StoreManager/RemoveAlbum", content).Result;
             ThrowIfResponseStatusNotOk(response);
 
-            _logger.WriteInformation("Verifying if the album '{0}' is deleted from store", albumName);
+            _logger.WriteInformation("Verifying if the album '{album}' is deleted from store", albumName);
             response = _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            _logger.WriteInformation("Album is successfully deleted from the store.", albumName, albumId);
+            _logger.WriteInformation("Album '{album}' with id '{Id}' is successfully deleted from the store.", albumName, albumId);
         }
 
         private void ThrowIfResponseStatusNotOk(HttpResponseMessage response)
@@ -426,7 +426,7 @@ namespace E2ETests
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 _logger.WriteError(response.Content.ReadAsStringAsync().Result);
-                throw new Exception(string.Format("Received the above response with status code : {0}", response.StatusCode.ToString()));
+                throw new Exception(string.Format("Received the above response with status code : {statusCode}", response.StatusCode.ToString()));
             }
         }
     }

@@ -85,7 +85,7 @@ namespace E2ETests
             //Verify cookie sent
             Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
             Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
-            _logger.WriteInformation("Successfully signed in with user '{0}'", "twitter@test.com");
+            _logger.WriteInformation("Successfully signed in with user '{email}'", "twitter@test.com");
 
             _logger.WriteInformation("Verifying if the middleware notifications were fired");
             //Check for a non existing item
