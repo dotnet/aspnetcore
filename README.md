@@ -1,12 +1,12 @@
 # ASP.NET vNext Home
-Latest dev version: [![dev version](http://img.shields.io/myget/aspnetvnext/v/KRE-CLR-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetvnext)<br>
-Latest master version: [![master version](http://img.shields.io/myget/aspnetmaster/v/KRE-CLR-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetmaster)
+Latest dev version: [![dev version](http://img.shields.io/myget/aspnetvnext/v/kre-clr-win-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetvnext)<br>
+Latest master version: [![master version](http://img.shields.io/myget/aspnetmaster/v/kre-clr-win-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetmaster)
 
 The Home repository is the starting point for people to learn about ASP.NET vNext. This repo contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what's coming in ASP.NET vNext.
 
 ASP.NET vNext is being actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
 
-The samples provided in this repo are designed to show some of the features of the new framework and to provide a starting point for further exploration. All the component packages are available on Nuget. To try out the latest bits under development switch to the dev branch of the Home repo and use the dev feed in Nuget.config (https://www.myget.org/F/aspnetvnext).
+The samples provided in this repo are designed to show some of the features of the new framework and to provide a starting point for further exploration. All the component packages are available on NuGet. To try out the latest bits under development switch to the dev branch of the Home repo and use the dev feed in NuGet.config (https://www.myget.org/F/aspnetvnext).
 
 ## Contents
 
@@ -37,14 +37,20 @@ That said, you can also try out ASP.NET vNext with just a command-prompt and a t
 
 ### Install the K Version Manager (KVM)
 
-The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager). You use the K Version Manager to install different versions of the ASP.NET vNext runtime and switch between them.
+The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager). We use the K Version Manager to install different versions of the ASP.NET vNext runtime and switch between them.
 
 #### Windows
-To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges):
+To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges for Powershell). This will use the currently released version of `kvm` (from the `release` branch of this repo).
 
 ```
-@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/kvminstall.ps1'))"
+@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.ps1'))"
 
+```
+
+If you want to run on the bleeding edge and install the latest development version of KVM, run the following command:
+
+```
+@powershell -NoProfile -ExecutionPolicy unrestricted -Command "&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.ps1'))}"
 ```
 
 After the script has run open a new command prompt to start using KVM.
@@ -60,10 +66,16 @@ To install KVM and the correct version of Mono on OS X using [Homebrew](http://b
 
 #### Linux:
 
-To install KVM on Linux run the following command:
+Installing KVM requires `curl`. Do verify if that is installed on the machine. Next install KVM on Linux run the following command:
 
 ```
-curl -sSL https://raw.githubusercontent.com/aspnet/Home/dev/kvminstall.sh | sh && source ~/.kre/kvm/kvm.sh
+curl -sSL https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.sh | sh && source ~/.k/kvm/kvm.sh
+```
+
+If you want to run on the bleeding edge and install the latest development version of KVM, use this command:
+
+```
+curl -sSL https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.sh | KVM_BRANCH=dev sh && source ~/.k/kvm/kvm.sh
 ```
 
 Note that on Linux you need to also install [Mono](http://mono-project.com) 3.4.1 or later.
@@ -78,9 +90,9 @@ This command will download the specified version of the K Runtime Environment (K
 
 The samples in this repo are basic starting points for you to experiment with.
 
-+ [ConsoleApp](https://github.com/aspnet/Home/tree/dev/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point.
-+ [HelloWeb](https://github.com/aspnet/Home/tree/dev/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
-+ [HelloMvc](https://github.com/aspnet/Home/tree/dev/samples/HelloMvc). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
++ [ConsoleApp](https://github.com/aspnet/Home/tree/release/samples/ConsoleApp). This is just basic console app if you want to use it as a starting point.
++ [HelloWeb](https://github.com/aspnet/Home/tree/release/samples/HelloWeb). This is a minimal startup class that shows welcome page and static file middleware. This is mostly for you to run through the steps in the readme and make sure you have everything setup and working correctly.
++ [HelloMvc](https://github.com/aspnet/Home/tree/release/samples/HelloMvc). This sample is a basic MVC app. It is not designed to show all the functionality of the new web stack, but to give you a starting point to play with features.
 + [MVC Music Store](https://github.com/aspnet/MusicStore) and [BugTracker](https://github.com/aspnet/BugTracker) are application samples that are both being ported to ASP.NET vNext. Each of these samples have their own separate repositories that you can look at.
 
 ### Running the samples
@@ -115,7 +127,7 @@ The community standup is held every week and streamed live to YouTube. You can v
 
 If you have questions you can also jump online during the next standup and have them answered live.
 
-### [Wiki Documentation] (https://github.com/aspnet/Home/wiki)
+### [Wiki Documentation](https://github.com/aspnet/Home/wiki)
 We have some useful documentation on the wiki of this Repo. This wiki is a central spot for docs from any part of the stack.
 
 If you see errors, or want some extra content, then feel free to create an issue or send a pull request (see feedback section below).
@@ -138,4 +150,4 @@ A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Rep
 
 ## Feedback
 
-Check out the [contributing](https://github.com/aspnet/Home/blob/dev/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
+Check out the [contributing](https://github.com/aspnet/Home/blob/release/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
