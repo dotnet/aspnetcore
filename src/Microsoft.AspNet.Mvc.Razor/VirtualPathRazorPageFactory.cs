@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.FileProviders;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -17,19 +14,16 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private readonly ITypeActivator _activator;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IRazorFileProviderCache _fileProviderCache;
         private readonly ICompilerCache _compilerCache;
         private IRazorCompilationService _razorcompilationService;
 
         public VirtualPathRazorPageFactory(ITypeActivator typeActivator,
                                            IServiceProvider serviceProvider,
-                                           ICompilerCache compilerCache,
-                                           IRazorFileProviderCache fileProviderCache)
+                                           ICompilerCache compilerCache)
         {
             _activator = typeActivator;
             _serviceProvider = serviceProvider;
             _compilerCache = compilerCache;
-            _fileProviderCache = fileProviderCache;
         }
 
         private IRazorCompilationService RazorCompilationService
@@ -57,23 +51,19 @@ namespace Microsoft.AspNet.Mvc.Razor
                 relativePath = relativePath.Substring(1);
             }
 
-            var fileInfo = _fileProviderCache.GetFileInfo(relativePath);
+            var result = _compilerCache.GetOrAdd(
+                relativePath,
+                RazorCompilationService.Compile);
 
-            if (fileInfo.Exists)
+            if (result == CompilerCacheResult.FileNotFound)
             {
-                var relativeFileInfo = new RelativeFileInfo(fileInfo, relativePath);
-
-                var result = _compilerCache.GetOrAdd(
-                    relativeFileInfo,
-                    RazorCompilationService.Compile);
-
-                var page = (IRazorPage)_activator.CreateInstance(_serviceProvider, result.CompiledType);
-                page.Path = relativePath;
-
-                return page;
+                return null;
             }
 
-            return null;
+            var page = (IRazorPage)_activator.CreateInstance(_serviceProvider, result.CompilationResult.CompiledType);
+            page.Path = relativePath;
+
+            return page;
         }
     }
 }

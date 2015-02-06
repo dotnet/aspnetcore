@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class RazorViewEngineOptionsTest
     {
         [Fact]
-        public void FileProviderThrows_IfNullIsAsseigned()
+        public void FileProviderThrows_IfNullIsAssigned()
         {
             // Arrange
             var options = new RazorViewEngineOptions();
@@ -27,18 +27,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
-            var timeSpan = new TimeSpan(400);
+            var fileProvider = new TestFileProvider();
 
             // Act
-            services.ConfigureRazorViewEngineOptions(options => {
-                options.ExpirationBeforeCheckingFilesOnDisk = timeSpan;
+            services.ConfigureRazorViewEngineOptions(options =>
+            {
+                options.FileProvider = fileProvider;
             });
             var serviceProvider = services.BuildServiceProvider();
 
             // Assert
             var accessor = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>();
-            var expiration = Assert.IsType<TimeSpan>(accessor.Options.ExpirationBeforeCheckingFilesOnDisk);
-            Assert.Equal(timeSpan, expiration);
+            Assert.Same(fileProvider, accessor.Options.FileProvider);
         }
     }
 }

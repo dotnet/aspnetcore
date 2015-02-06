@@ -7,35 +7,135 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNet.FileProviders;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     public class CompilerCacheTest
     {
+        private const string ViewPath = "view-path";
+
+        [Fact]
+        public void GetOrAdd_ReturnsFileNotFoundResult_IfFileIsNotFoundInFileSystem()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), fileProvider);
+            var type = GetType();
+
+            // Act
+            var result = cache.GetOrAdd("/some/path", _ => { throw new Exception("Shouldn't be called"); });
+
+            // Assert
+            Assert.Same(CompilerCacheResult.FileNotFound, result);
+            Assert.Null(result.CompilationResult);
+        }
+
         [Fact]
         public void GetOrAdd_ReturnsCompilationResultFromFactory()
         {
             // Arrange
             var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(ViewPath, "some content");
             var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), fileProvider);
-            var fileInfo = new TestFileInfo
-            {
-                LastModified = DateTime.FromFileTimeUtc(10000)
-            };
-
             var type = GetType();
             var expected = UncachedCompilationResult.Successful(type, "hello world");
 
-            var runtimeFileInfo = new RelativeFileInfo(fileInfo, "ab");
-
             // Act
-            var actual = cache.GetOrAdd(runtimeFileInfo, _ => expected);
+            var result = cache.GetOrAdd(ViewPath, _ => expected);
 
             // Assert
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result);
+            var actual = result.CompilationResult;
+            Assert.NotNull(actual);
             Assert.Same(expected, actual);
             Assert.Equal("hello world", actual.CompiledContent);
             Assert.Same(type, actual.CompiledType);
+        }
+
+        [Fact]
+        public void GetOrAdd_ReturnsFileNotFoundIfFileWasDeleted()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(ViewPath, "some content");
+            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), fileProvider);
+            var type = typeof(RuntimeCompileIdentical);
+            var expected = UncachedCompilationResult.Successful(type, "hello world");
+
+            // Act 1
+            var result1 = cache.GetOrAdd(ViewPath, _ => expected);
+
+            // Assert 1
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
+            Assert.Same(expected, result1.CompilationResult);
+
+            // Act 2
+            // Delete the file from the file system and set it's expiration trigger.
+            fileProvider.DeleteFile(ViewPath);
+            fileProvider.GetTrigger(ViewPath).IsExpired = true;
+            var result2 = cache.GetOrAdd(ViewPath, _ => { throw new Exception("shouldn't be called."); });
+
+            // Assert 2
+            Assert.Same(CompilerCacheResult.FileNotFound, result2);
+            Assert.Null(result2.CompilationResult);
+        }
+
+        [Fact]
+        public void GetOrAdd_ReturnsNewResultIfFileWasModified()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(ViewPath, "some content");
+            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), fileProvider);
+            var type = typeof(RuntimeCompileIdentical);
+            var expected1 = UncachedCompilationResult.Successful(type, "hello world");
+            var expected2 = UncachedCompilationResult.Successful(type, "different content");
+
+            // Act 1
+            var result1 = cache.GetOrAdd(ViewPath, _ => expected1);
+
+            // Assert 1
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
+            Assert.Same(expected1, result1.CompilationResult);
+
+            // Act 2
+            fileProvider.GetTrigger(ViewPath).IsExpired = true;
+            var result2 = cache.GetOrAdd(ViewPath, _ => expected2);
+
+            // Assert 2
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
+            Assert.Same(expected2, result2.CompilationResult);
+        }
+
+        [Fact]
+        public void GetOrAdd_DoesNotQueryFileSystem_IfCachedFileTriggerWasNotSet()
+        {
+            // Arrange
+            var mockFileProvider = new Mock<TestFileProvider> { CallBase = true };
+            var fileProvider = mockFileProvider.Object;
+            fileProvider.AddFile(ViewPath, "some content");
+            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), fileProvider);
+            var type = typeof(RuntimeCompileIdentical);
+            var expected = UncachedCompilationResult.Successful(type, "hello world");
+
+            // Act 1
+            var result1 = cache.GetOrAdd(ViewPath, _ => expected);
+
+            // Assert 1
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
+            Assert.Same(expected, result1.CompilationResult);
+
+            // Act 2
+            var result2 = cache.GetOrAdd(ViewPath, _ => { throw new Exception("shouldn't be called"); });
+
+            // Assert 2
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
+            Assert.IsType<CompilationResult>(result2.CompilationResult);
+            Assert.Same(type, result2.CompilationResult.CompiledType);
+            mockFileProvider.Verify(v => v.GetFileInfo(ViewPath), Times.Once());
         }
 
         private abstract class View
@@ -87,7 +187,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     HashAlgorithmVersion = 1,
                     LastModified = DateTime.FromFileTimeUtc(10000),
                     Length = length,
-                    RelativePath = "ab",
+                    RelativePath = ViewPath,
                 });
             }
 
@@ -122,25 +222,17 @@ namespace Microsoft.AspNet.Mvc.Razor
                 LastModified = DateTime.FromFileTimeUtc(fileTimeUTC),
                 Content = instance.Content
             };
-
-            var runtimeFileInfo = new RelativeFileInfo(fileInfo, "ab");
-
+            fileProvider.AddFile(ViewPath, fileInfo);
             var precompiledContent = new PreCompile().Content;
-            var razorFileInfo = new RazorFileInfo
-            {
-                FullTypeName = typeof(PreCompile).FullName,
-                Hash = Crc32.Calculate(GetMemoryStream(precompiledContent)).ToString(CultureInfo.InvariantCulture),
-                HashAlgorithmVersion = 1,
-                LastModified = DateTime.FromFileTimeUtc(10000),
-                Length = Encoding.UTF8.GetByteCount(precompiledContent),
-                RelativePath = "ab",
-            };
 
             // Act
-            var actual = cache.GetOrAdd(runtimeFileInfo,
+            var result = cache.GetOrAdd(ViewPath,
                                         compile: _ => { throw new Exception("Shouldn't be called."); });
 
             // Assert
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result);
+            var actual = result.CompilationResult;
+            Assert.NotNull(actual);
             Assert.Equal(typeof(PreCompile), actual.CompiledType);
         }
 
@@ -165,25 +257,16 @@ namespace Microsoft.AspNet.Mvc.Razor
                 LastModified = DateTime.FromFileTimeUtc(fileTimeUTC),
                 Content = instance.Content
             };
-
-            var runtimeFileInfo = new RelativeFileInfo(fileInfo, "ab");
-
-            var precompiledContent = new PreCompile().Content;
-            var razorFileInfo = new RazorFileInfo
-            {
-                FullTypeName = typeof(PreCompile).FullName,
-                Hash = Crc32.Calculate(GetMemoryStream(precompiledContent)).ToString(CultureInfo.InvariantCulture),
-                HashAlgorithmVersion = 1,
-                LastModified = DateTime.FromFileTimeUtc(10000),
-                Length = Encoding.UTF8.GetByteCount(precompiledContent),
-                RelativePath = "ab",
-            };
+            fileProvider.AddFile(ViewPath, fileInfo);
 
             // Act
-            var actual = cache.GetOrAdd(runtimeFileInfo,
+            var result = cache.GetOrAdd(ViewPath,
                                         compile: _ => CompilationResult.Successful(resultViewType));
 
             // Assert
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result);
+            var actual = result.CompilationResult;
+            Assert.NotNull(actual);
             Assert.Equal(resultViewType, actual.CompiledType);
         }
 
@@ -203,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 LastModified = lastModified,
                 Content = instance.Content
             };
-            var runtimeFileInfo = new RelativeFileInfo(fileInfo, "ab");
+            fileProvider.AddFile(ViewPath, fileInfo);
 
             var viewStartContent = "viewstart-content";
             var viewStartFileInfo = new TestFileInfo
@@ -227,11 +310,71 @@ namespace Microsoft.AspNet.Mvc.Razor
             var cache = new CompilerCache(new[] { precompiledViews }, fileProvider);
 
             // Act
-            var actual = cache.GetOrAdd(runtimeFileInfo,
+            var result = cache.GetOrAdd(ViewPath,
                                         compile: _ => { throw new Exception("shouldn't be invoked"); });
 
             // Assert
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result);
+            var actual = result.CompilationResult;
+            Assert.NotNull(actual);
             Assert.Equal(typeof(PreCompile), actual.CompiledType);
+        }
+
+        [Fact]
+        public void GetOrAdd_ReturnsFileNotFoundResult_IfPrecompiledViewWasRemovedFromFileSystem()
+        {
+            // Arrange
+            var precompiledViews = new ViewCollection();
+            var fileProvider = new TestFileProvider();
+            var precompiledView = precompiledViews.FileInfos[0];
+            var cache = new CompilerCache(new[] { precompiledViews }, fileProvider);
+
+            // Act
+            var result = cache.GetOrAdd(ViewPath,
+                                        compile: _ => { throw new Exception("shouldn't be invoked"); });
+
+            // Assert
+            Assert.Same(CompilerCacheResult.FileNotFound, result);
+            Assert.Null(result.CompilationResult);
+        }
+
+        [Fact]
+        public void GetOrAdd_DoesNotReadFileFromFileSystemAfterPrecompiledViewIsVerified()
+        {
+            // Arrange
+            var precompiledViews = new ViewCollection();
+            var mockFileProvider = new Mock<TestFileProvider> { CallBase = true };
+            var fileProvider = mockFileProvider.Object;
+            var precompiledView = precompiledViews.FileInfos[0];
+            var fileInfo = new TestFileInfo
+            {
+                Length = precompiledView.Length,
+                LastModified = precompiledView.LastModified,
+            };
+            fileProvider.AddFile(ViewPath, fileInfo);
+            var cache = new CompilerCache(new[] { precompiledViews }, fileProvider);
+
+            // Act 1
+            var result1 = cache.GetOrAdd(ViewPath,
+                                         compile: _ => { throw new Exception("shouldn't be invoked"); });
+
+            // Assert 1
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
+            var actual1 = result1.CompilationResult;
+            Assert.NotNull(actual1);
+            Assert.Equal(typeof(PreCompile), actual1.CompiledType);
+            mockFileProvider.Verify(v => v.GetFileInfo(ViewPath), Times.Once());
+
+            // Act 2
+            var result2 = cache.GetOrAdd(ViewPath,
+                                         compile: _ => { throw new Exception("shouldn't be invoked"); });
+
+            // Assert 2
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
+            var actual2 = result2.CompilationResult;
+            Assert.NotNull(actual2);
+            Assert.Equal(typeof(PreCompile), actual2.CompiledType);
+            mockFileProvider.Verify(v => v.GetFileInfo(ViewPath), Times.Once());
         }
 
         [Fact]
@@ -255,19 +398,25 @@ namespace Microsoft.AspNet.Mvc.Razor
             var relativeFile = new RelativeFileInfo(testFile, testFile.PhysicalPath);
 
             // Act 1
-            var actual1 = cache.GetOrAdd(relativeFile,
+            var result1 = cache.GetOrAdd(testFile.PhysicalPath,
                                         compile: _ => { throw new Exception("should not be called"); });
 
             // Assert 1
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
+            var actual1 = result1.CompilationResult;
+            Assert.NotNull(actual1);
             Assert.Equal(typeof(PreCompile), actual1.CompiledType);
 
             // Act 2
             var viewStartTrigger = fileProvider.GetTrigger("Views\\_ViewStart.cshtml");
             viewStartTrigger.IsExpired = true;
-            var actual2 = cache.GetOrAdd(relativeFile,
+            var result2 = cache.GetOrAdd(testFile.PhysicalPath,
                                          compile: _ => CompilationResult.Successful(expectedType));
 
             // Assert 2
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
+            var actual2 = result2.CompilationResult;
+            Assert.NotNull(actual2);
             Assert.Equal(expectedType, actual2.CompiledType);
         }
 
@@ -309,22 +458,27 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             viewCollection.Add(viewStart);
             var cache = new CompilerCache(new[] { viewCollection }, fileProvider);
-            var fileInfo = new RelativeFileInfo(viewFileInfo, viewFileInfo.PhysicalPath);
 
             // Act 1
-            var actual1 = cache.GetOrAdd(fileInfo,
+            var result1 = cache.GetOrAdd(viewFileInfo.PhysicalPath,
                                         compile: _ => { throw new Exception("should not be called"); });
 
             // Assert 1
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
+            var actual1 = result1.CompilationResult;
+            Assert.NotNull(actual1);
             Assert.Equal(typeof(PreCompile), actual1.CompiledType);
 
             // Act 2
             var trigger = fileProvider.GetTrigger(viewStartFileInfo.PhysicalPath);
             trigger.IsExpired = true;
-            var actual2 = cache.GetOrAdd(fileInfo,
+            var result2 = cache.GetOrAdd(viewFileInfo.PhysicalPath,
                                          compile: _ => CompilationResult.Successful(expectedType));
 
             // Assert 2
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
+            var actual2 = result2.CompilationResult;
+            Assert.NotNull(actual2);
             Assert.Equal(expectedType, actual2.CompiledType);
         }
 
@@ -385,28 +539,20 @@ namespace Microsoft.AspNet.Mvc.Razor
                 PhysicalPath = "Views\\home\\index.cshtml"
             };
 
-            var runtimeFileInfo = new RelativeFileInfo(fileInfo, fileInfo.PhysicalPath);
-
-            var razorFileInfo = new RazorFileInfo
-            {
-                FullTypeName = typeof(PreCompile).FullName,
-                Hash = RazorFileHash.GetHash(fileInfo, hashAlgorithmVersion: 1),
-                HashAlgorithmVersion = 1,
-                LastModified = lastModified,
-                Length = Encoding.UTF8.GetByteCount(content),
-                RelativePath = fileInfo.PhysicalPath,
-            };
-
             var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(fileInfo.PhysicalPath, fileInfo);
             fileProvider.AddFile(viewStartRazorFileInfo.RelativePath, viewStartFileInfo);
             var viewCollection = new ViewCollection();
             var cache = new CompilerCache(new[] { viewCollection }, fileProvider);
 
             // Act
-            var actual = cache.GetOrAdd(runtimeFileInfo,
+            var result = cache.GetOrAdd(fileInfo.PhysicalPath,
                                         compile: _ => CompilationResult.Successful(expectedType));
 
             // Assert
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result);
+            var actual = result.CompilationResult;
+            Assert.NotNull(actual);
             Assert.Equal(expectedType, actual.CompiledType);
         }
 
@@ -415,23 +561,28 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var lastModified = DateTime.UtcNow;
-            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), new TestFileProvider());
+            var fileProvider = new TestFileProvider();
+            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), fileProvider);
             var fileInfo = new TestFileInfo
             {
                 PhysicalPath = "test",
                 LastModified = lastModified
             };
+            fileProvider.AddFile("test", fileInfo);
             var type = GetType();
             var uncachedResult = UncachedCompilationResult.Successful(type, "hello world");
 
-            var runtimeFileInfo = new RelativeFileInfo(fileInfo, "test");
-
             // Act
-            cache.GetOrAdd(runtimeFileInfo, _ => uncachedResult);
-            var actual1 = cache.GetOrAdd(runtimeFileInfo, _ => uncachedResult);
-            var actual2 = cache.GetOrAdd(runtimeFileInfo, _ => uncachedResult);
+            cache.GetOrAdd("test", _ => uncachedResult);
+            var result1 = cache.GetOrAdd("test", _ => uncachedResult);
+            var result2 = cache.GetOrAdd("test", _ => uncachedResult);
 
             // Assert
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
+            Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
+
+            var actual1 = result1.CompilationResult;
+            var actual2 = result2.CompilationResult;
             Assert.NotSame(uncachedResult, actual1);
             Assert.NotSame(uncachedResult, actual2);
             var result = Assert.IsType<CompilationResult>(actual1);

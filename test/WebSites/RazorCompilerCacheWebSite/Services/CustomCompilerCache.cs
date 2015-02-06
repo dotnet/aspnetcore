@@ -3,15 +3,16 @@
 
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.Framework.OptionsModel;
 
 namespace RazorCompilerCacheWebSite
 {
     public class CustomCompilerCache : CompilerCache
     {
         public CustomCompilerCache(IAssemblyProvider assemblyProvider,
-                                   IRazorFileProviderCache fileProvider,
+                                   IOptions<RazorViewEngineOptions> optionsAccessor,
                                    CompilerCacheInitialiedService cacheInitializedService)
-            : base(assemblyProvider, fileProvider)
+            : base(assemblyProvider, optionsAccessor)
         {
             cacheInitializedService.Initialized = true;
         }

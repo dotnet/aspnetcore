@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly Dictionary<string, TestFileTrigger> _fileTriggers =
             new Dictionary<string, TestFileTrigger>(StringComparer.Ordinal);
 
-        public IDirectoryContents GetDirectoryContents(string subpath)
+        public virtual IDirectoryContents GetDirectoryContents(string subpath)
         {
             throw new NotSupportedException();
         }
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             _lookup.Remove(path);
         }
 
-        public IFileInfo GetFileInfo(string subpath)
+        public virtual IFileInfo GetFileInfo(string subpath)
         {
             if (_lookup.ContainsKey(subpath))
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        public IExpirationTrigger Watch(string filter)
+        public virtual IExpirationTrigger Watch(string filter)
         {
             TestFileTrigger trigger;
             if (!_fileTriggers.TryGetValue(filter, out trigger) || trigger.IsExpired)
