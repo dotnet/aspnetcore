@@ -25,6 +25,7 @@ namespace FormatterWebSite
                     options.ValidationExcludeFilters.Add(typeof(Supplier));
 
                     options.AddXmlDataContractSerializerFormatter();
+                    options.InputFormatters.Add(new StringInputFormatter());
                 });
             });
 

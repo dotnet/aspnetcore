@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc
         /// this <see cref="OutputFormatter"/>. The encodings are
         /// used when writing the data.
         /// </summary>
-        public IList<Encoding> SupportedEncodings { get; private set; }
+        public IList<Encoding> SupportedEncodings { get; }
 
         /// <summary>
         /// Gets the mutable collection of <see cref="MediaTypeHeaderValue"/> elements supported by

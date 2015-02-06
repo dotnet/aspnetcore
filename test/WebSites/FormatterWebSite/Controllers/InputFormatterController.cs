@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.WebUtilities;
 
 namespace FormatterWebSite.Controllers
 {
@@ -34,6 +35,16 @@ namespace FormatterWebSite.Controllers
         public object ActionFilterHandlesError([FromBody] DummyClass dummy)
         {
             return dummy;
+        }
+
+        public IActionResult ReturnInput([FromBody] string test)
+        {
+            if (!ModelState.IsValid)
+            {
+                return new HttpStatusCodeResult(StatusCodes.Status400BadRequest);
+            }
+
+            return Content(test);
         }
     }
 }

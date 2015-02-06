@@ -163,5 +163,42 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedSampleIntValue.ToString(), responseBody);
         }
+
+        [Theory]
+        [InlineData("utf-8")]
+        [InlineData("unicode")]
+        public async Task CustomFormatter_IsSelected_ForSupportedContentTypeAndEncoding(string encoding)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var content = new StringContent("Test Content", Encoding.GetEncoding(encoding), "text/plain");
+
+            // Act
+            var response = await client.PostAsync("http://localhost/InputFormatter/ReturnInput/", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Test Content", responseBody);
+        }
+
+        [Theory]
+        [InlineData("image/png")]
+        [InlineData("image/jpeg")]
+        public async Task CustomFormatter_NotSelected_ForUnsupportedContentType(string contentType)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var content = new StringContent("Test Content", Encoding.UTF8, contentType);
+
+            // Act
+            var response = await client.PostAsync("http://localhost/InputFormatter/ReturnInput/", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            //Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
     }
 }

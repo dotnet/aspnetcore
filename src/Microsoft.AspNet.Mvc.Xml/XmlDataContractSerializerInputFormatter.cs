@@ -4,10 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNet.Mvc.Internal;
@@ -19,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Xml
     /// This class handles deserialization of input XML data
     /// to strongly-typed objects using <see cref="DataContractSerializer"/>.
     /// </summary>
-    public class XmlDataContractSerializerInputFormatter : IInputFormatter
+    public class XmlDataContractSerializerInputFormatter : InputFormatter
     {
         private DataContractSerializerSettings _serializerSettings;
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
@@ -29,11 +26,9 @@ namespace Microsoft.AspNet.Mvc.Xml
         /// </summary>
         public XmlDataContractSerializerInputFormatter()
         {
-            SupportedEncodings = new List<Encoding>();
             SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(Encodings.UTF16EncodingLittleEndian);
 
-            SupportedMediaTypes = new List<MediaTypeHeaderValue>();
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
 
@@ -48,12 +43,6 @@ namespace Microsoft.AspNet.Mvc.Xml
         /// provide the wrapping type for de-serialization.
         /// </summary>
         public IList<IWrapperProviderFactory> WrapperProviderFactories { get; }
-
-        /// <inheritdoc />
-        public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; }
-
-        /// <inheritdoc />
-        public IList<Encoding> SupportedEncodings { get; }
 
         /// <summary>
         /// Indicates the acceptable input XML depth.
@@ -71,20 +60,6 @@ namespace Microsoft.AspNet.Mvc.Xml
         public XmlDictionaryReaderQuotas XmlDictionaryReaderQuotas
         {
             get { return _readerQuotas; }
-        }
-
-        /// <inheritdoc />
-        public bool CanRead(InputFormatterContext context)
-        {
-            var contentType = context.ActionContext.HttpContext.Request.ContentType;
-            MediaTypeHeaderValue requestContentType;
-            if (!MediaTypeHeaderValue.TryParse(contentType, out requestContentType))
-            {
-                return false;
-            }
-
-            return SupportedMediaTypes
-                            .Any(supportedMediaType => supportedMediaType.IsSubsetOf(requestContentType));
         }
 
         /// <summary>
@@ -110,15 +85,30 @@ namespace Microsoft.AspNet.Mvc.Xml
         /// </summary>
         /// <param name="context">The input formatter context which contains the body to be read.</param>
         /// <returns>Task which reads the input.</returns>
-        public async Task<object> ReadAsync(InputFormatterContext context)
+        public override Task<object> ReadRequestBodyAsync(InputFormatterContext context)
         {
             var request = context.ActionContext.HttpContext.Request;
-            if (request.ContentLength == 0)
-            {
-                return GetDefaultValueForType(context.ModelType);
-            }
 
-            return await ReadInternalAsync(context);
+            using (var xmlReader = CreateXmlReader(new NonDisposableStream(request.Body)))
+            {
+                var type = GetSerializableType(context.ModelType);
+
+                var serializer = CreateSerializer(type);
+
+                var deserializedObject = serializer.ReadObject(xmlReader);
+
+                // Unwrap only if the original type was wrapped.
+                if (type != context.ModelType)
+                {
+                    var unwrappable = deserializedObject as IUnwrappable;
+                    if (unwrappable != null)
+                    {
+                        deserializedObject = unwrappable.Unwrap(declaredType: context.ModelType);
+                    }
+                }
+
+                return Task.FromResult(deserializedObject);
+            }
         }
 
         /// <summary>
@@ -153,42 +143,6 @@ namespace Microsoft.AspNet.Mvc.Xml
         protected virtual DataContractSerializer CreateSerializer([NotNull] Type type)
         {
             return new DataContractSerializer(type, _serializerSettings);
-        }
-
-        private object GetDefaultValueForType(Type modelType)
-        {
-            if (modelType.GetTypeInfo().IsValueType)
-            {
-                return Activator.CreateInstance(modelType);
-            }
-
-            return null;
-        }
-
-        private Task<object> ReadInternalAsync(InputFormatterContext context)
-        {
-            var request = context.ActionContext.HttpContext.Request;
-
-            using (var xmlReader = CreateXmlReader(new NonDisposableStream(request.Body)))
-            {
-                var type = GetSerializableType(context.ModelType);
-
-                var serializer = CreateSerializer(type);
-
-                var deserializedObject = serializer.ReadObject(xmlReader);
-
-                // Unwrap only if the original type was wrapped.
-                if (type != context.ModelType)
-                {
-                    var unwrappable = deserializedObject as IUnwrappable;
-                    if (unwrappable != null)
-                    {
-                        deserializedObject = unwrappable.Unwrap(declaredType: context.ModelType);
-                    }
-                }
-
-                return Task.FromResult(deserializedObject);
-            }
         }
     }
 }
