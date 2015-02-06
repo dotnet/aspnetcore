@@ -11,7 +11,7 @@ namespace E2ETests
     {
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
         public void OpenIdConnect_OnX86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -55,7 +55,7 @@ namespace E2ETests
 
                 try
                 {
-                    hostProcess = DeploymentUtility.StartApplication(_startParameters, musicStoreDbName, _logger);
+                    hostProcess = DeploymentUtility.StartApplication(_startParameters, _logger);
                     if (serverType == ServerType.IISNativeModule || serverType == ServerType.IIS)
                     {
                         // Accomodate the vdir name.

@@ -82,6 +82,25 @@ namespace E2ETests
             //This action requires admin permissions. If notifications are fired this permission is granted
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             _logger.WriteInformation("Middleware notifications were fired successfully");
+
+            _logger.WriteInformation("Verifying the OpenIdConnect logout flow..");
+            response = _httpClient.GetAsync(string.Empty).Result;
+            ThrowIfResponseStatusNotOk(response);
+            responseContent = response.Content.ReadAsStringAsync().Result;
+            ValidateLayoutPage(responseContent);
+            formParameters = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/LogOff")),
+            };
+
+            content = new FormUrlEncodedContent(formParameters.ToArray());
+            response = _httpClient.PostAsync("Account/LogOff", content).Result;
+            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
+            Assert.Equal<string>(
+                "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/logout",
+                response.RequestMessage.RequestUri.AbsoluteUri.Replace(response.RequestMessage.RequestUri.Query, string.Empty));
+            queryItems = new ReadableStringCollection(QueryHelpers.ParseQuery(response.RequestMessage.RequestUri.Query));
+            Assert.Equal<string>(_applicationBaseUrl + "Account/Login", queryItems["post_logout_redirect_uri"]);
         }
     }
 }

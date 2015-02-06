@@ -116,7 +116,7 @@ namespace E2ETests
 
                 try
                 {
-                    hostProcess = DeploymentUtility.StartApplication(_startParameters, musicStoreDbName, _logger);
+                    hostProcess = DeploymentUtility.StartApplication(_startParameters, _logger);
                     if (serverType == ServerType.IISNativeModule || serverType == ServerType.IIS)
                     {
                         // Accomodate the vdir name.

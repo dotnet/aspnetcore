@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Security.Notifications;
 using Microsoft.AspNet.Security.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols;
@@ -58,6 +59,13 @@ namespace MusicStore.Mocks.OpenIdConnect
             (RedirectToIdentityProviderNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions> context)
         {
             notificationsFired.Add(nameof(RedirectToIdentityProvider));
+
+            if (context.ProtocolMessage.RequestType == OpenIdConnectRequestType.LogoutRequest)
+            {
+                context.ProtocolMessage.PostLogoutRedirectUri =
+                    context.Request.Scheme + "://" + context.Request.Host + context.Request.PathBase + new PathString("/Account/Login");
+            }
+
             await Task.FromResult(0);
         }
     }

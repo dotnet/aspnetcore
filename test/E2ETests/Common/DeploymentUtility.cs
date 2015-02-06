@@ -63,7 +63,7 @@ namespace E2ETests
 
         private static string APP_RELATIVE_PATH = Path.Combine("..", "..", "src", "MusicStore");
 
-        public static Process StartApplication(StartParameters startParameters, string identityDbName, ILogger logger)
+        public static Process StartApplication(StartParameters startParameters, ILogger logger)
         {
             startParameters.ApplicationPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, APP_RELATIVE_PATH));
 
@@ -158,7 +158,7 @@ namespace E2ETests
                 }
                 else
                 {
-                    hostProcess = StartSelfHost(startParameters, identityDbName, logger);
+                    hostProcess = StartSelfHost(startParameters, logger);
                 }
             }
 
@@ -205,6 +205,13 @@ namespace E2ETests
 
             var hostProcess = Process.Start(startInfo);
             logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
+
+            if (hostProcess.HasExited)
+            {
+                logger.WriteError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, hostProcess.ExitCode);
+                throw new Exception("Failed to start host");
+            }
+
             return hostProcess;
         }
 
@@ -256,7 +263,7 @@ namespace E2ETests
             return hostProcess;
         }
 
-        private static Process StartSelfHost(StartParameters startParameters, string identityDbName, ILogger logger)
+        private static Process StartSelfHost(StartParameters startParameters, ILogger logger)
         {
             var commandName = startParameters.ServerType == ServerType.WebListener ? "web" : "kestrel";
             logger.WriteInformation("Executing klr.exe --appbase {appPath} \"Microsoft.Framework.ApplicationHost\" {command}", startParameters.ApplicationPath, commandName);
@@ -273,6 +280,12 @@ namespace E2ETests
             //Sometimes reading MainModule returns null if called immediately after starting process.
             Thread.Sleep(1 * 1000);
 
+            if (hostProcess.HasExited)
+            {
+                logger.WriteError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, hostProcess.ExitCode);
+                throw new Exception("Failed to start host");
+            }
+
             try
             {
                 logger.WriteInformation("Started {fileName}. Process Id : {processId}", hostProcess.MainModule.FileName, hostProcess.Id);
@@ -281,8 +294,6 @@ namespace E2ETests
             {
                 logger.WriteWarning("Cannot access 64 bit modules from a 32 bit process. Failed with following message.", win32Exception);
             }
-
-            WaitTillDbCreated(identityDbName, logger);
 
             return hostProcess;
         }
@@ -340,50 +351,6 @@ namespace E2ETests
                 Path.Combine(startParameters.BundledApplicationRootPath, "approot", "src", "MusicStore");
 
             logger.WriteInformation("kpm bundle finished with exit code : {exitCode}", hostProcess.ExitCode);
-        }
-
-        //In case of self-host application activation happens immediately unlike iis where activation happens on first request.
-        //So in self-host case, we need a way to block the first request until the application is initialized. In MusicStore application's case, 
-        //identity DB creation is pretty much the last step of application setup. So waiting on this event will help us wait efficiently.
-        private static void WaitTillDbCreated(string identityDbName, ILogger logger)
-        {
-            var identityDBFullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), identityDbName + ".mdf");
-            if (File.Exists(identityDBFullPath))
-            {
-                logger.WriteWarning("Database file '{mdf}' exists. Proceeding with the tests.", identityDBFullPath);
-                return;
-            }
-
-            logger.WriteInformation("Watching for the DB file '{mdf}'", identityDBFullPath);
-            var dbWatch = new FileSystemWatcher(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), identityDbName + ".mdf");
-            dbWatch.EnableRaisingEvents = true;
-
-            try
-            {
-                if (!File.Exists(identityDBFullPath))
-                {
-                    //Wait for a maximum of 1 minute assuming the slowest cold start.
-                    var watchResult = dbWatch.WaitForChanged(WatcherChangeTypes.Created, 60 * 1000);
-                    if (watchResult.ChangeType == WatcherChangeTypes.Created)
-                    {
-                        //This event is fired immediately after the localdb file is created. Give it a while to finish populating data and start the application.
-                        Thread.Sleep(5 * 1000);
-                        logger.WriteInformation("Database file created '{mdf}'. Proceeding with the tests.", identityDBFullPath);
-                    }
-                    else
-                    {
-                        logger.WriteWarning("Database file '{mdf}' not created", identityDBFullPath);
-                    }
-                }
-            }
-            catch (Exception exception)
-            {
-                logger.WriteWarning("Received this exception while watching for Database file", exception);
-            }
-            finally
-            {
-                dbWatch.Dispose();
-            }
         }
 
         public static void CleanUpApplication(StartParameters startParameters, Process hostProcess, string musicStoreDbName, ILogger logger)

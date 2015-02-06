@@ -46,7 +46,7 @@ namespace E2ETests
 
                 try
                 {
-                    hostProcess = DeploymentUtility.StartApplication(_startParameters, musicStoreDbName, _logger);
+                    hostProcess = DeploymentUtility.StartApplication(_startParameters, _logger);
 
                     _httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
                     _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(applicationBaseUrl) };

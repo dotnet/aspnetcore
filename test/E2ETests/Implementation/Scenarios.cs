@@ -56,7 +56,9 @@ namespace E2ETests
             _logger.WriteInformation("Application initialization successful.");
 
             _logger.WriteInformation("Application runtime information");
-            var runtimeInfo = _httpClient.GetAsync("runtimeinfo").Result.Content.ReadAsStringAsync().Result;
+            var runtimeResponse = _httpClient.GetAsync("runtimeinfo").Result;
+            ThrowIfResponseStatusNotOk(runtimeResponse);
+            var runtimeInfo = runtimeResponse.Content.ReadAsStringAsync().Result;
             _logger.WriteInformation(runtimeInfo);
         }
 
