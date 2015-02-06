@@ -224,7 +224,7 @@ namespace Microsoft.AspNet.Identity
             return await LogResultAsync(true, user);
         }
 
-        public async Task<bool> IsTwoFactorClientRememberedAsync(TUser user,
+        public virtual async Task<bool> IsTwoFactorClientRememberedAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var userId = await UserManager.GetUserIdAsync(user, cancellationToken);
@@ -306,7 +306,7 @@ namespace Microsoft.AspNet.Identity
             return await UserManager.FindByIdAsync(info.UserId, cancellationToken);
         }
 
-        public async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent,
+        public virtual async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var user = await UserManager.FindByLoginAsync(loginProvider, providerKey, cancellationToken);
@@ -361,7 +361,7 @@ namespace Microsoft.AspNet.Identity
             return new ExternalLoginInfo(auth.Identity, provider, providerKey, auth.Description.Caption);
         }
 
-        public AuthenticationProperties ConfigureExternalAuthenticationProperties(string provider, string redirectUrl, string userId = null)
+        public virtual AuthenticationProperties ConfigureExternalAuthenticationProperties(string provider, string redirectUrl, string userId = null)
         {
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
             properties.Dictionary[LoginProviderKey] = provider;

@@ -25,53 +25,53 @@ namespace Microsoft.AspNet.Identity
             return this;
         }
 
-        public IdentityBuilder AddUserValidator<T>() where T : class
+        public virtual IdentityBuilder AddUserValidator<T>() where T : class
         {
             return AddScoped(typeof(IUserValidator<>).MakeGenericType(UserType), typeof(T));
         }
 
-        public IdentityBuilder AddRoleValidator<T>() where T : class
+        public virtual IdentityBuilder AddRoleValidator<T>() where T : class
         {
             return AddScoped(typeof(IRoleValidator<>).MakeGenericType(RoleType), typeof(T));
         }
 
-        public IdentityBuilder AddErrorDescriber<TDescriber>() where TDescriber : IdentityErrorDescriber
+        public virtual IdentityBuilder AddErrorDescriber<TDescriber>() where TDescriber : IdentityErrorDescriber
         {
             Services.AddScoped<IdentityErrorDescriber, TDescriber>();
             return this;
         }
 
-        public IdentityBuilder AddPasswordValidator<T>() where T : class
+        public virtual IdentityBuilder AddPasswordValidator<T>() where T : class
         {
             return AddScoped(typeof(IPasswordValidator<>).MakeGenericType(UserType), typeof(T));
         }
 
-        public IdentityBuilder AddUserStore<T>() where T : class
+        public virtual IdentityBuilder AddUserStore<T>() where T : class
         {
             return AddScoped(typeof(IUserStore<>).MakeGenericType(UserType), typeof(T));
         }
 
-        public IdentityBuilder AddRoleStore<T>() where T : class
+        public virtual IdentityBuilder AddRoleStore<T>() where T : class
         {
             return AddScoped(typeof(IRoleStore<>).MakeGenericType(RoleType), typeof(T));
         }
 
-        public IdentityBuilder AddTokenProvider<TProvider>() where TProvider : class
+        public virtual IdentityBuilder AddTokenProvider<TProvider>() where TProvider : class
         {
             return AddTokenProvider(typeof(TProvider));
         }
 
-        public IdentityBuilder AddTokenProvider(Type provider)
+        public virtual IdentityBuilder AddTokenProvider(Type provider)
         {
             return AddScoped(typeof(IUserTokenProvider<>).MakeGenericType(UserType), provider);
         }
 
-        public IdentityBuilder AddMessageProvider<TProvider>() where TProvider : IIdentityMessageProvider
+        public virtual IdentityBuilder AddMessageProvider<TProvider>() where TProvider : IIdentityMessageProvider
         {
             return AddScoped(typeof(IIdentityMessageProvider), typeof(TProvider));
         }
 
-        public IdentityBuilder AddDefaultTokenProviders()
+        public virtual IdentityBuilder AddDefaultTokenProviders()
         {
             Services.Configure<DataProtectionTokenProviderOptions>(options =>
             {
@@ -83,12 +83,12 @@ namespace Microsoft.AspNet.Identity
                 .AddTokenProvider(typeof(EmailTokenProvider<>).MakeGenericType(UserType));
         }
 
-        public IdentityBuilder AddUserManager<TUserManager>() where TUserManager : class
+        public virtual IdentityBuilder AddUserManager<TUserManager>() where TUserManager : class
         {
             return AddScoped(typeof(UserManager<>).MakeGenericType(UserType), typeof(TUserManager));
         }
 
-        public IdentityBuilder AddRoleManager<TRoleManager>() where TRoleManager : class
+        public virtual IdentityBuilder AddRoleManager<TRoleManager>() where TRoleManager : class
         {
             return AddScoped(typeof(RoleManager<>).MakeGenericType(RoleType), typeof(TRoleManager));
         }

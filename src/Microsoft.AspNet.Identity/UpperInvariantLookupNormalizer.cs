@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public string Normalize(string key)
+        public virtual string Normalize(string key)
         {
             if (key == null)
             {

@@ -16,29 +16,32 @@ namespace Microsoft.AspNet.Identity.Test
         protected const BindingFlags PublicInstance
             = BindingFlags.Instance | BindingFlags.Public;
 
-        //protected const BindingFlags AnyInstance
-        //    = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        protected const BindingFlags AnyInstance
+            = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        //[Fact]
-        //public void Public_inheritable_apis_should_be_virtual()
-        //{
-        //    var nonVirtualMethods
-        //        = (from type in GetAllTypes(TargetAssembly.GetTypes())
-        //            where type.IsVisible
-        //                  && !type.IsSealed
-        //                  && type.GetConstructors(AnyInstance).Any(c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly)
-        //                  && type.Namespace != null
-        //                  && !type.Namespace.EndsWith(".Compiled")
-        //            from method in type.GetMethods(PublicInstance)
-        //            where GetBasestTypeInAssembly(method.DeclaringType) == type
-        //                  && !(method.IsVirtual && !method.IsFinal)
-        //            select type.Name + "." + method.Name)
-        //            .ToList();
+        [Fact]
+        public void Public_inheritable_apis_should_be_virtual()
+        {
+            var nonVirtualMethods
+                = (from type in GetAllTypes(TargetAssembly.GetTypes())
+                   where type.IsVisible
+                         && !type.IsSealed
+                         && type.GetConstructors(AnyInstance).Any(c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly)
+                         && type.Namespace != null
+                         && !type.Namespace.EndsWith(".Compiled")
+                   from method in type.GetMethods(PublicInstance)
+                   where GetBasestTypeInAssembly(method.DeclaringType) == type
+                         && !(method.IsVirtual && !method.IsFinal) 
+                         && !method.Name.StartsWith("get_") 
+                         && !method.Name.StartsWith("set_")
+                         && !method.Name.Equals("Dispose")
+                   select type.Name + "." + method.Name)
+                    .ToList();
 
-        //    Assert.False(
-        //        nonVirtualMethods.Any(),
-        //        "\r\n-- Missing virtual APIs --\r\n" + string.Join("\r\n", nonVirtualMethods));
-        //}
+            Assert.False(
+                nonVirtualMethods.Any(),
+                "\r\n-- Missing virtual APIs --\r\n" + string.Join("\r\n", nonVirtualMethods));
+        }
 
         //[Fact]
         //public void Public_api_arguments_should_have_not_null_annotation()
