@@ -4,12 +4,12 @@
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Context object to be used for the URLs that <see cref="Mvc.IUrlHelper.Action(UrlActionContext)"/> generates.
+    /// Context object to be used for the URLs that <see cref="IUrlHelper.Action(UrlActionContext)"/> generates.
     /// </summary>
     public class UrlActionContext
     {
         /// <summary>
-        /// The name of the action method that <see cref="Mvc.UrlHelper.Action(UrlActionContext)" uses to generate URLs.
+        /// The name of the action method that <see cref="IUrlHelper.Action(UrlActionContext)"/> uses to generate URLs.
         /// </summary>
         public string Action
         {
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// The name of the controller that <see cref="Mvc.UrlHelper.Action(UrlActionContext)" uses to generate URLs.
+        /// The name of the controller that <see cref="IUrlHelper.Action(UrlActionContext)"/> uses to generate URLs.
         /// </summary>
         public string Controller
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// The object that contains the route parameters that <see cref="Mvc.IUrlHelper.Action(UrlActionContext)"/> 
+        /// The object that contains the route parameters that <see cref="IUrlHelper.Action(UrlActionContext)"/>
         /// uses to generate URLs.
         /// </summary>
         public object Values
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// The protocol for the URLs that <see cref="Mvc.UrlHelper.Action(UrlActionContext)" generates
+        /// The protocol for the URLs that <see cref="IUrlHelper.Action(UrlActionContext)"/> generates
         /// such as "http" or "https"
         /// </summary>
         public string Protocol
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// The host name for the URLs that <see cref="Mvc.UrlHelper.Action(UrlActionContext)" generates.
+        /// The host name for the URLs that <see cref="IUrlHelper.Action(UrlActionContext)"/> generates.
         /// </summary>
         public string Host
         {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// The fragment for the URLs that <see cref="Mvc.UrlHelper.Action(UrlActionContext)" generates.
+        /// The fragment for the URLs that <see cref="IUrlHelper.Action(UrlActionContext)"/> generates.
         /// </summary>
         public string Fragment
         {

@@ -4,12 +4,12 @@
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Context object to be used for the URLs that <see cref="Mvc.IUrlHelper.RouteUrl(UrlRouteContext)"/> generates.
+    /// Context object to be used for the URLs that <see cref="IUrlHelper.RouteUrl(UrlRouteContext)"/> generates.
     /// </summary>
     public class UrlRouteContext
     {
         /// <summary>
-        /// The name of the route that <see cref="Mvc.IUrlHelper.RouteUrl(UrlRouteContext)" uses to generate URLs.
+        /// The name of the route that <see cref="IUrlHelper.RouteUrl(UrlRouteContext)"/> uses to generate URLs.
         /// </summary>
         public string RouteName
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// The protocol for the URLs that <see cref="Mvc.IUrlHelper.RouteUrl(UrlRouteContext)" generates
+        /// The protocol for the URLs that <see cref="IUrlHelper.RouteUrl(UrlRouteContext)"/> generates
         /// such as "http" or "https"
         /// </summary>
         public string Protocol
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// The host name for the URLs that <see cref="Mvc.IUrlHelper.RouteUrl(UrlRouteContext)" generates.
+        /// The host name for the URLs that <see cref="IUrlHelper.RouteUrl(UrlRouteContext)"/> generates.
         /// </summary>
         public string Host
         {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// The fragment for the URLs that <see cref="Mvc.IUrlHelper.RouteUrl(UrlRouteContext)" generates.
+        /// The fragment for the URLs that <see cref="IUrlHelper.RouteUrl(UrlRouteContext)"/> generates.
         /// </summary>
         public string Fragment
         {
