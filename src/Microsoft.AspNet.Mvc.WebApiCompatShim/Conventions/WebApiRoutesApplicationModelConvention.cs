@@ -6,7 +6,7 @@ using Microsoft.AspNet.Mvc.ApplicationModels;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
-    public class WebApiRoutesApplicationModelConvention : IApplicationModelConvention
+    public class WebApiRoutesApplicationModelConvention : IControllerModelConvention
     {
         private readonly string _area;
 
@@ -15,25 +15,17 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             _area = area;
         }
 
-        public void Apply(ApplicationModel application)
+        public void Apply(ControllerModel controller)
         {
-            foreach (var controller in application.Controllers)
+            if (IsConventionApplicable(controller))
             {
-                if (IsConventionApplicable(controller))
-                {
-                    Apply(controller);
-                }
+                controller.RouteConstraints.Add(new AreaAttribute(_area));
             }
         }
 
         private bool IsConventionApplicable(ControllerModel controller)
         {
             return controller.Attributes.OfType<IUseWebApiRoutes>().Any();
-        }
-
-        private void Apply(ControllerModel controller)
-        {
-            controller.RouteConstraints.Add(new AreaAttribute(_area));
         }
     }
 }

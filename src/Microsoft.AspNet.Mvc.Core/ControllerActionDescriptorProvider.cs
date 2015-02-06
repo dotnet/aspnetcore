@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc
         private readonly IControllerModelBuilder _applicationModelBuilder;
         private readonly IAssemblyProvider _assemblyProvider;
         private readonly IReadOnlyList<IFilter> _globalFilters;
-        private readonly IEnumerable<IApplicationModelConvention> _modelConventions;
+        private readonly IEnumerable<IApplicationModelConvention> _conventions;
         private readonly ILogger _logger;
 
         public ControllerActionDescriptorProvider([NotNull] IAssemblyProvider assemblyProvider,
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc
             _assemblyProvider = assemblyProvider;
             _applicationModelBuilder = applicationModelBuilder;
             _globalFilters = globalFilters.Filters;
-            _modelConventions = optionsAccessor.Options.ApplicationModelConventions;
+            _conventions = optionsAccessor.Options.Conventions;
             _logger = loggerFactory.Create<ControllerActionDescriptorProvider>();
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc
         public IEnumerable<ControllerActionDescriptor> GetDescriptors()
         {
             var applicationModel = BuildModel();
-            ApplicationModelConventions.ApplyConventions(applicationModel, _modelConventions);
+            ApplicationModelConventions.ApplyConventions(applicationModel, _conventions);
             if (_logger.IsEnabled(LogLevel.Verbose))
             {
                 foreach (var controller in applicationModel.Controllers)

@@ -19,7 +19,9 @@ namespace ApplicationModelWebSite
 
                 services.Configure<MvcOptions>(options =>
                 {
-                    options.ApplicationModelConventions.Add(new ApplicationDescription("Common Application Description"));
+                    options.Conventions.Add(new ApplicationDescription("Common Application Description"));
+                    options.Conventions.Add(new ControllerLisenceConvention());
+                    options.Conventions.Add(new FromHeaderConvention());
                 });
             });
 

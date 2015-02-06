@@ -1187,7 +1187,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Callback(() => { Assert.Equal(3, sequence++); });
 
             var options = new MockMvcOptionsAccessor();
-            options.Options.ApplicationModelConventions.Add(applicationConvention.Object);
+            options.Options.Conventions.Add(applicationConvention.Object);
 
 
             var applicationModel = new ApplicationModel();
@@ -1209,7 +1209,7 @@ namespace Microsoft.AspNet.Mvc.Test
             actionModel.Parameters.Add(parameterModel);
 
             // Act
-            ApplicationModelConventions.ApplyConventions(applicationModel, options.Options.ApplicationModelConventions);
+            ApplicationModelConventions.ApplyConventions(applicationModel, options.Options.Conventions);
 
             // Assert
             Assert.Equal(4, sequence);
@@ -1411,7 +1411,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Returns(new Assembly[] { type.Assembly });
 
             var options = new MockMvcOptionsAccessor();
-            options.Options.ApplicationModelConventions.Add(convention);
+            options.Options.Conventions.Add(convention);
 
             return new ControllerActionDescriptorProvider(
                 assemblyProvider.Object,

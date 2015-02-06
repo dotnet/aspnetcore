@@ -12,5 +12,12 @@ namespace ApplicationModelWebSite
             var actionDescriptor = (ControllerActionDescriptor)ActionContext.ActionDescriptor;
             return actionDescriptor.Properties["description"].ToString();
         }
+
+        [HttpGet("Home/GetHelloWorld")]
+        public object GetHelloWorld([FromHeader] string helloWorld)
+        {
+            var actionDescriptor = (ControllerActionDescriptor)ActionContext.ActionDescriptor;
+            return actionDescriptor.Properties["source"].ToString() + " - " + helloWorld;
+        }
     }
 }

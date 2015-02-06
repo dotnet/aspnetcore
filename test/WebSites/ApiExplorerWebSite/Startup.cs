@@ -23,8 +23,8 @@ namespace ApiExplorerWebSite
                 {
                     options.Filters.AddService(typeof(ApiExplorerDataFilter));
 
-                    options.ApplicationModelConventions.Add(new ApiExplorerVisibilityEnabledConvention());
-                    options.ApplicationModelConventions.Add(new ApiExplorerVisibilityDisabledConvention(
+                    options.Conventions.Add(new ApiExplorerVisibilityEnabledConvention());
+                    options.Conventions.Add(new ApiExplorerVisibilityDisabledConvention(
                         typeof(ApiExplorerVisbilityDisabledByConventionController)));
 
                     options.OutputFormatters.Clear();

@@ -9,27 +9,11 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
-    public class WebApiParameterConventionsApplicationModelConvention : IApplicationModelConvention
+    public class WebApiParameterConventionsApplicationModelConvention : IActionModelConvention
     {
-        public void Apply(ApplicationModel application)
+        public void Apply(ActionModel action)
         {
-            foreach (var controller in application.Controllers)
-            {
-                if (IsConventionApplicable(controller))
-                {
-                    Apply(controller);
-                }
-            }
-        }
-
-        private bool IsConventionApplicable(ControllerModel controller)
-        {
-            return controller.Attributes.OfType<IUseWebApiParameterConventions>().Any();
-        }
-
-        private void Apply(ControllerModel controller)
-        {
-            foreach (var action in controller.Actions)
+            if (IsConventionApplicable(action.Controller))
             {
                 foreach (var parameter in action.Parameters)
                 {
@@ -56,6 +40,11 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                     }
                 }
             }
+        }
+
+        private bool IsConventionApplicable(ControllerModel controller)
+        {
+            return controller.Attributes.OfType<IUseWebApiParameterConventions>().Any();
         }
     }
 }

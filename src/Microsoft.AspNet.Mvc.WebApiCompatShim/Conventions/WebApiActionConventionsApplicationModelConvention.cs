@@ -8,7 +8,7 @@ using Microsoft.AspNet.Mvc.ApplicationModels;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
-    public class WebApiActionConventionsApplicationModelConvention : IApplicationModelConvention
+    public class WebApiActionConventionsApplicationModelConvention : IControllerModelConvention
     {
         private static readonly string[] SupportedHttpMethodConventions = new string[]
         {
@@ -21,13 +21,31 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             "OPTIONS",
         };
 
-        public void Apply(ApplicationModel application)
+        public void Apply(ControllerModel controller)
         {
-            foreach (var controller in application.Controllers)
+            if (IsConventionApplicable(controller))
             {
-                if (IsConventionApplicable(controller))
+                var newActions = new List<ActionModel>();
+
+                foreach (var action in controller.Actions)
                 {
-                    Apply(controller);
+                    SetHttpMethodFromConvention(action);
+
+                    // Action Name doesn't really come into play with attribute routed actions. However for a
+                    // non-attribute-routed action we need to create a 'named' version and an 'unnamed' version.
+                    if (!IsActionAttributeRouted(action))
+                    {
+                        var namedAction = action;
+
+                        var unnamedAction = new ActionModel(namedAction);
+                        unnamedAction.RouteConstraints.Add(new UnnamedActionRouteConstraint());
+                        newActions.Add(unnamedAction);
+                    }
+                }
+
+                foreach (var action in newActions)
+                {
+                    controller.Actions.Add(action);
                 }
             }
         }
@@ -35,32 +53,6 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         private bool IsConventionApplicable(ControllerModel controller)
         {
             return controller.Attributes.OfType<IUseWebApiActionConventions>().Any();
-        }
-
-        private void Apply(ControllerModel controller)
-        {
-            var newActions = new List<ActionModel>();
-
-            foreach (var action in controller.Actions)
-            {
-                SetHttpMethodFromConvention(action);
-
-                // Action Name doesn't really come into play with attribute routed actions. However for a
-                // non-attribute-routed action we need to create a 'named' version and an 'unnamed' version.
-                if (!IsActionAttributeRouted(action))
-                {
-                    var namedAction = action;
-
-                    var unnamedAction = new ActionModel(namedAction);
-                    unnamedAction.RouteConstraints.Add(new UnnamedActionRouteConstraint());
-                    newActions.Add(unnamedAction);
-                }
-            }
-
-            foreach (var action in newActions)
-            {
-                controller.Actions.Add(action);
-            }
         }
 
         private bool IsActionAttributeRouted(ActionModel action)

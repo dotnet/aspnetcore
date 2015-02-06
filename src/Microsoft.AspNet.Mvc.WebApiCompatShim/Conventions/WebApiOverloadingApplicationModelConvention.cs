@@ -6,30 +6,19 @@ using Microsoft.AspNet.Mvc.ApplicationModels;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
-    public class WebApiOverloadingApplicationModelConvention : IApplicationModelConvention
+    public class WebApiOverloadingApplicationModelConvention : IActionModelConvention
     {
-        public void Apply(ApplicationModel application)
+        public void Apply(ActionModel action)
         {
-            foreach (var controller in application.Controllers)
+            if (IsConventionApplicable(action.Controller))
             {
-                if (IsConventionApplicable(controller))
-                {
-                    Apply(controller);
-                }
+                action.ActionConstraints.Add(new OverloadActionConstraint());
             }
         }
 
         private bool IsConventionApplicable(ControllerModel controller)
         {
             return controller.Attributes.OfType<IUseWebApiOverloading>().Any();
-        }
-
-        private void Apply(ControllerModel controller)
-        {
-            foreach (var action in controller.Actions)
-            {
-                action.ActionConstraints.Add(new OverloadActionConstraint());
-            }
         }
     }
 }
