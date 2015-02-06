@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                   StringComparison.Ordinal))
                 {
                     // Cache hit, but we need to update the entry.
-                    // Assigning to LastModified and IsValidatedPreCompiled are atomic operations and will result in safe races
+                    // Assigning to LastModified and IsValidatedPreCompiled are atomic operations and will result in safe race
                     // if the entry is being concurrently read or updated.
                     cacheEntry.LastModified = fileInfo.LastModified;
                     cacheEntry.IsValidatedPreCompiled = true;
