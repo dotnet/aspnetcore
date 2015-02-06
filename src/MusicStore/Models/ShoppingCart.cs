@@ -78,7 +78,7 @@ namespace MusicStore.Models
         public void EmptyCart()
         {
             var cartItems = _dbContext.CartItems.Where(cart => cart.CartId == ShoppingCartId).ToArray();
-            _dbContext.CartItems.Remove(cartItems);
+            _dbContext.CartItems.RemoveRange(cartItems);
         }
 
         public async Task<List<CartItem>> GetCartItems()
