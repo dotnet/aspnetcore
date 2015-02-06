@@ -13,13 +13,13 @@ using Microsoft.Data.Entity.Update;
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
     public class RoleStore<TRole> : RoleStore<TRole, DbContext, string>
-        where TRole : IdentityRole
+        where TRole : IdentityRole<string>
     {
         public RoleStore(DbContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
     public class RoleStore<TRole, TContext> : RoleStore<TRole, TContext, string>
-        where TRole : IdentityRole
+        where TRole : IdentityRole<string>
         where TContext : DbContext
     {
         public RoleStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }

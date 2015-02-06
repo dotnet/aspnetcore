@@ -13,20 +13,20 @@ using Microsoft.Data.Entity.Update;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
-    public class UserStore : UserStore<IdentityUser>
+    public class UserStore : UserStore<IdentityUser<string>>
     {
         public UserStore(DbContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
     public class UserStore<TUser> : UserStore<TUser, IdentityRole, DbContext>
-        where TUser : IdentityUser, new()
+        where TUser : IdentityUser<string>, new()
     {
         public UserStore(DbContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
     public class UserStore<TUser, TRole, TContext> : UserStore<TUser, TRole, TContext, string>
-        where TUser : IdentityUser, new()
-        where TRole : IdentityRole, new()
+        where TUser : IdentityUser<string>, new()
+        where TRole : IdentityRole<string>, new()
         where TContext : DbContext
     {
         public UserStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
