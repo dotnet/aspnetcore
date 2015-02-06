@@ -20,7 +20,8 @@
         "EntityFramework.SqlServer": "7.0.0-*",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
         "Microsoft.Framework.OptionsModel": "1.0.0-*",
-        "Microsoft.Framework.Logging.Console": "1.0.0-*"
+        "Microsoft.Framework.Logging.Console": "1.0.0-*",
+        "Microsoft.Framework.Logging.NLog": "1.0.0-*"
     },
     "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:41532",

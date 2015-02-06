@@ -129,7 +129,8 @@ namespace Microsoft.AspNet.Identity.Test
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
             var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, null);
             helper.Logger = logger.Object;
-            string expected = string.Format("{0} for user: {1} : Result : {2}", "PasswordSignInAsync", user.Id, "Lockedout");
+            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            string expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Lockedout");
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
@@ -137,7 +138,8 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.False(result.Succeeded);
             Assert.True(result.IsLockedOut);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expected));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
         }
 
@@ -178,14 +180,16 @@ namespace Microsoft.AspNet.Identity.Test
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
             var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, null);
             helper.Logger = logger.Object;
-            string expected = string.Format("{0} for user: {1} : Result : {2}", "PasswordSignInAsync", user.Id, "Succeeded");
+            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            string expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Succeeded");
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", isPersistent, false);
 
             // Assert
             Assert.True(result.Succeeded);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expected));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
             response.Verify();
@@ -264,13 +268,14 @@ namespace Microsoft.AspNet.Identity.Test
             options.Setup(a => a.Options).Returns(identityOptions);
             var logStore = new StringBuilder();
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object, 
-                contextAccessor.Object, 
-                new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object), 
-                options.Object, 
+            var helper = new SignInManager<TestUser>(manager.Object,
+                contextAccessor.Object,
+                new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object),
+                options.Object,
                 null);
             helper.Logger = logger.Object;
-            string expected = string.Format("{0} for user: {1} : Result : {2}", "PasswordSignInAsync", user.Id, "RequiresTwoFactor");
+            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            string expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "RequiresTwoFactor");
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
@@ -278,7 +283,8 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.False(result.Succeeded);
             Assert.True(result.RequiresTwoFactor);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expected));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
             response.Verify();
@@ -320,14 +326,16 @@ namespace Microsoft.AspNet.Identity.Test
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
             var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, null);
             helper.Logger = logger.Object;
-            string expected = string.Format("{0} for user: {1} : Result : {2}", "ExternalLoginSignInAsync", user.Id.ToString(), "Succeeded");
+            string expectedScope = string.Format("{0} for {1}: {2}", "ExternalLoginSignInAsync", "user", user.Id);
+            string expectedLog = string.Format("{0} : {1}", "ExternalLoginSignInAsync", "Succeeded");
 
             // Act
             var result = await helper.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent);
 
             // Assert
             Assert.True(result.Succeeded);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expected));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
             response.Verify();
@@ -405,14 +413,16 @@ namespace Microsoft.AspNet.Identity.Test
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
             var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, null);
             helper.Logger = logger.Object;
-            string expected = string.Format("{0} for user: {1} : Result : {2}", "TwoFactorSignInAsync", user.Id.ToString(), "Succeeded");
+            string expectedScope = string.Format("{0} for {1}: {2}", "TwoFactorSignInAsync", "user", user.Id);
+            string expectedLog = string.Format("{0} : {1}", "TwoFactorSignInAsync", "Succeeded");
 
             // Act
             var result = await helper.TwoFactorSignInAsync(provider, code, isPersistent, rememberClient);
 
             // Assert
             Assert.True(result.Succeeded);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expected));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
             response.Verify();
@@ -559,13 +569,15 @@ namespace Microsoft.AspNet.Identity.Test
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
             var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object);
             helper.Logger = logger.Object;
-            string expected = string.Format("{0} for user: {1} : Result : {2}", "PasswordSignInAsync", user.Id.ToString(), "Failed");
+            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            string expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Failed");
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
 
             // Assert
             Assert.False(result.Succeeded);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expected));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
             contextAccessor.Verify();
@@ -664,7 +676,8 @@ namespace Microsoft.AspNet.Identity.Test
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
             var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object);
             helper.Logger = logger.Object;
-            string expected = string.Format("{0} for user: {1} : Result : {2}", "CanSignInAsync", user.Id.ToString(), confirmed.ToString());
+            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            string expectedLog = string.Format("{0} : {1}", "CanSignInAsync", confirmed.ToString());
 
             // Act
             var result = await helper.PasswordSignInAsync(user, "password", false, false);
@@ -673,7 +686,9 @@ namespace Microsoft.AspNet.Identity.Test
 
             Assert.Equal(confirmed, result.Succeeded);
             Assert.NotEqual(confirmed, result.IsNotAllowed);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expected));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
+
             manager.Verify();
             context.Verify();
             response.Verify();
@@ -683,7 +698,7 @@ namespace Microsoft.AspNet.Identity.Test
         private static void SetupSignIn(Mock<HttpResponse> response, string userId = null, bool? isPersistent = null, string loginProvider = null)
         {
             response.Setup(r => r.SignIn(IdentityOptions.ApplicationCookieAuthenticationScheme,
-                It.Is<ClaimsPrincipal>(id => 
+                It.Is<ClaimsPrincipal>(id =>
                     (userId == null || id.FindFirstValue(ClaimTypes.NameIdentifier) == userId) &&
                     (loginProvider == null || id.FindFirstValue(ClaimTypes.AuthenticationMethod) == loginProvider)),
                 It.Is<AuthenticationProperties>(v => isPersistent == null || v.IsPersistent == isPersistent))).Verifiable();
@@ -719,7 +734,8 @@ namespace Microsoft.AspNet.Identity.Test
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
             var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object, null);
             helper.Logger = logger.Object;
-            string expected = string.Format("{0} for user: {1} : Result : {2}", "CanSignInAsync", user.Id.ToString(), confirmed.ToString());
+            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            string expectedLog = string.Format("{0} : {1}", "CanSignInAsync", confirmed.ToString());
 
             // Act
             var result = await helper.PasswordSignInAsync(user, "password", false, false);
@@ -727,7 +743,8 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.Equal(confirmed, result.Succeeded);
             Assert.NotEqual(confirmed, result.IsNotAllowed);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expected));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
+            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
             response.Verify();

@@ -62,8 +62,10 @@ namespace Microsoft.AspNet.Identity.Test
             TestLogger testlogger = logger as TestLogger;
             if (testlogger != null)
             {
-                string expected = string.Format("{0} for {1}: {2} : Success", methodName, userOrRole, id);
-                Assert.True(testlogger.LogMessages.Contains(expected));
+                string expectedScope = string.Format("{0} for {1}: {2}", methodName, userOrRole, id);
+                string expectedLog = string.Format("{0} : Succeeded", methodName);
+                Assert.True(testlogger.LogMessages.Contains(expectedScope));
+                Assert.True(testlogger.LogMessages.Contains(expectedLog));
             }
             else
             {
@@ -84,15 +86,17 @@ namespace Microsoft.AspNet.Identity.Test
             }
         }
 
-        private static void VerifyFailureLog(ILogger logger, string className, string methodName, string userId, string userOrRole = "user", params IdentityError[] errors)
+        private static void VerifyFailureLog(ILogger logger, string className, string methodName, string id, string userOrRole = "user", params IdentityError[] errors)
         {
             TestLogger testlogger = logger as TestLogger;
             if (testlogger != null)
             {
                 errors = errors ?? new IdentityError[] { new IdentityError() };
-                string expected = string.Format("{0} for {1}: {2} : Failed : {3}", methodName, userOrRole, userId, string.Join(",", errors.Select(x => x.Code).ToList()));
+                string expectedScope = string.Format("{0} for {1}: {2}", methodName, userOrRole, id);
+                string expectedLog = string.Format("{0} : Failed : {1}", methodName, string.Join(",", errors.Select(x => x.Code).ToList()));
 
-                Assert.True(testlogger.LogMessages.Contains(expected));
+                Assert.True(testlogger.LogMessages.Contains(expectedScope));
+                Assert.True(testlogger.LogMessages.Contains(expectedLog));
             }
             else
             {

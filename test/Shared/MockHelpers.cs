@@ -42,8 +42,23 @@ namespace Microsoft.AspNet.Identity.Test
             logger.Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<int>(), It.IsAny<object>(),
                 It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
                 .Callback((LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter) =>
-                { logStore.Append(state.ToString()); });
-            logger.Setup(x => x.IsEnabled(LogLevel.Information)).Returns(true);
+                {
+                    if (formatter == null)
+                    {
+                        logStore.Append(state.ToString());
+                    }
+                    else
+                    {
+                        logStore.Append(formatter(state, exception));
+                    }
+                    logStore.Append(" ");
+                });
+            logger.Setup(x => x.BeginScope(It.IsAny<object>())).Callback((object state) =>
+                {
+                    logStore.Append(state.ToString());
+                    logStore.Append(" ");
+                });
+            logger.Setup(x => x.IsEnabled(LogLevel.Verbose)).Returns(true);
             logger.Setup(x => x.IsEnabled(LogLevel.Warning)).Returns(true);
 
             return logger;
@@ -75,8 +90,8 @@ namespace Microsoft.AspNet.Identity.Test
             store = store ?? new Mock<IRoleStore<TRole>>().Object;
             var roles = new List<IRoleValidator<TRole>>();
             roles.Add(new RoleValidator<TRole>());
-            return new RoleManager<TRole>(store, roles, 
-                new UpperInvariantLookupNormalizer(), 
+            return new RoleManager<TRole>(store, roles,
+                new UpperInvariantLookupNormalizer(),
                 new IdentityErrorDescriber(),
                 null,
                 null);

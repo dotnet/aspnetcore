@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Identity
                 default:
                     throw new InvalidOperationException(Resources.InvalidPasswordHasherCompatibilityMode);
             }
-          
+
             _rng = options.Rng;
         }
 

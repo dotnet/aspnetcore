@@ -141,13 +141,13 @@ namespace Microsoft.AspNet.Identity.Test
             var user = new TUser() { UserName = "UpdatePassword" };
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
             Assert.True(await manager.CheckPasswordAsync(user, "password"));
-            string expectedLog = string.Format("{0} for user: {1} : {2}", "CheckPasswordAsync", user.Id.ToString(), true.ToString());
+            string expectedLog = string.Format("{0} : {1}", "CheckPasswordAsync", true.ToString());
             IdentityResultAssert.VerifyLogMessage(manager.Logger, expectedLog);
 
             user.PasswordHash = manager.PasswordHasher.HashPassword(user, "New");
             IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
             Assert.False(await manager.CheckPasswordAsync(user, "password"));
-            expectedLog = string.Format("{0} for user: {1} : {2}", "CheckPasswordAsync", user.Id.ToString(), false.ToString());
+            expectedLog = string.Format("{0} : {1}", "CheckPasswordAsync", false.ToString());
             IdentityResultAssert.VerifyLogMessage(manager.Logger, expectedLog);
             Assert.True(await manager.CheckPasswordAsync(user, "New"));
         }
@@ -708,7 +708,8 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user2));
             var token = await manager.GenerateUserTokenAsync(user, "Static", "test");
-            IdentityResultAssert.VerifyUserManagerSuccessLog(manager.Logger, "GenerateUserTokenAsync", user.Id.ToString());
+            var expectedLog = string.Format("{0} : {1}", "GenerateUserTokenAsync", "Succeeded");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, expectedLog);
 
             Assert.True(await manager.VerifyUserTokenAsync(user, "Static", "test", token));
             IdentityResultAssert.VerifyUserManagerSuccessLog(manager.Logger, "VerifyUserTokenAsync", user.Id.ToString());

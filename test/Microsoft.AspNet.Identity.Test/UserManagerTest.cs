@@ -420,6 +420,10 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.GetPasswordHashAsync(user, CancellationToken.None))
                 .ReturnsAsync(hashed)
                 .Verifiable();
+            store.Setup(x => x.GetUserIdAsync(It.IsAny<TestUser>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(Guid.NewGuid().ToString()));
+            store.Setup(x => x.UpdateAsync(It.IsAny<TestUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(IdentityResult.Success));
+
             hasher.Setup(s => s.VerifyHashedPassword(user, hashed, pwd)).Returns(PasswordVerificationResult.SuccessRehashNeeded).Verifiable();
             hasher.Setup(s => s.HashPassword(user, pwd)).Returns(rehashed).Verifiable();
             var userManager = MockHelpers.TestUserManager(store.Object);
@@ -540,7 +544,9 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task SecurityStampMethodsFailWhenStoreNotImplemented()
         {
-            var manager = MockHelpers.TestUserManager(new NoopUserStore());
+            var store = new Mock<IUserStore<IdentityUser>>();
+            store.Setup(x => x.GetUserIdAsync(It.IsAny<IdentityUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(Guid.NewGuid().ToString()));
+            var manager = MockHelpers.TestUserManager(store.Object);
             Assert.False(manager.SupportsUserSecurityStamp);
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateSecurityStampAsync(null));
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetSecurityStampAsync(null));

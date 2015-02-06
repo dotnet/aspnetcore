@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Identity.Logging;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Identity
@@ -20,13 +22,17 @@ namespace Microsoft.AspNet.Identity
     public class RoleManager<TRole> : IDisposable where TRole : class
     {
         private bool _disposed;
-        private HttpContext _context;
+        private readonly HttpContext _context;
 
         /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         /// <param name="store">The IRoleStore commits changes via the UpdateAsync/CreateAsync methods</param>
-        /// <param name="roleValidator"></param>
+        /// <param name="roleValidators">IEnumerable of role validators</param>
+        /// <param name="keyNormalizer">user property normalizers</param>
+        /// <param name="errors">IdentityErrorDescribers</param>
+        /// <param name="logger">Logger for RoleManager</param>
+        /// <param name="contextAccessor">HttpContext accessor object</param>
         public RoleManager(IRoleStore<TRole> store,
             IEnumerable<IRoleValidator<TRole>> roleValidators,
             ILookupNormalizer keyNormalizer,
@@ -60,6 +66,11 @@ namespace Microsoft.AspNet.Identity
         protected IRoleStore<TRole> Store { get; private set; }
 
         /// <summary>
+        ///     Used for logging results
+        /// </summary>
+        protected internal virtual ILogger Logger { get; set; }
+
+        /// <summary>
         ///     Used to validate roles before persisting changes
         /// </summary>
         internal IList<IRoleValidator<TRole>> RoleValidators { get; } = new List<IRoleValidator<TRole>>();
@@ -68,11 +79,6 @@ namespace Microsoft.AspNet.Identity
         ///     Used to generate public API error messages
         /// </summary>
         internal IdentityErrorDescriber ErrorDescriber { get; set; }
-
-        /// <summary>
-        ///     Used to log results
-        /// </summary>
-        internal ILogger Logger { get; set; }
 
         /// <summary>
         ///     Used to normalize user names, role names, emails for uniqueness
@@ -119,13 +125,7 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-        private CancellationToken CancellationToken
-        {
-            get
-            {
-                return _context?.RequestAborted ?? CancellationToken.None;
-            }
-        }
+        private CancellationToken CancellationToken => _context?.RequestAborted ?? CancellationToken.None;
 
         /// <summary>
         ///     Dispose this object
@@ -162,20 +162,23 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("role");
             }
-
             var result = await ValidateRoleInternal(role);
             if (!result.Succeeded)
             {
                 return result;
             }
             await UpdateNormalizedRoleNameAsync(role);
-            return await LogResultAsync(await Store.CreateAsync(role, CancellationToken), role);
+            result = await Store.CreateAsync(role, CancellationToken);
+            using (await BeginLoggingScopeAsync(role))
+            {
+                return Logger.Log(result);
+            }
         }
 
         /// <summary>
         /// Update the user's normalized user name
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="role"></param>
         /// <returns></returns>
         public virtual async Task UpdateNormalizedRoleNameAsync(TRole role)
         {
@@ -197,7 +200,10 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("role");
             }
 
-            return await LogResultAsync(await UpdateRoleAsync(role), role);
+            using (await BeginLoggingScopeAsync(role))
+            {
+                return Logger.Log(await UpdateRoleAsync(role));
+            }
         }
 
         private async Task<IdentityResult> UpdateRoleAsync(TRole role)
@@ -223,7 +229,11 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("role");
             }
-            return await LogResultAsync(await Store.DeleteAsync(role, CancellationToken), role);
+
+            using (await BeginLoggingScopeAsync(role))
+            {
+                return Logger.Log(await Store.DeleteAsync(role, CancellationToken));
+            }
         }
 
         /// <summary>
@@ -284,9 +294,13 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<IdentityResult> SetRoleNameAsync(TRole role, string name)
         {
             ThrowIfDisposed();
-            await Store.SetRoleNameAsync(role, name, CancellationToken);
-            await UpdateNormalizedRoleNameAsync(role);
-            return await LogResultAsync(IdentityResult.Success, role);
+
+            using (await BeginLoggingScopeAsync(role))
+            {
+                await Store.SetRoleNameAsync(role, name, CancellationToken);
+                await UpdateNormalizedRoleNameAsync(role);
+                return Logger.Log(IdentityResult.Success);
+            }
         }
 
         /// <summary>
@@ -345,8 +359,12 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("role");
             }
-            await claimStore.AddClaimAsync(role, claim, CancellationToken);
-            return await LogResultAsync(await UpdateRoleAsync(role), role);
+
+            using (await BeginLoggingScopeAsync(role))
+            {
+                await claimStore.AddClaimAsync(role, claim, CancellationToken);
+                return Logger.Log(await UpdateRoleAsync(role));
+            }
         }
 
         /// <summary>
@@ -363,8 +381,12 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("role");
             }
-            await claimStore.RemoveClaimAsync(role, claim, CancellationToken);
-            return await LogResultAsync(await UpdateRoleAsync(role), role);
+
+            using (await BeginLoggingScopeAsync(role))
+            {
+                await claimStore.RemoveClaimAsync(role, claim, CancellationToken);
+                return Logger.Log(await UpdateRoleAsync(role));
+            }
         }
 
         /// <summary>
@@ -383,20 +405,12 @@ namespace Microsoft.AspNet.Identity
             return await claimStore.GetClaimsAsync(role, CancellationToken);
         }
 
-        /// <summary>
-        ///     Logs the current Identity Result and returns result object
-        /// </summary>
-        /// <param name="result"></param>
-        /// <param name="user"></param>
-        /// <param name="methodName"></param>
-        /// <returns></returns>
-        protected async Task<IdentityResult> LogResultAsync(IdentityResult result,
-            TRole role, [System.Runtime.CompilerServices.CallerMemberName] string methodName = "")
+        protected virtual async Task<IDisposable> BeginLoggingScopeAsync(TRole role, [CallerMemberName] string methodName = null)
         {
-            result.Log(Logger, Resources.FormatLoggingResultMessageForRole(methodName, await GetRoleIdAsync(role)));
-
-            return result;
+            var state = Resources.FormatLoggingResultMessageForRole(methodName, await GetRoleIdAsync(role));
+            return Logger.BeginScope(state);
         }
+            
 
         private void ThrowIfDisposed()
         {
