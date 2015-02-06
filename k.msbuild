@@ -298,7 +298,8 @@
                 <term>pot</term>
                 <Justification>file extension - powerpoint</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.WebSockets\WebSocketBuffer.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.WebSockets\WebSocketBuffer.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNet.Mvc.Razor\Compilation\CompilerCache.cs">
                 <term>races</term>
                 <Justification>refers to race condition</Justification>
             </SrcExclusions>
