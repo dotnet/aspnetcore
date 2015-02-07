@@ -9,10 +9,10 @@ using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Security;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
@@ -107,13 +107,14 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IViewLocationExpanderProvider, DefaultViewLocationExpanderProvider>();
             // Caches view locations that are valid for the lifetime of the application.
             yield return describe.Singleton<IViewLocationCache, DefaultViewLocationCache>();
-
-            // The host is designed to be discarded after consumption and is very inexpensive to initialize.
-            yield return describe.Transient<IMvcRazorHost>(serviceProvider =>
+            yield return describe.Singleton<ICodeTreeCache>(serviceProvider =>
             {
                 var cachedFileProvider = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>();
-                return new MvcRazorHost(cachedFileProvider.Options.FileProvider);
+                return new DefaultCodeTreeCache(cachedFileProvider.Options.FileProvider);
             });
+
+            // The host is designed to be discarded after consumption and is very inexpensive to initialize.
+            yield return describe.Transient<IMvcRazorHost, MvcRazorHost>();
 
             // Caches compilation artifacts across the lifetime of the application.
             yield return describe.Singleton<ICompilerCache, CompilerCache>();

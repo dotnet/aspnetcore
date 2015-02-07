@@ -18,25 +18,24 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
     /// </summary>
     public class ChunkInheritanceUtility
     {
-        private readonly Dictionary<string, CodeTree> _parsedCodeTrees;
         private readonly MvcRazorHost _razorHost;
-        private readonly IFileProvider _fileProvider;
         private readonly IReadOnlyList<Chunk> _defaultInheritedChunks;
+        private readonly ICodeTreeCache _codeTreeCache;
 
         /// <summary>
         /// Initializes a new instance of <see cref="ChunkInheritanceUtility"/>.
         /// </summary>
         /// <param name="razorHost">The <see cref="MvcRazorHost"/> used to parse _ViewStart pages.</param>
-        /// <param name="fileProvider">The fileProvider that represents the application.</param>
+        /// <param name="codeTreeCache"><see cref="ICodeTreeCache"/> that caches _ViewStart <see cref="CodeTree"/>
+        /// instances.</param>
         /// <param name="defaultInheritedChunks">Sequence of <see cref="Chunk"/>s inherited by default.</param>
         public ChunkInheritanceUtility([NotNull] MvcRazorHost razorHost,
-                                       [NotNull] IFileProvider fileProvider,
+                                       [NotNull] ICodeTreeCache codeTreeCache,
                                        [NotNull] IReadOnlyList<Chunk> defaultInheritedChunks)
         {
             _razorHost = razorHost;
-            _fileProvider = fileProvider;
             _defaultInheritedChunks = defaultInheritedChunks;
-            _parsedCodeTrees = new Dictionary<string, CodeTree>(StringComparer.Ordinal);
+            _codeTreeCache = codeTreeCache;
         }
 
         /// <summary>
@@ -50,30 +49,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public IReadOnlyList<CodeTree> GetInheritedCodeTrees([NotNull] string pagePath)
         {
             var inheritedCodeTrees = new List<CodeTree>();
-
             var templateEngine = new RazorTemplateEngine(_razorHost);
             foreach (var viewStartPath in ViewStartUtility.GetViewStartLocations(pagePath))
             {
-                CodeTree codeTree;
+                // viewStartPath contains the app-relative path of the ViewStart.
+                // Since the parsing of a _ViewStart would cause parent _ViewStarts to be parsed
+                // we need to ensure the paths are app-relative to allow the GetViewStartLocations
+                // for the current _ViewStart to succeed.
+                var codeTree = _codeTreeCache.GetOrAdd(viewStartPath,
+                                                       fileInfo => ParseViewFile(templateEngine, fileInfo, viewStartPath));
 
-                if (_parsedCodeTrees.TryGetValue(viewStartPath, out codeTree))
+                if (codeTree != null)
                 {
                     inheritedCodeTrees.Add(codeTree);
-                }
-                else
-                {
-                    var fileInfo = _fileProvider.GetFileInfo(viewStartPath);
-                    if (fileInfo.Exists)
-                    {
-                        // viewStartPath contains the app-relative path of the ViewStart.
-                        // Since the parsing of a _ViewStart would cause parent _ViewStarts to be parsed
-                        // we need to ensure the paths are app-relative to allow the GetViewStartLocations
-                        // for the current _ViewStart to succeed.
-                        codeTree = ParseViewFile(templateEngine, fileInfo, viewStartPath);
-                        _parsedCodeTrees.Add(viewStartPath, codeTree);
-
-                        inheritedCodeTrees.Add(codeTree);
-                    }
                 }
             }
 

@@ -30,8 +30,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 new InjectChunk("MyTestHtmlHelper", "Html"),
                 new UsingChunk { Namespace = "AppNamespace.Model" },
             };
-            var host = new MvcRazorHost(fileProvider);
-            var utility = new ChunkInheritanceUtility(host, fileProvider, defaultChunks);
+            var cache = new DefaultCodeTreeCache(fileProvider);
+            var host = new MvcRazorHost(cache);
+            var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
             // Act
             var codeTrees = utility.GetInheritedCodeTrees(@"Views\home\Index.cshtml");
@@ -70,13 +71,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             fileProvider.AddFile(@"_ViewStart.cs", string.Empty);
             fileProvider.AddFile(@"Views\_Layout.cshtml", string.Empty);
             fileProvider.AddFile(@"Views\home\_not-viewstart.cshtml", string.Empty);
-            var host = new MvcRazorHost(fileProvider);
+            var cache = new DefaultCodeTreeCache(fileProvider);
+            var host = new MvcRazorHost(cache);
             var defaultChunks = new Chunk[]
             {
                 new InjectChunk("MyTestHtmlHelper", "Html"),
                 new UsingChunk { Namespace = "AppNamespace.Model" },
             };
-            var utility = new ChunkInheritanceUtility(host, fileProvider, defaultChunks);
+            var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
             // Act
             var codeTrees = utility.GetInheritedCodeTrees(@"Views\home\Index.cshtml");
@@ -92,7 +94,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(@"Views\_ViewStart.cshtml",
                                "@inject DifferentHelper<TModel> Html");
-            var host = new MvcRazorHost(fileProvider);
+            var cache = new DefaultCodeTreeCache(fileProvider);
+            var host = new MvcRazorHost(cache);
             var defaultChunks = new Chunk[]
             {
                 new InjectChunk("MyTestHtmlHelper", "Html"),
@@ -117,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 }
             };
 
-            var utility = new ChunkInheritanceUtility(host, fileProvider, defaultChunks);
+            var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
             var codeTree = new CodeTree();
 
             // Act

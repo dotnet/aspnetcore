@@ -31,11 +31,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             new InjectChunk("Microsoft.AspNet.Mvc.IUrlHelper", "Url"),
         };
 
-        private readonly IFileProvider _fileProvider;
-
         // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>.
         // This field holds the type name without the generic decoration (MyBaseType)
         private readonly string _baseType;
+        private readonly ICodeTreeCache _codeTreeCache;
         private ChunkInheritanceUtility _chunkInheritanceUtility;
 
 #if NET45
@@ -44,8 +43,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="root"/>.
         /// </summary>
         /// <param name="root">The path to the application base.</param>
+        // Note: This constructor is used by tooling and is created once for each
+        // Razor page that is loaded. Consequently, each loaded page has its own copy of
+        // the CodeTreeCache, but this ok - having a shared CodeTreeCache per application in tooling
+        // is problematic to manage.
         public MvcRazorHost(string root) :
-            this(new PhysicalFileProvider(root))
+            this(new DefaultCodeTreeCache(new PhysicalFileProvider(root)))
         {
         }
 #endif
@@ -53,11 +56,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="fileProvider"/>.
         /// </summary>
         /// <param name="fileProvider">A <see cref="IFileProvider"/> rooted at the application base path.</param>
-        public MvcRazorHost(IFileProvider fileProvider)
+        public MvcRazorHost(ICodeTreeCache codeTreeCache)
             : base(new CSharpRazorCodeLanguage())
         {
-            _fileProvider = fileProvider;
             _baseType = BaseType;
+            _codeTreeCache = codeTreeCache;
 
             TagHelperDescriptorResolver = new TagHelperDescriptorResolver();
             DefaultBaseClass = BaseType + "<" + DefaultModel + ">";
@@ -164,7 +167,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 if (_chunkInheritanceUtility == null)
                 {
                     // This needs to be lazily evaluated to support DefaultInheritedChunks being virtual.
-                    _chunkInheritanceUtility = new ChunkInheritanceUtility(this, _fileProvider, DefaultInheritedChunks);
+                    _chunkInheritanceUtility = new ChunkInheritanceUtility(this, _codeTreeCache, DefaultInheritedChunks);
                 }
 
                 return _chunkInheritanceUtility;

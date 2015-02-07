@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
@@ -101,8 +102,9 @@ Environment.NewLine +
 
         private static CodeBuilderContext CreateContext()
         {
+            var fileProvider = new TestFileProvider();
             return new CodeBuilderContext(
-                new CodeGeneratorContext(new MvcRazorHost(new TestFileProvider()),
+                new CodeGeneratorContext(new MvcRazorHost(new DefaultCodeTreeCache(fileProvider)),
                                          "MyClass",
                                          "MyNamespace",
                                          string.Empty,

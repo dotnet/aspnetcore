@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void MvcRazorHost_EnablesInstrumentationByDefault()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileProvider());
+            var fileProvider = new TestFileProvider();
+            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider));
 
             // Act
             var instrumented = host.EnableInstrumentation;
@@ -32,7 +33,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void MvcRazorHost_GeneratesTagHelperModelExpressionCode_DesignTime()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileProvider())
+            var fileProvider = new TestFileProvider();
+            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -85,7 +87,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void MvcRazorHost_ParsesAndGeneratesCodeForBasicScenarios(string scenarioName)
         {
             // Arrange
-            var host = new TestMvcRazorHost(new TestFileProvider());
+            var fileProvider = new TestFileProvider();
+            var host = new TestMvcRazorHost(new DefaultCodeTreeCache(fileProvider));
 
             // Act and Assert
             RunRuntimeTest(host, scenarioName);
@@ -95,7 +98,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void InjectVisitor_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileProvider())
+            var fileProvider = new TestFileProvider();
+            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -114,7 +118,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void InjectVisitorWithModel_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileProvider())
+            var fileProvider = new TestFileProvider();
+            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -134,7 +139,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void InjectVisitorWithSemicolon_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileProvider())
+            var fileProvider = new TestFileProvider();
+            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -156,7 +162,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void ModelVisitor_GeneratesCorrectLineMappings()
         {
             // Arrange
-            var host = new MvcRazorHost(new TestFileProvider())
+            var fileProvider = new TestFileProvider();
+            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -252,8 +259,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         private class TestMvcRazorHost : MvcRazorHost
         {
-            public TestMvcRazorHost(IFileProvider fileProvider)
-                : base(fileProvider)
+            public TestMvcRazorHost(ICodeTreeCache codeTreeCache)
+                : base(codeTreeCache)
             { }
 
             public override CodeBuilder DecorateCodeBuilder(CodeBuilder incomingBuilder, CodeBuilderContext context)
