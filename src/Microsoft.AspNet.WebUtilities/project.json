@@ -1,6 +1,9 @@
 {
     "version": "1.0.0-*",
     "description": "ASP.NET 5 common helper methods such as URL encoding.",
+    "compilationOptions": {
+        "allowUnsafe": true
+    },
     "dependencies": {
     },
     "frameworks": {
@@ -11,8 +14,11 @@
                 "System.Diagnostics.Debug": "4.0.10-beta-*",
                 "System.IO": "4.0.10-beta-*",
                 "System.IO.FileSystem": "4.0.0-beta-*",
+                "System.Linq": "4.0.0-beta-*",
+                "System.Reflection.TypeExtensions": "4.0.0-beta-*",
                 "System.Runtime": "4.0.20-beta-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*"
+                "System.Runtime.Extensions": "4.0.10-beta-*",
+                "System.Threading": "4.0.10-beta-*"
             }
         }
     }
