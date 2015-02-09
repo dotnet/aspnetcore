@@ -2,11 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
+    [DebuggerDisplay("Name={ControllerName}, Type={ControllerType.Name}," +
+                     " Routes: {AttributeRoutes.Count}, Filters: {Filters.Count}")]
     public class ControllerModel
     {
         public ControllerModel([NotNull] TypeInfo controllerType,

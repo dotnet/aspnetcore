@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
+    [DebuggerDisplay("ApplicationModel: Controllers: {Controllers.Count}, Filters: {Filters.Count}")]
     public class ApplicationModel
     {
         public ApplicationModel()

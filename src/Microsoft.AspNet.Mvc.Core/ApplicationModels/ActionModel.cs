@@ -2,11 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
+    [DebuggerDisplay("Name={ActionName}({Methods()}), Type={Controller.ControllerType.Name}," +
+                     " Route: {AttributeRouteModel?.Template}, Filters: {Filters.Count}")]
     public class ActionModel
     {
         public ActionModel([NotNull] MethodInfo actionMethod,
@@ -91,5 +94,15 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// <see cref="ApplicationModel.Properties"/> and <see cref="ControllerModel.Properties"/>.
         /// </remarks>
         public IDictionary<object, object> Properties { get; }
+
+        private string Methods()
+        {
+            if (HttpMethods.Count == 0)
+            {
+                return "All";
+            }
+
+            return string.Join(", ", HttpMethods);
+        }
     }
 }
