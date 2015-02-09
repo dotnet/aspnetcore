@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="descriptors">A sequence of <see cref="IOptionDescriptor{object}"/>.</param>
         /// <returns>The only instance of <typeparamref name="TInstance"/> from a sequence of 
         /// <see cref="IOptionDescriptor{object}"/>.</returns>
-        /// <exception cref="InvalidOperationException"> 
+        /// <exception cref="System.InvalidOperationException"> 
         /// Thrown if there is not exactly one <typeparamref name="TInstance"/> in the sequence.</exception>
         public static TInstance InstanceOf<TInstance>(
             [NotNull] this IEnumerable<IOptionDescriptor<object>> descriptors)
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>The only instance of <typeparamref name="TInstance"/> from a sequence of 
         /// <see cref="IOptionDescriptor{object}"/>, 
         /// or a default value if the sequence is empty.</returns>
-        /// <exception cref="InvalidOperationException"> 
+        /// <exception cref="System.InvalidOperationException"> 
         /// Thrown if there is more than one <typeparamref name="TInstance"/> in the sequence.</exception>
         public static TInstance InstanceOfOrDefault<TInstance>([NotNull] this
             IEnumerable<IOptionDescriptor<object>> descriptors)
