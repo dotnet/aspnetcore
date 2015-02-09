@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             var i = 0;
-            Assert.Equal(12, mvcOptions.ModelBinders.Count);
+            Assert.Equal(13, mvcOptions.ModelBinders.Count);
             Assert.Equal(typeof(BinderTypeBasedModelBinder), mvcOptions.ModelBinders[i++].OptionType);
             Assert.Equal(typeof(ServicesModelBinder), mvcOptions.ModelBinders[i++].OptionType);
             Assert.Equal(typeof(BodyModelBinder), mvcOptions.ModelBinders[i++].OptionType);
@@ -49,6 +49,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(typeof(CancellationTokenModelBinder), mvcOptions.ModelBinders[i++].OptionType);
             Assert.Equal(typeof(ByteArrayModelBinder), mvcOptions.ModelBinders[i++].OptionType);
             Assert.Equal(typeof(FormFileModelBinder), mvcOptions.ModelBinders[i++].OptionType);
+            Assert.Equal(typeof(FormCollectionModelBinder), mvcOptions.ModelBinders[i++].OptionType);
             Assert.Equal(typeof(GenericModelBinder), mvcOptions.ModelBinders[i++].OptionType);
             Assert.Equal(typeof(MutableObjectModelBinder), mvcOptions.ModelBinders[i++].OptionType);
             Assert.Equal(typeof(ComplexModelDtoModelBinder), mvcOptions.ModelBinders[i++].OptionType);
