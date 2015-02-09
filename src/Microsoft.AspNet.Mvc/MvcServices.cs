@@ -37,6 +37,7 @@ namespace Microsoft.AspNet.Mvc
                 typeof(INestedProviderManagerAsync<>),
                 typeof(NestedProviderManagerAsync<>));
             yield return describe.Transient<MvcMarkerService, MvcMarkerService>();
+            yield return describe.Scoped(typeof(IScopedInstance<>), typeof(ScopedInstance<>));
 
             // Core action discovery, filters and action execution.
 

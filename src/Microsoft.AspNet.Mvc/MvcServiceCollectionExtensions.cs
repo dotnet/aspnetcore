@@ -41,13 +41,11 @@ namespace Microsoft.Framework.DependencyInjection
             services.AddOptions(configuration);
             services.AddDataProtection(configuration);
             services.AddRouting(configuration);
-            services.AddScopedInstance(configuration);
             services.AddAuthorization(configuration);
             services.Configure<RouteOptions>(routeOptions =>
                                                     routeOptions.ConstraintMap
                                                          .Add("exists",
                                                               typeof(KnownRouteValueConstraint)));
-
         }
     }
 }
