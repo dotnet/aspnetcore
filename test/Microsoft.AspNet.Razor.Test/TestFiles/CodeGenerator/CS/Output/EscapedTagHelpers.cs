@@ -37,7 +37,7 @@ namespace TestOutput
             Instrumentation.BeginContext(114, 69, true);
             WriteLiteral(">\r\n        <input type=\"text\" />\r\n        <em>Not a TagHelper: </em> ");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", "test", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
             }
             , StartWritingScope, EndWritingScope);
             __InputTagHelper = CreateTagHelper<InputTagHelper>();

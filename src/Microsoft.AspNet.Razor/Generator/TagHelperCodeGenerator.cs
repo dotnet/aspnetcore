@@ -76,12 +76,11 @@ namespace Microsoft.AspNet.Razor.Generator
             }
 
             context.CodeTreeBuilder.StartChunkBlock(
-                new TagHelperChunk
-                {
-                    TagName = tagHelperBlock.TagName,
-                    Attributes = attributes,
-                    Descriptors = _tagHelperDescriptors
-                },
+                new TagHelperChunk(
+                    tagHelperBlock.TagName,
+                    tagHelperBlock.SelfClosing,
+                    attributes,
+                    _tagHelperDescriptors),
                 target,
                 topLevel: false);
         }

@@ -31,6 +31,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             Descriptors = source.Descriptors;
             Attributes = new Dictionary<string, SyntaxTreeNode>(source.Attributes);
             _start = source.Start;
+            SelfClosing = source.SelfClosing;
 
             source.Reset();
 
@@ -39,6 +40,11 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                 attributeChildren.Parent = this;
             }
         }
+
+        /// <summary>
+        /// Indicates whether or not the tag is self closing.
+        /// </summary>
+        public bool SelfClosing { get; }
 
         /// <summary>
         /// <see cref="TagHelperDescriptor"/>s for the HTML element.

@@ -131,12 +131,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
         private static TagHelperChunk CreateTagHelperChunk(string tagName, IEnumerable<TagHelperDescriptor> tagHelperDescriptors)
         {
-            return new TagHelperChunk
+            return new TagHelperChunk(
+                tagName,
+                selfClosing: false,
+                attributes: new Dictionary<string, Chunk>(),
+                descriptors: tagHelperDescriptors)
             {
-                TagName = tagName,
-                Descriptors = tagHelperDescriptors,
                 Children = new List<Chunk>(),
-                Attributes = new Dictionary<string, Chunk>()
             };
         }
 

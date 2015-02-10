@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void GeneratePreContent_ReturnsNothingIfSelfClosing()
+        public void GeneratePreContent_ReturnsNothingIfSelfClosingWhenTagNameIsNotNullOrWhitespace()
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput("p")
@@ -205,6 +205,29 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(output);
+        }
+
+        [Theory]
+        [InlineData(null, true)]
+        [InlineData("\t", true )]
+        [InlineData(null, false)]
+        [InlineData("\t", false)]
+        public void GeneratePreContent_ReturnsPreContentIfTagNameIsNullOrWhitespace(string tagName, bool selfClosing)
+        {
+            // Arrange
+            var expectedContent = "Hello World";
+
+            var tagHelperOutput = new TagHelperOutput(tagName)
+            {
+                SelfClosing = selfClosing,
+                PreContent = expectedContent
+            };
+
+            // Act
+            var output = tagHelperOutput.GeneratePreContent();
+
+            // Assert
+            Assert.Same(expectedContent, output);
         }
 
         [Fact]
@@ -225,7 +248,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
 
         [Fact]
-        public void GenerateContent_ReturnsNothingIfSelfClosing()
+        public void GenerateContent_ReturnsNothingIfSelfClosingWhenTagNameIsNotNullOrWhitespace()
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput("p")
@@ -239,6 +262,29 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(output);
+        }
+
+        [Theory]
+        [InlineData(null, true)]
+        [InlineData("\t", true )]
+        [InlineData(null, false)]
+        [InlineData("\t", false)]
+        public void GenerateContent_ReturnsContentIfTagNameIsNullOrWhitespace(string tagName, bool selfClosing)
+        {
+            // Arrange
+            var expectedContent = "Hello World";
+
+            var tagHelperOutput = new TagHelperOutput(tagName)
+            {
+                SelfClosing = selfClosing,
+                Content = expectedContent
+            };
+
+            // Act
+            var output = tagHelperOutput.GenerateContent();
+
+            // Assert
+            Assert.Same(expectedContent, output);
         }
 
         [Fact]
@@ -258,7 +304,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void GeneratePostContent_ReturnsNothingIfSelfClosing()
+        public void GeneratePostContent_ReturnsNothingIfSelfClosingWhenTagNameIsNotNullOrWhitespace()
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput("p")
@@ -285,6 +331,29 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Equal("</p>", output);
+        }
+
+        [Theory]
+        [InlineData(null, true)]
+        [InlineData("\t", true )]
+        [InlineData(null, false)]
+        [InlineData("\t", false)]
+        public void GeneratePostContent_ReturnsPostContentIfTagNameIsNullOrWhitespace(string tagName, bool selfClosing)
+        {
+            // Arrange
+            var expectedContent = "Hello World";
+
+            var tagHelperOutput = new TagHelperOutput(tagName)
+            {
+                SelfClosing = selfClosing,
+                PostContent = expectedContent
+            };
+
+            // Act
+            var output = tagHelperOutput.GeneratePostContent();
+
+            // Assert
+            Assert.Equal(expectedContent, output);
         }
 
         [Fact]

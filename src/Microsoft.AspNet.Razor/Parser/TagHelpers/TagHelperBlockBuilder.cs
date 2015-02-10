@@ -33,29 +33,36 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// and <see cref="BlockBuilder.Type"/> from the <paramref name="startTag"/>.
         /// </summary>
         /// <param name="tagName">An HTML tag name.</param>
+        /// <param name="selfClosing">
+        /// <see cref="bool"/> indicating whether or not the tag in the Razor source was self-closing.
+        /// </param>
         /// <param name="start">Starting location of the <see cref="TagHelperBlock"/>.</param>
         /// <param name="attributes">Attributes of the <see cref="TagHelperBlock"/>.</param>
         /// <param name="descriptors">The <see cref="TagHelperDescriptor"/>s associated with the current HTML
         /// tag.</param>
         public TagHelperBlockBuilder(string tagName,
+                                     bool selfClosing,
                                      SourceLocation start,
                                      IDictionary<string, SyntaxTreeNode> attributes,
                                      IEnumerable<TagHelperDescriptor> descriptors)
         {
             TagName = tagName;
+            SelfClosing = selfClosing;
             Start = start;
             Descriptors = descriptors;
+            Attributes = new Dictionary<string, SyntaxTreeNode>(attributes);
             Type = BlockType.Tag;
             CodeGenerator = new TagHelperCodeGenerator(descriptors);
-            Attributes = new Dictionary<string, SyntaxTreeNode>(attributes);
         }
 
         // Internal for testing
         internal TagHelperBlockBuilder(string tagName,
+                                       bool selfClosing,
                                        IDictionary<string, SyntaxTreeNode> attributes,
                                        IEnumerable<SyntaxTreeNode> children)
         {
             TagName = tagName;
+            SelfClosing = selfClosing;
             Attributes = attributes;
             Type = BlockType.Tag;
             CodeGenerator = new TagHelperCodeGenerator(tagHelperDescriptors: null);
@@ -66,6 +73,11 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                 Children.Add(child);
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether or not the tag in the Razor source was self-closing.
+        /// </summary>
+        public bool SelfClosing { get; }
 
         /// <summary>
         /// <see cref="TagHelperDescriptor"/>s for the HTML element.

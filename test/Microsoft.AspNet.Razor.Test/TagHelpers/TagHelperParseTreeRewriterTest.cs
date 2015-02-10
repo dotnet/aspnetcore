@@ -37,7 +37,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     { "bound", new MarkupBlock() }
                                 })),
@@ -53,7 +54,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     { "bound", factory.CodeMarkup("    true") }
                                 })),
@@ -64,7 +66,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     { "bound", factory.CodeMarkup("    ") }
                                 })),
@@ -80,7 +83,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     { "bound", new MarkupBlock() }
                                 })),
@@ -99,7 +103,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     { "bound", factory.CodeMarkup("  ") }
                                 })),
@@ -118,7 +123,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) }
                                 })),
@@ -134,7 +140,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) },
                                     { "name", new MarkupBlock() }
@@ -151,7 +158,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) },
                                     { "name", factory.Markup("  ") }
@@ -168,7 +176,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) },
                                     { "name", factory.Markup(string.Empty).With(SpanCodeGenerator.Null) }
@@ -185,7 +194,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     { "BouND", new MarkupBlock() }
                                 })),
@@ -201,7 +211,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     { "BOUND", new MarkupBlock() }
                                 })),
@@ -237,7 +248,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     {
                                         "bound",
@@ -259,7 +271,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
                                 {
                                     {
                                         "bound",
@@ -1990,23 +2003,25 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p class1='' class2= class3=\"\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
-                            {
-                                { "class1",  new MarkupBlock() },
-                                { "class2",  factory.Markup("").With(SpanCodeGenerator.Null) },
-                                { "class3",  new MarkupBlock() },
-                            }))
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class1",  new MarkupBlock() },
+                                    { "class2",  factory.Markup("").With(SpanCodeGenerator.Null) },
+                                    { "class3",  new MarkupBlock() },
+                                }))
                     },
                     {
                         "<p class1=''class2=\"\"class3= />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
-                            {
-                                { "class1",  new MarkupBlock() },
-                                { "class2",  new MarkupBlock() },
-                                { "class3",  factory.Markup("").With(SpanCodeGenerator.Null) },
-                            }))
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class1",  new MarkupBlock() },
+                                    { "class2",  new MarkupBlock() },
+                                    { "class3",  factory.Markup("").With(SpanCodeGenerator.Null) },
+                                }))
                     },
                 };
             }
@@ -2462,48 +2477,53 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<person age=\"12\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                            new Dictionary<string, SyntaxTreeNode>
-                            {
-                                { "age", factory.CodeMarkup("12") }
-                            }))
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "age", factory.CodeMarkup("12") }
+                                }))
                     },
                     {
                         "<person birthday=\"DateTime.Now\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                            new Dictionary<string, SyntaxTreeNode>
-                            {
-                                { "birthday", factory.CodeMarkup("DateTime.Now") }
-                            }))
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "birthday", factory.CodeMarkup("DateTime.Now") }
+                                }))
                     },
                     {
                         "<person name=\"John\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                            new Dictionary<string, SyntaxTreeNode>
-                            {
-                                { "name", factory.Markup("John") }
-                            }))
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "name", factory.Markup("John") }
+                                }))
                     },
                     {
                         "<person name=\"Time: @DateTime.Now\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                            new Dictionary<string, SyntaxTreeNode>
-                            {
-                                { "name", new MarkupBlock(factory.Markup("Time:"), dateTimeNow) }
-                            }))
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "name", new MarkupBlock(factory.Markup("Time:"), dateTimeNow) }
+                                }))
                     },
                     {
                         "<person age=\"12\" birthday=\"DateTime.Now\" name=\"Time: @DateTime.Now\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                            new Dictionary<string, SyntaxTreeNode>
-                            {
-                                { "age", factory.CodeMarkup("12") },
-                                { "birthday", factory.CodeMarkup("DateTime.Now") },
-                                { "name", new MarkupBlock(factory.Markup("Time:"), dateTimeNow) }
-                            }))
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "age", factory.CodeMarkup("12") },
+                                    { "birthday", factory.CodeMarkup("DateTime.Now") },
+                                    { "name", new MarkupBlock(factory.Markup("Time:"), dateTimeNow) }
+                                }))
                     },
                 };
             }
@@ -2668,7 +2688,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<<p />",
                         new MarkupBlock(
                             blockFactory.MarkupTagBlock("<"),
-                            new MarkupTagHelperBlock("p"))
+                            new MarkupTagHelperBlock("p", selfClosing: true))
                     },
                     {
                         "< p />",
@@ -2679,7 +2699,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<input <p />",
                         new MarkupBlock(
                             blockFactory.MarkupTagBlock("<input "),
-                            new MarkupTagHelperBlock("p"))
+                            new MarkupTagHelperBlock("p", selfClosing: true))
                     },
                     {
                         "< class=\"foo\" <p />",
@@ -2697,7 +2717,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                         value: new LocationTagged<string>("foo", 9, 0, 9))),
                                     factory.Markup("\"").With(SpanCodeGenerator.Null)),
                                 factory.Markup(" ")),
-                            new MarkupTagHelperBlock("p"))
+                            new MarkupTagHelperBlock("p", selfClosing: true))
                     },
                     {
                         "</<<p>/></p>>",
@@ -3319,11 +3339,12 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<script class=\"foo\" style=\"color:red;\" />",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("script",
-                        new Dictionary<string, SyntaxTreeNode>
-                        {
-                            { "class", factory.Markup("foo") },
-                            { "style", factory.Markup("color:red;") }
-                        }))
+                            selfClosing: true,
+                            attributes: new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "class", factory.Markup("foo") },
+                                { "style", factory.Markup("color:red;") }
+                            }))
                 };
                 yield return new object[] {
                     "<p>Hello <script class=\"foo\" style=\"color:red;\"></script> World</p>",
@@ -3360,37 +3381,45 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p class=\"foo\" style=\"color:red;\" />",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                        new Dictionary<string, SyntaxTreeNode>
-                        {
-                            { "class", factory.Markup("foo") },
-                            { "style", factory.Markup("color:red;") }
-                        }))
+                            selfClosing: true,
+                            attributes:  new Dictionary<string, SyntaxTreeNode>
+                            {
+                                { "class", factory.Markup("foo") },
+                                { "style", factory.Markup("color:red;") }
+                            }))
                 };
                 yield return new object[] {
                     "<p>Hello <p class=\"foo\" style=\"color:red;\" /> World</p>",
                     new MarkupBlock(
-                        new MarkupTagHelperBlock("p",
-                            factory.Markup("Hello "),
-                            new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>
-                                {
-                                    { "class", factory.Markup("foo") },
-                                    { "style", factory.Markup("color:red;") }
-                                }),
-                            factory.Markup(" World")))
+                        new MarkupTagHelperBlock(
+                            "p",
+                            selfClosing: false,
+                            children: new SyntaxTreeNode[] {
+                                factory.Markup("Hello "),
+                                new MarkupTagHelperBlock(
+                                    "p",
+                                    selfClosing: true,
+                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                        {
+                                            { "class", factory.Markup("foo") },
+                                            { "style", factory.Markup("color:red;") }
+                                        }),
+                                factory.Markup(" World")}))
                 };
                 yield return new object[] {
                     "Hello<p class=\"foo\" /> <p style=\"color:red;\" />World",
                     new MarkupBlock(
                         factory.Markup("Hello"),
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            selfClosing: true,
+                            attributes: new Dictionary<string, SyntaxTreeNode>
                             {
                                 { "class", factory.Markup("foo") }
                             }),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            selfClosing: true,
+                            attributes: new Dictionary<string, SyntaxTreeNode>
                             {
                                 { "style", factory.Markup("color:red;") }
                             }),

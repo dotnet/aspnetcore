@@ -24,7 +24,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 executionContext.AllAttributes,
                 executionContext.UniqueId,
                 executionContext.GetChildContentAsync);
-            var tagHelperOutput = new TagHelperOutput(executionContext.TagName, executionContext.HTMLAttributes);
+            var tagHelperOutput = new TagHelperOutput(executionContext.TagName, executionContext.HTMLAttributes)
+            {
+                SelfClosing = executionContext.SelfClosing,
+            };
             var orderedTagHelpers = executionContext.TagHelpers.OrderBy(tagHelper => tagHelper.Order);
 
             foreach (var tagHelper in orderedTagHelpers)

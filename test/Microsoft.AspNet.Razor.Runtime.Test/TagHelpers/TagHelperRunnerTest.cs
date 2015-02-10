@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var runner = new TagHelperRunner();
-            var executionContext = new TagHelperExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
             var processOrder = new List<int>();
 
             foreach (var order in tagHelperOrders)
@@ -81,12 +81,32 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal(expectedTagHelperOrders, processOrder);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RunAsync_SetTagHelperOutputSelfClosing(bool selfClosing)
+        {
+            // Arrange
+            var runner = new TagHelperRunner();
+            var executionContext = new TagHelperExecutionContext("p", selfClosing);
+            var tagHelper = new TagHelperContextTouchingTagHelper();
+
+            executionContext.Add(tagHelper);
+            executionContext.AddTagHelperAttribute("foo", true);
+
+            // Act
+            var output = await runner.RunAsync(executionContext);
+
+            // Assert
+            Assert.Equal(selfClosing, output.SelfClosing);
+        }
+
         [Fact]
         public async Task RunAsync_ProcessesAllTagHelpers()
         {
             // Arrange
             var runner = new TagHelperRunner();
-            var executionContext = new TagHelperExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
             var executableTagHelper1 = new ExecutableTagHelper();
             var executableTagHelper2 = new ExecutableTagHelper();
 
@@ -105,7 +125,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var runner = new TagHelperRunner();
-            var executionContext = new TagHelperExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
             var executableTagHelper = new ExecutableTagHelper();
 
             // Act
@@ -125,7 +145,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var runner = new TagHelperRunner();
-            var executionContext = new TagHelperExecutionContext("p");
+            var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
             var tagHelper = new TagHelperContextTouchingTagHelper();
 
             // Act

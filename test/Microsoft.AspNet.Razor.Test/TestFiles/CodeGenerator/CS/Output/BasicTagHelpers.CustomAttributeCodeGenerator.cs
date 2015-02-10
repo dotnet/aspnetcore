@@ -27,9 +27,9 @@ namespace TestOutput
             Instrumentation.BeginContext(33, 49, true);
             WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    ");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
                 WriteLiteral("\r\n        ");
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
                 }
                 , StartWritingScope, EndWritingScope);
                 __PTagHelper = CreateTagHelper<PTagHelper>();
@@ -53,7 +53,7 @@ namespace TestOutput
                 WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 WriteLiteral("\r\n        ");
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
                 , StartWritingScope, EndWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();
@@ -82,7 +82,7 @@ namespace TestOutput
                 WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 WriteLiteral("\r\n        ");
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
                 , StartWritingScope, EndWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();

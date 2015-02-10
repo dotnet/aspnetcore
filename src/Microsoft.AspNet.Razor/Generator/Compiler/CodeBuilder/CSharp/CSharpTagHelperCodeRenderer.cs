@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         {
             var tagHelperDescriptors = chunk.Descriptors;
 
-            RenderBeginTagHelperScope(chunk.TagName, chunk.Children);
+            RenderBeginTagHelperScope(chunk.TagName, chunk.SelfClosing, chunk.Children);
 
             RenderTagHelpersCreation(chunk);
 
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return "__" + descriptor.TypeName.Replace('.', '_');
         }
 
-        private void RenderBeginTagHelperScope(string tagName, IList<Chunk> children)
+        private void RenderBeginTagHelperScope(string tagName, bool selfClosing, IList<Chunk> children)
         {
             // Scopes/execution contexts are a runtime feature.
             if (_designTimeMode)
@@ -108,6 +108,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             // Assign a unique ID for this instance of the source HTML tag. This must be unique
             // per call site, e.g. if the tag is on the view twice, there should be two IDs.
             _writer.WriteStringLiteral(tagName)
+                   .WriteParameterSeparator()
+                   .WriteBooleanLiteral(selfClosing)
                    .WriteParameterSeparator()
                    .WriteStringLiteral(GenerateUniqueId())
                    .WriteParameterSeparator();
@@ -466,8 +468,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             _writer.Write(ExecutionContextVariableName)
                    .Write(".")
-                   .Write(_tagHelperContext.ExecutionContextOutputPropertyName)
-                   .Write(" = ")
+                   .WriteStartAssignment(_tagHelperContext.ExecutionContextOutputPropertyName)
                    .WriteStartInstanceMethodInvocation(RunnerVariableName,
                                                        _tagHelperContext.RunnerRunAsyncMethodName);
 

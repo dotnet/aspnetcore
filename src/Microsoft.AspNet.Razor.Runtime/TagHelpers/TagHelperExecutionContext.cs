@@ -22,8 +22,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// Internal for testing purposes only.
         /// </summary>
-        internal TagHelperExecutionContext(string tagName)
+        internal TagHelperExecutionContext(string tagName, bool selfClosing)
             : this(tagName,
+                   selfClosing,
                    uniqueId: string.Empty,
                    executeChildContentAsync: async () => await Task.FromResult(result: true),
                    startWritingScope: () => { },
@@ -35,11 +36,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Instantiates a new <see cref="TagHelperExecutionContext"/>.
         /// </summary>
         /// <param name="tagName">The HTML tag name in the Razor source.</param>
+        /// <param name="selfClosing">
+        /// <see cref="bool"/> indicating whether or not the tag in the Razor source was self-closing.
+        /// </param>
         /// <param name="uniqueId">An identifier unique to the HTML element this context is for.</param>
         /// <param name="executeChildContentAsync">A delegate used to execute the child content asynchronously.</param>
         /// <param name="startWritingScope">A delegate used to start a writing scope in a Razor page.</param>
         /// <param name="endWritingScope">A delegate used to end a writing scope in a Razor page.</param>
         public TagHelperExecutionContext([NotNull] string tagName,
+                                         bool selfClosing,
                                          [NotNull] string uniqueId,
                                          [NotNull] Func<Task> executeChildContentAsync,
                                          [NotNull] Action startWritingScope,
@@ -50,11 +55,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             _startWritingScope = startWritingScope;
             _endWritingScope = endWritingScope;
 
+            SelfClosing = selfClosing;
             AllAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             HTMLAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             TagName = tagName;
             UniqueId = uniqueId;
         }
+
+        /// <summary>
+        /// Gets a value indicating whether or not the tag in the Razor source was self-closing.
+        /// </summary>
+        public bool SelfClosing { get; }
 
         /// <summary>
         /// Indicates if <see cref="GetChildContentAsync"/> has been called.

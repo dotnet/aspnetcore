@@ -27,18 +27,23 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Starts a <see cref="TagHelperExecutionContext"/> scope.
         /// </summary>
         /// <param name="tagName">The HTML tag name that the scope is associated with.</param>
+        /// <param name="selfClosing">
+        /// <see cref="bool"/> indicating whether or not the tag of this scope is self-closing.
+        /// </param>
         /// <param name="uniqueId">An identifier unique to the HTML element this scope is for.</param>
         /// <param name="executeChildContentAsync">A delegate used to execute the child content asynchronously.</param>
         /// <param name="startWritingScope">A delegate used to start a writing scope in a Razor page.</param>
         /// <param name="endWritingScope">A delegate used to end a writing scope in a Razor page.</param>
         /// <returns>A <see cref="TagHelperExecutionContext"/> to use.</returns>
         public TagHelperExecutionContext Begin([NotNull] string tagName,
+                                               bool selfClosing,
                                                [NotNull] string uniqueId,
                                                [NotNull] Func<Task> executeChildContentAsync,
                                                [NotNull] Action startWritingScope,
                                                [NotNull] Func<TextWriter> endWritingScope)
         {
             var executionContext = new TagHelperExecutionContext(tagName,
+                                                                 selfClosing,
                                                                  uniqueId,
                                                                  executeChildContentAsync,
                                                                  startWritingScope,

@@ -26,8 +26,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             // There will always be at least one child for the '<'.
             var start = tag.Children.First().Start;
             var attributes = GetTagAttributes(tagName, validStructure, tag, descriptors, errorSink);
+            var selfClosing = IsSelfClosing(tag);
 
-            return new TagHelperBlockBuilder(tagName, start, attributes, descriptors);
+            return new TagHelperBlockBuilder(tagName, selfClosing, start, attributes, descriptors);
         }
 
         private static IDictionary<string, SyntaxTreeNode> GetTagAttributes(
@@ -92,6 +93,13 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             }
 
             return attributes;
+        }
+
+        private static bool IsSelfClosing(Block beginTagBlock)
+        {
+            var childSpan = beginTagBlock.FindLastDescendentSpan();
+
+            return childSpan?.Content.EndsWith("/>") ?? false;
         }
 
         // This method handles cases when the attribute is a simple span attribute such as

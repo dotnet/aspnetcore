@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
                 // If it's a self closing block then we don't have to worry about nested children 
                 // within the tag... complete it.
-                if (IsSelfClosing(tagBlock))
+                if (builder.SelfClosing)
                 {
                     BuildCurrentlyTrackedTagHelperBlock();
                 }
@@ -332,15 +332,6 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             }
 
             return textSymbol.Type == HtmlSymbolType.WhiteSpace ? null : textSymbol.Content;
-        }
-
-        private static bool IsSelfClosing(Block beginTagBlock)
-        {
-            EnsureTagBlock(beginTagBlock);
-
-            var childSpan = beginTagBlock.Children.Last() as Span;
-
-            return childSpan?.Content.EndsWith("/>") ?? false;
         }
 
         private static bool IsEndTag(Block tagBlock)

@@ -398,6 +398,23 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             }
             else
             {
+                if (!string.Equals(expected.TagName, actual.TagName, StringComparison.Ordinal))
+                {
+                    collector.AddError(
+                        "{0} - FAILED :: TagName mismatch for TagHelperBlock :: ACTUAL: {1}",
+                        expected.TagName,
+                        actual.TagName);
+                }
+
+                if (expected.SelfClosing != actual.SelfClosing)
+                {
+                    collector.AddError(
+                        "{0} - FAILED :: SelfClosing for TagHelperBlock {1} :: ACTUAL: {2}",
+                        expected.SelfClosing,
+                        actual.TagName,
+                        actual.SelfClosing);
+                }
+                
                 var expectedAttributes = expected.Attributes.GetEnumerator();
                 var actualAttributes = actual.Attributes.GetEnumerator();
 
