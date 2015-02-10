@@ -25,9 +25,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("")]                        // Shared/MyView.cshtml
         [InlineData("/")]                       // Shared/MyView.cshtml
         [InlineData("/Home/Index")]             // Shared/MyView.cshtml
-#if !ASPNETCORE50
         [InlineData("/Home/Create")]            // Home/Create.cshtml
-#endif
         [InlineData("/Home/FlushPoint")]        // Home/FlushPoint.cshtml
         [InlineData("/Home/InjectSample")]      // Home/InjectSample.cshtml
         [InlineData("/Home/Language")]          // Home/Language.cshtml
