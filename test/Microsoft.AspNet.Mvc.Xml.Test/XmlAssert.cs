@@ -2,8 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Xml;
 using System.Xml.Linq;
+using Xunit;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNet.Mvc.Xml
@@ -20,30 +24,59 @@ namespace Microsoft.AspNet.Mvc.Xml
         /// <param name="actualXml">Actual xml string.</param>
         public static void Equal(string expectedXml, string actualXml)
         {
-            var sortedExpectedXDoc = SortAttributes(XDocument.Parse(expectedXml));
-            var sortedActualXDoc = SortAttributes(XDocument.Parse(actualXml));
+            var sortedExpectedXDocument = SortAttributes(XDocument.Parse(expectedXml));
+            var sortedActualXDocument = SortAttributes(XDocument.Parse(actualXml));
 
-            bool areEqual = XNode.DeepEquals(sortedExpectedXDoc, sortedActualXDoc);
+            // Since XNode's DeepEquals does not check for presence of xml declaration,
+            // check it explicitly
+            bool areEqual = EqualDeclarations(sortedExpectedXDocument.Declaration, sortedActualXDocument.Declaration);
+
+            areEqual = areEqual && XNode.DeepEquals(sortedExpectedXDocument, sortedActualXDocument);
 
             if (!areEqual)
             {
-                throw new EqualException(sortedExpectedXDoc, sortedActualXDoc);
+                throw new EqualException(
+                    sortedExpectedXDocument.ToString(SaveOptions.DisableFormatting),
+                    sortedActualXDocument.ToString(SaveOptions.DisableFormatting));
             }
         }
 
-        private static XDocument SortAttributes(XDocument doc)
+        private static bool EqualDeclarations(XDeclaration expected, XDeclaration actual)
         {
-            return new XDocument(
-                    doc.Declaration,
-                    SortAttributes(doc.Root));
+            if (expected == null && actual == null)
+            {
+                return true;
+            }
+
+            if (expected == null || actual == null)
+            {
+                return false;
+            }
+
+            // Note that this ignores 'Standalone' property comparison.
+            return string.Equals(expected.Version, actual.Version, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(expected.Encoding, actual.Encoding, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static XElement SortAttributes(XElement element)
+        private static XDocument SortAttributes(XDocument document)
         {
+            return new XDocument(
+                document.Declaration,
+                SortAttributes(document.Root));
+        }
+
+        private static XNode SortAttributes(XNode node)
+        {
+            XElement element = node as XElement;
+            if (element == null)
+            {
+                return node;
+            }
+
             return new XElement(
-                    element.Name,
-                    element.Attributes().OrderBy(a => a.Name.ToString()),
-                    element.Elements().Select(child => SortAttributes(child)));
+                element.Name,
+                element.Attributes().OrderBy(a => a.Name.ToString()),
+                element.Nodes().Select(child => SortAttributes(child)));
         }
     }
 }
