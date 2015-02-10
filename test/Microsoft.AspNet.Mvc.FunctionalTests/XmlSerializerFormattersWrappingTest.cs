@@ -178,6 +178,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 result);
         }
 
+#if !ASPNETCORE50
         [Fact]
         public async Task CanWrite_IEnumerableOf_SerializableErrors()
         {
@@ -199,5 +200,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 "<key4>key2-error</key4></SerializableErrorWrapper></ArrayOfSerializableErrorWrapper>",
                 result);
         }
+#endif
     }
 }
