@@ -23,8 +23,10 @@ namespace Microsoft.AspNet.Mvc.Routing
                 "The following errors occurred with attribute routing information:" + Environment.NewLine +
                 Environment.NewLine +
                 "For action: 'InvalidTemplate'" + Environment.NewLine +
-                "Error: There is an incomplete parameter in the route template. " +
-                "Check that each '{' character has a matching '}' character." + Environment.NewLine +
+                "Error: The route parameter name 'a/dkfk' is invalid. Route parameter names must be non-empty and " +
+                "cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, " + 
+                "and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, " +
+                "and can occur only at the start of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate";
 
             var router = CreateRouter();
