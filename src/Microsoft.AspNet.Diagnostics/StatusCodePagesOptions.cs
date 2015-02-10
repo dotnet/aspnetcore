@@ -9,6 +9,9 @@ using Microsoft.AspNet.WebUtilities;
 
 namespace Microsoft.AspNet.Diagnostics
 {
+    /// <summary>
+    /// Options for StatusCodePagesMiddleware.
+    /// </summary>
     public class StatusCodePagesOptions
     {
         public StatusCodePagesOptions()

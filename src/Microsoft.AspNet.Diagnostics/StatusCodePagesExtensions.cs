@@ -52,9 +52,9 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Specifies that responses should be handled by redirecting with the given location url template.
-        /// This may include a '{0}' placeholder for the status code. Ulrs starting with '~' will have PathBase prepeneded,
-        /// where any other url will be used as is.
+        /// Specifies that responses should be handled by redirecting with the given location URL template.
+        /// This may include a '{0}' placeholder for the status code. URLs starting with '~' will have PathBase prepended,
+        /// where any other URL will be used as is.
         /// </summary>
         /// <param name="options"></param>
         /// <param name="locationFormat"></param>

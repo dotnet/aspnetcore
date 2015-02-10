@@ -42,7 +42,10 @@ namespace StatusCodePagesSample
 
                 var builder = new StringBuilder();
                 builder.AppendLine("<html><body>");
-                builder.AppendLine("<a href=\"" + context.Request.PathBase + "/missingpage/\">" + context.Request.PathBase + "/missingpage/</a><br>");
+                builder.AppendLine("<a href=\"" +
+                    WebUtility.HtmlEncode(context.Request.PathBase.ToString()) + "/missingpage/\">" +
+                    WebUtility.HtmlEncode(context.Request.PathBase.ToString()) + "/missingpage/</a><br>");
+
                 for (int statusCode = 400; statusCode < 600; statusCode++)
                 {
                     builder.AppendLine("<a href=\"?statuscode=" + statusCode + "\">" + statusCode + "</a><br>");
