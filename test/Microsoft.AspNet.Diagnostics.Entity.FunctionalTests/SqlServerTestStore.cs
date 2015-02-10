@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             _connectionString = new SqlConnectionStringBuilder
             {
-                DataSource = @"(localdb)\v11.0",
+                DataSource = @"(localdb)\MSSQLLocalDB",
                 InitialCatalog = name,
                 IntegratedSecurity = true,
                 ConnectTimeout = 30

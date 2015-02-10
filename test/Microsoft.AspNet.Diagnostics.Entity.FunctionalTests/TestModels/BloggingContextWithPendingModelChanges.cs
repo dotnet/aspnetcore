@@ -26,19 +26,19 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         }
 
         [ContextType(typeof(BloggingContextWithPendingModelChanges))]
-        public partial class MigrationOne : Migration, IMigrationMetadata
+        public partial class MigrationOne : Migration
         {
-            string IMigrationMetadata.MigrationId
+            public override string Id
             {
                 get { return "111111111111111_MigrationOne"; }
             }
 
-            string IMigrationMetadata.ProductVersion
+            public override string ProductVersion
             {
                 get { return CurrentProductVersion; }
             }
 
-            IModel IMigrationMetadata.TargetModel
+            public override IModel Target
             {
                 get { return new BasicModelBuilder().Model; }
             }

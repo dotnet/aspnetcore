@@ -8,14 +8,9 @@ using Microsoft.AspNet.Diagnostics.Entity.Views;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Internal;
 using Microsoft.Data.Entity.Relational;
 using Microsoft.Data.Entity.Relational.Migrations;
-using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
-using Microsoft.Data.Entity.Relational.Migrations.Utilities;
-using Microsoft.Data.Entity.Utilities;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using System;
 using System.Linq;
@@ -54,7 +49,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             try
             {
 #if !ASPNETCORE50
-                // TODO This probably isn't the correct place for this workaround, it 
+                // TODO This probably isn't the correct place for this workaround, it
                 //      needs to be called before anything is written to CallContext
                 // http://msdn.microsoft.com/en-us/library/dn458353(v=vs.110).aspx
                 System.Configuration.ConfigurationManager.GetSection("system.xml/xmlReader");
@@ -89,14 +84,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
                                     var migrator = ((IAccessor<Migrator>)dbContext.Database).Service;
 
-                                    var pendingMigrations = migrator.GetPendingMigrations().Select(m => m.GetMigrationId());
+                                    var pendingMigrations = migrator.GetUnappliedMigrations().Select(m => m.Id);
 
-                                    var pendingModelChanges = true;
-                                    var snapshot = migrator.MigrationAssembly.ModelSnapshot;
-                                    if (snapshot != null)
-                                    {
-                                        pendingModelChanges = migrator.ModelDiffer.Diff(snapshot.Model, dbContext.Model).Any();
-                                    }
+                                    var pendingModelChanges = migrator.HasPendingModelChanges();
 
                                     if ((!databaseExists && pendingMigrations.Any()) || pendingMigrations.Any() || pendingModelChanges)
                                     {
@@ -128,7 +118,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                 logger.WriteVerbose(Strings.DatabaseErrorPage_NoRecordedException);
                 return false;
             }
-            
+
             bool match = false;
             for (var e = exception; e != null && !match; e = e.InnerException)
             {

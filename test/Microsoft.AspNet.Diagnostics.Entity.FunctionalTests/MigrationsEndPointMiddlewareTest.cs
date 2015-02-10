@@ -11,15 +11,12 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Internal;
-using Microsoft.Data.Entity.Relational.Migrations;
-using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
-using Microsoft.Data.Entity.Relational.Migrations.Utilities;
-using Microsoft.Data.Entity.Utilities;
+using Microsoft.Data.Entity.Relational.Migrations.History;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
+using Microsoft.Data.Entity.Infrastructure;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
@@ -105,11 +102,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                     Assert.True(db.Database.AsRelational().Exists());
 
-                    var migrator = ((IAccessor<Migrator>)db.Database).Service;
-                    var appliedMigrations = migrator.GetDatabaseMigrations();
+                    var historyRepository = ((IAccessor<IServiceProvider>)db).Service.GetRequiredService<DbContextService<IHistoryRepository>>().Service;
+                    var appliedMigrations = historyRepository.GetAppliedMigrations();
                     Assert.Equal(2, appliedMigrations.Count);
-                    Assert.Equal("111111111111111_MigrationOne", appliedMigrations.ElementAt(0).GetMigrationId());
-                    Assert.Equal("222222222222222_MigrationTwo", appliedMigrations.ElementAt(1).GetMigrationId());
+                    Assert.Equal("111111111111111_MigrationOne", appliedMigrations.ElementAt(0).MigrationId);
+                    Assert.Equal("222222222222222_MigrationTwo", appliedMigrations.ElementAt(1).MigrationId);
                 }
             }
         }
@@ -208,7 +205,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     await server.CreateClient().PostAsync("http://localhost" + MigrationsEndPointOptions.DefaultPath, formData));
 
                 Assert.Equal(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_Exception", typeof(BloggingContextWithSnapshotThatThrows)), ex.Message);
-                Assert.Equal("Welcome to the invalid snapshot!", ex.InnerException.Message);
+                Assert.Equal("Welcome to the invalid migration!", ex.InnerException.Message);
             }
         }
     }

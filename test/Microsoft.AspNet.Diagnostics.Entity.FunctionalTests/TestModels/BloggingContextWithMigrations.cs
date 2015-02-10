@@ -7,8 +7,7 @@ using Microsoft.Data.Entity.Relational.Migrations;
 using Microsoft.Data.Entity.Relational.Migrations.Builders;
 using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
 using System;
-using System.Linq;
-using System.Reflection;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
@@ -51,19 +50,19 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         }
 
         [ContextType(typeof(BloggingContextWithMigrations))]
-        public class MigrationOne : Migration, IMigrationMetadata
+        public class MigrationOne : Migration
         {
-            string IMigrationMetadata.MigrationId
+            public override string Id
             {
                 get { return "111111111111111_MigrationOne"; }
             }
 
-            string IMigrationMetadata.ProductVersion
+            public override string ProductVersion
             {
                 get { return CurrentProductVersion; }
             }
 
-            IModel IMigrationMetadata.TargetModel
+            public override IModel Target
             {
                 get { return new BloggingContextWithMigrationsModelSnapshot().Model; }
             }
@@ -73,10 +72,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 migrationBuilder.CreateTable("Blog",
                 c => new
                 {
-                    BlogId = c.Int(nullable: false, identity: true),
-                    Name = c.String(),
+                    BlogId = c.Column("int", annotations: new Dictionary<string, string> { { "SqlServer:ValueGeneration", "Identity" } }),
+                    Name = c.Column("nvarchar(max)", nullable: true),
                 })
-                .PrimaryKey("PK_Blog", t => t.BlogId);
+                .PrimaryKey(t => t.BlogId, name: "PK_Blog");
             }
 
             public override void Down(MigrationBuilder migrationBuilder)
@@ -86,19 +85,19 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         }
 
         [ContextType(typeof(BloggingContextWithMigrations))]
-        public class MigrationTwo : Migration, IMigrationMetadata
+        public class MigrationTwo : Migration
         {
-            string IMigrationMetadata.MigrationId
+            public override string Id
             {
                 get { return "222222222222222_MigrationTwo"; }
             }
 
-            string IMigrationMetadata.ProductVersion
+            public override string ProductVersion
             {
                 get { return CurrentProductVersion; }
             }
 
-            IModel IMigrationMetadata.TargetModel
+            public override IModel Target
             {
                 get { return new BloggingContextWithMigrationsModelSnapshot().Model; }
             }

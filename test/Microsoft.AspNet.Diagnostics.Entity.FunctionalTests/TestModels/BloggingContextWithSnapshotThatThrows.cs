@@ -7,8 +7,6 @@ using Microsoft.Data.Entity.Relational.Migrations;
 using Microsoft.Data.Entity.Relational.Migrations.Builders;
 using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
 using System;
-using System.Linq;
-using System.Reflection;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
@@ -31,19 +29,19 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         }
 
         [ContextType(typeof(BloggingContextWithSnapshotThatThrows))]
-        public class MigrationOne : Migration, IMigrationMetadata
+        public class MigrationOne : Migration
         {
-            string IMigrationMetadata.MigrationId
+            public override string Id
             {
                 get { return "111111111111111_MigrationOne"; }
             }
 
-            string IMigrationMetadata.ProductVersion
+            public override string ProductVersion
             {
                 get { return CurrentProductVersion; }
             }
 
-            IModel IMigrationMetadata.TargetModel
+            public override IModel Target
             {
                 get { return new BloggingContextWithSnapshotThatThrowsModelSnapshot().Model; }
             }
