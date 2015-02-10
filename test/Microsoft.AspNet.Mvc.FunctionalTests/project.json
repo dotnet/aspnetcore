@@ -15,6 +15,7 @@
         "ApiExplorerWebSite": "1.0.0",
         "ApplicationModelWebSite": "1.0.0",
         "BasicWebSite": "1.0.0",
+        "BestEffortLinkGenerationWebSite": "1.0.0",
         "CompositeViewEngineWebSite": "1.0.0",
         "ConnegWebSite": "1.0.0",
         "ControllerDiscoveryConventionsWebSite": "1.0.0",
