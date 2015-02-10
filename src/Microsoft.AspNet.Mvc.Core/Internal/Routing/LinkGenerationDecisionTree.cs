@@ -21,11 +21,11 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
                 new AttributeRouteLinkGenerationEntryClassifier());
         }
 
-        public List<AttributeRouteLinkGenerationEntry> GetMatches(VirtualPathContext context)
+        public List<LinkGenerationMatch> GetMatches(VirtualPathContext context)
         {
-            var results = new List<AttributeRouteLinkGenerationEntry>();
-            Walk(results, context, _root);
-            results.Sort(AttributeRouteLinkGenerationEntryComparer.Instance);
+            var results = new List<LinkGenerationMatch>();
+            Walk(results, context, _root, isFallbackPath: false);
+            results.Sort(LinkGenerationMatchComparer.Instance);
             return results;
         }
 
@@ -55,15 +55,16 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         //
         // The decision tree uses a tree data structure to execute these rules across all candidates at once.
         private void Walk(
-            List<AttributeRouteLinkGenerationEntry> results,
+            List<LinkGenerationMatch> results,
             VirtualPathContext context,
-            DecisionTreeNode<AttributeRouteLinkGenerationEntry> node)
+            DecisionTreeNode<AttributeRouteLinkGenerationEntry> node,
+            bool isFallbackPath)
         {
             // Any entries in node.Matches have had all their required values satisfied, so add them
             // to the results.
             for (var i = 0; i < node.Matches.Count; i++)
             {
-                results.Add(node.Matches[i]);
+                results.Add(new LinkGenerationMatch(node.Matches[i], isFallbackPath));
             }
 
             for (var i = 0; i < node.Criteria.Count; i++)
@@ -77,26 +78,27 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
                     DecisionTreeNode<AttributeRouteLinkGenerationEntry> branch;
                     if (criterion.Branches.TryGetValue(value ?? string.Empty, out branch))
                     {
-                        Walk(results, context, branch);
+                        Walk(results, context, branch, isFallbackPath);
                     }
                 }
                 else
                 {
                     // If a value wasn't explicitly supplied, match BOTH the ambient value and the empty value
-                    // if an ambient value was supplied.
+                    // if an ambient value was supplied. The path explored with the empty value is considered
+                    // the fallback path.
                     DecisionTreeNode<AttributeRouteLinkGenerationEntry> branch;
                     if (context.AmbientValues.TryGetValue(key, out value) &&
                         !criterion.Branches.Comparer.Equals(value, string.Empty))
                     {
                         if (criterion.Branches.TryGetValue(value, out branch))
                         {
-                            Walk(results, context, branch);
+                            Walk(results, context, branch, isFallbackPath);
                         }
                     }
 
                     if (criterion.Branches.TryGetValue(string.Empty, out branch))
                     {
-                        Walk(results, context, branch);
+                        Walk(results, context, branch, isFallbackPath: true);
                     }
                 }
             }
@@ -123,24 +125,31 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             }
         }
 
-        private class AttributeRouteLinkGenerationEntryComparer : IComparer<AttributeRouteLinkGenerationEntry>
+        private class LinkGenerationMatchComparer : IComparer<LinkGenerationMatch>
         {
-            public static readonly AttributeRouteLinkGenerationEntryComparer Instance =
-                new AttributeRouteLinkGenerationEntryComparer();
+            public static readonly LinkGenerationMatchComparer Instance = new LinkGenerationMatchComparer();
 
-            public int Compare(AttributeRouteLinkGenerationEntry x, AttributeRouteLinkGenerationEntry y)
+            public int Compare(LinkGenerationMatch x, LinkGenerationMatch y)
             {
-                if (x.Order != y.Order)
+                // For these comparisons lower is better.
+
+                if (x.Entry.Order != y.Entry.Order)
                 {
-                    return x.Order.CompareTo(y.Order);
+                    return x.Entry.Order.CompareTo(y.Entry.Order);
                 }
 
-                if (x.Precedence != y.Precedence)
+                if (x.IsFallbackMatch != y.IsFallbackMatch)
                 {
-                    return x.Precedence.CompareTo(y.Precedence);
+                    // A fallback match is worse than a non-fallback
+                    return x.IsFallbackMatch.CompareTo(y.IsFallbackMatch);
                 }
 
-                return StringComparer.Ordinal.Compare(x.TemplateText, y.TemplateText);
+                if (x.Entry.Precedence != y.Entry.Precedence)
+                {
+                    return x.Entry.Precedence.CompareTo(y.Entry.Precedence);
+                }
+
+                return StringComparer.Ordinal.Compare(x.Entry.TemplateText, y.Entry.TemplateText);
             }
         }
     }

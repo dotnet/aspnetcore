@@ -38,8 +38,8 @@ namespace Microsoft.AspNet.Mvc.Routing
             _routeLogger = loggerFactory.Create<InnerAttributeRoute>();
             _constraintLogger = loggerFactory.Create(typeof(RouteConstraintMatcher).FullName);
 
-			// Force creation of the route to report issues on startup.
-			GetInnerRoute();
+             // Force creation of the route to report issues on startup.
+            GetInnerRoute();
         }
 
         /// <inheritdoc />

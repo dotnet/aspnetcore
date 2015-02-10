@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var matches = tree.GetMatches(context);
 
             // Assert
-            Assert.Same(entry, Assert.Single(matches));
+            Assert.Same(entry, Assert.Single(matches).Entry);
         }
 
         [Fact]
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var matches = tree.GetMatches(context);
 
             // Assert
-            Assert.Same(entry, Assert.Single(matches));
+            Assert.Same(entry, Assert.Single(matches).Entry);
         }
 
         [Fact]
@@ -68,7 +69,9 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var matches = tree.GetMatches(context);
 
             // Assert
-            Assert.Same(entry, Assert.Single(matches));
+            var match = Assert.Single(matches);
+            Assert.Same(entry, match.Entry);
+            Assert.False(match.IsFallbackMatch);
         }
 
         [Fact]
@@ -90,7 +93,9 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var matches = tree.GetMatches(context);
 
             // Assert
-            Assert.Same(entry, Assert.Single(matches));
+            var match = Assert.Single(matches);
+            Assert.Same(entry, match.Entry);
+            Assert.False(match.IsFallbackMatch);
         }
 
         [Fact]
@@ -112,7 +117,9 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var matches = tree.GetMatches(context);
 
             // Assert
-            Assert.Same(entry, Assert.Single(matches));
+            var match = Assert.Single(matches);
+            Assert.Same(entry, match.Entry);
+            Assert.True(match.IsFallbackMatch);
         }
 
         [Fact]
@@ -179,7 +186,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var matches = tree.GetMatches(context);
 
             // Assert
-            Assert.Same(entry1, Assert.Single(matches));
+            Assert.Same(entry1, Assert.Single(matches).Entry);
         }
 
         [Fact]
@@ -202,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
                 ambientValues: new { controller = "Store", action = "Buy" });
 
             // Act
-            var matches = tree.GetMatches(context);
+            var matches = tree.GetMatches(context).Select(m => m.Entry).ToList();
 
             // Assert
             Assert.Equal(entries, matches);
@@ -226,7 +233,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var context = CreateContext(new { controller = "Store", action = "Buy", slug = "1234" });
 
             // Act
-            var matches = tree.GetMatches(context);
+            var matches = tree.GetMatches(context).Select(m => m.Entry).ToList();
 
             // Assert
             Assert.Equal(entries, matches);
@@ -253,7 +260,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var context = CreateContext(new { controller = "Store", action = "Buy" });
 
             // Act
-            var matches = tree.GetMatches(context);
+            var matches = tree.GetMatches(context).Select(m => m.Entry).ToList();
 
             // Assert
             Assert.Equal(entries, matches);
@@ -279,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var context = CreateContext(new { controller = "Store", action = "Buy" });
 
             // Act
-            var matches = tree.GetMatches(context);
+            var matches = tree.GetMatches(context).Select(m => m.Entry).ToList();
 
             // Assert
             Assert.Equal(entries, matches);
@@ -305,7 +312,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var context = CreateContext(new { controller = "Store", action = "Buy" });
 
             // Act
-            var matches = tree.GetMatches(context);
+            var matches = tree.GetMatches(context).Select(m => m.Entry).ToList();
 
             // Assert
             Assert.Equal(entries, matches);

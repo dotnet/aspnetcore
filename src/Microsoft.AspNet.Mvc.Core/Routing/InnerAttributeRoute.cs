@@ -154,9 +154,9 @@ namespace Microsoft.AspNet.Mvc.Routing
             // order. We just need to iterate them and use the first one that can generate a link.
             var matches = _linkGenerationTree.GetMatches(context);
 
-            foreach (var entry in matches)
+            foreach (var match in matches)
             {
-                var path = GenerateLink(context, entry);
+                var path = GenerateLink(context, match.Entry);
                 if (path != null)
                 {
                     context.IsBound = true;
