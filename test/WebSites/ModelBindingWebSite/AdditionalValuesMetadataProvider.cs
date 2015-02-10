@@ -15,19 +15,6 @@ namespace ModelBindingWebSite
         public static readonly string GroupNameKey = "__GroupName";
         private static Guid _guid = new Guid("7d6d0de2-8d59-49ac-99cc-881423b75a76");
 
-        protected override CachedDataAnnotationsModelMetadata CreateMetadataFromPrototype(
-            CachedDataAnnotationsModelMetadata prototype,
-            Func<object> modelAccessor)
-        {
-            var metadata = base.CreateMetadataFromPrototype(prototype, modelAccessor);
-            foreach (var keyValuePair in prototype.AdditionalValues)
-            {
-                metadata.AdditionalValues.Add(keyValuePair);
-            }
-
-            return metadata;
-        }
-
         protected override CachedDataAnnotationsModelMetadata CreateMetadataPrototype(
             IEnumerable<object> attributes,
             Type containerType,

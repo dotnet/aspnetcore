@@ -6,8 +6,14 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
+    /// <summary>
+    /// An <see cref="IModelMetadataProvider"/> implementation that provides
+    /// <see cref="CachedDataAnnotationsModelMetadata"/> instances. Those instances primarily calculate property values
+    /// using attributes from the <see cref="System.ComponentModel.DataAnnotations"/> namespace.
+    /// </summary>
     public class DataAnnotationsModelMetadataProvider : AssociatedMetadataProvider<CachedDataAnnotationsModelMetadata>
     {
+        /// <inheritdoc />
         protected override CachedDataAnnotationsModelMetadata CreateMetadataPrototype(
             IEnumerable<object> attributes,
             Type containerType,
@@ -17,11 +23,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new CachedDataAnnotationsModelMetadata(this, containerType, modelType, propertyName, attributes);
         }
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// Copies only a few values from the <paramref name="prototype"/>. Unlikely the rest have been computed.
+        /// </remarks>
         protected override CachedDataAnnotationsModelMetadata CreateMetadataFromPrototype(
             CachedDataAnnotationsModelMetadata prototype,
             Func<object> modelAccessor)
         {
-            return new CachedDataAnnotationsModelMetadata(prototype, modelAccessor);
+            var metadata = new CachedDataAnnotationsModelMetadata(prototype, modelAccessor);
+            foreach (var keyValuePair in prototype.AdditionalValues)
+            {
+                metadata.AdditionalValues.Add(keyValuePair);
+            }
+
+            return metadata;
         }
     }
 }

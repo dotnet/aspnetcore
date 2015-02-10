@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // Sealing for consistency with other properties.
         // ModelMetadata already caches the collection and we have no use case for a ComputeAdditionalValues() method.
         /// <inheritdoc />
-        public sealed override IDictionary<string, object> AdditionalValues
+        public sealed override IDictionary<object, object> AdditionalValues
         {
             get
             {
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 _binderMetadata = value;
                 _isBinderMetadataComputed = true;
             }
-            }
+        }
 
         /// <inheritdoc />
         public sealed override string BinderModelName

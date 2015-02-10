@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 modelAccessor: () => null,
                 modelType: typeof(object),
                 propertyName: null);
-            var valuesDictionary = new Dictionary<string, object>
+            var valuesDictionary = new Dictionary<object, object>
             {
                 { "key1", new object() },
                 { "key2", "value2" },

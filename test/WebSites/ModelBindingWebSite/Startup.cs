@@ -18,8 +18,8 @@ namespace ModelBindingWebSite
             // Set up application services
             app.UseServices(services =>
             {
-                // Override the IModelMetadataProvider AddMvc would normally use. Make service a singleton though
-                // AddMvc would configure DataAnnotationsModelMetadataProvider as transient.
+                // Override the IModelMetadataProvider AddMvc would normally add.
+                // ModelMetadataController relies on additional values AdditionalValuesMetadataProvider provides.
                 services.AddSingleton<IModelMetadataProvider, AdditionalValuesMetadataProvider>();
 
                 // Add MVC services to the services container

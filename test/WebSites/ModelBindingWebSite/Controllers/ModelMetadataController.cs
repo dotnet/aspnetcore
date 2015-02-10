@@ -12,7 +12,7 @@ namespace ModelBindingWebSite.Controllers
     public class ModelMetadataController
     {
         [HttpGet(template: "/AdditionalValues")]
-        public IDictionary<string, object> GetAdditionalValues([FromServices] IModelMetadataProvider provider)
+        public IDictionary<object, object> GetAdditionalValues([FromServices] IModelMetadataProvider provider)
         {
             var metadata = provider.GetMetadataForType(
                 modelAccessor: null,

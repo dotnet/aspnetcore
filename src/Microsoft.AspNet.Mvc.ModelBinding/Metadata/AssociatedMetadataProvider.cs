@@ -71,13 +71,38 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return GetMetadataForParameterCore(modelAccessor, parameterName, parameter);
         }
 
-        // Override for creating the prototype metadata (without the accessor)
+        // Override for creating the prototype metadata (without the model accessor).
+        /// <summary>
+        /// Creates a new <typeparamref name="TModelMetadata"/> instance.
+        /// </summary>
+        /// <param name="attributes">The set of attributes relevant for the new instance.</param>
+        /// <param name="containerType">
+        /// <see cref="Type"/> containing this property. <c>null</c> unless this <typeparamref name="TModelMetadata"/>
+        /// describes a property.
+        /// </param>
+        /// <param name="modelType"><see cref="Type"/> this <typeparamref name="TModelMetadata"/> describes.</param>
+        /// <param name="propertyName">
+        /// Name of the property (in <paramref name="containerType"/>) or parameter this
+        /// <typeparamref name="TModelMetadata"/> describes. <c>null</c> or empty if this
+        /// <typeparamref name="TModelMetadata"/> describes a <see cref="Type"/>.
+        /// </param>
+        /// <returns>A new <typeparamref name="TModelMetadata"/> instance.</returns>
         protected abstract TModelMetadata CreateMetadataPrototype(IEnumerable<object> attributes,
                                                                   Type containerType,
                                                                   Type modelType,
                                                                   string propertyName);
 
-        // Override for applying the prototype + modelAccess to yield the final metadata
+        // Override for applying the prototype + model accessor to yield the final metadata.
+        /// <summary>
+        /// Creates a new <typeparamref name="TModelMetadata"/> instance based on a <paramref name="prototype"/>.
+        /// </summary>
+        /// <param name="prototype">
+        /// <typeparamref name="TModelMetadata"/> that provides the basis for new instance.
+        /// </param>
+        /// <param name="modelAccessor">Accessor for model value of new instance.</param>
+        /// <returns>
+        /// A new <typeparamref name="TModelMetadata"/> instance based on <paramref name="prototype"/>.
+        /// </returns>
         protected abstract TModelMetadata CreateMetadataFromPrototype(TModelMetadata prototype,
                                                                       Func<object> modelAccessor);
 
