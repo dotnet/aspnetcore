@@ -4,7 +4,8 @@
     "dependencies": {
         "Microsoft.AspNet.FeatureModel": "1.0.0-*",
         "Microsoft.AspNet.Http": "1.0.0-*",
-        "Microsoft.AspNet.Http.Interfaces": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
+        "Microsoft.AspNet.Hosting.Interfaces": "1.0.0-*",
         "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Net.Http.Server": "1.0.0-*",
@@ -15,7 +16,6 @@
     },
     "frameworks": {
         "aspnet50": { },
-        "aspnetcore50": {
-        }
+        "aspnetcore50": { }
     }
 }
