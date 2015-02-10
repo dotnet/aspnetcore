@@ -176,8 +176,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            var propertyModelName = ModelBindingHelper.CreatePropertyModelName(bindingContext.ModelName,
-                                                                               metadata.PropertyName);
+            var propertyModelName = ModelBindingHelper.CreatePropertyModelName(
+                bindingContext.ModelName,
+                metadata.BinderModelName ?? metadata.PropertyName);
 
             if (await valueProvider.ContainsPrefixAsync(propertyModelName))
             {
@@ -357,14 +358,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             foreach (var missingRequiredProperty in validationInfo.RequiredProperties)
             {
                 var addedError = false;
-                var modelStateKey = ModelBindingHelper.CreatePropertyModelName(
-                    bindingContext.ModelName, missingRequiredProperty);
 
                 // Update Model as SetProperty() would: Place null value where validator will check for non-null. This
                 // ensures a failure result from a required validator (if any) even for a non-nullable property.
                 // (Otherwise, propertyMetadata.Model is likely already null.)
                 var propertyMetadata = bindingContext.ModelMetadata.Properties[missingRequiredProperty];
                 propertyMetadata.Model = null;
+                var propertyName = propertyMetadata.BinderModelName ?? missingRequiredProperty;
+                var modelStateKey = ModelBindingHelper.CreatePropertyModelName(
+                    bindingContext.ModelName,
+                    propertyName);
 
                 // Execute validator (if any) to get custom error message.
                 IModelValidator validator;
@@ -379,7 +382,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     bindingContext.ModelState.TryAddModelError(
                         modelStateKey,
-                        Resources.FormatMissingRequiredMember(missingRequiredProperty));
+                        Resources.FormatMissingRequiredMember(propertyName));
                 }
             }
 

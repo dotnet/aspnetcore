@@ -93,8 +93,32 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var result = JsonConvert.DeserializeObject<Result>(body);
             Assert.Equal<string>(tags, result.HeaderValues);
             var error = Assert.Single(result.ModelStateErrors);
-            Assert.Equal("Title", error);
+            Assert.Equal("BlogTitle", error);
         }
+
+        [Fact]
+        public async Task FromHeader_NonExistingHeaderAddsValidationErrors_OnCollectionProperty_CustomName()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToProperty/CustomName");
+            request.Headers.TryAddWithoutValidation("BlogTitle", "Cooking Receipes.");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<Result>(body);
+            Assert.Equal<string>("Cooking Receipes.", result.HeaderValue);
+            var error = Assert.Single(result.ModelStateErrors);
+            Assert.Equal("BlogTags", error);
+        }
+
         // The action that this test hits will echo back the model-bound value
         [Fact]
         public async Task FromHeader_BindHeader_ToString_OnParameter_CustomName()

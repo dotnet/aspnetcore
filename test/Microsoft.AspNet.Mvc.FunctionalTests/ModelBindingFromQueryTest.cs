@@ -2,36 +2,31 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using ModelBindingWebSite;
 using Newtonsoft.Json;
 using Xunit;
+using ModelBindingWebSite.Controllers;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ModelBindingModelBinderAttributeTest
+    public class ModelBindingFromQueryTest
     {
         private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(ModelBindingWebSite));
         private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
 
         [Fact]
-        public async Task ModelBinderAttribute_CustomModelPrefix()
+        public async Task FromQuery_CustomModelPrefix_ForParameter()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
-            // [ModelBinder(Name = "customPrefix")] is used to apply a prefix
-            var url = 
-                "http://localhost/ModelBinderAttribute_Company/GetCompany?customPrefix.Employees[0].Name=somename";
+            // [FromQuery(Name = "customPrefix")] is used to apply a prefix
+            var url =
+                "http://localhost/FromQueryAttribute_Company/CreateCompany?customPrefix.Employees[0].Name=somename";
 
             // Act
             var response = await client.GetAsync(url);
@@ -45,14 +40,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ModelBinderAttribute_CustomModelPrefix_OnProperty()
+        public async Task FromQuery_CustomModelPrefix_ForCollectionParameter()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
             var url =
-                "http://localhost/ModelBinderAttribute_Company/CreateCompany?employees[0].Alias=somealias";
+                "http://localhost/FromQueryAttribute_Company/CreateCompanyFromEmployees?customPrefix[0].Name=somename";
 
             // Act
             var response = await client.GetAsync(url);
@@ -62,83 +57,74 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var company = JsonConvert.DeserializeObject<Company>(body);
 
             var employee = Assert.Single(company.Employees);
-            Assert.Equal("somealias", employee.EmailAlias);
-        }
-
-        [Theory]
-        [InlineData("GetBinderType_UseModelBinderOnType")]
-        [InlineData("GetBinderType_UseModelBinderProviderOnType")]
-        public async Task ModelBinderAttribute_WithPrefixOnParameter(string action)
-        {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
-
-            // [ModelBinder(Name = "customPrefix")] is used to apply a prefix
-            var url =
-                "http://localhost/ModelBinderAttribute_Product/" +
-                action +
-                "?customPrefix.ProductId=5";
-
-            // Act
-            var response = await client.GetAsync(url);
-
-            // Assert
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal(
-                "ModelBindingWebSite.Controllers.ModelBinderAttribute_ProductController+ProductModelBinder",
-                body);
-        }
-
-        [Theory]
-        [InlineData("GetBinderType_UseModelBinder")]
-        [InlineData("GetBinderType_UseModelBinderProvider")]
-        public async Task ModelBinderAttribute_WithBinderOnParameter(string action)
-        {
-            // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
-
-            var url =
-                "http://localhost/ModelBinderAttribute_Product/" +
-                action +
-                "?model.productId=5";
-
-            // Act
-            var response = await client.GetAsync(url);
-
-            // Assert
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal(
-                "ModelBindingWebSite.Controllers.ModelBinderAttribute_ProductController+ProductModelBinder", 
-                body);
+            Assert.Equal("somename", employee.Name);
         }
 
         [Fact]
-        public async Task ModelBinderAttribute_WithBinderOnEnum()
+        public async Task FromQuery_CustomModelPrefix_ForProperty()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
 
+            // [FromQuery(Name = "EmployeeId")] is used to apply a prefix
             var url =
-                "http://localhost/ModelBinderAttribute_Product/" +
-                "ModelBinderAttribute_UseModelBinderOnEnum" +
-                "?status=Shipped";
+                "http://localhost/FromQueryAttribute_Company/CreateCompany?customPrefix.Employees[0].EmployeeId=1234";
 
             // Act
             var response = await client.GetAsync(url);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal("StatusShipped", body);
+            var company = JsonConvert.DeserializeObject<Company>(body);
+
+            var employee = Assert.Single(company.Employees);
+
+            Assert.Equal(1234, employee.Id);
         }
 
-        private class Product
+        [Fact]
+        public async Task FromQuery_CustomModelPrefix_ForCollectionProperty()
         {
-            public int ProductId { get; set; }
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
 
-            public string BinderType { get; set; }
+            var url =
+                "http://localhost/FromQueryAttribute_Company/CreateDepartment?TestEmployees[0].EmployeeId=1234";
+
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            var body = await response.Content.ReadAsStringAsync();
+            var department = JsonConvert.DeserializeObject<
+                FromQueryAttribute_CompanyController.FromQuery_Department>(body);
+
+            var employee = Assert.Single(department.Employees);
+            Assert.Equal(1234, employee.Id);
+        }
+
+        [Fact]
+        public async Task FromQuery_NonExistingValueAddsValidationErrors_OnProperty_UsingCustomModelPrefix()
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+
+            var url =
+                "http://localhost/FromQueryAttribute_Company/ValidateDepartment?TestEmployees[0].Department=contoso";
+
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<Result>(body);
+            var error = Assert.Single(result.ModelStateErrors);
+            Assert.Equal("TestEmployees[0].EmployeeId", error);
         }
     }
 }

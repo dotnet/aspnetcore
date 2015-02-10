@@ -156,7 +156,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             foreach (var childMetadata in metadata.Properties)
             {
-                var childKey = ModelBindingHelper.CreatePropertyModelName(currentModelKey, childMetadata.PropertyName);
+                var propertyName = childMetadata.BinderModelName ?? childMetadata.PropertyName;
+                var childKey = ModelBindingHelper.CreatePropertyModelName(currentModelKey, propertyName);
                 if (!ValidateNonVisitedNodeAndChildren(childKey, childMetadata, validationContext, validators: null))
                 {
                     isValid = false;

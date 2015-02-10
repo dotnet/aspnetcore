@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // to just those that match. We can skip filtering when IsGreedy == true, because that can't use
             // value providers.
             //
-            // We also want to base this filtering on the - top-level value profider in case the data source
+            // We also want to base this filtering on the - top-level value provider in case the data source
             // on this property doesn't intersect with the ambient data source.
             //
             // Ex:

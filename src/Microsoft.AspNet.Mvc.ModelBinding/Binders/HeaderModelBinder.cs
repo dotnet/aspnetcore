@@ -9,7 +9,7 @@ using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// An <see cref="IModelBinder"/> which binds models from the request headers when a model 
+    /// An <see cref="IModelBinder"/> which binds models from the request headers when a model
     /// has the binding source <see cref="BindingSource.Header"/>/
     /// </summary>
     public class HeaderModelBinder : BindingSourceModelBinder
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var request = bindingContext.OperationBindingContext.HttpContext.Request;
             var modelMetadata = bindingContext.ModelMetadata;
 
-            // Property name can be null if the model metadata represents a type (rahter than a property or parameter).
+            // Property name can be null if the model metadata represents a type (rather than a property or parameter).
             var headerName = modelMetadata.BinderModelName ?? modelMetadata.PropertyName ?? bindingContext.ModelName;
             object model = null;
             if (bindingContext.ModelType == typeof(string))

@@ -128,6 +128,7 @@ namespace ModelBindingWebSite.Controllers
             public string Title { get; set; }
 
             [FromHeader(Name = "BlogTags")]
+            [Required]
             public string[] Tags { get; set; }
 
             public string Author { get; set; }
