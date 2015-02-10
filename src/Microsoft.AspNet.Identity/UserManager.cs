@@ -9,6 +9,8 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
@@ -29,6 +31,7 @@ namespace Microsoft.AspNet.Identity
         private bool _disposed;
         private IPasswordHasher<TUser> _passwordHasher;
         private IdentityOptions _options;
+        private HttpContext _context;
 
         /// <summary>
         ///     Constructor
@@ -52,7 +55,8 @@ namespace Microsoft.AspNet.Identity
             IdentityErrorDescriber errors = null,
             IEnumerable<IUserTokenProvider<TUser>> tokenProviders = null,
             IEnumerable<IIdentityMessageProvider> msgProviders = null,
-            ILogger<UserManager<TUser>> logger = null)
+            ILogger<UserManager<TUser>> logger = null,
+            IHttpContextAccessor contextAccessor = null)
         {
             if (store == null)
             {
@@ -63,6 +67,7 @@ namespace Microsoft.AspNet.Identity
             PasswordHasher = passwordHasher ?? new PasswordHasher<TUser>();
             KeyNormalizer = keyNormalizer ?? new UpperInvariantLookupNormalizer();
             ErrorDescriber = errors ?? new IdentityErrorDescriber();
+            _context = contextAccessor?.Value;
 
             if (userValidators != null)
             {
@@ -304,6 +309,14 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
+        private CancellationToken CancellationToken
+        {
+            get
+            {
+                return _context?.RequestAborted ?? CancellationToken.None; 
+            }
+        }
+
         /// <summary>
         ///     Dispose the store context
         /// </summary>
@@ -313,12 +326,12 @@ namespace Microsoft.AspNet.Identity
             GC.SuppressFinalize(this);
         }
 
-        private async Task<IdentityResult> ValidateUserInternal(TUser user, CancellationToken cancellationToken)
+        private async Task<IdentityResult> ValidateUserInternal(TUser user)
         {
             var errors = new List<IdentityError>();
             foreach (var v in UserValidators)
             {
-                var result = await v.ValidateAsync(this, user, cancellationToken);
+                var result = await v.ValidateAsync(this, user);
                 if (!result.Succeeded)
                 {
                     errors.AddRange(result.Errors);
@@ -327,12 +340,12 @@ namespace Microsoft.AspNet.Identity
             return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
         }
 
-        private async Task<IdentityResult> ValidatePasswordInternal(TUser user, string password, CancellationToken cancellationToken)
+        private async Task<IdentityResult> ValidatePasswordInternal(TUser user, string password)
         {
             var errors = new List<IdentityError>();
             foreach (var v in PasswordValidators)
             {
-                var result = await v.ValidateAsync(this, user, password, cancellationToken);
+                var result = await v.ValidateAsync(this, user, password);
                 if (!result.Succeeded)
                 {
                     errors.AddRange(result.Errors);
@@ -341,8 +354,7 @@ namespace Microsoft.AspNet.Identity
             return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
         }
 
-        public virtual Task<string> GenerateConcurrencyStampAsync(TUser user,
-            CancellationToken token = default(CancellationToken))
+        public virtual Task<string> GenerateConcurrencyStampAsync(TUser user)
         {
             return Task.FromResult(Guid.NewGuid().ToString());
         }
@@ -351,101 +363,90 @@ namespace Microsoft.AspNet.Identity
         ///     Validate user and update. Called by other UserManager methods
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task<IdentityResult> UpdateUserAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        private async Task<IdentityResult> UpdateUserAsync(TUser user)
         {
-            var result = await ValidateUserInternal(user, cancellationToken);
+            var result = await ValidateUserInternal(user);
             if (!result.Succeeded)
             {
                 return result;
             }
-            await UpdateNormalizedUserNameAsync(user, cancellationToken);
-            await UpdateNormalizedEmailAsync(user, cancellationToken);
-            return await Store.UpdateAsync(user, cancellationToken);
+            await UpdateNormalizedUserNameAsync(user);
+            await UpdateNormalizedEmailAsync(user);
+            return await Store.UpdateAsync(user, CancellationToken);
         }
 
         /// <summary>
         ///     Create a user with no password
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> CreateAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> CreateAsync(TUser user)
         {
             ThrowIfDisposed();
-            await UpdateSecurityStampInternal(user, cancellationToken);
-            var result = await ValidateUserInternal(user, cancellationToken);
+            await UpdateSecurityStampInternal(user);
+            var result = await ValidateUserInternal(user);
             if (!result.Succeeded)
             {
                 return result;
             }
             if (Options.Lockout.EnabledByDefault && SupportsUserLockout)
             {
-                await GetUserLockoutStore().SetLockoutEnabledAsync(user, true, cancellationToken);
+                await GetUserLockoutStore().SetLockoutEnabledAsync(user, true, CancellationToken);
             }
-            await UpdateNormalizedUserNameAsync(user, cancellationToken);
-            await UpdateNormalizedEmailAsync(user, cancellationToken);
-            return await LogResultAsync(await Store.CreateAsync(user, cancellationToken), user);
+            await UpdateNormalizedUserNameAsync(user);
+            await UpdateNormalizedEmailAsync(user);
+            return await LogResultAsync(await Store.CreateAsync(user, CancellationToken), user);
         }
 
         /// <summary>
         ///     Update a user
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> UpdateAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> UpdateAsync(TUser user)
         {
             ThrowIfDisposed();
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
         ///     Delete a user
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> DeleteAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> DeleteAsync(TUser user)
         {
             ThrowIfDisposed();
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            return await LogResultAsync(await Store.DeleteAsync(user, cancellationToken), user);
+            return await LogResultAsync(await Store.DeleteAsync(user, CancellationToken), user);
         }
 
         /// <summary>
         ///     Find a user by id
         /// </summary>
         /// <param name="userId"></param>
-        /// <param name="cancellationToken"></param>
+
         /// <returns></returns>
-        public virtual Task<TUser> FindByIdAsync(string userId,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TUser> FindByIdAsync(string userId)
         {
             ThrowIfDisposed();
-            return Store.FindByIdAsync(userId, cancellationToken);
+            return Store.FindByIdAsync(userId, CancellationToken);
         }
 
         /// <summary>
         ///     Find a user by name
         /// </summary>
         /// <param name="userName"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TUser> FindByNameAsync(string userName,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TUser> FindByNameAsync(string userName)
         {
             ThrowIfDisposed();
             if (userName == null)
@@ -453,7 +454,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("userName");
             }
             userName = NormalizeKey(userName);
-            return Store.FindByNameAsync(userName, cancellationToken);
+            return Store.FindByNameAsync(userName, CancellationToken);
         }
 
         // IUserPasswordStore methods
@@ -472,10 +473,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="password"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> CreateAsync(TUser user, string password,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> CreateAsync(TUser user, string password)
         {
             ThrowIfDisposed();
             var passwordStore = GetPasswordStore();
@@ -487,12 +486,12 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("password");
             }
-            var result = await UpdatePasswordHash(passwordStore, user, password, cancellationToken);
+            var result = await UpdatePasswordHash(passwordStore, user, password);
             if (!result.Succeeded)
             {
                 return result;
             }
-            return await CreateAsync(user, cancellationToken);
+            return await CreateAsync(user);
         }
 
         /// <summary>
@@ -509,30 +508,26 @@ namespace Microsoft.AspNet.Identity
         /// Update the user's normalized user name
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task UpdateNormalizedUserNameAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task UpdateNormalizedUserNameAsync(TUser user)
         {
-            var normalizedName = NormalizeKey(await GetUserNameAsync(user, cancellationToken));
-            await Store.SetNormalizedUserNameAsync(user, normalizedName, cancellationToken);
+            var normalizedName = NormalizeKey(await GetUserNameAsync(user));
+            await Store.SetNormalizedUserNameAsync(user, normalizedName, CancellationToken);
         }
 
         /// <summary>
         /// Get the user's name
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GetUserNameAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GetUserNameAsync(TUser user)
         {
             ThrowIfDisposed();
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            return await Store.GetUserNameAsync(user, cancellationToken);
+            return await Store.GetUserNameAsync(user, CancellationToken);
         }
 
         /// <summary>
@@ -540,37 +535,33 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="userName"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> SetUserNameAsync(TUser user, string userName,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> SetUserNameAsync(TUser user, string userName)
         {
             ThrowIfDisposed();
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            await UpdateUserName(user, userName, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await UpdateUserName(user, userName);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
-        private async Task UpdateUserName(TUser user, string userName, CancellationToken cancellationToken)
+        private async Task UpdateUserName(TUser user, string userName)
         {
-            await Store.SetUserNameAsync(user, userName, cancellationToken);
-            await UpdateNormalizedUserNameAsync(user, cancellationToken);
+            await Store.SetUserNameAsync(user, userName, CancellationToken);
+            await UpdateNormalizedUserNameAsync(user);
         }
 
         /// <summary>
         /// Get the user's id
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GetUserIdAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GetUserIdAsync(TUser user)
         {
             ThrowIfDisposed();
-            return await Store.GetUserIdAsync(user, cancellationToken);
+            return await Store.GetUserIdAsync(user, CancellationToken);
         }
 
         /// <summary>
@@ -578,10 +569,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="password"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> CheckPasswordAsync(TUser user, string password,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> CheckPasswordAsync(TUser user, string password)
         {
             ThrowIfDisposed();
             var passwordStore = GetPasswordStore();
@@ -589,11 +578,11 @@ namespace Microsoft.AspNet.Identity
             {
                 return false;
             }
-            var result = await VerifyPasswordAsync(passwordStore, user, password, cancellationToken);
+            var result = await VerifyPasswordAsync(passwordStore, user, password);
             if (result == PasswordVerificationResult.SuccessRehashNeeded)
             {
-                await UpdatePasswordHash(passwordStore, user, password, cancellationToken, validatePassword: false);
-                await UpdateUserAsync(user, cancellationToken);
+                await UpdatePasswordHash(passwordStore, user, password, validatePassword: false);
+                await UpdateUserAsync(user);
             }
 
             return await LogResultAsync(result != PasswordVerificationResult.Failed, user);
@@ -603,10 +592,8 @@ namespace Microsoft.AspNet.Identity
         ///     Returns true if the user has a password
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> HasPasswordAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> HasPasswordAsync(TUser user)
         {
             ThrowIfDisposed();
             var passwordStore = GetPasswordStore();
@@ -614,7 +601,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await LogResultAsync(await passwordStore.HasPasswordAsync(user, cancellationToken), user);
+            return await LogResultAsync(await passwordStore.HasPasswordAsync(user, CancellationToken), user);
         }
 
         /// <summary>
@@ -622,10 +609,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="password"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> AddPasswordAsync(TUser user, string password,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> AddPasswordAsync(TUser user, string password)
         {
             ThrowIfDisposed();
             var passwordStore = GetPasswordStore();
@@ -633,17 +618,17 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            var hash = await passwordStore.GetPasswordHashAsync(user, cancellationToken);
+            var hash = await passwordStore.GetPasswordHashAsync(user, CancellationToken);
             if (hash != null)
             {
                 return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.UserAlreadyHasPassword()), user);
             }
-            var result = await UpdatePasswordHash(passwordStore, user, password, cancellationToken);
+            var result = await UpdatePasswordHash(passwordStore, user, password);
             if (!result.Succeeded)
             {
                 return await LogResultAsync(result, user);
             }
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
@@ -652,10 +637,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="currentPassword"></param>
         /// <param name="newPassword"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> ChangePasswordAsync(TUser user, string currentPassword,
-            string newPassword, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ChangePasswordAsync(TUser user, string currentPassword, string newPassword)
         {
             ThrowIfDisposed();
             var passwordStore = GetPasswordStore();
@@ -663,14 +646,14 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            if (await VerifyPasswordAsync(passwordStore, user, currentPassword, cancellationToken) != PasswordVerificationResult.Failed)
+            if (await VerifyPasswordAsync(passwordStore, user, currentPassword) != PasswordVerificationResult.Failed)
             {
-                var result = await UpdatePasswordHash(passwordStore, user, newPassword, cancellationToken);
+                var result = await UpdatePasswordHash(passwordStore, user, newPassword);
                 if (!result.Succeeded)
                 {
                     return await LogResultAsync(result, user);
                 }
-                return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+                return await LogResultAsync(await UpdateUserAsync(user), user);
             }
             return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.PasswordMismatch()), user);
         }
@@ -679,7 +662,7 @@ namespace Microsoft.AspNet.Identity
         ///     Remove a user's password
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
+
         /// <returns></returns>
         public virtual async Task<IdentityResult> RemovePasswordAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
@@ -690,25 +673,24 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await UpdatePasswordHash(passwordStore, user, null, cancellationToken, validatePassword: false);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await UpdatePasswordHash(passwordStore, user, null, validatePassword: false);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         internal async Task<IdentityResult> UpdatePasswordHash(IUserPasswordStore<TUser> passwordStore,
-            TUser user, string newPassword, CancellationToken cancellationToken, bool validatePassword = true)
+            TUser user, string newPassword, bool validatePassword = true)
         {
             if (validatePassword)
             {
-                var validate = await ValidatePasswordInternal(user, newPassword, cancellationToken);
+                var validate = await ValidatePasswordInternal(user, newPassword);
                 if (!validate.Succeeded)
                 {
                     return validate;
                 }
             }
             var hash = newPassword != null ? PasswordHasher.HashPassword(user, newPassword) : null;
-            await
-                passwordStore.SetPasswordHashAsync(user, hash, cancellationToken);
-            await UpdateSecurityStampInternal(user, cancellationToken);
+            await passwordStore.SetPasswordHashAsync(user, hash, CancellationToken);
+            await UpdateSecurityStampInternal(user);
             return IdentityResult.Success;
         }
 
@@ -718,12 +700,10 @@ namespace Microsoft.AspNet.Identity
         /// <param name="store"></param>
         /// <param name="user"></param>
         /// <param name="password"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual async Task<PasswordVerificationResult> VerifyPasswordAsync(IUserPasswordStore<TUser> store, TUser user,
-            string password, CancellationToken cancellationToken = default(CancellationToken))
+        protected virtual async Task<PasswordVerificationResult> VerifyPasswordAsync(IUserPasswordStore<TUser> store, TUser user, string password)
         {
-            var hash = await store.GetPasswordHashAsync(user, cancellationToken);
+            var hash = await store.GetPasswordHashAsync(user, CancellationToken);
             return PasswordHasher.VerifyHashedPassword(user, hash, password);
         }
 
@@ -742,10 +722,8 @@ namespace Microsoft.AspNet.Identity
         ///     Returns the current security stamp for a user
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GetSecurityStampAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GetSecurityStampAsync(TUser user)
         {
             ThrowIfDisposed();
             var securityStore = GetSecurityStore();
@@ -753,17 +731,15 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await securityStore.GetSecurityStampAsync(user, cancellationToken);
+            return await securityStore.GetSecurityStampAsync(user, CancellationToken);
         }
 
         /// <summary>
         ///     Generate a new security stamp for a user, used for SignOutEverywhere functionality
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> UpdateSecurityStampAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> UpdateSecurityStampAsync(TUser user)
         {
             ThrowIfDisposed();
             GetSecurityStore();
@@ -771,23 +747,20 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await UpdateSecurityStampInternal(user, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await UpdateSecurityStampInternal(user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
         ///     GenerateAsync a password reset token for the user using the UserTokenProvider
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GeneratePasswordResetTokenAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GeneratePasswordResetTokenAsync(TUser user)
         {
             ThrowIfDisposed();
-            var token = await GenerateUserTokenAsync(user, Options.PasswordResetTokenProvider, "ResetPassword", cancellationToken);
+            var token = await GenerateUserTokenAsync(user, Options.PasswordResetTokenProvider, "ResetPassword");
             await LogResultAsync(IdentityResult.Success, user);
-
             return token;
         }
 
@@ -797,10 +770,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="token"></param>
         /// <param name="newPassword"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> ResetPasswordAsync(TUser user, string token, string newPassword,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ResetPasswordAsync(TUser user, string token, string newPassword)
         {
             ThrowIfDisposed();
             if (user == null)
@@ -808,25 +779,25 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("user");
             }
             // Make sure the token is valid and the stamp matches
-            if (!await VerifyUserTokenAsync(user, Options.PasswordResetTokenProvider, "ResetPassword", token, cancellationToken))
+            if (!await VerifyUserTokenAsync(user, Options.PasswordResetTokenProvider, "ResetPassword", token))
             {
                 return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.InvalidToken()), user);
             }
             var passwordStore = GetPasswordStore();
-            var result = await UpdatePasswordHash(passwordStore, user, newPassword, cancellationToken);
+            var result = await UpdatePasswordHash(passwordStore, user, newPassword);
             if (!result.Succeeded)
             {
                 return await LogResultAsync(result, user);
             }
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         // Update the security stamp if the store supports it
-        internal async Task UpdateSecurityStampInternal(TUser user, CancellationToken cancellationToken)
+        internal async Task UpdateSecurityStampInternal(TUser user)
         {
             if (SupportsUserSecurityStamp)
             {
-                await GetSecurityStore().SetSecurityStampAsync(user, NewSecurityStamp(), cancellationToken);
+                await GetSecurityStore().SetSecurityStampAsync(user, NewSecurityStamp(), CancellationToken);
             }
         }
 
@@ -851,10 +822,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="loginProvider"></param>
         /// <param name="providerKey"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey)
         {
             ThrowIfDisposed();
             var loginStore = GetLoginStore();
@@ -866,7 +835,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("providerKey");
             }
-            return loginStore.FindByLoginAsync(loginProvider, providerKey, cancellationToken);
+            return loginStore.FindByLoginAsync(loginProvider, providerKey, CancellationToken);
         }
 
         /// <summary>
@@ -874,10 +843,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="login"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> RemoveLoginAsync(TUser user, string loginProvider, string providerKey)
         {
             ThrowIfDisposed();
             var loginStore = GetLoginStore();
@@ -893,9 +860,9 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await loginStore.RemoveLoginAsync(user, loginProvider, providerKey, cancellationToken);
-            await UpdateSecurityStampInternal(user, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await loginStore.RemoveLoginAsync(user, loginProvider, providerKey, CancellationToken);
+            await UpdateSecurityStampInternal(user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
@@ -903,10 +870,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="login"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> AddLoginAsync(TUser user, UserLoginInfo login,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> AddLoginAsync(TUser user, UserLoginInfo login)
         {
             ThrowIfDisposed();
             var loginStore = GetLoginStore();
@@ -918,23 +883,21 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            var existingUser = await FindByLoginAsync(login.LoginProvider, login.ProviderKey, cancellationToken);
+            var existingUser = await FindByLoginAsync(login.LoginProvider, login.ProviderKey);
             if (existingUser != null)
             {
                 return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.LoginAlreadyAssociated()), user);
             }
-            await loginStore.AddLoginAsync(user, login, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await loginStore.AddLoginAsync(user, login, CancellationToken);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
         ///     Gets the logins for a user.
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user)
         {
             ThrowIfDisposed();
             var loginStore = GetLoginStore();
@@ -942,7 +905,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await loginStore.GetLoginsAsync(user, cancellationToken);
+            return await loginStore.GetLoginsAsync(user, CancellationToken);
         }
 
         // IUserClaimStore methods
@@ -961,10 +924,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="claim"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<IdentityResult> AddClaimAsync(TUser user, Claim claim,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<IdentityResult> AddClaimAsync(TUser user, Claim claim)
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
@@ -976,18 +937,16 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return AddClaimsAsync(user, new Claim[] { claim }, cancellationToken);
+            return AddClaimsAsync(user, new Claim[] { claim });
         }
 
         /// <summary>
-        ///     Add a user claim
+        ///     Add claims for a user
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="claim"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="claims"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> AddClaimsAsync(TUser user, IEnumerable<Claim> claims,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> AddClaimsAsync(TUser user, IEnumerable<Claim> claims)
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
@@ -999,8 +958,8 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await claimStore.AddClaimsAsync(user, claims, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await claimStore.AddClaimsAsync(user, claims, CancellationToken);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
@@ -1009,10 +968,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="claim"></param>
         /// <param name="newClaim"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim,
-             CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim)
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
@@ -1028,8 +985,8 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await claimStore.ReplaceClaimAsync(user, claim, newClaim, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await claimStore.ReplaceClaimAsync(user, claim, newClaim, CancellationToken);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
@@ -1037,10 +994,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="claim"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<IdentityResult> RemoveClaimAsync(TUser user, Claim claim,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<IdentityResult> RemoveClaimAsync(TUser user, Claim claim)
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
@@ -1052,7 +1007,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("claim");
             }
-            return RemoveClaimsAsync(user, new Claim[] { claim }, cancellationToken);
+            return RemoveClaimsAsync(user, new Claim[] { claim });
         }
 
         /// <summary>
@@ -1060,10 +1015,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="claims"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims)
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
@@ -1075,18 +1028,16 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("claims");
             }
-            await claimStore.RemoveClaimsAsync(user, claims, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await claimStore.RemoveClaimsAsync(user, claims, CancellationToken);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
         ///     Get a users's claims
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IList<Claim>> GetClaimsAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IList<Claim>> GetClaimsAsync(TUser user)
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
@@ -1094,7 +1045,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await claimStore.GetClaimsAsync(user, cancellationToken);
+            return await claimStore.GetClaimsAsync(user, CancellationToken);
         }
 
         private IUserRoleStore<TUser> GetUserRoleStore()
@@ -1112,10 +1063,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="role"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> AddToRoleAsync(TUser user, string role,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> AddToRoleAsync(TUser user, string role)
         {
             ThrowIfDisposed();
             var userRoleStore = GetUserRoleStore();
@@ -1123,13 +1072,13 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            var userRoles = await userRoleStore.GetRolesAsync(user, cancellationToken);
+            var userRoles = await userRoleStore.GetRolesAsync(user, CancellationToken);
             if (userRoles.Contains(role))
             {
                 return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.UserAlreadyInRole(role)), user);
             }
-            await userRoleStore.AddToRoleAsync(user, role, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await userRoleStore.AddToRoleAsync(user, role, CancellationToken);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
@@ -1137,10 +1086,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="roles"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> AddToRolesAsync(TUser user, IEnumerable<string> roles,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> AddToRolesAsync(TUser user, IEnumerable<string> roles)
         {
             ThrowIfDisposed();
             var userRoleStore = GetUserRoleStore();
@@ -1152,16 +1099,16 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("roles");
             }
-            var userRoles = await userRoleStore.GetRolesAsync(user, cancellationToken);
+            var userRoles = await userRoleStore.GetRolesAsync(user, CancellationToken);
             foreach (var role in roles)
             {
                 if (userRoles.Contains(role))
                 {
                     return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.UserAlreadyInRole(role)), user);
                 }
-                await userRoleStore.AddToRoleAsync(user, role, cancellationToken);
+                await userRoleStore.AddToRoleAsync(user, role, CancellationToken);
             }
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
@@ -1169,10 +1116,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="role"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> RemoveFromRoleAsync(TUser user, string role,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> RemoveFromRoleAsync(TUser user, string role)
         {
             ThrowIfDisposed();
             var userRoleStore = GetUserRoleStore();
@@ -1180,12 +1125,12 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            if (!await userRoleStore.IsInRoleAsync(user, role, cancellationToken))
+            if (!await userRoleStore.IsInRoleAsync(user, role, CancellationToken))
             {
                 return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.UserNotInRole(role)), user);
             }
-            await userRoleStore.RemoveFromRoleAsync(user, role, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await userRoleStore.RemoveFromRoleAsync(user, role, CancellationToken);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
@@ -1193,10 +1138,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="roles"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> RemoveFromRolesAsync(TUser user, IEnumerable<string> roles,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> RemoveFromRolesAsync(TUser user, IEnumerable<string> roles)
         {
             ThrowIfDisposed();
             var userRoleStore = GetUserRoleStore();
@@ -1210,23 +1153,21 @@ namespace Microsoft.AspNet.Identity
             }
             foreach (var role in roles)
             {
-                if (!await userRoleStore.IsInRoleAsync(user, role, cancellationToken))
+                if (!await userRoleStore.IsInRoleAsync(user, role, CancellationToken))
                 {
                     return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.UserNotInRole(role)), user);
                 }
-                await userRoleStore.RemoveFromRoleAsync(user, role, cancellationToken);
+                await userRoleStore.RemoveFromRoleAsync(user, role, CancellationToken);
             }
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
         ///     Returns the roles for the user
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IList<string>> GetRolesAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IList<string>> GetRolesAsync(TUser user)
         {
             ThrowIfDisposed();
             var userRoleStore = GetUserRoleStore();
@@ -1234,7 +1175,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await userRoleStore.GetRolesAsync(user, cancellationToken);
+            return await userRoleStore.GetRolesAsync(user, CancellationToken);
         }
 
         /// <summary>
@@ -1242,10 +1183,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="role"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> IsInRoleAsync(TUser user, string role,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> IsInRoleAsync(TUser user, string role)
         {
             ThrowIfDisposed();
             var userRoleStore = GetUserRoleStore();
@@ -1253,7 +1192,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await userRoleStore.IsInRoleAsync(user, role, cancellationToken);
+            return await userRoleStore.IsInRoleAsync(user, role, CancellationToken);
         }
 
         // IUserEmailStore methods
@@ -1271,10 +1210,8 @@ namespace Microsoft.AspNet.Identity
         ///     Get a user's email
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GetEmailAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GetEmailAsync(TUser user)
         {
             ThrowIfDisposed();
             var store = GetEmailStore();
@@ -1282,7 +1219,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await store.GetEmailAsync(user, cancellationToken);
+            return await store.GetEmailAsync(user, CancellationToken);
         }
 
         /// <summary>
@@ -1290,32 +1227,27 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="email"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> SetEmailAsync(TUser user, string email,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> SetEmailAsync(TUser user, string email)
         {
             ThrowIfDisposed();
-
             var store = GetEmailStore();
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            await store.SetEmailAsync(user, email, cancellationToken);
-            await store.SetEmailConfirmedAsync(user, false, cancellationToken);
-            await UpdateSecurityStampInternal(user, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await store.SetEmailAsync(user, email, CancellationToken);
+            await store.SetEmailConfirmedAsync(user, false, CancellationToken);
+            await UpdateSecurityStampInternal(user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
         ///     FindByLoginAsync a user by his email
         /// </summary>
         /// <param name="email"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<TUser> FindByEmailAsync(string email,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TUser> FindByEmailAsync(string email)
         {
             ThrowIfDisposed();
             var store = GetEmailStore();
@@ -1323,23 +1255,21 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("email");
             }
-            return store.FindByEmailAsync(NormalizeKey(email), cancellationToken);
+            return store.FindByEmailAsync(NormalizeKey(email), CancellationToken);
         }
 
         /// <summary>
         /// Update the user's normalized email
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task UpdateNormalizedEmailAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task UpdateNormalizedEmailAsync(TUser user)
         {
             var store = GetEmailStore(throwOnFail: false);
             if (store != null)
             {
-                var email = await GetEmailAsync(user, cancellationToken);
-                await store.SetNormalizedEmailAsync(user, NormalizeKey(email), cancellationToken);
+                var email = await GetEmailAsync(user);
+                await store.SetNormalizedEmailAsync(user, NormalizeKey(email), CancellationToken);
             }
         }
 
@@ -1348,15 +1278,12 @@ namespace Microsoft.AspNet.Identity
         ///     Get the confirmation token for the user
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async virtual Task<string> GenerateEmailConfirmationTokenAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<string> GenerateEmailConfirmationTokenAsync(TUser user)
         {
             ThrowIfDisposed();
-            var token = await GenerateUserTokenAsync(user, Options.EmailConfirmationTokenProvider, "Confirmation", cancellationToken);
+            var token = await GenerateUserTokenAsync(user, Options.EmailConfirmationTokenProvider, "Confirmation");
             await LogResultAsync(IdentityResult.Success, user);
-
             return token;
         }
 
@@ -1365,10 +1292,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="token"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> ConfirmEmailAsync(TUser user, string token,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ConfirmEmailAsync(TUser user, string token)
         {
             ThrowIfDisposed();
             var store = GetEmailStore();
@@ -1376,22 +1301,20 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            if (!await VerifyUserTokenAsync(user, Options.EmailConfirmationTokenProvider, "Confirmation", token, cancellationToken))
+            if (!await VerifyUserTokenAsync(user, Options.EmailConfirmationTokenProvider, "Confirmation", token))
             {
                 return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.InvalidToken()), user);
             }
-            await store.SetEmailConfirmedAsync(user, true, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await store.SetEmailConfirmedAsync(user, true, CancellationToken);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
         ///     Returns true if the user's email has been confirmed
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> IsEmailConfirmedAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> IsEmailConfirmedAsync(TUser user)
         {
             ThrowIfDisposed();
             var store = GetEmailStore();
@@ -1399,7 +1322,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await store.GetEmailConfirmedAsync(user, cancellationToken);
+            return await store.GetEmailConfirmedAsync(user, CancellationToken);
         }
 
         private static string GetChangeEmailPurpose(string newEmail)
@@ -1411,15 +1334,12 @@ namespace Microsoft.AspNet.Identity
         ///     Generate a change email token for the user using the UserTokenProvider
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GenerateChangeEmailTokenAsync(TUser user, string newEmail,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GenerateChangeEmailTokenAsync(TUser user, string newEmail)
         {
             ThrowIfDisposed();
-            var token = await GenerateUserTokenAsync(user, Options.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail), cancellationToken);
+            var token = await GenerateUserTokenAsync(user, Options.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail));
             await LogResultAsync(IdentityResult.Success, user);
-
             return token;
         }
 
@@ -1429,10 +1349,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="token"></param>
         /// <param name="newPassword"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> ChangeEmailAsync(TUser user, string newEmail, string token,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ChangeEmailAsync(TUser user, string newEmail, string token)
         {
             ThrowIfDisposed();
             if (user == null)
@@ -1440,15 +1358,15 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("user");
             }
             // Make sure the token is valid and the stamp matches
-            if (!await VerifyUserTokenAsync(user, Options.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail), token, cancellationToken))
+            if (!await VerifyUserTokenAsync(user, Options.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail), token))
             {
                 return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.InvalidToken()), user);
             }
             var store = GetEmailStore();
-            await store.SetEmailAsync(user, newEmail, cancellationToken);
-            await store.SetEmailConfirmedAsync(user, true, cancellationToken);
-            await UpdateSecurityStampInternal(user, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await store.SetEmailAsync(user, newEmail, CancellationToken);
+            await store.SetEmailConfirmedAsync(user, true, CancellationToken);
+            await UpdateSecurityStampInternal(user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         // IUserPhoneNumberStore methods
@@ -1466,10 +1384,8 @@ namespace Microsoft.AspNet.Identity
         ///     Get a user's phoneNumber
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GetPhoneNumberAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GetPhoneNumberAsync(TUser user)
         {
             ThrowIfDisposed();
             var store = GetPhoneNumberStore();
@@ -1477,7 +1393,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await store.GetPhoneNumberAsync(user, cancellationToken);
+            return await store.GetPhoneNumberAsync(user, CancellationToken);
         }
 
         /// <summary>
@@ -1485,10 +1401,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="phoneNumber"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> SetPhoneNumberAsync(TUser user, string phoneNumber,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> SetPhoneNumberAsync(TUser user, string phoneNumber)
         {
             ThrowIfDisposed();
             var store = GetPhoneNumberStore();
@@ -1496,10 +1410,10 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await store.SetPhoneNumberAsync(user, phoneNumber, cancellationToken);
-            await store.SetPhoneNumberConfirmedAsync(user, false, cancellationToken);
-            await UpdateSecurityStampInternal(user, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await store.SetPhoneNumberAsync(user, phoneNumber, CancellationToken);
+            await store.SetPhoneNumberConfirmedAsync(user, false, CancellationToken);
+            await UpdateSecurityStampInternal(user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
@@ -1508,10 +1422,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="phoneNumber"></param>
         /// <param name="token"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> ChangePhoneNumberAsync(TUser user, string phoneNumber, string token,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ChangePhoneNumberAsync(TUser user, string phoneNumber, string token)
         {
             ThrowIfDisposed();
             var store = GetPhoneNumberStore();
@@ -1519,24 +1431,22 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            if (!await VerifyChangePhoneNumberTokenAsync(user, token, phoneNumber, cancellationToken))
+            if (!await VerifyChangePhoneNumberTokenAsync(user, token, phoneNumber))
             {
                 return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.InvalidToken()), user);
             }
-            await store.SetPhoneNumberAsync(user, phoneNumber, cancellationToken);
-            await store.SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
-            await UpdateSecurityStampInternal(user, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await store.SetPhoneNumberAsync(user, phoneNumber, CancellationToken);
+            await store.SetPhoneNumberConfirmedAsync(user, true, CancellationToken);
+            await UpdateSecurityStampInternal(user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
         ///     Returns true if the user's phone number has been confirmed
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> IsPhoneNumberConfirmedAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> IsPhoneNumberConfirmedAsync(TUser user)
         {
             ThrowIfDisposed();
             var store = GetPhoneNumberStore();
@@ -1544,15 +1454,13 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await store.GetPhoneNumberConfirmedAsync(user, cancellationToken);
+            return await store.GetPhoneNumberConfirmedAsync(user, CancellationToken);
         }
 
         // Two factor APIS
-
-        internal async Task<SecurityToken> CreateSecurityTokenAsync(TUser user, CancellationToken cancellationToken)
+        internal async Task<SecurityToken> CreateSecurityTokenAsync(TUser user)
         {
-            return
-                new SecurityToken(Encoding.Unicode.GetBytes(await GetSecurityStampAsync(user, cancellationToken)));
+            return new SecurityToken(Encoding.Unicode.GetBytes(await GetSecurityStampAsync(user)));
         }
 
         /// <summary>
@@ -1561,14 +1469,12 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="phoneNumber"></param>
         /// <returns></returns>
-        public virtual async Task<string> GenerateChangePhoneNumberTokenAsync(TUser user, string phoneNumber,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GenerateChangePhoneNumberTokenAsync(TUser user, string phoneNumber)
         {
             ThrowIfDisposed();
             var token = Rfc6238AuthenticationService.GenerateCode(
-                await CreateSecurityTokenAsync(user, cancellationToken), phoneNumber)
+                await CreateSecurityTokenAsync(user), phoneNumber)
                    .ToString(CultureInfo.InvariantCulture);
-
             await LogResultAsync(IdentityResult.Success, user);
             return token;
         }
@@ -1580,11 +1486,10 @@ namespace Microsoft.AspNet.Identity
         /// <param name="token"></param>
         /// <param name="phoneNumber"></param>
         /// <returns></returns>
-        public virtual async Task<bool> VerifyChangePhoneNumberTokenAsync(TUser user, string token, string phoneNumber,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> VerifyChangePhoneNumberTokenAsync(TUser user, string token, string phoneNumber)
         {
             ThrowIfDisposed();
-            var securityToken = await CreateSecurityTokenAsync(user, cancellationToken);
+            var securityToken = await CreateSecurityTokenAsync(user);
             int code;
             if (securityToken != null && Int32.TryParse(token, out code))
             {
@@ -1604,10 +1509,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="purpose"></param>
         /// <param name="token"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> VerifyUserTokenAsync(TUser user, string tokenProvider, string purpose, string token,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> VerifyUserTokenAsync(TUser user, string tokenProvider, string purpose, string token)
         {
             ThrowIfDisposed();
             if (user == null)
@@ -1623,7 +1526,7 @@ namespace Microsoft.AspNet.Identity
                 throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, Resources.NoTokenProvider, tokenProvider));
             }
             // Make sure the token is valid
-            var result = await _tokenProviders[tokenProvider].ValidateAsync(purpose, token, this, user, cancellationToken);
+            var result = await _tokenProviders[tokenProvider].ValidateAsync(purpose, token, this, user);
 
             if (result)
             {
@@ -1642,10 +1545,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="purpose"></param>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GenerateUserTokenAsync(TUser user, string tokenProvider, string purpose,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GenerateUserTokenAsync(TUser user, string tokenProvider, string purpose)
         {
             ThrowIfDisposed();
             if (user == null)
@@ -1661,9 +1562,8 @@ namespace Microsoft.AspNet.Identity
                 throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, Resources.NoTokenProvider, tokenProvider));
             }
 
-            var token = await _tokenProviders[tokenProvider].GenerateAsync(purpose, this, user, cancellationToken);
+            var token = await _tokenProviders[tokenProvider].GenerateAsync(purpose, this, user);
             await LogResultAsync(IdentityResult.Success, user);
-
             return token;
         }
 
@@ -1699,10 +1599,8 @@ namespace Microsoft.AspNet.Identity
         ///     Returns a list of valid two factor providers for a user
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IList<string>> GetValidTwoFactorProvidersAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IList<string>> GetValidTwoFactorProvidersAsync(TUser user)
         {
             ThrowIfDisposed();
             if (user == null)
@@ -1712,7 +1610,7 @@ namespace Microsoft.AspNet.Identity
             var results = new List<string>();
             foreach (var f in _tokenProviders)
             {
-                if (await f.Value.CanGenerateTwoFactorTokenAsync(this, user, cancellationToken))
+                if (await f.Value.CanGenerateTwoFactorTokenAsync(this, user))
                 {
                     results.Add(f.Key);
                 }
@@ -1726,10 +1624,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="twoFactorProvider"></param>
         /// <param name="token"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> VerifyTwoFactorTokenAsync(TUser user, string tokenProvider, string token,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> VerifyTwoFactorTokenAsync(TUser user, string tokenProvider, string token)
         {
             ThrowIfDisposed();
             if (user == null)
@@ -1742,8 +1638,7 @@ namespace Microsoft.AspNet.Identity
                     Resources.NoTokenProvider, tokenProvider));
             }
             // Make sure the token is valid
-            var result = await _tokenProviders[tokenProvider].ValidateAsync("TwoFactor", token, this, user, cancellationToken);
-
+            var result = await _tokenProviders[tokenProvider].ValidateAsync("TwoFactor", token, this, user);
             if (result)
             {
                 await LogResultAsync(IdentityResult.Success, user);
@@ -1752,7 +1647,6 @@ namespace Microsoft.AspNet.Identity
             {
                 await LogResultAsync(IdentityResult.Failed(ErrorDescriber.InvalidToken()), user);
             }
-
             return result;
         }
 
@@ -1761,10 +1655,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="twoFactorProvider"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GenerateTwoFactorTokenAsync(TUser user, string tokenProvider,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GenerateTwoFactorTokenAsync(TUser user, string tokenProvider)
         {
             ThrowIfDisposed();
             if (user == null)
@@ -1776,9 +1668,8 @@ namespace Microsoft.AspNet.Identity
                 throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture,
                     Resources.NoTokenProvider, tokenProvider));
             }
-            var token = await _tokenProviders[tokenProvider].GenerateAsync("TwoFactor", this, user, cancellationToken);
+            var token = await _tokenProviders[tokenProvider].GenerateAsync("TwoFactor", this, user);
             await LogResultAsync(IdentityResult.Success, user);
-
             return token;
         }
 
@@ -1788,10 +1679,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="tokenProvider"></param>
         /// <param name="token"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> NotifyTwoFactorTokenAsync(TUser user, string tokenProvider,
-            string token, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> NotifyTwoFactorTokenAsync(TUser user, string tokenProvider, string token)
         {
             ThrowIfDisposed();
             if (user == null)
@@ -1807,7 +1696,7 @@ namespace Microsoft.AspNet.Identity
                 throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture,
                     Resources.NoTokenProvider, tokenProvider));
             }
-            await _tokenProviders[tokenProvider].NotifyAsync(token, this, user, cancellationToken);
+            await _tokenProviders[tokenProvider].NotifyAsync(token, this, user);
             return await LogResultAsync(IdentityResult.Success, user);
         }
 
@@ -1826,10 +1715,8 @@ namespace Microsoft.AspNet.Identity
         ///     Get a user's two factor provider
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> GetTwoFactorEnabledAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> GetTwoFactorEnabledAsync(TUser user)
         {
             ThrowIfDisposed();
             var store = GetUserTwoFactorStore();
@@ -1837,7 +1724,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await store.GetTwoFactorEnabledAsync(user, cancellationToken);
+            return await store.GetTwoFactorEnabledAsync(user, CancellationToken);
         }
 
         /// <summary>
@@ -1845,10 +1732,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="enabled"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> SetTwoFactorEnabledAsync(TUser user, bool enabled,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> SetTwoFactorEnabledAsync(TUser user, bool enabled)
         {
             ThrowIfDisposed();
             var store = GetUserTwoFactorStore();
@@ -1856,9 +1741,9 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await store.SetTwoFactorEnabledAsync(user, enabled, cancellationToken);
-            await UpdateSecurityStampInternal(user, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await store.SetTwoFactorEnabledAsync(user, enabled, CancellationToken);
+            await UpdateSecurityStampInternal(user);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         // Messaging methods
@@ -1868,10 +1753,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="messageProvider"></param>
         /// <param name="message"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> SendMessageAsync(string messageProvider, IdentityMessage message,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> SendMessageAsync(string messageProvider, IdentityMessage message)
         {
             ThrowIfDisposed();
             if (message == null)
@@ -1883,7 +1766,7 @@ namespace Microsoft.AspNet.Identity
                 throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture,
                     Resources.NoMessageProvider, messageProvider));
             }
-            await _msgProviders[messageProvider].SendAsync(message, cancellationToken);
+            await _msgProviders[messageProvider].SendAsync(message, CancellationToken);
             return IdentityResult.Success;
         }
 
@@ -1902,10 +1785,8 @@ namespace Microsoft.AspNet.Identity
         ///     Returns true if the user is locked out
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> IsLockedOutAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> IsLockedOutAsync(TUser user)
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
@@ -1913,11 +1794,11 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            if (!await store.GetLockoutEnabledAsync(user, cancellationToken))
+            if (!await store.GetLockoutEnabledAsync(user, CancellationToken))
             {
                 return false;
             }
-            var lockoutTime = await store.GetLockoutEndDateAsync(user, cancellationToken).ConfigureAwait((false));
+            var lockoutTime = await store.GetLockoutEndDateAsync(user, CancellationToken);
             return lockoutTime >= DateTimeOffset.UtcNow;
         }
 
@@ -1926,10 +1807,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="enabled"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> SetLockoutEnabledAsync(TUser user, bool enabled,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> SetLockoutEnabledAsync(TUser user, bool enabled)
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
@@ -1937,18 +1816,16 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await store.SetLockoutEnabledAsync(user, enabled, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await store.SetLockoutEnabledAsync(user, enabled, CancellationToken);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
         ///     Returns whether the user allows lockout
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> GetLockoutEnabledAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> GetLockoutEnabledAsync(TUser user)
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
@@ -1956,17 +1833,15 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await store.GetLockoutEnabledAsync(user, cancellationToken);
+            return await store.GetLockoutEnabledAsync(user, CancellationToken);
         }
 
         /// <summary>
         ///     Returns the user lockout end date
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<DateTimeOffset?> GetLockoutEndDateAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<DateTimeOffset?> GetLockoutEndDateAsync(TUser user)
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
@@ -1974,7 +1849,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await store.GetLockoutEndDateAsync(user, cancellationToken);
+            return await store.GetLockoutEndDateAsync(user, CancellationToken);
         }
 
         /// <summary>
@@ -1982,10 +1857,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="lockoutEnd"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> SetLockoutEndDateAsync(TUser user, DateTimeOffset? lockoutEnd,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> SetLockoutEndDateAsync(TUser user, DateTimeOffset? lockoutEnd)
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
@@ -1993,12 +1866,12 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            if (!await store.GetLockoutEnabledAsync(user, cancellationToken).ConfigureAwait((false)))
+            if (!await store.GetLockoutEnabledAsync(user, CancellationToken))
             {
                 return await LogResultAsync(IdentityResult.Failed(ErrorDescriber.UserLockoutNotEnabled()), user);
             }
-            await store.SetLockoutEndDateAsync(user, lockoutEnd, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await store.SetLockoutEndDateAsync(user, lockoutEnd, CancellationToken);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
@@ -2007,10 +1880,8 @@ namespace Microsoft.AspNet.Identity
         /// DefaultAccountLockoutTimeSpan and the AccessFailedCount will be reset to 0.
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> AccessFailedAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> AccessFailedAsync(TUser user)
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
@@ -2019,25 +1890,23 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("user");
             }
             // If this puts the user over the threshold for lockout, lock them out and reset the access failed count
-            var count = await store.IncrementAccessFailedCountAsync(user, cancellationToken);
+            var count = await store.IncrementAccessFailedCountAsync(user, CancellationToken);
             if (count < Options.Lockout.MaxFailedAccessAttempts)
             {
-                return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+                return await LogResultAsync(await UpdateUserAsync(user), user);
             }
             await store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
-                cancellationToken);
-            await store.ResetAccessFailedCountAsync(user, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+                CancellationToken);
+            await store.ResetAccessFailedCountAsync(user, CancellationToken);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
         ///     Resets the access failed count for the user to 0
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> ResetAccessFailedCountAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> ResetAccessFailedCountAsync(TUser user)
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
@@ -2045,18 +1914,16 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            await store.ResetAccessFailedCountAsync(user, cancellationToken);
-            return await LogResultAsync(await UpdateUserAsync(user, cancellationToken), user);
+            await store.ResetAccessFailedCountAsync(user, CancellationToken);
+            return await LogResultAsync(await UpdateUserAsync(user), user);
         }
 
         /// <summary>
         ///     Returns the number of failed access attempts for the user
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<int> GetAccessFailedCountAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<int> GetAccessFailedCountAsync(TUser user)
         {
             ThrowIfDisposed();
             var store = GetUserLockoutStore();
@@ -2064,11 +1931,10 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await store.GetAccessFailedCountAsync(user, cancellationToken);
+            return await store.GetAccessFailedCountAsync(user, CancellationToken);
         }
 
-        public virtual Task<IList<TUser>> GetUsersForClaimAsync(Claim claim,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<IList<TUser>> GetUsersForClaimAsync(Claim claim)
         {
             ThrowIfDisposed();
             var store = GetClaimStore();
@@ -2076,17 +1942,15 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("claim");
             }
-            return store.GetUsersForClaimAsync(claim, cancellationToken);
+            return store.GetUsersForClaimAsync(claim, CancellationToken);
         }
 
         /// <summary>
         ///     Get all the users in a role
         /// </summary>
         /// <param name="role"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<IList<TUser>> GetUsersInRoleAsync(string roleName,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<IList<TUser>> GetUsersInRoleAsync(string roleName)
         {
             ThrowIfDisposed();
             var store = GetUserRoleStore();
@@ -2095,7 +1959,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("role");
             }
 
-            return store.GetUsersInRoleAsync(roleName, cancellationToken);
+            return store.GetUsersInRoleAsync(roleName, CancellationToken);
         }
 
         /// <summary>
@@ -2109,7 +1973,6 @@ namespace Microsoft.AspNet.Identity
             TUser user, [System.Runtime.CompilerServices.CallerMemberName] string methodName = "")
         {
             result.Log(Logger, Resources.FormatLoggingResultMessage(methodName, await GetUserIdAsync(user)));
-
             return result;
         }
 

@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Identity.Test
         public static Mock<UserManager<TUser>> MockUserManager<TUser>() where TUser : class
         {
             var store = new Mock<IUserStore<TUser>>();
-            var mgr = new Mock<UserManager<TUser>>(store.Object, null, null, null, null, null, null, null, null, null);
+            var mgr = new Mock<UserManager<TUser>>(store.Object, null, null, null, null, null, null, null, null, null, null);
             mgr.Object.UserValidators.Add(new UserValidator<TUser>());
             mgr.Object.PasswordValidators.Add(new PasswordValidator<TUser>());
             return mgr;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Identity.Test
             store = store ?? new Mock<IRoleStore<TRole>>().Object;
             var roles = new List<IRoleValidator<TRole>>();
             roles.Add(new RoleValidator<TRole>());
-            return new Mock<RoleManager<TRole>>(store, roles, null, null, null);
+            return new Mock<RoleManager<TRole>>(store, roles, null, null, null, null);
         }
 
         public static Mock<ILogger<T>> MockILogger<T>(StringBuilder logStore = null) where T : class
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Identity.Test
             var userManager = new UserManager<TUser>(store);
             userManager.UserValidators.Add(validator.Object);
             userManager.PasswordValidators.Add(new PasswordValidator<TUser>());
-            validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>(), CancellationToken.None))
+            validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>()))
                 .Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
             return userManager;
         }

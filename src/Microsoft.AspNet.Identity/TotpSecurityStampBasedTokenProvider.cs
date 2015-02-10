@@ -22,8 +22,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public virtual Task NotifyAsync(string token, UserManager<TUser> manager, TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task NotifyAsync(string token, UserManager<TUser> manager, TUser user)
         {
             return Task.FromResult(0);
         }
@@ -35,14 +34,13 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public virtual async Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
             {
                 throw new ArgumentNullException("manager");
             }
-            var token = await manager.CreateSecurityTokenAsync(user, cancellationToken);
+            var token = await manager.CreateSecurityTokenAsync(user);
             var modifier = await GetUserModifierAsync(purpose, manager, user);
             return Rfc6238AuthenticationService.GenerateCode(token, modifier).ToString("D6", CultureInfo.InvariantCulture);
         }
@@ -55,8 +53,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public virtual async Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager,
-            TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
             {
@@ -67,7 +64,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return false;
             }
-            var securityToken = await manager.CreateSecurityTokenAsync(user, cancellationToken);
+            var securityToken = await manager.CreateSecurityTokenAsync(user);
             var modifier = await GetUserModifierAsync(purpose, manager, user);
             return securityToken != null && Rfc6238AuthenticationService.ValidateCode(securityToken, code, modifier);
         }
@@ -79,8 +76,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public virtual async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager, TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
             {
@@ -90,6 +86,6 @@ namespace Microsoft.AspNet.Identity
             return "Totp:" + purpose + ":" + userId;
         }
 
-        public abstract Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        public abstract Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user);
     }
 }

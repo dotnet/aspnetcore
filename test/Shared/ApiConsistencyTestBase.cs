@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Identity.Test
         //}
 
         [Fact]
-        public void Async_methods_should_have_overload_with_cancellation_token_and_end_with_async_suffix()
+        public void Async_methods_should_end_with_async_suffix()
         {
             var asyncMethods
                 = (from type in GetAllTypes(TargetAssembly.GetTypes())
@@ -80,30 +80,6 @@ namespace Microsoft.AspNet.Identity.Test
                     where GetBasestTypeInAssembly(method.DeclaringType) == type
                     where typeof(Task).IsAssignableFrom(method.ReturnType)
                     select method).ToList();
-
-            var asyncMethodsWithToken
-                = (from method in asyncMethods
-                    where method.GetParameters().Any(pi => pi.ParameterType == typeof(CancellationToken))
-                    select method).ToList();
-
-            var asyncMethodsWithoutToken
-                = (from method in asyncMethods
-                    where method.GetParameters().All(pi => pi.ParameterType != typeof(CancellationToken))
-                    select method).ToList();
-
-            var missingOverloads
-                = (from methodWithoutToken in asyncMethodsWithoutToken
-                    where !asyncMethodsWithToken
-                        .Any(methodWithToken => methodWithoutToken.Name == methodWithToken.Name
-                                                && methodWithoutToken.ReflectedType == methodWithToken.ReflectedType)
-                    // ReSharper disable once PossibleNullReferenceException
-                    select methodWithoutToken.DeclaringType.Name + "." + methodWithoutToken.Name)
-                    .Except(GetCancellationTokenExceptions())
-                    .ToList();
-
-            Assert.False(
-                missingOverloads.Any(),
-                "\r\n-- Missing async overloads --\r\n" + string.Join("\r\n", missingOverloads));
 
             var missingSuffixMethods
                 = asyncMethods

@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.OptionsModel;
 
@@ -44,15 +43,14 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
             {
                 throw new ArgumentNullException("manager");
             }
-            var phoneNumber = await manager.GetPhoneNumberAsync(user, cancellationToken);
-            return !string.IsNullOrWhiteSpace(phoneNumber) && await manager.IsPhoneNumberConfirmedAsync(user, cancellationToken);
+            var phoneNumber = await manager.GetPhoneNumberAsync(user);
+            return !string.IsNullOrWhiteSpace(phoneNumber) && await manager.IsPhoneNumberConfirmedAsync(user);
         }
 
         /// <summary>
@@ -62,14 +60,13 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public override async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager,
-            TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
             {
                 throw new ArgumentNullException("manager");
             }
-            var phoneNumber = await manager.GetPhoneNumberAsync(user, cancellationToken);
+            var phoneNumber = await manager.GetPhoneNumberAsync(user);
             return "PhoneNumber:" + purpose + ":" + phoneNumber;
         }
 
@@ -80,8 +77,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public override async Task NotifyAsync(string token, UserManager<TUser> manager, TUser user, 
-            CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task NotifyAsync(string token, UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
             {
@@ -89,10 +85,10 @@ namespace Microsoft.AspNet.Identity
             }
             var msg = new IdentityMessage
             {
-                Destination = await manager.GetPhoneNumberAsync(user, cancellationToken),
+                Destination = await manager.GetPhoneNumberAsync(user),
                 Body = string.Format(CultureInfo.CurrentCulture, Options.MessageFormat, token)
             };
-            await manager.SendMessageAsync(Options.MessageProvider, msg, cancellationToken);
+            await manager.SendMessageAsync(Options.MessageProvider, msg);
         }
     }
 }

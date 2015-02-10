@@ -22,10 +22,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="purpose"></param>
         /// <param name="manager"></param>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user);
 
         /// <summary>
         ///     ValidateAsync and unprotect a token, returns null if invalid
@@ -34,10 +32,8 @@ namespace Microsoft.AspNet.Identity
         /// <param name="token"></param>
         /// <param name="manager"></param>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager, TUser user, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager, TUser user);
 
         /// <summary>
         ///     Notifies the user that a token has been generated, i.e. via email or sms, or can no-op
@@ -45,19 +41,15 @@ namespace Microsoft.AspNet.Identity
         /// <param name="token"></param>
         /// <param name="manager"></param>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task NotifyAsync(string token, UserManager<TUser> manager, TUser user, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task NotifyAsync(string token, UserManager<TUser> manager, TUser user);
 
         /// <summary>
         ///     Returns true if provider can be used for this user to generate two factor tokens, i.e. could require a user to have an email
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user);
     }
 }

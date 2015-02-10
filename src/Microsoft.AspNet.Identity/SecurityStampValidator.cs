@@ -19,12 +19,11 @@ namespace Microsoft.AspNet.Identity
         ///     ClaimsIdentity
         /// </summary>
         /// <returns></returns>
-        public virtual async Task ValidateAsync(CookieValidateIdentityContext context, ClaimsIdentity identity,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task ValidateAsync(CookieValidateIdentityContext context, ClaimsIdentity identity)
         {
             var manager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<TUser>>();
             var userId = identity.GetUserId();
-            var user = await manager.ValidateSecurityStampAsync(identity, userId, cancellationToken);
+            var user = await manager.ValidateSecurityStampAsync(identity, userId);
             if (user != null)
             {
                 var isPersistent = false;
@@ -32,7 +31,7 @@ namespace Microsoft.AspNet.Identity
                 {
                     isPersistent = context.Properties.IsPersistent;
                 }
-                await manager.SignInAsync(user, isPersistent, authenticationMethod: null, cancellationToken: cancellationToken);
+                await manager.SignInAsync(user, isPersistent, authenticationMethod: null);
             }
             else
             {

@@ -20,8 +20,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="login"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task AddLoginAsync(TUser user, UserLoginInfo login,
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task AddLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Removes the user login with the specified combination if it exists, returns true if found and removed
@@ -31,8 +30,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="providerKey"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Returns the linked accounts for this user
@@ -40,8 +38,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Returns the user associated with this login
@@ -50,7 +47,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="providerKey"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken);
     }
 }

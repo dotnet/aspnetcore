@@ -20,8 +20,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<DateTimeOffset?> GetLockoutEndDateAsync(TUser user, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<DateTimeOffset?> GetLockoutEndDateAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Locks a user out until the specified end date (set to a past date, to unlock a user)
@@ -30,8 +29,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="lockoutEnd"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetLockoutEndDateAsync(TUser user, DateTimeOffset? lockoutEnd, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task SetLockoutEndDateAsync(TUser user, DateTimeOffset? lockoutEnd, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Used to record when an attempt to access the user has failed
@@ -39,8 +37,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<int> IncrementAccessFailedCountAsync(TUser user, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<int> IncrementAccessFailedCountAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Used to reset the account access count, typically after the account is successfully accessed
@@ -48,7 +45,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task ResetAccessFailedCountAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task ResetAccessFailedCountAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns the current number of failed access attempts.  This number usually will be reset whenever the 
@@ -57,8 +54,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<int> GetAccessFailedCountAsync(TUser user, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<int> GetAccessFailedCountAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Returns whether the user can be locked out.
@@ -66,8 +62,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> GetLockoutEnabledAsync(TUser user, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> GetLockoutEnabledAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Sets whether the user can be locked out.
@@ -76,7 +71,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="enabled"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetLockoutEnabledAsync(TUser user, bool enabled, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task SetLockoutEnabledAsync(TUser user, bool enabled, CancellationToken cancellationToken);
     }
 }

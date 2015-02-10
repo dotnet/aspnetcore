@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="email"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetEmailAsync(TUser user, string email, CancellationToken cancellationToken = default(CancellationToken));
+        Task SetEmailAsync(TUser user, string email, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Get the user email
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> GetEmailAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<string> GetEmailAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Returns true if the user email is confirmed
@@ -35,8 +35,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> GetEmailConfirmedAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> GetEmailConfirmedAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Sets whether the user email is confirmed
@@ -45,8 +44,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="confirmed"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetEmailConfirmedAsync(TUser user, bool confirmed,
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task SetEmailConfirmedAsync(TUser user, bool confirmed, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Returns the user associated with this email
@@ -54,7 +52,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="normalizedEmail"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns the normalized email
@@ -62,7 +60,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> GetNormalizedEmailAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+        Task<string> GetNormalizedEmailAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Set the normalized email
@@ -71,8 +69,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="normalizedEmail"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetNormalizedEmailAsync(TUser user, string normalizedEmail,
-            CancellationToken cancellationToken = default(CancellationToken));
-
+        Task SetNormalizedEmailAsync(TUser user, string normalizedEmail, CancellationToken cancellationToken);
     }
 }

@@ -20,8 +20,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IList<Claim>> GetClaimsAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Add a new user claim
@@ -30,7 +29,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="claims"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken));
+        Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Updates the give claim information with the given new claim information
@@ -40,7 +39,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="newClaim"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken));
+        Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Remove a user claim
@@ -49,8 +48,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="claims"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims,
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken);
 
         /// <summary>
         /// Get users having a specific claim
@@ -58,6 +56,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="claim">Claim to look up</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken);
     }
 }

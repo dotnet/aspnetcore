@@ -46,11 +46,10 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
         {
-            var email = await manager.GetEmailAsync(user, cancellationToken);
-            return !string.IsNullOrWhiteSpace(email) && await manager.IsEmailConfirmedAsync(user, cancellationToken);
+            var email = await manager.GetEmailAsync(user);
+            return !string.IsNullOrWhiteSpace(email) && await manager.IsEmailConfirmedAsync(user);
         }
 
         /// <summary>
@@ -61,9 +60,9 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <returns></returns>
         public override async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager,
-            TUser user, CancellationToken cancellationToken = default(CancellationToken))
+            TUser user)
         {
-            var email = await manager.GetEmailAsync(user, cancellationToken);
+            var email = await manager.GetEmailAsync(user);
             return "Email:" + purpose + ":" + email;
         }
 
@@ -74,8 +73,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public override async Task NotifyAsync(string token, UserManager<TUser> manager, TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task NotifyAsync(string token, UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
             {
@@ -83,11 +81,11 @@ namespace Microsoft.AspNet.Identity
             }
             var msg = new IdentityMessage
             {
-                Destination = await manager.GetEmailAsync(user, cancellationToken),
+                Destination = await manager.GetEmailAsync(user),
                 Subject = Options.Subject,
                 Body = string.Format(CultureInfo.CurrentCulture, Options.BodyFormat, token)
             };
-            await manager.SendMessageAsync(Options.MessageProvider, msg, cancellationToken);
+            await manager.SendMessageAsync(Options.MessageProvider, msg);
         }
     }
 }

@@ -7,6 +7,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Identity
@@ -18,6 +20,7 @@ namespace Microsoft.AspNet.Identity
     public class RoleManager<TRole> : IDisposable where TRole : class
     {
         private bool _disposed;
+        private HttpContext _context;
 
         /// <summary>
         /// Constructor
@@ -28,7 +31,8 @@ namespace Microsoft.AspNet.Identity
             IEnumerable<IRoleValidator<TRole>> roleValidators = null,
             ILookupNormalizer keyNormalizer = null,
             IdentityErrorDescriber errors = null,
-            ILogger<RoleManager<TRole>> logger = null)
+            ILogger<RoleManager<TRole>> logger = null,
+            IHttpContextAccessor contextAccessor = null)
         {
             if (store == null)
             {
@@ -37,6 +41,7 @@ namespace Microsoft.AspNet.Identity
             Store = store;
             KeyNormalizer = keyNormalizer ?? new UpperInvariantLookupNormalizer();
             ErrorDescriber = errors ?? new IdentityErrorDescriber();
+            _context = contextAccessor?.Value;
 
             if (roleValidators != null)
             {
@@ -114,6 +119,14 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
+        private CancellationToken CancellationToken
+        {
+            get
+            {
+                return _context?.RequestAborted ?? CancellationToken.None;
+            }
+        }
+
         /// <summary>
         ///     Dispose this object
         /// </summary>
@@ -123,12 +136,12 @@ namespace Microsoft.AspNet.Identity
             GC.SuppressFinalize(this);
         }
 
-        private async Task<IdentityResult> ValidateRoleInternal(TRole role, CancellationToken cancellationToken)
+        private async Task<IdentityResult> ValidateRoleInternal(TRole role)
         {
             var errors = new List<IdentityError>();
             foreach (var v in RoleValidators)
             {
-                var result = await v.ValidateAsync(this, role, cancellationToken);
+                var result = await v.ValidateAsync(this, role);
                 if (!result.Succeeded)
                 {
                     errors.AddRange(result.Errors);
@@ -138,13 +151,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     CreateAsync a role
+        ///     Create a role
         /// </summary>
         /// <param name="role"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> CreateAsync(TRole role,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> CreateAsync(TRole role)
         {
             ThrowIfDisposed();
             if (role == null)
@@ -152,37 +163,33 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("role");
             }
 
-            var result = await ValidateRoleInternal(role, cancellationToken);
+            var result = await ValidateRoleInternal(role);
             if (!result.Succeeded)
             {
                 return result;
             }
-            await UpdateNormalizedRoleNameAsync(role, cancellationToken);
-            return await LogResultAsync(await Store.CreateAsync(role, cancellationToken), role);
+            await UpdateNormalizedRoleNameAsync(role);
+            return await LogResultAsync(await Store.CreateAsync(role, CancellationToken), role);
         }
 
         /// <summary>
         /// Update the user's normalized user name
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task UpdateNormalizedRoleNameAsync(TRole role,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task UpdateNormalizedRoleNameAsync(TRole role)
         {
-            var name = await GetRoleNameAsync(role, cancellationToken);
-            await Store.SetNormalizedRoleNameAsync(role, NormalizeKey(name), cancellationToken);
+            var name = await GetRoleNameAsync(role);
+            await Store.SetNormalizedRoleNameAsync(role, NormalizeKey(name), CancellationToken);
         }
 
 
         /// <summary>
-        ///     UpdateAsync an existing role
+        ///     Update an existing role
         /// </summary>
         /// <param name="role"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> UpdateAsync(TRole role,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> UpdateAsync(TRole role)
         {
             ThrowIfDisposed();
             if (role == null)
@@ -190,46 +197,41 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("role");
             }
 
-            return await LogResultAsync(await UpdateRoleAsync(role, cancellationToken), role);
+            return await LogResultAsync(await UpdateRoleAsync(role), role);
         }
 
-        private async Task<IdentityResult> UpdateRoleAsync(TRole role,
-             CancellationToken cancellationToken = default(CancellationToken))
+        private async Task<IdentityResult> UpdateRoleAsync(TRole role)
         {
-            var result = await ValidateRoleInternal(role, cancellationToken);
+            var result = await ValidateRoleInternal(role);
             if (!result.Succeeded)
             {
                 return result;
             }
-            await UpdateNormalizedRoleNameAsync(role, cancellationToken);
-            return await Store.UpdateAsync(role, cancellationToken);
+            await UpdateNormalizedRoleNameAsync(role);
+            return await Store.UpdateAsync(role, CancellationToken);
         }
 
         /// <summary>
-        ///     DeleteAsync a role
+        ///     Delete a role
         /// </summary>
         /// <param name="role"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> DeleteAsync(TRole role,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> DeleteAsync(TRole role)
         {
             ThrowIfDisposed();
             if (role == null)
             {
                 throw new ArgumentNullException("role");
             }
-            return await LogResultAsync(await Store.DeleteAsync(role, cancellationToken), role);
+            return await LogResultAsync(await Store.DeleteAsync(role, CancellationToken), role);
         }
 
         /// <summary>
         ///     Returns true if the role exists
         /// </summary>
         /// <param name="roleName"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> RoleExistsAsync(string roleName,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> RoleExistsAsync(string roleName)
         {
             ThrowIfDisposed();
             if (roleName == null)
@@ -237,7 +239,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("roleName");
             }
 
-            return await FindByNameAsync(NormalizeKey(roleName), cancellationToken) != null;
+            return await FindByNameAsync(NormalizeKey(roleName)) != null;
         }
 
         /// <summary>
@@ -252,29 +254,25 @@ namespace Microsoft.AspNet.Identity
 
 
         /// <summary>
-        ///     FindByLoginAsync a role by id
+        ///     Find a role by id
         /// </summary>
         /// <param name="roleId"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<TRole> FindByIdAsync(string roleId,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TRole> FindByIdAsync(string roleId)
         {
             ThrowIfDisposed();
-            return await Store.FindByIdAsync(roleId, cancellationToken);
+            return await Store.FindByIdAsync(roleId, CancellationToken);
         }
 
         /// <summary>
         /// Return the name of the role
         /// </summary>
         /// <param name="role"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GetRoleNameAsync(TRole role,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GetRoleNameAsync(TRole role)
         {
             ThrowIfDisposed();
-            return await Store.GetRoleNameAsync(role, cancellationToken);
+            return await Store.GetRoleNameAsync(role, CancellationToken);
         }
 
         /// <summary>
@@ -282,14 +280,12 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="role"></param>
         /// <param name="name"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> SetRoleNameAsync(TRole role, string name,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> SetRoleNameAsync(TRole role, string name)
         {
             ThrowIfDisposed();
-            await Store.SetRoleNameAsync(role, name, cancellationToken);
-            await UpdateNormalizedRoleNameAsync(role, cancellationToken);
+            await Store.SetRoleNameAsync(role, name, CancellationToken);
+            await UpdateNormalizedRoleNameAsync(role);
             return await LogResultAsync(IdentityResult.Success, role);
         }
 
@@ -297,23 +293,19 @@ namespace Microsoft.AspNet.Identity
         /// Return the role id for a role
         /// </summary>
         /// <param name="role"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<string> GetRoleIdAsync(TRole role,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<string> GetRoleIdAsync(TRole role)
         {
             ThrowIfDisposed();
-            return await Store.GetRoleIdAsync(role, cancellationToken);
+            return await Store.GetRoleIdAsync(role, CancellationToken);
         }
 
         /// <summary>
         ///     FindByLoginAsync a role by name
         /// </summary>
         /// <param name="roleName"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<TRole> FindByNameAsync(string roleName,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TRole> FindByNameAsync(string roleName)
         {
             ThrowIfDisposed();
             if (roleName == null)
@@ -321,7 +313,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("roleName");
             }
 
-            return await Store.FindByNameAsync(NormalizeKey(roleName), cancellationToken);
+            return await Store.FindByNameAsync(NormalizeKey(roleName), CancellationToken);
         }
 
         // IRoleClaimStore methods
@@ -340,10 +332,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="role"></param>
         /// <param name="claim"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> AddClaimAsync(TRole role, Claim claim,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> AddClaimAsync(TRole role, Claim claim)
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
@@ -355,8 +345,8 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("role");
             }
-            await claimStore.AddClaimAsync(role, claim, cancellationToken);
-            return await LogResultAsync(await UpdateRoleAsync(role, cancellationToken), role);
+            await claimStore.AddClaimAsync(role, claim, CancellationToken);
+            return await LogResultAsync(await UpdateRoleAsync(role), role);
         }
 
         /// <summary>
@@ -364,10 +354,8 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="role"></param>
         /// <param name="claim"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IdentityResult> RemoveClaimAsync(TRole role, Claim claim,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> RemoveClaimAsync(TRole role, Claim claim)
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
@@ -375,18 +363,16 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("role");
             }
-            await claimStore.RemoveClaimAsync(role, claim, cancellationToken);
-            return await LogResultAsync(await UpdateRoleAsync(role, cancellationToken), role);
+            await claimStore.RemoveClaimAsync(role, claim, CancellationToken);
+            return await LogResultAsync(await UpdateRoleAsync(role), role);
         }
 
         /// <summary>
         ///     Get a role's claims
         /// </summary>
         /// <param name="role"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IList<Claim>> GetClaimsAsync(TRole role,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IList<Claim>> GetClaimsAsync(TRole role)
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
@@ -394,7 +380,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("role");
             }
-            return await claimStore.GetClaimsAsync(role, cancellationToken);
+            return await claimStore.GetClaimsAsync(role, CancellationToken);
         }
 
         /// <summary>

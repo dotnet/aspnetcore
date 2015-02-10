@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.Identity
         ///     Validate the password for the user
         /// </summary>
         /// <returns></returns>
-        Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password);
     }
 }

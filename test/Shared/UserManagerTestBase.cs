@@ -611,24 +611,22 @@ namespace Microsoft.AspNet.Identity.Test
         {
             public string Name { get; } = "Static";
 
-            public Task<string> GenerateAsync(string purpose, UserManager<TUser> manager,
-                TUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user)
             {
                 return Task.FromResult(MakeToken(purpose, user));
             }
 
-            public Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager,
-                TUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager, TUser user)
             {
                 return Task.FromResult(token == MakeToken(purpose, user));
             }
 
-            public Task NotifyAsync(string token, UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task NotifyAsync(string token, UserManager<TUser> manager, TUser user)
             {
                 return Task.FromResult(0);
             }
 
-            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
             {
                 return Task.FromResult(true);
             }
@@ -965,17 +963,17 @@ namespace Microsoft.AspNet.Identity.Test
         {
             public static readonly IdentityError ErrorMessage = new IdentityError { Description = "I'm Bad.", Code = "BadValidator" };
 
-            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
 
-            public Task<IdentityResult> ValidateAsync(RoleManager<TRole> manager, TRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(RoleManager<TRole> manager, TRole role)
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
 
-            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user)
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }

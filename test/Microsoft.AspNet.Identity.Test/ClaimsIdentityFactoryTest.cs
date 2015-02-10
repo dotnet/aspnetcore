@@ -44,18 +44,18 @@ namespace Microsoft.AspNet.Identity.Test
             var user = new TestUser { UserName = "Foo" };
             userManager.Setup(m => m.SupportsUserClaim).Returns(supportClaims);
             userManager.Setup(m => m.SupportsUserRole).Returns(supportRoles);
-            userManager.Setup(m => m.GetUserIdAsync(user, CancellationToken.None)).ReturnsAsync(user.Id);
-            userManager.Setup(m => m.GetUserNameAsync(user, CancellationToken.None)).ReturnsAsync(user.UserName);
+            userManager.Setup(m => m.GetUserIdAsync(user)).ReturnsAsync(user.Id);
+            userManager.Setup(m => m.GetUserNameAsync(user)).ReturnsAsync(user.UserName);
             var roleClaims = new[] { "Admin", "Local" };
             if (supportRoles)
             {
-                userManager.Setup(m => m.GetRolesAsync(user, CancellationToken.None)).ReturnsAsync(roleClaims);
+                userManager.Setup(m => m.GetRolesAsync(user)).ReturnsAsync(roleClaims);
                 roleManager.Setup(m => m.SupportsRoleClaims).Returns(supportRoleClaims);
             }
             var userClaims = new[] { new Claim("Whatever", "Value"), new Claim("Whatever2", "Value2") };
             if (supportClaims)
             {
-                userManager.Setup(m => m.GetClaimsAsync(user, CancellationToken.None)).ReturnsAsync(userClaims);
+                userManager.Setup(m => m.GetClaimsAsync(user)).ReturnsAsync(userClaims);
             }
             userManager.Object.Options = new IdentityOptions();
 
@@ -65,10 +65,10 @@ namespace Microsoft.AspNet.Identity.Test
             var localClaims = new[] { new Claim("LocalClaim1", "Value1"), new Claim("LocalClaim2", "Value2") };
             if (supportRoleClaims)
             {
-                roleManager.Setup(m => m.FindByNameAsync("Admin", CancellationToken.None)).ReturnsAsync(admin);
-                roleManager.Setup(m => m.FindByNameAsync("Local", CancellationToken.None)).ReturnsAsync(local);
-                roleManager.Setup(m => m.GetClaimsAsync(admin, CancellationToken.None)).ReturnsAsync(adminClaims);
-                roleManager.Setup(m => m.GetClaimsAsync(local, CancellationToken.None)).ReturnsAsync(localClaims);
+                roleManager.Setup(m => m.FindByNameAsync("Admin")).ReturnsAsync(admin);
+                roleManager.Setup(m => m.FindByNameAsync("Local")).ReturnsAsync(local);
+                roleManager.Setup(m => m.GetClaimsAsync(admin)).ReturnsAsync(adminClaims);
+                roleManager.Setup(m => m.GetClaimsAsync(local)).ReturnsAsync(localClaims);
             }
 
             var options = new Mock<IOptions<IdentityOptions>>();

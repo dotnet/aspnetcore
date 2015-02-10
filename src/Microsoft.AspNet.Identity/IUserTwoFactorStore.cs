@@ -19,8 +19,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="enabled"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetTwoFactorEnabledAsync(TUser user, bool enabled, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task SetTwoFactorEnabledAsync(TUser user, bool enabled, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Returns whether two factor is enabled for the user
@@ -28,7 +27,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> GetTwoFactorEnabledAsync(TUser user, 
-            CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> GetTwoFactorEnabledAsync(TUser user, CancellationToken cancellationToken);
     }
 }

@@ -77,16 +77,14 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user">The user instance to create claims on.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the tasks to complete.</param>
         /// <returns>A <see cref="Task{TResult}"/> that represents the started task.</returns>
-        public virtual async Task<ClaimsIdentity> CreateAsync(
-            TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<ClaimsIdentity> CreateAsync(TUser user)
         {
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
-            var userId = await UserManager.GetUserIdAsync(user, cancellationToken);
-            var userName = await UserManager.GetUserNameAsync(user, cancellationToken);
+            var userId = await UserManager.GetUserIdAsync(user);
+            var userName = await UserManager.GetUserNameAsync(user);
             var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType, Options.ClaimsIdentity.UserNameClaimType,
                 Options.ClaimsIdentity.RoleClaimType);
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, userId));
@@ -94,11 +92,11 @@ namespace Microsoft.AspNet.Identity
             if (UserManager.SupportsUserSecurityStamp)
             {
                 id.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType, 
-                    await UserManager.GetSecurityStampAsync(user, cancellationToken)));
+                    await UserManager.GetSecurityStampAsync(user)));
             }
             if (UserManager.SupportsUserRole)
             {
-                var roles = await UserManager.GetRolesAsync(user, cancellationToken);
+                var roles = await UserManager.GetRolesAsync(user);
                 foreach (var roleName in roles)
                 {
                     id.AddClaim(new Claim(Options.ClaimsIdentity.RoleClaimType, roleName, ClaimValueTypes.String));
@@ -107,14 +105,14 @@ namespace Microsoft.AspNet.Identity
                         var role = await RoleManager.FindByNameAsync(roleName);
                         if (role != null)
                         {
-                            id.AddClaims(await RoleManager.GetClaimsAsync(role, cancellationToken));
+                            id.AddClaims(await RoleManager.GetClaimsAsync(role));
                         }
                     }
                 }
             }
             if (UserManager.SupportsUserClaim)
             {
-                id.AddClaims(await UserManager.GetClaimsAsync(user, cancellationToken));
+                id.AddClaims(await UserManager.GetClaimsAsync(user));
             }
             return id;
         }

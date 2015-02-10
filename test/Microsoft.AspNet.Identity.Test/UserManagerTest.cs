@@ -817,7 +817,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             public static readonly IdentityError ErrorMessage = new IdentityError { Description = "I'm Bad." };
 
-            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
@@ -1088,23 +1088,22 @@ namespace Microsoft.AspNet.Identity.Test
         {
             public string Name { get; } = "Noop";
 
-            public Task<string> GenerateAsync(string purpose, UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GenerateAsync(string purpose, UserManager<TestUser> manager, TestUser user)
             {
                 return Task.FromResult("Test");
             }
 
-            public Task<bool> ValidateAsync(string purpose, string token, UserManager<TestUser> manager,
-                TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> ValidateAsync(string purpose, string token, UserManager<TestUser> manager, TestUser user)
             {
                 return Task.FromResult(true);
             }
 
-            public Task NotifyAsync(string token, UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task NotifyAsync(string token, UserManager<TestUser> manager, TestUser user)
             {
                 return Task.FromResult(0);
             }
 
-            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TestUser> manager, TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TestUser> manager, TestUser user)
             {
                 return Task.FromResult(true);
             }

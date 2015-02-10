@@ -209,17 +209,17 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> ValidateAsync(RoleManager<IdentityRole> manager, IdentityRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(RoleManager<IdentityRole> manager, IdentityRole role)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> ValidateAsync(UserManager<IdentityUser> manager, IdentityUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(UserManager<IdentityUser> manager, IdentityUser user)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> ValidateAsync(UserManager<IdentityUser> manager, IdentityUser user, string password, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> ValidateAsync(UserManager<IdentityUser> manager, IdentityUser user, string password)
             {
                 throw new NotImplementedException();
             }

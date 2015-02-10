@@ -10,6 +10,6 @@ namespace Microsoft.AspNet.Identity
     {
         string Name { get; }
 
-        Task SendAsync(IdentityMessage message, CancellationToken cancellationToken = default(CancellationToken));
+        Task SendAsync(IdentityMessage message, CancellationToken cancellationToken);
     }
 }
