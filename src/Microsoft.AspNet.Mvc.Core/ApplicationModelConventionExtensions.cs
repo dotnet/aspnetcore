@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Adds a <see cref="IActionModelConvention"/> to all the actions in the application.
         /// </summary>
-        /// <param name="conventions">The list of <see cref="IApplicationModelConvention">
+        /// <param name="conventions">The list of <see cref="IApplicationModelConvention"/>
         /// in <see cref="MvcOptions"/>.</param>
         /// <param name="actionModelConvention">The <see cref="IActionModelConvention"/> which needs to be
         /// added.</param>
