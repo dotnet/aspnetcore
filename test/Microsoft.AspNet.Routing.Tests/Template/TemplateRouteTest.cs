@@ -971,7 +971,7 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [Fact]
-        public void GetVirtualPath_RejectedByHandler()
+        public void GetVirtualPath_ValuesRejectedByHandler_StillGeneratesPath()
         {
             // Arrange
             var route = CreateRoute("{controller}", accept: false);
@@ -982,7 +982,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Assert
             Assert.False(context.IsBound);
-            Assert.Null(path);
+            Assert.Equal("Home", path);
         }
 
         [Fact]
@@ -1026,7 +1026,7 @@ namespace Microsoft.AspNet.Routing.Template
             // Arrange
             var context = CreateVirtualPathContext(new { p1 = "hello", p2 = "1234" });
 
-            TemplateRoute r = CreateRoute(
+            var r = CreateRoute(
                 "{p1}/{p2}",
                 new { p2 = "catchall" },
                 true,

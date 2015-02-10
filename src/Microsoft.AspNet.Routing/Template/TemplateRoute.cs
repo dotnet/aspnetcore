@@ -202,24 +202,18 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Validate that the target can accept these values.
             var childContext = CreateChildVirtualPathContext(context, values.AcceptedValues);
+
             var path = _target.GetVirtualPath(childContext);
             if (path != null)
             {
                 // If the target generates a value then that can short circuit.
-                context.IsBound = true;
                 return path;
             }
-            else if (!childContext.IsBound)
-            {
-                // The target has rejected these values.
-                return null;
-            }
 
+            // If we can produce a value go ahead and do it, the caller can check context.IsBound
+            // to see if the values were validated.
             path = _binder.BindValues(values.AcceptedValues);
-            if (path != null)
-            {
-                context.IsBound = true;
-            }
+            context.IsBound = childContext.IsBound;
 
             return path;
         }
@@ -282,7 +276,7 @@ namespace Microsoft.AspNet.Routing.Template
                 foreach (var inlineConstraint in parameter.InlineConstraints)
                 {
                     constraintBuilder.AddResolvedConstraint(parameter.Name, inlineConstraint.Constraint);
-                }                
+                }
             }
 
             return constraintBuilder.Build();
