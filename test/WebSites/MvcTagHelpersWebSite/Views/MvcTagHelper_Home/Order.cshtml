@@ -33,6 +33,11 @@
             <select asp-for="@Model.Products" asp-items="@((IEnumerable<SelectListItem>)ViewBag.Items)" multiple="@(@object)" />
         </div>
         <div>
+            <label asp-for="SubstituteProducts" class="order" />
+            @* Use same select list as Products. Selection when Products is non-null is not used here. *@
+            <select asp-for="SubstituteProducts" asp-items="@((IEnumerable<SelectListItem>)ViewBag.Items)" />
+        </div>
+        <div>
             <label asp-for="OrderDate" class="order" />
             <input asp-for="OrderDate" type="datetime" asp-format="{0:yyyy/MM/dd/ g}" />
         </div>

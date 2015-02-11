@@ -45,6 +45,7 @@ namespace MvcTagHelpersWebSite.Controllers
             },
             NeedSpecialHandle = true,
             PaymentMethod = new List<string> { "Check" },
+            Products = new List<int> { 0, 1 },
         };
 
         public MvcTagHelper_HomeController()

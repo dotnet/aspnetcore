@@ -28,6 +28,11 @@ Html.BeginForm(actionName: "Submit", controllerName: "MvcTagHelper_Order"))
             @Html.ListBoxFor(m => m.Products, productSelectList)
         </div>
         <div>
+            @Html.LabelFor(m => m.SubstituteProducts, htmlAttributes: new { @class = "order" })
+            @* Use same select list as Products. Selection when Products is non-null is not used here. *@
+            @Html.ListBoxFor(m => m.SubstituteProducts, productSelectList)
+        </div>
+        <div>
             @Html.LabelFor(m => m.OrderDate, htmlAttributes: new { @class = "order" })
             @Html.TextBoxFor(m => m.OrderDate, format: "{0:yyyy/MM/dd/ g}", htmlAttributes: new { type = "datetime" })
         </div>

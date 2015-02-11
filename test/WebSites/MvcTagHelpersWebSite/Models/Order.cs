@@ -44,6 +44,12 @@ namespace MvcTagHelpersWebSite.Models
             set;
         }
 
+        public IEnumerable<int> SubstituteProducts
+        {
+            get;
+            set;
+        }
+
         public Customer Customer
         {
             get;

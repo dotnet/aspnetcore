@@ -1059,12 +1059,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
             values = values.Concat(enumValues);
 
             selectedValues = new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
+
+            // Perform deep copy of selectList to avoid changing user's Selected property values.
             var newSelectList = new List<SelectListItem>();
             foreach (SelectListItem item in selectList)
             {
-                item.Selected =
-                    (item.Value != null) ? selectedValues.Contains(item.Value) : selectedValues.Contains(item.Text);
-                newSelectList.Add(item);
+                var newItem = new SelectListItem
+                {
+                    Disabled = item.Disabled,
+                    Group = item.Group,
+                    Selected = selectedValues.Contains(item.Value ?? item.Text),
+                    Text = item.Text,
+                    Value = item.Value,
+                };
+                newSelectList.Add(newItem);
             }
 
             return newSelectList;
