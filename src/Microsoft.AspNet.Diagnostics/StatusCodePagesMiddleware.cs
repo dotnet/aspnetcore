@@ -13,13 +13,13 @@ namespace Microsoft.AspNet.Diagnostics
         private readonly RequestDelegate _next;
         private readonly StatusCodePagesOptions _options;
 
-        public StatusCodePagesMiddleware(RequestDelegate next, StatusCodePagesOptions options)
+        public StatusCodePagesMiddleware(RequestDelegate next, [NotNull]StatusCodePagesOptions options)
         {
             _next = next;
             _options = options;
             if (_options.HandleAsync == null)
             {
-                throw new ArgumentException("Missing HandleAsync implementation.");
+                throw new ArgumentException("Missing options.HandleAsync implementation.");
             }
         }
 
