@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Adds a <see cref="IControllerModelConvention"/> to all the controllers in the application.
         /// </summary>
-        /// <param name="conventions">The list of <see cref="IApplicationModelConvention">
+        /// <param name="conventions">The list of <see cref="IApplicationModelConvention"/>
         /// in <see cref="MvcOptions"/>.</param>
         /// <param name="controllerModelConvention">The <see cref="IControllerModelConvention"/> which needs to be
         /// added.</param>
