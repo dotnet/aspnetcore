@@ -15,34 +15,24 @@ namespace Microsoft.AspNet.Razor.Text
         public static readonly SourceLocation Undefined = CreateUndefined();
         public static readonly SourceLocation Zero = new SourceLocation(0, 0, 0);
 
-        private int _absoluteIndex;
-        private int _lineIndex;
-        private int _characterIndex;
-
         public SourceLocation(int absoluteIndex, int lineIndex, int characterIndex)
         {
-            _absoluteIndex = absoluteIndex;
-            _lineIndex = lineIndex;
-            _characterIndex = characterIndex;
+            AbsoluteIndex = absoluteIndex;
+            LineIndex = lineIndex;
+            CharacterIndex = characterIndex;
         }
 
-        public int AbsoluteIndex
-        {
-            get { return _absoluteIndex; }
-        }
+        /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
+        public int AbsoluteIndex { get; set; }
 
         /// <summary>
         /// Gets the 1-based index of the line referred to by this Source Location.
         /// </summary>
-        public int LineIndex
-        {
-            get { return _lineIndex; }
-        }
+        /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
+        public int LineIndex { get; set; }
 
-        public int CharacterIndex
-        {
-            get { return _characterIndex; }
-        }
+        /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
+        public int CharacterIndex { get; set; }
 
         public override string ToString()
         {
@@ -102,9 +92,9 @@ namespace Microsoft.AspNet.Razor.Text
         private static SourceLocation CreateUndefined()
         {
             var sl = new SourceLocation();
-            sl._absoluteIndex = -1;
-            sl._lineIndex = -1;
-            sl._characterIndex = -1;
+            sl.AbsoluteIndex = -1;
+            sl.LineIndex = -1;
+            sl.CharacterIndex = -1;
             return sl;
         }
 
