@@ -9,6 +9,11 @@ namespace Microsoft.AspNet.Routing
 {
     public class RouteOptions
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether all generated URLs are lower-case.
+        /// </summary>
+        public bool LowercaseUrls { get; set; }
+
         private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
 
         public IDictionary<string, Type> ConstraintMap
