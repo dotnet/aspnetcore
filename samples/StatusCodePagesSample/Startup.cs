@@ -15,14 +15,14 @@ namespace StatusCodePagesSample
         public void Configure(IApplicationBuilder app)
         {
             app.UseErrorPage(ErrorPageOptions.ShowAll);
-            //app.UseStatusCodePages(); // There is a default response but any of the following can be used to change the behavior.
+            app.UseStatusCodePages(); // There is a default response but any of the following can be used to change the behavior.
 
             // app.UseStatusCodePages(context => context.HttpContext.Response.SendAsync("Handler, status code: " + context.HttpContext.Response.StatusCode, "text/plain"));
             // app.UseStatusCodePages("text/plain", "Response, status code: {0}");
-            // app.UseStatusCodePages("~/errors/{0}"); // PathBase relative
-            // app.UseStatusCodePages("/base/errors/{0}"); // Absolute
+            // app.UseStatusCodePagesWithRedirects("~/errors/{0}"); // PathBase relative
+            // app.UseStatusCodePagesWithRedirects("/base/errors/{0}"); // Absolute
             // app.UseStatusCodePages(builder => builder.UseWelcomePage());
-            // app.WithReExecute("/errors/{0}");
+            // app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
             // "/[?statuscode=400]"
             app.Use((context, next) =>

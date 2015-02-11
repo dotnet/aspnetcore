@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app"></param>
         /// <param name="locationFormat"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, string locationFormat)
+        public static IApplicationBuilder UseStatusCodePagesWithRedirects(this IApplicationBuilder app, string locationFormat)
         {
             if (locationFormat.StartsWith("~"))
             {
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app"></param>
         /// <param name="pathFormat"></param>
         /// <returns></returns>
-        public static IApplicationBuilder WithReExecute(this IApplicationBuilder app, string pathFormat)
+        public static IApplicationBuilder UseStatusCodePagesWithReExecute(this IApplicationBuilder app, string pathFormat)
         {
             return UseStatusCodePages(app, async context =>
             {
