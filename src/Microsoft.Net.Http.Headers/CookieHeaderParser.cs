@@ -91,7 +91,7 @@ namespace Microsoft.Net.Http.Headers
 
             if (skipEmptyValues)
             {
-                while ((current < input.Length) && (input[current] == ',') && (input[current] == ';'))
+                while ((current < input.Length) && ((input[current] == ',') || (input[current] == ';')))
                 {
                     current++; // skip delimiter.
                     current = current + HttpRuleParser.GetWhitespaceLength(input, current);
