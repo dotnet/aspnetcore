@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
@@ -391,6 +392,22 @@ Partial that does not specify Layout
 
             // Act
             var body = await client.GetStringAsync("http://localhost/PartialsWithLayout/PartialsRenderedViaPartialAsync");
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
+
+        [Fact]
+        public async Task RazorView_SetsViewPathAndExecutingPagePath()
+        {
+            // Arrange
+            var expected = await GetType().GetTypeInfo().Assembly
+                .ReadResourceAsStringAsync("compiler/resources/ViewEngineController.ViewWithPaths.txt");
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/ViewWithPaths");
 
             // Assert
             Assert.Equal(expected, body.Trim());

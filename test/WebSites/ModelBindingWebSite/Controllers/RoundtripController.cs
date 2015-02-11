@@ -68,6 +68,8 @@ namespace ModelBindingWebSite.Controllers
 
         private sealed class TestView : IView
         {
+            public string Path { get; set; }
+
             public Task RenderAsync(ViewContext context)
             {
                 throw new NotImplementedException();

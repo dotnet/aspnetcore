@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -81,6 +82,61 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Assert
             activator.Verify();
             Assert.Same(expectedWriter, viewContext.Writer);
+        }
+
+        [Fact]
+        public async Task ViewContext_ExecutingPagePath_ReturnsPathOfRazorPageBeingExecuted()
+        {
+            // Arrange
+            var pagePath = "/my/view";
+            var paths = new List<string>();
+            var page = new TestableRazorPage(v =>
+            {
+                paths.Add(v.ViewContext.ExecutingFilePath);
+                Assert.Equal(pagePath, v.ViewContext.View.Path);
+            })
+            {
+                Path = pagePath
+            };
+
+            var viewStart = new TestableRazorPage(v =>
+            {
+                v.Layout = LayoutPath;
+                paths.Add(v.ViewContext.ExecutingFilePath);
+                Assert.Equal(pagePath, v.ViewContext.View.Path);
+            })
+            {
+                Path = "_ViewStart"
+            };
+
+            var layout = new TestableRazorPage(v =>
+            {
+                v.RenderBodyPublic();
+                paths.Add(v.ViewContext.ExecutingFilePath);
+                Assert.Equal(pagePath, v.ViewContext.View.Path);
+            })
+            {
+                Path = LayoutPath
+            };
+
+            var activator = Mock.Of<IRazorPageActivator>();
+            var viewEngine = new Mock<IRazorViewEngine>();
+            viewEngine.Setup(v => v.FindPage(It.IsAny<ActionContext>(), LayoutPath))
+                      .Returns(new RazorPageResult(LayoutPath, layout));
+            var view = new RazorView(viewEngine.Object,
+                                     activator,
+                                     CreateViewStartProvider(viewStart),
+                                     page,
+                                     isPartial: false);
+
+            var viewContext = CreateViewContext(view);
+            var expectedWriter = viewContext.Writer;
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.Equal(new[] { "_ViewStart", pagePath, LayoutPath }, paths);
         }
 
         [Fact]

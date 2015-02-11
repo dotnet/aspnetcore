@@ -9,6 +9,8 @@ namespace CompositeViewEngineWebSite
 {
     public class TestView : IView
     {
+        public string Path { get; set; }
+
         public async Task RenderAsync(ViewContext context)
         {
             await context.Writer.WriteLineAsync("Content from test view");

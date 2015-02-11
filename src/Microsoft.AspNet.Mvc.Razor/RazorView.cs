@@ -42,6 +42,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             IsPartial = isPartial;
         }
 
+        /// <inheritdoc />
+        public string Path
+        {
+            get { return RazorPage.Path; }
+        }
+
         /// <summary>
         /// Gets <see cref="IRazorPage"/> instance that the views executes on.
         /// </summary>
@@ -93,7 +99,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             // The writer for the body is passed through the ViewContext, allowing things like HtmlHelpers
             // and ViewComponents to reference it.
             var oldWriter = context.Writer;
+            var oldFilePath = context.ExecutingFilePath;
             context.Writer = writer;
+            context.ExecutingFilePath = page.Path;
 
             try
             {
@@ -109,6 +117,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             finally
             {
                 context.Writer = oldWriter;
+                context.ExecutingFilePath = oldFilePath;
                 writer.Dispose();
             }
         }
@@ -131,12 +140,21 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewStarts = _viewStartProvider.GetViewStartPages(RazorPage.Path);
 
             string layout = null;
-            foreach (var viewStart in viewStarts)
+            var oldFilePath = context.ExecutingFilePath;
+            try
             {
-                // Copy the layout value from the previous view start (if any) to the current.
-                viewStart.Layout = layout;
-                await RenderPageCoreAsync(viewStart, context);
-                layout = viewStart.Layout;
+                foreach (var viewStart in viewStarts)
+                {
+                    context.ExecutingFilePath = viewStart.Path;
+                    // Copy the layout value from the previous view start (if any) to the current.
+                    viewStart.Layout = layout;
+                    await RenderPageCoreAsync(viewStart, context);
+                    layout = viewStart.Layout;
+                }
+            }
+            finally
+            {
+                context.ExecutingFilePath = oldFilePath;
             }
 
             // Copy over interesting properties from the ViewStart page to the entry page.
