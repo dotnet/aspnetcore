@@ -8,7 +8,6 @@ using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -45,16 +44,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public ModelExpression For { get; set; }
 
         /// <summary>
-        /// Specifies that multiple options can be selected at once.
-        /// </summary>
-        /// <remarks>
-        /// Passed through to the generated HTML if value is <c>multiple</c>. Converted to <c>multiple</c> or absent if
-        /// value is <c>true</c> or <c>false</c>. Other values are not acceptable. Also used to determine the correct
-        /// "selected" attributes for generated &lt;option&gt; elements.
-        /// </remarks>
-        public string Multiple { get; set; }
-
-        /// <summary>
         /// A collection of <see cref="SelectListItem"/> objects used to populate the &lt;select&gt; element with
         /// &lt;optgroup&gt; and &lt;option&gt; elements.
         /// </summary>
@@ -79,12 +68,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         ItemsAttributeName);
                     throw new InvalidOperationException(message);
                 }
-
-                // Pass through attribute that is also a well-known HTML attribute.
-                if (!string.IsNullOrEmpty(Multiple))
-                {
-                    output.CopyHtmlAttribute(nameof(Multiple), context);
-                }
             }
             else
             {
@@ -100,33 +83,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         For.Name));
                 }
 
-                bool allowMultiple;
-                if (string.IsNullOrEmpty(Multiple))
-                {
-                    // Base allowMultiple on the instance or declared type of the expression.
-                    var realModelType = For.Metadata.RealModelType;
-                    allowMultiple =
+                // Base allowMultiple on the instance or declared type of the expression to avoid a
+                // "SelectExpressionNotEnumerable" InvalidOperationException during generation.
+                // Metadata.IsCollectionType() is similar but does not take runtime type into account.
+                var realModelType = For.Metadata.RealModelType;
+                var allowMultiple =
                         typeof(string) != realModelType && typeof(IEnumerable).IsAssignableFrom(realModelType);
-                }
-                else if (string.Equals(Multiple, "multiple", StringComparison.OrdinalIgnoreCase))
-                {
-                    allowMultiple = true;
-
-                    // Copy exact attribute name and value the user entered. Must be done prior to any copying from a
-                    // TagBuilder. Not done in next case because "true" and "false" aren't valid for the HTML 5
-                    // attribute.
-                    output.CopyHtmlAttribute(nameof(Multiple), context);
-                }
-                else if (!bool.TryParse(Multiple.ToLowerInvariant(), out allowMultiple))
-                {
-                    throw new InvalidOperationException(Resources.FormatTagHelpers_InvalidValue_ThreeAcceptableValues(
-                        "<select>",
-                        nameof(Multiple).ToLowerInvariant(),
-                        Multiple,
-                        bool.FalseString.ToLowerInvariant(),
-                        bool.TrueString.ToLowerInvariant(),
-                        nameof(Multiple).ToLowerInvariant())); // acceptable value (as well as attribute name)
-                }
 
                 // Ensure GenerateSelect() _never_ looks anything up in ViewData.
                 var items = Items ?? Enumerable.Empty<SelectListItem>();

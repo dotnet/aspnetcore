@@ -87,9 +87,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        // Items value, Multiple value, expected items value (passed to generator), expected allowMultiple.
-        // Provides cross product of Items and Multiple values. These attribute values should not interact.
-        public static TheoryData<IEnumerable<SelectListItem>, string, IEnumerable<SelectListItem>, bool>
+        // Items property value, attribute name, attribute value, expected items value (passed to generator). Provides
+        // cross product of Items and attributes. These values should not interact.
+        public static TheoryData<IEnumerable<SelectListItem>, string, string, IEnumerable<SelectListItem>>
             ItemsAndMultipleDataSet
         {
             get
@@ -106,24 +106,34 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     new[] { multiItems, multiItems },
                     new[] { selectItems, selectItems },
                 };
-                var mutlipleData = new[]
+                var attributeData = new Dictionary<string, string>(StringComparer.Ordinal)
                 {
-                    new Tuple<string, bool>(null, false), // allowMultiple determined by string datatype.
-                    new Tuple<string, bool>("", false),   // allowMultiple determined by string datatype.
-                    new Tuple<string, bool>("true", true),
-                    new Tuple<string, bool>("false", false),
-                    new Tuple<string, bool>("multiple", true),
-                    new Tuple<string, bool>("Multiple", true),
-                    new Tuple<string, bool>("MULTIPLE", true),
+                    // SelectTagHelper ignores all "multiple" attribute values.
+                    { "multiple", null },
+                    { "mUltiple", string.Empty },
+                    { "muLtiple", "true" },
+                    { "Multiple", "false" },
+                    { "MUltiple", "multiple" },
+                    { "MuLtiple", "Multiple" },
+                    { "mUlTiPlE", "mUlTiPlE" },
+                    { "mULTiPlE", "MULTIPLE" },
+                    { "mUlTIPlE", "Invalid" },
+                    { "MULTiPLE", "0" },
+                    { "MUlTIPLE", "1" },
+                    { "MULTIPLE", "__true" },
+                    // SelectTagHelper also ignores non-"multiple" attributes.
+                    { "multiple_", "multiple" },
+                    { "not-multiple", "multiple" },
+                    { "__multiple", "multiple" },
                 };
 
                 var theoryData =
-                    new TheoryData<IEnumerable<SelectListItem>, string, IEnumerable<SelectListItem>, bool>();
+                    new TheoryData<IEnumerable<SelectListItem>, string, string, IEnumerable<SelectListItem>>();
                 foreach (var items in itemsData)
                 {
-                    foreach (var multiples in mutlipleData)
+                    foreach (var attribute in attributeData)
                     {
-                        theoryData.Add(items[0], multiples.Item1, items[1], multiples.Item2);
+                        theoryData.Add(items[0], attribute.Key, attribute.Value, items[1]);
                     }
                 }
 
@@ -315,19 +325,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         [Theory]
         [MemberData(nameof(ItemsAndMultipleDataSet))]
-        public async Task ProcessAsync_CallsGeneratorWithExpectedValues_ItemsAndMultiple(
+        public async Task ProcessAsync_CallsGeneratorWithExpectedValues_ItemsAndAttribute(
             IEnumerable<SelectListItem> inputItems,
-            string multiple,
-            IEnumerable<SelectListItem> expectedItems,
-            bool expectedAllowMultiple)
+            string attributeName,
+            string attributeValue,
+            IEnumerable<SelectListItem> expectedItems)
         {
             // Arrange
             var contextAttributes = new Dictionary<string, object>
             {
-                // Attribute will be restored if value matches "multiple".
-                { "multiple", multiple },
+                // Provided for completeness. Select tag helper does not confirm AllAttributes set is consistent.
+                { attributeName, attributeValue },
             };
-            var originalAttributes = new Dictionary<string, string>();
+            var originalAttributes = new Dictionary<string, string>
+            {
+                { attributeName, attributeValue },
+            };
             var propertyName = "Property1";
             var expectedTagName = "select";
 
@@ -356,7 +369,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     null,         // optionLabel
                     string.Empty, // name
                     expectedItems,
-                    expectedAllowMultiple,
+                    false,        // allowMultiple
                     null,         // htmlAttributes
                     out selectedValues))
                 .Returns((TagBuilder)null)
@@ -367,7 +380,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 For = modelExpression,
                 Items = inputItems,
                 Generator = htmlGenerator.Object,
-                Multiple = multiple,
                 ViewContext = viewContext,
             };
 
@@ -443,58 +455,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Same(selectedValues, keyValuePair.Value);
         }
 
-        [Theory]
-        [InlineData("multiple")]
-        [InlineData("mUlTiPlE")]
-        [InlineData("MULTIPLE")]
-        public async Task ProcessAsync_RestoresMultiple_IfForNotBound(string attributeName)
-        {
-            // Arrange
-            var contextAttributes = new Dictionary<string, object>
-            {
-                { attributeName, "I'm more than one" },
-            };
-            var originalAttributes = new Dictionary<string, string>
-            {
-                { "class", "form-control" },
-                { "size", "2" },
-            };
-            var expectedAttributes = new Dictionary<string, string>(originalAttributes);
-            expectedAttributes[attributeName] = (string)contextAttributes[attributeName];
-            var expectedPreContent = "original pre-content";
-            var expectedContent = "original content";
-            var expectedPostContent = "original post-content";
-            var expectedTagName = "select";
-
-            var tagHelperContext = new TagHelperContext(
-                contextAttributes,
-                uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult("Something"));
-            var output = new TagHelperOutput(expectedTagName, originalAttributes)
-            {
-                PreContent = expectedPreContent,
-                Content = expectedContent,
-                PostContent = expectedPostContent,
-                SelfClosing = true,
-            };
-
-            var tagHelper = new SelectTagHelper
-            {
-                Multiple = "I'm more than one",
-            };
-
-            // Act
-            await tagHelper.ProcessAsync(tagHelperContext, output);
-
-            // Assert
-            Assert.Equal(expectedAttributes, output.Attributes);
-            Assert.Equal(expectedPreContent, output.PreContent);
-            Assert.Equal(expectedContent, output.Content);
-            Assert.Equal(expectedPostContent, output.PostContent);
-            Assert.True(output.SelfClosing);
-            Assert.Equal(expectedTagName, output.TagName);
-        }
-
         [Fact]
         public async Task ProcessAsync_Throws_IfForNotBoundButItemsIs()
         {
@@ -512,46 +472,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelper = new SelectTagHelper
             {
                 Items = Enumerable.Empty<SelectListItem>(),
-            };
-
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => tagHelper.ProcessAsync(tagHelperContext, output));
-            Assert.Equal(expectedMessage, exception.Message);
-        }
-
-        [Theory]
-        [InlineData("Invalid")]
-        [InlineData("0")]
-        [InlineData("1")]
-        [InlineData("__true")]
-        [InlineData("false__")]
-        [InlineData("__Multiple")]
-        [InlineData("Multiple__")]
-        public async Task ProcessAsync_Throws_IfMultipleInvalid(string multiple)
-        {
-            // Arrange
-            var contextAttributes = new Dictionary<string, object>();
-            var originalAttributes = new Dictionary<string, string>();
-            var expectedTagName = "select";
-            var expectedMessage = "Cannot parse 'multiple' value '" + multiple +
-                "' for <select>. Acceptable values are 'false', 'true' and 'multiple'.";
-
-            var tagHelperContext = new TagHelperContext(
-                contextAttributes,
-                uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult("Something"));
-            var output = new TagHelperOutput(expectedTagName, originalAttributes);
-
-            var metadataProvider = new EmptyModelMetadataProvider();
-            string model = null;
-            var metadata = metadataProvider.GetMetadataForType(() => model, typeof(string));
-            var modelExpression = new ModelExpression("Property1", metadata);
-
-            var tagHelper = new SelectTagHelper
-            {
-                For = modelExpression,
-                Multiple = multiple,
             };
 
             // Act & Assert
