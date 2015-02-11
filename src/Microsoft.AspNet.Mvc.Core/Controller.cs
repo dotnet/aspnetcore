@@ -186,6 +186,12 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Gets or sets <see cref="ITempDataDictionary"/> used by <see cref="ViewResult"/>.
+        /// </summary>
+        [FromServices]
+        public ITempDataDictionary TempData { get; set; }
+
+        /// <summary>
         /// Gets the dynamic view bag.
         /// </summary>
         public dynamic ViewBag
@@ -254,6 +260,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewName = viewName,
                 ViewData = ViewData,
+                TempData = TempData
             };
         }
 
@@ -310,6 +317,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewName = viewName,
                 ViewData = ViewData,
+                TempData = TempData
             };
         }
 

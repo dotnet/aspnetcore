@@ -91,6 +91,30 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             httpResponse.Verify();
         }
 
+        [Fact]
+        public void Execute_Calls_TempDataKeep()
+        {
+            // Arrange
+            var tempData = new Mock<ITempDataDictionary>();
+            tempData.Setup(t => t.Keep()).Verifiable();
+
+            var httpContext = new Mock<HttpContext>();
+            httpContext.Setup(o => o.Response).Returns(new Mock<HttpResponse>().Object);
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(ITempDataDictionary))).Returns(tempData.Object);
+            var actionContext = GetActionContext(httpContext.Object);
+
+            var result = new RedirectResult("url")
+            {
+                UrlHelper = Mock.Of<IUrlHelper>()
+            };
+
+            // Act
+            result.ExecuteResult(actionContext);
+
+            // Assert
+            tempData.Verify(t => t.Keep(), Times.Once());
+        }
+
         private static ActionContext GetActionContext(HttpContext httpContext)
         {
             var routeData = new RouteData();
@@ -105,6 +129,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddInstance<IUrlHelper>(urlHelper);
+            serviceCollection.AddInstance<ITempDataDictionary>(Mock.Of<ITempDataDictionary>());
             return serviceCollection.BuildServiceProvider();
         }
 

@@ -52,6 +52,36 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
+        public async Task InvokeAction_SavesTempData_WhenActionDoesNotThrow()
+        {
+            // Arrange
+            var tempData = new Mock<ITempDataDictionary>();
+            tempData.Setup(t => t.Save()).Verifiable();
+
+            var invoker = CreateInvoker(Mock.Of<IFilter>(), actionThrows: false, tempData: tempData.Object);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            tempData.Verify(t => t.Save(), Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_SavesTempData_WhenActionThrows()
+        {
+            // Arrange
+            var tempData = new Mock<ITempDataDictionary>();
+            tempData.Setup(t => t.Save()).Verifiable();
+
+            var invoker = CreateInvoker(Mock.Of<IFilter>(), actionThrows: true, tempData: tempData.Object);
+
+            // Act & Assert
+            await Assert.ThrowsAsync(_actionException.GetType(), async () => await invoker.InvokeAsync());
+            tempData.Verify(t => t.Save(), Times.Once());
+        }
+
+        [Fact]
         public async Task InvokeAction_DoesNotAsyncInvokeExceptionFilter_WhenActionDoesNotThrow()
         {
             // Arrange
@@ -1929,12 +1959,18 @@ namespace Microsoft.AspNet.Mvc
             Assert.Same(input, contentResult.Value);
         }
 
-        private TestControllerActionInvoker CreateInvoker(IFilter filter, bool actionThrows = false)
+        private TestControllerActionInvoker CreateInvoker(
+            IFilter filter,
+            bool actionThrows = false,
+            ITempDataDictionary tempData = null)
         {
-            return CreateInvoker(new[] { filter }, actionThrows);
+            return CreateInvoker(new[] { filter }, actionThrows, tempData);
         }
 
-        private TestControllerActionInvoker CreateInvoker(IFilter[] filters, bool actionThrows = false)
+        private TestControllerActionInvoker CreateInvoker(
+            IFilter[] filters,
+            bool actionThrows = false,
+            ITempDataDictionary tempData = null)
         {
             var actionDescriptor = new ControllerActionDescriptor()
             {
@@ -1951,6 +1987,7 @@ namespace Microsoft.AspNet.Mvc
                 actionDescriptor.MethodInfo = typeof(ControllerActionInvokerTest).GetMethod("ActionMethod");
             }
 
+            tempData = tempData ?? new Mock<ITempDataDictionary>().Object;
             var httpContext = new Mock<HttpContext>(MockBehavior.Loose);
             var httpRequest = new DefaultHttpContext().Request;
             var httpResponse = new DefaultHttpContext().Response;
@@ -1965,6 +2002,8 @@ namespace Microsoft.AspNet.Mvc
             httpContext.SetupGet(c => c.Response).Returns(httpResponse);
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
                        .Returns(mockFormattersProvider.Object);
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(ITempDataDictionary)))
+                       .Returns(tempData);
             httpResponse.Body = new MemoryStream();
 
             var options = new Mock<IOptions<MvcOptions>>();
@@ -2012,7 +2051,8 @@ namespace Microsoft.AspNet.Mvc
                 new MockModelBinderProvider(),
                 new MockModelValidatorProviderProvider(),
                 new MockValueProviderFactoryProvider(),
-                new MockScopedInstance<ActionBindingContext>());
+                new MockScopedInstance<ActionBindingContext>(),
+                tempData);
 
             return invoker;
         }
@@ -2044,6 +2084,8 @@ namespace Microsoft.AspNet.Mvc
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Items)
                    .Returns(new Dictionary<object, object>());
+            context.Setup(c => c.RequestServices.GetService(typeof(ITempDataDictionary)))
+                       .Returns(new Mock<ITempDataDictionary>().Object);
 
             var actionContext = new ActionContext(context.Object, new RouteData(), actionDescriptor);
 
@@ -2067,7 +2109,8 @@ namespace Microsoft.AspNet.Mvc
                     new MockModelBinderProvider() { ModelBinders = new List<IModelBinder>() { binder.Object } },
                     new MockModelValidatorProviderProvider(),
                     new MockValueProviderFactoryProvider(),
-                    new MockScopedInstance<ActionBindingContext>());
+                    new MockScopedInstance<ActionBindingContext>(),
+                    Mock.Of<ITempDataDictionary>());
 
             // Act
             await invoker.InvokeAsync();
@@ -2164,7 +2207,8 @@ namespace Microsoft.AspNet.Mvc
                 IModelBinderProvider modelBinderProvider,
                 IModelValidatorProviderProvider modelValidatorProviderProvider,
                 IValueProviderFactoryProvider valueProviderFactoryProvider,
-                IScopedInstance<ActionBindingContext> actionBindingContext)
+                IScopedInstance<ActionBindingContext> actionBindingContext,
+                ITempDataDictionary tempData)
                 : base(
                       actionContext,
                       filterProvider,
@@ -2175,7 +2219,8 @@ namespace Microsoft.AspNet.Mvc
                       modelBinderProvider,
                       modelValidatorProviderProvider,
                       valueProviderFactoryProvider,
-                      actionBindingContext)
+                      actionBindingContext,
+                      tempData)
             {
                 ControllerFactory = controllerFactory;
             }

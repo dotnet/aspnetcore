@@ -105,7 +105,19 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             get
             {
-                return (ViewContext == null) ? null : ViewContext.ViewBag;
+                return ViewContext?.ViewBag;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="ViewContext"/>.
+        /// </summary>
+        /// <remarks>Returns null if <see cref="ViewContext"/> is null.</remarks>
+        public ITempDataDictionary TempData
+        {
+            get
+            {
+                return ViewContext?.TempData;
             }
         }
 

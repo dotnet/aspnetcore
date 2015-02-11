@@ -23,6 +23,8 @@ namespace Microsoft.AspNet.Mvc.Core
             var httpContext = new Mock<HttpContext>();
             var httpResponse = new Mock<HttpResponse>();
             httpContext.Setup(o => o.Response).Returns(httpResponse.Object);
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(ITempDataDictionary)))
+                .Returns(Mock.Of<ITempDataDictionary>());
 
             var actionContext = new ActionContext(httpContext.Object,
                                                   new RouteData(),
@@ -67,6 +69,32 @@ namespace Microsoft.AspNet.Mvc.Core
                     await result.ExecuteResultAsync(actionContext);
                 },
                 "No route matches the supplied values.");
+        }
+
+        [Fact]
+        public void RedirectToRoute_Execute_Calls_TempDataKeep()
+        {
+            // Arrange
+            var tempData = new Mock<ITempDataDictionary>();
+            tempData.Setup(t => t.Keep()).Verifiable();
+
+            var httpContext = new Mock<HttpContext>();
+            httpContext.Setup(o => o.Response).Returns(new Mock<HttpResponse>().Object);
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(ITempDataDictionary))).Returns(tempData.Object);
+            var actionContext = new ActionContext(httpContext.Object,
+                                                  new RouteData(),
+                                                  new ActionDescriptor());
+
+            var result = new RedirectToRouteResult("SampleRoute", null)
+            {
+                UrlHelper = GetMockUrlHelper("SampleRoute")
+            };
+
+            // Act
+            result.ExecuteResult(actionContext);
+
+            // Assert
+            tempData.Verify(t => t.Keep(), Times.Once());
         }
 
         public static IEnumerable<object[]> RedirectToRouteData

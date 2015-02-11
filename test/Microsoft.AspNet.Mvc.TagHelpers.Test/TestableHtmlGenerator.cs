@@ -59,7 +59,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 Model = model,
             };
-            var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, TextWriter.Null);
+            var viewContext = new ViewContext(
+                actionContext,
+                Mock.Of<IView>(),
+                viewData,
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null);
 
             return viewContext;
         }

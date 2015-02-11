@@ -281,6 +281,8 @@ namespace Microsoft.AspNet.Mvc.Core
             services
                 .Setup(s => s.GetService(typeof(IScopedInstance<ActionBindingContext>)))
                 .Returns(new MockScopedInstance<ActionBindingContext>());
+            services.Setup(s => s.GetService(typeof(ITempDataDictionary)))
+                       .Returns(new Mock<ITempDataDictionary>().Object);
             return services.Object;
         }
 

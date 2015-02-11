@@ -115,6 +115,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = new ViewContext(actionContext,
                                               Mock.Of<IView>(),
                                               viewData,
+                                              Mock.Of<ITempDataDictionary>(),
                                               TextWriter.Null);
 
             return new TestRazorPage

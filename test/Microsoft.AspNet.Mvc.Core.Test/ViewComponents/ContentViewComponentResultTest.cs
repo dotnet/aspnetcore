@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
-            var viewContext = new ViewContext(actionContext, view, viewData, TextWriter.Null);
+            var viewContext = new ViewContext(actionContext, view, viewData, null, TextWriter.Null);
             var writer = new StreamWriter(stream) { AutoFlush = true };
             var viewComponentContext = new ViewComponentContext(typeof(object).GetTypeInfo(), viewContext, writer);
             return viewComponentContext;

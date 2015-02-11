@@ -881,6 +881,11 @@ Environment.NewLine;
                 get { return _innerHelper.ViewData; }
             }
 
+            public ITempDataDictionary TempData
+            {
+                get { return _innerHelper.TempData; }
+            }
+
             public IHtmlEncoder HtmlEncoder
             {
                 get { return _innerHelper.HtmlEncoder; }

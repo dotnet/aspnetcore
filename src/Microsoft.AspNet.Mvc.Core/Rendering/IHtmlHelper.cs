@@ -47,6 +47,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         ViewDataDictionary ViewData { get; }
 
         /// <summary>
+        /// Gets the current <see cref="ITempDataDictionary"/> instance.
+        /// </summary>
+        ITempDataDictionary TempData { get; }
+
+        /// <summary>
         /// Gets the <see cref="IHtmlEncoder"/> to be used for encoding HTML.
         /// </summary>
         IHtmlEncoder HtmlEncoder { get; }

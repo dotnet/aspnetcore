@@ -125,6 +125,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 actionContext,
                 view: Mock.Of<IView>(),
                 viewData: viewData,
+                tempData: Mock.Of<ITempDataDictionary>(),
                 writer: new StringWriter());
         }
 

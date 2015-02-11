@@ -371,7 +371,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
             var metadataProvider = new EmptyModelMetadataProvider();
             var viewData = new ViewDataDictionary(metadataProvider);
-            var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, TextWriter.Null);
+            var viewContext = new ViewContext(
+                actionContext,
+                Mock.Of<IView>(),
+                viewData,
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null);
 
             return viewContext;
         }

@@ -1023,6 +1023,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 actionContext,
                 view,
                 new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                Mock.Of<ITempDataDictionary>(),
                 new StringWriter());
         }
 

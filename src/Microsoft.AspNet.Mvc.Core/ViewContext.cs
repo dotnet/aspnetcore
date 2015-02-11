@@ -24,16 +24,19 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
         /// <param name="view">The <see cref="IView"/> being rendered.</param>
         /// <param name="viewData">The <see cref="ViewDataDictionary"/>.</param>
+        /// <param name="tempData">The <see cref="ITempDataDictionary"/>.</param>
         /// <param name="writer">The <see cref="TextWriter"/> to render output to.</param>
         public ViewContext(
             [NotNull] ActionContext actionContext,
             [NotNull] IView view,
             [NotNull] ViewDataDictionary viewData,
+            [NotNull] ITempDataDictionary tempData,
             [NotNull] TextWriter writer)
             : base(actionContext)
         {
             View = view;
             ViewData = viewData;
+            TempData = tempData;
             Writer = writer;
 
             _formContext = _defaultFormContext;
@@ -64,6 +67,7 @@ namespace Microsoft.AspNet.Mvc
 
             View = view;
             ViewData = viewData;
+            TempData = viewContext.TempData;
             Writer = writer;
         }
 
@@ -134,6 +138,11 @@ namespace Microsoft.AspNet.Mvc
         /// Gets or sets the <see cref="ViewDataDictionary"/>.
         /// </summary>
         public ViewDataDictionary ViewData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ITempDataDictionary"/> instance.
+        /// </summary>
+        public ITempDataDictionary TempData { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="TextWriter"/> used to write the output.

@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 new HtmlEncoder(),
                 new UrlEncoder(),
                 new JavaScriptStringEncoder());
-            var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, new StringWriter());
+            var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, null, new StringWriter());
             htmlHelper.Contextualize(viewContext);
 
             return htmlHelper;

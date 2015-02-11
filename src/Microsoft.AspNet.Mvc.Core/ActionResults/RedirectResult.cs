@@ -60,6 +60,8 @@ namespace Microsoft.AspNet.Mvc
                 destinationUrl = urlHelper.Content(Url);
             }
 
+            var tempData = context.HttpContext.RequestServices.GetRequiredService<ITempDataDictionary>();
+            tempData.Keep();
             context.HttpContext.Response.Redirect(destinationUrl, Permanent);
         }
 

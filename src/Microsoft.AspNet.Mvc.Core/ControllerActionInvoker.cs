@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly ControllerActionDescriptor _descriptor;
         private readonly IControllerFactory _controllerFactory;
         private readonly IControllerActionArgumentBinder _argumentBinder;
+        private readonly ITempDataDictionary _tempData;
 
         public ControllerActionInvoker(
             [NotNull] ActionContext actionContext,
@@ -27,7 +28,8 @@ namespace Microsoft.AspNet.Mvc.Core
             [NotNull] IModelBinderProvider modelBinderProvider,
             [NotNull] IModelValidatorProviderProvider modelValidatorProviderProvider,
             [NotNull] IValueProviderFactoryProvider valueProviderFactoryProvider,
-            [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor)
+            [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor,
+            [NotNull] ITempDataDictionary tempData)
             : base(
                   actionContext, 
                   filterProviders,
@@ -40,6 +42,7 @@ namespace Microsoft.AspNet.Mvc.Core
             _descriptor = descriptor;
             _controllerFactory = controllerFactory;
             _argumentBinder = controllerActionArgumentBinder;
+            _tempData = tempData;
 
             if (descriptor.MethodInfo == null)
             {
@@ -59,6 +62,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
         protected override void ReleaseInstance(object instance)
         {
+            _tempData.Save();
             _controllerFactory.ReleaseController(instance);
         }
 

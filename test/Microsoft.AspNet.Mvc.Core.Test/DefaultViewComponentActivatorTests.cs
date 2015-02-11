@@ -109,6 +109,7 @@ namespace Microsoft.AspNet.Mvc
             return new ViewContext(actionContext,
                                               Mock.Of<IView>(),
                                               new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                                              null,
                                               TextWriter.Null);
         }
 

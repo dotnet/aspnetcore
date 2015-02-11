@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(viewResult.ViewData);
             Assert.Same(model, viewResult.ViewData.Model);
             Assert.Same(controller.ViewData, viewResult.ViewData);
+            Assert.Same(controller.TempData, viewResult.TempData);
 
             if (model != null)
             {
@@ -61,6 +62,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(viewResult.ViewData);
             Assert.Same(model, viewResult.ViewData.Model);
             Assert.Same(controller.ViewData, viewResult.ViewData);
+            Assert.Same(controller.TempData, viewResult.TempData);
 
             if (model != null)
             {

@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void SettingViewData_AlsoUpdatesViewBag()
         {
             // Arrange (eventually passing null to these consturctors will throw)
-            var context = new ViewContext(new ActionContext(null, null, null), view: null, viewData: null, writer: null);
+            var context = new ViewContext(new ActionContext(null, null, null), view: null, viewData: null, tempData: null, writer: null);
             var originalViewData = context.ViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider());
             var replacementViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider());
 

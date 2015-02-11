@@ -5,15 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using System.Reflection;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.AspNet.Http.Core;
 #if DNX451
 using Moq;
 #endif
@@ -739,12 +740,13 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public void Controller_View_WithoutParameter_SetsResultNullViewNameAndNullViewDataModel()
+        public void Controller_View_WithoutParameter_SetsResultNullViewNameAndNullViewDataModelAndSameTempData()
         {
             // Arrange
             var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = new TempDataDictionary(Mock.Of<IHttpContextAccessor>(), Mock.Of<ITempDataProvider>()),
             };
 
             // Act
@@ -754,16 +756,18 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.IsType<ViewResult>(actualViewResult);
             Assert.Null(actualViewResult.ViewName);
             Assert.Same(controller.ViewData, actualViewResult.ViewData);
+            Assert.Same(controller.TempData, actualViewResult.TempData);
             Assert.Null(actualViewResult.ViewData.Model);
         }
 
         [Fact]
-        public void Controller_View_WithParameterViewName_SetsResultViewNameAndNullViewDataModel()
+        public void Controller_View_WithParameterViewName_SetsResultViewNameAndNullViewDataModelAndSameTempData()
         {
             // Arrange
             var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = new TempDataDictionary(Mock.Of<IHttpContextAccessor>(), Mock.Of<ITempDataProvider>()),
             };
 
             // Act
@@ -773,16 +777,18 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.IsType<ViewResult>(actualViewResult);
             Assert.Equal("CustomViewName", actualViewResult.ViewName);
             Assert.Same(controller.ViewData, actualViewResult.ViewData);
+            Assert.Same(controller.TempData, actualViewResult.TempData);
             Assert.Null(actualViewResult.ViewData.Model);
         }
 
         [Fact]
-        public void Controller_View_WithParameterViewModel_SetsResultNullViewNameAndViewDataModel()
+        public void Controller_View_WithParameterViewModel_SetsResultNullViewNameAndViewDataModelAndSameTempData()
         {
             // Arrange
             var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = new TempDataDictionary(Mock.Of<IHttpContextAccessor>(), Mock.Of<ITempDataProvider>()),
             };
             var model = new object();
 
@@ -793,16 +799,18 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.IsType<ViewResult>(actualViewResult);
             Assert.Null(actualViewResult.ViewName);
             Assert.Same(controller.ViewData, actualViewResult.ViewData);
+            Assert.Same(controller.TempData, actualViewResult.TempData);
             Assert.Same(model, actualViewResult.ViewData.Model);
         }
 
         [Fact]
-        public void Controller_View_WithParameterViewNameAndViewModel_SetsResultViewNameAndViewDataModel()
+        public void Controller_View_WithParameterViewNameAndViewModel_SetsResultViewNameAndViewDataModelAndSameTempData()
         {
             // Arrange
             var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = new TempDataDictionary(Mock.Of<IHttpContextAccessor>(), Mock.Of<ITempDataProvider>()),
             };
             var model = new object();
 
@@ -813,6 +821,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.IsType<ViewResult>(actualViewResult);
             Assert.Equal("CustomViewName", actualViewResult.ViewName);
             Assert.Same(controller.ViewData, actualViewResult.ViewData);
+            Assert.Same(controller.TempData, actualViewResult.TempData);
             Assert.Same(model, actualViewResult.ViewData.Model);
         }
 
@@ -1466,6 +1475,21 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("The 'BindingContext' property of 'Microsoft.AspNet.Mvc.Controller' must not be null.", exception.Message);
         }
 
+        [Fact]
+        public void TempData_CanSetAndGetValues()
+        {
+            // Arrange
+            var controller = GetController(null, null);
+            var input = "Foo";
+
+            // Act
+            controller.TempData["key"] = input;
+            var result = controller.TempData["key"];
+
+            // Assert
+            Assert.Equal(input, result);
+        }
+
         private static Controller GetController(IModelBinder binder, IValueProvider provider)
         {
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -1473,6 +1497,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
+            var tempData = new TempDataDictionary(Mock.Of<IHttpContextAccessor>(), Mock.Of<ITempDataProvider>());
 
             var bindingContext = new ActionBindingContext()
             {
@@ -1487,6 +1512,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 BindingContext = bindingContext,
                 MetadataProvider = metadataProvider,
                 ViewData = viewData,
+                TempData = tempData,
                 ObjectValidator = new DefaultObjectValidator(Mock.Of<IValidationExcludeFiltersProvider>(), metadataProvider)
             };
         }

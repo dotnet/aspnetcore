@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
 
             // Act
-            await ViewExecutor.ExecuteAsync(view.Object, actionContext, viewData, contentType: null);
+            await ViewExecutor.ExecuteAsync(view.Object, actionContext, viewData, null, contentType: null);
 
             // Assert
             Assert.Equal(expected, memoryStream.ToArray());
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
 
             // Act
-            await ViewExecutor.ExecuteAsync(view, actionContext, viewData, contentType);
+            await ViewExecutor.ExecuteAsync(view, actionContext, viewData, null, contentType);
 
             // Assert
             Assert.Equal(contentType, context.Response.ContentType);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Act
             await Record.ExceptionAsync(
-                () => ViewExecutor.ExecuteAsync(view.Object, actionContext, viewData, contentType: null));
+                () => ViewExecutor.ExecuteAsync(view.Object, actionContext, viewData, null, contentType: null));
 
             // Assert
             Assert.Equal(expectedLength, memoryStream.Length);

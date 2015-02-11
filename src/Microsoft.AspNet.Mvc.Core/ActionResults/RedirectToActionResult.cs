@@ -51,6 +51,8 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException(Resources.NoRoutesMatched);
             }
 
+            var tempData = context.HttpContext.RequestServices.GetRequiredService<ITempDataDictionary>();
+            tempData.Keep();
             context.HttpContext.Response.Redirect(destinationUrl, Permanent);
         }
 
