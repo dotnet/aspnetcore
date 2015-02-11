@@ -20,10 +20,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var attributes = new Dictionary<string, object>
-                {
-                    { "asp-fallback-src", "http://www.example.com/blank.js" },
-                    { "asp-fallback-test", "isavailable()" },
-                };
+            {
+                ["asp-fallback-src"] = "http://www.example.com/blank.js",
+                ["asp-fallback-test"] = "isavailable()",
+            };
 
             if (srcValue != null)
             {
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     {
                         new Dictionary<string, object> // the attributes provided
                         {
-                            { "asp-fallback-src", "http://www.example.com/blank.js" },
+                            ["asp-fallback-src"] =  "http://www.example.com/blank.js",
                         },
                         new ScriptTagHelper() // the tag helper
                         {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     {
                         new Dictionary<string, object> // the attributes provided
                         {
-                            { "asp-fallback-test", "isavailable()" },
+                            ["asp-fallback-test"] = "isavailable()",
                         },
                         new ScriptTagHelper() // the tag helper
                         {
@@ -205,19 +205,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new Dictionary<string, object>
                 {
-                    { "data-extra", "something"},
-                    { "src", "/blank.js"},
-                    { "data-more", "else"},
-                    { "asp-fallback-src", "http://www.example.com/blank.js" },
-                    { "asp-fallback-test", "isavailable()" },
+                    ["data-extra"] = "something",
+                    ["src"] = "/blank.js",
+                    ["data-more"] = "else",
+                    ["asp-fallback-src"] = "http://www.example.com/blank.js",
+                    ["asp-fallback-test"] = "isavailable()",
                 });
 
             var output = MakeTagHelperOutput("link",
                 attributes: new Dictionary<string, string>
                 {
-                    { "data-extra", "something"},
-                    { "src", "/blank.js"},
-                    { "data-more", "else"},
+                    ["data-extra"] = "something",
+                    ["src"] = "/blank.js",
+                    ["data-more"] = "else",
                 });
 
             var logger = CreateLogger();
