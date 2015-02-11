@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22526.0
+VisualStudioVersion = 14.0.22604.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -53,6 +53,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Xml", "src\Microsoft.AspNet.Mvc.Xml\Microsoft.AspNet.Mvc.Xml.kproj", "{9C632DF0-DC06-410B-95AE-B5423702E84F}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Xml.Test", "test\Microsoft.AspNet.Mvc.Xml.Test\Microsoft.AspNet.Mvc.Xml.Test.kproj", "{22019146-BDFA-442E-8C8E-345FB9644578}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.PageExecutionInstrumentation", "src\Microsoft.AspNet.PageExecutionInstrumentation\Microsoft.AspNet.PageExecutionInstrumentation.kproj", "{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -276,6 +278,18 @@ Global
 		{22019146-BDFA-442E-8C8E-345FB9644578}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{22019146-BDFA-442E-8C8E-345FB9644578}.Release|x86.ActiveCfg = Release|Any CPU
 		{22019146-BDFA-442E-8C8E-345FB9644578}.Release|x86.Build.0 = Release|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|x86.Build.0 = Debug|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|x86.ActiveCfg = Release|Any CPU
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -301,5 +315,6 @@ Global
 		{860119ED-3DB1-424D-8D0A-30132A8A7D96} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{9C632DF0-DC06-410B-95AE-B5423702E84F} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 		{22019146-BDFA-442E-8C8E-345FB9644578} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
+		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 	EndGlobalSection
 EndGlobal
