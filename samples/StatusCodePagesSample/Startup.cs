@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,53 +26,74 @@ namespace StatusCodePagesSample
             // app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
             // "/[?statuscode=400]"
-            app.Use((context, next) =>
+            app.Use(async (context, next) =>
             {
-                if (context.Request.Path.HasValue && !context.Request.Path.Equals(new PathString("/")))
-                {
-                    return next();
-                }
-
                 // Check for ?statuscode=400
                 var requestedStatusCode = context.Request.Query["statuscode"];
                 if (!string.IsNullOrEmpty(requestedStatusCode))
                 {
                     context.Response.StatusCode = int.Parse(requestedStatusCode);
-                    return Task.FromResult(0);
+
+                    // To turn off the StatusCode feature - For example the below code turns off the StatusCode middleware 
+                    // if the query contains a disableStatusCodePages=true parameter.
+                    var disableStatusCodePages = context.Request.Query["disableStatusCodePages"];
+                    if (disableStatusCodePages == "true")
+                    {
+                        var statusCodePagesFeature = context.GetFeature<IStatusCodePagesFeature>();
+                        if (statusCodePagesFeature != null)
+                        {
+                            statusCodePagesFeature.Enabled = false;
+                        }
+                    }
+
+                    await Task.FromResult(0);
                 }
-
-                var builder = new StringBuilder();
-                builder.AppendLine("<html><body>");
-                builder.AppendLine("<a href=\"" +
-                    WebUtility.HtmlEncode(context.Request.PathBase.ToString()) + "/missingpage/\">" +
-                    WebUtility.HtmlEncode(context.Request.PathBase.ToString()) + "/missingpage/</a><br>");
-
-                for (int statusCode = 400; statusCode < 600; statusCode++)
+                else
                 {
-                    builder.AppendLine("<a href=\"?statuscode=" + statusCode + "\">" + statusCode + "</a><br>");
+                    await next();
                 }
-                builder.AppendLine("</body></html>");
-                return context.Response.SendAsync(builder.ToString(), "text/html");
             });
 
             // "/errors/400"
-            app.Use((context, next) =>
+            app.Map("/errors", error =>
             {
-                PathString remainder;
-                if (context.Request.Path.StartsWithSegments(new PathString("/errors"), out remainder))
+                error.Run(async context =>
                 {
                     var builder = new StringBuilder();
                     builder.AppendLine("<html><body>");
-                    builder.AppendLine("An error occurred, Status Code: " + WebUtility.HtmlEncode(remainder.ToString().Substring(1)) + "<br>");
+                    builder.AppendLine("An error occurred, Status Code: " + WebUtility.HtmlEncode(context.Request.Path.ToString().Substring(1)) + "<br>");
                     var referrer = context.Request.Headers["referer"];
                     if (!string.IsNullOrEmpty(referrer))
                     {
                         builder.AppendLine("<a href=\"" + WebUtility.HtmlEncode(referrer) + "\">Retry " + WebUtility.HtmlEncode(referrer) + "</a><br>");
                     }
                     builder.AppendLine("</body></html>");
-                    return context.Response.SendAsync(builder.ToString(), "text/html");
+                    await context.Response.SendAsync(builder.ToString(), "text/html");
+                });
+            });
+
+            app.Run(async context =>
+            {
+                // Generates the HTML with all status codes.
+                var builder = new StringBuilder();
+                builder.AppendLine("<html><body>");
+                builder.AppendLine("<a href=\"" +
+                    WebUtility.HtmlEncode(context.Request.PathBase.ToString()) + "/missingpage/\">" +
+                    WebUtility.HtmlEncode(context.Request.PathBase.ToString()) + "/missingpage/</a><br>");
+
+                var space = string.Concat(Enumerable.Repeat("&nbsp;", 12));
+                builder.AppendFormat("<br><b>{0}{1}{2}</b><br>", "Status Code", space, "Status Code Pages");
+                for (int statusCode = 400; statusCode < 600; statusCode++)
+                {
+                    builder.AppendFormat("{0}{1}{2}{3}<br>",
+                        statusCode,
+                        space + space,
+                        string.Format("<a href=\"?statuscode={0}\">[Enabled]</a>{1}", statusCode, space),
+                        string.Format("<a href=\"?statuscode={0}&disableStatusCodePages=true\">[Disabled]</a>{1}", statusCode, space));
                 }
-                return next();
+
+                builder.AppendLine("</body></html>");
+                await context.Response.SendAsync(builder.ToString(), "text/html");
             });
         }
     }

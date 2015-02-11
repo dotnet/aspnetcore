@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Runtime;
-
 namespace Microsoft.AspNet.Diagnostics
 {
-    [AssemblyNeutral]
-    public interface IStatusCodeReExecuteFeature
+    /// <summary>
+    /// Represents the Status code pages feature.
+    /// </summary>
+    public class StatusCodePagesFeature : IStatusCodePagesFeature
     {
-        string OriginalPathBase { get; set; }
-
-        string OriginalPath { get; set; }
+        public bool Enabled { get; set; } = true;
     }
 }
