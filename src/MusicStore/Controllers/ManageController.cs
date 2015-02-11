@@ -39,11 +39,11 @@ namespace MusicStore.Controllers
             var user = await GetCurrentUserAsync();
             var model = new IndexViewModel
             {
-                HasPassword = await UserManager.HasPasswordAsync(user, cancellationToken: Context.RequestAborted),
-                PhoneNumber = await UserManager.GetPhoneNumberAsync(user, cancellationToken: Context.RequestAborted),
-                TwoFactor = await UserManager.GetTwoFactorEnabledAsync(user, cancellationToken: Context.RequestAborted),
-                Logins = await UserManager.GetLoginsAsync(user, cancellationToken: Context.RequestAborted),
-                BrowserRemembered = await SignInManager.IsTwoFactorClientRememberedAsync(user, cancellationToken: Context.RequestAborted)
+                HasPassword = await UserManager.HasPasswordAsync(user),
+                PhoneNumber = await UserManager.GetPhoneNumberAsync(user),
+                TwoFactor = await UserManager.GetTwoFactorEnabledAsync(user),
+                Logins = await UserManager.GetLoginsAsync(user),
+                BrowserRemembered = await SignInManager.IsTwoFactorClientRememberedAsync(user)
             };
 
             return View(model);
@@ -59,10 +59,10 @@ namespace MusicStore.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await UserManager.RemoveLoginAsync(user, loginProvider, providerKey, cancellationToken: Context.RequestAborted);
+                var result = await UserManager.RemoveLoginAsync(user, loginProvider, providerKey);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent: false, cancellationToken: Context.RequestAborted);
+                    await SignInManager.SignInAsync(user, isPersistent: false);
                     message = ManageMessageId.RemoveLoginSuccess;
                 }
             }
@@ -88,13 +88,13 @@ namespace MusicStore.Controllers
             }
             var user = await GetCurrentUserAsync();
             // Generate the token and send it
-            var code = await UserManager.GenerateChangePhoneNumberTokenAsync(user, model.Number, cancellationToken: Context.RequestAborted);
+            var code = await UserManager.GenerateChangePhoneNumberTokenAsync(user, model.Number);
             var message = new IdentityMessage
             {
                 Destination = model.Number,
                 Body = "Your security code is: " + code
             };
-            await UserManager.SendMessageAsync("SMS", message, cancellationToken: Context.RequestAborted);
+            await UserManager.SendMessageAsync("SMS", message);
 
             return RedirectToAction("VerifyPhoneNumber", new { PhoneNumber = model.Number });
         }
@@ -108,9 +108,9 @@ namespace MusicStore.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                await UserManager.SetTwoFactorEnabledAsync(user, true, cancellationToken: Context.RequestAborted);
+                await UserManager.SetTwoFactorEnabledAsync(user, true);
                 // TODO: flow remember me somehow?
-                await SignInManager.SignInAsync(user, isPersistent: false, cancellationToken: Context.RequestAborted);
+                await SignInManager.SignInAsync(user, isPersistent: false);
             }
             return RedirectToAction("Index", "Manage");
         }
@@ -124,8 +124,8 @@ namespace MusicStore.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                await UserManager.SetTwoFactorEnabledAsync(user, false, cancellationToken: Context.RequestAborted);
-                await SignInManager.SignInAsync(user, isPersistent: false, cancellationToken: Context.RequestAborted);
+                await UserManager.SetTwoFactorEnabledAsync(user, false);
+                await SignInManager.SignInAsync(user, isPersistent: false);
             }
             return RedirectToAction("Index", "Manage");
         }
@@ -137,7 +137,7 @@ namespace MusicStore.Controllers
             // This code allows you exercise the flow without actually sending codes
             // For production use please register a SMS provider in IdentityConfig and generate a code here.
 #if DEMO
-            ViewBag.Code = await UserManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), phoneNumber, cancellationToken: Context.RequestAborted);
+            ViewBag.Code = await UserManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), phoneNumber);
 #endif
             return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
         }
@@ -155,10 +155,10 @@ namespace MusicStore.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await UserManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code, cancellationToken: Context.RequestAborted);
+                var result = await UserManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent: false, cancellationToken: Context.RequestAborted);
+                    await SignInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", new { Message = ManageMessageId.AddPhoneSuccess });
                 }
             }
@@ -174,10 +174,10 @@ namespace MusicStore.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await UserManager.SetPhoneNumberAsync(user, null, cancellationToken: Context.RequestAborted);
+                var result = await UserManager.SetPhoneNumberAsync(user, null);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent: false, cancellationToken: Context.RequestAborted);
+                    await SignInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", new { Message = ManageMessageId.RemovePhoneSuccess });
                 }
             }
@@ -204,10 +204,10 @@ namespace MusicStore.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword, cancellationToken: Context.RequestAborted);
+                var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent: false, cancellationToken: Context.RequestAborted);
+                    await SignInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", new { Message = ManageMessageId.ChangePasswordSuccess });
                 }
                 AddErrors(result);
@@ -237,10 +237,10 @@ namespace MusicStore.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await UserManager.AddPasswordAsync(user, model.NewPassword, cancellationToken: Context.RequestAborted);
+                var result = await UserManager.AddPasswordAsync(user, model.NewPassword);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent: false, cancellationToken: Context.RequestAborted);
+                    await SignInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", new { Message = ManageMessageId.SetPasswordSuccess });
                 }
                 AddErrors(result);
@@ -258,8 +258,8 @@ namespace MusicStore.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                await SignInManager.RememberTwoFactorClientAsync(user, cancellationToken: Context.RequestAborted);
-                await SignInManager.SignInAsync(user, isPersistent: false, cancellationToken: Context.RequestAborted);
+                await SignInManager.RememberTwoFactorClientAsync(user);
+                await SignInManager.SignInAsync(user, isPersistent: false);
             }
             return RedirectToAction("Index", "Manage");
         }
@@ -288,7 +288,7 @@ namespace MusicStore.Controllers
             {
                 return View("Error");
             }
-            var userLogins = await UserManager.GetLoginsAsync(user, cancellationToken: Context.RequestAborted);
+            var userLogins = await UserManager.GetLoginsAsync(user);
             var otherLogins = SignInManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
             ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
             return View(new ManageLoginsViewModel
@@ -320,7 +320,7 @@ namespace MusicStore.Controllers
                 return View("Error");
             }
 
-            var loginInfo = await SignInManager.GetExternalLoginInfoAsync(User.Identity.GetUserId(), cancellationToken: Context.RequestAborted);
+            var loginInfo = await SignInManager.GetExternalLoginInfoAsync(User.Identity.GetUserId());
             if (loginInfo == null)
             {
                 return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
@@ -355,7 +355,7 @@ namespace MusicStore.Controllers
 
         private async Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return await UserManager.FindByIdAsync(Context.User.Identity.GetUserId(), cancellationToken: Context.RequestAborted);
+            return await UserManager.FindByIdAsync(Context.User.Identity.GetUserId());
         }
         
         #endregion

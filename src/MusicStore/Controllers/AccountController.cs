@@ -47,7 +47,7 @@ namespace MusicStore.Controllers
 
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
-            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false, cancellationToken: Context.RequestAborted);
+            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
             if (result.Succeeded)
             {
                 return RedirectToLocal(returnUrl);
@@ -72,7 +72,7 @@ namespace MusicStore.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = null)
         {
-            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync(cancellationToken: Context.RequestAborted);
+            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
                 return View("Error");
@@ -82,7 +82,7 @@ namespace MusicStore.Controllers
 #if DEMO
             if (user != null)
             {
-                ViewBag.Code = await UserManager.GenerateTwoFactorTokenAsync(user, provider, cancellationToken: Context.RequestAborted);
+                ViewBag.Code = await UserManager.GenerateTwoFactorTokenAsync(user, provider);
             }
 #endif
             return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
@@ -104,7 +104,7 @@ namespace MusicStore.Controllers
             // If a user enters incorrect codes for a specified amount of time then the user account 
             // will be locked out for a specified amount of time. 
             // You can configure the account lockout settings in IdentityConfig
-            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe, model.RememberBrowser, cancellationToken: Context.RequestAborted);
+            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe, model.RememberBrowser);
             if (result.Succeeded)
             {
                 return RedirectToLocal(model.ReturnUrl);
@@ -139,7 +139,7 @@ namespace MusicStore.Controllers
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                var result = await UserManager.CreateAsync(user, model.Password, cancellationToken: Context.RequestAborted);
+                var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
                     //Bug: Remember browser option missing?
@@ -148,7 +148,7 @@ namespace MusicStore.Controllers
 
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
-                    string code = await UserManager.GenerateEmailConfirmationTokenAsync(user, cancellationToken: Context.RequestAborted);
+                    string code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Context.Request.Scheme);
                     var email = new IdentityMessage
                     {
@@ -156,7 +156,7 @@ namespace MusicStore.Controllers
                         Subject = "Confirm your account",
                         Body = "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>"
                     };
-                    await UserManager.SendMessageAsync("Email", email, cancellationToken: Context.RequestAborted);
+                    await UserManager.SendMessageAsync("Email", email);
 #if !DEMO
                     return RedirectToAction("Index", "Home");
 #else
@@ -182,12 +182,12 @@ namespace MusicStore.Controllers
                 return View("Error");
             }
 
-            var user = await SignInManager.UserManager.FindByIdAsync(userId, cancellationToken: Context.RequestAborted);
+            var user = await SignInManager.UserManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return View("Error");
             }
-            var result = await UserManager.ConfirmEmailAsync(user, code, cancellationToken: Context.RequestAborted);
+            var result = await UserManager.ConfirmEmailAsync(user, code);
             return View(result.Succeeded ? "ConfirmEmail" : "Error");
         }
 
@@ -208,8 +208,8 @@ namespace MusicStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await UserManager.FindByNameAsync(model.Email, cancellationToken: Context.RequestAborted);
-                if (user == null || !(await UserManager.IsEmailConfirmedAsync(user, cancellationToken: Context.RequestAborted)))
+                var user = await UserManager.FindByNameAsync(model.Email);
+                if (user == null || !(await UserManager.IsEmailConfirmedAsync(user)))
                 {
                     // Don't reveal that the user does not exist or is not confirmed
                     return View("ForgotPasswordConfirmation");
@@ -217,7 +217,7 @@ namespace MusicStore.Controllers
 
                 // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
                 // Send an email with this link
-                string code = await UserManager.GeneratePasswordResetTokenAsync(user, cancellationToken: Context.RequestAborted);
+                string code = await UserManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { code = code }, protocol: Context.Request.Scheme);
                 var email = new IdentityMessage
                 {
@@ -225,7 +225,7 @@ namespace MusicStore.Controllers
                     Subject = "Reset Password",
                     Body = "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>"
                 };
-                await UserManager.SendMessageAsync("Email", email, cancellationToken: Context.RequestAborted);
+                await UserManager.SendMessageAsync("Email", email);
 #if !DEMO
                 return RedirectToAction("ForgotPasswordConfirmation");
 #else
@@ -270,13 +270,13 @@ namespace MusicStore.Controllers
             {
                 return View(model);
             }
-            var user = await UserManager.FindByNameAsync(model.Email, cancellationToken: Context.RequestAborted);
+            var user = await UserManager.FindByNameAsync(model.Email);
             if (user == null)
             {
                 // Don't reveal that the user does not exist
                 return RedirectToAction("ResetPasswordConfirmation", "Account");
             }
-            var result = await UserManager.ResetPasswordAsync(user, model.Code, model.Password, cancellationToken: Context.RequestAborted);
+            var result = await UserManager.ResetPasswordAsync(user, model.Code, model.Password);
             if (result.Succeeded)
             {
                 return RedirectToAction("ResetPasswordConfirmation", "Account");
@@ -312,7 +312,7 @@ namespace MusicStore.Controllers
         public async Task<ActionResult> SendCode(bool rememberMe, string returnUrl = null)
         {
             //TODO : Default rememberMe as well?
-            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync(cancellationToken: Context.RequestAborted);
+            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
                 return View("Error");
@@ -335,7 +335,7 @@ namespace MusicStore.Controllers
             }
 
             // Generate the token and send it
-            if (!await SignInManager.SendTwoFactorCodeAsync(model.SelectedProvider, cancellationToken: Context.RequestAborted))
+            if (!await SignInManager.SendTwoFactorCodeAsync(model.SelectedProvider))
             {
                 return View("Error");
             }
@@ -347,14 +347,14 @@ namespace MusicStore.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl = null)
         {
-            var loginInfo = await SignInManager.GetExternalLoginInfoAsync(cancellationToken: Context.RequestAborted);
+            var loginInfo = await SignInManager.GetExternalLoginInfoAsync();
             if (loginInfo == null)
             {
                 return RedirectToAction("Login");
             }
 
             // Sign in the user with this external login provider if the user already has a login
-            var result = await SignInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: false, cancellationToken: Context.RequestAborted);
+            var result = await SignInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: false);
             if (result.Succeeded)
             {
                 return RedirectToLocal(returnUrl);
@@ -393,29 +393,29 @@ namespace MusicStore.Controllers
             if (ModelState.IsValid)
             {
                 // Get the information about the user from the external login provider
-                var info = await SignInManager.GetExternalLoginInfoAsync(cancellationToken: Context.RequestAborted);
+                var info = await SignInManager.GetExternalLoginInfoAsync();
                 if (info == null)
                 {
                     return View("ExternalLoginFailure");
                 }
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                var result = await UserManager.CreateAsync(user, cancellationToken: Context.RequestAborted);
+                var result = await UserManager.CreateAsync(user);
 
 #if TESTING
                 //Just for automated testing adding a claim named 'ManageStore' - Not required for production
                 var manageClaim = info.ExternalIdentity.Claims.Where(c => c.Type == "ManageStore").FirstOrDefault();
                 if (manageClaim != null)
                 {
-                    await UserManager.AddClaimAsync(user, manageClaim, cancellationToken: Context.RequestAborted);
+                    await UserManager.AddClaimAsync(user, manageClaim);
                 }
 #endif
 
                 if (result.Succeeded)
                 {
-                    result = await UserManager.AddLoginAsync(user, info, cancellationToken: Context.RequestAborted);
+                    result = await UserManager.AddLoginAsync(user, info);
                     if (result.Succeeded)
                     {
-                        await SignInManager.SignInAsync(user, isPersistent: false, cancellationToken: Context.RequestAborted);
+                        await SignInManager.SignInAsync(user, isPersistent: false);
                         return RedirectToLocal(returnUrl);
                     }
                 }
@@ -465,7 +465,7 @@ namespace MusicStore.Controllers
 
         private async Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return await UserManager.FindByIdAsync(Context.User.Identity.GetUserId(), cancellationToken: Context.RequestAborted);
+            return await UserManager.FindByIdAsync(Context.User.Identity.GetUserId());
         }
 
         private ActionResult RedirectToLocal(string returnUrl)
