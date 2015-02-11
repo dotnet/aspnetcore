@@ -8,3 +8,5 @@ k-standard-goals
 
 #xml-docs-test .clean .build-compile description='Check generated XML documentation files for errors' target='test'
   k-xml-docs-test
+
+#do-deep-clean .deep-clean target='verify'
