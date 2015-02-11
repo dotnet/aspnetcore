@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app"></param>
         /// <param name="handler"></param>
         /// <returns></returns>
-        public static IApplicationBuilder WithHandler(this IApplicationBuilder app, Func<StatusCodeContext, Task> handler)
+        public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, Func<StatusCodeContext, Task> handler)
         {
             return UseStatusCodePages(app, new StatusCodePagesOptions() { HandleAsync = handler });
         }
@@ -54,9 +54,9 @@ namespace Microsoft.AspNet.Builder
         /// <param name="contentType"></param>
         /// <param name="bodyFormat"></param>
         /// <returns></returns>
-        public static IApplicationBuilder WithResponse(this IApplicationBuilder app, string contentType, string bodyFormat)
+        public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, string contentType, string bodyFormat)
         {
-            return WithHandler(app, context =>
+            return UseStatusCodePages(app, context =>
             {
                 var body = string.Format(CultureInfo.InvariantCulture, bodyFormat, context.HttpContext.Response.StatusCode);
                 return context.HttpContext.Response.SendAsync(body, contentType);
@@ -71,12 +71,12 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app"></param>
         /// <param name="locationFormat"></param>
         /// <returns></returns>
-        public static IApplicationBuilder WithRedirect(this IApplicationBuilder app, string locationFormat)
+        public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, string locationFormat)
         {
             if (locationFormat.StartsWith("~"))
             {
                 locationFormat = locationFormat.Substring(1);
-                return WithHandler(app, context =>
+                return UseStatusCodePages(app, context =>
                 {
                     var location = string.Format(CultureInfo.InvariantCulture, locationFormat, context.HttpContext.Response.StatusCode);
                     context.HttpContext.Response.Redirect(context.HttpContext.Request.PathBase + location);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Builder
             }
             else
             {
-                return WithHandler(app, context =>
+                return UseStatusCodePages(app, context =>
                 {
                     var location = string.Format(CultureInfo.InvariantCulture, locationFormat, context.HttpContext.Response.StatusCode);
                     context.HttpContext.Response.Redirect(location);
@@ -101,12 +101,12 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app"></param>
         /// <param name="configuration"></param>
         /// <returns></returns>
-        public static IApplicationBuilder WithPipeline(this IApplicationBuilder app, Action<IApplicationBuilder> configuration)
+        public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, Action<IApplicationBuilder> configuration)
         {
             var builder = app.New();
             configuration(builder);
             var tangent = builder.Build();
-            return WithHandler(app, context => tangent(context.HttpContext));
+            return UseStatusCodePages(app, context => tangent(context.HttpContext));
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Builder
         /// <returns></returns>
         public static IApplicationBuilder WithReExecute(this IApplicationBuilder app, string pathFormat)
         {
-            return WithHandler(app, async context =>
+            return UseStatusCodePages(app, async context =>
             {
                 var newPath = new PathString(string.Format(CultureInfo.InvariantCulture, pathFormat, context.HttpContext.Response.StatusCode));
 
