@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.Mvc
                                                                            string expectedPath)
         {
             // Arrange
-            var context = CreateHttpContext(appRoot);
+            var context = CreateHttpContext(GetServices(), appRoot);
             var contextAccessor = CreateActionContext(context);
             var urlHelper = CreateUrlHelper(contextAccessor);
 
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Mvc
                                                                          string expectedPath)
         {
             // Arrange
-            var context = CreateHttpContext(appRoot);
+            var context = CreateHttpContext(GetServices(), appRoot);
             var contextAccessor = CreateActionContext(context);
             var urlHelper = CreateUrlHelper(contextAccessor);
 
@@ -333,7 +334,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithDictionary()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.RouteUrl(values: new RouteValueDictionary(
@@ -352,7 +354,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithEmptyHostName()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.RouteUrl(routeName: "namedroute",
@@ -374,7 +377,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithEmptyProtocol()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.RouteUrl(routeName: "namedroute",
@@ -396,7 +400,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithNullProtocol()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.RouteUrl(routeName: "namedroute",
@@ -418,7 +423,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithNullProtocolAndNullHostName()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.RouteUrl(routeName: "namedroute",
@@ -440,7 +446,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithObjectProperties()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.RouteUrl(new { Action = "newaction", Controller = "home2", id = "someid" });
@@ -453,7 +460,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithProtocol()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.RouteUrl(routeName: "namedroute",
@@ -473,7 +481,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrl_WithUnicodeHost_DoesNotPunyEncodeTheHost()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.RouteUrl(routeName: "namedroute",
@@ -494,7 +503,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithRouteNameAndDefaults()
         {
             // Arrange
-            var routeCollection = GetRouter("MyRouteName", "any/url");
+            var services = GetServices();
+            var routeCollection = GetRouter(services, "MyRouteName", "any/url");
             var urlHelper = CreateUrlHelper("/app", routeCollection);
 
             // Act
@@ -508,7 +518,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithRouteNameAndDictionary()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.RouteUrl(routeName: "namedroute",
@@ -528,7 +539,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithRouteNameAndObjectProperties()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.RouteUrl(routeName: "namedroute",
@@ -547,7 +559,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithUrlRouteContext_ReturnsExpectedResult()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             var routeContext = new UrlRouteContext()
             {
@@ -574,7 +587,8 @@ namespace Microsoft.AspNet.Mvc
         public void RouteUrlWithAllParameters_ReturnsExpectedResult()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.RouteUrl(
@@ -597,7 +611,8 @@ namespace Microsoft.AspNet.Mvc
         public void UrlAction_RouteValuesAsDictionary_CaseSensitive()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // We're using a dictionary with a case-sensitive comparer and loading it with data
             // using casings differently from the route. This should still successfully generate a link.
@@ -624,7 +639,8 @@ namespace Microsoft.AspNet.Mvc
         public void UrlAction_WithUnicodeHost_DoesNotPunyEncodeTheHost()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.Action(
@@ -642,7 +658,8 @@ namespace Microsoft.AspNet.Mvc
         public void UrlRouteUrl_RouteValuesAsDictionary_CaseSensitive()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // We're using a dictionary with a case-sensitive comparer and loading it with data
             // using casings differently from the route. This should still successfully generate a link.
@@ -670,7 +687,8 @@ namespace Microsoft.AspNet.Mvc
         public void UrlActionWithUrlActionContext_ReturnsExpectedResult()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             var actionContext = new UrlActionContext()
             {
@@ -693,7 +711,8 @@ namespace Microsoft.AspNet.Mvc
         public void UrlActionWithAllParameters_ReturnsExpectedResult()
         {
             // Arrange
-            var urlHelper = CreateUrlHelperWithRouteCollection("/app");
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
 
             // Act
             var url = urlHelper.Action(
@@ -709,26 +728,17 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("https://remotelyhost/app/home3/contact#somefragment", url);
         }
 
-        private static HttpContext CreateHttpContext(string appRoot, ILoggerFactory factory = null)
+        private static HttpContext CreateHttpContext(
+            IServiceProvider services,
+            string appRoot)
         {
-            if (factory == null)
-            {
-                factory = NullLoggerFactory.Instance;
-            }
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
 
-            var appRootPath = new PathString(appRoot);
-            var request = new Mock<HttpRequest>();
-            request.SetupGet(r => r.PathBase)
-                   .Returns(appRootPath);
-            request.SetupGet(r => r.Host)
-                   .Returns(new HostString("localhost"));
-            var context = new Mock<HttpContext>();
-            context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
-                   .Returns(factory);
-            context.SetupGet(c => c.Request)
-                   .Returns(request.Object);
+            context.Request.PathBase = new PathString(appRoot);
+            context.Request.Host = new HostString("localhost");
 
-            return context.Object;
+            return context;
         }
 
         private static IScopedInstance<ActionContext> CreateActionContext(HttpContext context)
@@ -752,7 +762,8 @@ namespace Microsoft.AspNet.Mvc
 
         private static UrlHelper CreateUrlHelper()
         {
-            var context = CreateHttpContext(string.Empty);
+            var services = GetServices();
+            var context = CreateHttpContext(services, string.Empty);
             var actionContext = CreateActionContext(context);
 
             var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
@@ -761,7 +772,8 @@ namespace Microsoft.AspNet.Mvc
 
         private static UrlHelper CreateUrlHelper(string host)
         {
-            var context = CreateHttpContext(string.Empty);
+            var services = GetServices();
+            var context = CreateHttpContext(services, string.Empty);
             context.Request.Host = new HostString(host);
 
             var actionContext = CreateActionContext(context);
@@ -778,55 +790,80 @@ namespace Microsoft.AspNet.Mvc
 
         private static UrlHelper CreateUrlHelper(string appBase, IRouter router)
         {
-            var context = CreateHttpContext(appBase);
+            var services = GetServices();
+            var context = CreateHttpContext(services, appBase);
             var actionContext = CreateActionContext(context, router);
 
             var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
             return new UrlHelper(actionContext, actionSelector.Object);
         }
 
-        private static UrlHelper CreateUrlHelperWithRouteCollection(string appPrefix)
+        private static UrlHelper CreateUrlHelperWithRouteCollection(IServiceProvider services, string appPrefix)
         {
-            var routeCollection = GetRouter();
+            var routeCollection = GetRouter(services);
             return CreateUrlHelper(appPrefix, routeCollection);
         }
 
-        private static IRouter GetRouter()
+        private static IRouter GetRouter(IServiceProvider services)
         {
-            return GetRouter("mockRoute", "/mockTemplate");
+            return GetRouter(services, "mockRoute", "/mockTemplate");
         }
 
-        private static IRouter GetRouter(string mockRouteName, string mockTemplateValue)
+        private static IServiceProvider GetServices()
         {
-            var rt = new RouteBuilder();
+            var services = new Mock<IServiceProvider>();
+
+            var optionsAccessor = new Mock<IOptions<RouteOptions>>();
+            optionsAccessor
+                .SetupGet(o => o.Options)
+                .Returns(new RouteOptions());
+            services
+                .Setup(s => s.GetService(typeof(IOptions<RouteOptions>)))
+                .Returns(optionsAccessor.Object);
+
+            services
+                .Setup(s => s.GetService(typeof(IInlineConstraintResolver)))
+                .Returns(new DefaultInlineConstraintResolver(optionsAccessor.Object));
+
+            services
+                .Setup(s => s.GetService(typeof(ILoggerFactory)))
+                .Returns(NullLoggerFactory.Instance);
+
+            return services.Object;
+        }
+
+
+        private static IRouter GetRouter(
+            IServiceProvider services, 
+            string mockRouteName,
+            string mockTemplateValue)
+        {
+            var routeBuilder = new RouteBuilder();
+            routeBuilder.ServiceProvider = services;
+
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(router => router.GetVirtualPath(It.IsAny<VirtualPathContext>()))
                 .Callback<VirtualPathContext>(context => context.IsBound = true)
                 .Returns<VirtualPathContext>(context => null);
-            rt.DefaultHandler = target.Object;
-            var serviceProviderMock = new Mock<IServiceProvider>();
-            var accessorMock = new Mock<IOptions<RouteOptions>>();
-            accessorMock.SetupGet(o => o.Options).Returns(new RouteOptions());
-            serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
-                               .Returns(new DefaultInlineConstraintResolver(accessorMock.Object));
+            routeBuilder.DefaultHandler = target.Object;
 
-            rt.ServiceProvider = serviceProviderMock.Object;
-            rt.MapRoute(string.Empty,
+            routeBuilder.MapRoute(string.Empty,
                         "{controller}/{action}/{id}",
                         new RouteValueDictionary(new { id = "defaultid" }));
-            rt.MapRoute("namedroute",
+
+            routeBuilder.MapRoute("namedroute",
                         "named/{controller}/{action}/{id}",
                         new RouteValueDictionary(new { id = "defaultid" }));
 
             var mockHttpRoute = new Mock<IRouter>();
-            mockHttpRoute.Setup(mock =>
-                                    mock.GetVirtualPath(It.Is<VirtualPathContext>(c => string.Equals(c.RouteName,
-                                                                                                  mockRouteName)
-                                                                                  )))
-                         .Returns(mockTemplateValue);
-            rt.Routes.Add(mockHttpRoute.Object);
-            return rt.Build();
+            mockHttpRoute
+                .Setup(mock => mock.GetVirtualPath(It.Is<VirtualPathContext>(c => string.Equals(c.RouteName, mockRouteName))))
+                .Callback<VirtualPathContext>(c => c.IsBound = true)
+                .Returns(mockTemplateValue);
+
+            routeBuilder.Routes.Add(mockHttpRoute.Object);
+            return routeBuilder.Build();
         }
     }
 }

@@ -577,6 +577,8 @@ namespace Microsoft.AspNet.Mvc
                 .SetupGet(options => options.Options)
                 .Returns(routeOptions);
 
+            serviceCollection.AddInstance<IOptions<RouteOptions>>(accessor.Object);
+
             serviceCollection.AddInstance<IInlineConstraintResolver>(
                 new DefaultInlineConstraintResolver(accessor.Object));
 
