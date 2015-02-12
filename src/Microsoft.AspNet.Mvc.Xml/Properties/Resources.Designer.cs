@@ -27,6 +27,22 @@ namespace Microsoft.AspNet.Mvc.Xml
         }
 
         /// <summary>
+        /// {0} does not recognize '{1}', so instead use '{2}' with '{3}' set to '{4}' for value type property '{5}' on type '{6}'.
+        /// </summary>
+        internal static string RequiredProperty_MustHaveDataMemberRequired
+        {
+            get { return GetString("RequiredProperty_MustHaveDataMemberRequired"); }
+        }
+
+        /// <summary>
+        /// {0} does not recognize '{1}', so instead use '{2}' with '{3}' set to '{4}' for value type property '{5}' on type '{6}'.
+        /// </summary>
+        internal static string FormatRequiredProperty_MustHaveDataMemberRequired(object p0, object p1, object p2, object p3, object p4, object p5, object p6)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RequiredProperty_MustHaveDataMemberRequired"), p0, p1, p2, p3, p4, p5, p6);
+        }
+
+        /// <summary>
         /// The object to be wrapped must be of type '{0}' but was of type '{1}'.
         /// </summary>
         internal static string WrapperProvider_MismatchType

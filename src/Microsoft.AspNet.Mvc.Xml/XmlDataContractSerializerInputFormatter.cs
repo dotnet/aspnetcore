@@ -23,7 +23,8 @@ namespace Microsoft.AspNet.Mvc.Xml
         private DataContractSerializerSettings _serializerSettings;
         private ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
-
+        private readonly DataAnnotationRequiredAttributeValidation _dataAnnotationRequiredAttributeValidation;
+        
         /// <summary>
         /// Initializes a new instance of DataContractSerializerInputFormatter
         /// </summary>
@@ -39,6 +40,8 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             WrapperProviderFactories = new List<IWrapperProviderFactory>();
             WrapperProviderFactories.Add(new SerializableErrorWrapperProviderFactory());
+
+            _dataAnnotationRequiredAttributeValidation = new DataAnnotationRequiredAttributeValidation();
         }
 
         /// <summary>
@@ -95,6 +98,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             using (var xmlReader = CreateXmlReader(new NonDisposableStream(request.Body)))
             {
                 var type = GetSerializableType(context.ModelType);
+
+                _dataAnnotationRequiredAttributeValidation.Validate(
+                    type, 
+                    context.ActionContext.ModelState);
 
                 var serializer = GetCachedSerializer(type);
 

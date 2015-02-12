@@ -54,16 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         protected virtual bool IsSimpleType(Type type)
         {
-            var result = type.GetTypeInfo().IsPrimitive ||
-                            type.Equals(typeof(decimal)) ||
-                            type.Equals(typeof(string)) ||
-                            type.Equals(typeof(DateTime)) ||
-                            type.Equals(typeof(Guid)) ||
-                            type.Equals(typeof(DateTimeOffset)) ||
-                            type.Equals(typeof(TimeSpan)) ||
-                            type.Equals(typeof(Uri));
-
-            return result;
+            return TypeHelper.IsSimpleType(type);
         }
     }
 }
