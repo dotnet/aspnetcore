@@ -117,17 +117,17 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             }
 
             // Writes a scalar value as an HTML-encoded entity.
-            protected override void WriteEncodedScalar<T>(T output, Action<T, string> writeString, Action<T, char> writeChar, uint value)
+            protected override void WriteEncodedScalar(ref Writer writer, uint value)
             {
-                if (value == (uint)'\"') { writeString(output, "&quot;"); }
-                else if (value == (uint)'&') { writeString(output, "&amp;"); }
-                else if (value == (uint)'<') { writeString(output, "&lt;"); }
-                else if (value == (uint)'>') { writeString(output, "&gt;"); }
-                else { WriteEncodedScalarAsNumericEntity(output, writeChar, value); }
+                if (value == (uint)'\"') { writer.Write("&quot;"); }
+                else if (value == (uint)'&') { writer.Write("&amp;"); }
+                else if (value == (uint)'<') { writer.Write("&lt;"); }
+                else if (value == (uint)'>') { writer.Write("&gt;"); }
+                else { WriteEncodedScalarAsNumericEntity(ref writer, value); }
             }
 
             // Writes a scalar value as an HTML-encoded numeric entity.
-            private static void WriteEncodedScalarAsNumericEntity<T>(T output, Action<T, char> writeChar, uint value) where T : class
+            private static void WriteEncodedScalarAsNumericEntity(ref Writer writer, uint value)
             {
                 // We're building the characters up in reverse
                 char* chars = stackalloc char[8 /* "FFFFFFFF" */];
@@ -141,15 +141,15 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
                 } while (value != 0);
 
                 // Finally, write out the HTML-encoded scalar value.
-                writeChar(output, '&');
-                writeChar(output, '#');
-                writeChar(output, 'x');
+                writer.Write('&');
+                writer.Write('#');
+                writer.Write('x');
                 Debug.Assert(numCharsWritten > 0, "At least one character should've been written.");
                 do
                 {
-                    writeChar(output, chars[--numCharsWritten]);
+                    writer.Write(chars[--numCharsWritten]);
                 } while (numCharsWritten != 0);
-                writeChar(output, ';');
+                writer.Write(';');
             }
         }
     }

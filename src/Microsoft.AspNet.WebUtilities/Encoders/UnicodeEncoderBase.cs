@@ -11,12 +11,6 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
 {
     internal unsafe abstract class UnicodeEncoderBase
     {
-        // Stubs for appending data to a TextWriter or StringBuilder
-        private static readonly Action<StringBuilder, char> _appendCharToStringBuilderStub = PrepareDelegate((Action<StringBuilder, char>)AppendToStringBuilder);
-        private static readonly Action<TextWriter, char> _appendCharToTextWriterStub = PrepareDelegate((Action<TextWriter, char>)AppendToTextWriter);
-        private static readonly Action<StringBuilder, string> _appendStringToStringBuilderStub = PrepareDelegate((Action<StringBuilder, string>)AppendToStringBuilder);
-        private static readonly Action<TextWriter, string> _appendStringToTextWriterStub = PrepareDelegate((Action<TextWriter, string>)AppendToTextWriter);
-
         // A bitmap of characters which are allowed to be returned unescaped.
         private readonly uint[] _allowedCharsBitmap = new uint[0x10000 / 32];
 
@@ -75,26 +69,6 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             int index = (int)(codePoint >> 5);
             int offset = (int)(codePoint & 0x1FU);
             _allowedCharsBitmap[index] |= 0x1U << offset;
-        }
-
-        private static void AppendToStringBuilder(StringBuilder builder, char value)
-        {
-            builder.Append(value);
-        }
-
-        private static void AppendToStringBuilder(StringBuilder builder, string value)
-        {
-            builder.Append(value);
-        }
-
-        private static void AppendToTextWriter(TextWriter writer, char value)
-        {
-            writer.Write(value);
-        }
-
-        private static void AppendToTextWriter(TextWriter writer, string value)
-        {
-            writer.Write(value);
         }
 
         // Marks a character as forbidden (must be returned encoded)
@@ -212,19 +186,21 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             // Allocate the StringBuilder with the first (known to not require encoding) part of the input string,
             // then begin encoding from the last (potentially requiring encoding) part of the input string.
             StringBuilder builder = new StringBuilder(input, 0, idxOfFirstCharWhichRequiresEncoding, sbCapacity);
+            Writer writer = new Writer(builder);
             fixed (char* pInput = input)
             {
-                EncodeCore(builder, _appendStringToStringBuilderStub, _appendCharToStringBuilderStub, &pInput[idxOfFirstCharWhichRequiresEncoding], (uint)numCharsWhichMayRequireEncoding);
+                EncodeCore(ref writer, &pInput[idxOfFirstCharWhichRequiresEncoding], (uint)numCharsWhichMayRequireEncoding);
             }
             return builder.ToString();
         }
 
         private void EncodeCore(char* input, uint charsRemaining, TextWriter output)
         {
-            EncodeCore(output, _appendStringToTextWriterStub, _appendCharToTextWriterStub, input, charsRemaining);
+            Writer writer = new Writer(output);
+            EncodeCore(ref writer, input, charsRemaining);
         }
 
-        private void EncodeCore<T>(T output, Action<T, string> writeString, Action<T, char> writeChar, char* input, uint charsRemaining) where T : class
+        private void EncodeCore(ref Writer writer, char* input, uint charsRemaining)
         {
             while (charsRemaining != 0)
             {
@@ -232,7 +208,7 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
                 if (UnicodeHelpers.IsSupplementaryCodePoint(nextScalar))
                 {
                     // Supplementary characters should always be encoded numerically.
-                    WriteEncodedScalar(output, writeString, writeChar, (uint)nextScalar);
+                    WriteEncodedScalar(ref writer, (uint)nextScalar);
 
                     // We consume two UTF-16 characters for a single supplementary character.
                     input += 2;
@@ -246,11 +222,11 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
                     char c = (char)nextScalar;
                     if (IsCharacterAllowed(c))
                     {
-                        writeChar(output, c);
+                        writer.Write(c);
                     }
                     else
                     {
-                        WriteEncodedScalar(output, writeString, writeChar, (uint)nextScalar);
+                        WriteEncodedScalar(ref writer, (uint)nextScalar);
                     }
                 }
             }
@@ -278,22 +254,6 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             return ((_allowedCharsBitmap[index] >> offset) & 0x1U) != 0;
         }
 
-        private static T PrepareDelegate<T>(T @del) where T : class
-        {
-#if ASPNETCORE50
-            // RuntimeHelpers.PrepareMethod doesn't exist on CoreCLR, so we'll depend
-            // on cross-gen for performance optimizations.
-            return del;
-#else
-            // We prepare the method ahead of time to ensure that it's JITted before
-            // the delegate is constructed; this allows the delegate to point straight
-            // to the processor code rather than to the prestub dispatch code.
-            Delegate castDel = (Delegate)(object)del;
-            RuntimeHelpers.PrepareMethod(castDel.Method.MethodHandle);
-            return (T)(object)castDel.Method.CreateDelegate(typeof(T));
-#endif
-        }
-
         private static void ValidateInputs(int startIndex, int charCount, int actualInputLength)
         {
             if (startIndex < 0 || startIndex > actualInputLength)
@@ -306,6 +266,55 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             }
         }
 
-        protected abstract void WriteEncodedScalar<T>(T output, Action<T, string> writeString, Action<T, char> writeChar, uint value) where T : class;
+        protected abstract void WriteEncodedScalar(ref Writer writer, uint value);
+
+        /// <summary>
+        /// Provides an abstraction over both StringBuilder and TextWriter.
+        /// Declared as a struct so we can allocate on the stack and pass by
+        /// reference. Eliminates chatty virtual dispatches on hot paths.
+        /// </summary>
+        protected struct Writer
+        {
+            private readonly StringBuilder _innerBuilder;
+            private readonly TextWriter _innerWriter;
+
+            public Writer(StringBuilder innerBuilder)
+            {
+                _innerBuilder = innerBuilder;
+                _innerWriter = null;
+            }
+
+            public Writer(TextWriter innerWriter)
+            {
+                _innerBuilder = null;
+                _innerWriter = innerWriter;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Write(char value)
+            {
+                if (_innerBuilder != null)
+                {
+                    _innerBuilder.Append(value);
+                }
+                else
+                {
+                    _innerWriter.Write(value);
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Write(string value)
+            {
+                if (_innerBuilder != null)
+                {
+                    _innerBuilder.Append(value);
+                }
+                else
+                {
+                    _innerWriter.Write(value);
+                }
+            }
+        }
     }
 }

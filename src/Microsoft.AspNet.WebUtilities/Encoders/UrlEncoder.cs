@@ -160,16 +160,16 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             }
 
             // Writes a scalar value as a percent-encoded sequence of UTF8 bytes, per RFC 3987.
-            protected override void WriteEncodedScalar<T>(T output, Action<T, string> writeString, Action<T, char> writeChar, uint value)
+            protected override void WriteEncodedScalar(ref Writer writer, uint value)
             {
                 uint asUtf8 = (uint)UnicodeHelpers.GetUtf8RepresentationForScalarValue(value);
                 do
                 {
                     char highNibble, lowNibble;
                     HexUtil.WriteHexEncodedByte((byte)asUtf8, out highNibble, out lowNibble);
-                    writeChar(output, '%');
-                    writeChar(output, highNibble);
-                    writeChar(output, lowNibble);
+                    writer.Write('%');
+                    writer.Write(highNibble);
+                    writer.Write(lowNibble);
                 } while ((asUtf8 >>= 8) != 0);
             }
         }

@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             // See ECMA-262, Sec. 7.8.4, and ECMA-404, Sec. 9
             // http://www.ecma-international.org/ecma-262/5.1/#sec-7.8.4
             // http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
-            protected override void WriteEncodedScalar<T>(T output, Action<T, string> writeString, Action<T, char> writeChar, uint value)
+            protected override void WriteEncodedScalar(ref Writer writer, uint value)
             {
                 // ECMA-262 allows encoding U+000B as "\v", but ECMA-404 does not.
                 // Both ECMA-262 and ECMA-404 allow encoding U+002F SOLIDUS as "\/".
@@ -133,46 +133,46 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
                 // be written out as numeric entities for defense-in-depth.
                 // See UnicodeEncoderBase ctor comments for more info.
 
-                if (value == (uint)'\b') { writeString(output, @"\b"); }
-                else if (value == (uint)'\t') { writeString(output, @"\t"); }
-                else if (value == (uint)'\n') { writeString(output, @"\n"); }
-                else if (value == (uint)'\f') { writeString(output, @"\f"); }
-                else if (value == (uint)'\r') { writeString(output, @"\r"); }
-                else if (value == (uint)'/') { writeString(output, @"\/"); }
-                else if (value == (uint)'\\') { writeString(output, @"\\"); }
-                else { WriteEncodedScalarAsNumericEntity(output, writeChar, value); }
+                if (value == (uint)'\b') { writer.Write(@"\b"); }
+                else if (value == (uint)'\t') { writer.Write(@"\t"); }
+                else if (value == (uint)'\n') { writer.Write(@"\n"); }
+                else if (value == (uint)'\f') { writer.Write(@"\f"); }
+                else if (value == (uint)'\r') { writer.Write(@"\r"); }
+                else if (value == (uint)'/') { writer.Write(@"\/"); }
+                else if (value == (uint)'\\') { writer.Write(@"\\"); }
+                else { WriteEncodedScalarAsNumericEntity(ref writer, value); }
             }
 
             // Writes a scalar value as an JavaScript-escaped character (or sequence of characters).
-            private static void WriteEncodedScalarAsNumericEntity<T>(T output, Action<T, char> writeChar, uint value) where T : class
+            private static void WriteEncodedScalarAsNumericEntity(ref Writer writer, uint value)
             {
                 if (UnicodeHelpers.IsSupplementaryCodePoint((int)value))
                 {
                     // Convert this back to UTF-16 and write out both characters.
                     char leadingSurrogate, trailingSurrogate;
                     UnicodeHelpers.GetUtf16SurrogatePairFromAstralScalarValue((int)value, out leadingSurrogate, out trailingSurrogate);
-                    WriteEncodedSingleCharacter(output, writeChar, leadingSurrogate);
-                    WriteEncodedSingleCharacter(output, writeChar, trailingSurrogate);
+                    WriteEncodedSingleCharacter(ref writer, leadingSurrogate);
+                    WriteEncodedSingleCharacter(ref writer, trailingSurrogate);
                 }
                 else
                 {
                     // This is only a single character.
-                    WriteEncodedSingleCharacter(output, writeChar, value);
+                    WriteEncodedSingleCharacter(ref writer, value);
                 }
             }
 
             // Writes an encoded scalar value (in the BMP) as a JavaScript-escaped character.
-            private static void WriteEncodedSingleCharacter<T>(T output, Action<T, char> writeChar, uint value) where T : class
+            private static void WriteEncodedSingleCharacter(ref Writer writer, uint value)
             {
                 Debug.Assert(!UnicodeHelpers.IsSupplementaryCodePoint((int)value), "The incoming value should've been in the BMP.");
 
                 // Encode this as 6 chars "\uFFFF".
-                writeChar(output, '\\');
-                writeChar(output, 'u');
-                writeChar(output, HexUtil.IntToChar(value >> 12));
-                writeChar(output, HexUtil.IntToChar((value >> 8) & 0xFU));
-                writeChar(output, HexUtil.IntToChar((value >> 4) & 0xFU));
-                writeChar(output, HexUtil.IntToChar(value & 0xFU));
+                writer.Write('\\');
+                writer.Write('u');
+                writer.Write(HexUtil.IntToChar(value >> 12));
+                writer.Write(HexUtil.IntToChar((value >> 8) & 0xFU));
+                writer.Write(HexUtil.IntToChar((value >> 4) & 0xFU));
+                writer.Write(HexUtil.IntToChar(value & 0xFU));
             }
         }
     }
