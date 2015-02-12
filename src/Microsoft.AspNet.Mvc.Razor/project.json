@@ -5,12 +5,14 @@
         "warningsAsErrors": false
     },
     "dependencies": {
+        "Microsoft.AspNet.Diagnostics.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
         "Microsoft.AspNet.PageExecutionInstrumentation" : "1.0.0-*",
         "Microsoft.CodeAnalysis.CSharp": "1.0.0-rc1-*",
-        "Microsoft.Framework.Runtime.Roslyn.Common": "1.0.0-*"
+        "Microsoft.Framework.Runtime.Roslyn.Common": "1.0.0-*",
+        "Microsoft.Framework.Runtime.Roslyn.Interfaces": "1.0.0-*"
     },
     "frameworks": {
         "aspnet50": {
