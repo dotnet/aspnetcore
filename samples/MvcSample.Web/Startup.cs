@@ -23,6 +23,8 @@ namespace MvcSample.Web
     {
         public void Configure(IApplicationBuilder app)
         {
+            app.UseStatusCodePages();
+
             app.UseFileServer();
 #if ASPNET50
             // Set up configuration sources.

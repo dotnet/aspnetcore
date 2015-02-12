@@ -40,6 +40,7 @@ namespace MvcSample.Web
             return View();
         }
 
+        [SkipStatusCodePages]
         public ActionResult NotFound()
         {
             return HttpNotFound();
