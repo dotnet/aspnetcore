@@ -28,11 +28,11 @@ namespace Microsoft.AspNet.Identity
         /// <param name="store">The IRoleStore commits changes via the UpdateAsync/CreateAsync methods</param>
         /// <param name="roleValidator"></param>
         public RoleManager(IRoleStore<TRole> store,
-            IEnumerable<IRoleValidator<TRole>> roleValidators = null,
-            ILookupNormalizer keyNormalizer = null,
-            IdentityErrorDescriber errors = null,
-            ILogger<RoleManager<TRole>> logger = null,
-            IHttpContextAccessor contextAccessor = null)
+            IEnumerable<IRoleValidator<TRole>> roleValidators,
+            ILookupNormalizer keyNormalizer,
+            IdentityErrorDescriber errors,
+            ILogger<RoleManager<TRole>> logger,
+            IHttpContextAccessor contextAccessor)
         {
             if (store == null)
             {
@@ -62,22 +62,22 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Used to validate roles before persisting changes
         /// </summary>
-        public IList<IRoleValidator<TRole>> RoleValidators { get; } = new List<IRoleValidator<TRole>>();
+        internal IList<IRoleValidator<TRole>> RoleValidators { get; } = new List<IRoleValidator<TRole>>();
 
         /// <summary>
         ///     Used to generate public API error messages
         /// </summary>
-        public IdentityErrorDescriber ErrorDescriber { get; set; }
+        internal IdentityErrorDescriber ErrorDescriber { get; set; }
 
         /// <summary>
         ///     Used to log results
         /// </summary>
-        public ILogger<RoleManager<TRole>> Logger { get; set; }
+        internal ILogger<RoleManager<TRole>> Logger { get; set; }
 
         /// <summary>
         ///     Used to normalize user names, role names, emails for uniqueness
         /// </summary>
-        public ILookupNormalizer KeyNormalizer { get; set; }
+        internal ILookupNormalizer KeyNormalizer { get; set; }
 
         /// <summary>
         ///     Returns an IQueryable of roles if the store is an IQueryableRoleStore

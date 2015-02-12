@@ -16,23 +16,15 @@ namespace Microsoft.AspNet.Identity.Test
 {
     public class UserManagerTest
     {
-        private class TestManager : UserManager<TestUser>
-        {
-            public IUserStore<TestUser> StorePublic { get { return Store; } }
-
-            public TestManager(IUserStore<TestUser> store) : base(store) { }
-        }
-
         [Fact]
         public void EnsureDefaultServicesDefaultsWithStoreWorks()
         {
             var services = new ServiceCollection()
-                    .AddTransient<IUserStore<TestUser>, NoopUserStore>()
-                    .AddTransient<TestManager>();
+                    .AddTransient<IUserStore<TestUser>, NoopUserStore>();
             services.AddIdentity<TestUser, IdentityRole>();
-            var manager = services.BuildServiceProvider().GetRequiredService<TestManager>();
+            var manager = services.BuildServiceProvider().GetRequiredService<UserManager<TestUser>>();
             Assert.NotNull(manager.PasswordHasher);
-            Assert.NotNull(manager.StorePublic);
+            Assert.NotNull(manager.Store);
             Assert.NotNull(manager.Options);
         }
 
@@ -639,15 +631,11 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task ManagerPublicNullChecks()
         {
-            var store = new NotImplementedStore();
-
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>(null, null));
+                () => new UserManager<TestUser>(null, null, null, null, null, null, null, null, null, null, null));
 
-            var manager = new UserManager<TestUser>(store);
+            var manager = MockHelpers.TestUserManager(new NotImplementedStore());
 
-            Assert.Throws<ArgumentNullException>("value", () => manager.PasswordHasher = null);
-            Assert.Throws<ArgumentNullException>("value", () => manager.Options = null);
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.CreateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.CreateAsync(null, null));
             await

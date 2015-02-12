@@ -29,8 +29,6 @@ namespace Microsoft.AspNet.Identity
 
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
-        private IPasswordHasher<TUser> _passwordHasher;
-        private IdentityOptions _options;
         private HttpContext _context;
 
         /// <summary>
@@ -47,16 +45,16 @@ namespace Microsoft.AspNet.Identity
         /// <param name="msgProviders"></param>
         /// <param name="loggerFactory"></param>
         public UserManager(IUserStore<TUser> store,
-            IOptions<IdentityOptions> optionsAccessor = null,
-            IPasswordHasher<TUser> passwordHasher = null,
-            IEnumerable<IUserValidator<TUser>> userValidators = null,
-            IEnumerable<IPasswordValidator<TUser>> passwordValidators = null,
-            ILookupNormalizer keyNormalizer = null,
-            IdentityErrorDescriber errors = null,
-            IEnumerable<IUserTokenProvider<TUser>> tokenProviders = null,
-            IEnumerable<IIdentityMessageProvider> msgProviders = null,
-            ILogger<UserManager<TUser>> logger = null,
-            IHttpContextAccessor contextAccessor = null)
+            IOptions<IdentityOptions> optionsAccessor,
+            IPasswordHasher<TUser> passwordHasher,
+            IEnumerable<IUserValidator<TUser>> userValidators,
+            IEnumerable<IPasswordValidator<TUser>> passwordValidators,
+            ILookupNormalizer keyNormalizer,
+            IdentityErrorDescriber errors,
+            IEnumerable<IUserTokenProvider<TUser>> tokenProviders,
+            IEnumerable<IIdentityMessageProvider> msgProviders,
+            ILogger<UserManager<TUser>> logger,
+            IHttpContextAccessor contextAccessor)
         {
             if (store == null)
             {
@@ -64,10 +62,10 @@ namespace Microsoft.AspNet.Identity
             }
             Store = store;
             Options = optionsAccessor?.Options ?? new IdentityOptions();
-            PasswordHasher = passwordHasher ?? new PasswordHasher<TUser>();
-            KeyNormalizer = keyNormalizer ?? new UpperInvariantLookupNormalizer();
-            ErrorDescriber = errors ?? new IdentityErrorDescriber();
             _context = contextAccessor?.Value;
+            PasswordHasher = passwordHasher;
+            KeyNormalizer = keyNormalizer;
+            ErrorDescriber = errors;
 
             if (userValidators != null)
             {
@@ -93,7 +91,6 @@ namespace Microsoft.AspNet.Identity
                     RegisterTokenProvider(tokenProvider);
                 }
             }
-
             if (msgProviders != null)
             {
                 foreach (var msgProvider in msgProviders)
@@ -101,7 +98,6 @@ namespace Microsoft.AspNet.Identity
                     RegisterMessageProvider(msgProvider);
                 }
             }
-
         }
 
         /// <summary>
@@ -109,69 +105,19 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         protected internal IUserStore<TUser> Store { get; set; }
 
-        /// <summary>
-        ///     Used to hash/verify passwords
-        /// </summary>
-        public IPasswordHasher<TUser> PasswordHasher
-        {
-            get
-            {
-                ThrowIfDisposed();
-                return _passwordHasher;
-            }
-            set
-            {
-                ThrowIfDisposed();
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-                _passwordHasher = value;
-            }
-        }
+        internal IPasswordHasher<TUser> PasswordHasher { get; set; }
 
-        /// <summary>
-        ///     Used to validate users before persisting changes
-        /// </summary>
-        public IList<IUserValidator<TUser>> UserValidators { get; } = new List<IUserValidator<TUser>>();
+        internal IList<IUserValidator<TUser>> UserValidators { get; } = new List<IUserValidator<TUser>>();
 
-        /// <summary>
-        ///     Used to validate passwords before persisting changes
-        /// </summary>
-        public IList<IPasswordValidator<TUser>> PasswordValidators { get; } = new List<IPasswordValidator<TUser>>();
+        internal IList<IPasswordValidator<TUser>> PasswordValidators { get; } = new List<IPasswordValidator<TUser>>();
 
-        /// <summary>
-        ///     Used to normalize user names and emails for uniqueness
-        /// </summary>
-        public ILookupNormalizer KeyNormalizer { get; set; }
+        internal ILookupNormalizer KeyNormalizer { get; set; }
 
-        /// <summary>
-        ///     Used to generate public API error messages
-        /// </summary>
-        public IdentityErrorDescriber ErrorDescriber { get; set; }
+        internal IdentityErrorDescriber ErrorDescriber { get; set; }
 
-        /// <summary>
-        ///     Used to log IdentityResult
-        /// </summary>
-        public ILogger<UserManager<TUser>> Logger { get; set; }
+        internal ILogger<UserManager<TUser>> Logger { get; set; }
 
-        public IdentityOptions Options
-        {
-            get
-            {
-                ThrowIfDisposed();
-                return _options;
-            }
-            set
-            {
-                ThrowIfDisposed();
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-                _options = value;
-            }
-        }
+        internal IdentityOptions Options { get; set; }
 
         /// <summary>
         ///     Returns true if the store is an IUserTwoFactorStore

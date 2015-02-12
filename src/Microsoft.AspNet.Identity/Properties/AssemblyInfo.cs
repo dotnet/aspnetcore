@@ -4,3 +4,6 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Microsoft.AspNet.Identity.Test")]
+[assembly: InternalsVisibleTo("Microsoft.AspNet.Identity.EntityFramework.Test")]
+[assembly: InternalsVisibleTo("Microsoft.AspNet.Identity.EntityFramework.InMemory.Test")]
+[assembly: InternalsVisibleTo("Microsoft.AspNet.Identity.InMemory.Test")]

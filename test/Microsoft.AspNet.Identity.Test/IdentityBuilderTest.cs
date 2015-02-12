@@ -237,13 +237,13 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class MyUserManager : UserManager<TestUser>
         {
-            public MyUserManager(IUserStore<TestUser> store) : base(store) { }
+            public MyUserManager(IUserStore<TestUser> store) : base(store, null, null, null, null, null, null, null, null, null, null) { }
         }
 
         private class MyRoleManager : RoleManager<TestRole>
         {
             public MyRoleManager(IRoleStore<TestRole> store,
-                IEnumerable<IRoleValidator<TestRole>> roleValidators) : base(store)
+                IEnumerable<IRoleValidator<TestRole>> roleValidators) : base(store, null, null, null, null, null)
             {
 
             }

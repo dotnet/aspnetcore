@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using System.Text;
 using Microsoft.Framework.Logging;
 using Moq;
+using Microsoft.Framework.OptionsModel;
+using System.Linq;
+using Microsoft.AspNet.Hosting;
 
 namespace Microsoft.AspNet.Identity.Test
 {
@@ -49,10 +52,20 @@ namespace Microsoft.AspNet.Identity.Test
         public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser> store = null) where TUser : class
         {
             store = store ?? new Mock<IUserStore<TUser>>().Object;
+            var options = new Mock<IOptions<IdentityOptions>>();
+            var idOptions = new IdentityOptions();
+            options.Setup(o => o.Options).Returns(idOptions);
+            var userValidators = new List<IUserValidator<TUser>>();
             var validator = new Mock<IUserValidator<TUser>>();
-            var userManager = new UserManager<TUser>(store);
-            userManager.UserValidators.Add(validator.Object);
-            userManager.PasswordValidators.Add(new PasswordValidator<TUser>());
+            userValidators.Add(validator.Object);
+            var pwdValidators = new List<PasswordValidator<TUser>>();
+            pwdValidators.Add(new PasswordValidator<TUser>());
+            var userManager = new UserManager<TUser>(store, options.Object, new PasswordHasher<TUser>(),
+                userValidators, pwdValidators, new UpperInvariantLookupNormalizer(),
+                new IdentityErrorDescriber(), Enumerable.Empty<IUserTokenProvider<TUser>>(),
+                Enumerable.Empty<IIdentityMessageProvider>(), 
+                new Logger<UserManager<TUser>>(new LoggerFactory()),
+                null);
             validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>()))
                 .Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
             return userManager;
@@ -63,7 +76,11 @@ namespace Microsoft.AspNet.Identity.Test
             store = store ?? new Mock<IRoleStore<TRole>>().Object;
             var roles = new List<IRoleValidator<TRole>>();
             roles.Add(new RoleValidator<TRole>());
-            return new RoleManager<TRole>(store, roles);
+            return new RoleManager<TRole>(store, roles, 
+                new UpperInvariantLookupNormalizer(), 
+                new IdentityErrorDescriber(),
+                new Logger<RoleManager<TRole>>(new LoggerFactory()),
+                null);
         }
 
     }

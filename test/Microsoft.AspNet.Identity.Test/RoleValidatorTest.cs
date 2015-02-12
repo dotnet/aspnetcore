@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var validator = new RoleValidator<TestRole>();
-            var manager = new RoleManager<TestRole>(new NoopRoleStore());
+            var manager = MockHelpers.TestRoleManager<TestRole>();
 
             // Act
             // Assert
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var validator = new RoleValidator<TestRole>();
-            var manager = new RoleManager<TestRole>(new NoopRoleStore());
+            var manager = MockHelpers.TestRoleManager<TestRole>();
             var user = new TestRole {Name = input};
 
             // Act

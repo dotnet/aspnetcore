@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Security;
@@ -52,6 +53,8 @@ namespace Microsoft.Framework.DependencyInjection
             // Services used by identity
             services.AddOptions(identityConfig);
             services.AddDataProtection(identityConfig);
+            services.AddLogging(identityConfig);
+            services.TryAdd(describe.Singleton<IHttpContextAccessor, HttpContextAccessor>());
 
             // Identity services
             services.TryAdd(describe.Transient<IUserValidator<TUser>, UserValidator<TUser>>());
