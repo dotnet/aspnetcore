@@ -15,6 +15,8 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 {
     public static class TagHelperBlockRewriter
     {
+        private static readonly string StringTypeName = typeof(string).FullName;
+
         public static TagHelperBlockBuilder Rewrite(string tagName,
                                                     bool validStructure,
                                                     Block tag,
@@ -68,6 +70,23 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 // Only want to track the attribute if we succeeded in parsing its corresponding Block/Span.
                 if (succeeded)
                 {
+                    // Check if it's a bound attribute that is not of type string and happens to be null or whitespace.
+                    string attributeValueType;
+                    if (attributeValueTypes.TryGetValue(attribute.Key, out attributeValueType) &&
+                       !IsStringAttribute(attributeValueType) &&
+                       IsNullOrWhitespaceAttributeValue(attribute.Value))
+                    {
+                        var errorLocation = GetAttributeNameStartLocation(child);
+
+                        errorSink.OnError(
+                            errorLocation,
+                            RazorResources.FormatRewriterError_EmptyTagHelperBoundAttribute(
+                                attribute.Key,
+                                tagName,
+                                attributeValueType),
+                            attribute.Key.Length);
+                    }
+
                     attributes[attribute.Key] = attribute.Value;
                 }
             }
@@ -363,6 +382,34 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             return builder.Build();
         }
 
+        private static SourceLocation GetAttributeNameStartLocation(SyntaxTreeNode node)
+        {
+            Span span;
+
+            if (node.IsBlock)
+            {
+                span = ((Block)node).FindFirstDescendentSpan();
+            }
+            else
+            {
+                span = (Span)node;
+            }
+
+            // Span should never be null here, this should only ever be called if an attribute was successfully parsed.
+            Debug.Assert(span != null);
+
+            var nodeStart = span.Parent.Start;
+
+            // Attributes must have at least one non-whitespace character to represent the tagName (even if its a C#
+            // expression).
+            var firstNonWhitespaceSymbol = span
+                .Symbols
+                .OfType<HtmlSymbol>()
+                .First(sym => sym.Type != HtmlSymbolType.WhiteSpace && sym.Type != HtmlSymbolType.NewLine);
+
+            return nodeStart + firstNonWhitespaceSymbol.Start;
+        }
+
         private static KeyValuePair<string, SyntaxTreeNode> CreateMarkupAttribute(
             string name,
             SpanBuilder builder,
@@ -374,12 +421,37 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             // its value as code. Any non-string value can be any C# value so we need to ensure the SyntaxTreeNode
             // reflects that.
             if (attributeValueTypes.TryGetValue(name, out attributeTypeName) &&
-                !string.Equals(attributeTypeName, typeof(string).FullName, StringComparison.OrdinalIgnoreCase))
+                !IsStringAttribute(attributeTypeName))
             {
                 builder.Kind = SpanKind.Code;
             }
 
             return new KeyValuePair<string, SyntaxTreeNode>(name, builder.Build());
+        }
+
+        private static bool IsNullOrWhitespaceAttributeValue(SyntaxTreeNode attributeValue)
+        {
+            if (attributeValue.IsBlock)
+            {
+                foreach (var span in ((Block)attributeValue).Flatten())
+                {
+                    if (!string.IsNullOrWhiteSpace(span.Content))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                return string.IsNullOrWhiteSpace(((Span)attributeValue).Content);
+            }
+        }
+
+        private static bool IsStringAttribute(string attributeTypeName)
+        {
+            return string.Equals(attributeTypeName, StringTypeName, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsQuote(HtmlSymbol htmlSymbol)

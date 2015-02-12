@@ -1530,6 +1530,22 @@ namespace Microsoft.AspNet.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes"), p0);
         }
 
+        /// <summary>
+        /// Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound attributes of type '{2}' cannot be empty or contain only whitespace.
+        /// </summary>
+        internal static string RewriterError_EmptyTagHelperBoundAttribute
+        {
+            get { return GetString("RewriterError_EmptyTagHelperBoundAttribute"); }
+        }
+
+        /// <summary>
+        /// Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound attributes of type '{2}' cannot be empty or contain only whitespace.
+        /// </summary>
+        internal static string FormatRewriterError_EmptyTagHelperBoundAttribute(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RewriterError_EmptyTagHelperBoundAttribute"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

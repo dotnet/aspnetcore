@@ -19,6 +19,299 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : CsHtmlMarkupParserTestBase
     {
+        public static TheoryData EmptyTagHelperBoundAttributeData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var emptyAttributeError =
+                    "Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound attributes of " +
+                    "type '{2}' cannot be empty or contain only whitespace.";
+                var boolTypeName = typeof(bool).FullName;
+
+                // documentContent, expectedOutput, expectedErrors
+                return new TheoryData<string, MarkupBlock, RazorError[]>
+                {
+                    {
+                        "<myth bound='' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "bound", new MarkupBlock() }
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
+                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5)
+                        }
+                    },
+                    {
+                        "<myth bound='    true' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "bound", factory.CodeMarkup("    true") }
+                                })),
+                        new RazorError[0]
+                    },
+                    {
+                        "<myth bound='    ' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "bound", factory.CodeMarkup("    ") }
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
+                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5)
+                        }
+                    },
+                    {
+                        "<myth bound=''  bound=\"\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "bound", new MarkupBlock() }
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
+                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
+                            new RazorError(
+                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
+                                absoluteIndex: 16, lineIndex: 0, columnIndex: 16, length: 5)
+                        }
+                    },
+                    {
+                        "<myth bound=' '  bound=\"  \" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "bound", factory.CodeMarkup("  ") }
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
+                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
+                            new RazorError(
+                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
+                                absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 5)
+                        }
+                    },
+                    {
+                        "<myth bound='true' bound=  />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) }
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
+                                absoluteIndex: 19, lineIndex: 0, columnIndex: 19, length: 5)
+                        }
+                    },
+                    {
+                        "<myth bound= name='' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) },
+                                    { "name", new MarkupBlock() }
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
+                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
+                        }
+                    },
+                    {
+                        "<myth bound= name='  ' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) },
+                                    { "name", factory.Markup("  ") }
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
+                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
+                        }
+                    },
+                    {
+                        "<myth bound='true' name='john' bound= name= />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) },
+                                    { "name", factory.Markup(string.Empty).With(SpanCodeGenerator.Null) }
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
+                                absoluteIndex: 31, lineIndex: 0, columnIndex: 31, length: 5),
+                        }
+                    },
+                    {
+                        "<myth BouND='' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "BouND", new MarkupBlock() }
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(emptyAttributeError, "BouND", "myth", boolTypeName),
+                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
+                        }
+                    },
+                    {
+                        "<myth BOUND=''    bOUnd=\"\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "BOUND", new MarkupBlock() }
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(emptyAttributeError, "BOUND", "myth", boolTypeName),
+                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
+                            new RazorError(
+                                string.Format(emptyAttributeError, "bOUnd", "myth", boolTypeName),
+                                absoluteIndex: 18, lineIndex: 0, columnIndex: 18, length: 5)
+                        }
+                    },
+                    {
+                        "<myth BOUND= nAMe='john'></myth>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "BOUND", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) },
+                                    { "nAMe", factory.Markup("john") }
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(emptyAttributeError, "BOUND", "myth", boolTypeName),
+                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5)
+                        }
+                    },
+                    {
+                        "<myth bound='    @true  ' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    {
+                                        "bound",
+                                        new MarkupBlock(
+                                            new MarkupBlock(
+                                            factory.Markup("    "),
+                                            new ExpressionBlock(
+                                                factory.CodeTransition(),
+                                                factory.Code("true")
+                                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                    .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                        factory.Markup("  "))
+                                    }
+                                })),
+                        new RazorError[0]
+                    },
+                    {
+                        "<myth bound='    @(true)  ' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "myth",
+                                new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    {
+                                        "bound",
+                                        new MarkupBlock(
+                                            new MarkupBlock(
+                                            factory.Markup("    "),
+                                            new ExpressionBlock(
+                                                factory.CodeTransition(),
+                                                factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                                                factory.Code("true").AsExpression(),
+                                                factory.MetaCode(")").Accepts(AcceptedCharacters.None))),
+                                        factory.Markup("  "))
+                                    }
+                                })),
+                        new RazorError[0]
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(EmptyTagHelperBoundAttributeData))]
+        public void Rewrite_CreatesErrorForEmptyTagHelperBoundAttributes(
+            string documentContent,
+            MarkupBlock expectedOutput,
+            RazorError[] expectedErrors)
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        tagName: "myth",
+                        typeName: "mythTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new[]
+                        {
+                            new TagHelperAttributeDescriptor(
+                                name: "bound",
+                                propertyName: "Bound",
+                                typeName: typeof(bool).FullName),
+                            new TagHelperAttributeDescriptor(
+                                name: "name",
+                                propertyName: "Name",
+                                typeName: typeof(string).FullName)
+                        })
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+        }
+
         public static TheoryData OptOut_WithAttributeTextTagData
         {
             get
@@ -80,7 +373,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 errorMatchingBrace,
                                 absoluteIndex: 1, lineIndex: 0, columnIndex: 1),
                             new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "!text"), 
+                                string.Format(errorFormatNormalUnclosed, "!text"),
                                 absoluteIndex: 2, lineIndex: 0, columnIndex: 2)
                         }
                     },
@@ -1654,7 +1947,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         {
             RunParseTreeRewriterTest(documentContent, expectedOutput, expectedErrors, "strong", "p");
         }
-        
+
         public static TheoryData EmptyAttributeTagHelperData
         {
             get

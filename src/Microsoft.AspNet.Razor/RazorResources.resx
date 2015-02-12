@@ -422,4 +422,7 @@ Instead, wrap the contents of the block in "{{}}":
     <value>Inline markup blocks (e.g. @&lt;p&gt;content&lt;/p&gt;) must not appear in non-string tag helper attribute values.
  Expected a '{0}' attribute value, not a string.</value>
   </data>
+  <data name="RewriterError_EmptyTagHelperBoundAttribute" xml:space="preserve">
+    <value>Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound attributes of type '{2}' cannot be empty or contain only whitespace.</value>
+  </data>
 </root>
