@@ -5,7 +5,6 @@ using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Hosting
 {
-    [AssemblyNeutral]
     public interface IConfigureHostingEnvironment
     {
         void Configure(IHostingEnvironment hostingEnv);

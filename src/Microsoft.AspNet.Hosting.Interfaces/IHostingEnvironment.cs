@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.FileProviders;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Hosting
 {
-    [AssemblyNeutral]
     public interface IHostingEnvironment
     {
         string EnvironmentName { get; set; }

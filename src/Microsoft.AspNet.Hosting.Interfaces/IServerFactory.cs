@@ -5,11 +5,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.ConfigurationModel;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Hosting.Server
 {
-    [AssemblyNeutral]
     public interface IServerFactory
     {
         IServerInformation Initialize(IConfiguration configuration);
