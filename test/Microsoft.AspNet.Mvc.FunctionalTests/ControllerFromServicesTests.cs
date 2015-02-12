@@ -50,6 +50,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task TypesDerivingFromControllerPrefixedTypesAreRegistered()
+        {
+            // Arrange
+            var expected = "4";
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/inventory/");
+
+            // Assert
+            Assert.Equal(expected, response);
+        }
+
+        [Fact]
         public async Task TypesWithControllerSuffixAreRegistered()
         {
             // Arrange
@@ -84,9 +99,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("generic")]
-        [InlineData("nested")]
-        [InlineData("not-in-services")]
+        [InlineData("not-discovered/generic")]
+        [InlineData("not-discovered/nested")]
+        [InlineData("not-discovered/not-in-services")]
+        [InlineData("ClientUIStub/GetClientContent/5")]
         public async Task AddControllersFromServices_UsesControllerDiscoveryContentions(string action)
         {
             // Arrange
@@ -94,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/not-discovered/" + action);
+            var response = await client.GetAsync("http://localhost/" + action);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

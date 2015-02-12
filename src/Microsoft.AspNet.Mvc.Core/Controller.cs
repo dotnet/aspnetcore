@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Linq.Expressions;
-using System.Security.Principal;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -12,16 +12,21 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class Controller : IActionFilter, IAsyncActionFilter, IDisposable
+    /// <summary>
+    /// Base class for an MVC controller.
+    /// </summary>
+    public abstract class Controller : IActionFilter, IAsyncActionFilter, IDisposable
     {
         private DynamicViewData _viewBag;
         private ViewDataDictionary _viewData;
         private ActionContext _actionContext;
 
+        /// <summary>
+        /// Gets the request-specific <see cref="IServiceProvider"/>.
+        /// </summary>
         public IServiceProvider Resolver
         {
             get
@@ -30,6 +35,9 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="HttpContext"/> for the executing action.
+        /// </summary>
         public HttpContext Context
         {
             get
@@ -38,6 +46,9 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="HttpRequest"/> for the executing action.
+        /// </summary>
         public HttpRequest Request
         {
             get
@@ -46,6 +57,9 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="HttpResponse"/> for the executing action.
+        /// </summary>
         public HttpResponse Response
         {
             get
@@ -54,14 +68,20 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="AspNet.Routing.RouteData"/> for the executing action.
+        /// </summary>
         public RouteData RouteData
         {
             get
             {
                 return ActionContext?.RouteData;
             }
-            }
+        }
 
+        /// <summary>
+        /// Gets the <see cref="ModelStateDictionary"/> that contains the state of the model and of model-binding validation.
+        /// </summary>
         public ModelStateDictionary ModelState
         {
             get
@@ -97,16 +117,28 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ActionBindingContext"/>.
+        /// </summary>
         [Activate]
         public ActionBindingContext BindingContext { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="IModelMetadataProvider"/>.
+        /// </summary>
         [FromServices]
         public IModelMetadataProvider MetadataProvider { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="IUrlHelper"/>.
+        /// </summary>
         [FromServices]
         public IUrlHelper Url { get; set; }
 
-        public IPrincipal User
+        /// <summary>
+        /// Gets or sets the <see cref="ClaimsPrincipal"/> for user associated with the executing action.
+        /// </summary>
+        public ClaimsPrincipal User
         {
             get
             {
@@ -138,7 +170,7 @@ namespace Microsoft.AspNet.Mvc
                 return _viewData;
             }
             set
-                {
+            {
                 if (value == null)
                 {
                     throw
@@ -149,6 +181,9 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets the dynamic view bag.
+        /// </summary>
         public dynamic ViewBag
         {
             get
@@ -1111,12 +1146,18 @@ namespace Microsoft.AspNet.Mvc
             return ModelState.IsValid;
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases all resources currently used by this <see cref="Controller"/> instance.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> if this method is being invoked by the <see cref="Dispose"/> method,
+        /// otherwise <c>false</c>.</param>
         protected virtual void Dispose(bool disposing)
         {
         }

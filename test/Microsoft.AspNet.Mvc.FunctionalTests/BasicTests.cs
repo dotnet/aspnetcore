@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class BasicTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("BasicWebSite");
+        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(BasicWebSite));
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         // Some tests require comparing the actual response body against an expected response baseline
@@ -274,6 +275,34 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var responseData = await response.Content.ReadAsStringAsync();
             Assert.Equal("This is a basic website.", responseData);
+        }
+
+        [Fact]
+        public async Task TypesWithoutControllerSuffix_DerivingFromTypesWithControllerSuffix_CanBeAccessed()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = new HttpClient(server.CreateHandler(), false);
+
+            // Act
+            var response = await client.GetStringAsync("http://localhost/appointments");
+
+            // Assert
+            Assert.Equal("2 appointments available.", response);
+        }
+
+        [Fact]
+        public async Task TypesMarkedAsNonAction_AreInaccessible()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = new HttpClient(server.CreateHandler(), false);
+
+            // Act
+            var response = await client.GetAsync("http://localhost/SqlData/TruncateAllDbRecords");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
     }
 }

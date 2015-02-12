@@ -490,8 +490,8 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var actionContext = new ActionContext();
-            var controller1 = new Controller();
-            var controller2 = new Controller();
+            var controller1 = new TestabilityController();
+            var controller2 = new TestabilityController();
 
             // Act
             controller2.ActionContext = actionContext;

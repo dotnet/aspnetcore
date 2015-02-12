@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var controller = new Controller();
+            var controller = new TestableController();
             var originalViewData = controller.ViewData = new ViewDataDictionary<object>(metadataProvider);
             var replacementViewData = new ViewDataDictionary<object>(metadataProvider);
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Redirect_WithParameterUrl_SetsRedirectResultSameUrl()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var url = "/test/url";
 
             // Act
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void RedirectPermanent_WithParameterUrl_SetsRedirectResultPermanentAndSameUrl()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var url = "/test/url";
 
             // Act
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Redirect_WithParameter_NullOrEmptyUrl_Throws(string url)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act & Assert
             ExceptionAssert.ThrowsArgumentNullOrEmpty(
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void RedirectPermanent_WithParameter_NullOrEmptyUrl_Throws(string url)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act & Assert
             ExceptionAssert.ThrowsArgumentNullOrEmpty(
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void RedirectToAction_WithParameterActionName_SetsResultActionName()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var resultTemporary = controller.RedirectToAction("SampleAction");
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void RedirectToActionPermanent_WithParameterActionName_SetsResultActionNameAndPermanent()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var resultPermanent = controller.RedirectToActionPermanent("SampleAction");
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void RedirectToAction_WithParameterActionAndControllerName_SetsEqualNames(string controllerName)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var resultTemporary = controller.RedirectToAction("SampleAction", controllerName);
@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Mvc.Test
             string controllerName)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var resultPermanent = controller.RedirectToActionPermanent("SampleAction", controllerName);
@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.Mvc.Test
             IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var resultTemporary = controller.RedirectToAction("SampleAction", "SampleController", routeValues);
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Mvc.Test
             IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var resultPermanent = controller.RedirectToActionPermanent(
@@ -234,7 +234,7 @@ namespace Microsoft.AspNet.Mvc.Test
             IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var resultTemporary = controller.RedirectToAction(actionName: null, routeValues: routeValues);
@@ -253,7 +253,7 @@ namespace Microsoft.AspNet.Mvc.Test
             IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var resultPermanent = controller.RedirectToActionPermanent(null, routeValues);
@@ -272,7 +272,7 @@ namespace Microsoft.AspNet.Mvc.Test
             IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var resultTemporary = controller.RedirectToRoute(routeValues);
@@ -290,7 +290,7 @@ namespace Microsoft.AspNet.Mvc.Test
             IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var resultPermanent = controller.RedirectToRoutePermanent(routeValues);
@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void RedirectToRoute_WithParameterRouteName_SetsResultSameRouteName()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var routeName = "CustomRouteName";
 
             // Act
@@ -321,7 +321,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void RedirectToRoutePermanent_WithParameterRouteName_SetsResultSameRouteNameAndPermanent()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var routeName = "CustomRouteName";
 
             // Act
@@ -340,7 +340,7 @@ namespace Microsoft.AspNet.Mvc.Test
             IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var routeName = "CustomRouteName";
 
             // Act
@@ -360,7 +360,7 @@ namespace Microsoft.AspNet.Mvc.Test
             IEnumerable<KeyValuePair<string, object>> expected)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var routeName = "CustomRouteName";
 
             // Act
@@ -377,7 +377,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Created_WithStringParameter_SetsCreatedLocation()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var uri = "http://test/url";
 
             // Act
@@ -393,7 +393,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Created_WithAbsoluteUriParameter_SetsCreatedLocation()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var uri = new Uri("http://test/url");
 
             // Act
@@ -409,7 +409,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Created_WithRelativeUriParameter_SetsCreatedLocation()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var uri = new Uri("/test/url", UriKind.Relative);
 
             // Act
@@ -425,7 +425,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void CreatedAtAction_WithParameterActionName_SetsResultActionName()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var result = controller.CreatedAtAction("SampleAction", null);
@@ -444,7 +444,7 @@ namespace Microsoft.AspNet.Mvc.Test
             string controllerName)
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var result = controller.CreatedAtAction("SampleAction", controllerName, null, null);
@@ -460,7 +460,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void CreatedAtAction_WithActionControllerRouteValues_SetsSameValues()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var expected = new Dictionary<string, object>
                 {
                     { "test", "case" },
@@ -485,7 +485,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void CreatedAtRoute_WithParameterRouteName_SetsResultSameRouteName()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var routeName = "SampleRoute";
 
             // Act
@@ -500,7 +500,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void CreatedAtRoute_WithParameterRouteValues_SetsResultSameRouteValues()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var expected = new Dictionary<string, object>
                 {
                     { "test", "case" },
@@ -520,7 +520,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void CreatedAtRoute_WithParameterRouteNameAndValues_SetsResultSameProperties()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var routeName = "SampleRoute";
             var expected = new Dictionary<string, object>
                 {
@@ -542,7 +542,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void File_WithContents()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var fileContents = new byte[0];
 
             // Act
@@ -559,7 +559,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void File_WithContentsAndFileDownloadName()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var fileContents = new byte[0];
 
             // Act
@@ -576,7 +576,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void File_WithPath()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var path = Path.GetFullPath("somepath");
 
             // Act
@@ -593,7 +593,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void File_WithPathAndFileDownloadName()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var path = Path.GetFullPath("somepath");
 
             // Act
@@ -610,7 +610,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void File_WithStream()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var fileStream = Stream.Null;
 
             // Act
@@ -627,7 +627,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void File_WithStreamAndFileDownloadName()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var fileStream = Stream.Null;
 
             // Act
@@ -645,7 +645,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void HttpNotFound_SetsStatusCode()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var result = controller.HttpNotFound();
@@ -659,7 +659,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void BadRequest_SetsStatusCode()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var result = controller.HttpBadRequest();
@@ -673,7 +673,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void BadRequest_SetsStatusCodeAndValue_Object()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var obj = new object();
 
             // Act
@@ -689,7 +689,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void BadRequest_SetsStatusCodeAndValue_ModelState()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var result = controller.HttpBadRequest(new ModelStateDictionary());
@@ -713,7 +713,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Controller_View_WithoutParameter_SetsResultNullViewNameAndNullViewDataModel()
         {
             // Arrange
-            var controller = new Controller()
+            var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
             };
@@ -732,7 +732,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Controller_View_WithParameterViewName_SetsResultViewNameAndNullViewDataModel()
         {
             // Arrange
-            var controller = new Controller()
+            var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
             };
@@ -751,7 +751,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Controller_View_WithParameterViewModel_SetsResultNullViewNameAndViewDataModel()
         {
             // Arrange
-            var controller = new Controller()
+            var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
             };
@@ -771,7 +771,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Controller_View_WithParameterViewNameAndViewModel_SetsResultViewNameAndViewDataModel()
         {
             // Arrange
-            var controller = new Controller()
+            var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
             };
@@ -791,7 +791,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Controller_Content_WithParameterContentString_SetsResultContent()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var actualContentResult = controller.Content("TestContent");
@@ -807,7 +807,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Controller_Content_WithParameterContentStringAndContentType_SetsResultContentAndContentType()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var actualContentResult = controller.Content("TestContent", "text/plain");
@@ -823,7 +823,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Controller_Content_WithParameterContentAndTypeAndEncoding_SetsResultContentAndTypeAndEncoding()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             // Act
             var actualContentResult = controller.Content("TestContent", "text/plain", Encoding.UTF8);
@@ -839,7 +839,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Controller_Json_WithParameterValue_SetsResultData()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var data = new object();
 
             // Act
@@ -1144,7 +1144,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void ControllerExposes_RequestServices()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             var serviceProvider = Mock.Of<IServiceProvider>();
             var httpContext = new Mock<HttpContext>();
@@ -1166,7 +1166,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void ControllerExposes_Request()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             var request = Mock.Of<HttpRequest>();
             var httpContext = new Mock<HttpContext>();
@@ -1188,7 +1188,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void ControllerExposes_Response()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             var response = Mock.Of<HttpResponse>();
             var httpContext = new Mock<HttpContext>();
@@ -1210,7 +1210,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void ControllerExposes_RouteData()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
 
             var routeData = Mock.Of<RouteData>();
 
@@ -1325,7 +1325,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void TryValidateModelEmptyBindingContextThrowsException()
         {
             // Arrange
-            var controller = new Controller();
+            var controller = new TestableController();
             var model = new TryValidateModelModel();
 
             // Act & Assert
@@ -1346,7 +1346,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 ValueProvider = provider,
             };
 
-            return new Controller()
+            return new TestableController()
             {
                 ActionContext = actionContext,
                 BindingContext = bindingContext,
@@ -1396,6 +1396,11 @@ namespace Microsoft.AspNet.Mvc.Test
             {
                 DisposeCalled = true;
             }
+        }
+
+        private class TestableController : Controller
+        {
+
         }
     }
 }

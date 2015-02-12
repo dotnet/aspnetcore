@@ -12,10 +12,21 @@ namespace Microsoft.AspNet.Mvc
 {
     public class DefaultAssemblyProvider : IAssemblyProvider
     {
+        private readonly ILibraryManager _libraryManager;
+
+        public DefaultAssemblyProvider(ILibraryManager libraryManager)
+        {
+            _libraryManager = libraryManager;
+        }
+
         /// <summary>
         /// Gets the set of assembly names that are used as root for discovery of
         /// MVC controllers, view components and views.
         /// </summary>
+        // DefaultControllerTypeProvider uses CandidateAssemblies to determine if the base type of a POCO controller
+        // lives in an assembly that references MVC. CandidateAssemblies excludes all assemblies from the
+        // ReferenceAssemblies set. Consequently adding WebApiCompatShim to this set would cause the ApiController to
+        /// fail this test.
         protected virtual HashSet<string> ReferenceAssemblies { get; } = new HashSet<string>(StringComparer.Ordinal)
         {
             "Microsoft.AspNet.Mvc",
@@ -23,15 +34,7 @@ namespace Microsoft.AspNet.Mvc
             "Microsoft.AspNet.Mvc.ModelBinding",
             "Microsoft.AspNet.Mvc.Razor",
             "Microsoft.AspNet.Mvc.Razor.Host",
-            "Microsoft.AspNet.Mvc.Rendering",
         };
-
-        private readonly ILibraryManager _libraryManager;
-
-        public DefaultAssemblyProvider(ILibraryManager libraryManager)
-        {
-            _libraryManager = libraryManager;
-        }
 
         /// <inheritdoc />
         public IEnumerable<Assembly> CandidateAssemblies
