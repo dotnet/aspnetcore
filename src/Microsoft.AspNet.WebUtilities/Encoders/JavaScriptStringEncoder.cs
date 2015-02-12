@@ -3,7 +3,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Text;
+using System.IO;
 using System.Threading;
 
 namespace Microsoft.AspNet.WebUtilities.Encoders
@@ -66,9 +66,25 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// <summary>
         /// Everybody's favorite JavaScriptStringEncode routine.
         /// </summary>
+        public void JavaScriptStringEncode(char[] value, int startIndex, int charCount, TextWriter output)
+        {
+            _innerUnicodeEncoder.Encode(value, startIndex, charCount, output);
+        }
+
+        /// <summary>
+        /// Everybody's favorite JavaScriptStringEncode routine.
+        /// </summary>
         public string JavaScriptStringEncode(string value)
         {
             return _innerUnicodeEncoder.Encode(value);
+        }
+
+        /// <summary>
+        /// Everybody's favorite JavaScriptStringEncode routine.
+        /// </summary>
+        public void JavaScriptStringEncode(string value, int startIndex, int charCount, TextWriter output)
+        {
+            _innerUnicodeEncoder.Encode(value, startIndex, charCount, output);
         }
 
         private sealed class JavaScriptStringUnicodeEncoder : UnicodeEncoderBase
@@ -108,7 +124,7 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             // See ECMA-262, Sec. 7.8.4, and ECMA-404, Sec. 9
             // http://www.ecma-international.org/ecma-262/5.1/#sec-7.8.4
             // http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
-            protected override void WriteEncodedScalar(StringBuilder builder, uint value)
+            protected override void WriteEncodedScalar<T>(T output, Action<T, string> writeString, Action<T, char> writeChar, uint value)
             {
                 // ECMA-262 allows encoding U+000B as "\v", but ECMA-404 does not.
                 // Both ECMA-262 and ECMA-404 allow encoding U+002F SOLIDUS as "\/".
@@ -117,46 +133,46 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
                 // be written out as numeric entities for defense-in-depth.
                 // See UnicodeEncoderBase ctor comments for more info.
 
-                if (value == (uint)'\b') { builder.Append(@"\b"); }
-                else if (value == (uint)'\t') { builder.Append(@"\t"); }
-                else if (value == (uint)'\n') { builder.Append(@"\n"); }
-                else if (value == (uint)'\f') { builder.Append(@"\f"); }
-                else if (value == (uint)'\r') { builder.Append(@"\r"); }
-                else if (value == (uint)'/') { builder.Append(@"\/"); }
-                else if (value == (uint)'\\') { builder.Append(@"\\"); }
-                else { WriteEncodedScalarAsNumericEntity(builder, value); }
+                if (value == (uint)'\b') { writeString(output, @"\b"); }
+                else if (value == (uint)'\t') { writeString(output, @"\t"); }
+                else if (value == (uint)'\n') { writeString(output, @"\n"); }
+                else if (value == (uint)'\f') { writeString(output, @"\f"); }
+                else if (value == (uint)'\r') { writeString(output, @"\r"); }
+                else if (value == (uint)'/') { writeString(output, @"\/"); }
+                else if (value == (uint)'\\') { writeString(output, @"\\"); }
+                else { WriteEncodedScalarAsNumericEntity(output, writeChar, value); }
             }
 
             // Writes a scalar value as an JavaScript-escaped character (or sequence of characters).
-            private static void WriteEncodedScalarAsNumericEntity(StringBuilder builder, uint value)
+            private static void WriteEncodedScalarAsNumericEntity<T>(T output, Action<T, char> writeChar, uint value) where T : class
             {
                 if (UnicodeHelpers.IsSupplementaryCodePoint((int)value))
                 {
                     // Convert this back to UTF-16 and write out both characters.
                     char leadingSurrogate, trailingSurrogate;
                     UnicodeHelpers.GetUtf16SurrogatePairFromAstralScalarValue((int)value, out leadingSurrogate, out trailingSurrogate);
-                    WriteEncodedSingleCharacter(builder, leadingSurrogate);
-                    WriteEncodedSingleCharacter(builder, trailingSurrogate);
+                    WriteEncodedSingleCharacter(output, writeChar, leadingSurrogate);
+                    WriteEncodedSingleCharacter(output, writeChar, trailingSurrogate);
                 }
                 else
                 {
                     // This is only a single character.
-                    WriteEncodedSingleCharacter(builder, value);
+                    WriteEncodedSingleCharacter(output, writeChar, value);
                 }
             }
 
             // Writes an encoded scalar value (in the BMP) as a JavaScript-escaped character.
-            private static void WriteEncodedSingleCharacter(StringBuilder builder, uint value)
+            private static void WriteEncodedSingleCharacter<T>(T output, Action<T, char> writeChar, uint value) where T : class
             {
                 Debug.Assert(!UnicodeHelpers.IsSupplementaryCodePoint((int)value), "The incoming value should've been in the BMP.");
 
                 // Encode this as 6 chars "\uFFFF".
-                builder.Append('\\');
-                builder.Append('u');
-                builder.Append(HexUtil.IntToChar(value >> 12));
-                builder.Append(HexUtil.IntToChar((value >> 8) & 0xFU));
-                builder.Append(HexUtil.IntToChar((value >> 4) & 0xFU));
-                builder.Append(HexUtil.IntToChar(value & 0xFU));
+                writeChar(output, '\\');
+                writeChar(output, 'u');
+                writeChar(output, HexUtil.IntToChar(value >> 12));
+                writeChar(output, HexUtil.IntToChar((value >> 8) & 0xFU));
+                writeChar(output, HexUtil.IntToChar((value >> 4) & 0xFU));
+                writeChar(output, HexUtil.IntToChar(value & 0xFU));
             }
         }
     }

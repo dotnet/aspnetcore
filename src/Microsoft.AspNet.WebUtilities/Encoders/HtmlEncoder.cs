@@ -3,7 +3,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Text;
+using System.IO;
 using System.Threading;
 
 namespace Microsoft.AspNet.WebUtilities.Encoders
@@ -66,9 +66,25 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// <summary>
         /// Everybody's favorite HtmlEncode routine.
         /// </summary>
+        public void HtmlEncode(char[] value, int startIndex, int charCount, TextWriter output)
+        {
+            _innerUnicodeEncoder.Encode(value, startIndex, charCount, output);
+        }
+
+        /// <summary>
+        /// Everybody's favorite HtmlEncode routine.
+        /// </summary>
         public string HtmlEncode(string value)
         {
             return _innerUnicodeEncoder.Encode(value);
+        }
+
+        /// <summary>
+        /// Everybody's favorite HtmlEncode routine.
+        /// </summary>
+        public void HtmlEncode(string value, int startIndex, int charCount, TextWriter output)
+        {
+            _innerUnicodeEncoder.Encode(value, startIndex, charCount, output);
         }
 
         private sealed class HtmlUnicodeEncoder : UnicodeEncoderBase
@@ -101,17 +117,17 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             }
 
             // Writes a scalar value as an HTML-encoded entity.
-            protected override void WriteEncodedScalar(StringBuilder builder, uint value)
+            protected override void WriteEncodedScalar<T>(T output, Action<T, string> writeString, Action<T, char> writeChar, uint value)
             {
-                if (value == (uint)'\"') { builder.Append("&quot;"); }
-                else if (value == (uint)'&') { builder.Append("&amp;"); }
-                else if (value == (uint)'<') { builder.Append("&lt;"); }
-                else if (value == (uint)'>') { builder.Append("&gt;"); }
-                else { WriteEncodedScalarAsNumericEntity(builder, value); }
+                if (value == (uint)'\"') { writeString(output, "&quot;"); }
+                else if (value == (uint)'&') { writeString(output, "&amp;"); }
+                else if (value == (uint)'<') { writeString(output, "&lt;"); }
+                else if (value == (uint)'>') { writeString(output, "&gt;"); }
+                else { WriteEncodedScalarAsNumericEntity(output, writeChar, value); }
             }
 
             // Writes a scalar value as an HTML-encoded numeric entity.
-            private static void WriteEncodedScalarAsNumericEntity(StringBuilder builder, uint value)
+            private static void WriteEncodedScalarAsNumericEntity<T>(T output, Action<T, char> writeChar, uint value) where T : class
             {
                 // We're building the characters up in reverse
                 char* chars = stackalloc char[8 /* "FFFFFFFF" */];
@@ -125,15 +141,15 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
                 } while (value != 0);
 
                 // Finally, write out the HTML-encoded scalar value.
-                builder.Append('&');
-                builder.Append('#');
-                builder.Append('x');
+                writeChar(output, '&');
+                writeChar(output, '#');
+                writeChar(output, 'x');
                 Debug.Assert(numCharsWritten > 0, "At least one character should've been written.");
                 do
                 {
-                    builder.Append(chars[--numCharsWritten]);
+                    writeChar(output, chars[--numCharsWritten]);
                 } while (numCharsWritten != 0);
-                builder.Append(';');
+                writeChar(output, ';');
             }
         }
     }

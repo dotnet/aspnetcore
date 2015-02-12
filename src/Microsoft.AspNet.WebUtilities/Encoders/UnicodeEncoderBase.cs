@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -10,6 +11,12 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
 {
     internal unsafe abstract class UnicodeEncoderBase
     {
+        // Stubs for appending data to a TextWriter or StringBuilder
+        private static readonly Action<StringBuilder, char> _appendCharToStringBuilderStub = PrepareDelegate((Action<StringBuilder, char>)AppendToStringBuilder);
+        private static readonly Action<TextWriter, char> _appendCharToTextWriterStub = PrepareDelegate((Action<TextWriter, char>)AppendToTextWriter);
+        private static readonly Action<StringBuilder, string> _appendStringToStringBuilderStub = PrepareDelegate((Action<StringBuilder, string>)AppendToStringBuilder);
+        private static readonly Action<TextWriter, string> _appendStringToTextWriterStub = PrepareDelegate((Action<TextWriter, string>)AppendToTextWriter);
+
         // A bitmap of characters which are allowed to be returned unescaped.
         private readonly uint[] _allowedCharsBitmap = new uint[0x10000 / 32];
 
@@ -70,6 +77,26 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             _allowedCharsBitmap[index] |= 0x1U << offset;
         }
 
+        private static void AppendToStringBuilder(StringBuilder builder, char value)
+        {
+            builder.Append(value);
+        }
+
+        private static void AppendToStringBuilder(StringBuilder builder, string value)
+        {
+            builder.Append(value);
+        }
+
+        private static void AppendToTextWriter(TextWriter writer, char value)
+        {
+            writer.Write(value);
+        }
+
+        private static void AppendToTextWriter(TextWriter writer, string value)
+        {
+            writer.Write(value);
+        }
+
         // Marks a character as forbidden (must be returned encoded)
         protected void ForbidCharacter(char c)
         {
@@ -77,6 +104,37 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             int index = (int)(codePoint >> 5);
             int offset = (int)(codePoint & 0x1FU);
             _allowedCharsBitmap[index] &= ~(0x1U << offset);
+        }
+
+        /// <summary>
+        /// Entry point to the encoder.
+        /// </summary>
+        public void Encode([NotNull] char[] value, int startIndex, int charCount, [NotNull] TextWriter output)
+        {
+            // Input checking
+            ValidateInputs(startIndex, charCount, actualInputLength: value.Length);
+
+            if (charCount != 0)
+            {
+                fixed (char* pChars = value)
+                {
+                    int indexOfFirstCharWhichRequiresEncoding = GetIndexOfFirstCharWhichRequiresEncoding(&pChars[startIndex], charCount);
+                    if (indexOfFirstCharWhichRequiresEncoding < 0)
+                    {
+                        // All chars are valid - just copy the buffer as-is.
+                        output.Write(value, startIndex, charCount);
+                    }
+                    else
+                    {
+                        // Flush all chars which are known to be valid, then encode the remainder individually
+                        if (indexOfFirstCharWhichRequiresEncoding > 0)
+                        {
+                            output.Write(value, startIndex, indexOfFirstCharWhichRequiresEncoding);
+                        }
+                        EncodeCore(&pChars[startIndex + indexOfFirstCharWhichRequiresEncoding], (uint)(charCount - indexOfFirstCharWhichRequiresEncoding), output);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -95,10 +153,51 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             {
                 if (!IsCharacterAllowed(value[i]))
                 {
-                    return EncodeCore(value, i);
+                    return EncodeCore(value, idxOfFirstCharWhichRequiresEncoding: i);
                 }
             }
             return value;
+        }
+
+        /// <summary>
+        /// Entry point to the encoder.
+        /// </summary>
+        public void Encode([NotNull] string value, int startIndex, int charCount, [NotNull] TextWriter output)
+        {
+            // Input checking
+            ValidateInputs(startIndex, charCount, actualInputLength: value.Length);
+
+            if (charCount != 0)
+            {
+                fixed (char* pChars = value)
+                {
+                    if (charCount == value.Length)
+                    {
+                        // Optimize for the common case: we're being asked to encode the entire input string
+                        // (not just a subset). If all characters are safe, we can just spit it out as-is.
+                        int indexOfFirstCharWhichRequiresEncoding = GetIndexOfFirstCharWhichRequiresEncoding(pChars, charCount);
+                        if (indexOfFirstCharWhichRequiresEncoding < 0)
+                        {
+                            output.Write(value);
+                        }
+                        else
+                        {
+                            // Flush all chars which are known to be valid, then encode the remainder individually
+                            for (int i = 0; i < indexOfFirstCharWhichRequiresEncoding; i++)
+                            {
+                                output.Write(pChars[i]);
+                            }
+                            EncodeCore(&pChars[indexOfFirstCharWhichRequiresEncoding], (uint)(charCount - indexOfFirstCharWhichRequiresEncoding), output);
+                        }
+                    }
+                    else
+                    {
+                        // We're being asked to encode a subset, so we need to go through the slow path of appending
+                        // each character individually.
+                        EncodeCore(&pChars[startIndex], (uint)charCount, output);
+                    }
+                }
+            }
         }
 
         private string EncodeCore(string input, int idxOfFirstCharWhichRequiresEncoding)
@@ -106,11 +205,8 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             Debug.Assert(idxOfFirstCharWhichRequiresEncoding >= 0);
             Debug.Assert(idxOfFirstCharWhichRequiresEncoding < input.Length);
 
-            // The worst case encoding is 8 output chars per input char: [input] U+FFFF -> [output] "&#xFFFF;"
-            // We don't need to worry about astral code points since they consume *two* input chars to
-            // generate at most 10 output chars ("&#x10FFFF;"), which equates to 5 output per input.
             int numCharsWhichMayRequireEncoding = input.Length - idxOfFirstCharWhichRequiresEncoding;
-            int sbCapacity = checked(idxOfFirstCharWhichRequiresEncoding + EncoderCommon.GetCapacityOfOutputStringBuilder(numCharsWhichMayRequireEncoding, worstCaseOutputCharsPerInputChar: 8));
+            int sbCapacity = checked(idxOfFirstCharWhichRequiresEncoding + EncoderCommon.GetCapacityOfOutputStringBuilder(numCharsWhichMayRequireEncoding, _maxOutputCharsPerInputChar));
             Debug.Assert(sbCapacity >= input.Length);
 
             // Allocate the StringBuilder with the first (known to not require encoding) part of the input string,
@@ -118,11 +214,17 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             StringBuilder builder = new StringBuilder(input, 0, idxOfFirstCharWhichRequiresEncoding, sbCapacity);
             fixed (char* pInput = input)
             {
-                return EncodeCore2(builder, &pInput[idxOfFirstCharWhichRequiresEncoding], (uint)numCharsWhichMayRequireEncoding);
+                EncodeCore(builder, _appendStringToStringBuilderStub, _appendCharToStringBuilderStub, &pInput[idxOfFirstCharWhichRequiresEncoding], (uint)numCharsWhichMayRequireEncoding);
             }
+            return builder.ToString();
         }
 
-        private string EncodeCore2(StringBuilder builder, char* input, uint charsRemaining)
+        private void EncodeCore(char* input, uint charsRemaining, TextWriter output)
+        {
+            EncodeCore(output, _appendStringToTextWriterStub, _appendCharToTextWriterStub, input, charsRemaining);
+        }
+
+        private void EncodeCore<T>(T output, Action<T, string> writeString, Action<T, char> writeChar, char* input, uint charsRemaining) where T : class
         {
             while (charsRemaining != 0)
             {
@@ -130,7 +232,7 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
                 if (UnicodeHelpers.IsSupplementaryCodePoint(nextScalar))
                 {
                     // Supplementary characters should always be encoded numerically.
-                    WriteEncodedScalar(builder, (uint)nextScalar);
+                    WriteEncodedScalar(output, writeString, writeChar, (uint)nextScalar);
 
                     // We consume two UTF-16 characters for a single supplementary character.
                     input += 2;
@@ -144,16 +246,26 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
                     char c = (char)nextScalar;
                     if (IsCharacterAllowed(c))
                     {
-                        builder.Append(c);
+                        writeChar(output, c);
                     }
                     else
                     {
-                        WriteEncodedScalar(builder, (uint)nextScalar);
+                        WriteEncodedScalar(output, writeString, writeChar, (uint)nextScalar);
                     }
                 }
             }
+        }
 
-            return builder.ToString();
+        private int GetIndexOfFirstCharWhichRequiresEncoding(char* input, int inputLength)
+        {
+            for (int i = 0; i < inputLength; i++)
+            {
+                if (!IsCharacterAllowed(input[i]))
+                {
+                    return i;
+                }
+            }
+            return -1; // no characters require encoding
         }
 
         // Determines whether the given character can be returned unencoded.
@@ -166,6 +278,34 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             return ((_allowedCharsBitmap[index] >> offset) & 0x1U) != 0;
         }
 
-        protected abstract void WriteEncodedScalar(StringBuilder builder, uint value);
+        private static T PrepareDelegate<T>(T @del) where T : class
+        {
+#if ASPNETCORE50
+            // RuntimeHelpers.PrepareMethod doesn't exist on CoreCLR, so we'll depend
+            // on cross-gen for performance optimizations.
+            return del;
+#else
+            // We prepare the method ahead of time to ensure that it's JITted before
+            // the delegate is constructed; this allows the delegate to point straight
+            // to the processor code rather than to the prestub dispatch code.
+            Delegate castDel = (Delegate)(object)del;
+            RuntimeHelpers.PrepareMethod(castDel.Method.MethodHandle);
+            return (T)(object)castDel.Method.CreateDelegate(typeof(T));
+#endif
+        }
+
+        private static void ValidateInputs(int startIndex, int charCount, int actualInputLength)
+        {
+            if (startIndex < 0 || startIndex > actualInputLength)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            }
+            if (charCount < 0 || charCount > (actualInputLength - startIndex))
+            {
+                throw new ArgumentOutOfRangeException(nameof(charCount));
+            }
+        }
+
+        protected abstract void WriteEncodedScalar<T>(T output, Action<T, string> writeString, Action<T, char> writeChar, uint value) where T : class;
     }
 }

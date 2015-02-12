@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 
 namespace Microsoft.AspNet.WebUtilities.Encoders
 {
@@ -10,6 +11,16 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
     /// </summary>
     public interface IUrlEncoder
     {
+        /// <summary>
+        /// URL-escapes a character array and writes the result to the supplied
+        /// output.
+        /// </summary>
+        /// <remarks>
+        /// The encoded value is safe for use in the segment, query, or
+        /// fragment portion of a URI.
+        /// </remarks>
+        void UrlEncode([NotNull] char[] value, int startIndex, int charCount, [NotNull] TextWriter output);
+
         /// <summary>
         /// URL-escapes a given input string.
         /// </summary>
@@ -21,5 +32,14 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// fragment portion of a URI.
         /// </remarks>
         string UrlEncode(string value);
+
+        /// <summary>
+        /// URL-escapes a string and writes the result to the supplied output.
+        /// </summary>
+        /// <remarks>
+        /// The encoded value is safe for use in the segment, query, or
+        /// fragment portion of a URI.
+        /// </remarks>
+        void UrlEncode([NotNull] string value, int startIndex, int charCount, [NotNull] TextWriter output);
     }
 }

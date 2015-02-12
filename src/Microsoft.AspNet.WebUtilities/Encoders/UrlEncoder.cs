@@ -3,7 +3,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Text;
+using System.IO;
 using System.Threading;
 
 namespace Microsoft.AspNet.WebUtilities.Encoders
@@ -66,9 +66,25 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// <summary>
         /// Everybody's favorite UrlEncode routine.
         /// </summary>
+        public void UrlEncode(char[] value, int startIndex, int charCount, TextWriter output)
+        {
+            _innerUnicodeEncoder.Encode(value, startIndex, charCount, output);
+        }
+
+        /// <summary>
+        /// Everybody's favorite UrlEncode routine.
+        /// </summary>
         public string UrlEncode(string value)
         {
             return _innerUnicodeEncoder.Encode(value);
+        }
+
+        /// <summary>
+        /// Everybody's favorite UrlEncode routine.
+        /// </summary>
+        public void UrlEncode(string value, int startIndex, int charCount, TextWriter output)
+        {
+            _innerUnicodeEncoder.Encode(value, startIndex, charCount, output);
         }
 
         private sealed class UrlUnicodeEncoder : UnicodeEncoderBase
@@ -144,16 +160,16 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             }
 
             // Writes a scalar value as a percent-encoded sequence of UTF8 bytes, per RFC 3987.
-            protected override void WriteEncodedScalar(StringBuilder builder, uint value)
+            protected override void WriteEncodedScalar<T>(T output, Action<T, string> writeString, Action<T, char> writeChar, uint value)
             {
                 uint asUtf8 = (uint)UnicodeHelpers.GetUtf8RepresentationForScalarValue(value);
                 do
                 {
                     char highNibble, lowNibble;
                     HexUtil.WriteHexEncodedByte((byte)asUtf8, out highNibble, out lowNibble);
-                    builder.Append('%');
-                    builder.Append(highNibble);
-                    builder.Append(lowNibble);
+                    writeChar(output, '%');
+                    writeChar(output, highNibble);
+                    writeChar(output, lowNibble);
                 } while ((asUtf8 >>= 8) != 0);
             }
         }
