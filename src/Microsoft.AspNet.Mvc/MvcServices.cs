@@ -160,8 +160,10 @@ namespace Microsoft.AspNet.Mvc
             // IActionBindingContextProvider. Therefore it too is scoped.
             yield return describe.Transient<IHtmlGenerator, DefaultHtmlGenerator>();
 
-            yield return describe.Transient<IViewComponentSelector, DefaultViewComponentSelector>();
+            // These do caching so they should stay singleton
+            yield return describe.Singleton<IViewComponentSelector, DefaultViewComponentSelector>();
             yield return describe.Singleton<IViewComponentActivator, DefaultViewComponentActivator>();
+
             yield return describe.Transient<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
             yield return describe.Transient<INestedProviderManager<ViewComponentInvokerProviderContext>,
                 NestedProviderManager<ViewComponentInvokerProviderContext>>();

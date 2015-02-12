@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly IAssemblyProvider _assemblyProvider;
 
+        private ViewComponentCandidateCache _cache;
+
         public DefaultViewComponentSelector(IAssemblyProvider assemblyProvider)
         {
             _assemblyProvider = assemblyProvider;
@@ -21,49 +23,30 @@ namespace Microsoft.AspNet.Mvc
 
         public Type SelectComponent([NotNull] string componentName)
         {
-            var assemblies = _assemblyProvider.CandidateAssemblies;
-            var types = assemblies.SelectMany(a => a.DefinedTypes);
+            if (_cache == null)
+            {
+                var assemblies = _assemblyProvider.CandidateAssemblies;
+                var types = assemblies.SelectMany(a => a.DefinedTypes);
 
-            var candidates =
-                types
-                .Where(t => IsViewComponentType(t))
-                .Select(CreateCandidate);
+                var candidates =
+                    types
+                    .Where(IsViewComponentType)
+                    .Select(CreateCandidate)
+                    .ToArray();
+
+                _cache = new ViewComponentCandidateCache(candidates);
+            }
 
             // ViewComponent names can either be fully-qualified, or refer to the 'short-name'. If the provided
             // name contains a '.' - then it's a fully-qualified name.
             var matching = new List<ViewComponentCandidate>();
             if (componentName.Contains("."))
             {
-                matching.AddRange(candidates.Where(
-                    c => string.Equals(c.FullName, componentName, StringComparison.OrdinalIgnoreCase)));
+                return _cache.SelectByFullName(componentName);
             }
             else
             {
-                matching.AddRange(candidates.Where(
-                    c => string.Equals(c.ShortName, componentName, StringComparison.OrdinalIgnoreCase)));
-            }
-
-            if (matching.Count == 0)
-            {
-                return null;
-            }
-            else if (matching.Count == 1)
-            {
-                return matching[0].Type;
-            }
-            else
-            {
-                var matchedTypes = new List<string>();
-                foreach (var candidate in matching)
-                {
-                    matchedTypes.Add(Resources.FormatViewComponent_AmbiguousTypeMatch_Item(
-                        candidate.Type.FullName,
-                        candidate.FullName));
-                }
-
-                var typeNames = string.Join(Environment.NewLine, matchedTypes);
-                throw new InvalidOperationException(
-                    Resources.FormatViewComponent_AmbiguousTypeMatch(componentName, Environment.NewLine, typeNames));
+                return _cache.SelectByShortName(componentName);
             }
         }
 
@@ -102,6 +85,57 @@ namespace Microsoft.AspNet.Mvc
             public string ShortName { get; set; }
 
             public Type Type { get; set; }
+        }
+
+        private class ViewComponentCandidateCache
+        {
+            private readonly ILookup<string, ViewComponentCandidate> _lookupByShortName;
+            private readonly ILookup<string, ViewComponentCandidate> _lookupByFullName;
+
+            public ViewComponentCandidateCache(ViewComponentCandidate[] candidates)
+            {
+                _lookupByShortName = candidates.ToLookup(c => c.ShortName, c => c);
+                _lookupByFullName = candidates.ToLookup(c => c.FullName, c => c);
+            }
+
+            public Type SelectByShortName(string name)
+            {
+                return Select(_lookupByShortName, name);
+            }
+
+            public Type SelectByFullName(string name)
+            {
+                return Select(_lookupByFullName, name);
+            }
+
+            private static Type Select(ILookup<string, ViewComponentCandidate> candidates, string name)
+            {
+                var matches = candidates[name];
+
+                var count = matches.Count();
+                if (count == 0)
+                {
+                    return null;
+                }
+                else if (count == 1)
+                {
+                    return matches.Single().Type;
+                }
+                else
+                {
+                    var matchedTypes = new List<string>();
+                    foreach (var candidate in matches)
+                    {
+                        matchedTypes.Add(Resources.FormatViewComponent_AmbiguousTypeMatch_Item(
+                            candidate.Type.FullName,
+                            candidate.FullName));
+                    }
+
+                    var typeNames = string.Join(Environment.NewLine, matchedTypes);
+                    throw new InvalidOperationException(
+                        Resources.FormatViewComponent_AmbiguousTypeMatch(name, Environment.NewLine, typeNames));
+                }
+            }
         }
     }
 }
