@@ -4,11 +4,9 @@
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Http.Interfaces
 {
-    [AssemblyNeutral]
     public interface IHttpClientCertificateFeature
     {
         /// <summary>

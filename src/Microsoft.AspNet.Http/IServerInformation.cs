@@ -3,7 +3,6 @@
 
 namespace Microsoft.AspNet.Builder
 {
-    // TODO: [AssemblyNeutral]
     public interface IServerInformation
     {
         string Name { get; }

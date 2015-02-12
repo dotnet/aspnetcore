@@ -3,11 +3,9 @@
 
 using System.Collections.Generic;
 using System.Security.Claims;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Http.Interfaces.Security
 {
-    [AssemblyNeutral]
     public interface ISignInContext
     {
         IEnumerable<ClaimsIdentity> Identities { get; }

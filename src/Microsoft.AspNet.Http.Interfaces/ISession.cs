@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Http.Interfaces
 {
-    [AssemblyNeutral]
     public interface ISession
     {
         void Load();

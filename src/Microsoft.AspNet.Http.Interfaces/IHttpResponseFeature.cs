@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Http.Interfaces
 {
-    [AssemblyNeutral]
     public interface IHttpResponseFeature
     {
         int StatusCode { get; set; }

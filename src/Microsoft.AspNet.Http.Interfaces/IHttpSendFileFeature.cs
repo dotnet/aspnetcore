@@ -3,11 +3,9 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Http.Interfaces
 {
-    [AssemblyNeutral]
     public interface IHttpSendFileFeature
     {
         Task SendFileAsync(string path, long offset, long? length, CancellationToken cancellation);

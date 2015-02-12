@@ -3,11 +3,9 @@
 
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Http.Interfaces
 {
-    [AssemblyNeutral]
     public interface IHttpWebSocketFeature
     {
         bool IsWebSocketRequest { get; }
