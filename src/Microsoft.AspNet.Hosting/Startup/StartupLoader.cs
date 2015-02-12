@@ -29,18 +29,18 @@ namespace Microsoft.AspNet.Hosting.Startup
         {
             var methodNameWithEnv = string.Format(CultureInfo.InvariantCulture, methodName, environmentName);
             var methodNameWithNoEnv = string.Format(CultureInfo.InvariantCulture, methodName, "");
-            var methodInfo = startupType.GetTypeInfo().GetDeclaredMethod(methodNameWithEnv)
-                ?? startupType.GetTypeInfo().GetDeclaredMethod(methodNameWithNoEnv);
-            if (methodInfo == null)
+			var methodInfo = startupType.GetMethod(methodNameWithEnv, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
+				?? startupType.GetMethod(methodNameWithNoEnv, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+			if (methodInfo == null)
             {
                 if (required)
-                {
-                    throw new Exception(string.Format("TODO: {0} or {1} method not found",
-                        methodNameWithEnv,
-                        methodNameWithNoEnv));
+				{
+					throw new Exception(string.Format("TODO: {0} or {1} method not found",
+						methodNameWithEnv,
+						methodNameWithNoEnv));
 
-                }
-                return null;
+				}
+				return null;
             }
             if (returnType != null && methodInfo.ReturnType != returnType)
             {
@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Hosting.Startup
                     }
                     else
                     {
-                        // void ConfigureServices(IServiceCollection)
+						// void ConfigureServices(IServiceCollection)
                         Invoke(servicesMethod, instance, builder, services);
                         if (builder != null)
                         {
