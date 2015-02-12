@@ -429,7 +429,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        private void EditFormatString_DoesNotAffectDisplayFormat()
+        public void EditFormatString_DoesNotAffectDisplayFormat()
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
@@ -448,7 +448,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        private void DisplayFormatString_DoesNotAffectEditFormat()
+        public void DisplayFormatString_DoesNotAffectEditFormat()
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();

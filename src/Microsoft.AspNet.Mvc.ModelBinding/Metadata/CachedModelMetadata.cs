@@ -434,7 +434,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // Sealing for consistency with other properties.
         // ModelMetadata already caches the collection and we have no use case for a ComputeProperties() method.
         /// <inheritdoc />
-        public override ModelPropertyCollection Properties
+        public sealed override ModelPropertyCollection Properties
         {
             get
             {
