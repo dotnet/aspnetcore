@@ -275,6 +275,16 @@
                 <term>420</term>
                 <Justification>HTTP response code</Justification>
             </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.WebUtilities\Encoders\UnicodeEncoderBase.cs">
+                <term>a hole</term>
+                <Justification>valid context</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.WebUtilities\Encoders\CodePointFilters.cs;
+                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.dll;
+                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.xml">
+                <term>Bengali</term>
+                <Justification>Font reference</Justification>
+            </SrcExclusions>            
             <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
                 <term>butt</term>
                 <Justification>not our code, jquery scripts embedded in .cs file</Justification>
@@ -295,6 +305,12 @@
                 <term>hung</term>
                 <Justification>refers to a stuck process/thread</Justification>
             </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.WebUtilities\Encoders\CodePointFilters.cs;
+                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.dll;
+                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.xml">
+                <term>Oriya</term>
+                <Justification>Font reference</Justification>
+            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.StaticFiles\FileExtensionContentTypeProvider.cs">
                 <term>pot</term>
                 <Justification>file extension - powerpoint</Justification>
@@ -303,7 +319,7 @@
                 <term>races</term>
                 <Justification>refers to race condition</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Program.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Building\BuildContext.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Colors.cs;
@@ -317,13 +333,22 @@
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\WrapCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\InstallCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Bundle\BundleManager.cs;
-                                    $(PoliCheckPath)**\**\Microsoft.Framework.PackageManager.dll">
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\InstallBuilder.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\InstallGlobalCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\UninstallCommand.cs;
+                                    $(PoliCheckPath)**\Microsoft.Framework.PackageManager.dll">
                 <term>Red</term>
                 <Justification>Color constant name</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.Runtime\DependencyManagement\ProjectReferenceDependencyProvider.cs">
                 <term>sucks</term>
                 <Justification>expression of sadness</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.WebUtilities\Encoders\CodePointFilters.cs;
+                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.dll;
+                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.xml">
+                <term>Tibetan</term>
+                <Justification>Font reference</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
                 <term>UK</term>
