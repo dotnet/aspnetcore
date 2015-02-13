@@ -139,15 +139,15 @@ var buildTarget = "compile"
 
 #check-update-release
     @{
-	Parallel.ForEach(GetAllRepos(), repo=>{CloneOrUpdate(repo);});
+        Parallel.ForEach(GetAllRepos(), CloneOrUpdate);
 
         Log.Info("************************************* Checking repos for diffs *************************");
 
-	Parallel.ForEach(GetAllRepos(), repo=>{
-		Log.Info("Checking repo: " + repo);
-
-            	GitCommand(repo, "log origin/dev..origin/release");
-	});
+        foreach (var repo in GetAllRepos())
+        {
+            Log.Info("Checking repo: " + repo);
+            GitCommand(repo, "log origin/dev..origin/release");
+        }
 
         Log.Info("If there are no conflicts in the repos, continue with the 'update-release' target");
     }
@@ -172,8 +172,7 @@ var buildTarget = "compile"
     }
 
 #pull-all
-    for each='var repo in GetAllRepos()'
-        -CloneOrUpdate(repo);
+    -Parallel.ForEach(GetAllRepos(), CloneOrUpdate);
 
 #update-master
     -// Merge release branch to master
