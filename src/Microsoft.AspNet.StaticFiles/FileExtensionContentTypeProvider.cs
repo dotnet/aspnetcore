@@ -348,6 +348,7 @@ namespace Microsoft.AspNet.StaticFiles
                 { ".wmx", "video/x-ms-wmx" },
                 { ".wmz", "application/x-ms-wmz" },
                 { ".woff", "application/font-woff" },
+                { ".woff2", "application/font-woff2" },
                 { ".wps", "application/vnd.ms-works" },
                 { ".wri", "application/x-mswrite" },
                 { ".wrl", "x-world/x-vrml" },
