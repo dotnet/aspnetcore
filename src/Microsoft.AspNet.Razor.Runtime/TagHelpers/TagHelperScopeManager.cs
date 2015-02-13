@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -35,19 +36,36 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="startWritingScope">A delegate used to start a writing scope in a Razor page.</param>
         /// <param name="endWritingScope">A delegate used to end a writing scope in a Razor page.</param>
         /// <returns>A <see cref="TagHelperExecutionContext"/> to use.</returns>
-        public TagHelperExecutionContext Begin([NotNull] string tagName,
-                                               bool selfClosing,
-                                               [NotNull] string uniqueId,
-                                               [NotNull] Func<Task> executeChildContentAsync,
-                                               [NotNull] Action startWritingScope,
-                                               [NotNull] Func<TextWriter> endWritingScope)
+        public TagHelperExecutionContext Begin(
+            [NotNull] string tagName,
+            bool selfClosing,
+            [NotNull] string uniqueId,
+            [NotNull] Func<Task> executeChildContentAsync,
+            [NotNull] Action startWritingScope,
+            [NotNull] Func<TextWriter> endWritingScope)
         {
-            var executionContext = new TagHelperExecutionContext(tagName,
-                                                                 selfClosing,
-                                                                 uniqueId,
-                                                                 executeChildContentAsync,
-                                                                 startWritingScope,
-                                                                 endWritingScope);
+            IDictionary<object, object> items;
+
+            // If we're not wrapped by another TagHelper, then there will not be a parentExecutionContext.
+            if (_executionScopes.Count > 0)
+            {
+                items = new CopyOnWriteDictionary<object, object>(
+                    _executionScopes.Peek().Items,
+                    comparer: EqualityComparer<object>.Default);
+            }
+            else
+            {
+                items = new Dictionary<object, object>();
+            }
+
+            var executionContext = new TagHelperExecutionContext(
+                tagName,
+                selfClosing,
+                items,
+                uniqueId,
+                executeChildContentAsync,
+                startWritingScope,
+                endWritingScope);
 
             _executionScopes.Push(executionContext);
 

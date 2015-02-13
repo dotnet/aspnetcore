@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -25,6 +27,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         internal TagHelperExecutionContext(string tagName, bool selfClosing)
             : this(tagName,
                    selfClosing,
+                   items: new Dictionary<object, object>(),
                    uniqueId: string.Empty,
                    executeChildContentAsync: async () => await Task.FromResult(result: true),
                    startWritingScope: () => { },
@@ -37,18 +40,21 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="tagName">The HTML tag name in the Razor source.</param>
         /// <param name="selfClosing">
-        /// <see cref="bool"/> indicating whether or not the tag in the Razor source was self-closing.
-        /// </param>
+        /// <see cref="bool"/> indicating whether or not the tag in the Razor source was self-closing.</param>
+        /// <param name="items">The collection of items used to communicate with other 
+        /// <see cref="ITagHelper"/>s</param>
         /// <param name="uniqueId">An identifier unique to the HTML element this context is for.</param>
         /// <param name="executeChildContentAsync">A delegate used to execute the child content asynchronously.</param>
         /// <param name="startWritingScope">A delegate used to start a writing scope in a Razor page.</param>
         /// <param name="endWritingScope">A delegate used to end a writing scope in a Razor page.</param>
-        public TagHelperExecutionContext([NotNull] string tagName,
-                                         bool selfClosing,
-                                         [NotNull] string uniqueId,
-                                         [NotNull] Func<Task> executeChildContentAsync,
-                                         [NotNull] Action startWritingScope,
-                                         [NotNull] Func<TextWriter> endWritingScope)
+        public TagHelperExecutionContext(
+            [NotNull] string tagName,
+            bool selfClosing,
+            [NotNull] IDictionary<object, object> items,
+            [NotNull] string uniqueId,
+            [NotNull] Func<Task> executeChildContentAsync,
+            [NotNull] Action startWritingScope,
+            [NotNull] Func<TextWriter> endWritingScope)
         {
             _tagHelpers = new List<ITagHelper>();
             _executeChildContentAsync = executeChildContentAsync;
@@ -59,6 +65,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             AllAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             HTMLAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             TagName = tagName;
+            Items = items;
             UniqueId = uniqueId;
         }
 
@@ -77,6 +84,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 return _childContent != null;
             }
         }
+
+        /// <summary>
+        /// Gets the collection of items used to communicate with other <see cref="ITagHelper"/>s.
+        /// </summary>
+        public IDictionary<object, object> Items { get; }
 
         /// <summary>
         /// HTML attributes.

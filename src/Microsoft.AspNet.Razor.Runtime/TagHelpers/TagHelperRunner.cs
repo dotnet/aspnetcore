@@ -3,6 +3,7 @@
 
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -22,6 +23,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             var tagHelperContext = new TagHelperContext(
                 executionContext.AllAttributes,
+                executionContext.Items,
                 executionContext.UniqueId,
                 executionContext.GetChildContentAsync);
             var tagHelperOutput = new TagHelperOutput(executionContext.TagName, executionContext.HTMLAttributes)
