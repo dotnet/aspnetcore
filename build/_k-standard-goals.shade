@@ -111,7 +111,7 @@ default Configuration='${E("Configuration")}'
   k-test each='var projectFile in Files.Include("test/**/project.json")'
 
 #build-samples target='test' if='Directory.Exists("samples")'
-  kpm-pack each='var projectFile in Files.Include("samples/**/project.json")' configuration='${Configuration}'
+  kpm-build each='var projectFile in Files.Include("samples/**/project.json")' configuration='${Configuration}'
 
 #make-roslyn-fast
   ngen-roslyn
@@ -127,6 +127,7 @@ default Configuration='${E("Configuration")}'
 #--quiet
   @{
     E("KPM_pack_options"," --quiet");
+    E("KPM_build_options"," --quiet");
     E("KPM_restore_options"," --quiet");
     E("bower_install_options","--quiet");
     E("npm_install_options","--quiet");
