@@ -8,7 +8,7 @@
         "aspnet50": { },
         "aspnetcore50": {
             "dependencies": {
-                "System.IO": "4.0.0-beta-*"
+                "System.IO": "4.0.10-beta-*"
             }
         }
     }
