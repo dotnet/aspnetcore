@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Hosting.Fakes
             });
         }
 
-		public void ConfigureRetailServices(IServiceCollection services)
+        public void ConfigureRetailServices(IServiceCollection services)
         {
             services.AddOptions();
             services.Configure<FakeOptions>(o =>
@@ -94,8 +94,8 @@ namespace Microsoft.AspNet.Hosting.Fakes
             return services.BuildServiceProvider();
         }
 
-		public virtual void Configure(IApplicationBuilder builder)
-		{
-		}
-	}
+        public virtual void Configure(IApplicationBuilder builder)
+        {
+        }
+    }
 }

@@ -15,15 +15,15 @@ namespace Microsoft.AspNet.Hosting.Fakes
         {
         }
 
-		public void ConfigureBaseClassServices(IServiceCollection services)
-		{
-			services.AddOptions();
-			services.Configure<FakeOptions>(o =>
-			{
-				o.Configured = true;
-				o.Environment = "BaseClass";
-			});
-		}
+        public void ConfigureBaseClassServices(IServiceCollection services)
+        {
+            services.AddOptions();
+            services.Configure<FakeOptions>(o =>
+            {
+                o.Configured = true;
+                o.Environment = "BaseClass";
+            });
+        }
 
-	}
+    }
 }

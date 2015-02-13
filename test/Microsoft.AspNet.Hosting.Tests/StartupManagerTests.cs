@@ -42,8 +42,8 @@ namespace Microsoft.AspNet.Hosting.Tests
         [InlineData("StaticProvider")]
         [InlineData("Provider")]
         [InlineData("ProviderArgs")]
-		[InlineData("BaseClass")]
-		public void StartupClassAddsConfigureServicesToApplicationServices(string environment)
+        [InlineData("BaseClass")]
+        public void StartupClassAddsConfigureServicesToApplicationServices(string environment)
         {
             var services = HostingServices.Create().BuildServiceProvider();
             var manager = services.GetRequiredService<IStartupManager>();
