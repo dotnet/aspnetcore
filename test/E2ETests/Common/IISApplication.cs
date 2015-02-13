@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if ASPNET50
+using System;
 using System.IO;
 using System.Linq;
 using Microsoft.Framework.Logging;
@@ -77,3 +78,4 @@ namespace E2ETests
         }
     }
 }
+#endif

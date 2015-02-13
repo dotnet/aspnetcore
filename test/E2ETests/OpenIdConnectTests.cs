@@ -56,12 +56,13 @@ namespace E2ETests
                 try
                 {
                     hostProcess = DeploymentUtility.StartApplication(_startParameters, _logger);
+#if ASPNET50
                     if (serverType == ServerType.IISNativeModule || serverType == ServerType.IIS)
                     {
                         // Accomodate the vdir name.
                         _applicationBaseUrl += _startParameters.IISApplication.VirtualDirectoryName + "/";
                     }
-
+#endif
                     _httpClientHandler = new HttpClientHandler();
                     _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
 

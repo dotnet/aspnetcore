@@ -64,10 +64,14 @@ namespace E2ETests
 
         private string PrefixBaseAddress(string url)
         {
+#if ASPNET50
             url = (_startParameters.ServerType == ServerType.IISNativeModule ||
                 _startParameters.ServerType == ServerType.IIS) ?
                 string.Format(url, _startParameters.IISApplication.VirtualDirectoryName) :
                 string.Format(url, string.Empty);
+#else
+            url = string.Format(url, string.Empty);
+#endif
 
             return url.Replace("//", "/").Replace("%2F%2F", "%2F").Replace("%2F/", "%2F");
         }
@@ -291,6 +295,7 @@ namespace E2ETests
         private string CreateAlbum()
         {
             var albumName = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 12);
+#if ASPNET50
             string dataFromHub = null;
             var OnReceivedEvent = new AutoResetEvent(false);
             var hubConnection = new HubConnection(_applicationBaseUrl + "SignalR");
@@ -303,7 +308,7 @@ namespace E2ETests
 
             IHubProxy proxy = hubConnection.CreateHubProxy("Announcement");
             hubConnection.Start().Wait();
-
+#endif
             _logger.WriteInformation("Trying to create an album with name '{album}'", albumName);
             var response = _httpClient.GetAsync("Admin/StoreManager/create").Result;
             ThrowIfResponseStatusNotOk(response);
@@ -322,12 +327,13 @@ namespace E2ETests
             response = _httpClient.PostAsync("Admin/StoreManager/create", content).Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Equal<string>(_applicationBaseUrl + "Admin/StoreManager", response.RequestMessage.RequestUri.AbsoluteUri);
-
             Assert.Contains(albumName, responseContent);
+#if ASPNET50
             _logger.WriteInformation("Waiting for the SignalR client to receive album created announcement");
             OnReceivedEvent.WaitOne(TimeSpan.FromSeconds(10));
             dataFromHub = dataFromHub ?? "No relevant data received from Hub";
             Assert.Contains(albumName, dataFromHub);
+#endif
             _logger.WriteInformation("Successfully created an album with name '{album}' in the store", albumName);
             return albumName;
         }

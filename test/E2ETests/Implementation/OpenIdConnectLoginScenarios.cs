@@ -96,7 +96,7 @@ namespace E2ETests
             content = new FormUrlEncodedContent(formParameters.ToArray());
             // Need a non-redirecting handler
             var handler = new HttpClientHandler() { AllowAutoRedirect = false };
-            handler.CookieContainer.Add(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)));
+            handler.CookieContainer.Add(new Uri(_applicationBaseUrl), _httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)));
             _httpClient = new HttpClient(handler) { BaseAddress = new Uri(_applicationBaseUrl) };
 
             response = _httpClient.PostAsync("Account/LogOff", content).Result;

@@ -61,6 +61,7 @@ namespace E2ETests
         [SkipIfNativeModuleNotInstalled]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
+        [SkipIfCurrentRuntimeIsCoreClr]
         [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5005/")]
         public void SmokeTestSuite_On_NativeModule_X86(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
@@ -72,6 +73,7 @@ namespace E2ETests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
         [SkipOn32BitOS]
+        [SkipIfCurrentRuntimeIsCoreClr]
         [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5005/")]
         public void SmokeTestSuite_On_NativeModule_AMD64(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
@@ -81,6 +83,7 @@ namespace E2ETests
         // [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Unix)]
+        [SkipIfCurrentRuntimeIsCoreClr]
         [InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5005/")]
         public void SmokeTestSuite_On_IIS_X86(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
@@ -117,12 +120,13 @@ namespace E2ETests
                 try
                 {
                     hostProcess = DeploymentUtility.StartApplication(_startParameters, _logger);
+#if ASPNET50
                     if (serverType == ServerType.IISNativeModule || serverType == ServerType.IIS)
                     {
                         // Accomodate the vdir name.
                         _applicationBaseUrl += _startParameters.IISApplication.VirtualDirectoryName + "/";
                     }
-
+#endif
                     _httpClientHandler = new HttpClientHandler();
                     _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
 

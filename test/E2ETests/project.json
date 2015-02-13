@@ -1,5 +1,7 @@
 {
-    "compilationOptions": { "warningsAsErrors": "true" },
+    "compilationOptions": {
+        "warningsAsErrors": "true"
+    },
     "commands": {
         "test": "xunit.runner.kre"
     },
@@ -20,6 +22,14 @@
                 "System.Net.Http": "",
                 "System.Xml": ""
             }
-        }
+        } /*,
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Data.SqlClient": "4.0.0-beta-*",
+                "System.Net.Http": "4.0.0-beta-*",
+                "System.Xml.XmlDocument": "4.0.0-beta-*",
+                "Microsoft.Win32.Primitives": "4.0.0-beta-*"
+            }
+        }*/
     }
 }

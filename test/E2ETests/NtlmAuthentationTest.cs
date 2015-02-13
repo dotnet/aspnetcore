@@ -69,7 +69,9 @@ namespace E2ETests
                     VerifyHomePage(response, responseContent, true);
 
                     //Check if the user name appears in the page
-                    Assert.Contains(string.Format("{0}\\{1}", Environment.UserDomainName, Environment.UserName), responseContent, StringComparison.OrdinalIgnoreCase);
+                    Assert.Contains(
+                        string.Format("{0}\\{1}", Environment.GetEnvironmentVariable("USERDOMAIN"), Environment.GetEnvironmentVariable("USERNAME")),
+                        responseContent, StringComparison.OrdinalIgnoreCase);
 
                     //Should be able to access the store as the Startup adds necessary permissions for the current user
                     AccessStoreWithPermissions();

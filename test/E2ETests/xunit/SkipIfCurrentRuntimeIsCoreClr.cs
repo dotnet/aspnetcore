@@ -1,18 +1,17 @@
 ﻿using System;
-using System.IO;
+using System.Diagnostics;
 using Microsoft.AspNet.Testing.xunit;
 
 namespace E2ETests
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class SkipOn32BitOSAttribute : Attribute, ITestCondition
+    public class SkipIfCurrentRuntimeIsCoreClrAttribute : Attribute, ITestCondition
     {
         public bool IsMet
         {
             get
             {
-                // Directory found only on 64-bit OS.
-                return Directory.Exists(Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), "SysWOW64"));
+                return !Process.GetCurrentProcess().ProcessName.ToLower().Contains("coreclr");
             }
         }
 
@@ -20,7 +19,7 @@ namespace E2ETests
         {
             get
             {
-                return "Skipping the AMD64 test since the OS is 32-bit";
+                return "Cannot run these test variations using CoreCLR KRE as helpers are not available on CoreCLR.";
             }
         }
     }

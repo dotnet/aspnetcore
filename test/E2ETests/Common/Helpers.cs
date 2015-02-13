@@ -28,7 +28,11 @@ namespace E2ETests
                 }
                 catch (AggregateException exception)
                 {
-                    if (exception.InnerException is HttpRequestException || exception.InnerException is WebException)
+                    if (exception.InnerException is HttpRequestException
+#if ASPNET50
+                        || exception.InnerException is WebException
+#endif
+                        )
                     {
                         logger.WriteWarning("Failed to complete the request.", exception);
                         Thread.Sleep(7 * 1000); //Wait for a while before retry.
