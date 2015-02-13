@@ -8,6 +8,7 @@ using Microsoft.AspNet.Diagnostics.Entity.Views;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Internal;
 using Microsoft.Data.Entity.Relational;
 using Microsoft.Data.Entity.Relational.Migrations;

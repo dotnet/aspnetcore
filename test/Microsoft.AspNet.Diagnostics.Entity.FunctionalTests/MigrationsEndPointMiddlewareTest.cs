@@ -11,6 +11,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Internal;
 using Microsoft.Data.Entity.Relational.Migrations.History;
 using Microsoft.Framework.DependencyInjection;
