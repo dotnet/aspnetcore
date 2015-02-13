@@ -42,7 +42,7 @@
             }
             @Html.DropDownListFor(m => m.Employee.OfficeNumber, offices)
         </div>
-        @Html.HiddenFor(m => m.Employee.Number)
+        @Html.EditorFor(m => m.Employee.Number)
         @Html.ValidationSummary()
         <input type="submit" />
     </form>

@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNet.Mvc;
 
 namespace MvcTagHelpersWebSite.Models
 {
     public class Person
     {
+        [HiddenInput(DisplayValue = false)]
         [Range(1, 100)]
         public int Number
         {
@@ -28,6 +30,7 @@ namespace MvcTagHelpersWebSite.Models
         }
 
         [EnumDataType(typeof(Gender))]
+        [UIHint("GenderUsingTagHelpers")]
         public Gender Gender
         {
             get;

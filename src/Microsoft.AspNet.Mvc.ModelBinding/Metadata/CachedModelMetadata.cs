@@ -25,13 +25,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _hasNonDefaultEditFormat;
         private bool _hideSurroundingHtml;
         private bool _htmlEncode;
-        private bool _isReadOnly;
+        private bool _isCollectionType;
         private bool _isComplexType;
+        private bool _isReadOnly;
         private bool _isRequired;
         private string _nullDisplayText;
         private int _order;
         private bool _showForDisplay;
         private bool _showForEdit;
+        private string _templateHint;
         private IBinderMetadata _binderMetadata;
         private string _binderModelName;
         private IPropertyBindingPredicateProvider _propertyBindingPredicateProvider;
@@ -46,13 +48,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _hasNonDefaultEditFormatComputed;
         private bool _hideSurroundingHtmlComputed;
         private bool _htmlEncodeComputed;
-        private bool _isReadOnlyComputed;
+        private bool _isCollectionTypeComputed;
         private bool _isComplexTypeComputed;
+        private bool _isReadOnlyComputed;
         private bool _isRequiredComputed;
         private bool _nullDisplayTextComputed;
         private bool _orderComputed;
         private bool _showForDisplayComputed;
         private bool _showForEditComputed;
+        private bool _templateHintComputed;
         private bool _isBinderMetadataComputed;
         private bool _isBinderModelNameComputed;
         private bool _isBinderTypeComputed;
@@ -321,6 +325,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
+        public sealed override bool IsCollectionType
+        {
+            get
+            {
+                if (!_isCollectionTypeComputed)
+                {
+                    _isCollectionType = ComputeIsCollectionType();
+                    _isCollectionTypeComputed = true;
+                }
+
+                return _isCollectionType;
+            }
+        }
+
+        /// <inheritdoc />
+        public sealed override bool IsComplexType
+        {
+            get
+            {
+                if (!_isComplexTypeComputed)
+                {
+                    _isComplexType = ComputeIsComplexType();
+                    _isComplexTypeComputed = true;
+                }
+                return _isComplexType;
+            }
+        }
+
+        /// <inheritdoc />
         public sealed override bool IsReadOnly
         {
             get
@@ -355,20 +388,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 _isRequired = value;
                 _isRequiredComputed = true;
-            }
-        }
-
-        /// <inheritdoc />
-        public sealed override bool IsComplexType
-        {
-            get
-            {
-                if (!_isComplexTypeComputed)
-                {
-                    _isComplexType = ComputeIsComplexType();
-                    _isComplexTypeComputed = true;
-                }
-                return _isComplexType;
             }
         }
 
@@ -496,6 +515,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
+        public sealed override string TemplateHint
+        {
+            get
+            {
+                if (!_templateHintComputed)
+                {
+                    _templateHint = ComputeTemplateHint();
+                    _templateHintComputed = true;
+                }
+
+                return _templateHint;
+            }
+
+            set
+            {
+                _templateHint = value;
+                _templateHintComputed = true;
+            }
+        }
+
+        /// <inheritdoc />
         public sealed override Type BinderType
         {
             get
@@ -605,6 +645,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return base.HtmlEncode;
         }
 
+        /// <summary>
+        /// Calculate the <see cref="IsCollectionType"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="IsCollectionType"/> value.</returns>
+        protected virtual bool ComputeIsCollectionType()
+        {
+            return base.IsCollectionType;
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="IsComplexType"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="IsComplexType"/> value.</returns>
+        protected virtual bool ComputeIsComplexType()
+        {
+            return base.IsComplexType;
+        }
+
         protected virtual bool ComputeIsReadOnly()
         {
             return base.IsReadOnly;
@@ -613,11 +671,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual bool ComputeIsRequired()
         {
             return base.IsRequired;
-        }
-
-        protected virtual bool ComputeIsComplexType()
-        {
-            return base.IsComplexType;
         }
 
         /// <summary>
@@ -646,6 +699,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual bool ComputeShowForEdit()
         {
             return base.ShowForEdit;
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="TemplateHint"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="TemplateHint"/> value.</returns>
+        protected virtual string ComputeTemplateHint()
+        {
+            return base.TemplateHint;
         }
     }
 }

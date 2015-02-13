@@ -142,11 +142,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </remarks>
         public virtual bool HideSurroundingHtml { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="ModelType"/> is a collection <see cref="Type"/>.
+        /// </summary>
+        /// <remarks>
+        /// <c>true</c> if the <see cref="ModelType"/> is not <see cref="string"/> and is assignable to
+        /// <see cref="System.Collections.IEnumerable"/>; <c>false</c> otherwise.
+        /// </remarks>
         public virtual bool IsCollectionType
         {
             get { return TypeHelper.IsCollectionType(ModelType); }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="ModelType"/> is a complex type.
+        /// </summary>
+        /// <remarks>
+        /// <c>false</c> if the <see cref="ModelType"/> has a direct conversion to <see cref="string"/>; <c>true</c>
+        /// otherwise.
+        /// </remarks>
         public virtual bool IsComplexType
         {
             get { return !TypeHelper.HasStringConverter(ModelType); }
@@ -238,8 +252,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected IModelMetadataProvider Provider { get; set; }
 
         /// <returns>
-        /// Gets <c>T</c> if <see cref="ModelType"/> is <see cref="Nullable{T}"/>;
-        /// <see cref="ModelType"/> otherwise.
+        /// Gets runtime <see cref="Type"/> of <see cref="Model"/> if <see cref="Model"/> is non-<c>null</c> and
+        /// <see cref="ModelType"/> is not <see cref="Nullable{T}"/>; <see cref="ModelType"/> otherwise.
         /// </returns>
         public Type RealModelType
         {
@@ -294,6 +308,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             set { _showForEdit = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a hint that suggests what template to use for this model. Overrides <see cref="DataTypeName"/>
+        /// in that context but, unlike <see cref="DataTypeName"/>, this value is not used elsewhere.
+        /// </summary>
+        /// <value><c>null</c> unless set manually or through additional metadata e.g. attributes.</value>
         public virtual string TemplateHint { get; set; }
 
         internal EfficientTypePropertyKey<Type, string> CacheKey

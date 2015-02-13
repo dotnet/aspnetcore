@@ -109,7 +109,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         new DisplayFormatAttribute { NullDisplayText = "value" }, metadata => metadata.NullDisplayText
                     },
                     {
-                        new TestModelNameProvider() { Name = "value" }, metadata => metadata.BinderModelName
+                        new TestModelNameProvider { Name = "value" }, metadata => metadata.BinderModelName
+                    },
+                    {
+                         new UIHintAttribute("value"), metadata => metadata.TemplateHint
                     },
                 };
             }
@@ -207,6 +210,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         new HiddenInputAttribute { DisplayValue = true },
                         metadata => metadata.HideSurroundingHtml,
                         false
+                    },
+                    {
+                        new HiddenInputAttribute(),
+                        metadata => string.Equals("HiddenInput", metadata.TemplateHint, StringComparison.Ordinal),
+                        true
                     },
                     {
                         new RequiredAttribute(),
@@ -464,6 +472,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Null(metadata.EditFormatString);
+        }
+
+        [Fact]
+        public void TemplateHint_AttributesHaveExpectedPrecedence()
+        {
+            // Arrange
+            var expected = "this is a hint";
+            var hidden = new HiddenInputAttribute();
+            var uiHint = new UIHintAttribute(expected);
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = new CachedDataAnnotationsModelMetadata(
+                provider,
+                containerType: null,
+                modelType: typeof(object),
+                propertyName: null,
+                attributes: new Attribute[] { hidden, uiHint });
+
+            // Act
+            var result = metadata.TemplateHint;
+
+            // Assert
+            Assert.Equal(expected, result);
         }
 
         [Fact]

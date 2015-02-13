@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void HiddenInputWorksOnProperty()
+        public void HiddenInputWorksOnProperty_ForHideSurroundingHtml()
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void HiddenInputWorksOnPropertyType()
+        public void HiddenInputWorksOnPropertyType_ForHideSurroundingHtml()
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
@@ -207,6 +207,36 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.True(result);
+        }
+
+        [Fact]
+        public void HiddenInputWorksOnProperty_ForTemplateHint()
+        {
+            // Arrange
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(modelAccessor: null, modelType: typeof(ClassWithHiddenProperties));
+            var property = metadata.Properties["DirectlyHidden"];
+
+            // Act
+            var result = property.TemplateHint;
+
+            // Assert
+            Assert.Equal("HiddenInput", result);
+        }
+
+        [Fact]
+        public void HiddenInputWorksOnPropertyType_ForTemplateHint()
+        {
+            // Arrange
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(modelAccessor: null, modelType: typeof(ClassWithHiddenProperties));
+            var property = metadata.Properties["OfHiddenType"];
+
+            // Act
+            var result = property.TemplateHint;
+
+            // Assert
+            Assert.Equal("HiddenInput", result);
         }
 
         [Fact]

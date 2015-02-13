@@ -9,8 +9,8 @@ using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    // Class does not override ComputeIsComplexType() because value calculated in ModelMetadata's base implementation
-    // is correct.
+    // Class does not override ComputeIsCollectionType() or ComputeIsComplexType() because values calculated in
+    // ModelMetadata's base implementation are correct. No data annotations override those calculations.
     public class CachedDataAnnotationsModelMetadata : CachedModelMetadata<CachedDataAnnotationsMetadataAttributes>
     {
         private static readonly string HtmlName = DataType.Html.ToString();
@@ -331,6 +331,31 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return PrototypeCache.ScaffoldColumn != null
                        ? PrototypeCache.ScaffoldColumn.Scaffold
                        : base.ComputeShowForEdit();
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="ModelMetadata.TemplateHint"/> value based on presence of a
+        /// <see cref="UIHintAttribute"/> and its <see cref="UIHintAttribute.UIHint"/> value or presence of a
+        /// <see cref="HiddenInputAttribute"/> when no <see cref="UIHintAttribute"/> exists.
+        /// </summary>
+        /// <returns>
+        /// Calculated <see cref="ModelMetadata.TemplateHint"/> value. <see cref="UIHintAttribute.UIHint"/> if a
+        /// <see cref="UIHintAttribute"/> exists. <c>"HiddenInput"</c> if a <see cref="HiddenInputAttribute"/> exists
+        /// and no <see cref="UIHintAttribute"/> exists. <c>null</c> otherwise.
+        /// </returns>
+        protected override string ComputeTemplateHint()
+        {
+            if (PrototypeCache.UIHint != null)
+            {
+                return PrototypeCache.UIHint.UIHint;
+            }
+
+            if (PrototypeCache.HiddenInput != null)
+            {
+                return "HiddenInput";
+            }
+
+            return base.ComputeTemplateHint();
         }
 
         private static void ValidateDisplayColumnAttribute(DisplayColumnAttribute displayColumnAttribute,

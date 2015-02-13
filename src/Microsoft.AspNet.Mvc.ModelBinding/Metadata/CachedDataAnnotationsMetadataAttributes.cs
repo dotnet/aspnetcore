@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -20,6 +19,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             HiddenInput = attributes.OfType<HiddenInputAttribute>().FirstOrDefault();
             Required = attributes.OfType<RequiredAttribute>().FirstOrDefault();
             ScaffoldColumn = attributes.OfType<ScaffoldColumnAttribute>().FirstOrDefault();
+            UIHint = attributes.OfType<UIHintAttribute>().FirstOrDefault();
+
             BinderMetadata = attributes.OfType<IBinderMetadata>().FirstOrDefault();
             PropertyBindingPredicateProviders = attributes.OfType<IPropertyBindingPredicateProvider>();
             BinderModelNameProvider = attributes.OfType<IModelNameProvider>().FirstOrDefault();
@@ -82,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public HiddenInputAttribute HiddenInput { get; protected set; }
 
         /// <summary>
-        /// Gets (or sets in subclasses) <see cref="IEnumerable{IPropertyBindingPredicateProvider}"/> found in 
+        /// Gets (or sets in subclasses) <see cref="IEnumerable{IPropertyBindingPredicateProvider}"/> found in
         /// collection passed to the <see cref="CachedDataAnnotationsMetadataAttributes(IEnumerable{object})"/>
         /// constructor, if any.
         /// </summary>
@@ -91,5 +92,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public RequiredAttribute Required { get; protected set; }
 
         public ScaffoldColumnAttribute ScaffoldColumn { get; protected set; }
+
+        /// <summary>
+        /// Gets (or sets in subclasses) <see cref="UIHintAttribute"/> found in collection passed to the
+        /// <see cref="CachedDataAnnotationsMetadataAttributes(IEnumerable{object})"/> constructor, if any.
+        /// </summary>
+        public UIHintAttribute UIHint { get; protected set; }
     }
 }

@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Null(cache.HiddenInput);
             Assert.Null(cache.Required);
             Assert.Null(cache.ScaffoldColumn);
+            Assert.Null(cache.UIHint);
             Assert.Null(cache.BinderMetadata);
             Assert.Null(cache.BinderModelNameProvider);
             Assert.Empty(cache.PropertyBindingPredicateProviders);
@@ -51,6 +52,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     { new EditableAttribute(allowEdit: false), cache => cache.Editable },
                     { new HiddenInputAttribute(), cache => cache.HiddenInput },
                     { new RequiredAttribute(), cache => cache.Required },
+                    { new ScaffoldColumnAttribute(scaffold: true), cache => cache.ScaffoldColumn },
+                    { new UIHintAttribute("hintHint"), cache => cache.UIHint },
                     { new TestBinderMetadata(), cache => cache.BinderMetadata },
                     { new TestModelNameProvider(), cache => cache.BinderModelNameProvider },
                 };
