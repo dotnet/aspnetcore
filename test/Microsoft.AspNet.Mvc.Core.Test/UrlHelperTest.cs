@@ -728,6 +728,82 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("https://remotelyhost/app/home3/contact#somefragment", url);
         }
 
+        [Fact]
+        public void LinkWithAllParameters_ReturnsExpectedResult()
+        {
+            // Arrange
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
+
+            // Act
+            var url = urlHelper.Link("namedroute",
+                                     new
+                                     {
+                                         Action = "newaction",
+                                         Controller = "home",
+                                         id = "someid"
+                                     });
+
+            // Assert
+            Assert.Equal("http://localhost/app/named/home/newaction/someid", url);
+        }
+
+        [Fact]
+        public void LinkWithNullRouteName_ReturnsExpectedResult()
+        {
+            // Arrange
+            var services = GetServices();
+            var urlHelper = CreateUrlHelperWithRouteCollection(services, "/app");
+
+            // Act
+            var url = urlHelper.Link(null,
+                                     new
+                                     {
+                                         Action = "newaction",
+                                         Controller = "home",
+                                         id = "someid"
+                                     });
+
+            // Assert
+            Assert.Equal("http://localhost/app/home/newaction/someid", url);
+        }
+
+        [Fact]
+        public void LinkWithDefaultsAndNullRouteValues_ReturnsExpectedResult()
+        {
+            // Arrange
+            var services = GetServices();
+            var routeCollection = GetRouter(services, "MyRouteName", "any/url");
+            var urlHelper = CreateUrlHelper("/app", routeCollection);
+
+            // Act
+            var url = urlHelper.Link("MyRouteName", null);
+
+            // Assert
+            Assert.Equal("http://localhost/app/any/url", url);
+        }
+
+        [Fact]
+        public void LinkWithCustomHostAndProtocol_ReturnsExpectedResult()
+        {
+            // Arrange
+            var services = GetServices();
+            var routeCollection = GetRouter(services, "MyRouteName", "any/url");
+            var urlHelper = CreateUrlHelper("myhost", "https", routeCollection);
+
+            // Act
+            var url = urlHelper.Link("namedroute",
+                                     new
+                                     {
+                                         Action = "newaction",
+                                         Controller = "home",
+                                         id = "someid"
+                                     });
+
+            // Assert
+            Assert.Equal("https://myhost/named/home/newaction/someid", url);
+        }
+
         private static HttpContext CreateHttpContext(
             IServiceProvider services,
             string appRoot)
@@ -777,6 +853,19 @@ namespace Microsoft.AspNet.Mvc
             context.Request.Host = new HostString(host);
 
             var actionContext = CreateActionContext(context);
+
+            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
+            return new UrlHelper(actionContext, actionSelector.Object);
+        }
+
+        private static UrlHelper CreateUrlHelper(string host, string protocol, IRouter router)
+        {
+            var services = GetServices();
+            var context = CreateHttpContext(services, string.Empty);
+            context.Request.Host = new HostString(host);
+            context.Request.Scheme = protocol;
+
+            var actionContext = CreateActionContext(context, router);
 
             var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
             return new UrlHelper(actionContext, actionSelector.Object);

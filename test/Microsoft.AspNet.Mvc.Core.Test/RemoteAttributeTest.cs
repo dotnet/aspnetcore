@@ -613,6 +613,11 @@ namespace Microsoft.AspNet.Mvc
                 throw new NotImplementedException();
             }
 
+            public string Link(string routeName, object values)
+            {
+                throw new NotImplementedException();
+            }
+
             public string RouteUrl(UrlRouteContext routeContext)
             {
                 Assert.Equal(_routeName, routeContext.RouteName);
