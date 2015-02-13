@@ -760,7 +760,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var expectedErrorMessage = "Encountered an unexpected error when attempting to resolve tag helper " +
-                                       "directive '@addtaghelper' with value 'A custom, lookup text'. Error: A " +
+                                       "directive '@addTagHelper' with value 'A custom, lookup text'. Error: A " +
                                        "custom exception";
             var documentLocation = new SourceLocation(1, 2, 3);
             var directiveType = TagHelperDirectiveType.AddTagHelper;

@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 {
                     if (directiveDescriptor.DirectiveType == TagHelperDirectiveType.RemoveTagHelper)
                     {
-                        // We don't yet support "typeName, assemblyName" for @removetaghelper in this test class. Will
+                        // We don't yet support "typeName, assemblyName" for @removeTagHelper in this test class. Will
                         // add that ability and add the corresponding end-to-end test verification in:
                         // https://github.com/aspnet/Razor/issues/222
                         descriptors = null;

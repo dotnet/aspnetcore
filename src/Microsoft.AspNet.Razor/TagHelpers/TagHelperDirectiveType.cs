@@ -9,12 +9,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     public enum TagHelperDirectiveType
     {
         /// <summary>
-        /// An @addtaghelper directive.
+        /// An @addTagHelper directive.
         /// </summary>
         AddTagHelper,
 
         /// <summary>
-        /// A @removetaghelper directive.
+        /// A @removeTagHelper directive.
         /// </summary>
         RemoveTagHelper
     }

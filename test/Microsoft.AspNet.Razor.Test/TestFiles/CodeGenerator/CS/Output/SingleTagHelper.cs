@@ -1,4 +1,4 @@
-#pragma checksum "SingleTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "72db799463dab7865f759d0e3ed3660485d7871d"
+#pragma checksum "SingleTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "60ad52f4a16ebc0499d729dfd4b79358331907f4"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;

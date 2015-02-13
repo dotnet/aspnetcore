@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void RemoveTagHelperDirective_Succeeds()
         {
-            ParseBlockTest("@removetaghelper \"Foo\"",
+            ParseBlockTest("@removeTagHelper \"Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void RemoveTagHelperDirective_SupportsSpaces()
         {
-            ParseBlockTest("@removetaghelper   \"  Foo,   Bar \"   ",
+            ParseBlockTest("@removeTagHelper   \"  Foo,   Bar \"   ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + "   ")
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void RemoveTagHelperDirective_RequiresValue()
         {
-            ParseBlockTest("@removetaghelper ",
+            ParseBlockTest("@removeTagHelper ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void RemoveTagHelperDirective_StartQuoteRequiresDoubleQuotesAroundValue()
         {
-            ParseBlockTest("@removetaghelper \"Foo",
+            ParseBlockTest("@removeTagHelper \"Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void RemoveTagHelperDirective_EndQuoteRequiresDoubleQuotesAroundValue()
         {
-            ParseBlockTest("@removetaghelper Foo\"",
+            ParseBlockTest("@removeTagHelper Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void RemoveTagHelperDirective_RequiresDoubleQuotesAroundValue()
         {
-            ParseBlockTest("@removetaghelper Foo",
+            ParseBlockTest("@removeTagHelper Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void AddTagHelperDirective_Succeeds()
         {
-            ParseBlockTest("@addtaghelper \"Foo\"",
+            ParseBlockTest("@addTagHelper \"Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void AddTagHelperDirectiveSupportsSpaces()
         {
-            ParseBlockTest("@addtaghelper   \"  Foo,   Bar \"   ",
+            ParseBlockTest("@addTagHelper   \"  Foo,   Bar \"   ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + "   ")
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void AddTagHelperDirectiveRequiresValue()
         {
-            ParseBlockTest("@addtaghelper ",
+            ParseBlockTest("@addTagHelper ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void AddTagHelperDirectiveWithStartQuoteRequiresDoubleQuotesAroundValue()
         {
-            ParseBlockTest("@addtaghelper \"Foo",
+            ParseBlockTest("@addTagHelper \"Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void AddTagHelperDirectiveWithEndQuoteRequiresDoubleQuotesAroundValue()
         {
-            ParseBlockTest("@addtaghelper Foo\"",
+            ParseBlockTest("@addTagHelper Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void AddTagHelperDirectiveRequiresDoubleQuotesAroundValue()
         {
-            ParseBlockTest("@addtaghelper Foo",
+            ParseBlockTest("@addTagHelper Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")

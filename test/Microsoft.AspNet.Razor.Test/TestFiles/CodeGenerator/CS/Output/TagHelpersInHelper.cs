@@ -1,4 +1,4 @@
-#pragma checksum "TagHelpersInHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "daf9e656da8fef546fe782b39687a5029a852c48"
+#pragma checksum "TagHelpersInHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "5f28fe84901bdeb20db8296b1da1e9a1f1da1023"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;

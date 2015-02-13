@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Razor.Parser;
@@ -16,6 +17,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// </summary>
     public class TagHelperDescriptorResolver : ITagHelperDescriptorResolver
     {
+        private static readonly IReadOnlyDictionary<TagHelperDirectiveType, string> _directiveNames =
+            new Dictionary<TagHelperDirectiveType, string>
+            {
+                { TagHelperDirectiveType.AddTagHelper, SyntaxConstants.CSharp.AddTagHelperKeyword },
+                { TagHelperDirectiveType.RemoveTagHelper, SyntaxConstants.CSharp.RemoveTagHelperKeyword },
+            };
+
         private readonly TagHelperTypeResolver _typeResolver;
 
         // internal for testing
@@ -67,12 +75,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 }
                 catch (Exception ex)
                 {
-                    var directiveName = "@" + directiveDescriptor.DirectiveType.ToString().ToLowerInvariant();
+                    string directiveName;
+                    _directiveNames.TryGetValue(directiveDescriptor.DirectiveType, out directiveName);
+                    Debug.Assert(!string.IsNullOrEmpty(directiveName));
 
                     context.ErrorSink.OnError(
                         directiveDescriptor.Location,
                         Resources.FormatTagHelperDescriptorResolver_EncounteredUnexpectedError(
-                            directiveName,
+                            "@" + directiveName,
                             directiveDescriptor.LookupText,
                             ex.Message));
                 }
