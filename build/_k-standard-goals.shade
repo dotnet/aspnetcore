@@ -66,6 +66,8 @@ default Configuration='${E("Configuration")}'
 #build-clean target='clean' if='Directory.Exists("src")'
   k-clean each='var projectFile in Files.Include("src/**/project.json")'
 
+#ci-deep-clean .deep-clean target='clean' if='IsTeamCity'
+
 #build-compile target='compile' if='Directory.Exists("src")'
   kpm-pack each='var projectFile in Files.Include("src/**/project.json")' configuration='${Configuration}'
   @{
