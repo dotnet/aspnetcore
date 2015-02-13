@@ -3,11 +3,13 @@
 
 #if ASPNET50
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Serialization;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Xml;
@@ -62,6 +64,42 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             // Assert
             Assert.Equal(expectedCanRead, result);
+        }
+
+        [Theory]
+        [InlineData(typeof(Dictionary<string, object>), false)]
+        [InlineData(typeof(string), true)]
+        public void CanRead_ReturnsFalse_ForAnyUnsupportedModelType(Type modelType, bool expectedCanRead)
+        {
+            // Arrange
+            var formatter = new XmlSerializerInputFormatter();
+            var contentBytes = Encoding.UTF8.GetBytes("content");
+
+            var context = GetInputFormatterContext(contentBytes, modelType);
+
+            // Act
+            var result = formatter.CanRead(context);
+
+            // Assert
+            Assert.Equal(expectedCanRead, result);
+        }
+
+        [Fact]
+        public void XmlSerializer_CachesSerializerForType()
+        {
+            // Arrange
+            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<DummyClass><SampleInt>10</SampleInt></DummyClass>";
+            var formatter = new TestXmlSerializerInputFormatter();
+            var contentBytes = Encoding.UTF8.GetBytes(input);
+            var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
+
+            // Act
+            formatter.CanRead(context);
+            formatter.CanRead(context);
+
+            // Assert
+            Assert.Equal(1, formatter.createSerializerCalledCount);
         }
 
         [Fact]
@@ -373,6 +411,17 @@ namespace Microsoft.AspNet.Mvc.Xml
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             return httpContext.Object;
+        }
+
+        private class TestXmlSerializerInputFormatter : XmlSerializerInputFormatter
+        {
+            public int createSerializerCalledCount = 0;
+
+            protected override XmlSerializer CreateSerializer(Type type)
+            {
+                createSerializerCalledCount++;
+                return base.CreateSerializer(type);
+            }
         }
     }
 }

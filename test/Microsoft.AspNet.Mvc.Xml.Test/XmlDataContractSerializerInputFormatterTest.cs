@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
@@ -77,6 +76,24 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             // Assert
             Assert.Equal(expectedCanRead, result);
+        }
+
+        [Fact]
+        public void XmlDataContractSerializer_CachesSerializerForType()
+        {
+            // Arrange
+            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<DummyClass><SampleInt>10</SampleInt></DummyClass>";
+            var formatter = new TestXmlDataContractSerializerInputFormatter();
+            var contentBytes = Encoding.UTF8.GetBytes(input);
+            var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
+
+            // Act
+            formatter.CanRead(context);
+            formatter.CanRead(context);
+
+            // Assert
+            Assert.Equal(1, formatter.createSerializerCalledCount);
         }
 
         [Fact]
@@ -484,6 +501,17 @@ namespace Microsoft.AspNet.Mvc.Xml
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             return httpContext.Object;
+        }
+
+        private class TestXmlDataContractSerializerInputFormatter : XmlDataContractSerializerInputFormatter
+        {
+            public int createSerializerCalledCount = 0;
+
+            protected override DataContractSerializer CreateSerializer(Type type)
+            {
+                createSerializerCalledCount++;
+                return base.CreateSerializer(type);
+            }
         }
     }
 }

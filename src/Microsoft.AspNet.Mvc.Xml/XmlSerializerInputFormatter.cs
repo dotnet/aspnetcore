@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNet.Mvc.Xml
     /// </summary>
     public class XmlSerializerInputFormatter : InputFormatter
     {
+        private ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
 
         /// <summary>
@@ -72,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             {
                 var type = GetSerializableType(context.ModelType);
 
-                var serializer = CreateSerializer(type);
+                var serializer = GetCachedSerializer(type);
 
                 var deserializedObject = serializer.Deserialize(xmlReader);
 
@@ -88,6 +90,12 @@ namespace Microsoft.AspNet.Mvc.Xml
 
                 return Task.FromResult(deserializedObject);
             }
+        }
+
+        /// <inheritdoc />
+        protected override bool CanReadType([NotNull] Type type)
+        {
+            return GetCachedSerializer(GetSerializableType(type)) != null;
         }
 
         /// <summary>
@@ -120,7 +128,36 @@ namespace Microsoft.AspNet.Mvc.Xml
         /// <returns>The <see cref="XmlSerializer"/> used during deserialization.</returns>
         protected virtual XmlSerializer CreateSerializer(Type type)
         {
-            return new XmlSerializer(type);
+            try
+            {
+                // If the serializer does not support this type it will throw an exception.
+                return new XmlSerializer(type);
+            }
+            catch (Exception)
+            {
+                // We do not surface the caught exception because if CanRead returns
+                // false, then this Formatter is not picked up at all.
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the cached serializer or creates and caches the serializer for the given type.
+        /// </summary>
+        /// <returns>The <see cref="XmlSerializer"/> instance.</returns>
+        protected virtual XmlSerializer GetCachedSerializer(Type type)
+        {
+            object serializer;
+            if (!_serializerCache.TryGetValue(type, out serializer))
+            {
+                serializer = CreateSerializer(type);
+                if (serializer != null)
+                {
+                    _serializerCache.TryAdd(type, serializer);
+                }
+            }
+
+            return (XmlSerializer) serializer;
         }
     }
 }

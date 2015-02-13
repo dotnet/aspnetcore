@@ -43,6 +43,11 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public virtual bool CanRead(InputFormatterContext context)
         {
+            if (!CanReadType(context.ModelType))
+            {
+                return false;
+            }
+
             var contentType = context.ActionContext.HttpContext.Request.ContentType;
             MediaTypeHeaderValue requestContentType;
             if (!MediaTypeHeaderValue.TryParse(contentType, out requestContentType))
@@ -52,6 +57,16 @@ namespace Microsoft.AspNet.Mvc
 
             return SupportedMediaTypes
                             .Any(supportedMediaType => supportedMediaType.IsSubsetOf(requestContentType));
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether or not the given type can be read by this serializer.
+        /// </summary>
+        /// <param name="type">The type of object that will be read.</param>
+        /// <returns><c>true</c> if the type can be read, otherwise <c>false</c>.</returns>
+        protected virtual bool CanReadType(Type type)
+        {
+            return true;
         }
 
         /// <inheritdoc />

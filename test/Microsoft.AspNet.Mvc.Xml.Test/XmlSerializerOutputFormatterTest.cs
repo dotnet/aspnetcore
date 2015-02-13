@@ -13,6 +13,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.AspNet.Mvc.Xml;
 using Moq;
 using Xunit;
+using System.Xml.Serialization;
 
 namespace Microsoft.AspNet.Mvc.Xml
 {
@@ -66,6 +67,22 @@ namespace Microsoft.AspNet.Mvc.Xml
                 new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8)
                         .ReadToEnd());
             Assert.True(outputFormatterContext.ActionContext.HttpContext.Response.Body.CanRead);
+        }
+
+        [Fact]
+        public void XmlSerializer_CachesSerializerForType()
+        {
+            // Arrange
+            var input = new DummyClass { SampleInt = 10 };
+            var formatter = new TestXmlSerializerOutputFormatter();
+            var context = GetOutputFormatterContext(input, typeof(DummyClass));
+
+            // Act
+            formatter.CanWriteResult(context, MediaTypeHeaderValue.Parse("application/xml"));
+            formatter.CanWriteResult(context, MediaTypeHeaderValue.Parse("application/xml"));
+
+            // Assert
+            Assert.Equal(1, formatter.createSerializerCalledCount);
         }
 
         [Fact]
@@ -354,6 +371,17 @@ namespace Microsoft.AspNet.Mvc.Xml
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             httpContext.SetupGet(c => c.Response).Returns(response.Object);
             return new ActionContext(httpContext.Object, routeData: null, actionDescriptor: null);
+        }
+
+        private class TestXmlSerializerOutputFormatter : XmlSerializerOutputFormatter
+        {
+            public int createSerializerCalledCount = 0;
+
+            protected override XmlSerializer CreateSerializer(Type type)
+            {
+                createSerializerCalledCount++;
+                return base.CreateSerializer(type);
+            }
         }
     }
 }
