@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
             ForbidCharacter('+'); // technically not HTML-specific, but can be used to perform UTF7-based attacks
 
             // Forbid codepoints which aren't mapped to characters or which are otherwise always disallowed
-            // (includes categories Cc, Cs, Co, Cn, Zl, Zp)
+            // (includes categories Cc, Cs, Co, Cn, Zs [except U+0020 SPACE], Zl, Zp)
             uint[] definedCharactersBitmap = UnicodeHelpers.GetDefinedCharacterBitmap();
             Debug.Assert(definedCharactersBitmap.Length == _allowedCharsBitmap.Length);
             for (int i = 0; i < _allowedCharsBitmap.Length; i++)
