@@ -30,9 +30,9 @@ namespace E2ETests
         [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5002/")]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5004/")]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5002/")]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5004/")]
+        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
+        //[InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5002/")]
+        //[InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5004/")]
         public void SmokeTestSuite_OnX86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -42,8 +42,8 @@ namespace E2ETests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [SkipOn32BitOS]
         [InlineData(ServerType.WebListener, RuntimeFlavor.DesktopClr, RuntimeArchitecture.amd64, "http://localhost:5002/")]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5001/")]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5004/")]
+        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5001/")]
+        //[InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5004/")]
         public void SmokeTestSuite_OnAMD64(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
