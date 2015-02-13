@@ -3,7 +3,6 @@
     "dependencies": {
         "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.FileProviders.Interfaces": "1.0.0-*",
-        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Microsoft.Framework.ConfigurationModel": "1.0.0-*"
     },
 

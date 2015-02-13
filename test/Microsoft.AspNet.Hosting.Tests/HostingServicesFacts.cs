@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Hosting.Fakes;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.DependencyInjection.ServiceLookup;
+using Microsoft.Framework.Runtime;
 using Xunit;
 
 namespace Microsoft.AspNet.Hosting.Tests
@@ -84,11 +84,12 @@ namespace Microsoft.AspNet.Hosting.Tests
             fallbackServices.AddTransient<IFakeService, FakeService>();
 
             // Act
-            var exp = Assert.Throws<InvalidOperationException>(() => HostingServices.Create(fallbackServices.BuildServiceProvider()));
+            var exception = Assert.Throws<InvalidOperationException>(() => HostingServices.Create(fallbackServices.BuildServiceProvider()));
 
 
             // Assert
-            Assert.True(exp.Message.Contains("No service for type 'Microsoft.Framework.DependencyInjection.ServiceLookup.IServiceManifest'"));
+            Assert.Equal($"No service for type '{typeof(IServiceManifest).FullName}' has been registered.",
+                         exception.Message);
         }
 
         private class ServiceManifest : IServiceManifest

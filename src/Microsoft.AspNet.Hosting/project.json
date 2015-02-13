@@ -3,6 +3,7 @@
     "description": "ASP.NET 5 core hosting infrastructure and startup logic for web applications.",
     "dependencies": {
         "Microsoft.AspNet.Hosting.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.FileProviders": "1.0.0-*",
         "Microsoft.AspNet.Http.Core": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
