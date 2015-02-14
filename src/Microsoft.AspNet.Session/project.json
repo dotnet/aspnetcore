@@ -1,0 +1,21 @@
+{
+    "version": "1.0.0-*",
+    "description": "ASP.NET 5 session state middleware.",
+    "dependencies": {
+        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+        "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.Cache.Distributed": "1.0.0-*",
+        "Microsoft.Framework.Logging": "1.0.0-*"
+    },
+    "compilationOptions": {
+        "allowUnsafe": true
+    },
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Security.Cryptography.RandomNumberGenerator": "4.0.0-beta-*"
+            }
+        }
+    }
+}

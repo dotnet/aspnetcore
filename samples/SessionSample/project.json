@@ -1,0 +1,16 @@
+﻿{
+    "webroot": "wwwroot",
+    "exclude": "wwwroot/**/*.*",
+    "dependencies": {
+        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.AspNet.Server.WebListener" : "1.0.0-*",
+        "Microsoft.AspNet.Session": "1.0.0-*",
+        "Microsoft.Framework.Cache.Redis": "1.0.0-*",
+        "Microsoft.Framework.Logging.Console": "1.0.0-*"
+    },
+    "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
+    "frameworks" : {
+        "aspnet50" : { }
+    }
+}
