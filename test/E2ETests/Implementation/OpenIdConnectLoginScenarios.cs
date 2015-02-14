@@ -94,12 +94,17 @@ namespace E2ETests
             };
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
+            // Need a non-redirecting handler
+            var handler = new HttpClientHandler() { AllowAutoRedirect = false };
+            handler.CookieContainer.Add(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)));
+            _httpClient = new HttpClient(handler) { BaseAddress = new Uri(_applicationBaseUrl) };
+
             response = _httpClient.PostAsync("Account/LogOff", content).Result;
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
+            Assert.Null(handler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
             Assert.Equal<string>(
                 "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/logout",
-                response.RequestMessage.RequestUri.AbsoluteUri.Replace(response.RequestMessage.RequestUri.Query, string.Empty));
-            queryItems = new ReadableStringCollection(QueryHelpers.ParseQuery(response.RequestMessage.RequestUri.Query));
+                response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
+            queryItems = new ReadableStringCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
             Assert.Equal<string>(_applicationBaseUrl + "Account/Login", queryItems["post_logout_redirect_uri"]);
         }
     }
