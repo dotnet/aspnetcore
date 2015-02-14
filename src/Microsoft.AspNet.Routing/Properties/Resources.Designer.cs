@@ -203,22 +203,6 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// In a path segment that contains more than one section, such as a literal section or a parameter, there can only be one optional parameter. The optional parameter must be the last parameter in the segment and must be preceded by one single period (.).
-        /// </summary>
-        internal static string TemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator
-        {
-            get { return GetString("TemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator"); }
-        }
-
-        /// <summary>
-        /// In a path segment that contains more than one section, such as a literal section or a parameter, there can only be one optional parameter. The optional parameter must be the last parameter in the segment and must be preceded by one single period (.).
-        /// </summary>
-        internal static string FormatTemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator()
-        {
-            return GetString("TemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator");
-        }
-
-        /// <summary>
         /// A catch-all parameter cannot be marked optional.
         /// </summary>
         internal static string TemplateRoute_CatchAllCannotBeOptional
@@ -392,6 +376,38 @@ namespace Microsoft.AspNet.Routing
         internal static string FormatTemplateRoute_UnescapedBrace()
         {
             return GetString("TemplateRoute_UnescapedBrace");
+        }
+
+        /// <summary>
+        /// In the segment '{0}', the optional parameter '{1}' is preceded by an invalid segment '{2}'.  Only a period (.) can precede an optional parameter.
+        /// </summary>
+        internal static string TemplateRoute_OptionalParameterCanbBePrecededByPeriod
+        {
+            get { return GetString("TemplateRoute_OptionalParameterCanbBePrecededByPeriod"); }
+        }
+
+        /// <summary>
+        /// In the segment '{0}', the optional parameter '{1}' is preceded by an invalid segment '{2}'.  Only a period (.) can precede an optional parameter.
+        /// </summary>
+        internal static string FormatTemplateRoute_OptionalParameterCanbBePrecededByPeriod(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_OptionalParameterCanbBePrecededByPeriod"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// An optional parameter must be at the end of the segment. In the segment '{0}', optional parameter '{1}' is followed by '{2}'.
+        /// </summary>
+        internal static string TemplateRoute_OptionalParameterHasTobeTheLast
+        {
+            get { return GetString("TemplateRoute_OptionalParameterHasTobeTheLast"); }
+        }
+
+        /// <summary>
+        /// An optional parameter must be at the end of the segment. In the segment '{0}', optional parameter '{1}' is followed by '{2}'.
+        /// </summary>
+        internal static string FormatTemplateRoute_OptionalParameterHasTobeTheLast(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_OptionalParameterHasTobeTheLast"), p0, p1, p2);
         }
 
         private static string GetString(string name, params string[] formatterNames)

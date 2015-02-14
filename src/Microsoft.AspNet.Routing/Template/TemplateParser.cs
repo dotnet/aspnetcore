@@ -340,26 +340,48 @@ namespace Microsoft.AspNet.Routing.Template
 
                 if (part.IsParameter && part.IsOptional && segment.Parts.Count > 1)
                 {
-                    // This is the last part
+                    // This optional parameter is the last part in the segment
                     if (i == segment.Parts.Count - 1)
                     {
                         Debug.Assert(segment.Parts[i - 1].IsLiteral);
 
+                        // the optional parameter is preceded by a period
                         if (segment.Parts[i - 1].Text == PeriodString)
                         {
                             segment.Parts[i - 1].IsOptionalSeperator = true;
                         }
                         else
                         {
-                            context.Error = 
-                                Resources.TemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator;
+                            // The optional parameter is preceded by a literal other than period
+                            // Example of error message:
+                            // "In the complex segment {RouteValue}-{param?}, the optional parameter 'param'is preceded
+                            // by an invalid segment "-". Only valid literal to precede an optional parameter is a 
+                            // period (.).
+                            context.Error = string.Format(
+                                Resources.TemplateRoute_OptionalParameterCanbBePrecededByPeriod,
+                                segment.DebuggerToString(),
+                                part.Name,
+                                segment.Parts[i - 1].Text);
+
                             return false;
                         }
                     }
                     else
                     {
-                        context.Error = 
-                            Resources.TemplateRoute_CanHaveOnlyLastParameterOptional_IfFollowingOptionalSeperator;
+                        // This optional parameter is not the last one in the segment
+                        // Example:
+                        // An optional parameter must be at the end of the segment.In the segment '{RouteValue?})', 
+                        // optional parameter 'RouteValue' is followed by ')'
+                        var nextPart = segment.Parts[i + 1];
+                        var invalidPartText = nextPart.IsParameter ? nextPart.Name : nextPart.Text;
+
+                        context.Error = string.Format(
+                            Resources.TemplateRoute_OptionalParameterHasTobeTheLast,
+                            segment.DebuggerToString(),
+                            segment.Parts[i].Name,
+                            invalidPartText
+                            );
+
                         return false;
                     }
                 }

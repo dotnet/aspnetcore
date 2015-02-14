@@ -528,23 +528,37 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Theory]
-        [InlineData("{p1?}.{p2?}")]
-        [InlineData("{p1}.{p2?}.{p3}")]
-        [InlineData("{p1?}.{p2}/{p3}")]
-        [InlineData("{p3}.{p1?}.{p2?}")]
-        [InlineData("{p1}-{p2?}")]
-        [InlineData("{p1}..{p2?}")]
-        [InlineData("..{p2?}")]
-        [InlineData("{p1}.abc.{p2?}")]
-        public void Parse_ComplexSegment_OptionalParametersSeperatedByPeriod_Invalid(string template)
+        [InlineData("{p1}.{p2?}.{p3}", "p2", ".")]
+        [InlineData("{p1?}{p2}", "p1", "p2")]
+        [InlineData("{p1?}{p2?}", "p1", "p2")]
+        [InlineData("{p1}.{p2?})", "p2", ")")]
+        [InlineData("{foorb?}-bar-{z}", "foorb", "-bar-")]
+        public void Parse_ComplexSegment_OptionalParameter_NotTheLastPart(
+            string template, 
+            string parameter, 
+            string invalid)
         {
             // Act and Assert
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse(template),
-                "In a path segment that contains more than one section, such as a literal section or a parameter, " +
-                "there can only be one optional parameter. The optional parameter must be the last parameter in the " +
-                "segment and must be preceded by one single period (.)." + Environment.NewLine +
-                "Parameter name: routeTemplate");
+                "An optional parameter must be at the end of the segment. In the segment '" + template +
+                "', optional parameter '" + parameter + "' is followed by '" + invalid + "'."
+                 + Environment.NewLine + "Parameter name: routeTemplate");
+        }
+
+        [InlineData("{p1}-{p2?}", "-")]
+        [InlineData("{p1}..{p2?}", "..")]
+        [InlineData("..{p2?}", "..")]
+        [InlineData("{p1}.abc.{p2?}", ".abc.")]
+        [InlineData("{p1}{p2?}", "p1")]
+        public void Parse_ComplexSegment_OptionalParametersSeperatedByPeriod_Invalid(string template, string parameter)
+        {
+            // Act and Assert
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse(template),
+                "In the complex segment '"+ template +"',  the optional parameter 'p2' is preceded by an invalid " + 
+                "segment '" + parameter +"'. Only valid literal to precede an optional parameter is a period (.)." + 
+                Environment.NewLine + "Parameter name: routeTemplate");
         }
 
         [Fact]
@@ -626,7 +640,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [InlineData("{p}}}", "p}")]
         [InlineData("{p/}", "p/")]
         public void ParseRouteParameter_ThrowsIf_ParameterContainsSpecialCharacters(
-            string template, 
+            string template,
             string parameterName)
         {
             // Arrange
@@ -791,17 +805,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and" +
                 " can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
                 " and can occur only at the start of the parameter." + Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_MultiSegmentParameterCannotContainOptionalParameter()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("{foorb?}-bar-{z}"),
-                "In a path segment that contains more than one section, such as a literal section or a parameter, " +
-                "there can only be one optional parameter. The optional parameter must be the last parameter in " +
-                "the segment and must be preceded by one single period (.)." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
