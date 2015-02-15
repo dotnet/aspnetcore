@@ -12,6 +12,7 @@ bower_components/
 node_modules/
 **/wwwroot/lib/
 debugSettings.json
+project.lock.json
 *.user
 *.suo
 *.cache
