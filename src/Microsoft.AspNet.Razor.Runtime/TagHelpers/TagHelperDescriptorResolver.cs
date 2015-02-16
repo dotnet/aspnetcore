@@ -129,7 +129,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // We surround the escaped with ^ and $ in order ot ensure a regex match matches the entire 
             // string. We also replace any '*' or '?' characters with regex to match appropriate content.
-            var pattern = "^" + escaped.Replace(@"\?", ".?").Replace(@"\*", ".*?") + "$";
+            // '*' matches 0 or more characters lazily and '?' matches 1 character.
+            var pattern = "^" + escaped.Replace(@"\?", ".").Replace(@"\*", ".*?") + "$";
             var regex = new Regex(pattern, RegexOptions.Singleline);
 
             return regex.IsMatch(descriptor.TypeName);

@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         new []
                         {
                             new TagHelperDirectiveDescriptor(
-                                "?*?" + Valid_PlainTagHelperType.FullName + "?*?, " + assemblyA,
+                                "*" + Valid_PlainTagHelperType.FullName + "*, " + assemblyA,
                                 TagHelperDirectiveType.AddTagHelper),
                         },
                         new [] { Valid_PlainTagHelperDescriptor }
@@ -368,7 +368,20 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         new []
                         {
                             new TagHelperDirectiveDescriptor("?*?, " + assemblyA, TagHelperDirectiveType.AddTagHelper),
-                            new TagHelperDirectiveDescriptor("*?rin?g?, " + assemblyB, TagHelperDirectiveType.RemoveTagHelper)
+                            new TagHelperDirectiveDescriptor("*?r?n?, " + assemblyB, TagHelperDirectiveType.RemoveTagHelper)
+                        },
+                        new [] { Valid_PlainTagHelperDescriptor }
+                    },
+                    {
+                        new Dictionary<string, IEnumerable<Type>>
+                        {
+                            { assemblyA, new [] { Valid_PlainTagHelperType } },
+                            { assemblyB, new [] { stringType } }
+                        },
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor("?*TagHelper, " + assemblyA, TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor("?" + stringType.FullName + ", " + assemblyB, TagHelperDirectiveType.AddTagHelper)
                         },
                         new [] { Valid_PlainTagHelperDescriptor }
                     },
@@ -399,6 +412,54 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             new TagHelperDirectiveDescriptor("Microsoft?*, " + assemblyA, TagHelperDirectiveType.RemoveTagHelper)
                         },
                         new [] { stringTagHelperDescriptor }
+                    },
+                    {
+                        new Dictionary<string, IEnumerable<Type>>
+                        {
+                            { assemblyA, new [] { Valid_PlainTagHelperType, Valid_InheritedTagHelperType } },
+                            { assemblyB, new [] { stringType } }
+                        },
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "*, " + assemblyA, TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor(
+                                "*, " + assemblyB, TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor(
+                                "?Microsoft*, " + assemblyA, TagHelperDirectiveType.RemoveTagHelper),
+                            new TagHelperDirectiveDescriptor(
+                                "?" + stringType.FullName + ", " + assemblyB, TagHelperDirectiveType.RemoveTagHelper)
+                        },
+                        new []
+                        {
+                            Valid_InheritedTagHelperDescriptor,
+                            Valid_PlainTagHelperDescriptor,
+                            stringTagHelperDescriptor
+                        }
+                    },
+                    {
+                        new Dictionary<string, IEnumerable<Type>>
+                        {
+                            { assemblyA, new [] { Valid_PlainTagHelperType, Valid_InheritedTagHelperType } },
+                            { assemblyB, new [] { stringType } }
+                        },
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "*, " + assemblyA, TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor(
+                                "*, " + assemblyB, TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor(
+                                "Microsoft*TagHelper?, " + assemblyA, TagHelperDirectiveType.RemoveTagHelper),
+                            new TagHelperDirectiveDescriptor(
+                                stringType.FullName + "?, " + assemblyB, TagHelperDirectiveType.RemoveTagHelper)
+                        },
+                        new []
+                        {
+                            Valid_InheritedTagHelperDescriptor,
+                            Valid_PlainTagHelperDescriptor,
+                            stringTagHelperDescriptor
+                        }
                     },
                 };
             }
@@ -566,9 +627,21 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             new TagHelperDirectiveDescriptor("?icrosoft.*, " + assemblyA, TagHelperDirectiveType.AddTagHelper),
                             new TagHelperDirectiveDescriptor("?ystem.*, " + assemblyB, TagHelperDirectiveType.AddTagHelper),
                             new TagHelperDirectiveDescriptor("*?????r, " + assemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            new TagHelperDirectiveDescriptor("Sy????em.*, " + assemblyB, TagHelperDirectiveType.RemoveTagHelper)
+                            new TagHelperDirectiveDescriptor("Sy??em.*, " + assemblyB, TagHelperDirectiveType.RemoveTagHelper)
                         }
-                    }
+                    },
+                    {
+                        new Dictionary<string, IEnumerable<Type>>
+                        {
+                            { assemblyA, new [] { Valid_PlainTagHelperType, Valid_InheritedTagHelperType } },
+                            { assemblyB, new [] { stringType } },
+                        },
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor("?i?crosoft.*, " + assemblyA, TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor("??ystem.*, " + assemblyB, TagHelperDirectiveType.AddTagHelper),
+                        }
+                    },
                 };
             }
         }
