@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using IdentitySample.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Security;
 
 namespace IdentitySample
 {
