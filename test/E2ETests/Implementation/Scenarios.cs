@@ -428,7 +428,7 @@ namespace E2ETests
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 _logger.WriteError(response.Content.ReadAsStringAsync().Result);
-                throw new Exception(string.Format("Received the above response with status code : {statusCode}", response.StatusCode.ToString()));
+                throw new Exception(string.Format("Received the above response with status code : {0}", response.StatusCode));
             }
         }
     }
