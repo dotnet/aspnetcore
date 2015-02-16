@@ -113,18 +113,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// value to the dictionary. It will expose public properties from derived types as well. This is typically
         /// used with objects of an anonymous type.
         ///
-        /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then it is
-        /// returned as-is.
+        /// If the <paramref name="value"/> is already an <see cref="IDictionary{string, object}"/> instance, then it
+        /// is returned as-is.
         /// <example>
         /// <c>new { data_name="value" }</c> will translate to the entry <c>{ "data_name", "value" }</c>
         /// in the resulting dictionary.
         /// </example>
         /// </summary>
-        /// <param name="obj">The object to be converted.</param>
+        /// <param name="value">The <see cref="object"/> to be converted.</param>
         /// <returns>The created dictionary of property names and property values.</returns>
-        public static IDictionary<string, object> ObjectToDictionary(object obj)
+        public static IDictionary<string, object> ObjectToDictionary(object value)
         {
-            return TypeHelper.ObjectToDictionary(obj);
+            return TypeHelper.ObjectToDictionary(value);
         }
 
         /// <summary>
@@ -231,9 +231,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString CheckBox(string name, bool? isChecked, object htmlAttributes)
+        public HtmlString CheckBox(string expression, bool? isChecked, object htmlAttributes)
         {
-            return GenerateCheckBox(metadata: null, name: name, isChecked: isChecked, htmlAttributes: htmlAttributes);
+            return GenerateCheckBox(
+                metadata: null,
+                expression: expression,
+                isChecked: isChecked,
+                htmlAttributes: htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -255,9 +259,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public string GenerateIdFromName([NotNull] string name)
+        public string GenerateIdFromName([NotNull] string fullName)
         {
-            return TagBuilder.CreateSanitizedId(name, IdAttributeDotReplacement);
+            return TagBuilder.CreateSanitizedId(fullName, IdAttributeDotReplacement);
         }
 
         /// <inheritdoc />
@@ -282,26 +286,32 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public string DisplayText(string name)
+        public string DisplayText(string expression)
         {
-            var metadata = ExpressionMetadataProvider.FromStringExpression(name, ViewData, MetadataProvider);
+            var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
             return GenerateDisplayText(metadata);
         }
 
         /// <inheritdoc />
-        public HtmlString DropDownList(string name, IEnumerable<SelectListItem> selectList, string optionLabel,
+        public HtmlString DropDownList(
+            string expression,
+            IEnumerable<SelectListItem> selectList,
+            string optionLabel,
             object htmlAttributes)
         {
             return GenerateDropDown(
                 metadata: null,
-                expression: name,
+                expression: expression,
                 selectList: selectList,
                 optionLabel: optionLabel,
                 htmlAttributes: htmlAttributes);
         }
 
         /// <inheritdoc />
-        public HtmlString Editor(string expression, string templateName, string htmlFieldName,
+        public HtmlString Editor(
+            string expression,
+            string templateName,
+            string htmlFieldName,
             object additionalViewData)
         {
             var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
@@ -314,16 +324,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString Hidden(string name, object value, object htmlAttributes)
+        public HtmlString Hidden(string expression, object value, object htmlAttributes)
         {
-            return GenerateHidden(metadata: null, name: name, value: value, useViewData: (value == null),
+            return GenerateHidden(
+                metadata: null,
+                expression: expression,
+                value: value,
+                useViewData: (value == null),
                 htmlAttributes: htmlAttributes);
         }
 
         /// <inheritdoc />
-        public string Id(string name)
+        public string Id(string expression)
         {
-            return GenerateId(name);
+            return GenerateId(expression);
         }
 
         /// <inheritdoc />
@@ -331,27 +345,33 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
             return GenerateLabel(
-                            metadata,
-                            expression,
-                            labelText,
-                            htmlAttributes);
+                metadata,
+                expression,
+                labelText,
+                htmlAttributes);
         }
 
         /// <inheritdoc />
-        public HtmlString ListBox(string name, IEnumerable<SelectListItem> selectList, object htmlAttributes)
+        public HtmlString ListBox(string expression, IEnumerable<SelectListItem> selectList, object htmlAttributes)
         {
-            return GenerateListBox(metadata: null, name: name, selectList: selectList, htmlAttributes: htmlAttributes);
+            return GenerateListBox(
+                metadata: null,
+                expression: expression,
+                selectList: selectList,
+                htmlAttributes: htmlAttributes);
         }
 
         /// <inheritdoc />
-        public string Name(string name)
+        public string Name(string expression)
         {
-            return GenerateName(name);
+            return GenerateName(expression);
         }
 
         /// <inheritdoc />
-        public async Task<HtmlString> PartialAsync([NotNull] string partialViewName, object model,
-                                                   ViewDataDictionary viewData)
+        public async Task<HtmlString> PartialAsync(
+            [NotNull] string partialViewName,
+            object model,
+            ViewDataDictionary viewData)
         {
             using (var writer = new StringCollectionTextWriter(Encoding.UTF8))
             {
@@ -419,15 +439,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString Password(string name, object value, object htmlAttributes)
+        public HtmlString Password(string expression, object value, object htmlAttributes)
         {
-            return GeneratePassword(metadata: null, name: name, value: value, htmlAttributes: htmlAttributes);
+            return GeneratePassword(
+                metadata: null,
+                expression: expression,
+                value: value,
+                htmlAttributes: htmlAttributes);
         }
 
         /// <inheritdoc />
-        public HtmlString RadioButton(string name, object value, bool? isChecked, object htmlAttributes)
+        public HtmlString RadioButton(string expression, object value, bool? isChecked, object htmlAttributes)
         {
-            return GenerateRadioButton(metadata: null, name: name, value: value, isChecked: isChecked,
+            return GenerateRadioButton(
+                metadata: null,
+                expression: expression,
+                value: value,
+                isChecked: isChecked,
                 htmlAttributes: htmlAttributes);
         }
 
@@ -504,28 +532,28 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString TextArea(string name, string value, int rows, int columns, object htmlAttributes)
+        public HtmlString TextArea(string expression, string value, int rows, int columns, object htmlAttributes)
         {
-            var metadata = ExpressionMetadataProvider.FromStringExpression(name, ViewData, MetadataProvider);
+            var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
             if (value != null)
             {
                 metadata.Model = value;
             }
 
-            return GenerateTextArea(metadata, name, rows, columns, htmlAttributes);
+            return GenerateTextArea(metadata, expression, rows, columns, htmlAttributes);
         }
 
         /// <inheritdoc />
-        public HtmlString TextBox(string name, object value, string format, object htmlAttributes)
+        public HtmlString TextBox(string expression, object value, string format, object htmlAttributes)
         {
-            return GenerateTextBox(metadata: null, name: name, value: value, format: format,
+            return GenerateTextBox(metadata: null, expression: expression, value: value, format: format,
                 htmlAttributes: htmlAttributes);
         }
 
         /// <inheritdoc />
-        public string Value(string name, string format)
+        public string Value(string expression, string format)
         {
-            return GenerateValue(name, value: null, format: format, useViewData: true);
+            return GenerateValue(expression, value: null, format: format, useViewData: true);
         }
 
         /// <summary>
@@ -538,16 +566,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return new MvcForm(ViewContext);
         }
 
-        protected virtual HtmlString GenerateCheckBox(ModelMetadata metadata, string name, bool? isChecked,
+        protected virtual HtmlString GenerateCheckBox(
+            ModelMetadata metadata,
+            string expression,
+            bool? isChecked,
             object htmlAttributes)
         {
             var checkbox = _htmlGenerator.GenerateCheckBox(
                 ViewContext,
                 metadata,
-                name,
+                expression,
                 isChecked,
                 htmlAttributes);
-            var hidden = _htmlGenerator.GenerateHiddenForCheckbox(ViewContext, metadata, name);
+            var hidden = _htmlGenerator.GenerateHiddenForCheckbox(ViewContext, metadata, expression);
             if (checkbox == null || hidden == null)
             {
                 return HtmlString.Empty;
@@ -558,7 +589,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return new HtmlString(elements);
         }
 
-        protected virtual string GenerateDisplayName([NotNull] ModelMetadata metadata, string htmlFieldName)
+        protected virtual string GenerateDisplayName([NotNull] ModelMetadata metadata, string expression)
         {
             // We don't call ModelMetadata.GetDisplayName here because
             // we want to fall back to the field name rather than the ModelType.
@@ -567,7 +598,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             if (resolvedDisplayName == null)
             {
                 resolvedDisplayName =
-                    string.IsNullOrEmpty(htmlFieldName) ? string.Empty : htmlFieldName.Split('.').Last();
+                    string.IsNullOrEmpty(expression) ? string.Empty : expression.Split('.').Last();
             }
 
             return resolvedDisplayName;
@@ -578,14 +609,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return metadata.SimpleDisplayText ?? string.Empty;
         }
 
-        protected HtmlString GenerateDropDown(ModelMetadata metadata, string expression,
-            IEnumerable<SelectListItem> selectList, string optionLabel, object htmlAttributes)
+        protected HtmlString GenerateDropDown(
+            ModelMetadata metadata,
+            string expression,
+            IEnumerable<SelectListItem> selectList,
+            string optionLabel,
+            object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateSelect(
                 ViewContext,
                 metadata,
                 optionLabel,
-                name: expression,
+                expression: expression,
                 selectList: selectList,
                 allowMultiple: false,
                 htmlAttributes: htmlAttributes);
@@ -597,7 +632,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
-        protected virtual HtmlString GenerateEditor(ModelMetadata metadata, string htmlFieldName, string templateName,
+        protected virtual HtmlString GenerateEditor(
+            ModelMetadata metadata,
+            string htmlFieldName,
+            string templateName,
             object additionalViewData)
         {
             var templateBuilder = new TemplateBuilder(
@@ -704,7 +742,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         protected virtual HtmlString GenerateHidden(
             ModelMetadata metadata,
-            string name,
+            string expression,
             object value,
             bool useViewData,
             object htmlAttributes)
@@ -713,7 +751,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 _htmlGenerator.GenerateHidden(
                     ViewContext,
                     metadata,
-                    name,
+                    expression,
                     value,
                     useViewData,
                     htmlAttributes);
@@ -727,21 +765,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         protected virtual string GenerateId(string expression)
         {
-            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, name: expression);
+            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, expression: expression);
             var id = TagBuilder.CreateSanitizedId(fullName, IdAttributeDotReplacement);
 
             return id;
         }
 
-        protected virtual HtmlString GenerateLabel([NotNull] ModelMetadata metadata,
-                                                    string htmlFieldName,
-                                                    string labelText,
-                                                    object htmlAttributes)
+        protected virtual HtmlString GenerateLabel(
+            [NotNull] ModelMetadata metadata,
+            string expression,
+            string labelText,
+            object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateLabel(
                 ViewContext,
                 metadata,
-                name: htmlFieldName,
+                expression: expression,
                 labelText: labelText,
                 htmlAttributes: htmlAttributes);
             if (tagBuilder == null)
@@ -754,7 +793,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         protected HtmlString GenerateListBox(
             ModelMetadata metadata,
-            string name,
+            string expression,
             IEnumerable<SelectListItem> selectList,
             object htmlAttributes)
         {
@@ -762,7 +801,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 ViewContext,
                 metadata,
                 optionLabel: null,
-                name: name,
+                expression: expression,
                 selectList: selectList,
                 allowMultiple: true,
                 htmlAttributes: htmlAttributes);
@@ -774,19 +813,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
-        protected virtual string GenerateName(string name)
+        protected virtual string GenerateName(string expression)
         {
-            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, name);
+            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, expression);
             return fullName;
         }
 
-        protected virtual HtmlString GeneratePassword(ModelMetadata metadata, string name, object value,
+        protected virtual HtmlString GeneratePassword(
+            ModelMetadata metadata,
+            string expression,
+            object value,
             object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GeneratePassword(
                 ViewContext,
                 metadata,
-                name,
+                expression,
                 value,
                 htmlAttributes);
             if (tagBuilder == null)
@@ -797,13 +839,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
 
-        protected virtual HtmlString GenerateRadioButton(ModelMetadata metadata, string name, object value,
-            bool? isChecked, object htmlAttributes)
+        protected virtual HtmlString GenerateRadioButton(
+            ModelMetadata metadata,
+            string expression,
+            object value,
+            bool? isChecked,
+            object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateRadioButton(
                 ViewContext,
                 metadata,
-                name,
+                expression,
                 value,
                 isChecked,
                 htmlAttributes);
@@ -815,13 +861,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
 
-        protected virtual HtmlString GenerateTextArea(ModelMetadata metadata, string name,
-            int rows, int columns, object htmlAttributes)
+        protected virtual HtmlString GenerateTextArea(
+            ModelMetadata metadata,
+            string expression,
+            int rows,
+            int columns,
+            object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateTextArea(
                 ViewContext,
                 metadata,
-                name,
+                expression,
                 rows,
                 columns,
                 htmlAttributes);
@@ -833,13 +883,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
-        protected virtual HtmlString GenerateTextBox(ModelMetadata metadata, string name, object value, string format,
+        protected virtual HtmlString GenerateTextBox(
+            ModelMetadata metadata,
+            string expression,
+            object value,
+            string format,
             object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateTextBox(
                 ViewContext,
                 metadata,
-                name,
+                expression,
                 value,
                 format,
                 htmlAttributes);
@@ -851,14 +905,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
 
-        protected virtual HtmlString GenerateValidationMessage(string expression,
+        protected virtual HtmlString GenerateValidationMessage(
+            string expression,
             string message,
             object htmlAttributes,
             string tag)
         {
             var tagBuilder = _htmlGenerator.GenerateValidationMessage(
                 ViewContext,
-                name: expression,
+                expression: expression,
                 message: message,
                 tag: tag,
                 htmlAttributes: htmlAttributes);
@@ -890,9 +945,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder.ToHtmlString(TagRenderMode.Normal);
         }
 
-        protected virtual string GenerateValue(string name, object value, string format, bool useViewData)
+        protected virtual string GenerateValue(string expression, object value, string format, bool useViewData)
         {
-            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, name);
+            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, expression);
             var attemptedValue =
                 (string)DefaultHtmlGenerator.GetModelStateValue(ViewContext, fullName, typeof(string));
 
@@ -904,7 +959,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
             else if (useViewData)
             {
-                if (string.IsNullOrEmpty(name))
+                if (string.IsNullOrEmpty(expression))
                 {
                     // case 2(a): format the value from ModelMetadata for the current model
                     var metadata = ViewData.ModelMetadata;
@@ -913,7 +968,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 else
                 {
                     // case 2(b): format the value from ViewData
-                    resolvedValue = DefaultHtmlGenerator.EvalString(ViewContext, name, format);
+                    resolvedValue = DefaultHtmlGenerator.EvalString(ViewContext, expression, format);
                 }
             }
             else
@@ -928,9 +983,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public IEnumerable<ModelClientValidationRule> GetClientValidationRules(
             ModelMetadata metadata,
-            string name)
+            string expression)
         {
-            return _htmlGenerator.GetClientValidationRules(ViewContext, metadata, name);
+            return _htmlGenerator.GetClientValidationRules(ViewContext, metadata, expression);
         }
     }
 }

@@ -70,24 +70,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/> instance created for the
         /// template.
         /// </param>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the created HTML.</returns>
         /// <remarks>
         /// For example the default <see cref="object"/> display template includes markup for each property in the
         /// <paramref name="expression"/> result.
         /// </remarks>
-        HtmlString DisplayFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression,
-                                      string templateName,
-                                      string htmlFieldName,
-                                      object additionalViewData);
+        HtmlString DisplayFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            string templateName,
+            string htmlFieldName,
+            object additionalViewData);
 
         /// <summary>
         /// Returns the display name for the specified <paramref name="expression"/>.
         /// </summary>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A <see cref="string"/> containing the display name.</returns>
-        string DisplayNameFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression);
+        string DisplayNameFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression);
 
         /// <summary>
         /// Returns the display name for the specified <paramref name="expression"/>
@@ -95,22 +96,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="expression">An expression to be evaluated against an item in the current model.</param>
         /// <typeparam name="TModelItem">The type of items in the model collection.</typeparam>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A <see cref="string"/> containing the display name.</returns>
-        string DisplayNameForInnerType<TModelItem, TValue>(
-            [NotNull] Expression<Func<TModelItem, TValue>> expression);
+        string DisplayNameForInnerType<TModelItem, TResult>(
+            [NotNull] Expression<Func<TModelItem, TResult>> expression);
 
         /// <summary>
         /// Returns the simple display text for the specified <paramref name="expression"/>.
         /// </summary>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>
         /// A <see cref="string"/> containing the simple display text.
         /// If the <paramref name="expression"/> result is <c>null</c>, returns
         /// <see cref="ModelBinding.ModelMetadata.NullDisplayText"/>.
         /// </returns>
-        string DisplayTextFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression);
+        string DisplayTextFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression);
 
         /// <summary>
         /// Returns a single-selection HTML &lt;select&gt; element for the <paramref name="expression"/>, using the
@@ -128,15 +129,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;select&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </remarks>
-        HtmlString DropDownListFor<TProperty>(
-            [NotNull] Expression<Func<TModel, TProperty>> expression,
+        HtmlString DropDownListFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
             IEnumerable<SelectListItem> selectList,
             string optionLabel,
             object htmlAttributes);
@@ -157,13 +158,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/> instance created for the
         /// template.
         /// </param>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
         /// elements for each property in the <paramref name="expression"/> result.
         /// </remarks>
-        HtmlString EditorFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression,
+        HtmlString EditorFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
             string templateName,
             string htmlFieldName,
             object additionalViewData);
@@ -176,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
@@ -198,16 +200,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        HtmlString HiddenFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+        HtmlString HiddenFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
             object htmlAttributes);
 
         /// <summary>
         /// Returns the HTML element Id for the specified <paramref name="expression"/>.
         /// </summary>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A <see cref="string"/> containing the element Id.</returns>
-        string IdFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
+        string IdFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression);
 
         /// <summary>
         /// Returns a &lt;label&gt; element for the specified <paramref name="expression"/>.
@@ -218,11 +221,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;label&gt; element.</returns>
-        HtmlString LabelFor<TValue>([NotNull] Expression<Func<TModel, TValue>> expression,
-                                    string labelText,
-                                    object htmlAttributes);
+        HtmlString LabelFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            string labelText,
+            object htmlAttributes);
 
         /// <summary>
         /// Returns a multi-selection &lt;select&gt; element for the <paramref name="expression"/>, using the
@@ -237,15 +241,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;select&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </remarks>
-        HtmlString ListBoxFor<TProperty>(
-            [NotNull] Expression<Func<TModel, TProperty>> expression,
+        HtmlString ListBoxFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
             IEnumerable<SelectListItem> selectList,
             object htmlAttributes);
 
@@ -253,9 +257,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns the full HTML element name for the specified <paramref name="expression"/>.
         /// </summary>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A <see cref="string"/> containing the element name.</returns>
-        string NameFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression);
+        string NameFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression);
 
         /// <summary>
         /// Returns an &lt;input&gt; element of type "password" for the specified <paramref name="expression"/>.
@@ -265,7 +269,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
@@ -283,7 +287,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        HtmlString PasswordFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+        HtmlString PasswordFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
             object htmlAttributes);
 
         /// <summary>
@@ -295,7 +300,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
@@ -322,8 +327,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <paramref name="value"/>; does not include the attribute otherwise.
         /// </para>
         /// </remarks>
-        HtmlString RadioButtonFor<TProperty>(
-            [NotNull] Expression<Func<TModel, TProperty>> expression,
+        HtmlString RadioButtonFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
             [NotNull] object value,
             object htmlAttributes);
 
@@ -337,7 +342,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
@@ -357,8 +362,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        HtmlString TextAreaFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
-            int rows, int columns, object htmlAttributes);
+        HtmlString TextAreaFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            int rows,
+            int columns,
+            object htmlAttributes);
 
         /// <summary>
         /// Returns an &lt;input&gt; element of type "text" for the specified <paramref name="expression"/>.
@@ -371,7 +379,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
         /// </param>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
@@ -394,7 +402,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        HtmlString TextBoxFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format,
+        HtmlString TextBoxFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            string format,
             object htmlAttributes);
 
         /// <summary>
@@ -415,12 +425,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// The tag to wrap the <paramref name="message"/> in the generated HTML. Its default value is
         /// <see cref="ViewContext.ValidationMessageElement"/>.
         /// </param>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>
         /// A new <see cref="HtmlString"/> containing the <paramref name="tag"/> element. <c>null</c> if the
         /// <paramref name="expression"/> is valid and client-side validation is disabled.
         /// </returns>
-        HtmlString ValidationMessageFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression,
+        HtmlString ValidationMessageFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
             string message,
             object htmlAttributes,
             string tag);
@@ -432,12 +443,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="format">
         /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
         /// </param>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A <see cref="string"/> containing the formatted value.</returns>
         /// <remarks>
         /// Converts the <paramref name="expression"/> result to a <see cref="string"/> directly if
         /// <paramref name="format"/> is <c>null</c> or empty.
         /// </remarks>
-        string ValueFor<TProperty>([NotNull] Expression<Func<TModel, TProperty>> expression, string format);
+        string ValueFor<TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            string format);
     }
 }

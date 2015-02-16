@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns HTML markup for the <paramref name="expression"/>, using an editor template. The template is found
         /// using the <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">
         /// Expression name, relative to the current model. May identify a single property or an
         /// <see cref="object"/> that contains the properties to edit.
@@ -35,9 +35,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression)
+        public static HtmlString Editor([NotNull] this IHtmlHelper htmlHelper, string expression)
         {
-            return html.Editor(expression, templateName: null, htmlFieldName: null, additionalViewData: null);
+            return htmlHelper.Editor(expression, templateName: null, htmlFieldName: null, additionalViewData: null);
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// additional view data. The template is found using the <paramref name="expression"/>'s
         /// <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">
         /// Expression name, relative to the current model. May identify a single property or an
         /// <see cref="object"/> that contains the properties to edit.
@@ -70,9 +70,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, object additionalViewData)
+        public static HtmlString Editor(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string expression,
+            object additionalViewData)
         {
-            return html.Editor(expression, templateName: null, htmlFieldName: null,
+            return htmlHelper.Editor(
+                expression,
+                templateName: null,
+                htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
@@ -81,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// using the <paramref name="templateName"/> or the <paramref name="expression"/>'s
         /// <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">
         /// Expression name, relative to the current model. May identify a single property or an
         /// <see cref="object"/> that contains the properties to edit.
@@ -102,9 +108,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, string templateName)
+        public static HtmlString Editor([NotNull] this IHtmlHelper htmlHelper, string expression, string templateName)
         {
-            return html.Editor(expression, templateName, htmlFieldName: null, additionalViewData: null);
+            return htmlHelper.Editor(expression, templateName, htmlFieldName: null, additionalViewData: null);
         }
 
         /// <summary>
@@ -112,7 +118,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// additional view data. The template is found using the <paramref name="templateName"/> or the
         /// <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">
         /// Expression name, relative to the current model. May identify a single property or an
         /// <see cref="object"/> that contains the properties to edit.
@@ -138,10 +144,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, string templateName,
+        public static HtmlString Editor(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string expression,
+            string templateName,
             object additionalViewData)
         {
-            return html.Editor(expression, templateName, htmlFieldName: null, additionalViewData: additionalViewData);
+            return htmlHelper.Editor(
+                expression,
+                templateName,
+                htmlFieldName: null,
+                additionalViewData: additionalViewData);
         }
 
         /// <summary>
@@ -149,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// field name. The template is found using the <paramref name="templateName"/> or the
         /// <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">
         /// Expression name, relative to the current model. May identify a single property or an
         /// <see cref="object"/> that contains the properties to edit.
@@ -174,20 +187,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString Editor([NotNull] this IHtmlHelper html, string expression, string templateName,
+        public static HtmlString Editor(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string expression,
+            string templateName,
             string htmlFieldName)
         {
-            return html.Editor(expression, templateName, htmlFieldName, additionalViewData: null);
+            return htmlHelper.Editor(expression, templateName, htmlFieldName, additionalViewData: null);
         }
 
         /// <summary>
         /// Returns HTML markup for the <paramref name="expression"/>, using an editor template. The template is found
         /// using the <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
@@ -199,10 +215,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
-            [NotNull] Expression<Func<TModel, TValue>> expression)
+        public static HtmlString EditorFor<TModel, TResult>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TResult>> expression)
         {
-            return html.EditorFor(expression, templateName: null, htmlFieldName: null, additionalViewData: null);
+            return htmlHelper.EditorFor(expression, templateName: null, htmlFieldName: null, additionalViewData: null);
         }
 
         /// <summary>
@@ -210,7 +227,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// additional view data. The template is found using the <paramref name="expression"/>'s
         /// <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="additionalViewData">
         /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
@@ -218,7 +235,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// instance created for the template.
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
@@ -230,10 +247,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
-            [NotNull] Expression<Func<TModel, TValue>> expression, object additionalViewData)
+        public static HtmlString EditorFor<TModel, TResult>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            object additionalViewData)
         {
-            return html.EditorFor(expression, templateName: null, htmlFieldName: null,
+            return htmlHelper.EditorFor(
+                expression,
+                templateName: null,
+                htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
@@ -242,11 +264,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// using the <paramref name="templateName"/> or the <paramref name="expression"/>'s
         /// <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="templateName">The name of the template that is used to create the HTML markup.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
@@ -258,10 +280,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
-            [NotNull] Expression<Func<TModel, TValue>> expression, string templateName)
+        public static HtmlString EditorFor<TModel, TResult>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            string templateName)
         {
-            return html.EditorFor(expression, templateName, htmlFieldName: null, additionalViewData: null);
+            return htmlHelper.EditorFor(expression, templateName, htmlFieldName: null, additionalViewData: null);
         }
 
         /// <summary>
@@ -269,7 +293,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// additional view data. The template is found using the <paramref name="templateName"/> or the
         /// <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="templateName">The name of the template that is used to create the HTML markup.</param>
         /// <param name="additionalViewData">
@@ -278,7 +302,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// instance created for the template.
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
@@ -290,10 +314,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
-            [NotNull] Expression<Func<TModel, TValue>> expression, string templateName, object additionalViewData)
+        public static HtmlString EditorFor<TModel, TResult>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            string templateName,
+            object additionalViewData)
         {
-            return html.EditorFor(expression, templateName, htmlFieldName: null,
+            return htmlHelper.EditorFor(
+                expression,
+                templateName,
+                htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
@@ -302,7 +332,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// field name. The template is found using the <paramref name="templateName"/> or the
         /// <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="templateName">The name of the template that is used to create the HTML markup.</param>
         /// <param name="htmlFieldName">
@@ -310,7 +340,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// that have the same name.
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
@@ -322,17 +352,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
-            [NotNull] Expression<Func<TModel, TValue>> expression, string templateName, string htmlFieldName)
+        public static HtmlString EditorFor<TModel, TResult>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            string templateName,
+            string htmlFieldName)
         {
-            return html.EditorFor(expression, templateName, htmlFieldName, additionalViewData: null);
+            return htmlHelper.EditorFor(expression, templateName, htmlFieldName, additionalViewData: null);
         }
 
         /// <summary>
         /// Returns HTML markup for the current model, using an editor template. The template is found using the
         /// model's <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
@@ -344,16 +377,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html)
+        public static HtmlString EditorForModel([NotNull] this IHtmlHelper htmlHelper)
         {
-            return html.Editor(expression: null, templateName: null, htmlFieldName: null, additionalViewData: null);
+            return htmlHelper.Editor(
+                expression: null,
+                templateName: null,
+                htmlFieldName: null,
+                additionalViewData: null);
         }
 
         /// <summary>
         /// Returns HTML markup for the current model, using an editor template and specified additional view data. The
         /// template is found using the model's <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="additionalViewData">
         /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
         /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
@@ -370,9 +407,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, object additionalViewData)
+        public static HtmlString EditorForModel([NotNull] this IHtmlHelper htmlHelper, object additionalViewData)
         {
-            return html.Editor(expression: null, templateName: null, htmlFieldName: null,
+            return htmlHelper.Editor(
+                expression: null,
+                templateName: null,
+                htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
@@ -380,7 +420,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Returns HTML markup for the current model, using an editor template. The template is found using the
         /// <paramref name="templateName"/> or the model's <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
@@ -393,9 +433,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName)
+        public static HtmlString EditorForModel([NotNull] this IHtmlHelper htmlHelper, string templateName)
         {
-            return html.Editor(expression: null, templateName: templateName, htmlFieldName: null,
+            return htmlHelper.Editor(
+                expression: null,
+                templateName: templateName,
+                htmlFieldName: null,
                 additionalViewData: null);
         }
 
@@ -404,7 +447,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// template is found using the <paramref name="templateName"/> or the model's
         /// <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
         /// <param name="additionalViewData">
         /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
@@ -422,10 +465,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName,
+        public static HtmlString EditorForModel(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string templateName,
             object additionalViewData)
         {
-            return html.Editor(expression: null, templateName: templateName, htmlFieldName: null,
+            return htmlHelper.Editor(
+                expression: null,
+                templateName: templateName,
+                htmlFieldName: null,
                 additionalViewData: additionalViewData);
         }
 
@@ -434,7 +482,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// template is found using the <paramref name="templateName"/> or the model's
         /// <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
         /// <param name="htmlFieldName">
         /// A <see cref="string"/> used to disambiguate the names of HTML elements that are created for
@@ -451,10 +499,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName,
+        public static HtmlString EditorForModel(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string templateName,
             string htmlFieldName)
         {
-            return html.Editor(expression: null, templateName: templateName, htmlFieldName: htmlFieldName,
+            return htmlHelper.Editor(
+                expression: null,
+                templateName: templateName,
+                htmlFieldName: htmlFieldName,
                 additionalViewData: null);
         }
 
@@ -463,7 +516,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// additional view data. The template is found using the <paramref name="templateName"/> or the model's
         /// <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
         /// <param name="htmlFieldName">
         /// A <see cref="string"/> used to disambiguate the names of HTML elements that are created for
@@ -485,10 +538,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel([NotNull] this IHtmlHelper html, string templateName,
-            string htmlFieldName, object additionalViewData)
+        public static HtmlString EditorForModel(
+            [NotNull] this IHtmlHelper htmlHelper,
+            string templateName,
+            string htmlFieldName,
+            object additionalViewData)
         {
-            return html.Editor(expression: null, templateName: templateName, htmlFieldName: htmlFieldName,
+            return htmlHelper.Editor(
+                expression: null,
+                templateName: templateName,
+                htmlFieldName: htmlFieldName,
                 additionalViewData: additionalViewData);
         }
     }

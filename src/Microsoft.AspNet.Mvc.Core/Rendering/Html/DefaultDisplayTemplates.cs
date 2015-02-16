@@ -15,16 +15,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public static class DefaultDisplayTemplates
     {
-        public static string BooleanTemplate(IHtmlHelper html)
+        public static string BooleanTemplate(IHtmlHelper htmlHelper)
         {
             bool? value = null;
-            if (html.ViewData.Model != null)
+            if (htmlHelper.ViewData.Model != null)
             {
-                value = Convert.ToBoolean(html.ViewData.Model, CultureInfo.InvariantCulture);
+                value = Convert.ToBoolean(htmlHelper.ViewData.Model, CultureInfo.InvariantCulture);
             }
 
-            return html.ViewData.ModelMetadata.IsNullableValueType ?
-                BooleanTemplateDropDownList(html, value) :
+            return htmlHelper.ViewData.ModelMetadata.IsNullableValueType ?
+                BooleanTemplateDropDownList(htmlHelper, value) :
                 BooleanTemplateCheckbox(value ?? false);
         }
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return inputTag.ToString(TagRenderMode.SelfClosing);
         }
 
-        private static string BooleanTemplateDropDownList(IHtmlHelper html, bool? value)
+        private static string BooleanTemplateDropDownList(IHtmlHelper htmlHelper, bool? value)
         {
             var selectTag = new TagBuilder("select");
             selectTag.AddCssClass("list-box");
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             foreach (var item in TriStateValues(value))
             {
-                var encodedText = html.Encode(item.Text);
+                var encodedText = htmlHelper.Encode(item.Text);
                 var option = DefaultHtmlGenerator.GenerateOption(item, encodedText);
                 builder.Append(option);
             }
@@ -89,9 +89,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             };
         }
 
-        public static string CollectionTemplate(IHtmlHelper html)
+        public static string CollectionTemplate(IHtmlHelper htmlHelper)
         {
-            var model = html.ViewData.ModelMetadata.Model;
+            var model = htmlHelper.ViewData.ModelMetadata.Model;
             if (model == null)
             {
                 return string.Empty;
@@ -114,16 +114,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var typeInCollectionIsNullableValueType = typeInCollection.IsNullableValueType();
 
-            var oldPrefix = html.ViewData.TemplateInfo.HtmlFieldPrefix;
+            var oldPrefix = htmlHelper.ViewData.TemplateInfo.HtmlFieldPrefix;
 
             try
             {
-                html.ViewData.TemplateInfo.HtmlFieldPrefix = string.Empty;
+                htmlHelper.ViewData.TemplateInfo.HtmlFieldPrefix = string.Empty;
 
                 var fieldNameBase = oldPrefix;
                 var result = new StringBuilder();
 
-                var serviceProvider = html.ViewContext.HttpContext.RequestServices;
+                var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
                 var metadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
                 var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
 
@@ -141,8 +141,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                     var templateBuilder = new TemplateBuilder(
                         viewEngine,
-                        html.ViewContext,
-                        html.ViewData,
+                        htmlHelper.ViewContext,
+                        htmlHelper.ViewData,
                         metadata,
                         htmlFieldName: fieldName,
                         templateName: null,
@@ -157,51 +157,51 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
             finally
             {
-                html.ViewData.TemplateInfo.HtmlFieldPrefix = oldPrefix;
+                htmlHelper.ViewData.TemplateInfo.HtmlFieldPrefix = oldPrefix;
             }
         }
 
-        public static string DecimalTemplate(IHtmlHelper html)
+        public static string DecimalTemplate(IHtmlHelper htmlHelper)
         {
-            if (html.ViewData.TemplateInfo.FormattedModelValue == html.ViewData.ModelMetadata.Model)
+            if (htmlHelper.ViewData.TemplateInfo.FormattedModelValue == htmlHelper.ViewData.ModelMetadata.Model)
             {
-                html.ViewData.TemplateInfo.FormattedModelValue =
-                    string.Format(CultureInfo.CurrentCulture, "{0:0.00}", html.ViewData.ModelMetadata.Model);
+                htmlHelper.ViewData.TemplateInfo.FormattedModelValue =
+                    string.Format(CultureInfo.CurrentCulture, "{0:0.00}", htmlHelper.ViewData.ModelMetadata.Model);
             }
 
-            return StringTemplate(html);
+            return StringTemplate(htmlHelper);
         }
 
-        public static string EmailAddressTemplate(IHtmlHelper html)
+        public static string EmailAddressTemplate(IHtmlHelper htmlHelper)
         {
-            var uriString = "mailto:" + ((html.ViewData.Model == null) ?
+            var uriString = "mailto:" + ((htmlHelper.ViewData.Model == null) ?
                 string.Empty :
-                html.ViewData.Model.ToString());
-            var linkedText = (html.ViewData.TemplateInfo.FormattedModelValue == null) ?
+                htmlHelper.ViewData.Model.ToString());
+            var linkedText = (htmlHelper.ViewData.TemplateInfo.FormattedModelValue == null) ?
                 string.Empty :
-                html.ViewData.TemplateInfo.FormattedModelValue.ToString();
+                htmlHelper.ViewData.TemplateInfo.FormattedModelValue.ToString();
 
             return HyperlinkTemplate(uriString, linkedText);
         }
 
-        public static string HiddenInputTemplate(IHtmlHelper html)
+        public static string HiddenInputTemplate(IHtmlHelper htmlHelper)
         {
-            if (html.ViewData.ModelMetadata.HideSurroundingHtml)
+            if (htmlHelper.ViewData.ModelMetadata.HideSurroundingHtml)
             {
                 return string.Empty;
             }
 
-            return StringTemplate(html);
+            return StringTemplate(htmlHelper);
         }
 
-        public static string HtmlTemplate(IHtmlHelper html)
+        public static string HtmlTemplate(IHtmlHelper htmlHelper)
         {
-            return html.ViewData.TemplateInfo.FormattedModelValue.ToString();
+            return htmlHelper.ViewData.TemplateInfo.FormattedModelValue.ToString();
         }
 
-        public static string ObjectTemplate(IHtmlHelper html)
+        public static string ObjectTemplate(IHtmlHelper htmlHelper)
         {
-            var viewData = html.ViewData;
+            var viewData = htmlHelper.ViewData;
             var templateInfo = viewData.TemplateInfo;
             var modelMetadata = viewData.ModelMetadata;
             var builder = new StringBuilder();
@@ -216,13 +216,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 var text = modelMetadata.SimpleDisplayText;
                 if (modelMetadata.HtmlEncode)
                 {
-                    text = html.Encode(text);
+                    text = htmlHelper.Encode(text);
                 }
 
                 return text;
             }
 
-            var serviceProvider = html.ViewContext.HttpContext.RequestServices;
+            var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
             var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
 
             foreach (var propertyMetadata in modelMetadata.Properties.Where(pm => ShouldShow(pm, templateInfo)))
@@ -248,8 +248,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                 var templateBuilder = new TemplateBuilder(
                     viewEngine,
-                    html.ViewContext,
-                    html.ViewData,
+                    htmlHelper.ViewContext,
+                    htmlHelper.ViewData,
                     propertyMetadata,
                     htmlFieldName: propertyMetadata.PropertyName,
                     templateName: null,
@@ -275,17 +275,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 !templateInfo.Visited(metadata);
         }
 
-        public static string StringTemplate(IHtmlHelper html)
+        public static string StringTemplate(IHtmlHelper htmlHelper)
         {
-            return html.Encode(html.ViewData.TemplateInfo.FormattedModelValue);
+            return htmlHelper.Encode(htmlHelper.ViewData.TemplateInfo.FormattedModelValue);
         }
 
-        public static string UrlTemplate(IHtmlHelper html)
+        public static string UrlTemplate(IHtmlHelper htmlHelper)
         {
-            var uriString = (html.ViewData.Model == null) ? string.Empty : html.ViewData.Model.ToString();
-            var linkedText = (html.ViewData.TemplateInfo.FormattedModelValue == null) ?
+            var uriString = (htmlHelper.ViewData.Model == null) ? string.Empty : htmlHelper.ViewData.Model.ToString();
+            var linkedText = (htmlHelper.ViewData.TemplateInfo.FormattedModelValue == null) ?
                 string.Empty :
-                html.ViewData.TemplateInfo.FormattedModelValue.ToString();
+                htmlHelper.ViewData.TemplateInfo.FormattedModelValue.ToString();
 
             return HyperlinkTemplate(uriString, linkedText);
         }

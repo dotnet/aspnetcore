@@ -12,17 +12,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
     public static class HtmlHelperValueExtensions
     {
         /// <summary>
-        /// Returns the formatted value for the specified expression <paramref name="name"/>.
+        /// Returns the formatted value for the specified <paramref name="expression"/>.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="name">Expression name, relative to the current model.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
         /// <returns>A <see cref="string"/> containing the formatted value.</returns>
         /// <remarks>
         /// Converts the expression result to a <see cref="string"/> directly.
         /// </remarks>
-        public static string Value([NotNull] this IHtmlHelper htmlHelper, string name)
+        public static string Value([NotNull] this IHtmlHelper htmlHelper, string expression)
         {
-            return htmlHelper.Value(name, format: null);
+            return htmlHelper.Value(expression, format: null);
         }
 
         /// <summary>
@@ -31,14 +31,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
-        /// <typeparam name="TProperty">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A <see cref="string"/> containing the formatted value.</returns>
         /// <remarks>
         /// Converts the <paramref name="expression"/> result to a <see cref="string"/> directly.
         /// </remarks>
-        public static string ValueFor<TModel, TProperty>(
+        public static string ValueFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TProperty>> expression)
+            [NotNull] Expression<Func<TModel, TResult>> expression)
         {
             return htmlHelper.ValueFor(expression, format: null);
         }
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </remarks>
         public static string ValueForModel([NotNull] this IHtmlHelper htmlHelper)
         {
-            return htmlHelper.Value(name: null, format: null);
+            return htmlHelper.Value(expression: null, format: null);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </remarks>
         public static string ValueForModel([NotNull] this IHtmlHelper htmlHelper, string format)
         {
-            return htmlHelper.Value(name: null, format: format);
+            return htmlHelper.Value(expression: null, format: format);
         }
     }
 }

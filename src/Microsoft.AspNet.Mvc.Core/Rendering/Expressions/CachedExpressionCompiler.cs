@@ -15,54 +15,56 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
         // relying on cache lookups and other techniques to save time if appropriate.
         // If the provided expression is particularly obscure and the system doesn't know
         // how to handle it, we'll just compile the expression as normal.
-        public static Func<TModel, TValue> Process<TModel, TValue>(
-            [NotNull] Expression<Func<TModel, TValue>> lambdaExpression)
+        public static Func<TModel, TResult> Process<TModel, TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression)
         {
-            return Compiler<TModel, TValue>.Compile(lambdaExpression);
+            return Compiler<TModel, TResult>.Compile(expression);
         }
 
-        private static class Compiler<TIn, TOut>
+        private static class Compiler<TModel, TResult>
         {
-            private static Func<TIn, TOut> _identityFunc;
+            private static Func<TModel, TResult> _identityFunc;
 
-            private static readonly ConcurrentDictionary<MemberInfo, Func<TIn, TOut>> _simpleMemberAccessDict =
-                new ConcurrentDictionary<MemberInfo, Func<TIn, TOut>>();
+            private static readonly ConcurrentDictionary<MemberInfo, Func<TModel, TResult>> _simpleMemberAccessDict =
+                new ConcurrentDictionary<MemberInfo, Func<TModel, TResult>>();
 
-            private static readonly ConcurrentDictionary<MemberInfo, Func<object, TOut>> _constMemberAccessDict =
-                new ConcurrentDictionary<MemberInfo, Func<object, TOut>>();
+            private static readonly ConcurrentDictionary<MemberInfo, Func<object, TResult>> _constMemberAccessDict =
+                new ConcurrentDictionary<MemberInfo, Func<object, TResult>>();
 
-            public static Func<TIn, TOut> Compile([NotNull] Expression<Func<TIn, TOut>> expr)
+            public static Func<TModel, TResult> Compile([NotNull] Expression<Func<TModel, TResult>> expression)
             {
-                return CompileFromIdentityFunc(expr)
-                       ?? CompileFromConstLookup(expr)
-                       ?? CompileFromMemberAccess(expr)
-                       ?? CompileSlow(expr);
+                return CompileFromIdentityFunc(expression)
+                       ?? CompileFromConstLookup(expression)
+                       ?? CompileFromMemberAccess(expression)
+                       ?? CompileSlow(expression);
             }
 
-            private static Func<TIn, TOut> CompileFromConstLookup([NotNull] Expression<Func<TIn, TOut>> expr)
+            private static Func<TModel, TResult> CompileFromConstLookup(
+                [NotNull] Expression<Func<TModel, TResult>> expression)
             {
-                var constExpr = expr.Body as ConstantExpression;
-                if (constExpr != null)
+                var constantExpression = expression.Body as ConstantExpression;
+                if (constantExpression != null)
                 {
                     // model => {const}
 
-                    var constantValue = (TOut)constExpr.Value;
+                    var constantValue = (TResult)constantExpression.Value;
                     return _ => constantValue;
                 }
 
                 return null;
             }
 
-            private static Func<TIn, TOut> CompileFromIdentityFunc([NotNull] Expression<Func<TIn, TOut>> expr)
+            private static Func<TModel, TResult> CompileFromIdentityFunc(
+                [NotNull] Expression<Func<TModel, TResult>> expression)
             {
-                if (expr.Body == expr.Parameters[0])
+                if (expression.Body == expression.Parameters[0])
                 {
                     // model => model
 
                     // Don't need to lock, as all identity funcs are identical.
                     if (_identityFunc == null)
                     {
-                        _identityFunc = expr.Compile();
+                        _identityFunc = expression.Compile();
                     }
 
                     return _identityFunc;
@@ -71,7 +73,8 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                 return null;
             }
 
-            private static Func<TIn, TOut> CompileFromMemberAccess([NotNull] Expression<Func<TIn, TOut>> expr)
+            private static Func<TModel, TResult> CompileFromMemberAccess(
+                [NotNull] Expression<Func<TModel, TResult>> expression)
             {
                 // Performance tests show that on the x64 platform, special-casing static member and
                 // captured local variable accesses is faster than letting the fingerprinting system
@@ -79,42 +82,43 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                 // by around one microsecond, so it's not worth it to complicate the logic here with
                 // an architecture check.
 
-                var memberExpr = expr.Body as MemberExpression;
-                if (memberExpr != null)
+                var memberExpression = expression.Body as MemberExpression;
+                if (memberExpression != null)
                 {
-                    if (memberExpr.Expression == expr.Parameters[0] || memberExpr.Expression == null)
+                    if (memberExpression.Expression == expression.Parameters[0] || memberExpression.Expression == null)
                     {
                         // model => model.Member or model => StaticMember
-                        return _simpleMemberAccessDict.GetOrAdd(memberExpr.Member, _ => expr.Compile());
+                        return _simpleMemberAccessDict.GetOrAdd(memberExpression.Member, _ => expression.Compile());
                     }
 
-                    var constExpr = memberExpr.Expression as ConstantExpression;
-                    if (constExpr != null)
+                    var constantExpression = memberExpression.Expression as ConstantExpression;
+                    if (constantExpression != null)
                     {
                         // model => {const}.Member (captured local variable)
-                        var del = _constMemberAccessDict.GetOrAdd(memberExpr.Member, _ =>
+                        var compiledExpression = _constMemberAccessDict.GetOrAdd(memberExpression.Member, _ =>
                         {
                             // rewrite as capturedLocal => ((TDeclaringType)capturedLocal).Member
-                            var constParamExpr = Expression.Parameter(typeof(object), "capturedLocal");
-                            var constCastExpr = Expression.Convert(constParamExpr, memberExpr.Member.DeclaringType);
-                            var newMemberAccessExpr = memberExpr.Update(constCastExpr);
-                            var newLambdaExpr =
-                                Expression.Lambda<Func<object, TOut>>(newMemberAccessExpr, constParamExpr);
-                            return newLambdaExpr.Compile();
+                            var parameterExpression = Expression.Parameter(typeof(object), "capturedLocal");
+                            var castExpression =
+                                Expression.Convert(parameterExpression, memberExpression.Member.DeclaringType);
+                            var newMemberExpression = memberExpression.Update(castExpression);
+                            var newExpression =
+                                Expression.Lambda<Func<object, TResult>>(newMemberExpression, parameterExpression);
+                            return newExpression.Compile();
                         });
 
-                        var capturedLocal = constExpr.Value;
-                        return _ => del(capturedLocal);
+                        var capturedLocal = constantExpression.Value;
+                        return _ => compiledExpression(capturedLocal);
                     }
                 }
 
                 return null;
             }
 
-            private static Func<TIn, TOut> CompileSlow([NotNull] Expression<Func<TIn, TOut>> expr)
+            private static Func<TModel, TResult> CompileSlow([NotNull] Expression<Func<TModel, TResult>> expression)
             {
                 // fallback compilation system - just compile the expression directly
-                return expr.Compile();
+                return expression.Compile();
             }
         }
     }

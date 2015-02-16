@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ViewContext,
                     For.Metadata,
                     optionLabel: null,
-                    name: For.Name,
+                    expression: For.Name,
                     selectList: items,
                     allowMultiple: allowMultiple,
                     htmlAttributes: null,

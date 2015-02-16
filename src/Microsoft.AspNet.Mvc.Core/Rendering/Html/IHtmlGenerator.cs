@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         TagBuilder GenerateCheckBox(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             bool? isChecked,
             object htmlAttributes);
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         TagBuilder GenerateHiddenForCheckbox(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name);
+            string expression);
 
         /// <summary>
         /// Generate a &lt;form&gt; element. When the user submits the form, the action with name
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         TagBuilder GenerateHidden(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             object value,
             bool useViewData,
             object htmlAttributes);
@@ -115,21 +115,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
         TagBuilder GenerateLabel(
             [NotNull] ViewContext viewContext,
             [NotNull] ModelMetadata metadata,
-            string name,
+            string expression,
             string labelText,
             object htmlAttributes);
 
         TagBuilder GeneratePassword(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             object value,
             object htmlAttributes);
 
         TagBuilder GenerateRadioButton(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             object value,
             bool? isChecked,
             object htmlAttributes);
@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
             string optionLabel,
-            string name,
+            string expression,
             IEnumerable<SelectListItem> selectList,
             bool allowMultiple,
             object htmlAttributes);
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
             string optionLabel,
-            string name,
+            string expression,
             IEnumerable<SelectListItem> selectList,
             bool allowMultiple,
             object htmlAttributes,
@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         TagBuilder GenerateTextArea(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             int rows,
             int columns,
             object htmlAttributes);
@@ -173,14 +173,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         TagBuilder GenerateTextBox(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             object value,
             string format,
             object htmlAttributes);
 
         TagBuilder GenerateValidationMessage(
             [NotNull] ViewContext viewContext,
-            string name,
+            string expression,
             string message,
             string tag,
             object htmlAttributes);
@@ -193,11 +193,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes);
 
         /// <remarks>
-        /// Not used directly in HtmlHelper. Exposed publicly for use in other IHtmlHelper implementations.
+        /// Not used directly in <see cref="HtmlHelper"/>. Exposed publicly for use in other <see cref="IHtmlHelper"/>
+        /// implementations.
         /// </remarks>
         IEnumerable<ModelClientValidationRule> GetClientValidationRules(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name);
+            string expression);
     }
 }

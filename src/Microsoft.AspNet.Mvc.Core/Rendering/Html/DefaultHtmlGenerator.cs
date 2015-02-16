@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public virtual TagBuilder GenerateCheckBox(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             bool? isChecked,
             object htmlAttributes)
         {
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 viewContext,
                 InputType.CheckBox,
                 metadata,
-                name,
+                expression,
                 value: "true",
                 useViewData: (metadata == null && !isChecked.HasValue),
                 isChecked: isChecked ?? false,
@@ -135,13 +135,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public virtual TagBuilder GenerateHiddenForCheckbox(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name)
+            string expression)
         {
             var tagBuilder = new TagBuilder("input");
             tagBuilder.MergeAttribute("type", GetInputTypeString(InputType.Hidden));
             tagBuilder.MergeAttribute("value", "false");
 
-            var fullName = GetFullHtmlFieldName(viewContext, name);
+            var fullName = GetFullHtmlFieldName(viewContext, expression);
             tagBuilder.MergeAttribute("name", fullName);
 
             return tagBuilder;
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public virtual TagBuilder GenerateHidden(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             object value,
             bool useViewData,
             object htmlAttributes)
@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 viewContext,
                 InputType.Hidden,
                 metadata,
-                name,
+                expression,
                 value,
                 useViewData,
                 isChecked: false,
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public virtual TagBuilder GenerateLabel(
             [NotNull] ViewContext viewContext,
             [NotNull] ModelMetadata metadata,
-            string name,
+            string expression,
             string labelText,
             object htmlAttributes)
         {
@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             if (resolvedLabelText == null)
             {
                 resolvedLabelText =
-                    string.IsNullOrEmpty(name) ? string.Empty : name.Split('.').Last();
+                    string.IsNullOrEmpty(expression) ? string.Empty : expression.Split('.').Last();
             }
 
             if (string.IsNullOrEmpty(resolvedLabelText))
@@ -251,7 +251,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var tagBuilder = new TagBuilder("label");
             var idString =
-                TagBuilder.CreateSanitizedId(GetFullHtmlFieldName(viewContext, name), IdAttributeDotReplacement);
+                TagBuilder.CreateSanitizedId(GetFullHtmlFieldName(viewContext, expression), IdAttributeDotReplacement);
             tagBuilder.Attributes.Add("for", idString);
             tagBuilder.SetInnerText(resolvedLabelText);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes), replaceExisting: true);
@@ -263,7 +263,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public virtual TagBuilder GeneratePassword(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             object value,
             object htmlAttributes)
         {
@@ -272,7 +272,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 viewContext,
                 InputType.Password,
                 metadata,
-                name,
+                expression,
                 value,
                 useViewData: false,
                 isChecked: false,
@@ -286,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public virtual TagBuilder GenerateRadioButton(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             object value,
             bool? isChecked,
             object htmlAttributes)
@@ -301,13 +301,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     // Note value may be null if isChecked is non-null.
                     if (value == null)
                     {
-                        throw new ArgumentNullException("value");
+                        throw new ArgumentNullException(nameof(value));
                     }
 
                     // isChecked not provided nor found in the given attributes; fall back to view data.
                     var valueString = Convert.ToString(value, CultureInfo.CurrentCulture);
-                    isChecked = !string.IsNullOrEmpty(name) &&
-                        string.Equals(EvalString(viewContext, name), valueString, StringComparison.OrdinalIgnoreCase);
+                    isChecked = !string.IsNullOrEmpty(expression) &&
+                        string.Equals(
+                            EvalString(viewContext, expression),
+                            valueString,
+                            StringComparison.OrdinalIgnoreCase);
                 }
             }
             else
@@ -334,7 +337,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 viewContext,
                 InputType.Radio,
                 metadata,
-                name,
+                expression,
                 value,
                 useViewData: false,
                 isChecked: isChecked ?? false,
@@ -363,7 +366,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
             string optionLabel,
-            string name,
+            string expression,
             IEnumerable<SelectListItem> selectList,
             bool allowMultiple,
             object htmlAttributes)
@@ -373,7 +376,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 viewContext,
                 metadata,
                 optionLabel,
-                name,
+                expression,
                 selectList,
                 allowMultiple,
                 htmlAttributes,
@@ -385,31 +388,31 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
             string optionLabel,
-            string name,
+            string expression,
             IEnumerable<SelectListItem> selectList,
             bool allowMultiple,
             object htmlAttributes,
             out ICollection<string> selectedValues)
         {
-            var fullName = GetFullHtmlFieldName(viewContext, name);
+            var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
             }
 
             // If we got a null selectList, try to use ViewData to get the list of items.
             var usedViewData = false;
             if (selectList == null)
             {
-                if (string.IsNullOrEmpty(name))
+                if (string.IsNullOrEmpty(expression))
                 {
                     // Avoid ViewData.Eval() throwing an ArgumentException with a different parameter name. Note this
                     // is an extreme case since users must pass a non-null selectList to use CheckBox() or ListBox()
                     // in a template, where a null or empty name has meaning.
-                    throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
+                    throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
                 }
 
-                selectList = GetSelectListItems(viewContext, name);
+                selectList = GetSelectListItems(viewContext, expression);
                 usedViewData = true;
             }
 
@@ -418,11 +421,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // If we haven't already used ViewData to get the entire list of items then we need to
             // use the ViewData-supplied value before using the parameter-supplied value.
-            if (defaultValue == null && !string.IsNullOrEmpty(name))
+            if (defaultValue == null && !string.IsNullOrEmpty(expression))
             {
                 if (!usedViewData)
                 {
-                    defaultValue = viewContext.ViewData.Eval(name);
+                    defaultValue = viewContext.ViewData.Eval(expression);
                 }
                 else if (metadata != null)
                 {
@@ -465,7 +468,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 }
             }
 
-            tagBuilder.MergeAttributes(GetValidationAttributes(viewContext, metadata, name));
+            tagBuilder.MergeAttributes(GetValidationAttributes(viewContext, metadata, expression));
 
             return tagBuilder;
         }
@@ -474,25 +477,27 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public virtual TagBuilder GenerateTextArea(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             int rows,
             int columns,
             object htmlAttributes)
         {
             if (rows < 0)
             {
-                throw new ArgumentOutOfRangeException("rows", Resources.HtmlHelper_TextAreaParameterOutOfRange);
+                throw new ArgumentOutOfRangeException(nameof(rows), Resources.HtmlHelper_TextAreaParameterOutOfRange);
             }
 
             if (columns < 0)
             {
-                throw new ArgumentOutOfRangeException("columns", Resources.HtmlHelper_TextAreaParameterOutOfRange);
+                throw new ArgumentOutOfRangeException(
+                    nameof(columns),
+                    Resources.HtmlHelper_TextAreaParameterOutOfRange);
             }
 
-            var fullName = GetFullHtmlFieldName(viewContext, name);
+            var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
             }
 
             ModelState modelState;
@@ -522,7 +527,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             tagBuilder.MergeAttribute("name", fullName, true);
-            tagBuilder.MergeAttributes(GetValidationAttributes(viewContext, metadata, name));
+            tagBuilder.MergeAttributes(GetValidationAttributes(viewContext, metadata, expression));
 
             // If there are any errors for a named field, we add this CSS attribute.
             if (modelState != null && modelState.Errors.Count > 0)
@@ -541,7 +546,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public virtual TagBuilder GenerateTextBox(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name,
+            string expression,
             object value,
             string format,
             object htmlAttributes)
@@ -551,7 +556,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 viewContext,
                 InputType.Text,
                 metadata,
-                name,
+                expression,
                 value,
                 useViewData: (metadata == null && value == null),
                 isChecked: false,
@@ -564,15 +569,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public virtual TagBuilder GenerateValidationMessage(
             [NotNull] ViewContext viewContext,
-            string name,
+            string expression,
             string message,
             string tag,
             object htmlAttributes)
         {
-            var fullName = GetFullHtmlFieldName(viewContext, name);
+            var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "expression");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
             }
 
             var formContext = viewContext.ClientValidationEnabled ? viewContext.FormContext : null;
@@ -721,11 +726,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public IEnumerable<ModelClientValidationRule> GetClientValidationRules(
             [NotNull] ViewContext viewContext,
             ModelMetadata metadata,
-            string name)
+            string expression)
         {
             var validatorProvider = _bindingContextAccessor.Value.ValidatorProvider;
             metadata = metadata ??
-                ExpressionMetadataProvider.FromStringExpression(name, viewContext.ViewData, _metadataProvider);
+                ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
             var validationContext =
                 new ClientModelValidationContext(metadata, _metadataProvider, viewContext.HttpContext.RequestServices);
 
@@ -768,9 +773,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return tagBuilder;
         }
 
-        internal static string GetFullHtmlFieldName(ViewContext viewContext, string name)
+        internal static string GetFullHtmlFieldName(ViewContext viewContext, string expression)
         {
-            var fullName = viewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            var fullName = viewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(expression);
             return fullName;
         }
 
@@ -827,7 +832,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] ViewContext viewContext,
             InputType inputType,
             ModelMetadata metadata,
-            string name,
+            string expression,
             object value,
             bool useViewData,
             bool isChecked,
@@ -839,10 +844,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Not valid to use TextBoxForModel() and so on in a top-level view; would end up with an unnamed input
             // elements. But we support the *ForModel() methods in any lower-level template, once HtmlFieldPrefix is
             // non-empty.
-            var fullName = GetFullHtmlFieldName(viewContext, name);
+            var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "name");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
             }
 
             var tagBuilder = new TagBuilder("input");
@@ -920,7 +925,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
             }
 
-            tagBuilder.MergeAttributes(GetValidationAttributes(viewContext, metadata, name));
+            tagBuilder.MergeAttributes(GetValidationAttributes(viewContext, metadata, expression));
 
             return tagBuilder;
         }
@@ -946,7 +951,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         protected virtual IDictionary<string, object> GetValidationAttributes(
             ViewContext viewContext,
             ModelMetadata metadata,
-            string name)
+            string expression)
         {
             var formContext = viewContext.ClientValidationEnabled ? viewContext.FormContext : null;
             if (formContext == null)
@@ -954,14 +959,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return null;
             }
 
-            var fullName = GetFullHtmlFieldName(viewContext, name);
+            var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (formContext.RenderedField(fullName))
             {
                 return null;
             }
 
             formContext.RenderedField(fullName, true);
-            var clientRules = GetClientValidationRules(viewContext, metadata, name);
+            var clientRules = GetClientValidationRules(viewContext, metadata, expression);
 
             return UnobtrusiveValidationAttributesGenerator.GetValidationAttributes(clientRules);
         }
@@ -1011,20 +1016,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
-        private static IEnumerable<SelectListItem> GetSelectListItems([NotNull] ViewContext viewContext, string name)
+        private static IEnumerable<SelectListItem> GetSelectListItems(
+            [NotNull] ViewContext viewContext,
+            string expression)
         {
-            var value = viewContext.ViewData.Eval(name);
+            var value = viewContext.ViewData.Eval(expression);
             if (value == null)
             {
                 throw new InvalidOperationException(Resources.FormatHtmlHelper_MissingSelectData(
-                    "IEnumerable<SelectListItem>", name));
+                    "IEnumerable<SelectListItem>", expression));
             }
 
             var selectList = value as IEnumerable<SelectListItem>;
             if (selectList == null)
             {
                 throw new InvalidOperationException(Resources.FormatHtmlHelper_WrongSelectDataType(
-                    name, value.GetType().FullName, "IEnumerable<SelectListItem>"));
+                    expression, value.GetType().FullName, "IEnumerable<SelectListItem>"));
             }
 
             return selectList;

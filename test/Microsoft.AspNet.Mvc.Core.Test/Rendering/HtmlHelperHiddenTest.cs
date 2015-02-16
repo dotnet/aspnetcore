@@ -290,7 +290,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Act and Assert
             ExceptionAssert.ThrowsArgumentNullOrEmpty(() => helper.Hidden(string.Empty, string.Empty, attributes),
-                                                      "name");
+                                                      "expression");
         }
 
         [Fact]

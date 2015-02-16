@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Act and Assert
             ExceptionAssert.ThrowsArgumentNullOrEmpty(() => helper.Password(name, value, htmlAttributes: null),
-                                                      "name");
+                                                      "expression");
         }
 
         [Fact]

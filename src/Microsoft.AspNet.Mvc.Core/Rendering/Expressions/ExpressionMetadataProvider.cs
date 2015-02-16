@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
@@ -12,9 +11,9 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 {
     public static class ExpressionMetadataProvider
     {
-        public static ModelMetadata FromLambdaExpression<TParameter, TValue>(
-            [NotNull] Expression<Func<TParameter, TValue>> expression,
-            [NotNull] ViewDataDictionary<TParameter> viewData,
+        public static ModelMetadata FromLambdaExpression<TModel, TResult>(
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            [NotNull] ViewDataDictionary<TModel> viewData,
             IModelMetadataProvider metadataProvider)
         {
             string propertyName = null;
@@ -70,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 
             return GetMetadataFromProvider(
                 modelAccessor,
-                typeof(TValue),
+                typeof(TResult),
                 propertyName,
                 container,
                 containerType,

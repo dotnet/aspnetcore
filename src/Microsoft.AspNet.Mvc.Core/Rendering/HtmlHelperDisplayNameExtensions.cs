@@ -31,13 +31,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <param name="expression">An expression to be evaluated against an item in the current model.</param>
         /// <typeparam name="TModelItem">The type of items in the model collection.</typeparam>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A <see cref="string"/> containing the display name.</returns>
-        public static string DisplayNameFor<TModelItem, TValue>(
+        public static string DisplayNameFor<TModelItem, TResult>(
             [NotNull] this IHtmlHelper<IEnumerable<TModelItem>> htmlHelper,
-            [NotNull] Expression<Func<TModelItem, TValue>> expression)
+            [NotNull] Expression<Func<TModelItem, TResult>> expression)
         {
-            return htmlHelper.DisplayNameForInnerType<TModelItem, TValue>(expression);
+            return htmlHelper.DisplayNameForInnerType<TModelItem, TResult>(expression);
         }
     }
 }

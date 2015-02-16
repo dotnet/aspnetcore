@@ -21,12 +21,12 @@ namespace Microsoft.AspNet.Mvc.Core
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
 
             // Act
-            var idResult = helper.Id(name: string.Empty);
-            var idNullResult = helper.Id(name: null);   // null is another alias for current model
+            var idResult = helper.Id(expression: string.Empty);
+            var idNullResult = helper.Id(expression: null);   // null is another alias for current model
             var idForResult = helper.IdFor(m => m);
             var idForModelResult = helper.IdForModel();
-            var nameResult = helper.Name(name: string.Empty);
-            var nameNullResult = helper.Name(name: null);
+            var nameResult = helper.Name(expression: string.Empty);
+            var nameNullResult = helper.Name(expression: null);
             var nameForResult = helper.NameFor(m => m);
             var nameForModelResult = helper.NameForModel();
 
@@ -54,10 +54,10 @@ namespace Microsoft.AspNet.Mvc.Core
             helper.ViewData.TemplateInfo.HtmlFieldPrefix = prefix;
 
             // Act
-            var idResult = helper.Id(name: string.Empty);
+            var idResult = helper.Id(expression: string.Empty);
             var idForResult = helper.IdFor(m => m);
             var idForModelResult = helper.IdForModel();
-            var nameResult = helper.Name(name: string.Empty);
+            var nameResult = helper.Name(expression: string.Empty);
             var nameForResult = helper.NameFor(m => m);
             var nameForModelResult = helper.NameForModel();
 
@@ -149,10 +149,10 @@ namespace Microsoft.AspNet.Mvc.Core
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider.Object);
 
             // Act (do not throw)
-            var idResult = helper.Id(name: string.Empty);
+            var idResult = helper.Id(expression: string.Empty);
             var idForResult = helper.IdFor(m => m);
             var idForModelResult = helper.IdForModel();
-            var nameResult = helper.Name(name: string.Empty);
+            var nameResult = helper.Name(expression: string.Empty);
             var nameForResult = helper.NameFor(m => m);
             var nameForModelResult = helper.NameForModel();
 

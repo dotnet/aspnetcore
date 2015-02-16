@@ -91,8 +91,8 @@ namespace Microsoft.AspNet.Mvc.Core
                 "{ StringProperty = ModelStringPropertyValue, ObjectProperty = 01/01/1900 00:00:00 }";
 
             // Act & Assert
-            Assert.Equal(expectedModelValue, helper.Value(name: string.Empty));
-            Assert.Equal(expectedModelValue, helper.Value(name: null)); // null is another alias for current model
+            Assert.Equal(expectedModelValue, helper.Value(expression: string.Empty));
+            Assert.Equal(expectedModelValue, helper.Value(expression: null)); // null is another alias for current model
             Assert.Equal(expectedModelValue, helper.ValueFor(m => m));
             Assert.Equal(expectedModelValue, helper.ValueForModel());
         }

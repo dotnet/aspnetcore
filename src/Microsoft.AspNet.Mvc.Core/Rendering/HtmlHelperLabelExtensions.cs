@@ -12,64 +12,64 @@ namespace Microsoft.AspNet.Mvc.Rendering
     public static class HtmlHelperLabelExtensions
     {
         /// <summary>
-        /// Returns a &lt;label&gt; element for the specified expression <paramref name="name"/>.
+        /// Returns a &lt;label&gt; element for the specified <paramref name="expression"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;label&gt; element.</returns>
-        public static HtmlString Label([NotNull] this IHtmlHelper html, string expression)
+        public static HtmlString Label([NotNull] this IHtmlHelper htmlHelper, string expression)
         {
-            return html.Label(expression,
-                             labelText: null,
-                             htmlAttributes: null);
+            return htmlHelper.Label(expression, labelText: null, htmlAttributes: null);
         }
 
         /// <summary>
-        /// Returns a &lt;label&gt; element for the specified expression <paramref name="name"/>.
+        /// Returns a &lt;label&gt; element for the specified <paramref name="expression"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="labelText">The inner text of the element.</param>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;label&gt; element.</returns>
-        public static HtmlString Label([NotNull] this IHtmlHelper html, string expression, string labelText)
+        public static HtmlString Label([NotNull] this IHtmlHelper htmlHelper, string expression, string labelText)
         {
-            return html.Label(expression, labelText, htmlAttributes: null);
+            return htmlHelper.Label(expression, labelText, htmlAttributes: null);
         }
 
         /// <summary>
         /// Returns a &lt;label&gt; element for the specified <paramref name="expression"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;label&gt; element.</returns>
-        public static HtmlString LabelFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
-                                                          [NotNull] Expression<Func<TModel, TValue>> expression)
+        public static HtmlString LabelFor<TModel, TResult>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TResult>> expression)
         {
-            return html.LabelFor<TValue>(expression, labelText: null, htmlAttributes: null);
+            return htmlHelper.LabelFor<TResult>(expression, labelText: null, htmlAttributes: null);
         }
 
         /// <summary>
         /// Returns a &lt;label&gt; element for the specified <paramref name="expression"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="labelText">The inner text of the element.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;label&gt; element.</returns>
-        public static HtmlString LabelFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
-                                                          [NotNull] Expression<Func<TModel, TValue>> expression,
-                                                          string labelText)
+        public static HtmlString LabelFor<TModel, TResult>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            string labelText)
         {
-            return html.LabelFor<TValue>(expression, labelText, htmlAttributes: null);
+            return htmlHelper.LabelFor<TResult>(expression, labelText, htmlAttributes: null);
         }
 
         /// <summary>
         /// Returns a &lt;label&gt; element for the specified <paramref name="expression"/>.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
@@ -77,55 +77,56 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// attributes.
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
+        /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;label&gt; element.</returns>
-        public static HtmlString LabelFor<TModel, TValue>([NotNull] this IHtmlHelper<TModel> html,
-                                                          [NotNull] Expression<Func<TModel, TValue>> expression,
-                                                          object htmlAttributes)
+        public static HtmlString LabelFor<TModel, TResult>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
+            [NotNull] Expression<Func<TModel, TResult>> expression,
+            object htmlAttributes)
         {
-            return html.LabelFor<TValue>(expression, labelText: null, htmlAttributes: htmlAttributes);
+            return htmlHelper.LabelFor<TResult>(expression, labelText: null, htmlAttributes: htmlAttributes);
         }
 
         /// <summary>
         /// Returns a &lt;label&gt; element for the current model.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;label&gt; element.</returns>
-        public static HtmlString LabelForModel([NotNull] this IHtmlHelper html)
+        public static HtmlString LabelForModel([NotNull] this IHtmlHelper htmlHelper)
         {
-            return html.Label(expression: null, labelText: null, htmlAttributes: null);
+            return htmlHelper.Label(expression: null, labelText: null, htmlAttributes: null);
         }
 
         /// <summary>
         /// Returns a &lt;label&gt; element for the current model.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="labelText">The inner text of the element.</param>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;label&gt; element.</returns>
-        public static HtmlString LabelForModel([NotNull] this IHtmlHelper html, string labelText)
+        public static HtmlString LabelForModel([NotNull] this IHtmlHelper htmlHelper, string labelText)
         {
-            return html.Label(expression: null, labelText: labelText, htmlAttributes: null);
+            return htmlHelper.Label(expression: null, labelText: labelText, htmlAttributes: null);
         }
 
         /// <summary>
         /// Returns a &lt;label&gt; element for the current model.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;label&gt; element.</returns>
-        public static HtmlString LabelForModel([NotNull] this IHtmlHelper html, object htmlAttributes)
+        public static HtmlString LabelForModel([NotNull] this IHtmlHelper htmlHelper, object htmlAttributes)
         {
-            return html.Label(expression: null, labelText: null, htmlAttributes: htmlAttributes);
+            return htmlHelper.Label(expression: null, labelText: null, htmlAttributes: htmlAttributes);
         }
 
         /// <summary>
         /// Returns a &lt;label&gt; element for the current model.
         /// </summary>
-        /// <param name="html">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="labelText">The inner text of the element.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
@@ -134,11 +135,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="HtmlString"/> containing the &lt;label&gt; element.</returns>
         public static HtmlString LabelForModel(
-            [NotNull] this IHtmlHelper html,
+            [NotNull] this IHtmlHelper htmlHelper,
             string labelText,
             object htmlAttributes)
         {
-            return html.Label(expression: null, labelText: labelText, htmlAttributes: htmlAttributes);
+            return htmlHelper.Label(expression: null, labelText: labelText, htmlAttributes: htmlAttributes);
         }
     }
 }
