@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Security;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
@@ -15,8 +17,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void BuildControllerModel_DerivedFromControllerClass_HasFilter()
         {
             // Arrange
-            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(),
-                                                            NullLoggerFactory.Instance);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
+                                                            NullLoggerFactory.Instance,
+                                                            null);
             var typeInfo = typeof(StoreController).GetTypeInfo();
 
             // Act
@@ -27,14 +30,31 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.IsType<ControllerActionFilter>(filter);
         }
 
+        [Fact]
+        public void BuildControllerModel_AuthorizeAttributeAddsAuthorizeFilter()
+        {
+            // Arrange
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
+                                                            NullLoggerFactory.Instance,
+                                                            null);
+            var typeInfo = typeof(AccountController).GetTypeInfo();
+
+            // Act
+            var model = builder.BuildControllerModel(typeInfo);
+
+            // Assert
+            Assert.True(model.Filters.Any(f => f is AuthorizeFilter));
+        }
+
         // This class has a filter attribute, but doesn't implement any filter interfaces,
         // so ControllerFilter is not present.
         [Fact]
         public void BuildControllerModel_ClassWithoutFilterInterfaces_HasNoControllerFilter()
         {
             // Arrange
-            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(),
-                                                            NullLoggerFactory.Instance);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
+                                                            NullLoggerFactory.Instance,
+                                                            null);
             var typeInfo = typeof(NoFiltersController).GetTypeInfo();
 
             // Act
@@ -49,8 +69,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void BuildControllerModel_ClassWithFilterInterfaces_HasFilter()
         {
             // Arrange
-            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(),
-                                                            NullLoggerFactory.Instance);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
+                                                            NullLoggerFactory.Instance,
+                                                            null);
             var typeInfo = typeof(SomeFiltersController).GetTypeInfo();
 
             // Act
@@ -65,8 +86,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void BuildControllerModel_ClassWithFilterInterfaces_UnsupportedType()
         {
             // Arrange
-            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(),
-                                                            NullLoggerFactory.Instance);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
+                                                            NullLoggerFactory.Instance,
+                                                            null);
             var typeInfo = typeof(UnsupportedFiltersController).GetTypeInfo();
 
             // Act
@@ -81,11 +103,16 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         }
 
         [Produces("application/json")]
-        private class NoFiltersController
+        public class NoFiltersController
         {
         }
 
-        private class SomeFiltersController : IAsyncActionFilter, IResultFilter
+        [Authorize]
+        public class AccountController
+        {
+        }
+
+        public class SomeFiltersController : IAsyncActionFilter, IResultFilter
         {
             public Task OnActionExecutionAsync(
                 [NotNull] ActionExecutingContext context,

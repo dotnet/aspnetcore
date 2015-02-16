@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Security;
+using Microsoft.Framework.OptionsModel;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
@@ -18,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_WithInheritedMethods(string methodName, bool expected)
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var method = typeof(DerivedController).GetMethod(methodName);
             Assert.NotNull(method);
 
@@ -33,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_OverridenMethodControllerClass()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var method = typeof(BaseController).GetMethod(nameof(BaseController.Redirect));
             Assert.NotNull(method);
 
@@ -48,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_PrivateMethod_FromUserDefinedController()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var method = typeof(DerivedController).GetMethod(
                 "PrivateMethod",
                 BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
@@ -65,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_OperatorOverloadingMethod_FromOperatorOverloadingController()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var method = typeof(OperatorOverloadingController).GetMethod("op_Addition");
             Assert.NotNull(method);
             Assert.True(method.IsSpecialName);
@@ -81,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_GenericMethod_FromUserDefinedController()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var method = typeof(DerivedController).GetMethod("GenericMethod");
             Assert.NotNull(method);
 
@@ -96,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_OverridenNonActionMethod()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var method = typeof(DerivedController).GetMethod("OverridenNonActionMethod");
             Assert.NotNull(method);
 
@@ -115,7 +118,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_OverriddenMethodsFromObjectClass(string methodName)
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var method = typeof(DerivedController).GetMethod(
                 methodName,
                 BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
@@ -132,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_DerivedControllerIDisposableDisposeMethod()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var typeInfo = typeof(DerivedController).GetTypeInfo();
             var methodInfo =
                 typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0];
@@ -150,7 +153,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_DerivedControllerDisposeMethod()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var typeInfo = typeof(DerivedController).GetTypeInfo();
             var methodInfo =
                 typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0];
@@ -172,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_OverriddenDisposeMethod()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var typeInfo = typeof(DerivedOverriddenDisposeController).GetTypeInfo();
             var method = typeInfo.GetDeclaredMethods("Dispose").SingleOrDefault();
             Assert.NotNull(method);
@@ -188,7 +191,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_NewDisposeMethod()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var typeInfo = typeof(DerivedNewDisposeController).GetTypeInfo();
             var method = typeInfo.GetDeclaredMethods("Dispose").SingleOrDefault();
             Assert.NotNull(method);
@@ -204,7 +207,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_PocoControllerIDisposableDisposeMethod()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var typeInfo = typeof(IDisposablePocoController).GetTypeInfo();
             var methodInfo =
                 typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0];
@@ -222,7 +225,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_PocoControllerDisposeMethod()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var typeInfo = typeof(IDisposablePocoController).GetTypeInfo();
             var methodInfo =
                 typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0];
@@ -244,7 +247,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_SimplePocoControllerDisposeMethod()
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var typeInfo = typeof(SimplePocoController).GetTypeInfo();
             var methods = typeInfo.GetMethods().Where(m => m.Name.Equals("Dispose"));
 
@@ -267,7 +270,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void IsAction_StaticMethods(string methodName)
         {
             // Arrange
-            var builder = new AccessibleActionModelBuilder();
+            var builder = CreateTestAccessibleActionModelBuilder();
             var method = typeof(DerivedController).GetMethod(
                 methodName,
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
@@ -284,7 +287,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_ConventionallyRoutedAction_WithoutHttpConstraints()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(ConventionallyRoutedController).GetTypeInfo();
             var actionName = nameof(ConventionallyRoutedController.Edit);
 
@@ -303,7 +306,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_ConventionallyRoutedAction_WithHttpConstraints()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(ConventionallyRoutedController).GetTypeInfo();
             var actionName = nameof(ConventionallyRoutedController.Update);
 
@@ -321,10 +324,33 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         }
 
         [Fact]
+        public void GetActions_BaseAuthorizeFiltersAreStillValidWhenOverriden()
+        {
+            // Arrange
+            var options = new AuthorizationOptions();
+            options.AddPolicy("Base", policy => policy.RequiresClaim("Basic").RequiresClaim("Basic2"));
+            options.AddPolicy("Derived", policy => policy.RequiresClaim("Derived"));
+            var builder = CreateTestDefaultActionModelBuilder(options);
+            var typeInfo = typeof(DerivedController).GetTypeInfo();
+            var actionName = nameof(DerivedController.Authorize);
+
+            // Act
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+
+            // Assert
+            var action = Assert.Single(actions);
+            Assert.Equal("Authorize", action.ActionName);
+            Assert.Null(action.AttributeRouteModel);
+            var authorizeFilters = action.Filters.OfType<AuthorizeFilter>();
+            Assert.Single(authorizeFilters);
+            Assert.Equal(3, authorizeFilters.First().Policy.Requirements.Count);
+        }
+
+        [Fact]
         public void GetActions_ConventionallyRoutedActionWithHttpConstraints_AndInvalidRouteTemplateProvider()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(ConventionallyRoutedController).GetTypeInfo();
             var actionName = nameof(ConventionallyRoutedController.Delete);
 
@@ -346,7 +372,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_ConventionallyRoutedAction_WithMultipleHttpConstraints()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(ConventionallyRoutedController).GetTypeInfo();
             var actionName = nameof(ConventionallyRoutedController.Details);
 
@@ -365,7 +391,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_ConventionallyRoutedAction_WithMultipleOverlappingHttpConstraints()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(ConventionallyRoutedController).GetTypeInfo();
             var actionName = nameof(ConventionallyRoutedController.List);
 
@@ -385,7 +411,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_AttributeRouteOnAction()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(NoRouteAttributeOnControllerController).GetTypeInfo();
             var actionName = nameof(NoRouteAttributeOnControllerController.Edit);
 
@@ -410,7 +436,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_AttributeRouteOnAction_RouteAttribute()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(NoRouteAttributeOnControllerController).GetTypeInfo();
             var actionName = nameof(NoRouteAttributeOnControllerController.Update);
 
@@ -434,7 +460,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_AttributeRouteOnAction_AcceptVerbsAttributeWithTemplate()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(NoRouteAttributeOnControllerController).GetTypeInfo();
             var actionName = nameof(NoRouteAttributeOnControllerController.List);
 
@@ -458,7 +484,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_AttributeRouteOnAction_CreatesOneActionInforPerRouteTemplate()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(NoRouteAttributeOnControllerController).GetTypeInfo();
             var actionName = nameof(NoRouteAttributeOnControllerController.Index);
 
@@ -489,7 +515,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_NoRouteOnController_AllowsConventionallyRoutedActions_OnTheSameController()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(NoRouteAttributeOnControllerController).GetTypeInfo();
             var actionName = nameof(NoRouteAttributeOnControllerController.Remove);
 
@@ -514,7 +540,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_RouteAttributeOnController_CreatesAttributeRoute_ForNonAttributedActions(Type controller)
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = controller.GetTypeInfo();
 
             // Act
@@ -538,7 +564,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_RouteOnController_CreatesOneActionInforPerRouteTemplateOnAction(Type controller)
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = controller.GetTypeInfo();
 
             // Act
@@ -567,7 +593,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_MixedHttpVerbsAndRoutes_EmptyVerbWithRoute()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(MixedHttpVerbsAndRouteAttributeController).GetTypeInfo();
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.VerbAndRoute);
 
@@ -584,7 +610,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_MixedHttpVerbsAndRoutes_MultipleEmptyVerbsWithMultipleRoutes()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(MixedHttpVerbsAndRouteAttributeController).GetTypeInfo();
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.MultipleVerbsAndRoutes);
 
@@ -605,7 +631,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_MixedHttpVerbsAndRoutes_MultipleEmptyAndNonEmptyVerbsWithMultipleRoutes()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(MixedHttpVerbsAndRouteAttributeController).GetTypeInfo();
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.MultipleVerbsWithAnyWithoutTemplateAndRoutes);
 
@@ -629,7 +655,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void GetActions_MixedHttpVerbsAndRoutes_MultipleEmptyAndNonEmptyVerbs()
         {
             // Arrange
-            var builder = new DefaultActionModelBuilder();
+            var builder = CreateTestDefaultActionModelBuilder();
             var typeInfo = typeof(MixedHttpVerbsAndRouteAttributeController).GetTypeInfo();
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.Invalid);
 
@@ -646,8 +672,25 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
         }
 
+        private static DefaultActionModelBuilder CreateTestDefaultActionModelBuilder(
+            AuthorizationOptions authOptions = null)
+        {
+            var options = new Mock<IOptions<AuthorizationOptions>>();
+            options.Setup(o => o.Options).Returns(authOptions ?? new AuthorizationOptions());
+            return new DefaultActionModelBuilder(options.Object);
+        }
+
+        private static AccessibleActionModelBuilder CreateTestAccessibleActionModelBuilder()
+        {
+            var options = new Mock<IOptions<AuthorizationOptions>>();
+            options.Setup(o => o.Options).Returns(new AuthorizationOptions());
+            return new AccessibleActionModelBuilder(options.Object);
+        }
+
         private class AccessibleActionModelBuilder : DefaultActionModelBuilder
         {
+            public AccessibleActionModelBuilder(IOptions<AuthorizationOptions> options) : base(options) { }
+
             public new bool IsAction([NotNull] TypeInfo typeInfo, [NotNull]MethodInfo methodInfo)
             {
                 return base.IsAction(typeInfo, methodInfo);
@@ -674,6 +717,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             {
                 return base.Redirect(url + "#RedirectOverride");
             }
+
+            [Authorize(Policy = "Base")]
+            public virtual void Authorize()
+            {
+            }
+
         }
 
         private class DerivedController : BaseController
@@ -690,6 +739,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             public new void NewMethod() // Valid action method.
             {
             }
+
+            [Authorize(Policy = "Derived")]
+            public override void Authorize()
+            {
+            }
+
 
             public void GenericMethod<T>()
             {

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Security;
 using MvcSample.Web.Filters;
 using MvcSample.Web.Models;
 
@@ -50,14 +51,12 @@ namespace MvcSample.Web
             return new ChallengeResult();
         }
 
-        [Authorize("CanViewPage")]
         public ActionResult NotGrantedClaim(int age = 20, string userName = "SampleUser")
         {
             return Index(age, userName);
         }
 
         [FakeUser]
-        [Authorize("CanViewAnything")]
         public ActionResult AllGranted(int age = 20, string userName = "SampleUser")
         {
             return Index(age, userName);

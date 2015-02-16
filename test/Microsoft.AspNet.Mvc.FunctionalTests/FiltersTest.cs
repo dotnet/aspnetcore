@@ -106,8 +106,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("4", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
-        public async Task CanAuthorizeParticularUsers()
+
+        [Theory]
+        [InlineData("AdminRole")]
+        [InlineData("InteractiveUsers")]
+        [InlineData("ApiManagers")]
+        public async Task CanAuthorize(string testAction)
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
@@ -115,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetAsync(
-                "http://localhost/AuthorizeUser/ReturnHelloWorldOnlyForAuthorizedUser");
+                "http://localhost/AuthorizeUser/"+testAction);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

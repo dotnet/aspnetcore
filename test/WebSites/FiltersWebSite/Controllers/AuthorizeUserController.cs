@@ -2,15 +2,27 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Security;
 
 namespace FiltersWebSite
 {
-    [AuthorizeUser]
-    [Authorize("RequireBasic")]
+    [Authorize("Api")]
     public class AuthorizeUserController : Controller
     {
-        [Authorize("CanViewPage")]
-        public string ReturnHelloWorldOnlyForAuthorizedUser()
+        [Authorize("Api-Manager")]
+        public string ApiManagers()
+        {
+            return "Hello World!";
+        }
+
+        [Authorize(Roles = "Administrator")]
+        public string AdminRole()
+        {
+            return "Hello World!";
+        }
+
+        [Authorize("Interactive")]
+        public string InteractiveUsers()
         {
             return "Hello World!";
         }
@@ -27,6 +39,5 @@ namespace FiltersWebSite
         {
             return "Hello World!";
         }
-
     }
 }

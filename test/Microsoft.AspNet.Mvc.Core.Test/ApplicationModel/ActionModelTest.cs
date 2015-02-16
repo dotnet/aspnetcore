@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.AspNet.Security;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
@@ -43,14 +44,14 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         {
             // Arrange
             var action = new ActionModel(typeof(TestController).GetMethod("Edit"),
-                                         new List<object>() { new HttpGetAttribute() });
+                                         new List<object>() { new HttpGetAttribute(), new AuthorizeAttribute() });
 
             action.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
             action.ActionName = "Edit";
 
             action.Controller = new ControllerModel(typeof(TestController).GetTypeInfo(),
                                                     new List<object>());
-            action.Filters.Add(new AuthorizeAttribute());
+            action.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().Build()));
             action.HttpMethods.Add("GET");
             action.RouteConstraints.Add(new AreaAttribute("Admin"));
             action.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));

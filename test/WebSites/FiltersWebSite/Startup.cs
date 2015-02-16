@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Security;
@@ -18,23 +19,32 @@ namespace FiltersWebSite
             app.UseServices(services =>
             {
                 services.AddMvc(configuration);
-                services.Configure<AuthorizationOptions>(options =>
+                services.ConfigureAuthorization(options =>
                 {
                     // This policy cannot succeed since it has no requirements
-                    options.AddPolicy("Impossible",
-                        new AuthorizationPolicyBuilder()
-                            .Build());
-                    options.AddPolicy("RequireBasic", 
-                        new AuthorizationPolicyBuilder("Basic")
-                            .RequiresClaim(ClaimTypes.NameIdentifier)
-                            .Build());
-                    options.AddPolicy("CanViewPage", 
-                        new AuthorizationPolicyBuilder()
-                            .RequiresClaim("Permission", "CanViewPage")
-                            .Build());
+                    options.AddPolicy("Impossible", policy => { });
+                    options.AddPolicy("Api", policy =>
+                    {
+                        policy.ActiveAuthenticationTypes.Add("Api");
+                        policy.RequiresClaim(ClaimTypes.NameIdentifier);
+                    });
+                    options.AddPolicy("Api-Manager", policy =>
+                    {
+                        policy.ActiveAuthenticationTypes.Add("Api");
+                        policy.Requirements.Add(Operations.Edit);
+                    });
+                    options.AddPolicy("Interactive", policy =>
+                    {
+                        policy.ActiveAuthenticationTypes.Add("Interactive");
+                        policy.RequiresClaim(ClaimTypes.NameIdentifier)
+                              .RequiresClaim("Permission", "CanViewPage");
+                    });
                 });
                 services.AddSingleton<RandomNumberFilter>();
                 services.AddSingleton<RandomNumberService>();
+                services.AddTransient<IAuthorizationHandler, ManagerHandler>();
+                services.Configure<BasicOptions>(o => o.AuthenticationType = "Api", "Api");
+                services.Configure<BasicOptions>(o => o.AuthenticationType = "Interactive", "Interactive");
 
                 services.Configure<MvcOptions>(options =>
                 {
@@ -48,7 +58,8 @@ namespace FiltersWebSite
 
             app.UseErrorReporter();
 
-            app.UseMiddleware<AuthorizeBasicMiddleware>();
+            app.UseMiddleware<AuthorizeBasicMiddleware>("Interactive");
+            app.UseMiddleware<AuthorizeBasicMiddleware>("Api");
 
             app.UseMvc(routes =>
             {
