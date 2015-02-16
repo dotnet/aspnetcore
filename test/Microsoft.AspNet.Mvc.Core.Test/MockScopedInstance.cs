@@ -8,5 +8,9 @@ namespace Microsoft.AspNet.Mvc
     public class MockScopedInstance<T> : IScopedInstance<T>
     {
         public T Value { get; set; }
+
+        public void Dispose()
+        {
+        }
     }
 }
