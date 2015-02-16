@@ -26,3 +26,4 @@ nuget.exe
 *.sln.ide
 node_modules
 *.sln.ide
+project.lock.json
