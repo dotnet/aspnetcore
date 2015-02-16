@@ -9,6 +9,7 @@ artifacts/
 PublishProfiles/
 .vs/
 debugSettings.json
+project.lock.json
 *.user
 *.suo
 *.cache
