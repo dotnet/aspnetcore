@@ -37,3 +37,4 @@ node_modules
 */*.Spa/wwwroot/lib
 *.ng.ts
 *.sln.ide
+project.lock.json
