@@ -24,3 +24,4 @@ nuget.exe
 *.*sdf
 *.ipch
 *.sln.ide
+project.lock.json
