@@ -4,6 +4,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Security;
 using MusicStore.Models;
 
 namespace MusicStore.Controllers
