@@ -126,4 +126,7 @@
   <data name="Exception_AuthenticationTokenDoesNotProvideSyncMethods" xml:space="preserve">
     <value>The AuthenticationTokenProvider's required synchronous events have not been registered.</value>
   </data>
+  <data name="Exception_AuthorizationPolicyNotFound" xml:space="preserve">
+    <value>The AuthorizationPolicy named: '{0}' was not found.</value>
+  </data>
 </root>

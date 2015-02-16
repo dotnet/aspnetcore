@@ -9,6 +9,11 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
+        public static IServiceCollection ConfigureClaimsTransformation([NotNull] this IServiceCollection services, [NotNull] Action<ClaimsTransformationOptions> configure)
+        {
+            return services.Configure(configure);
+        }
+
         public static IServiceCollection ConfigureAuthorization([NotNull] this IServiceCollection services, [NotNull] Action<AuthorizationOptions> configure)
         {
             return services.Configure(configure);

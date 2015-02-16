@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Security
 {
@@ -13,27 +12,23 @@ namespace Microsoft.AspNet.Security
     /// </summary>
     public class AuthorizationContext
     {
-        private HashSet<IAuthorizationRequirement> _pendingRequirements = new HashSet<IAuthorizationRequirement>();
+        private HashSet<IAuthorizationRequirement> _pendingRequirements;
         private bool _failCalled;
         private bool _succeedCalled;
 
         public AuthorizationContext(
-            [NotNull] AuthorizationPolicy policy, 
-            HttpContext context,
+            [NotNull] IEnumerable<IAuthorizationRequirement> requirements, 
+            ClaimsPrincipal user,
             object resource)
         {
-            Policy = policy;
-            Context = context;
+            Requirements = requirements;
+            User = user;
             Resource = resource;
-            foreach (var req in Policy.Requirements)
-            {
-                _pendingRequirements.Add(req);
-            }
+            _pendingRequirements = new HashSet<IAuthorizationRequirement>(requirements);
         }
 
-        public AuthorizationPolicy Policy { get; private set; }
-        public ClaimsPrincipal User { get { return Context.User; } }
-        public HttpContext Context { get; private set; }
+        public IEnumerable<IAuthorizationRequirement> Requirements { get; private set; }
+        public ClaimsPrincipal User { get; private set; }
         public object Resource { get; private set; }
 
         public IEnumerable<IAuthorizationRequirement> PendingRequirements { get { return _pendingRequirements; } }

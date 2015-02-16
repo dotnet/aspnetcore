@@ -7,14 +7,17 @@ namespace Microsoft.AspNet.Security
 {
     public class DenyAnonymousAuthorizationHandler : AuthorizationHandler<DenyAnonymousAuthorizationRequirement>
     {
-        public override Task<bool> CheckAsync(AuthorizationContext context, DenyAnonymousAuthorizationRequirement requirement)
+        public override void Handle(AuthorizationContext context, DenyAnonymousAuthorizationRequirement requirement)
         {
             var user = context.User;
             var userIsAnonymous =
                 user == null ||
                 user.Identity == null ||
                 !user.Identity.IsAuthenticated;
-            return Task.FromResult(!userIsAnonymous);
+            if (!userIsAnonymous)
+            {
+                context.Succeed(requirement);
+            }
         }
     }
 }
