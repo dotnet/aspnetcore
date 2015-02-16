@@ -17,9 +17,9 @@ namespace PrecompilationWebSite.Controllers
             return View("~/Views/ViewsConsumingCompilationOptions/Index");
         }
 
-        public IActionResult ViewStartDeletedPriorToFirstRequest()
+        public IActionResult GlobalDeletedPriorToFirstRequest()
         {
-            return View("~/Views/ViewStartDelete/Index");
+            return View("~/Views/GlobalImportDelete/Index");
         }
 
         [HttpGet("/Test")]

@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNet.FileProviders;
 using Moq;
 using Xunit;
 
@@ -271,10 +270,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public void GetOrAdd_UsesValueFromCache_IfViewStartHasNotChanged()
+        public void GetOrAdd_UsesValueFromCache_IfGlobalHasNotChanged()
         {
             // Arrange
-            var instance = (View)Activator.CreateInstance(typeof(PreCompile));
+            var instance = new PreCompile();
             var length = Encoding.UTF8.GetByteCount(instance.Content);
             var fileProvider = new TestFileProvider();
 
@@ -288,25 +287,25 @@ namespace Microsoft.AspNet.Mvc.Razor
             };
             fileProvider.AddFile(ViewPath, fileInfo);
 
-            var viewStartContent = "viewstart-content";
-            var viewStartFileInfo = new TestFileInfo
+            var globalContent = "global-content";
+            var globalFileInfo = new TestFileInfo
             {
-                Content = viewStartContent,
+                Content = globalContent,
                 LastModified = DateTime.UtcNow
             };
-            fileProvider.AddFile("_ViewStart.cshtml", viewStartFileInfo);
-            var viewStartRazorFileInfo = new RazorFileInfo
+            fileProvider.AddFile("_GlobalImport.cshtml", globalFileInfo);
+            var globalRazorFileInfo = new RazorFileInfo
             {
-                Hash = Crc32.Calculate(GetMemoryStream(viewStartContent)).ToString(CultureInfo.InvariantCulture),
+                Hash = Crc32.Calculate(GetMemoryStream(globalContent)).ToString(CultureInfo.InvariantCulture),
                 HashAlgorithmVersion = 1,
-                LastModified = viewStartFileInfo.LastModified,
-                Length = viewStartFileInfo.Length,
-                RelativePath = "_ViewStart.cshtml",
+                LastModified = globalFileInfo.LastModified,
+                Length = globalFileInfo.Length,
+                RelativePath = "_GlobalImport.cshtml",
                 FullTypeName = typeof(RuntimeCompileIdentical).FullName
             };
 
             var precompiledViews = new ViewCollection();
-            precompiledViews.Add(viewStartRazorFileInfo);
+            precompiledViews.Add(globalRazorFileInfo);
             var cache = new CompilerCache(new[] { precompiledViews }, fileProvider);
 
             // Act
@@ -378,7 +377,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public void GetOrAdd_IgnoresCachedValueIfFileIsIdentical_ButViewStartWasAdedSinceTheCacheWasCreated()
+        public void GetOrAdd_IgnoresCachedValueIfFileIsIdentical_ButGlobalImportWasAdedSinceTheCacheWasCreated()
         {
             // Arrange
             var expectedType = typeof(RuntimeCompileDifferent);
@@ -408,8 +407,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(typeof(PreCompile), actual1.CompiledType);
 
             // Act 2
-            var viewStartTrigger = fileProvider.GetTrigger("Views\\_ViewStart.cshtml");
-            viewStartTrigger.IsExpired = true;
+            var globalTrigger = fileProvider.GetTrigger("Views\\_GlobalImport.cshtml");
+            globalTrigger.IsExpired = true;
             var result2 = cache.GetOrAdd(testFile.PhysicalPath,
                                          compile: _ => CompilationResult.Successful(expectedType));
 
@@ -421,7 +420,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public void GetOrAdd_IgnoresCachedValueIfFileIsIdentical_ButViewStartWasDeletedSinceCacheWasCreated()
+        public void GetOrAdd_IgnoresCachedValueIfFileIsIdentical_ButGlobalWasDeletedSinceCacheWasCreated()
         {
             // Arrange
             var expectedType = typeof(RuntimeCompileDifferent);
@@ -439,24 +438,24 @@ namespace Microsoft.AspNet.Mvc.Razor
             };
             fileProvider.AddFile(viewFileInfo.PhysicalPath, viewFileInfo);
 
-            var viewStartFileInfo = new TestFileInfo
+            var globalFileInfo = new TestFileInfo
             {
-                PhysicalPath = "Views\\_ViewStart.cshtml",
+                PhysicalPath = "Views\\_GlobalImport.cshtml",
                 Content = "viewstart-content",
                 LastModified = lastModified
             };
-            var viewStart = new RazorFileInfo
+            var globalFile = new RazorFileInfo
             {
                 FullTypeName = typeof(RuntimeCompileIdentical).FullName,
-                RelativePath = viewStartFileInfo.PhysicalPath,
-                LastModified = viewStartFileInfo.LastModified,
-                Hash = RazorFileHash.GetHash(viewStartFileInfo, hashAlgorithmVersion: 1),
+                RelativePath = globalFileInfo.PhysicalPath,
+                LastModified = globalFileInfo.LastModified,
+                Hash = RazorFileHash.GetHash(globalFileInfo, hashAlgorithmVersion: 1),
                 HashAlgorithmVersion = 1,
-                Length = viewStartFileInfo.Length
+                Length = globalFileInfo.Length
             };
-            fileProvider.AddFile(viewStartFileInfo.PhysicalPath, viewStartFileInfo);
+            fileProvider.AddFile(globalFileInfo.PhysicalPath, globalFileInfo);
 
-            viewCollection.Add(viewStart);
+            viewCollection.Add(globalFile);
             var cache = new CompilerCache(new[] { viewCollection }, fileProvider);
 
             // Act 1
@@ -470,7 +469,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(typeof(PreCompile), actual1.CompiledType);
 
             // Act 2
-            var trigger = fileProvider.GetTrigger(viewStartFileInfo.PhysicalPath);
+            var trigger = fileProvider.GetTrigger(globalFileInfo.PhysicalPath);
             trigger.IsExpired = true;
             var result2 = cache.GetOrAdd(viewFileInfo.PhysicalPath,
                                          compile: _ => CompilationResult.Successful(expectedType));
@@ -482,15 +481,15 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(expectedType, actual2.CompiledType);
         }
 
-        public static IEnumerable<object[]> GetOrAdd_IgnoresCachedValue_IfViewStartWasChangedSinceCacheWasCreatedData
+        public static IEnumerable<object[]> GetOrAdd_IgnoresCachedValue_IfGlobalWasChangedSinceCacheWasCreatedData
         {
             get
             {
-                var viewStartContent = "viewstart-content";
-                var contentStream = GetMemoryStream(viewStartContent);
+                var globalContent = "global-content";
+                var contentStream = GetMemoryStream(globalContent);
                 var lastModified = DateTime.UtcNow;
-                int length = Encoding.UTF8.GetByteCount(viewStartContent);
-                var path = "Views\\_ViewStart.cshtml";
+                int length = Encoding.UTF8.GetByteCount(globalContent);
+                var path = "Views\\_GlobalImport.cshtml";
 
                 var razorFileInfo = new RazorFileInfo
                 {
@@ -522,9 +521,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Theory]
-        [MemberData(nameof(GetOrAdd_IgnoresCachedValue_IfViewStartWasChangedSinceCacheWasCreatedData))]
-        public void GetOrAdd_IgnoresCachedValue_IfViewStartWasChangedSinceCacheWasCreated(
-            RazorFileInfo viewStartRazorFileInfo, TestFileInfo viewStartFileInfo)
+        [MemberData(nameof(GetOrAdd_IgnoresCachedValue_IfGlobalWasChangedSinceCacheWasCreatedData))]
+        public void GetOrAdd_IgnoresCachedValue_IfGlobalFileWasChangedSinceCacheWasCreated(
+            RazorFileInfo viewStartRazorFileInfo, TestFileInfo globalFileInfo)
         {
             // Arrange
             var expectedType = typeof(RuntimeCompileDifferent);
@@ -541,7 +540,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(fileInfo.PhysicalPath, fileInfo);
-            fileProvider.AddFile(viewStartRazorFileInfo.RelativePath, viewStartFileInfo);
+            fileProvider.AddFile(viewStartRazorFileInfo.RelativePath, globalFileInfo);
             var viewCollection = new ViewCollection();
             var cache = new CompilerCache(new[] { viewCollection }, fileProvider);
 

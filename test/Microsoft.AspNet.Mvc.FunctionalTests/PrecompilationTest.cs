@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var layoutContent = File.ReadAllText(Path.Combine(viewsDirectory, "Layout.cshtml"));
             var indexContent = File.ReadAllText(Path.Combine(viewsDirectory, "Index.cshtml"));
             var viewstartContent = File.ReadAllText(Path.Combine(viewsDirectory, "_ViewStart.cshtml"));
+            var globalContent = File.ReadAllText(Path.Combine(viewsDirectory, "_GlobalImport.cshtml"));
 
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
@@ -65,57 +66,54 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Assert.Equal(assemblyName, response2.Index);
 
                 // Act - 3
-                // Touch the _ViewStart file and verify it causes all files to recompile.
+                // Touch the _ViewStart file and verify it is is dynamically compiled.
                 await TouchFile(viewsDirectory, "_ViewStart.cshtml");
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 3
                 var response3 = new ParsedResponse(responseContent);
                 Assert.NotEqual(assemblyName, response3.ViewStart);
-                Assert.NotEqual(assemblyName, response3.Index);
-                Assert.NotEqual(response2.Layout, response3.Layout);
+                Assert.Equal(assemblyName, response3.Index);
+                Assert.Equal(response2.Layout, response3.Layout);
 
                 // Act - 4
-                // Touch Index file and verify it is the only page that recompiles.
-                await TouchFile(viewsDirectory, "Index.cshtml");
+                // Touch the _GlobalImport file and verify it causes all files to recompile.
+                await TouchFile(viewsDirectory, "_GlobalImport.cshtml");
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 4
                 var response4 = new ParsedResponse(responseContent);
-                // Layout and _ViewStart should not have changed.
-                Assert.Equal(response3.Layout, response4.Layout);
-                Assert.Equal(response3.ViewStart, response4.ViewStart);
+                Assert.NotEqual(response3.ViewStart, response4.ViewStart);
                 Assert.NotEqual(response3.Index, response4.Index);
+                Assert.NotEqual(response3.Layout, response4.Layout);
 
                 // Act - 5
-                // Touch the _ViewStart file. This time, we'll verify the Non-precompiled -> Non-precompiled workflow.
-                await TouchFile(viewsDirectory, "_ViewStart.cshtml");
+                // Touch Index file and verify it is the only page that recompiles.
+                await TouchFile(viewsDirectory, "Index.cshtml");
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 5
                 var response5 = new ParsedResponse(responseContent);
-                // Everything should've recompiled.
-                Assert.NotEqual(response4.ViewStart, response5.ViewStart);
+                // Layout and _ViewStart should not have changed.
+                Assert.Equal(response4.Layout, response5.Layout);
+                Assert.Equal(response4.ViewStart, response5.ViewStart);
                 Assert.NotEqual(response4.Index, response5.Index);
-                Assert.NotEqual(response4.Layout, response5.Layout);
 
                 // Act - 6
-                // Add a new _ViewStart file
-                File.WriteAllText(Path.Combine(viewsDirectory, "..", "_ViewStart.cshtml"), string.Empty);
-                await Task.Delay(_cacheDelayInterval);
+                // Touch the _GlobalImport file. This time, we'll verify the Non-precompiled -> Non-precompiled workflow.
+                await TouchFile(viewsDirectory, "_GlobalImport.cshtml");
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 6
-                // Everything should've recompiled.
                 var response6 = new ParsedResponse(responseContent);
+                // Everything should've recompiled.
                 Assert.NotEqual(response5.ViewStart, response6.ViewStart);
                 Assert.NotEqual(response5.Index, response6.Index);
                 Assert.NotEqual(response5.Layout, response6.Layout);
 
                 // Act - 7
-                // Remove new _ViewStart file
-                File.Delete(Path.Combine(viewsDirectory, "..", "_ViewStart.cshtml"));
-                await Task.Delay(_cacheDelayInterval);
+                // Add a new _GlobalImport file
+                File.WriteAllText(Path.Combine(viewsDirectory, "..", "_GlobalImport.cshtml"), string.Empty);
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 7
@@ -126,20 +124,33 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Assert.NotEqual(response6.Layout, response7.Layout);
 
                 // Act - 8
+                // Remove new _GlobalImport file
+                File.Delete(Path.Combine(viewsDirectory, "..", "_GlobalImport.cshtml"));
+                responseContent = await client.GetStringAsync("http://localhost/Home/Index");
+
+                // Assert - 8
+                // Everything should've recompiled.
+                var response8 = new ParsedResponse(responseContent);
+                Assert.NotEqual(response6.ViewStart, response7.ViewStart);
+                Assert.NotEqual(response6.Index, response7.Index);
+                Assert.NotEqual(response6.Layout, response7.Layout);
+
+                // Act - 9
                 // Refetch and verify we get cached types
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
-                // Assert - 7
-                var response8 = new ParsedResponse(responseContent);
-                Assert.Equal(response7.ViewStart, response8.ViewStart);
-                Assert.Equal(response7.Index, response8.Index);
-                Assert.Equal(response7.Layout, response8.Layout);
+                // Assert - 9
+                var response9 = new ParsedResponse(responseContent);
+                Assert.Equal(response8.ViewStart, response9.ViewStart);
+                Assert.Equal(response8.Index, response9.Index);
+                Assert.Equal(response8.Layout, response9.Layout);
             }
             finally
             {
-                File.WriteAllText(Path.Combine(viewsDirectory, "Layout.cshtml"), layoutContent);
-                File.WriteAllText(Path.Combine(viewsDirectory, "Index.cshtml"), indexContent);
-                File.WriteAllText(Path.Combine(viewsDirectory, "_ViewStart.cshtml"), viewstartContent);
+                File.WriteAllText(Path.Combine(viewsDirectory, "Layout.cshtml"), layoutContent.TrimEnd(' '));
+                File.WriteAllText(Path.Combine(viewsDirectory, "Index.cshtml"), indexContent.TrimEnd(' '));
+                File.WriteAllText(Path.Combine(viewsDirectory, "_ViewStart.cshtml"), viewstartContent.TrimEnd(' '));
+                File.WriteAllText(Path.Combine(viewsDirectory, "_GlobalImport.cshtml"), globalContent.TrimEnd(' '));
             }
         }
 
@@ -168,7 +179,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task DeletingPrecompiledViewStart_PriorToFirstRequestToAView_CausesViewToBeRecompiled()
+        public async Task DeletingPrecompiledGlobalFile_PriorToFirstRequestToAView_CausesViewToBeRecompiled()
         {
             // Arrange
             var expected = typeof(Startup).GetTypeInfo().Assembly.GetName().ToString();
@@ -177,9 +188,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var applicationEnvironment = _services.GetRequiredService<IApplicationEnvironment>();
 
-            var viewsDirectory = Path.Combine(applicationEnvironment.ApplicationBasePath, "Views", "ViewStartDelete");
-            var viewStartPath = Path.Combine(viewsDirectory, "_ViewStart.cshtml");
-            var viewStartContent = File.ReadAllText(viewStartPath);
+            var viewsDirectory = Path.Combine(applicationEnvironment.ApplicationBasePath, 
+                                              "Views", 
+                                              "GlobalImportDelete");
+            var globalPath = Path.Combine(viewsDirectory, "_GlobalImport.cshtml");
+            var globalContent = File.ReadAllText(globalPath);
 
             // Act - 1
             // Query the Test view so we know the compiler cache gets populated.
@@ -191,14 +204,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             try
             {
                 // Act - 2
-                var response2 = await client.GetStringAsync("http://localhost/Home/ViewStartDeletedPriorToFirstRequest");
+                File.Delete(globalPath);
+                var response2 = await client.GetStringAsync("http://localhost/Home/GlobalDeletedPriorToFirstRequest");
 
                 // Assert - 2
                 Assert.NotEqual(expected, response2.Trim());
             }
             finally
             {
-                File.WriteAllText(viewStartPath, viewStartContent);
+                File.WriteAllText(globalPath, globalContent);
             }
         }
 

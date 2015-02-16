@@ -7,14 +7,14 @@ namespace RazorWebSite
 {
     public class DirectivesController : Controller
     {
-        public ViewResult ViewInheritsInjectAndUsingsFromViewStarts()
+        public ViewResult ViewInheritsInjectAndUsingsFromGlobalImports()
         {
             return View(new Person { Name = "Person1" });
         }
 
-        public ViewResult ViewInheritsBasePageFromViewStarts()
+        public ViewResult ViewInheritsBasePageFromGlobalImports()
         {
-            return View("/views/directives/scoped/ViewInheritsBasePageFromViewStarts.cshtml",
+            return View("/views/directives/scoped/ViewInheritsBasePageFromGlobalImports.cshtml",
                         new Person { Name = "Person2" });
         }
     }

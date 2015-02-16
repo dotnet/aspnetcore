@@ -286,11 +286,8 @@ View With Layout
             Assert.Equal(expected, body.Trim());
         }
 
-        // Inheritance of chunks in _ViewStart is affected by paths being app-relative and not absolute.
-        // This change ensures that _ViewStart files correctly inherits directives from parent _ViewStarts
-        // which guarantees that paths flow correctly through MvcRazorHost.
         [Fact]
-        public async Task ViewStartsCanUseDirectivesInjectedFromParentViewStarts()
+        public async Task ViewStartsCanUseDirectivesInjectedFromParentGlobals()
         {
             // Arrange
             var expected = 
@@ -298,7 +295,7 @@ View With Layout
 <page>Hello Controller-Person</page>";
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
-            var target = "http://localhost/NestedViewStarts/NestedViewStartUsingParentDirectives";
+            var target = "http://localhost/NestedGlobalImports";
 
             // Act
             var body = await client.GetStringAsync(target);

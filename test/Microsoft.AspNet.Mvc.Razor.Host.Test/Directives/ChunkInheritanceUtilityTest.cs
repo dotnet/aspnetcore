@@ -9,14 +9,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
     public class ChunkInheritanceUtilityTest
     {
         [Fact]
-        public void GetInheritedChunks_ReadsChunksFromViewStartsInPath()
+        public void GetInheritedChunks_ReadsChunksFromGlobalFilesInPath()
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(@"Views\accounts\_ViewStart.cshtml", "@using AccountModels");
-            fileProvider.AddFile(@"Views\Shared\_ViewStart.cshtml", "@inject SharedHelper Shared");
-            fileProvider.AddFile(@"Views\home\_ViewStart.cshtml", "@using MyNamespace");
-            fileProvider.AddFile(@"Views\_ViewStart.cshtml",
+            fileProvider.AddFile(@"Views\accounts\_GlobalImport.cshtml", "@using AccountModels");
+            fileProvider.AddFile(@"Views\Shared\_GlobalImport.cshtml", "@inject SharedHelper Shared");
+            fileProvider.AddFile(@"Views\home\_GlobalImport.cshtml", "@using MyNamespace");
+            fileProvider.AddFile(@"Views\_GlobalImport.cshtml",
 @"@inject MyHelper<TModel> Helper
 @inherits MyBaseType
 
@@ -64,13 +64,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         }
 
         [Fact]
-        public void GetInheritedChunks_ReturnsEmptySequenceIfNoViewStartsArePresent()
+        public void GetInheritedChunks_ReturnsEmptySequenceIfNoGlobalsArePresent()
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(@"_ViewStart.cs", string.Empty);
+            fileProvider.AddFile(@"_GlobalImport.cs", string.Empty);
             fileProvider.AddFile(@"Views\_Layout.cshtml", string.Empty);
-            fileProvider.AddFile(@"Views\home\_not-viewstart.cshtml", string.Empty);
+            fileProvider.AddFile(@"Views\home\_not-globalimport.cshtml", string.Empty);
             var cache = new DefaultCodeTreeCache(fileProvider);
             var host = new MvcRazorHost(cache);
             var defaultChunks = new Chunk[]
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(@"Views\_ViewStart.cshtml",
+            fileProvider.AddFile(@"Views\_GlobalImport.cshtml",
                                "@inject DifferentHelper<TModel> Html");
             var cache = new DefaultCodeTreeCache(fileProvider);
             var host = new MvcRazorHost(cache);

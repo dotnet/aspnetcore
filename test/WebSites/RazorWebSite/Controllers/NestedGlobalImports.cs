@@ -5,11 +5,16 @@ using Microsoft.AspNet.Mvc;
 
 namespace RazorWebSite.Controllers
 {
-    public class NestedViewStartsController : Controller
+    public class NestedGlobalImportsController : Controller
     {
         public ViewResult Index()
         {
-            return View("NestedViewStarts/Index");
+            var model = new Person
+            {
+                Name = "Controller-Person"
+            };
+
+            return View("~/Views/NestedGlobalImports/Nested/Index.cshtml", model);
         }
     }
 }

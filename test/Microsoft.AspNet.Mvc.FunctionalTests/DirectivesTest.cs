@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var body = await client.GetStringAsync("http://localhost/Directives/ViewInheritsInjectAndUsingsFromViewStarts");
+            var body = await client.GetStringAsync("http://localhost/Directives/ViewInheritsInjectAndUsingsFromGlobalImports");
 
             // Assert
             Assert.Equal(expected, body.Trim());
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var body = await client.GetStringAsync("http://localhost/Directives/ViewInheritsBasePageFromViewStarts");
+            var body = await client.GetStringAsync("http://localhost/Directives/ViewInheritsBasePageFromGlobalImports");
 
             // Assert
             Assert.Equal(expected, body.Trim());
