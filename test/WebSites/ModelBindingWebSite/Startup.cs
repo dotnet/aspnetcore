@@ -29,6 +29,8 @@ namespace ModelBindingWebSite
                             m.MaxModelValidationErrors = 8;
                             m.ModelBinders.Insert(0, typeof(TestBindingSourceModelBinder));
 
+                            m.InputFormatters.InstanceOf<JsonInputFormatter>().CaptureDeserilizationErrors = true;
+
                             m.AddXmlDataContractSerializerFormatter();
                             m.ValidationExcludeFilters.Add(typeof(Address));
                         });

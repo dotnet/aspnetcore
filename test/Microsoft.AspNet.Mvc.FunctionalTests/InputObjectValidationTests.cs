@@ -175,8 +175,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
-            var content = new StringContent("{\"Alias\":\"xyz\"}", Encoding.UTF8, "application/json");
-
+            var kvps = new List<KeyValuePair<string, string>>();
+            kvps.Add(new KeyValuePair<string, string>("Alias", "xyz"));
+            var content = new FormUrlEncodedContent(kvps);
+            
             // Act
             var response = await client.PostAsync("http://localhost/Validation/GetDeveloperAlias", content);
 

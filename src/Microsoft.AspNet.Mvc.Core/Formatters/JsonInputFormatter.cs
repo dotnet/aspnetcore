@@ -36,6 +36,8 @@ namespace Microsoft.AspNet.Mvc
                 // Setting this to None prevents Json.NET from loading malicious, unsafe, or security-sensitive types
                 TypeNameHandling = TypeNameHandling.None
             };
+
+            _jsonSerializerSettings.ContractResolver = new JsonContractResolver();
         }
 
         /// <summary>

@@ -1777,5 +1777,74 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Should Update all included properties.
             Assert.Equal("March", user.RegisterationMonth);
         }
+
+        public static TheoryData<string, string[]> ModelStateHasErrorsForValueAndReferenceTypesData
+        {
+            get
+            {
+                return new TheoryData<string, string[]>()
+                {
+                    {
+                        "{}",
+                        new[]
+                        {
+                            ":Required property 'Id' not found in JSON",
+                            "rectangle.Lines:The Lines field is required."
+                        }
+                    },
+                    {
+                        "{\"Id\":10}",
+                        new[]
+                        {
+                            "rectangle.Lines:The Lines field is required."
+                        }
+                    },
+                    {
+                        "{\"Id\":10,\"Lines\":[{}]}",
+                        new []
+                        {
+                            "Lines[0]:Required property 'Start' not found in JSON",
+                            "Lines[0]:Required property 'End' not found in JSON"
+                        }
+                    },
+                    {
+                        "{\"Id\":10,\"Lines\":[{\"Start\":{\"X\":10,\"Y\":10},\"End\":{\"X\":10}}]}",
+                        new []
+                        {
+                            "Lines[0].End:Required property 'Y' not found in JSON"
+                        }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ModelStateHasErrorsForValueAndReferenceTypesData))]
+        public async Task ModelState_HasErrors_ForValueAndReferenceTypes(
+            string input, 
+            IEnumerable<string> expectedModelStateErrorMessages)
+        {
+            // Arrange
+            var server = TestServer.Create(_services, _app);
+            var client = server.CreateClient();
+            var content = new StringContent(input, Encoding.UTF8, "text/json");
+
+            // Act
+            var response = await client.PostAsync(
+                "http://localhost/Validation/CreateRectangle", 
+                content);
+
+            // Assert
+            var data = await response.Content.ReadAsStringAsync();
+            var actualModelStateErrorMessages = JsonConvert.DeserializeObject<IEnumerable<string>>(data);
+            Assert.NotNull(actualModelStateErrorMessages);
+            Assert.Equal(expectedModelStateErrorMessages.Count(), actualModelStateErrorMessages.Count());
+            foreach (var expectedErrorMessage in expectedModelStateErrorMessages)
+            {
+                Assert.Contains(
+                    actualModelStateErrorMessages,
+                    (actualErrorMessage) => actualErrorMessage.StartsWith(expectedErrorMessage));
+            }
+        }
     }
 }

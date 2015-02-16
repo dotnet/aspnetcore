@@ -4,6 +4,7 @@
 #if ASPNET50
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -234,6 +235,126 @@ namespace Microsoft.AspNet.Mvc
             Assert.Contains("Required property 'Password' not found in JSON", modelErrorMessage);
         }
 
+        [Fact]
+        public async Task ThrowsException_OnSupplyingNull_ForRequiredValueType()
+        {
+            // Arrange
+            var contentBytes = Encoding.UTF8.GetBytes("{\"Id\":\"null\",\"Name\":\"Programming C#\"}");
+            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(Book));
+            var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
+
+            // Act
+            var obj = await jsonFormatter.ReadAsync(inputFormatterContext);
+
+            // Assert
+            var book = obj as Book;
+            Assert.NotNull(book);
+            Assert.Equal(0, book.Id);
+            Assert.Equal("Programming C#", book.Name);
+            Assert.False(actionContext.ModelState.IsValid);
+
+            Assert.Equal(1, actionContext.ModelState.Values.First().Errors.Count);
+            var modelErrorMessage = actionContext.ModelState.Values.First().Errors[0].Exception.Message;
+            Assert.Contains("Could not convert string to integer: null. Path 'Id'", modelErrorMessage);
+        }
+
+        [Theory]
+        [InlineData(typeof(Book))]
+        [InlineData(typeof(EBook))]
+        public async Task Validates_RequiredAttribute_OnRegularAndInheritedProperties(Type type)
+        {
+            // Arrange
+            var contentBytes = Encoding.UTF8.GetBytes("{ \"Name\" : \"Programming C#\"}");
+            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(type);
+            var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
+
+            // Act
+            var obj = await jsonFormatter.ReadAsync(inputFormatterContext);
+
+            // Assert
+            Assert.False(actionContext.ModelState.IsValid);
+            Assert.Equal(1, actionContext.ModelState.Count);
+
+            var modelErrorMessage = actionContext.ModelState.Values.First().Errors[0].Exception.Message;
+            Assert.Contains("Required property 'Id' not found in JSON", modelErrorMessage);
+        }
+
+        [Fact]
+        public async Task Validates_RequiredAttributeOnStructTypes()
+        {
+            // Arrange
+            var contentBytes = Encoding.UTF8.GetBytes("{\"Longitude\":{}}");
+            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(GpsCoordinate));
+            var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
+
+            // Act
+            var obj = await jsonFormatter.ReadAsync(inputFormatterContext);
+
+            // Assert
+            Assert.False(actionContext.ModelState.IsValid);
+            Assert.Equal(2, actionContext.ModelState.Count);
+            var errorMessages = GetModelStateErrorMessages(actionContext.ModelState);
+            Assert.Equal(3, errorMessages.Count());
+            Assert.Contains(
+                errorMessages,
+                (errorMessage) => errorMessage.Contains("Required property 'Latitude' not found in JSON"));
+            Assert.Contains(
+                errorMessages,
+                (errorMessage) => errorMessage.Contains("Required property 'X' not found in JSON"));
+            Assert.Contains(
+                errorMessages,
+                (errorMessage) => errorMessage.Contains("Required property 'Y' not found in JSON"));
+        }
+
+        [Fact]
+        public async Task Validation_DoesNotHappen_ForNonRequired_ValueTypeProperties()
+        {
+            // Arrange
+            var contentBytes = Encoding.UTF8.GetBytes("{\"Name\":\"Seattle\"}");
+            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(Location));
+            var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
+
+            // Act
+            var obj = await jsonFormatter.ReadAsync(inputFormatterContext);
+
+            // Assert
+            Assert.True(actionContext.ModelState.IsValid);
+            var location = obj as Location;
+            Assert.NotNull(location);
+            Assert.Equal(0, location.Id);
+            Assert.Equal("Seattle", location.Name);
+        }
+
+        [Fact]
+        public async Task Validation_DoesNotHappen_OnNullableValueTypeProperties()
+        {
+            // Arrange
+            var contentBytes = Encoding.UTF8.GetBytes("{}");
+            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(Venue));
+            var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
+
+            // Act
+            var obj = await jsonFormatter.ReadAsync(inputFormatterContext);
+
+            // Assert
+            Assert.True(actionContext.ModelState.IsValid);
+            var venue = obj as Venue;
+            Assert.NotNull(venue);
+            Assert.Null(venue.Location);
+            Assert.Null(venue.NearByLocations);
+            Assert.Null(venue.Name);
+        }
+
         private static ActionContext GetActionContext(byte[] contentBytes,
                                                  string contentType = "application/xml")
         {
@@ -257,6 +378,35 @@ namespace Microsoft.AspNet.Mvc
             return httpContext.Object;
         }
 
+        private IEnumerable<string> GetModelStateErrorMessages(ModelStateDictionary modelStateDictionary)
+        {
+            var allErrorMessages = new List<string>();
+            foreach (var keyModelStatePair in modelStateDictionary)
+            {
+                var key = keyModelStatePair.Key;
+                var errors = keyModelStatePair.Value.Errors;
+                if (errors != null && errors.Count > 0)
+                {
+                    foreach (var modelError in errors)
+                    {
+                        if (string.IsNullOrEmpty(modelError.ErrorMessage))
+                        {
+                            if (modelError.Exception != null)
+                            {
+                                allErrorMessages.Add(modelError.Exception.Message);
+                            }
+                        }
+                        else
+                        {
+                            allErrorMessages.Add(modelError.ErrorMessage);
+                        }
+                    }
+                }
+            }
+
+            return allErrorMessages;
+        }
+
         private sealed class User
         {
             public string Name { get; set; }
@@ -271,6 +421,56 @@ namespace Microsoft.AspNet.Mvc
 
             [JsonProperty(Required = Required.Always)]
             public string Password { get; set; }
+        }
+
+        private class Book
+        {
+            [Required]
+            public int Id { get; set; }
+
+            [Required]
+            public string Name { get; set; }
+        }
+
+        private class EBook : Book
+        {
+        }
+
+        private struct Point
+        {
+            [Required]
+            public int X { get; set; }
+
+            [Required]
+            public int Y { get; set; }
+        }
+
+        private class GpsCoordinate
+        {
+            [Required]
+            public Point Latitude { get; set; }
+
+            [Required]
+            public Point Longitude { get; set; }
+        }
+
+        private class Location
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+        }
+
+        private class Venue
+        {
+            [Required]
+            public string Name { get; set; }
+
+            [Required]
+            public Point? Location { get; set; }
+
+            [Required]
+            public List<Point> NearByLocations { get; set; }
         }
     }
 }
