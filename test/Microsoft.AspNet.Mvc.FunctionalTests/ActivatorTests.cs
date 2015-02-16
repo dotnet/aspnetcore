@@ -187,6 +187,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                            "<input id=\"foo\" name=\"foo\" type=\"hidden\" value=\"test content\" />" +
                            "</span>" +
                            Environment.NewLine +
+                           "<footer>Footer from activated ViewData</footer>" +
                            "</body>";
 
             // Act

@@ -43,17 +43,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         private static PropertyActivator<ViewContext> CreateActivateInfo(PropertyInfo property)
         {
             Func<ViewContext, object> valueAccessor;
+            var propertyType = property.PropertyType;
 
-            if (property.PropertyType == typeof(ViewContext))
+            if (propertyType == typeof(ViewContext))
             {
                 valueAccessor = viewContext => viewContext;
+            }
+            else if (propertyType == typeof(ViewDataDictionary))
+            {
+                valueAccessor = viewContext => viewContext.ViewData;
             }
             else
             {
                 valueAccessor = (viewContext) =>
                 {
                     var serviceProvider = viewContext.HttpContext.RequestServices;
-                    var service = serviceProvider.GetRequiredService(property.PropertyType);
+                    var service = serviceProvider.GetRequiredService(propertyType);
 
                     var contextable = service as ICanHasViewContext;
                     contextable?.Contextualize(viewContext);
