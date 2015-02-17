@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace ModelBindingWebSite
+namespace ModelBindingWebSite.Models
 {
     public class User_FromBody
     {

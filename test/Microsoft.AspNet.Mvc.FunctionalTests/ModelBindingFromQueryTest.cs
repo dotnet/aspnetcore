@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using ModelBindingWebSite;
+using ModelBindingWebSite.Models;
 using Newtonsoft.Json;
 using Xunit;
 using ModelBindingWebSite.Controllers;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class ModelBindingFromQueryTest
     {
         private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(ModelBindingWebSite));
-        private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task FromQuery_CustomModelPrefix_ForParameter()

@@ -5,6 +5,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
+using ModelBindingWebSite.Models;
 using ModelBindingWebSite.Services;
 
 namespace ModelBindingWebSite

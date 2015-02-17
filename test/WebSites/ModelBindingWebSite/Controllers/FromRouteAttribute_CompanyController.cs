@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNet.Mvc;
+using ModelBindingWebSite.Models;
 
 namespace ModelBindingWebSite.Controllers
 {

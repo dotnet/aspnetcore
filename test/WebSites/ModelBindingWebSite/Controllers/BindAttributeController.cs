@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using ModelBindingWebSite.Models;
 
 namespace ModelBindingWebSite.Controllers
 {

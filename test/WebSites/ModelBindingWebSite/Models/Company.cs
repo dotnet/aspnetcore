@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace ModelBindingWebSite
+namespace ModelBindingWebSite.Models
 {
     public class Company
     {

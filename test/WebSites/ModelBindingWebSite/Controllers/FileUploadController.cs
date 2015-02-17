@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Http;
 using Microsoft.Net.Http.Headers;
+using ModelBindingWebSite.Models;
 
 namespace ModelBindingWebSite.Controllers
 {

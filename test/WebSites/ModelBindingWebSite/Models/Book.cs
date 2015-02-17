@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Http;
 
-namespace ModelBindingWebSite
+namespace ModelBindingWebSite.Models
 {
     public class Book
     {

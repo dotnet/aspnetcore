@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using ModelBindingWebSite;
+using ModelBindingWebSite.Models;
 using Newtonsoft.Json;
 using Xunit;
 

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc;
+using ModelBindingWebSite.Models;
 
 namespace ModelBindingWebSite.Controllers
 {

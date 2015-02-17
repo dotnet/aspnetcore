@@ -5,7 +5,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Mvc;
 
-namespace ModelBindingWebSite
+namespace ModelBindingWebSite.Models
 {
     public class Employee : Person
     {

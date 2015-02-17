@@ -3,15 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using ModelBindingWebSite;
+using ModelBindingWebSite.Models;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -20,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class ModelBindingFromRouteTest
     {
         private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(ModelBindingWebSite));
-        private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
+        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task FromRoute_CustomModelPrefix_ForParameter()

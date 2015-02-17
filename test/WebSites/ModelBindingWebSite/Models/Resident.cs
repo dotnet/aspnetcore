@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc;
 
-namespace ModelBindingWebSite
+namespace ModelBindingWebSite.Models
 {
     public class Resident : Person
     {

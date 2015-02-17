@@ -3,7 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace ModelBindingWebSite
+namespace ModelBindingWebSite.Models
 {
     public class Address
     {

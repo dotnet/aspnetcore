@@ -9,6 +9,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using ModelBindingWebSite;
 using ModelBindingWebSite.Controllers;
+using ModelBindingWebSite.Models;
 using Newtonsoft.Json;
 using Xunit;
 

@@ -8,7 +8,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http.Core.Collections;
-using Microsoft.AspNet.Http;
+using ModelBindingWebSite.Models;
 
 namespace ModelBindingWebSite.Controllers
 {
@@ -42,8 +42,8 @@ namespace ModelBindingWebSite.Controllers
                 prefix: string.Empty,
                 predicate:
                 (context, modelName) =>
-                    !string.Equals(modelName, nameof(ModelBindingWebSite.User.Id), StringComparison.Ordinal) &&
-                    !string.Equals(modelName, nameof(ModelBindingWebSite.User.Key), StringComparison.Ordinal));
+                    !string.Equals(modelName, nameof(Models.User.Id), StringComparison.Ordinal) &&
+                    !string.Equals(modelName, nameof(Models.User.Key), StringComparison.Ordinal));
 
             return user;
         }
