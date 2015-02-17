@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             if (viewContext.ViewData == null)
             {
                 throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
-                        "ViewData",
+                        nameof(ViewContext.ViewData),
                         typeof(ViewContext)),
                     nameof(viewContext));
             }
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 // viewContext may contain a base ViewDataDictionary instance. So complain about that type, not TModel.
                 throw new ArgumentException(Resources.FormatArgumentPropertyUnexpectedType(
-                        "ViewData",
+                        nameof(ViewContext.ViewData),
                         viewContext.ViewData.GetType().FullName,
                         typeof(ViewDataDictionary<TModel>).FullName),
                     nameof(viewContext));

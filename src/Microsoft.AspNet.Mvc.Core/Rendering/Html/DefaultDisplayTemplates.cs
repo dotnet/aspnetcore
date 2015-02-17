@@ -224,8 +224,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
             var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
-
-            foreach (var propertyMetadata in modelMetadata.Properties.Where(pm => ShouldShow(pm, templateInfo)))
+            var properties = modelMetadata.Properties.Where(metadata => ShouldShow(metadata, templateInfo));
+            foreach (var propertyMetadata in properties)
             {
                 var divTag = new TagBuilder("div");
 

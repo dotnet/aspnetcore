@@ -25,10 +25,10 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
         {
             private static Func<TModel, TResult> _identityFunc;
 
-            private static readonly ConcurrentDictionary<MemberInfo, Func<TModel, TResult>> _simpleMemberAccessDict =
+            private static readonly ConcurrentDictionary<MemberInfo, Func<TModel, TResult>> _simpleMemberAccessCache =
                 new ConcurrentDictionary<MemberInfo, Func<TModel, TResult>>();
 
-            private static readonly ConcurrentDictionary<MemberInfo, Func<object, TResult>> _constMemberAccessDict =
+            private static readonly ConcurrentDictionary<MemberInfo, Func<object, TResult>> _constMemberAccessCache =
                 new ConcurrentDictionary<MemberInfo, Func<object, TResult>>();
 
             public static Func<TModel, TResult> Compile([NotNull] Expression<Func<TModel, TResult>> expression)
@@ -88,23 +88,25 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                     if (memberExpression.Expression == expression.Parameters[0] || memberExpression.Expression == null)
                     {
                         // model => model.Member or model => StaticMember
-                        return _simpleMemberAccessDict.GetOrAdd(memberExpression.Member, _ => expression.Compile());
+                        return _simpleMemberAccessCache.GetOrAdd(memberExpression.Member, _ => expression.Compile());
                     }
 
                     var constantExpression = memberExpression.Expression as ConstantExpression;
                     if (constantExpression != null)
                     {
                         // model => {const}.Member (captured local variable)
-                        var compiledExpression = _constMemberAccessDict.GetOrAdd(memberExpression.Member, _ =>
+                        var compiledExpression = _constMemberAccessCache.GetOrAdd(memberExpression.Member, _ =>
                         {
                             // rewrite as capturedLocal => ((TDeclaringType)capturedLocal).Member
                             var parameterExpression = Expression.Parameter(typeof(object), "capturedLocal");
                             var castExpression =
                                 Expression.Convert(parameterExpression, memberExpression.Member.DeclaringType);
-                            var newMemberExpression = memberExpression.Update(castExpression);
-                            var newExpression =
-                                Expression.Lambda<Func<object, TResult>>(newMemberExpression, parameterExpression);
-                            return newExpression.Compile();
+                            var replacementMemberExpression = memberExpression.Update(castExpression);
+                            var replacementExpression = Expression.Lambda<Func<object, TResult>>(
+                                replacementMemberExpression,
+                                parameterExpression);
+
+                            return replacementExpression.Compile();
                         });
 
                         var capturedLocal = constantExpression.Value;

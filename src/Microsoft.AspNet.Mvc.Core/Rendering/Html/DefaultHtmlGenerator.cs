@@ -1024,14 +1024,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
             if (value == null)
             {
                 throw new InvalidOperationException(Resources.FormatHtmlHelper_MissingSelectData(
-                    "IEnumerable<SelectListItem>", expression));
+                    $"IEnumerable<{nameof(SelectListItem)}>",
+                    expression));
             }
 
             var selectList = value as IEnumerable<SelectListItem>;
             if (selectList == null)
             {
                 throw new InvalidOperationException(Resources.FormatHtmlHelper_WrongSelectDataType(
-                    expression, value.GetType().FullName, "IEnumerable<SelectListItem>"));
+                    expression,
+                    value.GetType().FullName,
+                    $"IEnumerable<{nameof(SelectListItem)}>"));
             }
 
             return selectList;
