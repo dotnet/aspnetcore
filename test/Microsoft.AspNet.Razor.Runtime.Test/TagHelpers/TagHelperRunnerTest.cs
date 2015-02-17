@@ -157,6 +157,23 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal("True", output.Attributes["foo"]);
         }
 
+        [Fact]
+        public async Task RunAsync_ConfiguresTagHelperContextWithExecutionContextsItems()
+        {
+            // Arrange
+            var runner = new TagHelperRunner();
+            var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
+            var tagHelper = new ContextInspectingTagHelper();
+            executionContext.Add(tagHelper);
+
+            // Act
+            await runner.RunAsync(executionContext);
+
+            // Assert
+            Assert.NotNull(tagHelper.ContextProcessedWith);
+            Assert.Same(tagHelper.ContextProcessedWith.Items, executionContext.Items);
+        }
+
         private class ExecutableTagHelper : TagHelper
         {
             public bool Processed { get; set; }
@@ -169,6 +186,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 output.Attributes["class"] = "somethingelse";
                 output.Attributes["hello"] = "world";
                 output.SelfClosing = true;
+            }
+        }
+
+        private class ContextInspectingTagHelper : TagHelper
+        {
+            public TagHelperContext ContextProcessedWith { get; set; }
+
+            public override void Process(TagHelperContext context, TagHelperOutput output)
+            {
+                ContextProcessedWith = context;
             }
         }
 

@@ -26,6 +26,30 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
+        public void ParentItems_SetsItemsProperty()
+        {
+            // Arrange
+            var expectedItems = new Dictionary<object, object>
+            {
+                { "test-entry", 1234 }
+            };
+
+            // Act
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                selfClosing: false,
+                items: expectedItems,
+                uniqueId: string.Empty,
+                executeChildContentAsync: async () => await Task.FromResult(result: true),
+                startWritingScope: () => { },
+                endWritingScope: () => new StringWriter());
+
+            // Assert
+            Assert.NotNull(executionContext.Items);
+            Assert.Same(expectedItems, executionContext.Items);
+        }
+
+        [Fact]
         public async Task GetChildContentAsync_CachesValue()
         {
             // Arrange
@@ -34,6 +58,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 selfClosing: false,
+                items: null,
                 uniqueId: string.Empty,
                 executeChildContentAsync: () =>
                 {
@@ -67,6 +92,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 selfClosing: false,
+                items: null,
                 uniqueId: string.Empty,
                 executeChildContentAsync: () =>
                 {
