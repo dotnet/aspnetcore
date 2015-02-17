@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.WebUtilities.Encoders;
 
 namespace Microsoft.AspNet.StaticFiles
 {
@@ -19,6 +19,8 @@ namespace Microsoft.AspNet.StaticFiles
     public class HtmlDirectoryFormatter : IDirectoryFormatter
     {
         private const string TextHtmlUtf8 = "text/html; charset=utf-8";
+
+        private static IHtmlEncoder _htmlEncoder;
 
         /// <summary>
         /// Generates an HTML view for a directory.
@@ -32,6 +34,11 @@ namespace Microsoft.AspNet.StaticFiles
             if (contents == null)
             {
                 throw new ArgumentNullException("contents");
+            }
+
+            if (_htmlEncoder == null)
+            {
+                _htmlEncoder = context.ApplicationServices.GetHtmlEncoder();
             }
 
             context.Response.ContentType = TextHtmlUtf8;
@@ -154,7 +161,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         private static string HtmlEncode(string body)
         {
-            return WebUtility.HtmlEncode(body);
+            return _htmlEncoder.HtmlEncode(body);
         }
     }
 }
