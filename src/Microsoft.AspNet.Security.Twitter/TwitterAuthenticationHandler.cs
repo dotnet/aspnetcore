@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Security.Twitter
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = Request.IsSecure
+                    Secure = Request.IsHttps
                 };
 
                 Response.Cookies.Delete(StateCookie, cookieOptions);
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Security.Twitter
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = Request.IsSecure
+                    Secure = Request.IsHttps
                 };
 
                 Response.Cookies.Append(StateCookie, Options.StateDataFormat.Protect(requestToken), cookieOptions);

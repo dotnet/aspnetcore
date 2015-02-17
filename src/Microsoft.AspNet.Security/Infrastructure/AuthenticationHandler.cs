@@ -393,7 +393,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = Request.IsSecure
+                Secure = Request.IsHttps
             };
 
             properties.Dictionary[correlationKey] = correlationId;
@@ -415,7 +415,7 @@ namespace Microsoft.AspNet.Security.Infrastructure
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = Request.IsSecure
+                Secure = Request.IsHttps
             };
             Response.Cookies.Delete(correlationKey, cookieOptions);
 

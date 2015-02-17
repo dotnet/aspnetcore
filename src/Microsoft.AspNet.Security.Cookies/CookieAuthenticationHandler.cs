@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Security.Cookies
                 };
                 if (Options.CookieSecure == CookieSecureOption.SameAsRequest)
                 {
-                    cookieOptions.Secure = Request.IsSecure;
+                    cookieOptions.Secure = Request.IsHttps;
                 }
                 else
                 {

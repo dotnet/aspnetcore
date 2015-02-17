@@ -472,7 +472,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = Request.IsSecure
+                    Secure = Request.IsHttps
                 });
         }
 
@@ -502,7 +502,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
                             var cookieOptions = new CookieOptions
                             {
                                 HttpOnly = true,
-                                Secure = Request.IsSecure
+                                Secure = Request.IsHttps
                             };
 
                             Response.Cookies.Delete(nonceKey, cookieOptions);
