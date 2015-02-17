@@ -495,7 +495,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private static bool HasConstraint(List<RouteDataActionConstraint> constraints, string routeKey)
+        private static bool HasConstraint(IList<RouteDataActionConstraint> constraints, string routeKey)
         {
             return constraints.Any(
                 rc => string.Equals(rc.RouteKey, routeKey, StringComparison.OrdinalIgnoreCase));

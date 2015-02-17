@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Mvc
 {
     public class FilterProviderContext
     {
-        public FilterProviderContext([NotNull] ActionContext actionContext, [NotNull] List<FilterItem> items)
+        public FilterProviderContext([NotNull] ActionContext actionContext, [NotNull] IList<FilterItem> items)
         {
             ActionContext = actionContext;
             Results = items;
@@ -17,6 +17,6 @@ namespace Microsoft.AspNet.Mvc
         public ActionContext ActionContext { get; set; }
 
         // Results
-        public List<FilterItem> Results { get; set; }
+        public IList<FilterItem> Results { get; set; }
     }
 }

@@ -52,37 +52,37 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The actions of the controller as <see cref="ActionModelValues"/>.
         /// See <see cref="ControllerModel.Actions"/>.
         /// </summary>
-        public List<ActionModelValues> Actions { get; }
+        public IList<ActionModelValues> Actions { get; }
 
         /// <summary>
         /// The <see cref="Type"/>s of the controller's attributes. 
         /// See <see cref="ControllerModel.Attributes"/>.
         /// </summary>
-        public List<Type> Attributes { get; }
+        public IList<Type> Attributes { get; }
 
         /// <summary>
         /// The filters on the controller as <see cref="FilterValues"/>.
         /// See <see cref="ControllerModel.Filters"/>.
         /// </summary>
-        public List<FilterValues> Filters { get; }
+        public IList<FilterValues> Filters { get; }
 
         /// <summary>
         /// The action constraints on the controller as <see cref="ActionConstraintValues"/>.
         /// See <see cref="ControllerModel.ActionConstraints"/>.
         /// </summary>
-        public List<ActionConstraintValues> ActionConstraints { get; }
+        public IList<ActionConstraintValues> ActionConstraints { get; }
 
         /// <summary>
         /// The route constraints on the controller as <see cref="RouteConstraintProviderValues"/>.
         /// See <see cref="ControllerModel.RouteConstraints"/>.
         /// </summary>
-        public List<RouteConstraintProviderValues> RouteConstraints { get; set; }
+        public IList<RouteConstraintProviderValues> RouteConstraints { get; set; }
 
         /// <summary>
         /// The attribute routes on the controller as <see cref="AttributeRouteModelValues"/>.
         /// See <see cref="ControllerModel.AttributeRoutes"/>.
         /// </summary>
-        public List<AttributeRouteModelValues> AttributeRoutes { get; set; }
+        public IList<AttributeRouteModelValues> AttributeRoutes { get; set; }
 
         /// <summary>
         /// Gets the set of properties associated with the controller <see cref="ControllerModel.Properties"/>.

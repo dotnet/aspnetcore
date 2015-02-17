@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
                 new AttributeRouteLinkGenerationEntryClassifier());
         }
 
-        public List<LinkGenerationMatch> GetMatches(VirtualPathContext context)
+        public IList<LinkGenerationMatch> GetMatches(VirtualPathContext context)
         {
             var results = new List<LinkGenerationMatch>();
             Walk(results, context, _root, isFallbackPath: false);

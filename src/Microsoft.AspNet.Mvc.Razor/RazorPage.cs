@@ -108,10 +108,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         public bool IsLayoutBeingRendered { get; set; }
 
         /// <inheritdoc />
-        public Dictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
+        public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
 
         /// <inheritdoc />
-        public Dictionary<string, RenderAsyncDelegate> SectionWriters { get; private set; }
+        public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; private set; }
 
         /// <inheritdoc />
         public abstract Task ExecuteAsync();

@@ -39,7 +39,11 @@ namespace Microsoft.AspNet.Mvc
 
         public void Invoke(ActionDescriptorProviderContext context, Action callNext)
         {
-            context.Results.AddRange(GetDescriptors());
+            foreach (var descriptor in GetDescriptors())
+            {
+                context.Results.Add(descriptor);
+            }
+
             callNext();
         }
 

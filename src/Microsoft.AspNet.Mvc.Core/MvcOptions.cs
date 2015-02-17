@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
@@ -30,6 +29,9 @@ namespace Microsoft.AspNet.Mvc
             InputFormatters = new List<InputFormatterDescriptor>();
             Filters = new List<IFilter>();
             FormatterMappings = new FormatterMappings();
+            ValidationExcludeFilters = new List<ExcludeValidationDescriptor>();
+            ModelValidatorProviders = new List<ModelValidatorProviderDescriptor>();
+            CacheProfiles = new Dictionary<string, CacheProfile>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -70,21 +72,20 @@ namespace Microsoft.AspNet.Mvc
         /// Gets a list of the <see cref="OutputFormatterDescriptor" /> which are used to construct
         /// a list of <see cref="IOutputFormatter"/> by <see cref="IOutputFormattersProvider"/>.
         /// </summary>
-        public List<OutputFormatterDescriptor> OutputFormatters { get; private set; }
+        public IList<OutputFormatterDescriptor> OutputFormatters { get; }
 
         /// <summary>
         /// Gets a list of the <see cref="InputFormatterDescriptor" /> which are used to construct
         /// a list of <see cref="IInputFormatter"/> by <see cref="IInputFormattersProvider"/>.
         /// </summary>
-        public List<InputFormatterDescriptor> InputFormatters { get; private set; }
+        public IList<InputFormatterDescriptor> InputFormatters { get; }
 
         /// <summary>
         /// Gets a list of <see cref="ExcludeValidationDescriptor"/> which are used to construct a list
         /// of exclude filters by <see cref="IValidationExcludeFiltersProvider"/>.
         /// </summary>
-        public List<ExcludeValidationDescriptor> ValidationExcludeFilters { get; }
-            = new List<ExcludeValidationDescriptor>();
-        
+        public IList<ExcludeValidationDescriptor> ValidationExcludeFilters { get; }
+
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further
         /// errors are ignored.
@@ -108,44 +109,42 @@ namespace Microsoft.AspNet.Mvc
         /// Gets a list of the <see cref="ModelBinderDescriptor" /> used by the
         /// <see cref="ModelBinding.CompositeModelBinder" />.
         /// </summary>
-        public List<ModelBinderDescriptor> ModelBinders { get; private set; }
+        public IList<ModelBinderDescriptor> ModelBinders { get; }
 
         /// <summary>
         /// Gets a list of the <see cref="ModelValidatorProviderDescriptor" />s used by
         /// <see cref="ModelBinding.CompositeModelValidatorProvider"/>.
         /// </summary>
-        public List<ModelValidatorProviderDescriptor> ModelValidatorProviders { get; }
-            = new List<ModelValidatorProviderDescriptor>();
+        public IList<ModelValidatorProviderDescriptor> ModelValidatorProviders { get; }
 
         /// <summary>
         /// Gets a list of descriptors that represent <see cref="Rendering.IViewEngine"/> used
         /// by this application.
         /// </summary>
-        public List<ViewEngineDescriptor> ViewEngines { get; private set; }
+        public IList<ViewEngineDescriptor> ViewEngines { get; }
 
         /// <summary>
         /// Gets a list of descriptors that represent
         /// <see cref="ModelBinding.IValueProviderFactory"/> used by this application.
         /// </summary>
-        public List<ValueProviderFactoryDescriptor> ValueProviderFactories { get; private set; }
+        public IList<ValueProviderFactoryDescriptor> ValueProviderFactories { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IApplicationModelConvention"/> instances that will be applied to
         /// the <see cref="ApplicationModel"/> when discovering actions.
         /// </summary>
-        public List<IApplicationModelConvention> Conventions { get; private set; }
+        public IList<IApplicationModelConvention> Conventions { get; }
 
         /// <summary>
         /// Gets or sets the flag which causes content negotiation to ignore Accept header 
         /// when it contains the media type */*. <see langword="false"/> by default.
         /// </summary>
-        public bool RespectBrowserAcceptHeader { get; set; } = false;
-        
+        public bool RespectBrowserAcceptHeader { get; set; }
+
         /// <summary>
         /// Gets a Dictionary of CacheProfile Names, <see cref="CacheProfile"/> which are pre-defined settings for
         /// <see cref="ResponseCacheFilter"/>.
         /// </summary>
-        public Dictionary<string, CacheProfile> CacheProfiles { get; }
-            = new Dictionary<string, CacheProfile>(StringComparer.OrdinalIgnoreCase);
+        public IDictionary<string, CacheProfile> CacheProfiles { get; }
     }
 }

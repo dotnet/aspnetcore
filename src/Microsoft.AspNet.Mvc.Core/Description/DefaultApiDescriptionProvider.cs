@@ -81,7 +81,11 @@ namespace Microsoft.AspNet.Mvc.Description
             var templateParameters = parsedTemplate?.Parameters?.ToList() ?? new List<TemplatePart>();
 
             var parameterContext = new ApiParameterContext(_modelMetadataProvider, action, templateParameters);
-            apiDescription.ParameterDescriptions.AddRange(GetParameters(parameterContext));
+
+            foreach (var parameter in GetParameters(parameterContext))
+            {
+                apiDescription.ParameterDescriptions.Add(parameter);
+            }
 
             var responseMetadataAttributes = GetResponseMetadataAttributes(action);
 

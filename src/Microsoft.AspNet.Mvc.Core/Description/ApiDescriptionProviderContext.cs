@@ -29,6 +29,6 @@ namespace Microsoft.AspNet.Mvc.Description
         /// <summary>
         /// The list of resulting <see cref="ApiDescription"/>.
         /// </summary>
-        public List<ApiDescription> Results { get; private set; }
+        public IList<ApiDescription> Results { get; private set; }
     }
 }

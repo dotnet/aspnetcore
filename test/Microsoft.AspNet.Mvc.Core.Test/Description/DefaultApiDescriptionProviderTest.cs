@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -925,7 +926,7 @@ namespace Microsoft.AspNet.Mvc.Description
                 modelMetadataProvider);
 
             provider.Invoke(context, () => { });
-            return context.Results;
+            return new ReadOnlyCollection<ApiDescription>(context.Results);
         }
 
         private List<MockFormatter> CreateFormatters()

@@ -51,19 +51,19 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The parameters of the action as <see cref="ParameterDescriptorValues"/>.
         /// See <see cref="ActionDescriptor.Parameters"/>.
         /// </summary>
-        public List<ParameterDescriptorValues> Parameters { get; }
+        public IList<ParameterDescriptorValues> Parameters { get; }
 
         /// <summary>
         /// The filters of the action as <see cref="FilterDescriptorValues"/>.
         /// See <see cref="ActionDescriptor.FilterDescriptors"/>.
         /// </summary>
-        public List<FilterDescriptorValues> FilterDescriptors { get; }
+        public IList<FilterDescriptorValues> FilterDescriptors { get; }
 
         /// <summary>
         /// The route constraints of the action as <see cref="RouteDataActionConstraintValues"/>.
         /// See <see cref="ActionDescriptor.RouteConstraints"/>
         /// </summary>
-        public List<RouteDataActionConstraintValues> RouteConstraints { get; }
+        public IList<RouteDataActionConstraintValues> RouteConstraints { get; }
 
         /// <summary>
         /// The attribute route info of the action as <see cref="AttributeRouteInfoValues"/>.
@@ -74,23 +74,23 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// <summary>
         /// See <see cref="ActionDescriptor.RouteValueDefaults"/>.
         /// </summary>
-        public Dictionary<string, string> RouteValueDefaults { get; }
+        public IDictionary<string, string> RouteValueDefaults { get; }
 
         /// <summary>
         /// The action constraints of the action as <see cref="ActionConstraintValues"/>.
         /// See <see cref="ActionDescriptor.ActionConstraints"/>.
         /// </summary>
-        public List<ActionConstraintValues> ActionConstraints { get; }
+        public IList<ActionConstraintValues> ActionConstraints { get; }
 
         /// <summary>
         /// The http methods this action supports.
         /// </summary>
-        public List<string> HttpMethods { get; }
+        public IList<string> HttpMethods { get; }
 
         /// <summary>
         /// See <see cref="ActionDescriptor.Properties"/>.
         /// </summary>
-        public Dictionary<string, Type> Properties { get; }
+        public IDictionary<string, Type> Properties { get; }
 
         /// <summary>
         /// The method info of the action if this is a <see cref="ControllerActionDescriptor"/>.

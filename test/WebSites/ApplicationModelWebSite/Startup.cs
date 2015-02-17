@@ -20,7 +20,7 @@ namespace ApplicationModelWebSite
                 services.Configure<MvcOptions>(options =>
                 {
                     options.Conventions.Add(new ApplicationDescription("Common Application Description"));
-                    options.Conventions.Add(new ControllerLisenceConvention());
+                    options.Conventions.Add(new ControllerLicenseConvention());
                     options.Conventions.Add(new FromHeaderConvention());
                 });
             });

@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Description
         /// <summary>
         /// The list of <see cref="ApiParameterDescription"/> for this api.
         /// </summary>
-        public List<ApiParameterDescription> ParameterDescriptions { get; private set; }
+        public IList<ApiParameterDescription> ParameterDescriptions { get; private set; }
 
         /// <summary>
         /// Stores arbitrary metadata properties associated with the <see cref="ApiDescription"/>.

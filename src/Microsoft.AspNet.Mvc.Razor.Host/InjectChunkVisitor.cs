@@ -9,7 +9,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class InjectChunkVisitor : MvcCSharpCodeVisitor
     {
-        private readonly List<InjectChunk> _injectChunks = new List<InjectChunk>();
         private readonly string _activateAttribute;
 
         public InjectChunkVisitor([NotNull] CSharpCodeWriter writer,
@@ -20,10 +19,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             _activateAttribute = "[" + activateAttributeName + "]";
         }
 
-        public List<InjectChunk> InjectChunks
-        {
-            get { return _injectChunks; }
-        }
+        public IList<InjectChunk> InjectChunks { get; } = new List<InjectChunk>();
 
         protected override void Visit([NotNull] InjectChunk chunk)
         {
@@ -53,7 +49,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                       .Write(chunk.MemberName)
                       .WriteLine(" { get; private set; }");
             }
-            _injectChunks.Add(chunk);
+
+            InjectChunks.Add(chunk);
         }
     }
 }

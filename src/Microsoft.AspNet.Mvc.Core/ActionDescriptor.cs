@@ -17,20 +17,20 @@ namespace Microsoft.AspNet.Mvc
 
         public virtual string Name { get; set; }
 
-        public List<RouteDataActionConstraint> RouteConstraints { get; set; }
+        public IList<RouteDataActionConstraint> RouteConstraints { get; set; }
 
         public AttributeRouteInfo AttributeRouteInfo { get; set; }
 
-        public Dictionary<string, object> RouteValueDefaults { get; private set; }
+        public IDictionary<string, object> RouteValueDefaults { get; }
 
         /// <summary>
         /// The set of constraints for this action. Must all be satisfied for the action to be selected.
         /// </summary>
-        public List<IActionConstraintMetadata> ActionConstraints { get; set; }
+        public IList<IActionConstraintMetadata> ActionConstraints { get; set; }
 
-        public List<ParameterDescriptor> Parameters { get; set; }
+        public IList<ParameterDescriptor> Parameters { get; set; }
 
-        public List<FilterDescriptor> FilterDescriptors { get; set; }
+        public IList<FilterDescriptor> FilterDescriptors { get; set; }
 
         /// <summary>
         /// A friendly name for this action.
@@ -40,6 +40,6 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Stores arbitrary metadata properties associated with the <see cref="ActionDescriptor"/>.
         /// </summary>
-        public IDictionary<object, object> Properties { get; private set; }
+        public IDictionary<object, object> Properties { get; }
     }
 }

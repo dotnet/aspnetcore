@@ -58,12 +58,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets or sets the sections that can be rendered by this page.
         /// </summary>
-        Dictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
+        IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
 
         /// <summary>
         /// Gets the sections that are defined by this page.
         /// </summary>
-        Dictionary<string, RenderAsyncDelegate> SectionWriters { get; }
+        IDictionary<string, RenderAsyncDelegate> SectionWriters { get; }
 
         /// <summary>
         /// Renders the page and writes the output to the <see cref="ViewContext.Writer"/>.

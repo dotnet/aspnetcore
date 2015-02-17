@@ -11,10 +11,10 @@ namespace Microsoft.AspNet.Mvc.Internal.DecisionTree
     {
         // The list of matches for the current node. This represents a set of items that have had all
         // of their criteria matched if control gets to this point in the tree.
-        public List<TItem> Matches { get; set; }
+        public IList<TItem> Matches { get; set; }
 
         // Additional criteria that further branch out from this node. Walk these to fine more items
         // matching the input data.
-        public List<DecisionCriterion<TItem>> Criteria { get; set; }
+        public IList<DecisionCriterion<TItem>> Criteria { get; set; }
     }
 }

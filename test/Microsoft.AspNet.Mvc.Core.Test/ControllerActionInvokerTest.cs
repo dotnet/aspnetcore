@@ -1979,8 +1979,14 @@ namespace Microsoft.AspNet.Mvc
             var filterProvider = new Mock<INestedProviderManager<FilterProviderContext>>(MockBehavior.Strict);
             filterProvider
                 .Setup(fp => fp.Invoke(It.IsAny<FilterProviderContext>()))
-                .Callback<FilterProviderContext>(
-                    context => context.Results.AddRange(filters.Select(f => new FilterItem(null, f))));
+                .Callback<FilterProviderContext>(context =>
+                    {
+                        foreach (var filter in filters.Select(f => new FilterItem(null, f)))
+                        {
+                            context.Results.Add(filter);
+                        }
+                    });
+
             var inputFormattersProvider = new Mock<IInputFormattersProvider>();
             inputFormattersProvider.SetupGet(o => o.InputFormatters)
                                             .Returns(new List<IInputFormatter>());

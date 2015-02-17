@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// <summary>
         /// A list of interfaces the <see cref="IFilter"/> implements.
         /// </summary>
-        public List<Type> FilterInterfaces { get; }
+        public IList<Type> FilterInterfaces { get; }
 
         public override string Format()
         {

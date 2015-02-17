@@ -12,6 +12,6 @@ namespace Microsoft.AspNet.Mvc
             Results = new List<ActionDescriptor>();
         }
 
-        public List<ActionDescriptor> Results { get; private set; }
+        public IList<ActionDescriptor> Results { get; }
     }
 }

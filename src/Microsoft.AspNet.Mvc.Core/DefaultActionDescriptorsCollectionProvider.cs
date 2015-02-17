@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.ObjectModel;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -60,7 +61,8 @@ namespace Microsoft.AspNet.Mvc
                 }
             }
 
-            return new ActionDescriptorsCollection(actionDescriptorProviderContext.Results, 0);
+            return new ActionDescriptorsCollection(
+                new ReadOnlyCollection<ActionDescriptor>(actionDescriptorProviderContext.Results), 0);
         }
     }
 }
