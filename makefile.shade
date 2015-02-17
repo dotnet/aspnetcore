@@ -13,6 +13,7 @@ use import="BuildEnv"
 
 functions
     @{
+        static string BUILD_BRANCH = Environment.GetEnvironmentVariable("BUILD_BRANCH") ?? "dev";
         static string BASE_DIR = Directory.GetCurrentDirectory();
         static string TARGET_DIR = Path.Combine(BASE_DIR, "artifacts", "build");
         string[] repos = new[] {
@@ -423,7 +424,7 @@ functions
 
             if(Directory.Exists(repo))
             {
-                GitPull(repoUrl, "dev", repo);
+                GitPull(repoUrl, BUILD_BRANCH, repo);
             }
             else
             {
@@ -437,7 +438,7 @@ functions
 
                 try
                 {
-                    GitClone(repoUrl, "dev");
+                    GitClone(repoUrl, BUILD_BRANCH);
                 }
                 catch (Exception ex)
                 {
