@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Owin
                 _context.Items[OwinConstants.OwinVersion] = "1.0";
             }
 
-            if (context.Request.IsSecure)
+            if (context.Request.IsHttps)
             {
                 _entries.Add(OwinConstants.CommonKeys.ClientCertificate, new FeatureMap<IHttpClientCertificateFeature>(feature => feature.ClientCertificate,
                     (feature, value) => feature.ClientCertificate = (X509Certificate)value));

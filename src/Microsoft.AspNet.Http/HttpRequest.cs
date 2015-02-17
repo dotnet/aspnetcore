@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Http
         /// Returns true if the owin.RequestScheme is https.
         /// </summary>
         /// <returns>true if this request is using https; otherwise, false.</returns>
-        public abstract bool IsSecure { get; }
+        public abstract bool IsHttps { get; }
 
         /// <summary>
         /// Gets or set the Host header. May include the port.

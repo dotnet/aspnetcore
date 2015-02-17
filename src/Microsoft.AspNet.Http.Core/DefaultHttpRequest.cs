@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Http.Core
             set { HttpRequestFeature.Scheme = value; }
         }
 
-        public override bool IsSecure
+        public override bool IsHttps
         {
             get { return string.Equals("https", Scheme, StringComparison.OrdinalIgnoreCase); }
         }
