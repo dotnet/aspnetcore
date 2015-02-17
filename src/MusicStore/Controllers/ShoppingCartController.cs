@@ -11,11 +11,7 @@ namespace MusicStore.Controllers
     public class ShoppingCartController : Controller
     {
         [FromServices]
-        public MusicStoreContext DbContext
-        {
-            get;
-            set;
-        }
+        public MusicStoreContext DbContext { get; set; }
 
         //
         // GET: /ShoppingCart/

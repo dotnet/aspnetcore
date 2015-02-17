@@ -15,11 +15,7 @@ namespace MusicStore.Controllers
         private const string PromoCode = "FREE";
 
         [FromServices]
-        public MusicStoreContext DbContext
-        {
-            get;
-            set;
-        } 
+        public MusicStoreContext DbContext { get; set; }
 
         //
         // GET: /Checkout/

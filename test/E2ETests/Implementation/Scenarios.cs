@@ -354,6 +354,16 @@ namespace E2ETests
             Assert.Contains(PrefixBaseAddress("<a href=\"/{0}/Admin/StoreManager\">Back to List</a>"), responseContent, StringComparison.OrdinalIgnoreCase);
         }
 
+        private void VerifyStatusCodePages()
+        {
+            _logger.WriteInformation("Getting details of a non-existing album with Id '-1'");
+            var response = _httpClient.GetAsync("Admin/StoreManager/Details?id=-1").Result;
+            ThrowIfResponseStatusNotOk(response);
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+            Assert.Contains("Item not found.", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal(PrefixBaseAddress("/{0}/Home/StatusCodePage"), response.RequestMessage.RequestUri.AbsolutePath);
+        }
+
         // This gets the view that non-admin users get to see.
         private void GetAlbumDetailsFromStore(string albumId, string albumName)
         {

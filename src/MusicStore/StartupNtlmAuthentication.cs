@@ -73,6 +73,12 @@ namespace MusicStore
         {
             loggerFactory.AddConsole();
 
+            app.UseStatusCodePagesWithRedirects("~/Home/StatusCodePage");
+
+            //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
+            //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
+            app.UseErrorPage(ErrorPageOptions.ShowAll);
+
             //Set up NTLM authentication for WebListener like below. 
             //For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or modify the applicationHost.config to enable NTLM. 
             if ((app.Server as ServerInformation) != null)
@@ -80,10 +86,6 @@ namespace MusicStore
                 var serverInformation = (ServerInformation)app.Server;
                 serverInformation.Listener.AuthenticationManager.AuthenticationTypes = AuthenticationTypes.NTLM;
             }
-
-            //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
-            //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
-            app.UseErrorPage(ErrorPageOptions.ShowAll);
 
             app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
 

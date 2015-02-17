@@ -196,6 +196,9 @@ namespace E2ETests
                     //Get details of the album
                     VerifyAlbumDetails(albumId, albumName);
 
+                    //Verify status code pages acts on non-existing items.
+                    VerifyStatusCodePages();
+
                     //Get the non-admin view of the album.
                     GetAlbumDetailsFromStore(albumId, albumName);
 

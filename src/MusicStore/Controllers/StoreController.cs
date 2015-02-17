@@ -10,18 +10,10 @@ namespace MusicStore.Controllers
     public class StoreController : Controller
     {
         [FromServices]
-        public MusicStoreContext DbContext
-        {
-            get;
-            set;
-        }
+        public MusicStoreContext DbContext { get; set; }
 
         [FromServices]
-        public IMemoryCache Cache
-        {
-            get;
-            set;
-        }
+        public IMemoryCache Cache { get; set; }
 
         //
         // GET: /Store/
@@ -42,6 +34,11 @@ namespace MusicStore.Controllers
                 .Where(g => g.Name == genre)
                 .FirstOrDefaultAsync();
 
+            if (genreModel == null)
+            {
+                return HttpNotFound();
+            }
+
             return View(genreModel);
         }
 
@@ -58,6 +55,11 @@ namespace MusicStore.Controllers
                     .Include(a => a.Genre)
                     .FirstOrDefaultAsync();
             });
+
+            if (album == null)
+            {
+                return HttpNotFound();
+            }
 
             return View(album);
         }

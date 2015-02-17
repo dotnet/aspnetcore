@@ -6,8 +6,6 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.Security;
-using Microsoft.Data.Entity;
 using Microsoft.Framework.Cache.Memory;
 using MusicStore.Hubs;
 using MusicStore.Models;
@@ -23,18 +21,10 @@ namespace MusicStore.Areas.Admin.Controllers
         private IHubContext _announcementHub;
 
         [FromServices]
-        public MusicStoreContext DbContext
-        {
-            get;
-            set;
-        }
+        public MusicStoreContext DbContext { get; set; }
 
         [FromServices]
-        public IMemoryCache Cache
-        {
-            get;
-            set;
-        }
+        public IMemoryCache Cache { get; set; }
 
         [FromServices]
         public IConnectionManager ConnectionManager
@@ -84,7 +74,7 @@ namespace MusicStore.Areas.Admin.Controllers
             if (album == null)
             {
                 Cache.Remove(cacheKey);
-                return View(album);
+                return HttpNotFound();
             }
 
             return View(album);
@@ -135,7 +125,7 @@ namespace MusicStore.Areas.Admin.Controllers
 
             if (album == null)
             {
-                return View(album);
+                return HttpNotFound();
             }
 
             ViewBag.GenreId = new SelectList(DbContext.Genres, "GenreId", "Name", album.GenreId);
@@ -168,6 +158,11 @@ namespace MusicStore.Areas.Admin.Controllers
         public async Task<IActionResult> RemoveAlbum(int id)
         {
             var album = await DbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefaultAsync();
+            if (album == null)
+            {
+                return HttpNotFound();
+            }
+
             return View(album);
         }
 
@@ -177,14 +172,15 @@ namespace MusicStore.Areas.Admin.Controllers
         public async Task<IActionResult> RemoveAlbumConfirmed(int id, CancellationToken requestAborted)
         {
             var album = await DbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefaultAsync();
-
-            if (album != null)
+            if (album == null)
             {
-                DbContext.Albums.Remove(album);
-                await DbContext.SaveChangesAsync(requestAborted);
-                //Remove the cache entry as it is removed
-                Cache.Remove(GetCacheKey(id));
+                return HttpNotFound();
             }
+
+            DbContext.Albums.Remove(album);
+            await DbContext.SaveChangesAsync(requestAborted);
+            //Remove the cache entry as it is removed
+            Cache.Remove(GetCacheKey(id));
 
             return RedirectToAction("Index");
         }
@@ -199,6 +195,7 @@ namespace MusicStore.Areas.Admin.Controllers
         // GET: /StoreManager/GetAlbumIdFromName
         // Note: Added for automated testing purpose. Application does not use this.
         [HttpGet]
+        [SkipStatusCodePages]
         public async Task<IActionResult> GetAlbumIdFromName(string albumName)
         {
             var album = await DbContext.Albums.Where(a => a.Title == albumName).FirstOrDefaultAsync();

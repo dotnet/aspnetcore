@@ -10,20 +10,11 @@ namespace MusicStore.Controllers
 {
     public class HomeController : Controller
     {
-        
         [FromServices]
-        public MusicStoreContext DbContext
-        {
-            get;
-            set;
-        }
+        public MusicStoreContext DbContext { get; set; }
 
         [FromServices]
-        public IMemoryCache Cache
-        {
-            get;
-            set;
-        }
+        public IMemoryCache Cache { get; set; }
 
         //
         // GET: /Home/
@@ -46,6 +37,11 @@ namespace MusicStore.Controllers
         public IActionResult Error()
         {
             return View("~/Views/Shared/Error.cshtml");
+        }
+
+        public IActionResult StatusCodePage()
+        {
+            return View("~/Views/Shared/StatusCodePage.cshtml");
         }
 
         private async Task<List<Album>> GetTopSellingAlbums(int count)
