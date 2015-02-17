@@ -7,7 +7,9 @@
     "dependencies": {
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.Cache.Memory": "1.0.0-*",
+        "Microsoft.Framework.FileSystemGlobbing": "1.0.0-*",
+        "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" },
         "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*"
     },
     "frameworks": {

@@ -5,12 +5,114 @@
 <head>
     <meta charset="utf-8" />
     <title>Link</title>
-    <link href="~/blank.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/link-test.min.css" data-extra="test"
-          asp-fallback-href="~/link-test.css"
+
+    <!-- Plain link tag -->
+    <link href="~/site.css" rel="stylesheet" />
+
+    <!-- Globbed link tag with existing file -->
+    <link asp-href-include="**/site.css" rel="stylesheet" />
+
+    <!-- Globbed link tag with existing file and exclude -->
+    <link asp-href-include="**/*.css" asp-href-exclude="**/site3.css" rel="stylesheet" />
+
+    <!-- Globbed link tag missing include -->
+    <link asp-href-exclude="**/site2.css" rel="stylesheet" />
+
+    <!-- Globbed link tag missing include but with static href -->
+    <link href="~/site.css" asp-href-exclude="**/site2.css" rel="stylesheet" />
+
+    <!-- Globbed link tag with missing file -->
+    <link asp-href-include="**/notThere.css" rel="stylesheet" />
+
+    <!-- Globbed link tag with file outside of webroot -->
+    <link asp-href-include="../**/appRoot.css" rel="stylesheet" />
+
+    <!-- Globbed link tag with file outside of webroot -->
+    <link asp-href-include="**/appRoot.css" rel="stylesheet" />
+
+    <!-- Globbed link tag with existing file and static href -->
+    <link href="~/site.css" asp-href-include="**/site2.css" rel="stylesheet" />
+
+    <!-- Globbed link tag with existing file and static href should dedupe -->
+    <link href="~/site.css" asp-href-include="**/site.css" rel="stylesheet" />
+
+    <!-- Fallback to static href -->
+    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
+          asp-fallback-href="~/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden" />
+
+    <!-- Fallback to static href with no primary href -->
+    <link rel="stylesheet" data-extra="test"
+          asp-fallback-href="~/site.css"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback to globbed href -->
+    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
+          asp-fallback-href-include="**/site.css"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback to static and globbed href -->
+    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
+          asp-fallback-href="~/site.css"
+          asp-fallback-href-include="**/site2.css"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback to static and globbed href should dedupe -->
+    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
+          asp-fallback-href="~/site.css"
+          asp-fallback-href-include="**/site.css"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback to static and globbed href with exclude -->
+    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
+          asp-fallback-href="~/site.css"
+          asp-fallback-href-include="**/*.css"
+          asp-fallback-href-exclude="**/site3.css"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback to globbed href that doesn't exist -->
+    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
+          asp-fallback-href-include="**/notThere.css"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback to globbed href outside webroot -->
+    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
+          asp-fallback-href-include="../**/appRoot.css"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback with missing attribute -->
+    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
+          asp-fallback-href="~/site.css"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback with missing attribute -->
+    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
+          asp-fallback-href="~/site.css"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback with missing attribute -->
+    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
+          asp-fallback-href="~/site.css"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility" />
 </head>
 <body>
 

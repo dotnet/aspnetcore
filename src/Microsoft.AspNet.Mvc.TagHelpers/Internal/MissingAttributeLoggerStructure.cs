@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Logging;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers
+namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {
     /// <summary>
-    /// An <see cref="ILoggerStructure"/> for log messages regarding <see cref="TagHelper"/> instances that opt out of
+    /// An <see cref="ILoggerStructure"/> for log messages regarding <see cref="ITagHelper"/> instances that opt out of
     /// processing due to missing required attributes.
     /// </summary>
     public class MissingAttributeLoggerStructure : ILoggerStructure
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private readonly string _uniqueId;
         private readonly IEnumerable<KeyValuePair<string, object>> _values;
 
-        // internal for unit testing.
+        // Internal for unit testing
         internal IEnumerable<string> MissingAttributes { get; }
 
         /// <summary>
@@ -30,8 +30,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             MissingAttributes = missingAttributes;
             _values = new Dictionary<string, object>
             {
-                { "UniqueId", _uniqueId },
-                { "MissingAttributes", MissingAttributes }
+                ["UniqueId"] = _uniqueId,
+                ["MissingAttributes"] = MissingAttributes
             };
         }
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             get
             {
-                return "Tag Helper skipped due to missing required attributes.";
+                return "Tag Helper has one or more missing required attributes.";
             }
         }
 

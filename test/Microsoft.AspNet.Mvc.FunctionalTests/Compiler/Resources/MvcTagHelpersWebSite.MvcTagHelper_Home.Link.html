@@ -4,10 +4,75 @@
 <head>
     <meta charset="utf-8" />
     <title>Link</title>
-    <link href="/blank.css" rel="stylesheet"></link>
-    <link rel="stylesheet" href="/link-test.min.css" data-extra="test" />
-<meta name="x-stylesheet-fallback-test" class="hidden" />
-<script>!function(a,b,c){var d=document,e=d.getElementsByTagName("SCRIPT"),f=e[e.length-1].previousElementSibling;d.defaultView.getComputedStyle(f)[a]!==b&&d.write('<link rel="stylesheet" href="'+c+'"/>')}("visibility","hidden","/link-test.css");</script>
+
+    <!-- Plain link tag -->
+    <link href="/site.css" rel="stylesheet"></link>
+
+    <!-- Globbed link tag with existing file -->
+    <link rel="stylesheet" href="/site.css" />
+
+    <!-- Globbed link tag with existing file and exclude -->
+    <link rel="stylesheet" href="/site.css" /><link rel="stylesheet" href="/sub/site2.css" />
+
+    <!-- Globbed link tag missing include -->
+    <link rel="stylesheet"></link>
+
+    <!-- Globbed link tag missing include but with static href -->
+    <link href="/site.css" rel="stylesheet"></link>
+
+    <!-- Globbed link tag with missing file -->
+    
+
+    <!-- Globbed link tag with file outside of webroot -->
+    
+
+    <!-- Globbed link tag with file outside of webroot -->
+    
+
+    <!-- Globbed link tag with existing file and static href -->
+    <link href="/site.css" rel="stylesheet" /><link href="/sub/site2.css" rel="stylesheet" />
+
+    <!-- Globbed link tag with existing file and static href should dedupe -->
+    <link href="/site.css" rel="stylesheet" />
+
+    <!-- Fallback to static href -->
+    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
+
+    <!-- Fallback to static href with no primary href -->
+    <link rel="stylesheet" data-extra="test" />
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
+
+    <!-- Fallback to globbed href -->
+    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
+
+    <!-- Fallback to static and globbed href -->
+    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css","\/sub\/site2.css"]);</script>
+
+    <!-- Fallback to static and globbed href should dedupe -->
+    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
+
+    <!-- Fallback to static and globbed href with exclude -->
+    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css","\/sub\/site2.css"]);</script>
+
+    <!-- Fallback to globbed href that doesn't exist -->
+    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+
+    <!-- Fallback to globbed href outside webroot -->
+    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+
+    <!-- Fallback with missing attribute -->
+    <link href="/site.min.css" rel="stylesheet" data-extra="test"></link>
+
+    <!-- Fallback with missing attribute -->
+    <link href="/site.min.css" rel="stylesheet" data-extra="test"></link>
+
+    <!-- Fallback with missing attribute -->
+    <link href="/site.min.css" rel="stylesheet" data-extra="test"></link>
 </head>
 <body>
 
