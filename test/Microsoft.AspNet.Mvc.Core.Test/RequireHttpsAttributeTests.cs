@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
     public class RequireHttpsAttributeTests
     {
         [Fact]
-        public void OnAuthorization_AllowsTheRequestIfItIsSecure()
+        public void OnAuthorization_AllowsTheRequestIfItIsHttps()
         {
             // Arrange
             var requestContext = new DefaultHttpContext();

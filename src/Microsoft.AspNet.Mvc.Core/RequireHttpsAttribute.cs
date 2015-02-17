@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
 
         public virtual void OnAuthorization([NotNull]AuthorizationContext filterContext)
         {
-            if (!filterContext.HttpContext.Request.IsSecure)
+            if (!filterContext.HttpContext.Request.IsHttps)
             {
                 HandleNonHttpsRequest(filterContext);
             }

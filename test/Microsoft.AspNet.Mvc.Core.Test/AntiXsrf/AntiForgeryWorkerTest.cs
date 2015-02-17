@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(o => o.Request.IsSecure)
+            mockHttpContext.Setup(o => o.Request.IsHttps)
                            .Returns(false);
 
             var config = new AntiForgeryOptions()
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(o => o.Request.IsSecure)
+            mockHttpContext.Setup(o => o.Request.IsHttps)
                            .Returns(false);
 
             var config = new AntiForgeryOptions()
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(o => o.Request.IsSecure)
+            mockHttpContext.Setup(o => o.Request.IsHttps)
                            .Returns(false);
 
             var config = new AntiForgeryOptions()
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(o => o.Request.IsSecure)
+            mockHttpContext.Setup(o => o.Request.IsHttps)
                            .Returns(false);
 
             var config = new AntiForgeryOptions()

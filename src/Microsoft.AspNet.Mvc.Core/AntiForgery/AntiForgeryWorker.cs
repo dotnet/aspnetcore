@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc
 
         private void CheckSSLConfig(HttpContext httpContext)
         {
-            if (_config.RequireSSL && !httpContext.Request.IsSecure)
+            if (_config.RequireSSL && !httpContext.Request.IsHttps)
             {
                 throw new InvalidOperationException(Resources.AntiForgeryWorker_RequireSSL);
             }
