@@ -9,6 +9,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -46,7 +47,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new Dictionary<string, string>
                 {
                     { "id", "myvalidationmessage" }
-                })
+                },
+                htmlEncoder: new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,
@@ -96,7 +98,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>())
+                attributes: new Dictionary<string, string>(),
+                htmlEncoder: new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,
@@ -107,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             generator
                 .Setup(mock =>
                     mock.GenerateValidationMessage(expectedViewContext, "Hello", null, null, null))
-                .Returns(new TagBuilder("span"))
+                .Returns(new TagBuilder("span", new HtmlEncoder()))
                 .Verifiable();
             validationMessageTagHelper.Generator = generator.Object;
             validationMessageTagHelper.ViewContext = expectedViewContext;
@@ -137,7 +140,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>())
+                attributes: new Dictionary<string, string>(),
+                htmlEncoder: new HtmlEncoder())
             {
                 Content = outputContent
             };
@@ -147,7 +151,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult(childContent));
-            var tagBuilder = new TagBuilder("span2")
+            var tagBuilder = new TagBuilder("span2", new HtmlEncoder())
             {
                 InnerHtml = "New HTML"
             };
@@ -193,14 +197,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, string>(),
+                htmlEncoder: new HtmlEncoder());
 
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult(childContent));
-            var tagBuilder = new TagBuilder("span2")
+            var tagBuilder = new TagBuilder("span2", new HtmlEncoder())
             {
                 InnerHtml = "New HTML"
             };
@@ -243,7 +248,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>())
+                attributes: new Dictionary<string, string>(),
+                htmlEncoder: new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,

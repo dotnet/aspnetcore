@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -44,6 +45,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Gets the current view data.
         /// </summary>
         ViewDataDictionary ViewData { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IHtmlEncoder"/> to be used for encoding HTML.
+        /// </summary>
+        IHtmlEncoder HtmlEncoder { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IUrlEncoder"/> to be used for encoding a URL.
+        /// </summary>
+        IUrlEncoder UrlEncoder { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IJavaScriptStringEncoder"/> to be used for encoding JavaScript.
+        /// </summary>
+        IJavaScriptStringEncoder JavaScriptStringEncoder { get; }
 
         /// <summary>
         /// Returns an anchor (&lt;a&gt;) element that contains a URL path to the specified action.

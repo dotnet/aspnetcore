@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -202,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
-            var output = new TagHelperOutput(expectedTagName, originalAttributes)
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,
@@ -287,7 +288,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
-            var output = new TagHelperOutput(expectedTagName, originalAttributes)
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,
@@ -386,7 +387,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
-            var output = new TagHelperOutput(expectedTagName, originalAttributes)
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,
@@ -470,7 +471,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
-            var output = new TagHelperOutput(expectedTagName, originalAttributes);
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder());
 
             var metadataProvider = new EmptyModelMetadataProvider();
             string model = null;
@@ -536,7 +537,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
-            var output = new TagHelperOutput(tagName, originalAttributes);
+            var output = new TagHelperOutput(tagName, originalAttributes, new HtmlEncoder());
 
             var metadataProvider = new EmptyModelMetadataProvider();
             var modelExplorer = metadataProvider.GetModelExplorerForType(modelType, model);
@@ -592,7 +593,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
-            var output = new TagHelperOutput(expectedTagName, originalAttributes);
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder());
             var tagHelper = new SelectTagHelper
             {
                 Items = Enumerable.Empty<SelectListItem>(),

@@ -14,16 +14,11 @@ namespace TagHelpersWebSite.TagHelpers
         private static readonly Dictionary<string, string> PrettyTagStyles =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                { "a", @"background-color: gray;
-                         color: white;
-                         border-radius: 3px;
-                         border: 1px solid black;
-                         padding: 3px;
-                         font-family: cursive;" },
-                { "strong", @"font-size: 1.25em;
-                              text-decoration: underline;" },
-                { "h1", @"font-family: cursive;" },
-                { "h3", @"font-family: cursive;" }
+                { "a", "background-color: gray;color: white;border-radius: 3px;"
+                    + "border: 1px solid black;padding: 3px;font-family: cursive;" },
+                { "strong", "font-size: 1.25em;text-decoration: underline;" },
+                { "h1", "font-family: cursive;" },
+                { "h3", "font-family: cursive;" }
             };
 
         public bool? MakePretty { get; set; }

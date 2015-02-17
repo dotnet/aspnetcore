@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -34,7 +35,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 serializer: null,
                 tokenStore: null,
                 generator: null,
-                validator: null);
+                validator: null,
+                htmlEncoder: new HtmlEncoder());
 
             // Act & assert
             var ex =
@@ -65,7 +67,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 serializer: null,
                 tokenStore: null,
                 generator: null,
-                validator: null);
+                validator: null,
+                htmlEncoder: new HtmlEncoder());
 
             // Act & assert
             var ex = Assert.Throws<InvalidOperationException>(
@@ -94,7 +97,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 serializer: null,
                 tokenStore: null,
                 generator: null,
-                validator: null);
+                validator: null,
+                htmlEncoder: new HtmlEncoder());
 
             // Act & assert
             var ex = Assert.Throws<InvalidOperationException>(() => worker.GetFormInputElement(mockHttpContext.Object));
@@ -122,7 +126,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 serializer: null,
                 tokenStore: null,
                 generator: null,
-                validator: null);
+                validator: null,
+                htmlEncoder: new HtmlEncoder());
 
             // Act & assert
             var ex = Assert.Throws<InvalidOperationException>(() => worker.GetTokens(mockHttpContext.Object, "cookie-token"));
@@ -409,7 +414,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                  serializer: context.TokenSerializer != null ? context.TokenSerializer.Object : null,
                  tokenStore: context.TokenStore != null ? context.TokenStore.Object : null,
                  generator: context.TokenProvider != null ? context.TokenProvider.Object : null,
-                 validator: context.TokenProvider != null ? context.TokenProvider.Object : null);
+                 validator: context.TokenProvider != null ? context.TokenProvider.Object : null,
+                 htmlEncoder: new HtmlEncoder());
         }
 
         private Mock<HttpContext> GetHttpContext(bool setupResponse = true)

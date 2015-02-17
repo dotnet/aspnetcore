@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -25,12 +24,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             return htmlHelper.ViewData.ModelMetadata.IsNullableValueType ?
                 BooleanTemplateDropDownList(htmlHelper, value) :
-                BooleanTemplateCheckbox(value ?? false);
+                BooleanTemplateCheckbox(value ?? false, htmlHelper);
         }
 
-        private static string BooleanTemplateCheckbox(bool value)
+        private static string BooleanTemplateCheckbox(bool value, IHtmlHelper htmlHelper)
         {
-            var inputTag = new TagBuilder("input");
+            var inputTag = new TagBuilder("input", htmlHelper.HtmlEncoder);
             inputTag.AddCssClass("check-box");
             inputTag.Attributes["disabled"] = "disabled";
             inputTag.Attributes["type"] = "checkbox";
@@ -44,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private static string BooleanTemplateDropDownList(IHtmlHelper htmlHelper, bool? value)
         {
-            var selectTag = new TagBuilder("select");
+            var selectTag = new TagBuilder("select", htmlHelper.HtmlEncoder);
             selectTag.AddCssClass("list-box");
             selectTag.AddCssClass("tri-state");
             selectTag.Attributes["disabled"] = "disabled";
@@ -55,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             foreach (var item in TriStateValues(value))
             {
                 var encodedText = htmlHelper.Encode(item.Text);
-                var option = DefaultHtmlGenerator.GenerateOption(item, encodedText);
+                var option = DefaultHtmlGenerator.GenerateOption(item, encodedText, htmlHelper.HtmlEncoder);
                 builder.Append(option);
             }
 
@@ -181,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 string.Empty :
                 htmlHelper.ViewData.TemplateInfo.FormattedModelValue.ToString();
 
-            return HyperlinkTemplate(uriString, linkedText);
+            return HyperlinkTemplate(uriString, linkedText, htmlHelper);
         }
 
         public static string HiddenInputTemplate(IHtmlHelper htmlHelper)
@@ -233,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     continue;
                 }
 
-                var divTag = new TagBuilder("div");
+                var divTag = new TagBuilder("div", htmlHelper.HtmlEncoder);
 
                 if (!propertyMetadata.HideSurroundingHtml)
                 {
@@ -293,13 +292,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 string.Empty :
                 htmlHelper.ViewData.TemplateInfo.FormattedModelValue.ToString();
 
-            return HyperlinkTemplate(uriString, linkedText);
+            return HyperlinkTemplate(uriString, linkedText, htmlHelper);
         }
 
         // Neither uriString nor linkedText need be encoded prior to calling this method.
-        private static string HyperlinkTemplate(string uriString, string linkedText)
+        private static string HyperlinkTemplate(string uriString, string linkedText, IHtmlHelper htmlHelper)
         {
-            var hyperlinkTag = new TagBuilder("a");
+            var hyperlinkTag = new TagBuilder("a", htmlHelper.HtmlEncoder);
             hyperlinkTag.MergeAttribute("href", uriString);
             hyperlinkTag.SetInnerText(linkedText);
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.Framework.WebEncoders;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -141,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult(originalContent));
-            var output = new TagHelperOutput(expectedTagName, originalAttributes)
+            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
             {
                 Content = originalContent,
                 SelfClosing = false,
@@ -200,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult(originalContent));
-            var output = new TagHelperOutput(originalTagName, originalAttributes)
+            var output = new TagHelperOutput(originalTagName, originalAttributes, new HtmlEncoder())
             {
                 PreContent = originalPreContent,
                 Content = originalContent,
@@ -256,7 +257,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult(originalContent));
-            var output = new TagHelperOutput(originalTagName, originalAttributes)
+            var output = new TagHelperOutput(originalTagName, originalAttributes, new HtmlEncoder())
             {
                 PreContent = originalPreContent,
                 Content = originalContent,

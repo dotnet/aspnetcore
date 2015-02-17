@@ -12,6 +12,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -527,8 +528,8 @@ Environment.NewLine;
         // DateTime-local is not special-cased unless using Html5DateRenderingMode.Rfc3339.
         [Theory]
         [InlineData("date", "{0:d}", "02/01/2000")]
-        [InlineData("datetime", null, "02/01/2000 03:04:05 +00:00")]
-        [InlineData("datetime-local", null, "02/01/2000 03:04:05 +00:00")]
+        [InlineData("datetime", null, "02/01/2000 03:04:05 &#x2B;00:00")]
+        [InlineData("datetime-local", null, "02/01/2000 03:04:05 &#x2B;00:00")]
         [InlineData("time", "{0:t}", "03:04")]
         [ReplaceCulture]
         public void Editor_FindsCorrectDateOrTimeTemplate(string dataTypeName, string editFormatString, string expected)
@@ -564,7 +565,7 @@ Environment.NewLine;
 
         [Theory]
         [InlineData("date", "{0:d}", "2000-01-02")]
-        [InlineData("datetime", null, "2000-01-02T03:04:05.060+00:00")]
+        [InlineData("datetime", null, "2000-01-02T03:04:05.060&#x2B;00:00")]
         [InlineData("datetime-local", null, "2000-01-02T03:04:05.060")]
         [InlineData("time", "{0:t}", "03:04:05.060")]
         [ReplaceCulture]
@@ -615,7 +616,7 @@ Environment.NewLine;
         {
             // Arrange
             var expectedInput = "<input class=\"text-box single-line\" id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"" +
-                dataTypeName + "\" value=\"Formatted as 2000-01-02T03:04:05.0600000+00:00\" />";
+                dataTypeName + "\" value=\"Formatted as 2000-01-02T03:04:05.0600000&#x2B;00:00\" />";
             var offset = TimeSpan.FromHours(0);
             var model = new DateTimeOffset(
                 year: 2000,
@@ -806,6 +807,21 @@ Environment.NewLine;
             public ViewDataDictionary ViewData
             {
                 get { return _innerHelper.ViewData; }
+            }
+
+            public IHtmlEncoder HtmlEncoder
+            {
+                get { return _innerHelper.HtmlEncoder; }
+            }
+
+            public IUrlEncoder UrlEncoder
+            {
+                get { return _innerHelper.UrlEncoder; }
+            }
+
+            public IJavaScriptStringEncoder JavaScriptStringEncoder
+            {
+                get { return _innerHelper.JavaScriptStringEncoder; }
             }
 
             public void Contextualize([NotNull] ViewContext viewContext)

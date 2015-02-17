@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.Framework.WebEncoders;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -121,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, htmlAttributes)
+            var output = new TagHelperOutput(expectedTagName, htmlAttributes, new HtmlEncoder())
             {
                 Content = "original content",
                 SelfClosing = true,
@@ -174,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
-            var output = new TagHelperOutput(expectedTagName, expectedAttributes)
+            var output = new TagHelperOutput(expectedTagName, expectedAttributes, new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,

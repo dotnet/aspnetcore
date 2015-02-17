@@ -134,6 +134,7 @@ namespace Microsoft.Framework.DependencyInjection
             services.AddDataProtection(configuration);
             services.AddRouting(configuration);
             services.AddAuthorization(configuration);
+            services.AddWebEncoders();
             services.Configure<RouteOptions>(routeOptions =>
                                                     routeOptions.ConstraintMap
                                                          .Add("exists",

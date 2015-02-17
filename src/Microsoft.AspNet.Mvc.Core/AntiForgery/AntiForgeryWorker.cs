@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -19,18 +20,21 @@ namespace Microsoft.AspNet.Mvc
         private readonly ITokenStore _tokenStore;
         private readonly ITokenValidator _validator;
         private readonly ITokenGenerator _generator;
+        private readonly IHtmlEncoder _htmlEncoder;
 
         internal AntiForgeryWorker([NotNull] IAntiForgeryTokenSerializer serializer,
                                    [NotNull] AntiForgeryOptions config,
                                    [NotNull] ITokenStore tokenStore,
                                    [NotNull] ITokenGenerator generator,
-                                   [NotNull] ITokenValidator validator)
+                                   [NotNull] ITokenValidator validator,
+                                   [NotNull] IHtmlEncoder htmlEncoder)
         {
             _serializer = serializer;
             _config = config;
             _tokenStore = tokenStore;
             _generator = generator;
             _validator = validator;
+            _htmlEncoder = htmlEncoder;
         }
 
         private void CheckSSLConfig(HttpContext httpContext)
@@ -107,11 +111,16 @@ namespace Microsoft.AspNet.Mvc
             SaveCookieTokenAndHeader(httpContext, newCookieToken);
 
             // <input type="hidden" name="__AntiForgeryToken" value="..." />
-            var retVal = new TagBuilder("input");
-            retVal.Attributes["type"] = "hidden";
-            retVal.Attributes["name"] = _config.FormFieldName;
-            retVal.Attributes["value"] = _serializer.Serialize(formToken);
-            return retVal;
+            var inputTag = new TagBuilder("input", _htmlEncoder)
+            {
+                Attributes =
+                {
+                    { "type", "hidden" },
+                    { "name", _config.FormFieldName },
+                    { "value", _serializer.Serialize(formToken) }
+                }
+            };
+            return inputTag;
         }
 
         // [ ENTRY POINT ]

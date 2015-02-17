@@ -12,6 +12,7 @@ using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -191,11 +192,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     GetAntiForgeryInstance(),
                     bindingContextAccessor,
                     provider,
-                    urlHelper);
+                    urlHelper,
+                    new HtmlEncoder());
             }
 
             // TemplateRenderer will Contextualize this transient service.
-            var innerHelper = (IHtmlHelper)new HtmlHelper(htmlGenerator, viewEngine, provider);
+            var innerHelper = (IHtmlHelper)new HtmlHelper(
+                htmlGenerator,
+                viewEngine,
+                provider,
+                new HtmlEncoder(),
+                new UrlEncoder(),
+                new JavaScriptStringEncoder());
             if (innerHelperWrapper != null)
             {
                 innerHelper = innerHelperWrapper(innerHelper);
@@ -204,7 +212,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 .Setup(s => s.GetService(typeof(IHtmlHelper)))
                 .Returns(() => innerHelper);
 
-            var htmlHelper = new HtmlHelper<TModel>(htmlGenerator, viewEngine, provider);
+            var htmlHelper = new HtmlHelper<TModel>(
+                htmlGenerator,
+                viewEngine,
+                provider,
+                new HtmlEncoder(),
+                new UrlEncoder(),
+                new JavaScriptStringEncoder());
             var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, new StringWriter());
             htmlHelper.Contextualize(viewContext);
 
@@ -244,21 +258,24 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var additionalDataProvider = new Mock<IAntiForgeryAdditionalDataProvider>();
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor.SetupGet(o => o.Options).Returns(new MvcOptions());
-            return new AntiForgery(claimExtractor.Object,
-                                   dataProtectionProvider.Object,
-                                   additionalDataProvider.Object,
-                                   optionsAccessor.Object);
+            return new AntiForgery(
+                claimExtractor.Object,
+                dataProtectionProvider.Object,
+                additionalDataProvider.Object,
+                optionsAccessor.Object,
+                new HtmlEncoder());
         }
 
         private static string FormatOutput(ModelExplorer modelExplorer)
         {
             var metadata = modelExplorer.Metadata;
-            return string.Format(CultureInfo.InvariantCulture,
-                                "Model = {0}, ModelType = {1}, PropertyName = {2}, SimpleDisplayText = {3}",
-                                modelExplorer.Model ?? "(null)",
-                                metadata.ModelType == null ? "(null)" : metadata.ModelType.FullName,
-                                metadata.PropertyName ?? "(null)",
-                                modelExplorer.GetSimpleDisplayText() ?? "(null)");
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "Model = {0}, ModelType = {1}, PropertyName = {2}, SimpleDisplayText = {3}",
+                modelExplorer.Model ?? "(null)",
+                metadata.ModelType == null ? "(null)" : metadata.ModelType.FullName,
+                metadata.PropertyName ?? "(null)",
+                modelExplorer.GetSimpleDisplayText() ?? "(null)");
         }
 
         private static IUrlHelper CreateUrlHelper()

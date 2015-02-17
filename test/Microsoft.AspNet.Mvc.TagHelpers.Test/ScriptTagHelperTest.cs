@@ -15,6 +15,7 @@ using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -120,6 +121,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = MakeViewContext();
             var helper = new ScriptTagHelper
             {
+                HtmlEncoder = new HtmlEncoder(),
                 Logger = logger,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
@@ -346,6 +348,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var helper = new ScriptTagHelper
             {
+                HtmlEncoder = new HtmlEncoder(),
                 Logger = logger,
                 ViewContext = viewContext,
                 HostingEnvironment = hostingEnvironment,
@@ -387,7 +390,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
-                SrcInclude = "**/*.js"
+                SrcInclude = "**/*.js",
+                HtmlEncoder = new HtmlEncoder()
             };
 
             // Act
@@ -395,6 +399,44 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal("<script src=\"/js/site.js\"></script><script src=\"/common.js\"></script>", output.Content);
+        }
+
+        [Fact]
+        public async Task RendersScriptTagsForGlobbedSrcResults_UsesProvidedEncoder()
+        {
+            // Arrange
+            var context = MakeTagHelperContext(
+                attributes: new Dictionary<string, object>
+                {
+                    ["src"] = "/js/site.js",
+                    ["asp-src-include"] = "**/*.js"
+                });
+            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, string>
+            {
+                ["src"] = "/js/site.js"
+            });
+            var logger = new Mock<ILogger<ScriptTagHelper>>();
+            var hostingEnvironment = MakeHostingEnvironment();
+            var viewContext = MakeViewContext();
+            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
+            globbingUrlBuilder.Setup(g => g.BuildUrlList("/js/site.js", "**/*.js", null))
+                .Returns(new[] { "/js/site.js", "/common.js" });
+            var helper = new ScriptTagHelper
+            {
+                GlobbingUrlBuilder = globbingUrlBuilder.Object,
+                Logger = logger.Object,
+                HostingEnvironment = hostingEnvironment,
+                ViewContext = viewContext,
+                SrcInclude = "**/*.js",
+                HtmlEncoder = new TestHtmlEncoder()
+            };
+
+            // Act
+            await helper.ProcessAsync(context, output);
+
+            // Assert
+            Assert.Equal("<script src=\"HtmlEncode[[/js/site.js]]\"></script>" +
+                "<script src=\"HtmlEncode[[/common.js]]\"></script>", output.Content);
         }
 
         private TagHelperContext MakeTagHelperContext(
@@ -424,7 +466,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             attributes = attributes ?? new Dictionary<string, string>();
 
-            return new TagHelperOutput(tagName, attributes);
+            return new TagHelperOutput(tagName, attributes, new HtmlEncoder());
         }
 
         private TagHelperLogger<ScriptTagHelper> CreateLogger()
@@ -444,6 +486,28 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(mockFileProvider.Object);
 
             return hostingEnvironment.Object;
+        }
+
+        private class TestHtmlEncoder : IHtmlEncoder
+        {
+            public string HtmlEncode(string value)
+            {
+                return "HtmlEncode[[" + value + "]]";
+            }
+
+            public void HtmlEncode(string value, int startIndex, int charCount, TextWriter output)
+            {
+                output.Write("HtmlEncode[[");
+                output.Write(value.Substring(startIndex, charCount));
+                output.Write("]]");
+            }
+
+            public void HtmlEncode(char[] value, int startIndex, int charCount, TextWriter output)
+            {
+                output.Write("HtmlEncode[[");
+                output.Write(value, startIndex, charCount);
+                output.Write("]]");
+            }
         }
     }
 }

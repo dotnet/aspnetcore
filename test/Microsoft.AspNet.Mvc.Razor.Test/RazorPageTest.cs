@@ -10,6 +10,7 @@ using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -28,6 +29,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(v =>
             {
+                v.HtmlEncoder = new HtmlEncoder();
                 v.Write("Hello Prefix");
                 v.StartWritingScope();
                 v.Write("Hello from Output");
@@ -51,6 +53,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(v =>
             {
+                v.HtmlEncoder = new HtmlEncoder();
                 v.Write("Hello Prefix");
                 v.StartWritingScope();
                 v.Write("Hello In Scope");
@@ -73,6 +76,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(v =>
             {
+                v.HtmlEncoder = new HtmlEncoder();
                 v.Write("Hello Prefix");
                 v.StartWritingScope();
                 v.Write("Hello In Scope Pre Nest");
@@ -453,6 +457,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                   .Verifiable();
             var page = CreatePage(v =>
             {
+                v.HtmlEncoder = new HtmlEncoder();
                 v.Write(v.Href("url"));
             });
             var services = new Mock<IServiceProvider>();
@@ -554,6 +559,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var page = CreatePage(p =>
             {
+                p.HtmlEncoder = new HtmlEncoder();
                 p.WriteAttribute("href",
                                  new PositionTagged<string>("prefix", 0),
                                  new PositionTagged<string>("suffix", 34),

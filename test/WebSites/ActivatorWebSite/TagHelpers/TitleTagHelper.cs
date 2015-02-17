@@ -19,7 +19,7 @@ namespace ActivatorWebSite.TagHelpers
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            var builder = new TagBuilder("h2");
+            var builder = new TagBuilder("h2", HtmlHelper.HtmlEncoder);
             var title = ViewContext.ViewBag.Title;
             builder.InnerHtml = HtmlHelper.Encode(title);
             output.PreContent = builder.ToString();

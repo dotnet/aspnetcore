@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -41,7 +42,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "id", "myanchor" },
                     { "asp-route-foo", "bar" },
-                })
+                },
+                htmlEncoder: new HtmlEncoder())
             {
                 Content = "Something"
             };
@@ -88,7 +90,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>())
+                attributes: new Dictionary<string, string>(),
+                htmlEncoder: new HtmlEncoder())
             {
                 Content = string.Empty
             };
@@ -97,7 +100,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             generator
                 .Setup(mock => mock.GenerateRouteLink(
                     string.Empty, "Default", "http", "contoso.com", "hello=world", null, null))
-                .Returns(new TagBuilder("a"))
+                .Returns(new TagBuilder("a", new HtmlEncoder()))
                 .Verifiable();
             var anchorTagHelper = new AnchorTagHelper
             {
@@ -127,7 +130,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>())
+                attributes: new Dictionary<string, string>(),
+                htmlEncoder: new HtmlEncoder())
             {
                 Content = string.Empty
             };
@@ -136,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             generator
                 .Setup(mock => mock.GenerateActionLink(
                     string.Empty, "Index", "Home", "http", "contoso.com", "hello=world", null, null))
-                .Returns(new TagBuilder("a"))
+                .Returns(new TagBuilder("a", new HtmlEncoder()))
                 .Verifiable();
             var anchorTagHelper = new AnchorTagHelper
             {
@@ -173,7 +177,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new Dictionary<string, string>()
                 {
                     { "href", "http://www.contoso.com" }
-                });
+                },
+                htmlEncoder: new HtmlEncoder());
             if (propertyName == "asp-route-")
             {
                 output.Attributes.Add("asp-route-foo", "bar");
@@ -208,7 +213,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             typeof(AnchorTagHelper).GetProperty(propertyName).SetValue(anchorTagHelper, "Home");
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, string>(),
+                htmlEncoder: new HtmlEncoder());
             var expectedErrorMessage = "Cannot determine an 'href' attribute for <a>. An <a> with a specified " +
                 "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
 

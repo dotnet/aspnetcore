@@ -29,17 +29,17 @@ namespace Microsoft.AspNet.Mvc.Core
                     { "<blink>text</blink>", false, "<blink>text</blink>" },
                     { "<blink>text</blink>", true, "&lt;blink&gt;text&lt;/blink&gt;" },
                     { "&'\"", false, "&'\"" },
-                    { "&'\"", true, "&amp;&#39;&quot;" },
+                    { "&'\"", true, "&amp;&#x27;&quot;" },
                     { " ¡ÿĀ", false, " ¡ÿĀ" },                                           // high ASCII
-                    { " ¡ÿĀ", true, "&#160;&#161;&#255;Ā" },
+                    { " ¡ÿĀ", true, "&#xA0;&#xA1;&#xFF;&#x100;" },
                     { "Chinese西雅图Chars", false, "Chinese西雅图Chars" },
-                    { "Chinese西雅图Chars", true, "Chinese西雅图Chars" },
+                    { "Chinese西雅图Chars", true, "Chinese&#x897F;&#x96C5;&#x56FE;Chars" },
                     { "Unicode؃Format؃Char", false, "Unicode؃Format؃Char" },            // class Cf
-                    { "Unicode؃Format؃Char", true, "Unicode؃Format؃Char" },
+                    { "Unicode؃Format؃Char", true, "Unicode&#x603;Format&#x603;Char" },
                     { "UnicodeῼTitlecaseῼChar", false, "UnicodeῼTitlecaseῼChar" },       // class Lt
-                    { "UnicodeῼTitlecaseῼChar", true, "UnicodeῼTitlecaseῼChar" },
+                    { "UnicodeῼTitlecaseῼChar", true, "Unicode&#x1FFC;Titlecase&#x1FFC;Char" },
                     { "UnicodeःCombiningःChar", false, "UnicodeःCombiningःChar" },    // class Mc
-                    { "UnicodeःCombiningःChar", true, "UnicodeःCombiningःChar" },
+                    { "UnicodeःCombiningःChar", true, "Unicode&#x903;Combining&#x903;Char" },
                 };
             }
         }

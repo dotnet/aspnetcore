@@ -7,13 +7,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Text;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private readonly IScopedInstance<ActionBindingContext> _bindingContextAccessor;
         private readonly IModelMetadataProvider _metadataProvider;
         private readonly IUrlHelper _urlHelper;
+        private readonly IHtmlEncoder _htmlEncoder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
@@ -33,12 +34,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] AntiForgery antiForgery,
             [NotNull] IScopedInstance<ActionBindingContext> bindingContextAccessor,
             [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] IUrlHelper urlHelper)
+            [NotNull] IUrlHelper urlHelper,
+            [NotNull] IHtmlEncoder htmlEncoder)
         {
             _antiForgery = antiForgery;
             _bindingContextAccessor = bindingContextAccessor;
             _metadataProvider = metadataProvider;
             _urlHelper = urlHelper;
+            _htmlEncoder = htmlEncoder;
 
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = "_";
@@ -50,13 +53,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public string Encode(string value)
         {
-            return !string.IsNullOrEmpty(value) ? WebUtility.HtmlEncode(value) : string.Empty;
+            return !string.IsNullOrEmpty(value) ? _htmlEncoder.HtmlEncode(value) : string.Empty;
         }
 
         /// <inheritdoc />
         public string Encode(object value)
         {
-            return (value != null) ? WebUtility.HtmlEncode(value.ToString()) : string.Empty;
+            return (value != null) ? _htmlEncoder.HtmlEncode(value.ToString()) : string.Empty;
         }
 
         /// <inheritdoc />
@@ -138,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             ModelExplorer modelExplorer,
             string expression)
         {
-            var tagBuilder = new TagBuilder("input");
+            var tagBuilder = new TagBuilder("input", _htmlEncoder);
             tagBuilder.MergeAttribute("type", GetInputTypeString(InputType.Hidden));
             tagBuilder.MergeAttribute("value", "false");
 
@@ -252,7 +255,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return null;
             }
 
-            var tagBuilder = new TagBuilder("label");
+            var tagBuilder = new TagBuilder("label", _htmlEncoder);
             var idString =
                 TagBuilder.CreateSanitizedId(GetFullHtmlFieldName(viewContext, expression), IdAttributeDotReplacement);
             tagBuilder.Attributes.Add("for", idString);
@@ -454,7 +457,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Convert each ListItem to an <option> tag and wrap them with <optgroup> if requested.
             var listItemBuilder = GenerateGroupsAndOptions(optionLabel, selectList);
 
-            var tagBuilder = new TagBuilder("select")
+            var tagBuilder = new TagBuilder("select", _htmlEncoder)
             {
                 InnerHtml = listItemBuilder.ToString()
             };
@@ -521,7 +524,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 value = modelExplorer.Model.ToString();
             }
 
-            var tagBuilder = new TagBuilder("textarea");
+            var tagBuilder = new TagBuilder("textarea", _htmlEncoder);
             tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes), true);
             if (rows > 0)
@@ -545,7 +548,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // The first newline is always trimmed when a TextArea is rendered, so we add an extra one
             // in case the value being rendered is something like "\r\nHello".
-            tagBuilder.InnerHtml = Environment.NewLine + WebUtility.HtmlEncode(value);
+            tagBuilder.InnerHtml = Environment.NewLine + _htmlEncoder.HtmlEncode(value);
 
             return tagBuilder;
         }
@@ -615,7 +618,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 tag = viewContext.ValidationMessageElement;
             }
-            var tagBuilder = new TagBuilder(tag);
+            var tagBuilder = new TagBuilder(tag, _htmlEncoder);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
 
             // Only the style of the span is changed according to the errors if message is null or empty.
@@ -668,7 +671,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 {
                     headerTag = viewContext.ValidationSummaryMessageElement;
                 }
-                var messageTag = new TagBuilder(headerTag);
+                var messageTag = new TagBuilder(headerTag, _htmlEncoder);
                 messageTag.SetInnerText(message);
                 wrappedMessage = messageTag.ToString(TagRenderMode.Normal) + Environment.NewLine;
             }
@@ -690,7 +693,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                     if (!string.IsNullOrEmpty(errorText))
                     {
-                        var listItem = new TagBuilder("li");
+                        var listItem = new TagBuilder("li", _htmlEncoder);
                         listItem.SetInnerText(errorText);
                         htmlSummary.AppendLine(listItem.ToString(TagRenderMode.Normal));
                     }
@@ -702,12 +705,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlSummary.AppendLine(HiddenListItem);
             }
 
-            var unorderedList = new TagBuilder("ul")
+            var unorderedList = new TagBuilder("ul", _htmlEncoder)
             {
                 InnerHtml = htmlSummary.ToString()
             };
 
-            var tagBuilder = new TagBuilder("div");
+            var tagBuilder = new TagBuilder("div", _htmlEncoder);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
 
             if (viewContext.ViewData.ModelState.IsValid)
@@ -758,9 +761,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// Not used directly in HtmlHelper. Exposed for use in DefaultDisplayTemplates.
         /// </remarks>
-        internal static TagBuilder GenerateOption(SelectListItem item, string encodedText)
+        internal static TagBuilder GenerateOption(SelectListItem item, string encodedText, IHtmlEncoder htmlEncoder)
         {
-            var tagBuilder = new TagBuilder("option")
+            var tagBuilder = new TagBuilder("option", htmlEncoder)
             {
                 InnerHtml = encodedText,
             };
@@ -819,7 +822,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string method,
             object htmlAttributes)
         {
-            var tagBuilder = new TagBuilder("form");
+            var tagBuilder = new TagBuilder("form", _htmlEncoder);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
 
             // action is implicitly generated from other parameters, so htmlAttributes take precedence.
@@ -860,7 +863,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
             }
 
-            var tagBuilder = new TagBuilder("input");
+            var tagBuilder = new TagBuilder("input", _htmlEncoder);
             tagBuilder.MergeAttributes(htmlAttributes);
             tagBuilder.MergeAttribute("type", GetInputTypeString(inputType));
             tagBuilder.MergeAttribute("name", fullName, replaceExisting: true);
@@ -945,9 +948,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] string url,
             object htmlAttributes)
         {
-            var tagBuilder = new TagBuilder("a")
+            var tagBuilder = new TagBuilder("a", _htmlEncoder)
             {
-                InnerHtml = WebUtility.HtmlEncode(linkText),
+                InnerHtml = _htmlEncoder.HtmlEncode(linkText),
             };
 
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
@@ -1127,7 +1130,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 TagBuilder groupBuilder = null;
                 if (optGroup != null)
                 {
-                    groupBuilder = new TagBuilder("optgroup");
+                    groupBuilder = new TagBuilder("optgroup", _htmlEncoder);
                     if (optGroup.Name != null)
                     {
                         groupBuilder.MergeAttribute("label", optGroup.Name);
@@ -1158,7 +1161,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private string GenerateOption(SelectListItem item)
         {
             var encodedText = Encode(item.Text);
-            var tagBuilder = GenerateOption(item, encodedText);
+            var tagBuilder = GenerateOption(item, encodedText, _htmlEncoder);
 
             return tagBuilder.ToString(TagRenderMode.Normal);
         }

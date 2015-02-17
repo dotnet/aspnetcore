@@ -8,6 +8,7 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -19,8 +20,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlHelper(
             [NotNull] IHtmlGenerator htmlGenerator,
             [NotNull] ICompositeViewEngine viewEngine,
-            [NotNull] IModelMetadataProvider metadataProvider)
-            : base(htmlGenerator, viewEngine, metadataProvider)
+            [NotNull] IModelMetadataProvider metadataProvider,
+            [NotNull] IHtmlEncoder htmlEncoder,
+            [NotNull] IUrlEncoder urlEncoder,
+            [NotNull] IJavaScriptStringEncoder javaScriptStringEncoder)
+            : base(htmlGenerator, viewEngine, metadataProvider, htmlEncoder, urlEncoder, javaScriptStringEncoder)
         {
         }
 

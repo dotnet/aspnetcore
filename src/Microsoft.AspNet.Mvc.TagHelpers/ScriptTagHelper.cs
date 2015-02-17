@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
@@ -135,6 +133,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         // Internal for ease of use when testing.
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
 
+        [Activate]
+        protected internal IHtmlEncoder HtmlEncoder { get; set; }
+
         /// <inheritdoc />
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
@@ -191,7 +192,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             foreach (var url in urls)
             {
-                attributes["src"] = WebUtility.HtmlEncode(url);
+                attributes["src"] = HtmlEncoder.HtmlEncode(url);
                 var content = string.Equals(url, staticSrc, StringComparison.OrdinalIgnoreCase)
                     ? originalContent
                     : string.Empty;
@@ -283,7 +284,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             content.Append(" ")
                    .Append(srcKey)
                    .Append("=\\\"")
-                   .Append(WebUtility.HtmlEncode(srcValue))
+                   .Append(HtmlEncoder.HtmlEncode(srcValue))
                    .Append("\\\"");
         }
     }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -145,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
         {
             attributes = attributes ?? new Dictionary<string, string>();
 
-            return new TagHelperOutput(tagName, attributes);
+            return new TagHelperOutput(tagName, attributes, new HtmlEncoder());
         }
     }
 }

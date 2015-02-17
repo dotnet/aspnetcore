@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -26,11 +27,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
+            var htmlEncoder = new HtmlEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);
             serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
                            .Returns(helper);
+            serviceProvider.Setup(p => p.GetService(typeof(IHtmlEncoder)))
+                           .Returns(htmlEncoder);
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(serviceProvider.Object);
@@ -90,11 +94,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
+            var htmlEncoder = new HtmlEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);
             serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
                            .Returns(helper);
+            serviceProvider.Setup(p => p.GetService(typeof(IHtmlEncoder)))
+                           .Returns(htmlEncoder);
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(serviceProvider.Object);
@@ -124,11 +131,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             var instance = new TestRazorPage();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
+            var htmlEncoder = new HtmlEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);
             serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
                            .Returns(helper);
+            serviceProvider.Setup(p => p.GetService(typeof(IHtmlEncoder)))
+                           .Returns(htmlEncoder);
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(serviceProvider.Object);
@@ -158,11 +168,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             var instance = new DoesNotDeriveFromRazorPageOfTButHasModelProperty();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
+            var htmlEncoder = new HtmlEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);
             serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
                            .Returns(helper);
+            serviceProvider.Setup(p => p.GetService(typeof(IHtmlEncoder)))
+                           .Returns(htmlEncoder);
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(serviceProvider.Object);

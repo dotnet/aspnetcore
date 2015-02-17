@@ -11,6 +11,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -52,7 +53,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new Dictionary<string, string>
                 {
                     { "class", "form-control" }
-                })
+                },
+                htmlEncoder: new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,
@@ -98,7 +100,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>())
+                attributes: new Dictionary<string, string>(),
+                htmlEncoder: new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,
@@ -113,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     null,   // message
                     null,   // headerTag
                     null))  // htmlAttributes
-                .Returns(new TagBuilder("div"))
+                .Returns(new TagBuilder("div", new HtmlEncoder()))
                 .Verifiable();
             validationSummaryTagHelper.ViewContext = expectedViewContext;
             validationSummaryTagHelper.Generator = generator.Object;
@@ -141,13 +144,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>())
+                attributes: new Dictionary<string, string>(),
+                htmlEncoder: new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,
                 PostContent = "Content of validation summary"
             };
-            var tagBuilder = new TagBuilder("span2")
+            var tagBuilder = new TagBuilder("span2", new HtmlEncoder())
             {
                 InnerHtml = "New HTML"
             };
@@ -199,7 +203,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>())
+                attributes: new Dictionary<string, string>(),
+                htmlEncoder: new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,
@@ -236,13 +241,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>())
+                attributes: new Dictionary<string, string>(),
+                htmlEncoder: new HtmlEncoder())
             {
                 PreContent = expectedPreContent,
                 Content = expectedContent,
                 PostContent = "Content of validation message",
             };
-            var tagBuilder = new TagBuilder("span2")
+            var tagBuilder = new TagBuilder("span2", new HtmlEncoder())
             {
                 InnerHtml = "New HTML"
             };

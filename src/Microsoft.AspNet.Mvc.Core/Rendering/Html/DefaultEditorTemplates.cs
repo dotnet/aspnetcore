@@ -257,7 +257,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     continue;
                 }
 
-                var divTag = new TagBuilder("div");
+                var divTag = new TagBuilder("div", htmlHelper.HtmlEncoder);
 
                 if (!propertyMetadata.HideSurroundingHtml)
                 {

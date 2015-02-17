@@ -22,7 +22,7 @@ namespace Asp
         private System.IO.TextWriter __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext = null;
-        private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperRunner();
+        private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = null;
         private Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperScopeManager __tagHelperScopeManager = new Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperScopeManager();
         private Microsoft.AspNet.Mvc.Razor.InputTestTagHelper __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = null;
         #line hidden
@@ -42,6 +42,7 @@ namespace Asp
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            __tagHelperRunner = __tagHelperRunner ?? new Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperRunner(HtmlEncoder);
             BeginContext(120, 2, true);
             WriteLiteral("\r\n");
             EndContext();

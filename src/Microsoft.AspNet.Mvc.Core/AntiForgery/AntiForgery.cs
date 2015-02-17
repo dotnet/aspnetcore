@@ -7,6 +7,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -22,13 +23,14 @@ namespace Microsoft.AspNet.Mvc
         public AntiForgery([NotNull] IClaimUidExtractor claimUidExtractor,
                            [NotNull] IDataProtectionProvider dataProtectionProvider,
                            [NotNull] IAntiForgeryAdditionalDataProvider additionalDataProvider,
-                           [NotNull] IOptions<MvcOptions> mvcOptions)
+                           [NotNull] IOptions<MvcOptions> mvcOptions,
+                           [NotNull] IHtmlEncoder htmlEncoder)
         {
             var config = mvcOptions.Options.AntiForgeryOptions;
             var serializer = new AntiForgeryTokenSerializer(dataProtectionProvider.CreateProtector(_purpose));
             var tokenStore = new AntiForgeryTokenStore(config, serializer);
             var tokenProvider = new TokenProvider(config, claimUidExtractor, additionalDataProvider);
-            _worker = new AntiForgeryWorker(serializer, config, tokenStore, tokenProvider, tokenProvider);
+            _worker = new AntiForgeryWorker(serializer, config, tokenStore, tokenProvider, tokenProvider, htmlEncoder);
         }
 
         /// <summary>

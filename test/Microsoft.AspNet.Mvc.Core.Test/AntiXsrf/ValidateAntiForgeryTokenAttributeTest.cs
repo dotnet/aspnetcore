@@ -5,6 +5,7 @@ using Microsoft.AspNet.DataProtection;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -39,7 +40,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             return new AntiForgery(claimExtractor.Object,
                                    dataProtectionProvider.Object,
                                    additionalDataProvider.Object,
-                                   optionsAccessor.Object);
+                                   optionsAccessor.Object,
+                                   new HtmlEncoder());
         }
     }
 }
