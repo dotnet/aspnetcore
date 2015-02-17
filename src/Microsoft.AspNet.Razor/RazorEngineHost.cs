@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Razor
         /// <summary>
         /// The <see cref="ITagHelperDescriptorResolver"/> used to resolve <see cref="TagHelperDescriptor"/>s.
         /// </summary>
-        public virtual ITagHelperDescriptorResolver TagHelperDescriptorResolver { get; protected set; }
+        public virtual ITagHelperDescriptorResolver TagHelperDescriptorResolver { get; set; }
 
         /// <summary>
         /// Boolean indicating if instrumentation code should be injected into the output page

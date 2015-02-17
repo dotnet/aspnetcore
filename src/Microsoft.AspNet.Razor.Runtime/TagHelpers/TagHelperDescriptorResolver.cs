@@ -26,18 +26,23 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private readonly TagHelperTypeResolver _typeResolver;
 
-        // internal for testing
-        internal TagHelperDescriptorResolver(TagHelperTypeResolver typeResolver)
-        {
-            _typeResolver = typeResolver;
-        }
-
         /// <summary>
         /// Instantiates a new instance of the <see cref="TagHelperDescriptorResolver"/> class.
         /// </summary>
         public TagHelperDescriptorResolver()
             : this(new TagHelperTypeResolver())
         {
+
+        }
+
+        /// <summary>
+        /// Instantiates a new instance of <see cref="TagHelperDescriptorResolver"/> class with the
+        /// specified <paramref name="typeResolver"/>.
+        /// </summary>
+        /// <param name="typeResolver">The <see cref="TagHelperTypeResolver"/>.</param>
+        public TagHelperDescriptorResolver(TagHelperTypeResolver typeResolver)
+        {
+            _typeResolver = typeResolver;
         }
 
         /// <inheritdoc />
@@ -112,7 +117,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperTypes = _typeResolver.Resolve(assemblyName, documentLocation, errorSink);
 
             // Convert types to TagHelperDescriptors
-            var descriptors = tagHelperTypes.SelectMany(TagHelperDescriptorFactory.CreateDescriptors);
+            var descriptors = tagHelperTypes.SelectMany(
+                type => TagHelperDescriptorFactory.CreateDescriptors(assemblyName, type));
 
             return descriptors;
         }
