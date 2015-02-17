@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Security;
 using MusicStore.Infrastructure;
 using MusicStore.Models;
 using MusicStore.Spa.Infrastructure;
