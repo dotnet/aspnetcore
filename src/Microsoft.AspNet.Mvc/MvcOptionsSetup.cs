@@ -55,6 +55,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Set up default input formatters.
             options.InputFormatters.Add(new JsonInputFormatter());
+            options.InputFormatters.Add(new JsonPatchInputFormatter());
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());
