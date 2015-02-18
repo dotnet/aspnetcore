@@ -3,11 +3,14 @@
 
 using Microsoft.AspNet.JsonPatch.Operations;
 using System.Collections.Generic;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNet.JsonPatch
 {
     public interface IJsonPatchDocument
     {
+        IContractResolver ContractResolver { get; set; }
+
         List<Operation> GetOperations();
     }
 }

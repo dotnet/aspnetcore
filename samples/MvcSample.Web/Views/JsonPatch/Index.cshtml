@@ -1,0 +1,114 @@
+﻿<head>
+    <script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.0.min.js"></script>
+    <script>
+        $(function () {
+            var currentObj = {
+                "Name": "John",
+                "Orders": [{"OrderName": "Order1"},
+                         {"OrderName": "Order2"}]
+                };
+            $('#currentlabel').text(JSON.stringify(currentObj))
+
+            $('#addorder').on("click", function () {
+                var obj = [{
+                    "op": "Add",
+                    "path": "Customer/Orders/2",
+                    "value": { "OrderName": "Name3" }
+                }]
+                $.ajax({
+                    url: 'jsonpatch',
+                    type: 'PATCH',
+                    data: JSON.stringify(obj),
+                    dataType: 'json',
+                    contentType: 'application/json-patch+json',
+                    success: function (data) {
+                        $('#addlabel').text(JSON.stringify(data))
+                    }
+                });
+            });
+
+            $('#removeorder').on("click", function () {
+                var obj = [{
+                    "op": "Remove",
+                    "path": "Customer/Name"
+                }]
+                $.ajax({
+                    url: 'jsonpatch',
+                    type: 'PATCH',
+                    data: JSON.stringify(obj),
+                    dataType: 'json',
+                    contentType: 'application/json-patch+json',
+                    success: function (data) {
+                        $('#removelabel').text(JSON.stringify(data))
+                    }
+                });
+            });
+
+            $('#moveorder').on("click", function () {
+                var obj = [{
+                    "op": "Move",
+                    "from": "Customer/Orders/0",
+                    "path": "Customer/Orders/1"
+                }]
+                $.ajax({
+                    url: 'jsonpatch',
+                    type: 'PATCH',
+                    data: JSON.stringify(obj),
+                    dataType: 'json',
+                    contentType: 'application/json-patch+json',
+                    success: function (data) {
+                        $('#movelabel').text(JSON.stringify(data))
+                    }
+                });
+            });
+
+            $('#replaceorder').on("click", function () {
+                var obj = [{
+                    "op": "Replace",
+                    "path": "Customer/Name",
+                    "value": "ReplacedName"
+                }]
+                $.ajax({
+                    url: 'jsonpatch',
+                    type: 'PATCH',
+                    data: JSON.stringify(obj),
+                    dataType: 'json',
+                    contentType: 'application/json-patch+json',
+                    success: function (data) {
+                        $('#replacelabel').text(JSON.stringify(data))
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div>
+        <label>Current Customer</label>
+        <br />
+        <label id="currentlabel" name="currentlabel"></label>
+        <br />
+    </div>
+    <div>
+        <button id="addorder" type="submit" class="btn btn-primary"> Add </button>
+        <br />
+        <label id="addlabel" name="addlabel"></label>
+        <br />
+    </div>
+    <div>
+        <button id="removeorder" type="submit" class="btn btn-primary"> Remove </button>
+        <br />
+        <label id="removelabel" name="removelabel"></label>
+    </div>
+    <div>
+        <button id="moveorder" type="submit" class="btn btn-primary"> Move </button>
+        <br />
+        <label id="movelabel" name="movelabel"></label>
+        <br />
+    </div>
+    <div>
+        <button id="replaceorder" type="submit" class="btn btn-primary"> Replace </button>
+        <br />
+        <label id="replacelabel" name="replacelabel"></label>
+    </div>
+</body>

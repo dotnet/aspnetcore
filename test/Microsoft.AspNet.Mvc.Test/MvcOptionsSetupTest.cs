@@ -103,8 +103,9 @@ namespace Microsoft.AspNet.Mvc
             setup.Configure(mvcOptions);
 
             // Assert
-            Assert.Equal(1, mvcOptions.InputFormatters.Count);
+            Assert.Equal(2, mvcOptions.InputFormatters.Count);
             Assert.IsType<JsonInputFormatter>(mvcOptions.InputFormatters[0].Instance);
+            Assert.IsType<JsonPatchInputFormatter>(mvcOptions.InputFormatters[1].Instance);
         }
 
         [Fact]

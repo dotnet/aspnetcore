@@ -15,7 +15,7 @@
                 "System.Collections": "4.0.10-beta-*",
                 "System.Collections.Concurrent": "4.0.10-beta-*",
                 "System.Globalization": "4.0.10-beta-*",
-				"System.Runtime.Extensions": "4.0.10-beta-*"
+                "System.Runtime.Extensions": "4.0.10-beta-*"
             }
         }
     }

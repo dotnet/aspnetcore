@@ -202,6 +202,69 @@ namespace Microsoft.AspNet.JsonPatch.Test
         }
 
         [Fact]
+        public void AddToComplextTypeListSpecifyIndex()
+        {
+            // Arrange
+            var doc = new SimpleDTOWithNestedDTO()
+            {
+                SimpleDTOList = new List<SimpleDTO>()
+                {
+                    new SimpleDTO
+                    {
+                        StringProperty = "String1"
+                    },
+                    new SimpleDTO
+                    {
+                        StringProperty = "String2"
+                    }
+                }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTOWithNestedDTO>();
+            patchDoc.Add<string>(o => o.SimpleDTOList[0].StringProperty, "ChangedString1");
+
+            // Act
+            patchDoc.ApplyTo(doc);
+
+            // Assert
+            Assert.Equal("ChangedString1", doc.SimpleDTOList[0].StringProperty);
+        }
+
+        [Fact]
+        public void AddToComplextTypeListSpecifyIndexWithSerialization()
+        {
+            // Arrange
+            var doc = new SimpleDTOWithNestedDTO()
+            {
+                SimpleDTOList = new List<SimpleDTO>()
+                {
+                    new SimpleDTO
+                    {
+                        StringProperty = "String1"
+                    },
+                    new SimpleDTO
+                    {
+                        StringProperty = "String2"
+                    }
+                }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTOWithNestedDTO>();
+            patchDoc.Add<string>(o => o.SimpleDTOList[0].StringProperty, "ChangedString1");
+
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTOWithNestedDTO>>(serialized);
+
+            // Act
+            deserialized.ApplyTo(doc);
+
+            // Assert
+            Assert.Equal("ChangedString1", doc.SimpleDTOList[0].StringProperty);
+        }
+
+        [Fact]
         public void AddToListInvalidPositionTooLarge()
         {
             // Arrange

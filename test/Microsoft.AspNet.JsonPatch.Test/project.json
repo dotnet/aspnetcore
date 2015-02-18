@@ -3,12 +3,12 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-		"Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-		"Microsoft.AspNet.JsonPatch": "1.0.0-*",
-		"Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-		"Microsoft.AspNet.Testing": "1.0.0-*",
-		"Moq": "4.2.1312.1622",
-		"Newtonsoft.Json": "6.0.6",
+        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+        "Microsoft.AspNet.JsonPatch": "1.0.0-*",
+        "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Moq": "4.2.1312.1622",
+        "Newtonsoft.Json": "6.0.6",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "commands": {

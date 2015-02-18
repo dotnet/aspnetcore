@@ -1,59 +1,21 @@
-﻿using Newtonsoft.Json;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNet.JsonPatch.Helpers
 {
     internal static class PropertyHelpers
     {
-        public static object GetValue(PropertyInfo propertyToGet, object targetObject, string pathToProperty)
-        {
-            // it is possible the path refers to a nested property.  In that case, we need to
-            // get from a different target object: the nested object.
-
-            var splitPath = pathToProperty.Split('/');
-
-            // skip the first one if it's empty
-            var startIndex = (string.IsNullOrWhiteSpace(splitPath[0]) ? 1 : 0);
-
-            for (int i = startIndex; i < splitPath.Length - 1; i++)
-            {
-                var propertyInfoToGet = GetPropertyInfo(targetObject, splitPath[i]
-                    , BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                targetObject = propertyInfoToGet.GetValue(targetObject, null);
-            }
-
-            return propertyToGet.GetValue(targetObject, null);
-        }
-
-        public static bool SetValue(PropertyInfo propertyToSet, object targetObject, string pathToProperty, object value)
-        {
-            // it is possible the path refers to a nested property.  In that case, we need to
-            // set on a different target object: the nested object.
-            var splitPath = pathToProperty.Split('/');
-
-            // skip the first one if it's empty
-            var startIndex = (string.IsNullOrWhiteSpace(splitPath[0]) ? 1 : 0);
-
-            for (int i = startIndex; i < splitPath.Length - 1; i++)
-            {
-                var propertyInfoToGet = GetPropertyInfo(targetObject, splitPath[i]
-                    , BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                targetObject = propertyInfoToGet.GetValue(targetObject, null);
-            }
-
-            propertyToSet.SetValue(targetObject, value, null);
-
-            return true;
-        }
-
-
-        public static PropertyInfo FindProperty(object targetObject, string propertyPath)
+        public static JsonPatchProperty FindPropertyAndParent(
+            object targetObject,
+            string propertyPath,
+            IContractResolver contractResolver)
         {
             try
             {
@@ -62,17 +24,37 @@ namespace Microsoft.AspNet.JsonPatch.Helpers
                 // skip the first one if it's empty
                 var startIndex = (string.IsNullOrWhiteSpace(splitPath[0]) ? 1 : 0);
 
-                for (int i = startIndex; i < splitPath.Length - 1; i++)
+                for (int i = startIndex; i < splitPath.Length; i++)
                 {
-                    var propertyInfoToGet = GetPropertyInfo(targetObject, splitPath[i]
-                        , BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                    targetObject = propertyInfoToGet.GetValue(targetObject, null);
+                    var jsonContract = (JsonObjectContract)contractResolver.ResolveContract(targetObject.GetType());
+
+                    foreach (var property in jsonContract.Properties)
+                    {
+                        if (string.Equals(property.PropertyName, splitPath[i], StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (i == (splitPath.Length - 1))
+                            {
+                                return new JsonPatchProperty(property, targetObject);
+                            }
+                            else
+                            {
+                                targetObject = property.ValueProvider.GetValue(targetObject);
+
+                                // if property is of IList type then get the array index from splitPath and get the
+                                // object at the indexed position from the list.
+                                if (typeof(IList).GetTypeInfo().IsAssignableFrom(property.PropertyType.GetTypeInfo()))
+                                {
+                                    var index = int.Parse(splitPath[++i]);
+                                    targetObject = ((IList)targetObject)[index];
+                                }
+                            }
+
+                            break;
+                        }
+                    }
                 }
 
-                var propertyToFind = targetObject.GetType().GetProperty(splitPath.Last(),
-                    BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-
-                return propertyToFind;
+                return null;
             }
             catch (Exception)
             {
@@ -100,20 +82,11 @@ namespace Microsoft.AspNet.JsonPatch.Helpers
             if (type == null) throw new ArgumentNullException();
             foreach (Type interfaceType in type.GetInterfaces())
             {
-#if NETFX_CORE || ASPNETCORE50
-			    if (interfaceType.GetTypeInfo().IsGenericType &&
-					interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-				{
-					return interfaceType.GetGenericArguments()[0];
-				}
-#else
                 if (interfaceType.GetTypeInfo().IsGenericType &&
-                interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                    interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                 {
                     return interfaceType.GetGenericArguments()[0];
                 }
-#endif
-
             }
             return null;
         }
@@ -129,12 +102,6 @@ namespace Microsoft.AspNet.JsonPatch.Helpers
             }
 
             return -1;
-        }
-
-        private static PropertyInfo GetPropertyInfo(object targetObject, string propertyName,
-        BindingFlags bindingFlags)
-        {
-            return targetObject.GetType().GetProperty(propertyName, bindingFlags);
         }
     }
 }
