@@ -126,14 +126,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 // Act - 8
                 // Remove new _GlobalImport file
                 File.Delete(newGlobalImport);
+                await Task.Delay(_cacheDelayInterval);
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 8
                 // Everything should've recompiled.
                 var response8 = new ParsedResponse(responseContent);
-                Assert.NotEqual(response6.ViewStart, response7.ViewStart);
-                Assert.NotEqual(response6.Index, response7.Index);
-                Assert.NotEqual(response6.Layout, response7.Layout);
+                Assert.NotEqual(response7.ViewStart, response8.ViewStart);
+                Assert.NotEqual(response7.Index, response8.Index);
+                Assert.NotEqual(response7.Layout, response8.Layout);
 
                 // Act - 9
                 // Refetch and verify we get cached types
