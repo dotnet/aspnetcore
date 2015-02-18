@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class PrecompilationTest
     {
-        private static readonly TimeSpan _cacheDelayInterval = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan _cacheDelayInterval = TimeSpan.FromSeconds(1);
         private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(PrecompilationWebSite));
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
                 // Act - 7
                 // Add a new _GlobalImport file
-                File.WriteAllText(Path.Combine(viewsDirectory, "..", "_GlobalImport.cshtml"), string.Empty);
+                var newGlobalImport = await TouchFile(Path.GetDirectoryName(viewsDirectory), "_GlobalImport.cshtml");
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 7
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
                 // Act - 8
                 // Remove new _GlobalImport file
-                File.Delete(Path.Combine(viewsDirectory, "..", "_GlobalImport.cshtml"));
+                File.Delete(newGlobalImport);
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 8
@@ -188,8 +188,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var applicationEnvironment = _services.GetRequiredService<IApplicationEnvironment>();
 
-            var viewsDirectory = Path.Combine(applicationEnvironment.ApplicationBasePath, 
-                                              "Views", 
+            var viewsDirectory = Path.Combine(applicationEnvironment.ApplicationBasePath,
+                                              "Views",
                                               "GlobalImportDelete");
             var globalPath = Path.Combine(viewsDirectory, "_GlobalImport.cshtml");
             var globalContent = File.ReadAllText(globalPath);
@@ -216,11 +216,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
         }
 
-        private static Task TouchFile(string viewsDir, string file)
+        private static async Task<string> TouchFile(string viewsDir, string file)
         {
-            File.AppendAllText(Path.Combine(viewsDir, file), " ");
-            // Delay to ensure we don't hit the cached file system.
-            return Task.Delay(_cacheDelayInterval);
+            var path = Path.Combine(viewsDir, file);
+            File.AppendAllText(path, " ");
+
+            // Delay to allow the file system watcher to catch up.
+            await Task.Delay(_cacheDelayInterval);
+
+            return path;
         }
 
         private sealed class ParsedResponse
