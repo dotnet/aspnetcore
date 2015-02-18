@@ -15,12 +15,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var skipStatusCodeAttribute = new SkipStatusCodePagesAttribute();
-            var resultExecutingContext = CreateResultExecutingContext(new IFilter[] { skipStatusCodeAttribute });
+            var resourceExecutingContext = CreateResourceExecutingContext(new IFilter[] { skipStatusCodeAttribute });
             var statusCodePagesFeature = new TestStatusCodeFeature();
-            resultExecutingContext.HttpContext.SetFeature<IStatusCodePagesFeature>(statusCodePagesFeature);
+            resourceExecutingContext.HttpContext.SetFeature<IStatusCodePagesFeature>(statusCodePagesFeature);
 
             // Act
-            skipStatusCodeAttribute.OnResultExecuted(CreateResultExecutedContext(resultExecutingContext));
+            skipStatusCodeAttribute.OnResourceExecuting(resourceExecutingContext);
 
             // Assert
             Assert.False(statusCodePagesFeature.Enabled);
@@ -31,24 +31,17 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var skipStatusCodeAttribute = new SkipStatusCodePagesAttribute();
-            var resultExecutingContext = CreateResultExecutingContext(new IFilter[] { skipStatusCodeAttribute });
+            var resourceExecutingContext = CreateResourceExecutingContext(new IFilter[] { skipStatusCodeAttribute });
 
             // Act
-            skipStatusCodeAttribute.OnResultExecuted(CreateResultExecutedContext(resultExecutingContext));
+            skipStatusCodeAttribute.OnResourceExecuting(resourceExecutingContext);
         }
 
-        private static ResultExecutedContext CreateResultExecutedContext(ResultExecutingContext context)
+        private static ResourceExecutingContext CreateResourceExecutingContext(IFilter[] filters)
         {
-            return new ResultExecutedContext(context, context.Filters, context.Result, context.Controller);
-        }
-
-        private static ResultExecutingContext CreateResultExecutingContext(IFilter[] filters)
-        {
-            return new ResultExecutingContext(
+            return new ResourceExecutingContext(
                 CreateActionContext(),
-                filters,
-                new ObjectResult("Some Value"),
-                controller: new object());
+                filters);
         }
 
         private static ActionContext CreateActionContext()
