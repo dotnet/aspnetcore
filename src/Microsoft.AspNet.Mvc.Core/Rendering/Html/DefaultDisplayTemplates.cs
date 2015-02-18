@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static string CollectionTemplate(IHtmlHelper htmlHelper)
         {
-            var model = htmlHelper.ViewData.ModelMetadata.Model;
+            var model = htmlHelper.ViewData.Model;
             if (model == null)
             {
                 return string.Empty;
@@ -136,14 +136,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                         itemType = item.GetType();
                     }
 
-                    var metadata = metadataProvider.GetMetadataForType(() => item, itemType);
+                    var modelExplorer = metadataProvider.GetModelExplorerForType(itemType, item);
                     var fieldName = string.Format(CultureInfo.InvariantCulture, "{0}[{1}]", fieldNameBase, index++);
 
                     var templateBuilder = new TemplateBuilder(
                         viewEngine,
                         htmlHelper.ViewContext,
                         htmlHelper.ViewData,
-                        metadata,
+                        modelExplorer,
                         htmlFieldName: fieldName,
                         templateName: null,
                         readOnly: true,
@@ -163,10 +163,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static string DecimalTemplate(IHtmlHelper htmlHelper)
         {
-            if (htmlHelper.ViewData.TemplateInfo.FormattedModelValue == htmlHelper.ViewData.ModelMetadata.Model)
+            if (htmlHelper.ViewData.TemplateInfo.FormattedModelValue == htmlHelper.ViewData.Model)
             {
                 htmlHelper.ViewData.TemplateInfo.FormattedModelValue =
-                    string.Format(CultureInfo.CurrentCulture, "{0:0.00}", htmlHelper.ViewData.ModelMetadata.Model);
+                    string.Format(CultureInfo.CurrentCulture, "{0:0.00}", htmlHelper.ViewData.Model);
             }
 
             return StringTemplate(htmlHelper);
@@ -203,18 +203,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             var viewData = htmlHelper.ViewData;
             var templateInfo = viewData.TemplateInfo;
-            var modelMetadata = viewData.ModelMetadata;
+            var modelExplorer = viewData.ModelExplorer;
             var builder = new StringBuilder();
 
-            if (modelMetadata.Model == null)
+            if (modelExplorer.Model == null)
             {
-                return modelMetadata.NullDisplayText;
+                return modelExplorer.Metadata.NullDisplayText;
             }
 
             if (templateInfo.TemplateDepth > 1)
             {
-                var text = modelMetadata.SimpleDisplayText;
-                if (modelMetadata.HtmlEncode)
+                var text = modelExplorer.GetSimpleDisplayText();
+                if (modelExplorer.Metadata.HtmlEncode)
                 {
                     text = htmlHelper.Encode(text);
                 }
@@ -224,9 +224,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
             var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
-            var properties = modelMetadata.Properties.Where(metadata => ShouldShow(metadata, templateInfo));
-            foreach (var propertyMetadata in properties)
+
+            foreach (var propertyExplorer in modelExplorer.Properties)
             {
+                var propertyMetadata = propertyExplorer.Metadata;
+                if (!ShouldShow(propertyExplorer, templateInfo))
+                {
+                    continue;
+                }
+
                 var divTag = new TagBuilder("div");
 
                 if (!propertyMetadata.HideSurroundingHtml)
@@ -250,7 +256,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     viewEngine,
                     htmlHelper.ViewContext,
                     htmlHelper.ViewData,
-                    propertyMetadata,
+                    propertyExplorer,
                     htmlFieldName: propertyMetadata.PropertyName,
                     templateName: null,
                     readOnly: true,
@@ -267,12 +273,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return builder.ToString();
         }
 
-        private static bool ShouldShow(ModelMetadata metadata, TemplateInfo templateInfo)
+        private static bool ShouldShow(ModelExplorer modelExplorer, TemplateInfo templateInfo)
         {
             return
-                metadata.ShowForDisplay &&
-                !metadata.IsComplexType &&
-                !templateInfo.Visited(metadata);
+                modelExplorer.Metadata.ShowForDisplay &&
+                !modelExplorer.Metadata.IsComplexType &&
+                !templateInfo.Visited(modelExplorer);
         }
 
         public static string StringTemplate(IHtmlHelper htmlHelper)

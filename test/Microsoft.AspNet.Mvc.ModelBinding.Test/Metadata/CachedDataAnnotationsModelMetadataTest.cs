@@ -31,7 +31,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             Assert.NotNull(metadata.AdditionalValues);
             Assert.Empty(metadata.AdditionalValues);
-            Assert.Null(metadata.Container);
             Assert.Null(metadata.ContainerType);
 
             Assert.True(metadata.ConvertEmptyStringToNull);
@@ -52,12 +51,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Null(metadata.DisplayName);
             Assert.Null(metadata.EditFormatString);
             Assert.Null(metadata.NullDisplayText);
-            Assert.Null(metadata.SimpleDisplayText);
+            Assert.Null(metadata.SimpleDisplayProperty);
             Assert.Null(metadata.TemplateHint);
 
-            Assert.Null(metadata.Model);
             Assert.Equal(typeof(object), metadata.ModelType);
-            Assert.Equal(typeof(object), metadata.RealModelType);
             Assert.Null(metadata.PropertyName);
 
             Assert.Equal(ModelMetadata.DefaultOrder, metadata.Order);
@@ -88,9 +85,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     },
                     {
                         new DisplayAttribute { Name = "value" }, metadata => metadata.DisplayName
-                    },
-                    {
-                        new DisplayColumnAttribute("Property"), metadata => metadata.SimpleDisplayText
                     },
                     {
                         new DisplayFormatAttribute { DataFormatString = "value" },
@@ -130,16 +124,34 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 containerType: null,
                 modelType: typeof(ClassWithDisplayableColumn),
                 propertyName: null,
-                attributes: attributes)
-            {
-                Model = new ClassWithDisplayableColumn { Property = "value" },
-            };
+                attributes: attributes);
 
             // Act
             var result = accessor(metadata);
 
             // Assert
             Assert.Equal("value", result);
+        }
+
+        [Fact]
+        public void AttributesOverrideMetadataStrings_SimpleDisplayProperty()
+        {
+            // Arrange
+            var attributes = new[] { new DisplayColumnAttribute("Property") };
+
+            var provider = new DataAnnotationsModelMetadataProvider();
+            var metadata = new CachedDataAnnotationsModelMetadata(
+                provider,
+                containerType: null,
+                modelType: typeof(ClassWithDisplayableColumn),
+                propertyName: null,
+                attributes: attributes);
+
+            // Act
+            var result = metadata.SimpleDisplayProperty;
+
+            // Assert
+            Assert.Equal("Property", result);
         }
 
         public static TheoryData<Attribute, Func<ModelMetadata, bool>, bool> ExpectedAttributeDataBooleans

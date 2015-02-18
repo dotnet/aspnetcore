@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForProperty(() => null, typeof(string), "Length");
+            var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new RangeAttribute(typeof(decimal), "0", "100");
             var adapter = new RangeAttributeAdapter(attribute);
             var serviceCollection = new ServiceCollection();

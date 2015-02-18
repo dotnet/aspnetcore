@@ -33,6 +33,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private int _order;
         private bool _showForDisplay;
         private bool _showForEdit;
+        private string _simpleDisplayProperty;
         private string _templateHint;
         private IBinderMetadata _binderMetadata;
         private string _binderModelName;
@@ -56,6 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _orderComputed;
         private bool _showForDisplayComputed;
         private bool _showForEditComputed;
+        private bool _simpleDisplayPropertyComputed;
         private bool _templateHintComputed;
         private bool _isBinderMetadataComputed;
         private bool _isBinderModelNameComputed;
@@ -63,10 +65,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool _propertyBindingPredicateProviderComputed;
 
         // Constructor for creating real instances of the metadata class based on a prototype
-        protected CachedModelMetadata(CachedModelMetadata<TPrototypeCache> prototype, Func<object> modelAccessor)
+        protected CachedModelMetadata(CachedModelMetadata<TPrototypeCache> prototype)
             : base(prototype.Provider,
                    prototype.ContainerType,
-                   modelAccessor,
                    prototype.ModelType,
                    prototype.PropertyName)
         {
@@ -82,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                       Type modelType,
                                       string propertyName,
                                       TPrototypeCache prototypeCache)
-            : base(provider, containerType, modelAccessor: null, modelType: modelType, propertyName: propertyName)
+            : base(provider, containerType, modelType: modelType, propertyName: propertyName)
         {
             PrototypeCache = prototypeCache;
         }
@@ -500,17 +501,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public sealed override string SimpleDisplayText
+        public sealed override string SimpleDisplayProperty
         {
             get
             {
-                // Value already cached in ModelMetadata. That class also already exposes ComputeSimpleDisplayText()
-                // for overrides. Sealed here for consistency with other properties.
-                return base.SimpleDisplayText;
+                if (!_simpleDisplayPropertyComputed)
+                {
+                    _simpleDisplayProperty = ComputeSimpleDisplayProperty();
+                    _simpleDisplayPropertyComputed = true;
+                }
+                return _simpleDisplayProperty;
             }
             set
             {
-                base.SimpleDisplayText = value;
+                _simpleDisplayProperty = value;
+                _simpleDisplayPropertyComputed = true;
             }
         }
 
@@ -699,6 +704,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected virtual bool ComputeShowForEdit()
         {
             return base.ShowForEdit;
+        }
+
+        /// <summary>
+        /// Calculate the <see cref="SimpleDisplayProperty"/> value.
+        /// </summary>
+        /// <returns>Calculated <see cref="SimpleDisplayProperty"/> value.</returns>
+        protected virtual string ComputeSimpleDisplayProperty()
+        {
+            return base.SimpleDisplayProperty;
         }
 
         /// <summary>

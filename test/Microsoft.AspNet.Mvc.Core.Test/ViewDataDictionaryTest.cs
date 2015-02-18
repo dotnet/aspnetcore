@@ -56,12 +56,12 @@ namespace Microsoft.AspNet.Mvc.Core
             // Arrange
             var metadataProvider = new Mock<IModelMetadataProvider>();
             metadataProvider
-                .Setup(m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(object)))
-                .Returns(new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(object)))
+                .Setup(m => m.GetMetadataForType(typeof(object)))
+                .Returns(new EmptyModelMetadataProvider().GetMetadataForType(typeof(object)))
                 .Verifiable();
             metadataProvider
-                .Setup(m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(TestModel)))
-                .Returns(new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(TestModel)))
+                .Setup(m => m.GetMetadataForType(typeof(TestModel)))
+                .Returns(new EmptyModelMetadataProvider().GetMetadataForType(typeof(TestModel)))
                 .Verifiable();
             var modelState = new ModelStateDictionary();
             var viewData = new TestViewDataDictionary(metadataProvider.Object, modelState);
@@ -82,12 +82,12 @@ namespace Microsoft.AspNet.Mvc.Core
             // Arrange
             var metadataProvider = new Mock<IModelMetadataProvider>(MockBehavior.Strict);
             metadataProvider
-                .Setup(m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(object)))
-                .Returns(new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(object)))
+                .Setup(m => m.GetMetadataForType(typeof(object)))
+                .Returns(new EmptyModelMetadataProvider().GetMetadataForType(typeof(object)))
                 .Verifiable();
             metadataProvider
-                .Setup(m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(TestModel)))
-                .Returns(new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(TestModel)))
+                .Setup(m => m.GetMetadataForType(typeof(TestModel)))
+                .Returns(new EmptyModelMetadataProvider().GetMetadataForType(typeof(TestModel)))
                 .Verifiable();
             var modelState = new ModelStateDictionary();
             var viewData = new TestViewDataDictionary(metadataProvider.Object, modelState);
@@ -100,13 +100,10 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.NotNull(viewData.ModelMetadata);
             // Verifies if the GetMetadataForType is called only once.
             metadataProvider.Verify(
-                m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(object)), Times.Once());
+                m => m.GetMetadataForType(typeof(object)), Times.Once());
             // Verifies if GetMetadataForProperties and GetMetadataForProperty is not called.
             metadataProvider.Verify(
-                m => m.GetMetadataForProperties(It.IsAny<Func<object>>(), typeof(object)), Times.Never());
-            metadataProvider.Verify(
-                m => m.GetMetadataForProperty(
-                    It.IsAny<Func<object>>(), typeof(object), It.IsAny<string>()), Times.Never());
+                m => m.GetMetadataForProperties(typeof(object)), Times.Never());
         }
 
         public static TheoryData<object> SetModelData
@@ -299,19 +296,14 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForType(() => null, typeof(object));
-            var source = new ViewDataDictionary(metadataProvider)
-            {
-                ModelMetadata = metadata,
-            };
+            var source = new ViewDataDictionary(metadataProvider);
 
             // Act
             var viewData1 = new ViewDataDictionary(source);
             var viewData2 = new ViewDataDictionary(source, model: null);
 
             // Assert
-            Assert.Same(metadata, viewData1.ModelMetadata);
-            Assert.Same(metadata, viewData2.ModelMetadata);
+            Assert.Same(viewData1.ModelMetadata, viewData2.ModelMetadata);
         }
 
         [Theory]
@@ -326,11 +318,7 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForType(() => null, sourceType);
-            var source = new ViewDataDictionary(metadataProvider)
-            {
-                ModelMetadata = metadata,
-            };
+            var source = new ViewDataDictionary(metadataProvider);
 
             // Act
             var viewData1 = new ViewDataDictionary(source)
@@ -342,33 +330,84 @@ namespace Microsoft.AspNet.Mvc.Core
             // Assert
             Assert.NotNull(viewData1.ModelMetadata);
             Assert.Equal(expectedType, viewData1.ModelMetadata.ModelType);
-            Assert.Equal(expectedType, viewData1.ModelMetadata.RealModelType);
 
             Assert.NotNull(viewData2.ModelMetadata);
             Assert.Equal(expectedType, viewData2.ModelMetadata.ModelType);
-            Assert.Equal(expectedType, viewData2.ModelMetadata.RealModelType);
         }
 
         [Fact]
-        public void ModelSetter_UpdatesModelMetadata()
+        public void ModelSetter_SameType_UpdatesModelExplorer()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
             var viewData = new ViewDataDictionary(metadataProvider)
             {
-                Model = "same-string",
+                Model = 3,
             };
+
             var originalMetadata = viewData.ModelMetadata;
+            var originalExplorer = viewData.ModelExplorer;
 
             // Act
-            viewData.Model = "same-string";
+            viewData.Model = 5;
 
             // Assert
             Assert.NotNull(viewData.ModelMetadata);
-            Assert.Equal("same-string", viewData.Model);
-            Assert.Equal("same-string", viewData.ModelMetadata.Model);
-            Assert.Same(originalMetadata.ModelType, viewData.ModelMetadata.ModelType);
-            Assert.NotSame(originalMetadata, viewData.ModelMetadata);
+            Assert.NotNull(viewData.ModelExplorer);
+            Assert.Equal(5, viewData.Model);
+            Assert.Equal(5, viewData.ModelExplorer.Model);
+            Assert.Same(originalMetadata, viewData.ModelMetadata);
+            Assert.NotSame(originalExplorer, viewData.ModelExplorer);
+        }
+
+        [Fact]
+        public void ModelSetter_SameType_BoxedValueTypeUpdatesModelExplorer()
+        {
+            // Arrange
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var viewData = new ViewDataDictionary(metadataProvider)
+            {
+                Model = 3,
+            };
+
+            var originalMetadata = viewData.ModelMetadata;
+            var originalExplorer = viewData.ModelExplorer;
+
+            // Act
+            viewData.Model = 3; // This is the same value, but it's in a different box.
+
+            // Assert
+            Assert.NotNull(viewData.ModelMetadata);
+            Assert.NotNull(viewData.ModelExplorer);
+            Assert.Equal(3, viewData.Model);
+            Assert.Equal(3, viewData.ModelExplorer.Model);
+            Assert.Same(originalMetadata, viewData.ModelMetadata);
+            Assert.NotSame(originalExplorer, viewData.ModelExplorer);
+        }
+
+        [Fact]
+        public void ModelSetter_SameModel_NoChanges()
+        {
+            // Arrange
+            var model = "Hello";
+
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var viewData = new ViewDataDictionary(metadataProvider)
+            {
+                Model = model,
+            };
+
+            var originalMetadata = viewData.ModelMetadata;
+            var originalExplorer = viewData.ModelExplorer;
+
+            // Act
+            viewData.Model = model;
+
+            // Assert
+            Assert.NotNull(viewData.ModelMetadata);
+            Assert.Equal("Hello", viewData.Model);
+            Assert.Same(originalMetadata, viewData.ModelMetadata);
+            Assert.Same(originalExplorer, viewData.ModelExplorer);
         }
 
         public static TheoryData<object, string, object> Eval_EvaluatesExpressionsData

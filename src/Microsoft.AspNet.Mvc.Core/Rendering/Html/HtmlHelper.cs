@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlString CheckBox(string expression, bool? isChecked, object htmlAttributes)
         {
             return GenerateCheckBox(
-                metadata: null,
+                modelExplorer: null,
                 expression: expression,
                 isChecked: isChecked,
                 htmlAttributes: htmlAttributes);
@@ -282,15 +282,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public string DisplayName(string expression)
         {
-            var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
-            return GenerateDisplayName(metadata, expression);
+            var modelExplorer = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
+            return GenerateDisplayName(modelExplorer, expression);
         }
 
         /// <inheritdoc />
         public string DisplayText(string expression)
         {
-            var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
-            return GenerateDisplayText(metadata);
+            var modelExplorer = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
+            return GenerateDisplayText(modelExplorer);
         }
 
         /// <inheritdoc />
@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes)
         {
             return GenerateDropDown(
-                metadata: null,
+                modelExplorer: null,
                 expression: expression,
                 selectList: selectList,
                 optionLabel: optionLabel,
@@ -315,10 +315,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string htmlFieldName,
             object additionalViewData)
         {
-            var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
+            var modelExplorer = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
 
             return GenerateEditor(
-                metadata,
+                modelExplorer,
                 htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
                 templateName,
                 additionalViewData);
@@ -328,7 +328,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlString Hidden(string expression, object value, object htmlAttributes)
         {
             return GenerateHidden(
-                metadata: null,
+                modelExplorer: null,
                 expression: expression,
                 value: value,
                 useViewData: (value == null),
@@ -344,9 +344,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public HtmlString Label(string expression, string labelText, object htmlAttributes)
         {
-            var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
+            var modelExplorer = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
             return GenerateLabel(
-                metadata,
+                modelExplorer,
                 expression,
                 labelText,
                 htmlAttributes);
@@ -356,7 +356,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlString ListBox(string expression, IEnumerable<SelectListItem> selectList, object htmlAttributes)
         {
             return GenerateListBox(
-                metadata: null,
+                modelExplorer: null,
                 expression: expression,
                 selectList: selectList,
                 htmlAttributes: htmlAttributes);
@@ -388,7 +388,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return RenderPartialCoreAsync(partialViewName, model, viewData, ViewContext.Writer);
         }
 
-        protected virtual HtmlString GenerateDisplay(ModelMetadata metadata,
+        protected virtual HtmlString GenerateDisplay(ModelExplorer modelExplorer,
                                                      string htmlFieldName,
                                                      string templateName,
                                                      object additionalViewData)
@@ -396,7 +396,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var templateBuilder = new TemplateBuilder(_viewEngine,
                                                       ViewContext,
                                                       ViewData,
-                                                      metadata,
+                                                      modelExplorer,
                                                       htmlFieldName,
                                                       templateName,
                                                       readOnly: true,
@@ -443,7 +443,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlString Password(string expression, object value, object htmlAttributes)
         {
             return GeneratePassword(
-                metadata: null,
+                modelExplorer: null,
                 expression: expression,
                 value: value,
                 htmlAttributes: htmlAttributes);
@@ -453,7 +453,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public HtmlString RadioButton(string expression, object value, bool? isChecked, object htmlAttributes)
         {
             return GenerateRadioButton(
-                metadata: null,
+                modelExplorer: null,
                 expression: expression,
                 value: value,
                 isChecked: isChecked,
@@ -535,19 +535,29 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public HtmlString TextArea(string expression, string value, int rows, int columns, object htmlAttributes)
         {
-            var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
+            var modelExplorer = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
             if (value != null)
             {
-                metadata.Model = value;
+                // As a special case we allow treating a string value as a model of arbitrary type.
+                // So pass through the string representation, even though the ModelMetadata might
+                // be for some other type.
+                //
+                // We do this because thought we're displaying something as a string, we want to have
+                // the right set of validation attributes.
+                modelExplorer = new ModelExplorer(
+                    MetadataProvider,
+                    modelExplorer.Container,
+                    modelExplorer.Metadata,
+                    value);
             }
 
-            return GenerateTextArea(metadata, expression, rows, columns, htmlAttributes);
+            return GenerateTextArea(modelExplorer, expression, rows, columns, htmlAttributes);
         }
 
         /// <inheritdoc />
         public HtmlString TextBox(string expression, object value, string format, object htmlAttributes)
         {
-            return GenerateTextBox(metadata: null, expression: expression, value: value, format: format,
+            return GenerateTextBox(modelExplorer: null, expression: expression, value: value, format: format,
                 htmlAttributes: htmlAttributes);
         }
 
@@ -568,18 +578,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected virtual HtmlString GenerateCheckBox(
-            ModelMetadata metadata,
+            ModelExplorer modelExplorer,
             string expression,
             bool? isChecked,
             object htmlAttributes)
         {
             var checkbox = _htmlGenerator.GenerateCheckBox(
                 ViewContext,
-                metadata,
+                modelExplorer,
                 expression,
                 isChecked,
                 htmlAttributes);
-            var hidden = _htmlGenerator.GenerateHiddenForCheckbox(ViewContext, metadata, expression);
+
+            var hidden = _htmlGenerator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, expression);
             if (checkbox == null || hidden == null)
             {
                 return HtmlString.Empty;
@@ -590,12 +601,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return new HtmlString(elements);
         }
 
-        protected virtual string GenerateDisplayName([NotNull] ModelMetadata metadata, string expression)
+        protected virtual string GenerateDisplayName([NotNull] ModelExplorer modelExplorer, string expression)
         {
             // We don't call ModelMetadata.GetDisplayName here because
             // we want to fall back to the field name rather than the ModelType.
             // This is similar to how the GenerateLabel get the text of a label.
-            var resolvedDisplayName = metadata.DisplayName ?? metadata.PropertyName;
+            var resolvedDisplayName = modelExplorer.Metadata.DisplayName ?? modelExplorer.Metadata.PropertyName;
             if (resolvedDisplayName == null)
             {
                 resolvedDisplayName =
@@ -605,13 +616,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return resolvedDisplayName;
         }
 
-        protected virtual string GenerateDisplayText(ModelMetadata metadata)
+        protected virtual string GenerateDisplayText(ModelExplorer modelExplorer)
         {
-            return metadata.SimpleDisplayText ?? string.Empty;
+            return modelExplorer.GetSimpleDisplayText() ?? string.Empty;
         }
 
         protected HtmlString GenerateDropDown(
-            ModelMetadata metadata,
+            ModelExplorer modelExplorer,
             string expression,
             IEnumerable<SelectListItem> selectList,
             string optionLabel,
@@ -619,7 +630,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             var tagBuilder = _htmlGenerator.GenerateSelect(
                 ViewContext,
-                metadata,
+                modelExplorer,
                 optionLabel,
                 expression: expression,
                 selectList: selectList,
@@ -634,7 +645,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected virtual HtmlString GenerateEditor(
-            ModelMetadata metadata,
+            ModelExplorer modelExplorer,
             string htmlFieldName,
             string templateName,
             object additionalViewData)
@@ -643,7 +654,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 _viewEngine,
                 ViewContext,
                 ViewData,
-                metadata,
+                modelExplorer,
                 htmlFieldName,
                 templateName,
                 readOnly: false,
@@ -742,7 +753,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected virtual HtmlString GenerateHidden(
-            ModelMetadata metadata,
+            ModelExplorer modelExplorer,
             string expression,
             object value,
             bool useViewData,
@@ -751,7 +762,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var tagBuilder =
                 _htmlGenerator.GenerateHidden(
                     ViewContext,
-                    metadata,
+                    modelExplorer,
                     expression,
                     value,
                     useViewData,
@@ -773,14 +784,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected virtual HtmlString GenerateLabel(
-            [NotNull] ModelMetadata metadata,
+            [NotNull] ModelExplorer modelExplorer,
             string expression,
             string labelText,
             object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateLabel(
                 ViewContext,
-                metadata,
+                modelExplorer,
                 expression: expression,
                 labelText: labelText,
                 htmlAttributes: htmlAttributes);
@@ -793,14 +804,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected HtmlString GenerateListBox(
-            ModelMetadata metadata,
+            ModelExplorer modelExplorer,
             string expression,
             IEnumerable<SelectListItem> selectList,
             object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateSelect(
                 ViewContext,
-                metadata,
+                modelExplorer,
                 optionLabel: null,
                 expression: expression,
                 selectList: selectList,
@@ -821,14 +832,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected virtual HtmlString GeneratePassword(
-            ModelMetadata metadata,
+            ModelExplorer modelExplorer,
             string expression,
             object value,
             object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GeneratePassword(
                 ViewContext,
-                metadata,
+                modelExplorer,
                 expression,
                 value,
                 htmlAttributes);
@@ -841,7 +852,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected virtual HtmlString GenerateRadioButton(
-            ModelMetadata metadata,
+            ModelExplorer modelExplorer,
             string expression,
             object value,
             bool? isChecked,
@@ -849,7 +860,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             var tagBuilder = _htmlGenerator.GenerateRadioButton(
                 ViewContext,
-                metadata,
+                modelExplorer,
                 expression,
                 value,
                 isChecked,
@@ -863,7 +874,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected virtual HtmlString GenerateTextArea(
-            ModelMetadata metadata,
+            ModelExplorer modelExplorer,
             string expression,
             int rows,
             int columns,
@@ -871,7 +882,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             var tagBuilder = _htmlGenerator.GenerateTextArea(
                 ViewContext,
-                metadata,
+                modelExplorer,
                 expression,
                 rows,
                 columns,
@@ -885,7 +896,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         protected virtual HtmlString GenerateTextBox(
-            ModelMetadata metadata,
+            ModelExplorer modelExplorer,
             string expression,
             object value,
             string format,
@@ -893,7 +904,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             var tagBuilder = _htmlGenerator.GenerateTextBox(
                 ViewContext,
-                metadata,
+                modelExplorer,
                 expression,
                 value,
                 format,
@@ -962,9 +973,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 if (string.IsNullOrEmpty(expression))
                 {
-                    // case 2(a): format the value from ModelMetadata for the current model
-                    var metadata = ViewData.ModelMetadata;
-                    resolvedValue = FormatValue(metadata.Model, format);
+                    // case 2(a): format the value from ViewData for the current model
+                    resolvedValue = FormatValue(ViewData.Model, format);
                 }
                 else
                 {
@@ -983,10 +993,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         /// <inheritdoc />
         public IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ModelMetadata metadata,
+            ModelExplorer modelExplorer,
             string expression)
         {
-            return _htmlGenerator.GetClientValidationRules(ViewContext, metadata, expression);
+            return _htmlGenerator.GetClientValidationRules(ViewContext, modelExplorer, expression);
         }
     }
 }

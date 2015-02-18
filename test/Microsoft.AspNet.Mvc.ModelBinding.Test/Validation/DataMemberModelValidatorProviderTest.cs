@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataMemberModelValidatorProvider();
-            var metadata = _metadataProvider.GetMetadataForProperty(() => null, typeof(ClassWithoutAttributes), "TheProperty");
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(ClassWithoutAttributes), "TheProperty");
 
             // Act
             var validators = provider.GetValidators(metadata);
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataMemberModelValidatorProvider();
-            var metadata = _metadataProvider.GetMetadataForProperty(() => null, typeof(ClassWithDataMemberIsRequiredTrue), "TheProperty");
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(ClassWithDataMemberIsRequiredTrue), "TheProperty");
 
             // Act
             var validators = provider.GetValidators(metadata);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataMemberModelValidatorProvider();
-            var metadata = _metadataProvider.GetMetadataForProperty(() => null, typeof(ClassWithDataMemberIsRequiredFalse), "TheProperty");
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(ClassWithDataMemberIsRequiredFalse), "TheProperty");
 
             // Act
             var validators = provider.GetValidators(metadata);
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataMemberModelValidatorProvider();
-            var metadata = _metadataProvider.GetMetadataForProperty(() => null, typeof(ClassWithDataMemberIsRequiredTrueWithoutDataContract), "TheProperty");
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(ClassWithDataMemberIsRequiredTrueWithoutDataContract), "TheProperty");
 
             // Act
             var validators = provider.GetValidators(metadata);

@@ -56,8 +56,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] Expression<Func<TModel, bool>> expression,
             object htmlAttributes)
         {
-            var metadata = GetModelMetadata(expression);
-            return GenerateCheckBox(metadata, GetExpressionName(expression), isChecked: null,
+            var modelExplorer = GetModelExplorer(expression);
+            return GenerateCheckBox(modelExplorer, GetExpressionName(expression), isChecked: null,
                 htmlAttributes: htmlAttributes);
         }
 
@@ -68,9 +68,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string optionLabel,
             object htmlAttributes)
         {
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
+            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
 
-            return GenerateDropDown(metadata, ExpressionHelper.GetExpressionText(expression), selectList,
+            return GenerateDropDown(modelExplorer, ExpressionHelper.GetExpressionText(expression), selectList,
                 optionLabel, htmlAttributes);
         }
 
@@ -81,11 +81,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string htmlFieldName,
             object additionalViewData)
         {
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression,
+            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression,
                                                                            ViewData,
                                                                            MetadataProvider);
 
-            return GenerateDisplay(metadata,
+            return GenerateDisplay(modelExplorer,
                                    htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
                                    templateName,
                                    additionalViewData);
@@ -94,32 +94,32 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public string DisplayNameFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression)
         {
-            var metadata = GetModelMetadata(expression);
-            return GenerateDisplayName(metadata, ExpressionHelper.GetExpressionText(expression));
+            var modelExplorer = GetModelExplorer(expression);
+            return GenerateDisplayName(modelExplorer, ExpressionHelper.GetExpressionText(expression));
         }
 
         /// <inheritdoc />
         public string DisplayNameForInnerType<TModelItem, TResult>(
             [NotNull] Expression<Func<TModelItem, TResult>> expression)
         {
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression<TModelItem, TResult>(
+            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression<TModelItem, TResult>(
                 expression,
                 new ViewDataDictionary<TModelItem>(ViewData, model: null),
                 MetadataProvider);
 
             var expressionText = ExpressionHelper.GetExpressionText(expression);
-            if (metadata == null)
+            if (modelExplorer == null)
             {
                 throw new InvalidOperationException(Resources.FormatHtmlHelper_NullModelMetadata(expressionText));
             }
 
-            return GenerateDisplayName(metadata, expressionText);
+            return GenerateDisplayName(modelExplorer, expressionText);
         }
 
         /// <inheritdoc />
         public string DisplayTextFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression)
         {
-            return GenerateDisplayText(GetModelMetadata(expression));
+            return GenerateDisplayText(GetModelExplorer(expression));
         }
 
         /// <inheritdoc />
@@ -129,10 +129,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string htmlFieldName,
             object additionalViewData)
         {
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
+            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
 
             return GenerateEditor(
-                metadata,
+                modelExplorer,
                 htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
                 templateName,
                 additionalViewData);
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
         {
-            var metadata = GetModelMetadata(expression);
+            var metadata = GetModelExplorer(expression);
             return GenerateHidden(metadata, GetExpressionName(expression), metadata.Model, useViewData: false,
                 htmlAttributes: htmlAttributes);
         }
@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string labelText,
             object htmlAttributes)
         {
-            var metadata = GetModelMetadata(expression);
+            var metadata = GetModelExplorer(expression);
             return GenerateLabel(metadata, ExpressionHelper.GetExpressionText(expression), labelText, htmlAttributes);
         }
 
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             IEnumerable<SelectListItem> selectList,
             object htmlAttributes)
         {
-            var metadata = GetModelMetadata(expression);
+            var metadata = GetModelExplorer(expression);
             var name = ExpressionHelper.GetExpressionText(expression);
 
             return GenerateListBox(metadata, name, selectList, htmlAttributes);
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
         {
-            var metadata = GetModelMetadata(expression);
+            var metadata = GetModelExplorer(expression);
             return GeneratePassword(metadata, GetExpressionName(expression), value: null,
                 htmlAttributes: htmlAttributes);
         }
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] object value,
             object htmlAttributes)
         {
-            var metadata = GetModelMetadata(expression);
+            var metadata = GetModelExplorer(expression);
             return GenerateRadioButton(metadata, GetExpressionName(expression), value, isChecked: null,
                 htmlAttributes: htmlAttributes);
         }
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             int columns,
             object htmlAttributes)
         {
-            var metadata = GetModelMetadata(expression);
+            var metadata = GetModelExplorer(expression);
             return GenerateTextArea(metadata, GetExpressionName(expression), rows, columns, htmlAttributes);
         }
 
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string format,
             object htmlAttributes)
         {
-            var metadata = GetModelMetadata(expression);
+            var metadata = GetModelExplorer(expression);
             return GenerateTextBox(metadata, GetExpressionName(expression), metadata.Model, format, htmlAttributes);
         }
 
@@ -230,16 +230,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return ExpressionHelper.GetExpressionText(expression);
         }
 
-        protected ModelMetadata GetModelMetadata<TResult>([NotNull] Expression<Func<TModel, TResult>> expression)
+        protected ModelExplorer GetModelExplorer<TResult>([NotNull] Expression<Func<TModel, TResult>> expression)
         {
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
-            if (metadata == null)
+            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
+            if (modelExplorer == null)
             {
                 var expressionName = GetExpressionName(expression);
                 throw new InvalidOperationException(Resources.FormatHtmlHelper_NullModelMetadata(expressionName));
             }
 
-            return metadata;
+            return modelExplorer;
         }
 
         /// <inheritdoc />
@@ -258,7 +258,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public string ValueFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression, string format)
         {
-            var metadata = GetModelMetadata(expression);
+            var metadata = GetModelExplorer(expression);
             return GenerateValue(ExpressionHelper.GetExpressionText(expression), metadata.Model, format,
                 useViewData: false);
         }

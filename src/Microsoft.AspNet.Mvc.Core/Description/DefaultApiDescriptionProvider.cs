@@ -111,9 +111,7 @@ namespace Microsoft.AspNet.Mvc.Description
             {
                 apiDescription.ResponseType = runtimeReturnType;
 
-                apiDescription.ResponseModelMetadata = _modelMetadataProvider.GetMetadataForType(
-                    modelAccessor: null,
-                    modelType: runtimeReturnType);
+                apiDescription.ResponseModelMetadata = _modelMetadataProvider.GetMetadataForType(runtimeReturnType);
 
                 var formats = GetResponseFormats(
                     action,
@@ -436,7 +434,6 @@ namespace Microsoft.AspNet.Mvc.Description
             public void WalkParameter()
             {
                 var modelMetadata = Context.MetadataProvider.GetMetadataForParameter(
-                    modelAccessor: null,
                     methodInfo: Context.ActionDescriptor.MethodInfo,
                     parameterName: Parameter.Name);
 

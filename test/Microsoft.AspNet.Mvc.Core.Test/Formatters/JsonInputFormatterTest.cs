@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var actionContext = GetActionContext(contentBytes);
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(User));
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(User));
             var context = new InputFormatterContext(actionContext, metadata.ModelType);
 
             // Act
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Mvc
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var httpContext = GetActionContext(contentBytes);
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(User));
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(User));
             var context = new InputFormatterContext(httpContext, metadata.ModelType);
 
             // Act and Assert
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Mvc
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var actionContext = GetActionContext(contentBytes);
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(User));
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(User));
             var context = new InputFormatterContext(actionContext, metadata.ModelType);
 
             // Act
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Mvc
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var actionContext = GetActionContext(contentBytes);
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(User));
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(User));
             var context = new InputFormatterContext(actionContext, metadata.ModelType);
             actionContext.ModelState.MaxAllowedErrors = 3;
             actionContext.ModelState.AddModelError("key1", "error1");
@@ -193,8 +193,7 @@ namespace Microsoft.AspNet.Mvc
             jsonFormatter.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Error;
 
             var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(modelAccessor: null,
-                                                                                modelType: typeof(UserLogin));
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(UserLogin));
             var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
 
             // Act
@@ -222,8 +221,7 @@ namespace Microsoft.AspNet.Mvc
             };
 
             var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(modelAccessor: null,
-                                                                            modelType: typeof(UserLogin));
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(UserLogin));
             var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
 
             // Act

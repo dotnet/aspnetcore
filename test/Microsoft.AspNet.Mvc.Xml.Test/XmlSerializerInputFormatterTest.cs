@@ -387,7 +387,7 @@ namespace Microsoft.AspNet.Mvc.Xml
         private InputFormatterContext GetInputFormatterContext(byte[] contentBytes, Type modelType)
         {
             var actionContext = GetActionContext(contentBytes);
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(null, modelType);
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(modelType);
             return new InputFormatterContext(actionContext, metadata.ModelType);
         }
 

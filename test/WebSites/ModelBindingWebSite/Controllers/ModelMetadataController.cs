@@ -14,9 +14,7 @@ namespace ModelBindingWebSite.Controllers
         [HttpGet(template: "/AdditionalValues")]
         public IDictionary<object, object> GetAdditionalValues([FromServices] IModelMetadataProvider provider)
         {
-            var metadata = provider.GetMetadataForType(
-                modelAccessor: null,
-                modelType: typeof(LargeModelWithValidation));
+            var metadata = provider.GetMetadataForType(typeof(LargeModelWithValidation));
 
             return metadata.AdditionalValues;
         }
@@ -25,9 +23,7 @@ namespace ModelBindingWebSite.Controllers
         public IDictionary<string, string> GetGroupNames([FromServices] IModelMetadataProvider provider)
         {
             var groupNames = new Dictionary<string, string>();
-            var metadata = provider.GetMetadataForType(
-                modelAccessor: null,
-                modelType: typeof(VehicleViewModel));
+            var metadata = provider.GetMetadataForType(typeof(VehicleViewModel));
             foreach (var property in metadata.Properties)
             {
                 groupNames.Add(property.PropertyName, property.GetGroupName());

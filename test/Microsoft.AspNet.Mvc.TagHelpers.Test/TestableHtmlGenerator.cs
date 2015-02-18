@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         protected override IDictionary<string, object> GetValidationAttributes(
             ViewContext viewContext,
-            ModelMetadata metadata,
+            ModelExplorer modelExplorer,
             string name)
         {
             return ValidationAttributes;

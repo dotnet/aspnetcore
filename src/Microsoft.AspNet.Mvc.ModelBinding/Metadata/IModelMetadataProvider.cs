@@ -10,18 +10,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public interface IModelMetadataProvider
     {
-        IEnumerable<ModelMetadata> GetMetadataForProperties(object container, [NotNull] Type containerType);
+        IEnumerable<ModelMetadata> GetMetadataForProperties([NotNull] Type containerType);
 
-        ModelMetadata GetMetadataForProperty(
-            Func<object> modelAccessor,
-            [NotNull] Type containerType,
-            [NotNull] string propertyName);
+        ModelMetadata GetMetadataForType([NotNull] Type modelType);
 
-        ModelMetadata GetMetadataForType(Func<object> modelAccessor, [NotNull] Type modelType);
-
-        ModelMetadata GetMetadataForParameter(
-            Func<object> modelAccessor,
-            [NotNull] MethodInfo methodInfo,
-            [NotNull] string parameterName);
+        ModelMetadata GetMetadataForParameter([NotNull] MethodInfo methodInfo, [NotNull] string parameterName);
     }
 }

@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             return new ModelBindingContext
             {
-                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, modelType),
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(modelType),
                 ModelName = "theModelName",
                 ValueProvider = new SimpleHttpValueProvider() // empty
             };

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     {
         // Model (List<Model> or Model instance), container type (Model or NestModel), model accessor,
         // property path / id, expected content.
-        public static TheoryData<object, Type, Func<object>, NameAndId, string> TestDataSet
+        public static TheoryData<object, Type, object, NameAndId, string> TestDataSet
         {
             get
             {
@@ -41,37 +41,37 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     modelWithText,
                 };
 
-                return new TheoryData<object, Type, Func<object>, NameAndId, string>
+                return new TheoryData<object, Type, object, NameAndId, string>
                 {
-                    { null, typeof(Model), () => null,
+                    { null, typeof(Model), null,
                         new NameAndId("Text", "Text"),
                         Environment.NewLine },
 
-                    { modelWithNull, typeof(Model), () => modelWithNull.Text,
+                    { modelWithNull, typeof(Model), modelWithNull.Text,
                         new NameAndId("Text", "Text"),
                         Environment.NewLine },
-                    { modelWithText, typeof(Model), () => modelWithText.Text,
+                    { modelWithText, typeof(Model), modelWithText.Text,
                         new NameAndId("Text", "Text"),
                         Environment.NewLine + "outer text" },
 
-                    { modelWithNull, typeof(NestedModel), () => modelWithNull.NestedModel.Text,
+                    { modelWithNull, typeof(NestedModel), modelWithNull.NestedModel.Text,
                         new NameAndId("NestedModel.Text", "NestedModel_Text"),
                         Environment.NewLine },
-                    { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text,
+                    { modelWithText, typeof(NestedModel), modelWithText.NestedModel.Text,
                         new NameAndId("NestedModel.Text", "NestedModel_Text"),
                         Environment.NewLine + "inner text" },
 
-                    { models, typeof(Model), () => models[0].Text,
+                    { models, typeof(Model), models[0].Text,
                         new NameAndId("[0].Text", "z0__Text"),
                         Environment.NewLine },
-                    { models, typeof(Model), () => models[1].Text,
+                    { models, typeof(Model), models[1].Text,
                         new NameAndId("[1].Text", "z1__Text"),
                         Environment.NewLine + "outer text" },
 
-                    { models, typeof(NestedModel), () => models[0].NestedModel.Text,
+                    { models, typeof(NestedModel), models[0].NestedModel.Text,
                         new NameAndId("[0].NestedModel.Text", "z0__NestedModel_Text"),
                         Environment.NewLine },
-                    { models, typeof(NestedModel), () => models[1].NestedModel.Text,
+                    { models, typeof(NestedModel), models[1].NestedModel.Text,
                         new NameAndId("[1].NestedModel.Text", "z1__NestedModel_Text"),
                         Environment.NewLine + "inner text" },
                 };
@@ -81,9 +81,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [Theory]
         [MemberData(nameof(TestDataSet))]
         public async Task Process_GeneratesExpectedOutput(
-            object model,
+            object container,
             Type containerType,
-            Func<object> modelAccessor,
+            object model,
             NameAndId nameAndId,
             string expectedContent)
         {
@@ -99,9 +99,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
 
+            var containerMetadata = metadataProvider.GetMetadataForType(containerType);
+            var containerExplorer = metadataProvider.GetModelExplorerForType(containerType, container);
+
+            var propertyMetadata = metadataProvider.GetMetadataForProperty(containerType, "Text");
+            var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, model);
+
             // Property name is either nameof(Model.Text) or nameof(NestedModel.Text).
-            var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
-            var modelExpression = new ModelExpression(nameAndId.Name, metadata);
+            var modelExpression = new ModelExpression(nameAndId.Name, modelExplorer);
             var tagHelper = new TextAreaTagHelper
             {
                 For = modelExpression,
@@ -157,11 +162,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedTagName = "textarea";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForProperty(
-                modelAccessor: () => null,
-                containerType: typeof(Model),
-                propertyName: nameof(Model.Text));
-            var modelExpression = new ModelExpression(nameof(Model.Text), metadata);
+            var modelExplorer = metadataProvider
+                .GetModelExplorerForType(typeof(Model), model: null)
+                .GetExplorerForProperty(nameof(Model.Text));
+
+            var modelExpression = new ModelExpression(nameof(Model.Text), modelExplorer);
             var tagHelper = new TextAreaTagHelper();
 
             var tagHelperContext = new TagHelperContext(

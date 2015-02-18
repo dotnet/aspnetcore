@@ -139,13 +139,16 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var provider = new Mock<IModelMetadataProvider>(MockBehavior.Strict);
-            var metadata =
-                new Mock<ModelMetadata>(MockBehavior.Strict, provider.Object, null, null, typeof(object), null);
+            var metadata = new Mock<ModelMetadata>(
+                MockBehavior.Strict, 
+                provider.Object,
+                null, 
+                typeof(object), 
+                null);
             provider
-                .Setup(m => m.GetMetadataForType(
-                    It.IsAny<Func<object>>(),
-                    typeof(DefaultTemplatesUtilities.ObjectTemplateModel)))
+                .Setup(m => m.GetMetadataForType(typeof(DefaultTemplatesUtilities.ObjectTemplateModel)))
                 .Returns(metadata.Object);
+
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider.Object);
 
             // Act (do not throw)
@@ -159,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.Core
             // Assert
             // Only the ViewDataDictionary should do anything with metadata.
             provider.Verify(
-                m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(DefaultTemplatesUtilities.ObjectTemplateModel)),
+                m => m.GetMetadataForType(typeof(DefaultTemplatesUtilities.ObjectTemplateModel)),
                 Times.Exactly(2));
         }
 
@@ -168,12 +171,15 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var provider = new Mock<IModelMetadataProvider>(MockBehavior.Strict);
-            var metadata =
-                new Mock<ModelMetadata>(MockBehavior.Strict, provider.Object, null, null, typeof(object), null);
+            var metadata = new Mock<ModelMetadata>(
+                MockBehavior.Strict, 
+                provider.Object,
+                null, 
+                typeof(object), 
+                null);
+
             provider
-                .Setup(m => m.GetMetadataForType(
-                    It.IsAny<Func<object>>(),
-                    typeof(DefaultTemplatesUtilities.ObjectTemplateModel)))
+                .Setup(m => m.GetMetadataForType(typeof(DefaultTemplatesUtilities.ObjectTemplateModel)))
                 .Returns(metadata.Object);
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider.Object);
 
@@ -186,7 +192,7 @@ namespace Microsoft.AspNet.Mvc.Core
             // Assert
             // Only the ViewDataDictionary should do anything with metadata.
             provider.Verify(
-                m => m.GetMetadataForType(It.IsAny<Func<object>>(), typeof(DefaultTemplatesUtilities.ObjectTemplateModel)),
+                m => m.GetMetadataForType(typeof(DefaultTemplatesUtilities.ObjectTemplateModel)),
                 Times.Exactly(2));
         }
 

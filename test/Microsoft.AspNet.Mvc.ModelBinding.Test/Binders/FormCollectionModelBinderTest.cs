@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var metadataProvider = new EmptyModelMetadataProvider();
             var bindingContext = new ModelBindingContext
             {
-                ModelMetadata = metadataProvider.GetMetadataForType(null, modelType),
+                ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "file",
                 OperationBindingContext = new OperationBindingContext
                 {

@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 var tagBuilder = Generator.GenerateTextArea(
                     ViewContext,
-                    For.Metadata,
+                    For.ModelExplorer,
                     For.Name,
                     rows: 0,
                     columns: 0,

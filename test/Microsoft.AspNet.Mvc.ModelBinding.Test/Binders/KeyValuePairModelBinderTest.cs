@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var metataProvider = new EmptyModelMetadataProvider();
             var bindingContext = new ModelBindingContext
             {
-                ModelMetadata = metataProvider.GetMetadataForType(null, keyValuePairType ?? typeof(KeyValuePair<int, string>)),
+                ModelMetadata = metataProvider.GetMetadataForType(keyValuePairType ?? typeof(KeyValuePair<int, string>)),
                 ModelName = "someName",
                 ValueProvider = valueProvider,
                 OperationBindingContext = new OperationBindingContext

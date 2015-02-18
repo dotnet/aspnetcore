@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             IEnumerable<object> callbackAttributes = null;
-            var metadata = _metadataProvider.GetMetadataForProperty(null, typeof(PropertyModel), "LocalAttributes");
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(PropertyModel), "LocalAttributes");
             var provider = new Mock<TestableAssociatedValidatorProvider> { CallBase = true };
             provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<object>>()))
                     .Callback<ModelMetadata, IEnumerable<object>>((m, attributes) => callbackAttributes = attributes)
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             IEnumerable<object> callbackAttributes = null;
-            var metadata = _metadataProvider.GetMetadataForProperty(null, typeof(PropertyModel), "MetadataAttributes");
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(PropertyModel), "MetadataAttributes");
             var provider = new Mock<TestableAssociatedValidatorProvider> { CallBase = true };
             provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<object>>()))
                     .Callback<ModelMetadata, IEnumerable<object>>((m, attributes) => callbackAttributes = attributes)
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             IEnumerable<object> callbackAttributes = null;
-            var metadata = _metadataProvider.GetMetadataForProperty(null, typeof(PropertyModel), "MixedAttributes");
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(PropertyModel), "MixedAttributes");
             var provider = new Mock<TestableAssociatedValidatorProvider> { CallBase = true };
             provider.Setup(p => p.AbstractGetValidators(metadata, It.IsAny<IEnumerable<object>>()))
                     .Callback<ModelMetadata, IEnumerable<object>>((m, attributes) => callbackAttributes = attributes)

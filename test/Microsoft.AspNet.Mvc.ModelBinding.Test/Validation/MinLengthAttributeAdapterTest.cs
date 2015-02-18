@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForProperty(() => null, typeof(string), "Length");
+            var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new MinLengthAttribute(6);
             var adapter = new MinLengthAttributeAdapter(attribute);
             var serviceCollection = new ServiceCollection();
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var propertyName = "Length";
             var message = "Array must have at least {1} items.";
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForProperty(() => null, typeof(string), propertyName);
+            var metadata = provider.GetMetadataForProperty(typeof(string), propertyName);
             var attribute = new MinLengthAttribute(2) { ErrorMessage = message };
             var adapter = new MinLengthAttributeAdapter(attribute);
             var serviceCollection = new ServiceCollection();

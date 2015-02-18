@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                 provider);
 
             // Assert
-            Assert.Same(myModel, metadata.Container);
+            Assert.Same(myModel, metadata.Container.Model);
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                                                                            provider);
 
             // Assert
-            Assert.Same(myModel, metadata.Container);
+            Assert.Same(myModel, metadata.Container.Model);
         }
 
         private class TestModel

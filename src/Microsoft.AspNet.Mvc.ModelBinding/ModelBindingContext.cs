@@ -56,6 +56,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public OperationBindingContext OperationBindingContext { get; set; }
 
         /// <summary>
+        /// Gets or sets the model value for the current operation.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="Model"/> will typically be set for a binding operation that works
+        /// against a pre-existing model object to update certain properties.
+        /// </remarks>
+        public object Model { get; set; }
+
+        /// <summary>
         /// Gets or sets the metadata for the model associated with this context.
         /// </summary>
         public ModelMetadata ModelMetadata { get; set; }

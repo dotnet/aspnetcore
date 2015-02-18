@@ -88,9 +88,9 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        public bool Visited(ModelMetadata metadata)
+        public bool Visited(ModelExplorer modelExplorer)
         {
-            return _visitedObjects.Contains(metadata.Model ?? metadata.ModelType);
+            return _visitedObjects.Contains(modelExplorer.Model ?? modelExplorer.Metadata.ModelType);
         }
     }
 }

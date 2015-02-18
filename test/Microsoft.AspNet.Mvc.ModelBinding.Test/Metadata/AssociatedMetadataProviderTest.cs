@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act
             // Call ToList() to force the lazy evaluation to evaluate
-            provider.GetMetadataForProperties(model, typeof(PropertyModel)).ToList();
+            provider.GetMetadataForProperties(typeof(PropertyModel)).ToList();
 
             // Assert
             var local = Assert.Single(
@@ -53,18 +53,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetMetadataForProperties_ExcludesIndexers()
         {
             // Arrange
-            var value = "some value";
-            var model = new ModelWithIndexer { Value = value };
+            var model = new ModelWithIndexer();
             var provider = new TestableAssociatedMetadataProvider();
             var modelType = model.GetType();
 
             // Act
-            provider.GetMetadataForProperties(model, modelType).ToList();
+            provider.GetMetadataForProperties(modelType).ToList();
 
             // Assert
             Assert.Equal(2, provider.CreateMetadataFromPrototypeLog.Count);
-            Assert.Equal(value, provider.CreateMetadataFromPrototypeLog[0].Model);
-            Assert.Null(provider.CreateMetadataFromPrototypeLog[1].Model);
 
             var valueMetadata = Assert.Single(
                 provider.CreateMetadataPrototypeLog,
@@ -79,23 +76,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void GetMetadataForPropertyWithNullContainerReturnsMetadataWithNullValuesForProperties()
-        {
-            // Arrange
-            var provider = new TestableAssociatedMetadataProvider();
-
-            // Act
-            provider.GetMetadataForProperties(null, typeof(PropertyModel)).ToList(); // Call ToList() to force the lazy evaluation to evaluate
-
-            // Assert
-            Assert.NotEmpty(provider.CreateMetadataFromPrototypeLog);
-            foreach (var parms in provider.CreateMetadataFromPrototypeLog)
-            {
-                Assert.Null(parms.Model);
-            }
-        }
-
-        [Fact]
         public void GetMetadataForParameterNullOrEmptyPropertyNameThrows()
         {
             // Arrange
@@ -103,56 +83,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act & Assert
             ExceptionAssert.ThrowsArgumentNullOrEmpty(
-                () => provider.GetMetadataForParameter(modelAccessor: null, methodInfo: null, parameterName: null),
+                () => provider.GetMetadataForParameter(methodInfo: null, parameterName: null),
                 "parameterName");
             ExceptionAssert.ThrowsArgumentNullOrEmpty(
-                () => provider.GetMetadataForParameter(modelAccessor: null, methodInfo: null, parameterName: null),
+                () => provider.GetMetadataForParameter(methodInfo: null, parameterName: null),
                 "parameterName");
         }
 
-        // GetMetadataForProperty
+        // GetMetadata and access metadata for a property
 
         [Fact]
-        public void GetMetadataForPropertyNullOrEmptyPropertyNameThrows()
+        public void GetMetadataForProperty_WithLocalAttributes()
         {
             // Arrange
             var provider = new TestableAssociatedMetadataProvider();
+            var metadata = new ModelMetadata(provider, null, typeof(PropertyModel), null);
 
-            // Act & Assert
-            ExceptionAssert.ThrowsArgumentNullOrEmpty(
-                () => provider.GetMetadataForProperty(modelAccessor: null, containerType: typeof(object), propertyName: null),
-                "propertyName");
-            ExceptionAssert.ThrowsArgumentNullOrEmpty(
-                () => provider.GetMetadataForProperty(modelAccessor: null, containerType: typeof(object), propertyName: String.Empty),
-                "propertyName");
-        }
-
-        [Fact]
-        public void GetMetadataForPropertyInvalidPropertyNameThrows()
-        {
-            // Arrange
-            var provider = new TestableAssociatedMetadataProvider();
-
-            // Act & Assert
-            ExceptionAssert.ThrowsArgument(
-                () => provider.GetMetadataForProperty(modelAccessor: null, containerType: typeof(object), propertyName: "BadPropertyName"),
-                "propertyName",
-                "The property System.Object.BadPropertyName could not be found.");
-        }
-
-        [Fact]
-        public void GetMetadataForPropertyWithLocalAttributes()
-        {
-            // Arrange
-            var provider = new TestableAssociatedMetadataProvider();
-            var metadata = new ModelMetadata(provider, typeof(PropertyModel), null, typeof(int), "LocalAttributes");
-            provider.CreateMetadataFromPrototypeReturnValue = metadata;
+            var propertyMetadata = new ModelMetadata(provider, typeof(PropertyModel), typeof(int), "LocalAttributes");
+            provider.CreateMetadataFromPrototypeReturnValue = propertyMetadata;
 
             // Act
-            var result = provider.GetMetadataForProperty(null, typeof(PropertyModel), "LocalAttributes");
+            var result = provider.GetMetadataForProperty(typeof(PropertyModel), "LocalAttributes");
 
             // Assert
-            Assert.Same(metadata, result);
+            Assert.Same(propertyMetadata, result);
             var localAttributes = Assert.Single(
                 provider.CreateMetadataPrototypeLog,
                 parameters => parameters.PropertyName == "LocalAttributes");
@@ -160,18 +114,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void GetMetadataForPropertyWithMetadataAttributes()
+        public void GetMetadataForProperty_WithMetadataAttributes()
         {
             // Arrange
             var provider = new TestableAssociatedMetadataProvider();
-            var metadata = new ModelMetadata(provider, typeof(PropertyModel), null, typeof(string), "MetadataAttributes");
-            provider.CreateMetadataFromPrototypeReturnValue = metadata;
+            var metadata = new ModelMetadata(provider, null, typeof(PropertyModel), null);
+
+            var propertyMetadata = new ModelMetadata(provider, typeof(PropertyModel), typeof(string), "MetadataAttributes");
+            provider.CreateMetadataFromPrototypeReturnValue = propertyMetadata;
 
             // Act
-            var result = provider.GetMetadataForProperty(null, typeof(PropertyModel), "MetadataAttributes");
+            var result = metadata.Properties["MetadataAttributes"];
 
             // Assert
-            Assert.Same(metadata, result);
+            Assert.Same(propertyMetadata, result);
             var parmaters = Assert.Single(
                 provider.CreateMetadataPrototypeLog,
                 p => p.PropertyName == "MetadataAttributes");
@@ -179,18 +135,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void GetMetadataForPropertyWithMixedAttributes()
+        public void GetMetadataForProperty_WithMixedAttributes()
         {
             // Arrange
             var provider = new TestableAssociatedMetadataProvider();
-            var metadata = new ModelMetadata(provider, typeof(PropertyModel), null, typeof(double), "MixedAttributes");
-            provider.CreateMetadataFromPrototypeReturnValue = metadata;
+            var metadata = new ModelMetadata(provider, null, typeof(PropertyModel), null);
+
+            var propertyMetadata = new ModelMetadata(provider, typeof(PropertyModel), typeof(double), "MixedAttributes");
+            provider.CreateMetadataFromPrototypeReturnValue = propertyMetadata;
 
             // Act
-            var result = provider.GetMetadataForProperty(null, typeof(PropertyModel), "MixedAttributes");
+            var result = metadata.Properties["MixedAttributes"];
 
             // Assert
-            Assert.Same(metadata, result);
+            Assert.Same(propertyMetadata, result);
             var parms = Assert.Single(provider.CreateMetadataPrototypeLog, p => p.PropertyName == "MixedAttributes");
             Assert.Single(parms.Attributes, a => a is RequiredAttribute);
             Assert.Single(parms.Attributes, a => a is RangeAttribute);
@@ -203,11 +161,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetMetadataForTypeIncludesAttributesOnType()
         {
             var provider = new TestableAssociatedMetadataProvider();
-            var metadata = new ModelMetadata(provider, null, null, typeof(TypeModel), null);
+            var metadata = new ModelMetadata(provider, null, typeof(TypeModel), null);
             provider.CreateMetadataFromPrototypeReturnValue = metadata;
 
             // Act
-            var result = provider.GetMetadataForType(null, typeof(TypeModel));
+            var result = provider.GetMetadataForType(typeof(TypeModel));
 
             // Assert
             Assert.Same(metadata, result);
@@ -215,23 +173,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Single(parms.Attributes, a => a is ReadOnlyAttribute);
         }
 #endif
-
-        [Fact]
-        public void GetMetadataForProperties_SetsContainerAsExpected()
-        {
-            // Arrange
-            var model = new PropertyModel { LocalAttributes = 42, MetadataAttributes = "hello", MixedAttributes = 21.12 };
-            var provider = new EmptyModelMetadataProvider();
-
-            // Act
-            var metadata = provider.GetMetadataForProperties(model, typeof(PropertyModel)).ToList();
-
-            // Assert
-            Assert.Equal(3, metadata.Count);
-            Assert.Same(model, metadata[0].Container);
-            Assert.Same(model, metadata[1].Container);
-            Assert.Same(model, metadata[2].Container);
-        }
 
         // Helpers
 
@@ -292,12 +233,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return CreateMetadataPrototypeReturnValue;
             }
 
-            protected override ModelMetadata CreateMetadataFromPrototype(ModelMetadata prototype, Func<object> modelAccessor)
+            protected override ModelMetadata CreateMetadataFromPrototype(ModelMetadata prototype)
             {
                 CreateMetadataFromPrototypeLog.Add(new CreateMetadataFromPrototypeParams
                 {
                     Prototype = prototype,
-                    Model = modelAccessor == null ? null : modelAccessor()
                 });
 
                 return CreateMetadataFromPrototypeReturnValue;
@@ -315,7 +255,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private class CreateMetadataFromPrototypeParams
         {
             public ModelMetadata Prototype { get; set; }
-            public object Model { get; set; }
         }
     }
 }

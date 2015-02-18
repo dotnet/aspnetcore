@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var expected = ValidationAttributeUtil.GetRequiredErrorMessage("Length");
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForProperty(() => null, typeof(string), "Length");
+            var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new RequiredAttribute();
             var adapter = new RequiredAttributeAdapter(attribute);
             var serviceCollection = new ServiceCollection();

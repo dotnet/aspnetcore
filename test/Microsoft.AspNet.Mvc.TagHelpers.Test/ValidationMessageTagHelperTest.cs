@@ -267,14 +267,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         private static ModelExpression CreateModelExpression(string name)
         {
+            var modelMetadataProvider = new Mock<IModelMetadataProvider>().Object;
             return new ModelExpression(
                 name,
-                new ModelMetadata(
-                    new Mock<IModelMetadataProvider>().Object,
-                    containerType: null,
-                    modelAccessor: null,
-                    modelType: typeof(object),
-                    propertyName: string.Empty));
+                new ModelExplorer(
+                    modelMetadataProvider,
+                    new ModelMetadata(
+                        modelMetadataProvider,
+                        containerType: null,
+                        modelType: typeof(object),
+                        propertyName: string.Empty),
+                    model: null));
         }
 
         private static ViewContext CreateViewContext()

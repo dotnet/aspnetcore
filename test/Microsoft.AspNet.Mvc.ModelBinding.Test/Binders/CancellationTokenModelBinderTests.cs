@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var metadataProvider = new EmptyModelMetadataProvider();
             ModelBindingContext bindingContext = new ModelBindingContext
             {
-                ModelMetadata = metadataProvider.GetMetadataForType(null, modelType),
+                ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",
                 ValueProvider = new SimpleHttpValueProvider(),
                 OperationBindingContext = new OperationBindingContext

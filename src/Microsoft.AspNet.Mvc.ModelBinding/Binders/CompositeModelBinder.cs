@@ -57,8 +57,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             if (modelBindingResult.IsModelSet)
             {
-                bindingContext.ModelMetadata.Model = modelBindingResult.Model;
-
                 // Update the model state key if we are bound using an empty prefix and it is a complex type.
                 // This is needed as validation uses the model state key to log errors. The client validation expects
                 // the errors with property names rather than the full name.
@@ -112,6 +110,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var newBindingContext = new ModelBindingContext
             {
+                Model = oldBindingContext.Model,
                 ModelMetadata = oldBindingContext.ModelMetadata,
                 ModelName = modelName,
                 ModelState = oldBindingContext.ModelState,

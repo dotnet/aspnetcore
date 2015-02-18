@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var provider = new DataAnnotationsModelValidatorProvider();
             var mockValidatable = Mock.Of<IValidatableObject>();
-            var metadata = _metadataProvider.GetMetadataForType(() => null, mockValidatable.GetType());
+            var metadata = _metadataProvider.GetMetadataForType(mockValidatable.GetType());
 
             // Act
             var validators = provider.GetValidators(metadata);
@@ -39,8 +39,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataAnnotationsModelValidatorProvider();
-            var metadata = _metadataProvider.GetMetadataForProperty(() => null,
-                                                                    typeof(DummyRequiredAttributeHelperClass),
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(DummyRequiredAttributeHelperClass),
                                                                     "WithAttribute");
 
             // Act
@@ -143,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataAnnotationsModelValidatorProvider();
-            var metadata = _metadataProvider.GetMetadataForType(() => null, typeof(DummyClassWithDummyValidationAttribute));
+            var metadata = _metadataProvider.GetMetadataForType(typeof(DummyClassWithDummyValidationAttribute));
 
             // Act
             IEnumerable<IModelValidator> validators = provider.GetValidators(metadata);
@@ -171,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var provider = new DataAnnotationsModelValidatorProvider();
             var mockValidatable = new Mock<IValidatableObject>();
-            var metadata = _metadataProvider.GetMetadataForType(() => null, mockValidatable.Object.GetType());
+            var metadata = _metadataProvider.GetMetadataForType(mockValidatable.Object.GetType());
 
             // Act
             var validators = provider.GetValidators(metadata);
@@ -189,11 +188,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var provider = new DataAnnotationsModelValidatorProvider();
             var model = new ObservableModel();
-            var metadata = _metadataProvider.GetMetadataForProperty(() => model.TheProperty, typeof(ObservableModel), "TheProperty");
-            var context = new ModelValidationContext(null, null, null, metadata, null);
+
+            var modelExplorer = _metadataProvider
+                .GetModelExplorerForType(typeof(ObservableModel), model)
+                .GetExplorerForProperty("TheProperty");
+
+            var context = new ModelValidationContext(
+                rootPrefix: null, 
+                validatorProvider: null, 
+                modelState: null, 
+                modelExplorer: modelExplorer);
 
             // Act
-            var validators = provider.GetValidators(metadata).ToArray();
+            var validators = provider.GetValidators(modelExplorer.Metadata).ToArray();
             var results = validators.SelectMany(o => o.Validate(context)).ToArray();
 
             // Assert

@@ -28,10 +28,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Copies only a few values from the <paramref name="prototype"/>. Unlikely the rest have been computed.
         /// </remarks>
         protected override CachedDataAnnotationsModelMetadata CreateMetadataFromPrototype(
-            CachedDataAnnotationsModelMetadata prototype,
-            Func<object> modelAccessor)
+            CachedDataAnnotationsModelMetadata prototype)
         {
-            var metadata = new CachedDataAnnotationsModelMetadata(prototype, modelAccessor);
+            var metadata = new CachedDataAnnotationsModelMetadata(prototype);
             foreach (var keyValuePair in prototype.AdditionalValues)
             {
                 metadata.AdditionalValues.Add(keyValuePair);

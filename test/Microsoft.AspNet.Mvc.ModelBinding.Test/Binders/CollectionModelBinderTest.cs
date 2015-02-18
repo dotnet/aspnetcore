@@ -103,8 +103,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var binder = new CollectionModelBinder<int>();
 
+            var context = new ModelBindingContext()
+            {
+                OperationBindingContext = new OperationBindingContext()
+                {
+                    MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                },
+            };
+
             // Act
-            var boundCollection = await binder.BindSimpleCollection(bindingContext: null, rawValue: new object[0], culture: null);
+            var boundCollection = await binder.BindSimpleCollection(context, rawValue: new object[0], culture: null);
 
             // Assert
             Assert.NotNull(boundCollection);
@@ -153,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var metadataProvider = new EmptyModelMetadataProvider();
             var bindingContext = new ModelBindingContext
             {
-                ModelMetadata = metadataProvider.GetMetadataForType(null, typeof(int)),
+                ModelMetadata = metadataProvider.GetMetadataForType(typeof(int)),
                 ModelName = "someName",
                 ValueProvider = valueProvider,
                 OperationBindingContext = new OperationBindingContext

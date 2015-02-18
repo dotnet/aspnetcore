@@ -420,14 +420,13 @@ namespace System.Web.Http
         /// </param>
         public void Validate<TEntity>(TEntity entity, string keyPrefix)
         {
-            var modelMetadata = MetadataProvider.GetMetadataForType(() => entity, typeof(TEntity));
+            var modelExplorer = MetadataProvider.GetModelExplorerForType(typeof(TEntity), entity);
 
             var modelValidationContext = new ModelValidationContext(
                 keyPrefix,
                 BindingContext.ValidatorProvider,
                 ModelState,
-                modelMetadata,
-                containerMetadata: null);
+                modelExplorer);
 
             ObjectValidator.Validate(modelValidationContext);
         }

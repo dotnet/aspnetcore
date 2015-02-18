@@ -8,42 +8,40 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ModelValidationContext
     {
-        public ModelValidationContext([NotNull] ModelBindingContext bindingContext,
-                                      [NotNull] ModelMetadata metadata)
+        public ModelValidationContext(
+            [NotNull] ModelBindingContext bindingContext,
+            [NotNull] ModelExplorer modelExplorer)
             : this(bindingContext.ModelName,
                    bindingContext.OperationBindingContext.ValidatorProvider,
                    bindingContext.ModelState,
-                   metadata,
-                   bindingContext.ModelMetadata)
+                   modelExplorer)
         {
         }
 
-        public ModelValidationContext(string rootPrefix,
-                                      [NotNull] IModelValidatorProvider validatorProvider,
-                                      [NotNull] ModelStateDictionary modelState,
-                                      [NotNull] ModelMetadata metadata,
-                                      ModelMetadata containerMetadata)
+        public ModelValidationContext(
+            string rootPrefix,
+            [NotNull] IModelValidatorProvider validatorProvider,
+            [NotNull] ModelStateDictionary modelState,
+            [NotNull] ModelExplorer modelExplorer)
         {
-            ModelMetadata = metadata;
             ModelState = modelState;
             RootPrefix = rootPrefix;
             ValidatorProvider = validatorProvider;
-            ContainerMetadata = containerMetadata;
+            ModelExplorer = modelExplorer;
         }
 
-        public ModelValidationContext([NotNull] ModelValidationContext parentContext,
-                                      [NotNull] ModelMetadata metadata)
+        public ModelValidationContext(
+            [NotNull] ModelValidationContext parentContext,
+            [NotNull] ModelExplorer modelExplorer)
         {
-            ModelMetadata = metadata;
-            ContainerMetadata = parentContext.ModelMetadata;
+            ModelExplorer = modelExplorer;
             ModelState = parentContext.ModelState;
             RootPrefix = parentContext.RootPrefix;
             ValidatorProvider = parentContext.ValidatorProvider;
         }
 
-        public ModelMetadata ModelMetadata { get; }
 
-        public ModelMetadata ContainerMetadata { get; }
+        public ModelExplorer ModelExplorer { get; }
 
         public ModelStateDictionary ModelState { get; }
 

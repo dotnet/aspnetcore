@@ -81,17 +81,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
                 throw new ArgumentException(message, "bindingContext");
             }
 
-            if (!allowNullModel && bindingContext.ModelMetadata.Model == null)
+            if (!allowNullModel && bindingContext.Model == null)
             {
                 var message = Resources.FormatModelBinderUtil_ModelCannotBeNull(requiredType);
                 throw new ArgumentException(message, "bindingContext");
             }
 
-            if (bindingContext.ModelMetadata.Model != null &&
+            if (bindingContext.Model != null &&
                 !bindingContext.ModelType.GetTypeInfo().IsAssignableFrom(requiredType.GetTypeInfo()))
             {
                 var message = Resources.FormatModelBinderUtil_ModelInstanceIsWrong(
-                    bindingContext.ModelMetadata.Model.GetType(),
+                    bindingContext.Model.GetType(),
                     requiredType);
                 throw new ArgumentException(message, "bindingContext");
             }

@@ -47,7 +47,6 @@ namespace Microsoft.AspNet.Mvc
             foreach (var parameter in actionDescriptor.Parameters)
             {
                 var metadata = _modelMetadataProvider.GetMetadataForParameter(
-                    modelAccessor: null,
                     methodInfo: actionDescriptor.MethodInfo,
                     parameterName: parameter.Name);
 
@@ -97,17 +96,19 @@ namespace Microsoft.AspNet.Mvc
             foreach (var parameter in parameterMetadata)
             {
                 var parameterType = parameter.ModelType;
+
                 var modelBindingContext = GetModelBindingContext(parameter, modelState, operationBindingContext);
                 var modelBindingResult = await bindingContext.ModelBinder.BindModelAsync(modelBindingContext);
                 if (modelBindingResult != null && modelBindingResult.IsModelSet)
                 {
+                    var modelExplorer = new ModelExplorer(_modelMetadataProvider, parameter, modelBindingResult.Model);
+
                     arguments[parameter.PropertyName] = modelBindingResult.Model;
                     var validationContext = new ModelValidationContext(
-                    modelBindingResult.Key,
-                    bindingContext.ValidatorProvider,
-                    actionContext.ModelState,
-                    parameter,
-                    containerMetadata: null);
+                        modelBindingResult.Key,
+                        bindingContext.ValidatorProvider,
+                        actionContext.ModelState,
+                        modelExplorer);
                     _validator.Validate(validationContext);
                 }
             }

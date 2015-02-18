@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForProperty(() => null, typeof(string), "Length");
+            var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new MaxLengthAttribute(10);
             var adapter = new MaxLengthAttributeAdapter(attribute);
             var serviceCollection = new ServiceCollection();
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var propertyName = "Length";
             var message = "{0} must be at most {1}";
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForProperty(() => null, typeof(string), propertyName);
+            var metadata = provider.GetMetadataForProperty(typeof(string), propertyName);
             var attribute = new MaxLengthAttribute(5) { ErrorMessage = message };
             var adapter = new MaxLengthAttributeAdapter(attribute);
             var serviceCollection = new ServiceCollection();

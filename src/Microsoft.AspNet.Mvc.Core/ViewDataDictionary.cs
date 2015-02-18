@@ -18,9 +18,6 @@ namespace Microsoft.AspNet.Mvc
         private readonly Type _declaredModelType;
         private readonly IModelMetadataProvider _metadataProvider;
 
-        private object _model;
-        private ModelMetadata _modelMetadata;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewDataDictionary"/> class.
         /// </summary>
@@ -128,7 +125,7 @@ namespace Microsoft.AspNet.Mvc
                    templateInfo: new TemplateInfo())
         {
             // This is the core constructor called when Model is unknown. Base ModelMetadata on the declared type.
-            ModelMetadata = _metadataProvider.GetMetadataForType(() => null, _declaredModelType);
+            ModelExplorer = _metadataProvider.GetModelExplorerForType(declaredModelType, model: null);
         }
 
         /// <summary>
@@ -188,16 +185,16 @@ namespace Microsoft.AspNet.Mvc
         {
             // This is the core constructor called when Model is known.
             var modelType = GetModelType(model);
-            if (modelType == source.ModelMetadata.ModelType && model == source.ModelMetadata.Model)
+            if (modelType == source.ModelMetadata.ModelType && model == source.ModelExplorer.Model)
             {
-                // Preserve any customizations made to source.ModelMetadata if the Type that will be calculated in
-                // SetModel() and source.Model match new instance's values.
-                ModelMetadata = source.ModelMetadata;
+                // Preserve any customizations made to source.ModelExplorer.ModelMetadata if the Type
+                // that will be calculated in SetModel() and source.Model match new instance's values.
+                ModelExplorer = source.ModelExplorer;
             }
             else if (model == null)
             {
-                // Ensure ModelMetadata is never null though SetModel() isn't called.
-                ModelMetadata = _metadataProvider.GetMetadataForType(() => null, _declaredModelType);
+                // Ensure ModelMetadata is never null though SetModel() isn't called below.
+                ModelExplorer = _metadataProvider.GetModelExplorerForType(_declaredModelType, model: null);
             }
 
             // If we're constructing a ViewDataDictionary<TModel> where TModel is a non-Nullable value type,
@@ -226,12 +223,11 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                return _model;
+                return ModelExplorer.Model;
             }
             set
             {
-                // Reset ModelMetadata to ensure Model and ModelMetadata.Model remain equal.
-                _modelMetadata = null;
+                // Reset ModelExplorer to ensure Model and ModelMetadata.Model remain equal.
                 SetModel(value);
             }
         }
@@ -250,20 +246,14 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                return _modelMetadata;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(Resources.FormatPropertyOfTypeCannotBeNull(
-                        nameof(ViewDataDictionary.ModelMetadata),
-                        nameof(ViewDataDictionary)));
-                }
-
-                _modelMetadata = value;
+                return ModelExplorer.Metadata;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ModelExplorer"/> for the <see cref="Model"/>.
+        /// </summary>
+        public ModelExplorer ModelExplorer { get; set; }
 
         public TemplateInfo TemplateInfo { get; }
 
@@ -355,15 +345,24 @@ namespace Microsoft.AspNet.Mvc
         protected virtual void SetModel(object value)
         {
             EnsureCompatible(value);
-            _model = value;
 
             // Reset or override ModelMetadata based on runtime value type. Fall back to declared type if value is
             // null. When called from the Model setter, ModelMetadata will (temporarily) be null. When called from
             // a constructor, current ModelMetadata may already be set to preserve customizations made in parent scope.
             var modelType = GetModelType(value);
-            if (ModelMetadata == null || ModelMetadata.ModelType != modelType)
+            if (ModelExplorer?.Metadata.ModelType != modelType)
             {
-                ModelMetadata = _metadataProvider.GetMetadataForType(() => value, modelType);
+                ModelExplorer = _metadataProvider.GetModelExplorerForType(modelType, value);
+            }
+            else if (object.ReferenceEquals(value, Model))
+            {
+                // The metadata already matches, and the model is literally the same, nothing
+                // to do here. This will likely occur when using one of the copy constructors.
+            }
+            else
+            {
+                // The metadata matches, but it's a new value.
+                ModelExplorer = new ModelExplorer(_metadataProvider, ModelExplorer.Container, ModelMetadata, value);
             }
         }
 

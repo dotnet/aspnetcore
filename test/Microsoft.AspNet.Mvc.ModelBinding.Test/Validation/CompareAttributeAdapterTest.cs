@@ -17,12 +17,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForProperty(() => null, typeof(PropertyDisplayNameModel), "MyProperty");
+            var metadata = metadataProvider.GetMetadataForProperty(typeof(PropertyDisplayNameModel), "MyProperty");
+
             var attribute = new CompareAttribute("OtherProperty");
+            var adapter = new CompareAttributeAdapter(attribute);
+
             var serviceCollection = new ServiceCollection();
             var requestServices = serviceCollection.BuildServiceProvider();
+
             var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
-            var adapter = new CompareAttributeAdapter(attribute);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);
@@ -38,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForProperty(() => null, typeof(PropertyNameModel), "MyProperty");
+            var metadata = metadataProvider.GetMetadataForProperty(typeof(PropertyNameModel), "MyProperty");
             var attribute = new CompareAttribute("OtherProperty");
             var serviceCollection = new ServiceCollection();
             var requestServices = serviceCollection.BuildServiceProvider();
@@ -58,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForProperty(() => null, typeof(PropertyNameModel), "MyProperty");
+            var metadata = metadataProvider.GetMetadataForProperty( typeof(PropertyNameModel), "MyProperty");
             var attribute = new CompareAttribute("OtherProperty")
             {
                 ErrorMessage = "Hello '{0}', goodbye '{1}'."
@@ -87,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Arrange
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForProperty(() => null, typeof(PropertyNameModel), "MyProperty");
+            var metadata = metadataProvider.GetMetadataForProperty(typeof(PropertyNameModel), "MyProperty");
             var attribute = new CompareAttribute("OtherProperty")
             {
                 ErrorMessageResourceName = "CompareAttributeTestResource",

@@ -48,14 +48,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             var name = ExpressionHelper.GetExpressionText(expression);
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, _provider);
-            if (metadata == null)
+            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, _provider);
+            if (modelExplorer == null)
             {
                 throw new InvalidOperationException(
                     Resources.FormatRazorPage_NullModelMetadata(nameof(IModelMetadataProvider), name));
             }
 
-            return new ModelExpression(name, metadata);
+            return new ModelExpression(name, modelExplorer);
         }
     }
 }

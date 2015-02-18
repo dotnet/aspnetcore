@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             var bindingContext = new ModelBindingContext
             {
-                ModelMetadata = metadataProvider.GetMetadataForType(null, modelType),
+                ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",
                 ValueProvider = Mock.Of<IValueProvider>(),
                 ModelState = new ModelStateDictionary(),

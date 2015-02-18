@@ -193,12 +193,14 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Assert
             Assert.NotNull(viewData1.ModelMetadata);
+            Assert.NotNull(viewData1.ModelExplorer);
             Assert.Equal(expectedType, viewData1.ModelMetadata.ModelType);
-            Assert.Equal(expectedType, viewData1.ModelMetadata.RealModelType);
+            Assert.Equal(expectedType, viewData1.ModelExplorer.ModelType);
 
             Assert.NotNull(viewData2.ModelMetadata);
+            Assert.NotNull(viewData2.ModelExplorer);
             Assert.Equal(expectedType, viewData2.ModelMetadata.ModelType);
-            Assert.Equal(expectedType, viewData2.ModelMetadata.RealModelType);
+            Assert.Equal(expectedType, viewData2.ModelExplorer.ModelType);
         }
 
         [Fact]

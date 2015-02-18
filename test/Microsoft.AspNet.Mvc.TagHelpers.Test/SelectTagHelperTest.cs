@@ -189,10 +189,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedTagName = "not-select";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var containerMetadata = metadataProvider.GetMetadataForType(containerType);
+            var containerExplorer = metadataProvider.GetModelExplorerForType(containerType, model);
 
-            // Property name is either nameof(Model.Text) or nameof(NestedModel.Text).
-            var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
-            var modelExpression = new ModelExpression(nameAndId.Name, metadata);
+            var propertyMetadata = metadataProvider.GetMetadataForProperty(containerType, "Text");
+            var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, modelAccessor);
+
+            var modelExpression = new ModelExpression(nameAndId.Name, modelExplorer);
 
             var tagHelperContext = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
@@ -271,9 +274,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
 
-            // Property name is either nameof(Model.Text) or nameof(NestedModel.Text).
-            var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
-            var modelExpression = new ModelExpression(nameAndId.Name, metadata);
+            var containerMetadata = metadataProvider.GetMetadataForType(containerType);
+            var containerExplorer = metadataProvider.GetModelExplorerForType(containerType, model);
+
+            var propertyMetadata = metadataProvider.GetMetadataForProperty(containerType, "Text");
+            var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, modelAccessor);
+
+            var modelExpression = new ModelExpression(nameAndId.Name, modelExplorer);
 
             var tagHelperContext = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
@@ -367,7 +374,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var metadataProvider = new EmptyModelMetadataProvider();
             string model = null;
-            var metadata = metadataProvider.GetMetadataForType(() => model, typeof(string));
+            var metadata = metadataProvider.GetModelExplorerForType(typeof(string), model);
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator.Object, metadataProvider);
@@ -432,8 +439,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(tagName, originalAttributes);
 
             var metadataProvider = new EmptyModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForType(() => model, modelType);
-            var modelExpression = new ModelExpression(propertyName, metadata);
+            var modelExplorer = metadataProvider.GetModelExplorerForType(modelType, model);
+            var modelExpression = new ModelExpression(propertyName, modelExplorer);
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator.Object, metadataProvider);
@@ -441,7 +448,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             htmlGenerator
                 .Setup(real => real.GenerateSelect(
                     viewContext,
-                    metadata,
+                    modelExplorer,
                     null,         // optionLabel
                     propertyName, // name
                     It.IsAny<IEnumerable<SelectListItem>>(),

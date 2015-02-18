@@ -352,7 +352,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <paramref name="metadata"/> is <c>null</c>; ignored otherwise.
         /// </param>
         /// <returns>An <see cref="IEnumerable{ModelClientValidationRule}"/> containing the relevant rules.</returns>
-        IEnumerable<ModelClientValidationRule> GetClientValidationRules(ModelMetadata metadata, string expression);
+        IEnumerable<ModelClientValidationRule> GetClientValidationRules(ModelExplorer modelExplorer, string expression);
 
         /// <summary>
         /// Returns an &lt;input&gt; element of type "hidden" for the specified <paramref name="expression"/>.

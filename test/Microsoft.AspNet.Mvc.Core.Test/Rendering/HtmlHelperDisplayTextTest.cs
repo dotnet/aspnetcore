@@ -115,9 +115,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void DisplayText_ReturnsSimpleDisplayText_IfSetAndValueNonNull()
         {
             // Arrange
-            var model = new OverriddenToStringModel("Ignored text");
+            var model = new OverriddenToStringModel("Ignored text")
+            {
+                SimpleDisplay = "Simple display text",
+            };
+
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            helper.ViewData.ModelMetadata.SimpleDisplayText = "Simple display text";
+            helper.ViewData.ModelMetadata.SimpleDisplayProperty = nameof(OverriddenToStringModel.SimpleDisplay);
 
             // Act
             var result = helper.DisplayText(expression: string.Empty);
@@ -130,9 +134,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void DisplayTextFor_ReturnsSimpleDisplayText_IfSetAndValueNonNull()
         {
             // Arrange
-            var model = new OverriddenToStringModel("Ignored text");
+            var model = new OverriddenToStringModel("Ignored text")
+            {
+                SimpleDisplay = "Simple display text",
+            };
+            
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            helper.ViewData.ModelMetadata.SimpleDisplayText = "Simple display text";
+            helper.ViewData.ModelMetadata.SimpleDisplayProperty = nameof(OverriddenToStringModel.SimpleDisplay);
 
             // Act
             var result = helper.DisplayTextFor(m => m);
@@ -148,9 +156,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var model = new OverriddenToStringModel("Ignored text")
             {
                 Name = "Property value",
+                SimpleDisplay = "Simple display text",
             };
+
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            helper.ViewData.ModelMetadata.SimpleDisplayText = "Simple display text";
+            helper.ViewData.ModelMetadata.SimpleDisplayProperty = nameof(OverriddenToStringModel.SimpleDisplay);
 
             // Act
             var result = helper.DisplayText("Name");
@@ -275,6 +285,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 _simpleDisplayText = simpleDisplayText;
             }
+
+            public string SimpleDisplay { get; set; }
 
             public string Name { get; set; }
 

@@ -20,9 +20,8 @@ namespace Microsoft.AspNet.Mvc
     {
         private static readonly IModelMetadataProvider _metadataProvider = new EmptyModelMetadataProvider();
         private static readonly ModelMetadata _metadata = _metadataProvider.GetMetadataForProperty(
-            modelAccessor: null,
-            containerType: typeof(string),
-            propertyName: "Length");
+            typeof(string),
+            "Length");
 
         public static TheoryData<string> SomeNames
         {

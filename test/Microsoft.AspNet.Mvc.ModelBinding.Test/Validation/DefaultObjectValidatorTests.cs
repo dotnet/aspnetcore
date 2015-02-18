@@ -213,17 +213,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ExpectedValidationErrorsRaised(object model, Type type, Dictionary<string, string> expectedErrors)
         {
             // Arrange
-            var testValidationContext = GetModelValidationContext(model, type);
+            var context = GetModelValidationContext(model, type);
 
-            // Act (does not throw)
-            new DefaultObjectValidator(
-                testValidationContext.ExcludeFiltersProvider,
-                testValidationContext.ModelMetadataProvider)
-                .Validate(testValidationContext.ModelValidationContext);
+            var validator = new DefaultObjectValidator(context.ExcludeFiltersProvider, context.ModelMetadataProvider);
+
+            // Act
+            validator.Validate(context.ModelValidationContext);
 
             // Assert
             var actualErrors = new Dictionary<string, string>();
-            foreach (var keyStatePair in testValidationContext.ModelValidationContext.ModelState)
+            foreach (var keyStatePair in context.ModelValidationContext.ModelState)
             {
                 foreach (var error in keyStatePair.Value.Errors)
                 {
@@ -483,44 +482,46 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         private TestModelValidationContext GetModelValidationContext(
-            object model, Type type, string key = "", List<Type> excludedTypes = null)
+            object model,
+            Type type,
+            string key = "",
+            List<Type> excludedTypes = null)
         {
             var modelStateDictionary = new ModelStateDictionary();
+
             var providers = new IModelValidatorProvider[]
             {
                 new DataAnnotationsModelValidatorProvider(),
                 new DataMemberModelValidatorProvider()
             };
+
             var modelMetadataProvider = new DataAnnotationsModelMetadataProvider();
-            var excludedValidationTypesPredicate =
-                new List<IExcludeTypeValidationFilter>();
-          
+
+            var excludedValidationTypesPredicate = new List<IExcludeTypeValidationFilter>();
             if (excludedTypes != null)
             {
                 var mockExcludeTypeFilter = new Mock<IExcludeTypeValidationFilter>();
-                mockExcludeTypeFilter.Setup(o => o.IsTypeExcluded(It.IsAny<Type>()))
-                                     .Returns<Type>(excludedType =>
-                                                        excludedTypes.Any(t => t.IsAssignableFrom(excludedType)));
+                mockExcludeTypeFilter
+                    .Setup(o => o.IsTypeExcluded(It.IsAny<Type>()))
+                    .Returns<Type>(excludedType => excludedTypes.Any(t => t.IsAssignableFrom(excludedType)));
 
                 excludedValidationTypesPredicate.Add(mockExcludeTypeFilter.Object);
             }
 
             var mockValidationExcludeFiltersProvider = new Mock<IValidationExcludeFiltersProvider>();
-            mockValidationExcludeFiltersProvider.SetupGet(o => o.ExcludeFilters)
-                                             .Returns(excludedValidationTypesPredicate);
+            mockValidationExcludeFiltersProvider
+                .SetupGet(o => o.ExcludeFilters)
+                .Returns(excludedValidationTypesPredicate);
+
+            var modelExplorer = modelMetadataProvider.GetModelExplorerForType(type, model);
+
             return new TestModelValidationContext
             {
                 ModelValidationContext = new ModelValidationContext(
                     key,
                     new CompositeModelValidatorProvider(providers),
                     modelStateDictionary,
-                    new ModelMetadata(
-                        provider: modelMetadataProvider,
-                        containerType: typeof(object),
-                        modelAccessor: () => model,
-                        modelType: type,
-                        propertyName: null),
-                    containerMetadata: null),
+                    modelExplorer),
                 ModelMetadataProvider = modelMetadataProvider,
                 ExcludeFiltersProvider = mockValidationExcludeFiltersProvider.Object
             };

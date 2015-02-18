@@ -18,36 +18,40 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var keyResult = await TryBindStrongModel<TKey>(bindingContext, "Key");
             var valueResult = await TryBindStrongModel<TValue>(bindingContext, "Value");
-            var model = bindingContext.ModelMetadata.Model;
-            var isModelSet = false;
+
             if (keyResult.IsModelSet && valueResult.IsModelSet)
             {
-                model = new KeyValuePair<TKey, TValue>(
+                var model = new KeyValuePair<TKey, TValue>(
                     ModelBindingHelper.CastOrDefault<TKey>(keyResult.Model),
                     ModelBindingHelper.CastOrDefault<TValue>(valueResult.Model));
-                isModelSet = true;
+
+                return new ModelBindingResult(model, bindingContext.ModelName, isModelSet: true);
             }
             else if (!keyResult.IsModelSet && valueResult.IsModelSet)
             {
-                bindingContext.ModelState.TryAddModelError(keyResult.Key,
+                bindingContext.ModelState.TryAddModelError(
+                    keyResult.Key,
                     Resources.KeyValuePair_BothKeyAndValueMustBePresent);
+                return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
             }
             else if (keyResult.IsModelSet && !valueResult.IsModelSet)
             {
-                bindingContext.ModelState.TryAddModelError(valueResult.Key,
+                bindingContext.ModelState.TryAddModelError(
+                    valueResult.Key,
                     Resources.KeyValuePair_BothKeyAndValueMustBePresent);
+                return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
             }
-            
-            var result = new ModelBindingResult(model, bindingContext.ModelName, isModelSet);
-            return (keyResult.IsModelSet || valueResult.IsModelSet) ? result : null;
+            else
+            {
+                return null;
+            }
         }
 
         internal async Task<ModelBindingResult> TryBindStrongModel<TModel>(ModelBindingContext parentBindingContext,
                                                                           string propertyName)
         {
             var propertyModelMetadata =
-                parentBindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(modelAccessor: null,
-                                                                                            modelType: typeof(TModel));
+                parentBindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(typeof(TModel));
             var propertyModelName =
                 ModelBindingHelper.CreatePropertyModelName(parentBindingContext.ModelName, propertyName);
             var propertyBindingContext =

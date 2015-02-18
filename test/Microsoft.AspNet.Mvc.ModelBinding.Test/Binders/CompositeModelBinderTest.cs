@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
-                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(int)),
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(int)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = new SimpleHttpValueProvider
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
-                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(List<int>)),
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = new SimpleHttpValueProvider
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
-                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(List<int>)),
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = new SimpleHttpValueProvider
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
-                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(List<int>)),
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = new SimpleHttpValueProvider
@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = false,
-                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(List<int>)),
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
             };
 
             // Act
@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
-                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(int)),
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(int)),
                 ModelState = new ModelStateDictionary(),
                 OperationBindingContext = Mock.Of<OperationBindingContext>(),
             };
@@ -275,6 +275,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 { "friends[1].lastName", "name"},
                 { "resume", "4+mFeTp3tPF=" }
             };
+
             var bindingContext = CreateBindingContext(binder, valueProvider, typeof(Person));
 
             // Act
@@ -305,7 +306,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
-                ModelMetadata = metadataProvider.GetMetadataForType(null, type),
+                ModelMetadata = metadataProvider.GetMetadataForType(type),
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,
                 OperationBindingContext = new OperationBindingContext

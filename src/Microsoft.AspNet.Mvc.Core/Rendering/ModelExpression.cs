@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.Internal;
 
@@ -19,13 +17,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="name">
         /// String representation of the <see cref="System.Linq.Expressions.Expression"/> of interest.
         /// </param>
-        /// <param name="metadata">
-        /// Metadata about the <see cref="System.Linq.Expressions.Expression"/> of interest.
+        /// <param name="modelExplorer">
+        /// Includes the model and metadata about the <see cref="System.Linq.Expressions.Expression"/> of interest.
         /// </param>
-        public ModelExpression([NotNull] string name, [NotNull] ModelMetadata metadata)
+        public ModelExpression([NotNull] string name, [NotNull] ModelExplorer modelExplorer)
         {
             Name = name;
-            Metadata = metadata;
+            ModelExplorer = modelExplorer;
         }
 
         /// <summary>
@@ -36,10 +34,36 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// Metadata about the <see cref="System.Linq.Expressions.Expression"/> of interest.
         /// </summary>
+        public ModelMetadata Metadata
+        {
+            get
+            {
+                return ModelExplorer.Metadata;
+            }
+        }
+
+        /// <summary>
+        /// Gets the model object for the <see cref="System.Linq.Expressions.Expression"/> of interest.
+        /// </summary>
         /// <remarks>
-        /// Getting <see cref="ModelMetadata.Model"/> will evaluate a compiled version of the original
+        /// Getting <see cref="Model"/> will evaluate a compiled version of the original
         /// <see cref="System.Linq.Expressions.Expression"/>.
         /// </remarks>
-        public ModelMetadata Metadata { get; private set; }
+        public object Model
+        {
+            get
+            {
+                return ModelExplorer.Model;
+            }
+        }
+
+        /// <summary>
+        /// Gets the model explorer for the <see cref="System.Linq.Expressions.Expression"/> of interest.
+        /// </summary>
+        /// <remarks>
+        /// Getting <see cref="ModelExplorer.Model"/> will evaluate a compiled version of the original
+        /// <see cref="System.Linq.Expressions.Expression"/>.
+        /// </remarks>
+        public ModelExplorer ModelExplorer { get; }
     }
 }

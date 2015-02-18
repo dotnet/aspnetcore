@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForProperty(() => null, typeof(string), "Length");
+            var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new StringLengthAttribute(8);
             var adapter = new StringLengthAttributeAdapter(attribute);
             var serviceCollection = new ServiceCollection();
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForProperty(() => null, typeof(string), "Length");
+            var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new StringLengthAttribute(10) { MinimumLength = 3 };
             var adapter = new StringLengthAttributeAdapter(attribute);
             var serviceCollection = new ServiceCollection();

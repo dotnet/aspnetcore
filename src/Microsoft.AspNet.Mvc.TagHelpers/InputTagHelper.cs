@@ -137,6 +137,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // Note null or empty For.Name is allowed because TemplateInfo.HtmlFieldPrefix may be sufficient.
                 // IHtmlGenerator will enforce name requirements.
                 var metadata = For.Metadata;
+                var modelExplorer = For.ModelExplorer;
                 if (metadata == null)
                 {
                     throw new InvalidOperationException(Resources.FormatTagHelpers_NoProvidedMetadata(
@@ -151,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 if (string.IsNullOrEmpty(InputTypeName))
                 {
                     // Note GetInputType never returns null.
-                    inputType = GetInputType(metadata, out inputTypeHint);
+                    inputType = GetInputType(modelExplorer, out inputTypeHint);
                 }
                 else
                 {
@@ -169,15 +170,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 switch (inputType)
                 {
                     case "checkbox":
-                        GenerateCheckBox(metadata, output);
+                        GenerateCheckBox(modelExplorer, output);
                         return;
 
                     case "hidden":
                         tagBuilder = Generator.GenerateHidden(
                             ViewContext,
-                            metadata,
+                            modelExplorer,
                             For.Name,
-                            value: metadata.Model,
+                            value: For.Model,
                             useViewData: false,
                             htmlAttributes: null);
                         break;
@@ -185,18 +186,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     case "password":
                         tagBuilder = Generator.GeneratePassword(
                             ViewContext,
-                            metadata,
+                            modelExplorer,
                             For.Name,
                             value: null,
                             htmlAttributes: null);
                         break;
 
                     case "radio":
-                        tagBuilder = GenerateRadio(metadata);
+                        tagBuilder = GenerateRadio(modelExplorer);
                         break;
 
                     default:
-                        tagBuilder = GenerateTextBox(metadata, inputTypeHint, inputType);
+                        tagBuilder = GenerateTextBox(modelExplorer, inputTypeHint, inputType);
                         break;
                 }
 
@@ -210,14 +211,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private void GenerateCheckBox(ModelMetadata metadata, TagHelperOutput output)
+        private void GenerateCheckBox(ModelExplorer modelExplorer, TagHelperOutput output)
         {
-            if (typeof(bool) != metadata.RealModelType)
+            if (typeof(bool) != modelExplorer.ModelType)
             {
                 throw new InvalidOperationException(Resources.FormatInputTagHelper_InvalidExpressionResult(
                     "<input>",
                     ForAttributeName,
-                    metadata.RealModelType.FullName,
+                    modelExplorer.ModelType.FullName,
                     typeof(bool).FullName,
                     "type",
                     "checkbox"));
@@ -230,7 +231,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var tagBuilder = Generator.GenerateCheckBox(
                 ViewContext,
-                metadata,
+                modelExplorer,
                 For.Name,
                 isChecked: null,
                 htmlAttributes: htmlAttributes);
@@ -243,7 +244,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                 output.Content += tagBuilder.ToString(TagRenderMode.SelfClosing);
 
-                tagBuilder = Generator.GenerateHiddenForCheckbox(ViewContext, metadata, For.Name);
+                tagBuilder = Generator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, For.Name);
                 if (tagBuilder != null)
                 {
                     output.Content += tagBuilder.ToString(TagRenderMode.SelfClosing);
@@ -251,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private TagBuilder GenerateRadio(ModelMetadata metadata)
+        private TagBuilder GenerateRadio(ModelExplorer modelExplorer)
         {
             // Note empty string is allowed.
             if (Value == null)
@@ -265,38 +266,38 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             return Generator.GenerateRadioButton(
                 ViewContext,
-                metadata,
+                modelExplorer,
                 For.Name,
                 Value,
                 isChecked: null,
                 htmlAttributes: null);
         }
 
-        private TagBuilder GenerateTextBox(ModelMetadata metadata, string inputTypeHint, string inputType)
+        private TagBuilder GenerateTextBox(ModelExplorer modelExplorer, string inputTypeHint, string inputType)
         {
             var format = Format;
             if (string.IsNullOrEmpty(format))
             {
-                format = GetFormat(metadata, inputTypeHint, inputType);
+                format = GetFormat(modelExplorer, inputTypeHint, inputType);
             }
 
             return Generator.GenerateTextBox(
                 ViewContext,
-                metadata,
+                modelExplorer,
                 For.Name,
-                value: metadata.Model,
+                value: modelExplorer.Model,
                 format: Format,
                 htmlAttributes: null);
         }
 
         // Get a fall-back format based on the metadata.
-        private string GetFormat(ModelMetadata metadata, string inputTypeHint, string inputType)
+        private string GetFormat(ModelExplorer modelExplorer, string inputTypeHint, string inputType)
         {
             string format;
             string rfc3339Format;
             if (string.Equals("decimal", inputTypeHint, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals("text", inputType, StringComparison.Ordinal) &&
-                string.IsNullOrEmpty(metadata.EditFormatString))
+                string.IsNullOrEmpty(modelExplorer.Metadata.EditFormatString))
             {
                 // Decimal data is edited using an <input type="text"/> element, with a reasonable format.
                 // EditFormatString has precedence over this fall-back format.
@@ -304,8 +305,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
             else if (_rfc3339Formats.TryGetValue(inputType, out rfc3339Format) &&
                 ViewContext.Html5DateRenderingMode == Html5DateRenderingMode.Rfc3339 &&
-                !metadata.HasNonDefaultEditFormat &&
-                (typeof(DateTime) == metadata.RealModelType || typeof(DateTimeOffset) == metadata.RealModelType))
+                !modelExplorer.Metadata.HasNonDefaultEditFormat &&
+                (typeof(DateTime) == modelExplorer.ModelType || typeof(DateTimeOffset) == modelExplorer.ModelType))
             {
                 // Rfc3339 mode _may_ override EditFormatString in a limited number of cases e.g. EditFormatString
                 // must be a default format (i.e. came from a built-in [DataType] attribute).
@@ -314,15 +315,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             else
             {
                 // Otherwise use EditFormatString, if any.
-                format = metadata.EditFormatString;
+                format = modelExplorer.Metadata.EditFormatString;
             }
 
             return format;
         }
 
-        private string GetInputType(ModelMetadata metadata, out string inputTypeHint)
+        private string GetInputType(ModelExplorer modelExplorer, out string inputTypeHint)
         {
-            foreach (var hint in GetInputTypeHints(metadata))
+            foreach (var hint in GetInputTypeHints(modelExplorer))
             {
                 string inputType;
                 if (_defaultInputTypes.TryGetValue(hint, out inputType))
@@ -337,12 +338,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         // A variant of TemplateRenderer.GetViewNames(). Main change relates to bool? handling.
-        private static IEnumerable<string> GetInputTypeHints(ModelMetadata metadata)
+        private static IEnumerable<string> GetInputTypeHints(ModelExplorer modelExplorer)
         {
             var inputTypeHints = new string[]
             {
-                metadata.TemplateHint,
-                metadata.DataTypeName,
+                modelExplorer.Metadata.TemplateHint,
+                modelExplorer.Metadata.DataTypeName,
             };
 
             foreach (string inputTypeHint in inputTypeHints.Where(s => !string.IsNullOrEmpty(s)))
@@ -352,7 +353,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // In most cases, we don't want to search for Nullable<T>. We want to search for T, which should handle
             // both T and Nullable<T>. However we special-case bool? to avoid turning an <input/> into a <select/>.
-            var fieldType = metadata.RealModelType;
+            var fieldType = modelExplorer.ModelType;
             if (typeof(bool?) != fieldType)
             {
                 var underlyingType = Nullable.GetUnderlyingType(fieldType);
@@ -369,7 +370,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // Nothing more to provide
                 yield break;
             }
-            else if (!metadata.IsComplexType)
+            else if (!modelExplorer.Metadata.IsComplexType)
             {
                 // IsEnum is false for the Enum class itself
                 if (fieldType.IsEnum())

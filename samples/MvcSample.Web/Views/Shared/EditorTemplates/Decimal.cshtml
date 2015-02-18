@@ -4,8 +4,8 @@
 @functions {
     private object FormattedValue {
         get {
-            if (ViewData.TemplateInfo.FormattedModelValue == ViewData.ModelMetadata.Model) {
-                return string.Format(CultureInfo.CurrentCulture, "{0:0.00}", ViewData.ModelMetadata.Model);
+            if (ViewData.TemplateInfo.FormattedModelValue == ViewData.ModelExplorer.Model) {
+                return string.Format(CultureInfo.CurrentCulture, "{0:0.00}", ViewData.ModelExplorer.Model);
             }
             return ViewData.TemplateInfo.FormattedModelValue;
         }

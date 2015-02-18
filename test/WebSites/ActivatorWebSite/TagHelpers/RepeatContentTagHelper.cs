@@ -21,7 +21,7 @@ namespace ActivatorWebSite.TagHelpers
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             var content = await context.GetChildContentAsync();
-            var repeatContent = HtmlHelper.Encode(Expression.Metadata.Model.ToString());
+            var repeatContent = HtmlHelper.Encode(Expression.Model.ToString());
 
             if (string.IsNullOrEmpty(repeatContent))
             {

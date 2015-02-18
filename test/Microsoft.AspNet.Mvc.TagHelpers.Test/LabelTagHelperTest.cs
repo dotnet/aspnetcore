@@ -171,9 +171,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
 
-            // Property name is either nameof(Model.Text) or nameof(NestedModel.Text).
-            var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
-            var modelExpression = new ModelExpression(propertyPath, metadata);
+            var containerMetadata = metadataProvider.GetMetadataForType(containerType);
+            var containerExplorer = metadataProvider.GetModelExplorerForType(containerType, model);
+
+            var propertyMetadata = metadataProvider.GetMetadataForProperty(containerType, "Text");
+            var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, modelAccessor);
+
+            var modelExpression = new ModelExpression(propertyPath, modelExplorer);
             var tagHelper = new LabelTagHelper
             {
                 For = modelExpression,
@@ -234,11 +238,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedTagName = "label";
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForProperty(
-                modelAccessor: () => null,
-                containerType: typeof(Model),
-                propertyName: nameof(Model.Text));
-            var modelExpression = new ModelExpression(nameof(Model.Text), metadata);
+            var modelExplorer = metadataProvider
+                .GetModelExplorerForType(typeof(Model), model: null)
+                .GetExplorerForProperty(nameof(Model.Text));
+            var modelExpression = new ModelExpression(nameof(Model.Text), modelExplorer);
+
             var tagHelper = new LabelTagHelper();
 
             var tagHelperContext = new TagHelperContext(

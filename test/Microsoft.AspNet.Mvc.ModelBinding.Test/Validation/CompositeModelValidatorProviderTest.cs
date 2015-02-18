@@ -23,9 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             provider2.Setup(p => p.GetValidators(It.IsAny<ModelMetadata>()))
                      .Returns(new[] { validator3 });
             var compositeModelValidator = new CompositeModelValidatorProvider(new[] { provider1.Object, provider2.Object });
-            var modelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(
-                                    modelAccessor: null,
-                                    modelType: typeof(string));
+            var modelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(string));
 
             // Act
             var result = compositeModelValidator.GetValidators(modelMetadata);

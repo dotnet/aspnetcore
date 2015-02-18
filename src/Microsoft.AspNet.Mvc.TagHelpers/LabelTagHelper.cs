@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (For != null)
             {
                 var tagBuilder = Generator.GenerateLabel(ViewContext,
-                                                         For.Metadata,
+                                                         For.ModelExplorer,
                                                          For.Name,
                                                          labelText: null,
                                                          htmlAttributes: null);

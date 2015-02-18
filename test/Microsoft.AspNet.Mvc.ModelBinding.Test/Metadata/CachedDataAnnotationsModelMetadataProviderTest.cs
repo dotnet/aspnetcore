@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var expected = new[] { "IsAdmin", "UserName" };
 
             // Act
-            var metadata = provider.GetMetadataForType(null, type);
+            var metadata = provider.GetMetadataForType(type);
 
             // Assert
             var predicate = metadata.PropertyBindingPredicateProvider.PropertyFilter;
@@ -59,7 +59,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act
             var metadata = provider.GetMetadataForParameter(
-                modelAccessor: null,
                 methodInfo: methodInfo,
                 parameterName: "param");
 
@@ -97,7 +96,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act
             var metadata = provider.GetMetadataForParameter(
-                modelAccessor: null,
                 methodInfo: methodInfo,
                 parameterName: "param");
 
@@ -130,7 +128,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act
             var metadata = provider.GetMetadataForParameter(
-                modelAccessor: null,
                 methodInfo: methodInfo,
                 parameterName: "param");
 
@@ -146,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new DataAnnotationsModelMetadataProvider();
 
             // Act
-            var metadata = provider.GetMetadataForType(null, type);
+            var metadata = provider.GetMetadataForType(type);
 
             // Assert
             Assert.Equal("TypePrefix", metadata.BinderModelName);
@@ -161,9 +158,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new DataAnnotationsModelMetadataProvider();
 
             // Act & Assert
-            Assert.True(provider.GetMetadataForProperty(null, type, "NoAttribute").ShowForDisplay);
-            Assert.True(provider.GetMetadataForProperty(null, type, "ScaffoldColumnTrue").ShowForDisplay);
-            Assert.False(provider.GetMetadataForProperty(null, type, "ScaffoldColumnFalse").ShowForDisplay);
+            Assert.True(provider.GetMetadataForProperty(type, "NoAttribute").ShowForDisplay);
+            Assert.True(provider.GetMetadataForProperty(type, "ScaffoldColumnTrue").ShowForDisplay);
+            Assert.False(provider.GetMetadataForProperty(type, "ScaffoldColumnFalse").ShowForDisplay);
         }
 
         [Fact]
@@ -174,9 +171,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new DataAnnotationsModelMetadataProvider();
 
             // Act & Assert
-            Assert.True(provider.GetMetadataForProperty(null, type, "NoAttribute").ShowForEdit);
-            Assert.True(provider.GetMetadataForProperty(null, type, "ScaffoldColumnTrue").ShowForEdit);
-            Assert.False(provider.GetMetadataForProperty(null, type, "ScaffoldColumnFalse").ShowForEdit);
+            Assert.True(provider.GetMetadataForProperty(type, "NoAttribute").ShowForEdit);
+            Assert.True(provider.GetMetadataForProperty(type, "ScaffoldColumnTrue").ShowForEdit);
+            Assert.False(provider.GetMetadataForProperty(type, "ScaffoldColumnFalse").ShowForEdit);
         }
 
         [Fact]
@@ -184,7 +181,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForType(modelAccessor: null, modelType: typeof(ClassWithHiddenProperties));
+            var metadata = provider.GetMetadataForType(modelType: typeof(ClassWithHiddenProperties));
             var property = metadata.Properties["DirectlyHidden"];
 
             // Act
@@ -199,7 +196,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForType(modelAccessor: null, modelType: typeof(ClassWithHiddenProperties));
+            var metadata = provider.GetMetadataForType(typeof(ClassWithHiddenProperties));
             var property = metadata.Properties["OfHiddenType"];
 
             // Act
@@ -214,7 +211,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForType(modelAccessor: null, modelType: typeof(ClassWithHiddenProperties));
+            var metadata = provider.GetMetadataForType(typeof(ClassWithHiddenProperties));
             var property = metadata.Properties["DirectlyHidden"];
 
             // Act
@@ -229,7 +226,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = provider.GetMetadataForType(modelAccessor: null, modelType: typeof(ClassWithHiddenProperties));
+            var metadata = provider.GetMetadataForType(typeof(ClassWithHiddenProperties));
             var property = metadata.Properties["OfHiddenType"];
 
             // Act
@@ -246,7 +243,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new DataAnnotationsModelMetadataProvider();
 
             // Act
-            var propertyMetadata = provider.GetMetadataForProperty(null, typeof(Person), nameof(Person.Parent));
+            var propertyMetadata = provider.GetMetadataForProperty(typeof(Person), nameof(Person.Parent));
 
             // Assert
             Assert.NotNull(propertyMetadata.BinderMetadata);
@@ -261,7 +258,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new DataAnnotationsModelMetadataProvider();
 
             // Act
-            var propertyMetadata = provider.GetMetadataForProperty(null, typeof(Person), nameof(Person.GrandParent));
+            var propertyMetadata = provider.GetMetadataForProperty(typeof(Person), nameof(Person.GrandParent));
 
             // Assert
             Assert.NotNull(propertyMetadata.BinderMetadata);
@@ -277,7 +274,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act
             var parameterMetadata = provider.GetMetadataForParameter(
-                null,
                 typeof(Person).GetMethod("Update"),
                 "person");
 
@@ -295,7 +291,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act
             var parameterMetadata = provider.GetMetadataForParameter(
-                null,
                 typeof(Person).GetMethod("Save"),
                 "person");
 

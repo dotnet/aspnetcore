@@ -19,13 +19,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private readonly ConcurrentDictionary<Type, Dictionary<string, PropertyInformation>> _typePropertyInfoCache =
                 new ConcurrentDictionary<Type, Dictionary<string, PropertyInformation>>();
 
-        public IEnumerable<ModelMetadata> GetMetadataForProperties(object container, [NotNull] Type containerType)
+        public IEnumerable<ModelMetadata> GetMetadataForProperties([NotNull] Type containerType)
         {
-            return GetMetadataForPropertiesCore(container, containerType);
+            return GetMetadataForPropertiesCore(containerType);
         }
 
-        public ModelMetadata GetMetadataForProperty(Func<object> modelAccessor,
-                                                    [NotNull] Type containerType,
+        public ModelMetadata GetMetadataForProperty([NotNull] Type containerType,
                                                     [NotNull] string propertyName)
         {
             if (string.IsNullOrEmpty(propertyName))
@@ -42,17 +41,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentException(message, nameof(propertyName));
             }
 
-            return CreatePropertyMetadata(modelAccessor, propertyInfo);
+            return CreatePropertyMetadata(propertyInfo);
         }
 
-        public ModelMetadata GetMetadataForType(Func<object> modelAccessor, [NotNull] Type modelType)
+        public ModelMetadata GetMetadataForType([NotNull] Type modelType)
         {
             var prototype = GetTypeInformation(modelType);
-            return CreateMetadataFromPrototype(prototype, modelAccessor);
+            return CreateMetadataFromPrototype(prototype);
         }
 
         public ModelMetadata GetMetadataForParameter(
-            Func<object> modelAccessor,
             [NotNull] MethodInfo methodInfo,
             [NotNull] string parameterName)
         {
@@ -69,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentException(message, nameof(parameterName));
             }
 
-            return GetMetadataForParameterCore(modelAccessor, parameterName, parameter);
+            return GetMetadataForParameterCore(parameterName, parameter);
         }
 
         // Override for creating the prototype metadata (without the model accessor).
@@ -104,47 +102,36 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <returns>
         /// A new <typeparamref name="TModelMetadata"/> instance based on <paramref name="prototype"/>.
         /// </returns>
-        protected abstract TModelMetadata CreateMetadataFromPrototype(TModelMetadata prototype,
-                                                                      Func<object> modelAccessor);
+        protected abstract TModelMetadata CreateMetadataFromPrototype(TModelMetadata prototype);
 
-        private ModelMetadata GetMetadataForParameterCore(Func<object> modelAccessor,
-                                                          string parameterName,
-                                                          ParameterInfo parameter)
+        private ModelMetadata GetMetadataForParameterCore(
+            string parameterName,
+            ParameterInfo parameter)
         {
             var parameterInfo =
                 CreateParameterInfo(parameter.ParameterType,
                                     ModelAttributes.GetAttributesForParameter(parameter),
                                     parameterName);
 
-            var metadata = CreateMetadataFromPrototype(parameterInfo.Prototype, modelAccessor);
+            var metadata = CreateMetadataFromPrototype(parameterInfo.Prototype);
             return metadata;
         }
 
-        private IEnumerable<ModelMetadata> GetMetadataForPropertiesCore(object container, Type containerType)
+        private IEnumerable<ModelMetadata> GetMetadataForPropertiesCore(Type containerType)
         {
             var typePropertyInfo = GetTypePropertyInformation(containerType);
 
             foreach (var kvp in typePropertyInfo)
             {
                 var propertyInfo = kvp.Value;
-                Func<object> modelAccessor = null;
-                if (container != null)
-                {
-                    modelAccessor = () => propertyInfo.PropertyHelper.GetValue(container);
-                }
-                var propertyMetadata = CreatePropertyMetadata(modelAccessor, propertyInfo);
-                if (propertyMetadata != null)
-                {
-                    propertyMetadata.Container = container;
-                }
-
+                var propertyMetadata = CreatePropertyMetadata(propertyInfo);
                 yield return propertyMetadata;
             }
         }
 
-        private TModelMetadata CreatePropertyMetadata(Func<object> modelAccessor, PropertyInformation propertyInfo)
+        private TModelMetadata CreatePropertyMetadata(PropertyInformation propertyInfo)
         {
-            var metadata = CreateMetadataFromPrototype(propertyInfo.Prototype, modelAccessor);
+            var metadata = CreateMetadataFromPrototype(propertyInfo.Prototype);
             if (propertyInfo.IsReadOnly)
             {
                 metadata.IsReadOnly = true;

@@ -53,8 +53,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
             var modelMetadata = metadataProvider.GetMetadataForType(
-                modelAccessor: null, 
-                modelType: typeof(TypeWithIncludedPropertiesUsingBindAttribute));
+                typeof(TypeWithIncludedPropertiesUsingBindAttribute));
 
             // Act
             var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
@@ -75,9 +74,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var methodInfo = type.GetMethod("ParameterWithNoBindAttribute");
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
-                                                                         methodInfo: methodInfo,
-                                                                         parameterName: "parameter");
+            var modelMetadata = metadataProvider.GetMetadataForParameter(
+                methodInfo: methodInfo,
+                parameterName: "parameter");
 
             // Act
             var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
@@ -104,9 +103,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var methodInfo = type.GetMethod(actionMethodName);
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
-                                                                         methodInfo: methodInfo,
-                                                                         parameterName: "parameter");
+            var modelMetadata = metadataProvider.GetMetadataForParameter(
+                methodInfo: methodInfo,
+                parameterName: "parameter");
 
             // Act
             var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
@@ -133,9 +132,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var methodInfo = type.GetMethod(actionMethodName);
 
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            var modelMetadata = metadataProvider.GetMetadataForParameter(modelAccessor: null,
-                                                                         methodInfo: methodInfo,
-                                                                         parameterName: "parameter1");
+            var modelMetadata = metadataProvider.GetMetadataForParameter(
+                methodInfo: methodInfo,
+                parameterName: "parameter1");
 
             // Act
             var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
@@ -275,9 +274,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Callback((ModelBindingContext context) =>
                 {
-                    context.ModelMetadata = metadataProvider.GetMetadataForType(
-                        modelAccessor: null,
-                        modelType: typeof(string));
+                    context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(string));
                 })
                 .Returns(Task.FromResult(result: new ModelBindingResult(value, "", true)));
 

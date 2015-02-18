@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public interface IObjectModelValidator
     {
         /// <summary>
-        /// Validates the given model in <see cref="ModelValidationContext.ModelMetadata"/>.
+        /// Validates the given model in <see cref="ModelValidationContext.ModelExplorer"/>.
         /// </summary>
         /// <param name="validationContext">The <see cref="ModelValidationContext"/> associated with the current call.
         /// </param>

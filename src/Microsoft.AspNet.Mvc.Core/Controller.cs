@@ -1209,17 +1209,14 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException(message);
             }
 
-            var modelMetadata = MetadataProvider.GetMetadataForType(
-               modelAccessor: () => model,
-               modelType: model.GetType());
+            var modelExplorer = MetadataProvider.GetModelExplorerForType(model.GetType(), model);
 
             var modelName = prefix ?? string.Empty;
             var validationContext = new ModelValidationContext(
                 modelName,
                 BindingContext.ValidatorProvider,
                 ModelState,
-                modelMetadata,
-                containerMetadata: null);
+                modelExplorer);
 
             ObjectValidator.Validate(validationContext);
             return ModelState.IsValid;

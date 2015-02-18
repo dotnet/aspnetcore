@@ -71,17 +71,14 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var html = DefaultTemplatesUtilities.GetHtmlHelper();
-            var metadata =
-                new EmptyModelMetadataProvider()
-                    .GetMetadataForType(null, typeof(DefaultTemplatesUtilities.ObjectTemplateModel));
-            metadata.NullDisplayText = "(null value)";
-            html.ViewData.ModelMetadata = metadata;
+
+            html.ViewData.ModelMetadata.NullDisplayText = "(null value)";
 
             // Act
             var result = DefaultDisplayTemplates.ObjectTemplate(html);
 
             // Assert
-            Assert.Equal(metadata.NullDisplayText, result);
+            Assert.Equal("(null value)", result);
         }
 
         [Theory]
@@ -93,13 +90,13 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel();
+            model.Property1 = simpleDisplayText;
+
             var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            var metadata =
-                new EmptyModelMetadataProvider()
-                    .GetMetadataForType(() => model, typeof(DefaultTemplatesUtilities.ObjectTemplateModel));
-            metadata.HtmlEncode = htmlEncode;
-            metadata.SimpleDisplayText = simpleDisplayText;
-            html.ViewData.ModelMetadata = metadata;
+
+            html.ViewData.ModelMetadata.HtmlEncode = htmlEncode;
+            html.ViewData.ModelMetadata.SimpleDisplayProperty = "Property1";
+
             html.ViewData.TemplateInfo.AddVisited("foo");
             html.ViewData.TemplateInfo.AddVisited("bar");
 

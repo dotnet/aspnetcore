@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
@@ -15,13 +13,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var originalBindingContext = new ModelBindingContext
             {
-                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(object)),
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(object)),
                 ModelName = "theName",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = new SimpleHttpValueProvider()
             };
 
-            var newModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(null, typeof(object));
+            var newModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(object));
 
             // Act
             var newBindingContext = new ModelBindingContext(originalBindingContext, string.Empty, newModelMetadata);
@@ -39,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Act
             var bindingContext = new ModelBindingContext
             {
-                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(() => 42, typeof(int))
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(int))
             };
 
             // Assert

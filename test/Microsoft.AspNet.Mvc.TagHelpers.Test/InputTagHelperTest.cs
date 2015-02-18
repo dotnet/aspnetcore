@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     {
         // Top-level container (List<Model> or Model instance), immediate container type (Model or NestModel),
         // model accessor, expression path / id, expected value.
-        public static TheoryData<object, Type, Func<object>, NameAndId, string> TestDataSet
+        public static TheoryData<object, Type, object, NameAndId, string> TestDataSet
         {
             get
             {
@@ -42,29 +42,29 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     modelWithText,
                 };
 
-                return new TheoryData<object, Type, Func<object>, NameAndId, string>
+                return new TheoryData<object, Type, object, NameAndId, string>
                 {
-                    { null, typeof(Model), () => null, new NameAndId("Text", "Text"),
+                    { null, typeof(Model), null, new NameAndId("Text", "Text"),
                         string.Empty },
 
-                    { modelWithNull, typeof(Model), () => modelWithNull.Text, new NameAndId("Text", "Text"),
+                    { modelWithNull, typeof(Model), modelWithNull.Text, new NameAndId("Text", "Text"),
                         string.Empty },
-                    { modelWithText, typeof(Model), () => modelWithText.Text, new NameAndId("Text", "Text"),
+                    { modelWithText, typeof(Model), modelWithText.Text, new NameAndId("Text", "Text"),
                         "outer text" },
 
-                    { modelWithNull, typeof(NestedModel), () => modelWithNull.NestedModel.Text,
+                    { modelWithNull, typeof(NestedModel), modelWithNull.NestedModel.Text,
                         new NameAndId("NestedModel.Text", "NestedModel_Text"), string.Empty },
-                    { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text,
+                    { modelWithText, typeof(NestedModel), modelWithText.NestedModel.Text,
                         new NameAndId("NestedModel.Text", "NestedModel_Text"), "inner text" },
 
-                    { models, typeof(Model), () => models[0].Text,
+                    { models, typeof(Model), models[0].Text,
                         new NameAndId("[0].Text", "z0__Text"), string.Empty },
-                    { models, typeof(Model), () => models[1].Text,
+                    { models, typeof(Model), models[1].Text,
                         new NameAndId("[1].Text", "z1__Text"), "outer text" },
 
-                    { models, typeof(NestedModel), () => models[0].NestedModel.Text,
+                    { models, typeof(NestedModel), models[0].NestedModel.Text,
                         new NameAndId("[0].NestedModel.Text", "z0__NestedModel_Text"), string.Empty },
-                    { models, typeof(NestedModel), () => models[1].NestedModel.Text,
+                    { models, typeof(NestedModel), models[1].NestedModel.Text,
                         new NameAndId("[1].NestedModel.Text", "z1__NestedModel_Text"), "inner text" },
                 };
             }
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_GeneratesExpectedOutput(
             object container,
             Type containerType,
-            Func<object> modelAccessor,
+            object model,
             NameAndId nameAndId,
             string expectedValue)
         {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 htmlGenerator,
                 container,
                 containerType,
-                modelAccessor,
+                model,
                 propertyName: nameof(Model.Text),
                 expressionName: nameAndId.Name);
 
@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             htmlGenerator
                 .Setup(mock => mock.GenerateCheckBox(
                     tagHelper.ViewContext,
-                    tagHelper.For.Metadata,
+                    tagHelper.For.ModelExplorer,
                     tagHelper.For.Name,
                     null,                   // isChecked
                     It.IsAny<object>()))    // htmlAttributes
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             htmlGenerator
                 .Setup(mock => mock.GenerateHiddenForCheckbox(
                     tagHelper.ViewContext,
-                    tagHelper.For.Metadata,
+                    tagHelper.For.ModelExplorer,
                     tagHelper.For.Name))
                 .Returns(new TagBuilder("hidden"))
                 .Verifiable();
@@ -273,7 +273,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             htmlGenerator
                 .Setup(mock => mock.GenerateHidden(
                     tagHelper.ViewContext,
-                    tagHelper.For.Metadata,
+                    tagHelper.For.ModelExplorer,
                     tagHelper.For.Name,
                     model,      // value
                     false,      // useViewData
@@ -361,7 +361,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             htmlGenerator
                 .Setup(mock => mock.GeneratePassword(
                     tagHelper.ViewContext,
-                    tagHelper.For.Metadata,
+                    tagHelper.For.ModelExplorer,
                     tagHelper.For.Name,
                     null,       // value
                     null))      // htmlAttributes
@@ -446,7 +446,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             htmlGenerator
                 .Setup(mock => mock.GenerateRadioButton(
                     tagHelper.ViewContext,
-                    tagHelper.For.Metadata,
+                    tagHelper.For.ModelExplorer,
                     tagHelper.For.Name,
                     value,
                     null,       // isChecked
@@ -546,7 +546,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             htmlGenerator
                 .Setup(mock => mock.GenerateTextBox(
                     tagHelper.ViewContext,
-                    tagHelper.For.Metadata,
+                    tagHelper.For.ModelExplorer,
                     tagHelper.For.Name,
                     model,      // value
                     null,       // format
@@ -624,7 +624,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 htmlGenerator,
                 container: new Model(),
                 containerType: typeof(Model),
-                modelAccessor: () => model,
+                model: model,
                 propertyName: propertyName,
                 expressionName: propertyName);
         }
@@ -660,13 +660,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             IHtmlGenerator htmlGenerator,
             object container,
             Type containerType,
-            Func<object> modelAccessor,
+            object model,
             string propertyName,
             string expressionName)
         {
             var metadataProvider = new EmptyModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName);
-            var modelExpression = new ModelExpression(expressionName, metadata);
+
+            var containerMetadata = metadataProvider.GetMetadataForType(containerType);
+            var containerExplorer = metadataProvider.GetModelExplorerForType(containerType, container);
+
+            var propertyMetadata = metadataProvider.GetMetadataForProperty(containerType, propertyName);
+            var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, model);
+
+            var modelExpression = new ModelExpression(expressionName, modelExplorer);
             var viewContext = TestableHtmlGenerator.GetViewContext(container, htmlGenerator, metadataProvider);
             var inputTagHelper = new InputTagHelper
             {

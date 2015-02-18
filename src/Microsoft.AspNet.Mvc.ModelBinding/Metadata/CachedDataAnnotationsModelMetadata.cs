@@ -16,9 +16,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static readonly string HtmlName = DataType.Html.ToString();
         private bool _isEditFormatStringFromCache;
 
-        public CachedDataAnnotationsModelMetadata(CachedDataAnnotationsModelMetadata prototype,
-                                                  Func<object> modelAccessor)
-            : base(prototype, modelAccessor)
+        public CachedDataAnnotationsModelMetadata(CachedDataAnnotationsModelMetadata prototype)
+            : base(prototype)
         {
         }
 
@@ -299,24 +298,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return result ?? base.ComputeOrder();
         }
 
-        protected override string ComputeSimpleDisplayText()
+        /// <inheritdoc />
+        protected override string ComputeSimpleDisplayProperty()
         {
-            if (Model != null &&
-                PrototypeCache.DisplayColumn != null &&
-                !string.IsNullOrEmpty(PrototypeCache.DisplayColumn.DisplayColumn))
+            if (!string.IsNullOrEmpty(PrototypeCache.DisplayColumn?.DisplayColumn))
             {
                 var displayColumnProperty = ModelType.GetTypeInfo().GetDeclaredProperty(
                                                     PrototypeCache.DisplayColumn.DisplayColumn);
                 ValidateDisplayColumnAttribute(PrototypeCache.DisplayColumn, displayColumnProperty, ModelType);
 
-                var simpleDisplayTextValue = displayColumnProperty.GetValue(Model, null);
-                if (simpleDisplayTextValue != null)
-                {
-                    return simpleDisplayTextValue.ToString();
-                }
+                return displayColumnProperty.Name;
             }
 
-            return base.ComputeSimpleDisplayText();
+            return base.ComputeSimpleDisplayProperty();
         }
 
         protected override bool ComputeShowForDisplay()

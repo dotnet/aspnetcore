@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             throw new InvalidOperationException(
-                Resources.FormatTemplateHelpers_NoTemplate(_viewData.ModelMetadata.RealModelType.FullName));
+                Resources.FormatTemplateHelpers_NoTemplate(_viewData.ModelExplorer.ModelType.FullName));
         }
 
         private Dictionary<string, Func<IHtmlHelper, string>> GetDefaultActions()
@@ -139,7 +139,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // We don't want to search for Nullable<T>, we want to search for T (which should handle both T and
             // Nullable<T>).
-            var fieldType = Nullable.GetUnderlyingType(metadata.RealModelType) ?? metadata.RealModelType;
+            var modelType = _viewData.ModelExplorer.ModelType;
+            var fieldType = Nullable.GetUnderlyingType(modelType) ?? modelType;
 
             yield return fieldType.Name;
 
