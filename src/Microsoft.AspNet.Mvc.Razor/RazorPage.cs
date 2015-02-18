@@ -558,13 +558,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Invokes <see cref="TextWriter.FlushAsync"/> on <see cref="Output"/> writing out any buffered
         /// content to the <see cref="HttpResponse.Body"/>.
         /// </summary>
-        /// <returns>A<see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
+        /// <returns>A <see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
         /// completion returns a <see cref="HtmlString.Empty"/>.</returns>
         /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
         /// section. However the value does not represent the rendered content.
-        /// This method also writes out headers, so any modifications to headers must be done before FulshAsync is
-        /// called. For example, call <see cref="SetAntiForgeryCookieAndHeader"/> to send anti-forgery cookie token
-        /// and X-Frame-Options header to client before this method flushes headers out. </remarks>
+        /// This method also writes out headers, so any modifications to headers must be done before
+        /// <see cref="FlushAsync"/> is called. For example, call <see cref="SetAntiForgeryCookieAndHeader"/> to send
+        /// anti-forgery cookie token and X-Frame-Options header to client before this method flushes headers out.
+        /// </remarks>
         public async Task<HtmlString> FlushAsync()
         {
             // If there are active writing scopes then we should throw. Cannot flush content that has the potential to
