@@ -7,6 +7,8 @@ namespace Microsoft.AspNet.Routing
 {
     public class NullLoggerFactory : ILoggerFactory
     {
+        public LogLevel MinimumLevel { get; set; }
+
         public static NullLoggerFactory Instance = new NullLoggerFactory();
 
         public ILogger Create(string name)
