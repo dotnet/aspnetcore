@@ -24,7 +24,7 @@ namespace RazorCompilerCacheWebSite
         [HttpGet("/file")]
         public IActionResult FileAction()
         {
-            return File("readme.md", "application/text");
+            return File("HelloWorld.htm", "application/text");
         }
 
         [HttpGet("/view")]
