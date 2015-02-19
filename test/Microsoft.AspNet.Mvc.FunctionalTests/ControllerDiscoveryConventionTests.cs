@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // TestHelper.CreateServices replaces the DefaultAssemblyProvider with a provider that
             // limits the set of candidate assemblies to the executing application. For this test,
             // we'll switch it back to using a filtered default assembly provider.
-            var services = HostingServices.Create(configuration: null);
+            var services = HostingServices.Create();
             services.AddTransient<IAssemblyProvider, FilteredDefaultAssemblyProvider>();
             var serviceProvider = TestHelper.CreateServices(nameof(ControllerDiscoveryConventionsWebSite), services);
             var server = TestServer.Create(serviceProvider, _app);
