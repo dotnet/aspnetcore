@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Hosting
 
         public static IServiceCollection Create(IServiceProvider fallbackServices, IConfiguration configuration)
         {
-            return Create(CallContextServiceLocator.Locator.ServiceProvider, configureHostServices: null, configuration: configuration);
+            return Create(fallbackServices, configureHostServices: null, configuration: configuration);
         }
 
         public static IServiceCollection Create(IServiceProvider fallbackServices, Action<IServiceCollection> configureHostServices, IConfiguration configuration)
