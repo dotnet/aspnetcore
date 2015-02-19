@@ -60,8 +60,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 "<Employee xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\">" +
                 "<Id>2</Id><Name>foo</Name></Employee>";
 
-            var expectedOutput = "{\"employee.Id\":[\"The field Id must be between 10 and 100." +
-                    "\"],\"employee.Name\":[\"The field Name must be a string or array type with" +
+            var expectedOutput = "{\"Id\":[\"The field Id must be between 10 and 100." +
+                    "\"],\"Name\":[\"The field Name must be a string or array type with" +
                     " a minimum length of '15'.\"]}";
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SerializableError/CreateEmployee");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json"));

@@ -15,10 +15,10 @@ namespace FormatterWebSite
         {
             if (!ModelState.IsValid)
             {
-                return Content(ModelState["user.Id"].Errors[0].ErrorMessage + "," +
-                    ModelState["user.Name"].Errors[0].ErrorMessage + "," +
-                    ModelState["user.Alias"].Errors[0].ErrorMessage + "," +
-                    ModelState["user.Designation"].Errors[0].ErrorMessage);
+                return Content(ModelState["Id"].Errors[0].ErrorMessage + "," +
+                    ModelState["Name"].Errors[0].ErrorMessage + "," +
+                    ModelState["Alias"].Errors[0].ErrorMessage + "," +
+                    ModelState["Designation"].Errors[0].ErrorMessage);
             }
 
             return Content("User has been registerd : " + user.Name);

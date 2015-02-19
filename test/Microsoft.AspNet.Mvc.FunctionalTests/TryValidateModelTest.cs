@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            var input = "{ \"Price\": 2, \"Contact\": \"acvrdzersaererererfdsfdsfdsfsdf\", "+
+            var input = "{ \"Price\": 2, \"Contact\": \"acvrdzersaererererfdsfdsfdsfsdf\", " +
                 "\"ProductDetails\": {\"Detail1\": \"d1\", \"Detail2\": \"d2\", \"Detail3\": \"d3\"}}";
             var content = new StringContent(input, Encoding.UTF8, "application/json");
             var url =
@@ -39,12 +39,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             var body = await response.Content.ReadAsStringAsync();
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(body);
-            Assert.Equal(8, json.Count);
-            Assert.Equal("CompanyName cannot be null or empty.", json["product.CompanyName"]);
-            Assert.Equal("The field Price must be between 20 and 100.", json["product.Price"]);
-            Assert.Equal("The Category field is required.", json["product.Category"]);
-            Assert.Equal("The field Contact Us must be a string with a maximum length of 20." +
-                "The field Contact Us must match the regular expression '^[0-9]*$'.", json["product.Contact"]);
+            Assert.Equal(4, json.Count);
             Assert.Equal("CompanyName cannot be null or empty.", json["CompanyName"]);
             Assert.Equal("The field Price must be between 20 and 100.", json["Price"]);
             Assert.Equal("The Category field is required.", json["Category"]);

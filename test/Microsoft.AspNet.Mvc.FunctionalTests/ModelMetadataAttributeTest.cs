@@ -58,12 +58,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(body);
             Assert.Equal(6, json.Count);
-            Assert.Equal("CompanyName cannot be null or empty.", json["product.CompanyName"]);
-            Assert.Equal("The field Price must be between 20 and 100.", json["product.Price"]);
-            Assert.Equal("The Category field is required.", json["product.Category"]);
-            Assert.Equal("The Contact Us field is required.", json["product.Contact"]);
-            Assert.Equal("The Detail2 field is required.", json["product.ProductDetails.Detail2"]);
-            Assert.Equal("The Detail3 field is required.", json["product.ProductDetails.Detail3"]);
+            Assert.Equal("CompanyName cannot be null or empty.", json["CompanyName"]);
+            Assert.Equal("The field Price must be between 20 and 100.", json["Price"]);
+            Assert.Equal("The Category field is required.", json["Category"]);
+            Assert.Equal("The Contact Us field is required.", json["Contact"]);
+            Assert.Equal("The Detail2 field is required.", json["ProductDetails.Detail2"]);
+            Assert.Equal("The Detail3 field is required.", json["ProductDetails.Detail3"]);
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(body);
             Assert.Equal(1, json.Count);
-            Assert.Equal("The ProductDetails field is required.", json["product.ProductDetails"]);
+            Assert.Equal("The ProductDetails field is required.", json["ProductDetails"]);
         }
 
         [Fact]
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(body);
             Assert.Equal(1, json.Count);
-            Assert.Equal("Product must be made in the USA if it is not named.", json["product"]);
+            Assert.Equal("Product must be made in the USA if it is not named.", json[""]);
         }
 
         [Fact]
@@ -152,8 +152,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(body);
             Assert.Equal(2, json.Count);
-            Assert.Equal("The field Price must be between 100 and 200.", json["software.Price"]);
-            Assert.Equal("The field Contact must be a string with a maximum length of 10.", json["software.Contact"]);
+            Assert.Equal("The field Price must be between 100 and 200.", json["Price"]);
+            Assert.Equal("The field Contact must be a string with a maximum length of 10.", json["Contact"]);
         }
 
         [Fact]
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(body);
             Assert.Equal(1, json.Count);
-            Assert.Equal("Product must be made in the USA if it is not named.", json["software"]);
+            Assert.Equal("Product must be made in the USA if it is not named.", json[""]);
         }
     }
 }

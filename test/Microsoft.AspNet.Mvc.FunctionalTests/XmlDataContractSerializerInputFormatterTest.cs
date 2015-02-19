@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             {
                 return string.Format(errorMessageFormat, kvp.Key, kvp.Value);
             }).ToList();
-            expectedErrorMessages.Add("store.Address:The Address field is required.");
+            expectedErrorMessages.Add("Address:The Address field is required.");
 
             // Act
             var response = await client.PostAsync("http://localhost/Validation/CreateStore", content);

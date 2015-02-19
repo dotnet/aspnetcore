@@ -158,6 +158,38 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("Your input is bad!", errorMessage);
         }
 
+        [Fact]
+        public async Task NullFormatterError_AddedToModelState()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.ContentType = "text/xyz";
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
+
+            var bindingContext = GetBindingContext(
+                typeof(Person),
+                inputFormatter: null,
+                httpContext: httpContext,
+                metadataProvider: provider);
+
+            var binder = bindingContext.OperationBindingContext.ModelBinder;
+
+            // Act
+            var binderResult = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+
+            // Returns true because it understands the metadata type.
+            Assert.NotNull(binderResult);
+            Assert.False(binderResult.IsModelSet);
+            Assert.Null(binderResult.Model);
+            Assert.True(bindingContext.ModelState.ContainsKey("someName"));
+            var errorMessage = bindingContext.ModelState["someName"].Errors[0].ErrorMessage;
+            Assert.Equal("Unsupported content type 'text/xyz'.", errorMessage);
+        }
+
         private static ModelBindingContext GetBindingContext(
             Type modelType,
             IInputFormatter inputFormatter = null,
