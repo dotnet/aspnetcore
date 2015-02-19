@@ -174,6 +174,7 @@ namespace Microsoft.AspNet.TestHost
                 if (!_responseTcs.Task.IsCompleted)
                 {
                     var response = GenerateResponse();
+                    _responseFeature.FireOnResponseCompleted();
                     // Dispatch, as TrySetResult will synchronously execute the waiters callback and block our Write.
                     Task.Factory.StartNew(() => _responseTcs.TrySetResult(response));
                 }

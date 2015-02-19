@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.TestHost
     internal class ResponseFeature : IHttpResponseFeature
     {
         private Action _sendingHeaders = () => { };
+        private Action _responseCompleted = () => { };
 
         public ResponseFeature()
         {
@@ -42,10 +43,25 @@ namespace Microsoft.AspNet.TestHost
             };
         }
 
+        public void OnResponseCompleted(Action<object> callback, object state)
+        {
+            var prior = _responseCompleted;
+            _responseCompleted = () =>
+            {
+                callback(state);
+                prior();
+            };
+        }
+
         public void FireOnSendingHeaders()
         {
             _sendingHeaders();
             HeadersSent = true;
+        }
+
+        public void FireOnResponseCompleted()
+        {
+            _responseCompleted();
         }
     }
 }
