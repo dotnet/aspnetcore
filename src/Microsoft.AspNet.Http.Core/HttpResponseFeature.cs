@@ -34,5 +34,10 @@ namespace Microsoft.AspNet.Http.Core
         {
             throw new NotSupportedException();
         }
+
+        public void OnResponseCompleted(Action<object> callback, object state)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

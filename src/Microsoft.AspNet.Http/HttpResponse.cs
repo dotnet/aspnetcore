@@ -27,6 +27,8 @@ namespace Microsoft.AspNet.Http
 
         public abstract void OnSendingHeaders(Action<object> callback, object state);
 
+        public abstract void OnResponseCompleted(Action<object> callback, object state);
+
         public virtual void Redirect(string location)
         {
             Redirect(location, permanent: false);

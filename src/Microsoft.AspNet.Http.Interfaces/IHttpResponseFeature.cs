@@ -15,5 +15,6 @@ namespace Microsoft.AspNet.Http
         Stream Body { get; set; }
         bool HeadersSent { get; }
         void OnSendingHeaders(Action<object> callback, object state);
+        void OnResponseCompleted(Action<object> callback, object state);
     }
 }

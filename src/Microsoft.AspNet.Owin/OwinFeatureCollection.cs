@@ -157,6 +157,11 @@ namespace Microsoft.AspNet.Owin
             register(callback, state);
         }
 
+        void IHttpResponseFeature.OnResponseCompleted(Action<object> callback, object state)
+        {
+            throw new NotSupportedException();
+        }
+
         IPAddress IHttpConnectionFeature.RemoteIpAddress
         {
             get { return IPAddress.Parse(Prop<string>(OwinConstants.CommonKeys.RemoteIpAddress)); }

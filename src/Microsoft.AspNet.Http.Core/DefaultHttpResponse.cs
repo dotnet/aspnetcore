@@ -111,6 +111,11 @@ namespace Microsoft.AspNet.Http.Core
             HttpResponseFeature.OnSendingHeaders(callback, state);
         }
 
+        public override void OnResponseCompleted(Action<object> callback, object state)
+        {
+            HttpResponseFeature.OnResponseCompleted(callback, state);
+        }
+
         public override void Redirect(string location, bool permanent)
         {
             if (permanent)
