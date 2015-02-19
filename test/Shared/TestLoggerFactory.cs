@@ -7,6 +7,8 @@ namespace Microsoft.AspNet.Identity.Test
 {
     public class TestLoggerFactory : ILoggerFactory
     {
+        public LogLevel MinimumLevel { get; set; }
+
         public void AddProvider(ILoggerProvider provider)
         {
 
