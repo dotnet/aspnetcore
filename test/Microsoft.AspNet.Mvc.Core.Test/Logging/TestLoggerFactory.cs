@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.Mvc
             _sink = sink;
         }
 
+        public LogLevel MinimumLevel { get; set; }
+
         public ILogger Create(string name)
         {
             return new TestLogger(name, _sink);

@@ -9,6 +9,8 @@ namespace Microsoft.AspNet.Mvc
     {
         public static NullLoggerFactory Instance = new NullLoggerFactory();
 
+        public LogLevel MinimumLevel { get; set; }
+
         public ILogger Create(string name)
         {
             return NullLogger.Instance;

@@ -62,6 +62,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         
         private class TestLoggerFactory : ILoggerFactory
         {
+            public LogLevel MinimumLevel { get; set; }
+
             public void AddProvider(ILoggerProvider provider)
             {
 
