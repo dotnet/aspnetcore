@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
@@ -49,12 +46,22 @@ namespace Microsoft.AspNet.TestHost
 
         public static TestServer Create(Action<IApplicationBuilder> app)
         {
-            return Create(CallContextServiceLocator.Locator.ServiceProvider, app);
+            return Create(CallContextServiceLocator.Locator.ServiceProvider, app, configureHostServices: null);
+        }
+
+        public static TestServer Create(Action<IApplicationBuilder> app, Action<IServiceCollection> configureHostServices)
+        {
+            return Create(CallContextServiceLocator.Locator.ServiceProvider, app, configureHostServices);
         }
 
         public static TestServer Create(IServiceProvider serviceProvider, Action<IApplicationBuilder> app)
         {
-            var appServices = HostingServices.Create(serviceProvider).BuildServiceProvider();
+            return Create(serviceProvider, app, configureHostServices: null);
+        }
+
+        public static TestServer Create(IServiceProvider serviceProvider, Action<IApplicationBuilder> app, Action<IServiceCollection> configureHostServices)
+        {
+            var appServices = HostingServices.Create(serviceProvider, configureHostServices).BuildServiceProvider();
             var config = new Configuration();
             return new TestServer(config, appServices, app);
         }

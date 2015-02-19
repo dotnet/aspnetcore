@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Hosting
 
         public void Configure(IHostingEnvironment hostingEnv)
         {
-            hostingEnv.EnvironmentName = _config.Get(EnvironmentKey) ?? hostingEnv.EnvironmentName;
+            hostingEnv.EnvironmentName = _config?.Get(EnvironmentKey) ?? hostingEnv.EnvironmentName;
         }
     }
 }

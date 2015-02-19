@@ -12,8 +12,13 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class HostingServicesExtensions
     {
+        public static IServiceCollection AddLogging(this IServiceCollection services)
+        {
+            return services.AddLogging(config: null);
+        }
+
         // REVIEW: Logging doesn't depend on DI, where should this live?
-        public static IServiceCollection AddLogging(this IServiceCollection services, IConfiguration config = null)
+        public static IServiceCollection AddLogging(this IServiceCollection services, IConfiguration config)
         {
             var describe = new ServiceDescriber(config);
             services.TryAdd(describe.Singleton<ILoggerFactory, LoggerFactory>());
@@ -21,7 +26,12 @@ namespace Microsoft.Framework.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddHosting(this IServiceCollection services, IConfiguration configuration = null)
+        public static IServiceCollection AddHosting(this IServiceCollection services)
+        {
+            return services.AddHosting(configuration: null);
+        }
+
+        public static IServiceCollection AddHosting(this IServiceCollection services, IConfiguration configuration)
         {
             var describer = new ServiceDescriber(configuration);
 
