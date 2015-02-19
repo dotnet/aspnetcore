@@ -11,7 +11,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Roslyn;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -62,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                 CompilationSettings);
 
                 var tree = collectionGenerator.GenerateCollection();
-                context.CSharpCompilation = context.CSharpCompilation.AddSyntaxTrees(tree);
+                context.Compilation = context.Compilation.AddSyntaxTrees(tree);
             }
         }
 
@@ -103,8 +102,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
             });
 
-            context.CSharpCompilation = context.CSharpCompilation
-                                               .AddSyntaxTrees(syntaxTrees.Where(tree => tree != null));
+            context.Compilation = context.Compilation
+                                         .AddSyntaxTrees(syntaxTrees.Where(tree => tree != null));
             return razorFiles.Where(file => file != null);
         }
 

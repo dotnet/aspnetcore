@@ -12,8 +12,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.DependencyInjection.ServiceLookup;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Roslyn;
 
 namespace Microsoft.AspNet.Mvc
 {
