@@ -16,17 +16,6 @@ namespace Microsoft.AspNet.Mvc
     /// </remarks>
     public class DefaultActionConstraintProvider : INestedProvider<ActionConstraintProviderContext>
     {
-        private readonly IServiceProvider _services;
-
-        /// <summary>
-        /// Creates a new <see cref="DefaultActionConstraintProvider"/>.
-        /// </summary>
-        /// <param name="services">The per-request services.</param>
-        public DefaultActionConstraintProvider(IServiceProvider services)
-        {
-            _services = services;
-        }
-
         /// <inheritdoc />
         public int Order
         {
@@ -38,13 +27,13 @@ namespace Microsoft.AspNet.Mvc
         {
             foreach (var item in context.Results)
             {
-                ProvideConstraint(item);
+                ProvideConstraint(item, context.HttpContext.RequestServices);
             }
 
             callNext();
         }
 
-        private void ProvideConstraint(ActionConstraintItem item)
+        private void ProvideConstraint(ActionConstraintItem item, IServiceProvider services)
         {
             // Don't overwrite anything that was done by a previous provider.
             if (item.Constraint != null)
@@ -62,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
             var factory = item.Metadata as IActionConstraintFactory;
             if (factory != null)
             {
-                item.Constraint = factory.CreateInstance(_services);
+                item.Constraint = factory.CreateInstance(services);
                 return;
             }
         }

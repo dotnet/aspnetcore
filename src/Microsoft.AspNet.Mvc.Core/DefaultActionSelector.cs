@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
                 var candidates = new List<ActionSelectorCandidate>();
                 foreach (var action in matchingRouteConstraints)
                 {
-                    var constraints = GetConstraints(action);
+                    var constraints = GetConstraints(context.HttpContext, action);
                     candidates.Add(new ActionSelectorCandidate(action, constraints));
                 }
 
@@ -253,7 +254,7 @@ namespace Microsoft.AspNet.Mvc
             return descriptors.Items;
         }
 
-        private IReadOnlyList<IActionConstraint> GetConstraints(ActionDescriptor action)
+        private IReadOnlyList<IActionConstraint> GetConstraints(HttpContext httpContext, ActionDescriptor action)
         {
             if (action.ActionConstraints == null || action.ActionConstraints.Count == 0)
             {
@@ -261,7 +262,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var items = action.ActionConstraints.Select(c => new ActionConstraintItem(c)).ToList();
-            var context = new ActionConstraintProviderContext(action, items);
+            var context = new ActionConstraintProviderContext(httpContext, action, items);
 
             _actionConstraintProvider.Invoke(context);
 

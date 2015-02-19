@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -16,12 +17,16 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="action">The <see cref="ActionDescriptor"/> for which constraints are being created.</param>
         /// <param name="items">The list of <see cref="ActionConstraintItem"/> objects.</param>
         public ActionConstraintProviderContext(
+            [NotNull] HttpContext context,
             [NotNull] ActionDescriptor action,
             [NotNull] IList<ActionConstraintItem> items)
         {
+            HttpContext = context;
             Action = action;
             Results = items;
         }
+
+        public HttpContext HttpContext { get; }
 
         /// <summary>
         /// The <see cref="ActionDescriptor"/> for which constraints are being created.
