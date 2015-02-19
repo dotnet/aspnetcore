@@ -10,6 +10,8 @@ namespace Microsoft.AspNet.Routing
         private TestSink _sink;
         private bool _enabled;
 
+        public LogLevel MinimumLevel { get; set; }
+
         public TestLoggerFactory(TestSink sink, bool enabled)
         {
             _sink = sink;
