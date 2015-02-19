@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// output.
         /// </summary>
         /// <remarks>
-        /// The encoded value is also safe for inclusion inside an HTML attribute
+        /// The encoded value is also appropriately encoded for inclusion inside an HTML attribute
         /// as long as the attribute value is surrounded by single or double quotes.
         /// </remarks>
         void HtmlEncode([NotNull] char[] value, int startIndex, int charCount, [NotNull] TextWriter output);
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// The HTML-encoded value, or null if the input string was null.
         /// </returns>
         /// <remarks>
-        /// The return value is also safe for inclusion inside an HTML attribute
+        /// The return value is also appropriately encoded for inclusion inside an HTML attribute
         /// as long as the attribute value is surrounded by single or double quotes.
         /// </remarks>
         string HtmlEncode(string value);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// supplied output.
         /// </summary>
         /// <remarks>
-        /// The encoded value is also safe for inclusion inside an HTML attribute
+        /// The encoded value is also appropriately encoded for inclusion inside an HTML attribute
         /// as long as the attribute value is surrounded by single or double quotes.
         /// </remarks>
         void HtmlEncode([NotNull] string value, int startIndex, int charCount, [NotNull] TextWriter output);

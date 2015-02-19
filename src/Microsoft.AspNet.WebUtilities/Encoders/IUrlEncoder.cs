@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// output.
         /// </summary>
         /// <remarks>
-        /// The encoded value is safe for use in the segment, query, or
+        /// The encoded value is appropriately encoded for inclusion in the segment, query, or
         /// fragment portion of a URI.
         /// </remarks>
         void UrlEncode([NotNull] char[] value, int startIndex, int charCount, [NotNull] TextWriter output);
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// The URL-escaped value, or null if the input string was null.
         /// </returns>
         /// <remarks>
-        /// The return value is safe for use in the segment, query, or
+        /// The return value is appropriately encoded for inclusion in the segment, query, or
         /// fragment portion of a URI.
         /// </remarks>
         string UrlEncode(string value);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// URL-escapes a string and writes the result to the supplied output.
         /// </summary>
         /// <remarks>
-        /// The encoded value is safe for use in the segment, query, or
+        /// The encoded value is appropriately encoded for inclusion in the segment, query, or
         /// fragment portion of a URI.
         /// </remarks>
         void UrlEncode([NotNull] string value, int startIndex, int charCount, [NotNull] TextWriter output);
