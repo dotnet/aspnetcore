@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Cryptography;
 using Microsoft.AspNet.Security.DataProtection.SafeHandles;
 using Microsoft.AspNet.Security.DataProtection.SP800_108;
 
@@ -41,7 +40,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
         private readonly uint _symmetricAlgorithmBlockSizeInBytes;
         private readonly uint _symmetricAlgorithmSubkeyLengthInBytes;
 
-        public CbcAuthenticatedEncryptor(ProtectedMemoryBlob keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, BCryptAlgorithmHandle hmacAlgorithmHandle, IBCryptGenRandom genRandom = null)
+        public CbcAuthenticatedEncryptor(Secret keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, BCryptAlgorithmHandle hmacAlgorithmHandle, IBCryptGenRandom genRandom = null)
         {
             CryptoUtil.Assert(KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES,
                 "KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES");
@@ -88,16 +87,12 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
                 *(ptr++) = 0; // 0x00 = CBC encryption + HMAC authentication
 
                 // Next is information about the symmetric algorithm (key size followed by block size)
-                BitHelpers.WriteTo(ptr, _symmetricAlgorithmSubkeyLengthInBytes);
-                ptr += sizeof(uint);
-                BitHelpers.WriteTo(ptr, _symmetricAlgorithmBlockSizeInBytes);
-                ptr += sizeof(uint);
+                BitHelpers.WriteTo(ref ptr, _symmetricAlgorithmSubkeyLengthInBytes);
+                BitHelpers.WriteTo(ref ptr, _symmetricAlgorithmBlockSizeInBytes);
 
                 // Next is information about the HMAC algorithm (key size followed by digest size)
-                BitHelpers.WriteTo(ptr, _hmacAlgorithmSubkeyLengthInBytes);
-                ptr += sizeof(uint);
-                BitHelpers.WriteTo(ptr, _hmacAlgorithmDigestLengthInBytes);
-                ptr += sizeof(uint);
+                BitHelpers.WriteTo(ref ptr, _hmacAlgorithmSubkeyLengthInBytes);
+                BitHelpers.WriteTo(ref ptr, _hmacAlgorithmDigestLengthInBytes);
 
                 // See the design document for an explanation of the following code.
                 byte[] tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes];
@@ -348,7 +343,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
 
                 using (var symmetricKeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
                 {
-                    // We can't assume PKCS#7 padding (maybe the underlying provided is using CTS),
+                    // We can't assume PKCS#7 padding (maybe the underlying provider is really using CTS),
                     // so we need to query the padded output size before we can allocate the return value array.
                     uint cbOutputCiphertext = GetCbcEncryptedOutputSizeWithPadding(symmetricKeyHandle, pbPlaintext, cbPlaintext);
 

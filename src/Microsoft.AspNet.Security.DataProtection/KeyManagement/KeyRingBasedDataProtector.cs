@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Security.DataProtection.KeyManagement
                     postBufferSize: 0);
                 CryptoUtil.Assert(retVal != null && retVal.Length >= sizeof(uint) + sizeof(Guid), "retVal != null && retVal.Length >= sizeof(uint) + sizeof(Guid)");
             }
-            catch (Exception ex) when (!(ex is CryptographicException))
+            catch (Exception ex) when (ex.RequiresHomogenization())
             {
                 // homogenize all errors to CryptographicException
                 throw Error.Common_EncryptionFailed(ex);
@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.Security.DataProtection.KeyManagement
                 CryptoUtil.Assert(retVal != null, "retVal != null");
                 return retVal;
             }
-            catch (Exception ex) when (!(ex is CryptographicException))
+            catch (Exception ex) when (ex.RequiresHomogenization())
             {
                 // homogenize all failures to CryptographicException
                 throw Error.DecryptionFailed(ex);

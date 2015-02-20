@@ -22,6 +22,20 @@ namespace Microsoft.AspNet.Security.DataProtection
         }
 
         /// <summary>
+        /// Writes an unsigned 32-bit value to a memory address, big-endian.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteTo(ref byte* ptr, uint value)
+        {
+            byte* pTemp = ptr;
+            pTemp[0] = (byte)(value >> 24);
+            pTemp[1] = (byte)(value >> 16);
+            pTemp[2] = (byte)(value >> 8);
+            pTemp[3] = (byte)(value);
+            ptr = &pTemp[4];
+        }
+
+        /// <summary>
         /// Writes a signed 32-bit value to a memory address, big-endian.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

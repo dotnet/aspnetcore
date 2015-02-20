@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
 
             // and we're good to go!
             return new GcmAuthenticatedEncryptor(
-                keyDerivationKey: new ProtectedMemoryBlob(secret),
+                keyDerivationKey: new Secret(secret),
                 symmetricAlgorithmHandle: encryptionAlgorithmHandle,
                 symmetricAlgorithmKeySizeInBytes: encryptionAlgorithmKeySizeInBits / 8);
         }

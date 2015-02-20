@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
 
             // and we're good to go!
             return new CbcAuthenticatedEncryptor(
-                keyDerivationKey: new ProtectedMemoryBlob(secret),
+                keyDerivationKey: new Secret(secret),
                 symmetricAlgorithmHandle: encryptionAlgorithmHandle,
                 symmetricAlgorithmKeySizeInBytes: encryptionAlgorithmKeySizeInBits / 8,
                 hmacAlgorithmHandle: hashAlgorithmHandle);

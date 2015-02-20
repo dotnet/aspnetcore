@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
 
             // We're good to go!
             return new ManagedAuthenticatedEncryptor(
-                keyDerivationKey: new ProtectedMemoryBlob(secret),
+                keyDerivationKey: new Secret(secret),
                 symmetricAlgorithmFactory: encryptorFactory,
                 symmetricAlgorithmKeySizeInBytes: keySizeInBytes,
                 validationAlgorithmFactory: validatorFactory);

@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Security.DataProtection
             // Currently hardcoded to a 512-bit KDK.
             private const int NUM_BYTES_IN_KDK = 512 / 8;
 
-            public IAuthenticatedEncryptor DefaultAuthenticatedEncryptor { get; } = new T().CreateAuthenticatedEncryptor(ProtectedMemoryBlob.Random(NUM_BYTES_IN_KDK));
+            public IAuthenticatedEncryptor DefaultAuthenticatedEncryptor { get; } = new T().CreateAuthenticatedEncryptor(Secret.Random(NUM_BYTES_IN_KDK));
 
             public Guid DefaultKeyId { get; } = default(Guid);
 

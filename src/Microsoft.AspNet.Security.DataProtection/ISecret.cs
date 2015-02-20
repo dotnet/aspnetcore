@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Security.DataProtection
     public interface ISecret : IDisposable
     {
         /// <summary>
-        /// The length (in bytes) of the value.
+        /// The length (in bytes) of the secret value.
         /// </summary>
         int Length { get; }
 

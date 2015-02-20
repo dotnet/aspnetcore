@@ -21,10 +21,10 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
             // generate a 512-bit secret randomly
             const int KDK_SIZE_IN_BYTES = 512 / 8;
             byte[] kdk = ManagedGenRandomImpl.Instance.GenRandom(KDK_SIZE_IN_BYTES);
-            ProtectedMemoryBlob secret;
+            Secret secret;
             try
             {
-                secret = new ProtectedMemoryBlob(kdk);
+                secret = new Secret(kdk);
             }
             finally
             {

@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
 
         private readonly byte[] _contextHeader;
         private readonly IManagedGenRandom _genRandom;
-        private readonly ProtectedMemoryBlob _keyDerivationKey;
+        private readonly Secret _keyDerivationKey;
         private readonly Func<SymmetricAlgorithm> _symmetricAlgorithmFactory;
         private readonly int _symmetricAlgorithmBlockSizeInBytes;
         private readonly int _symmetricAlgorithmSubkeyLengthInBytes;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
         private readonly int _validationAlgorithmSubkeyLengthInBytes;
         private readonly Func<KeyedHashAlgorithm> _validationAlgorithmFactory;
 
-        public ManagedAuthenticatedEncryptor(ProtectedMemoryBlob keyDerivationKey, Func<SymmetricAlgorithm> symmetricAlgorithmFactory, int symmetricAlgorithmKeySizeInBytes, Func<KeyedHashAlgorithm> validationAlgorithmFactory, IManagedGenRandom genRandom = null)
+        public ManagedAuthenticatedEncryptor(Secret keyDerivationKey, Func<SymmetricAlgorithm> symmetricAlgorithmFactory, int symmetricAlgorithmKeySizeInBytes, Func<KeyedHashAlgorithm> validationAlgorithmFactory, IManagedGenRandom genRandom = null)
         {
             CryptoUtil.Assert(KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES,
                 "KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES");
@@ -278,7 +278,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
                     }
                 }
             }
-            catch (Exception ex) when (!(ex is CryptographicException))
+            catch (Exception ex) when (ex.RequiresHomogenization())
             {
                 // Homogenize all exceptions to CryptographicException.
                 throw Error.CryptCommon_GenericError(ex);
@@ -382,7 +382,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Managed
                     }
                 }
             }
-            catch (Exception ex) when (!(ex is CryptographicException))
+            catch (Exception ex) when (ex.RequiresHomogenization())
             {
                 // Homogenize all exceptions to CryptographicException.
                 throw Error.CryptCommon_GenericError(ex);

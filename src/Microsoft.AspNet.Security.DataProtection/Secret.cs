@@ -8,7 +8,10 @@ using Microsoft.AspNet.Security.DataProtection.SafeHandles;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
-    public unsafe sealed class ProtectedMemoryBlob : IDisposable, ISecret
+    /// <summary>
+    /// Represents a secret value stored in memory.
+    /// </summary>
+    public unsafe sealed class Secret : IDisposable, ISecret
     {
         // from wincrypt.h
         private const uint CRYPTPROTECTMEMORY_BLOCK_SIZE = 16;
@@ -16,42 +19,57 @@ namespace Microsoft.AspNet.Security.DataProtection
         private readonly SecureLocalAllocHandle _localAllocHandle;
         private readonly uint _plaintextLength;
 
-        public ProtectedMemoryBlob(ArraySegment<byte> plaintext)
+        /// <summary>
+        /// Creates a new Secret from the provided input value, where the input value
+        /// is specified as an array segment.
+        /// </summary>
+        public Secret(ArraySegment<byte> value)
         {
-            plaintext.Validate();
+            value.Validate();
 
-            _localAllocHandle = Protect(plaintext);
-            _plaintextLength = (uint)plaintext.Count;
+            _localAllocHandle = Protect(value);
+            _plaintextLength = (uint)value.Count;
         }
 
-        public ProtectedMemoryBlob(byte[] plaintext)
-            : this(new ArraySegment<byte>(plaintext))
+        /// <summary>
+        /// Creates a new Secret from the provided input value, where the input value
+        /// is specified as an array.
+        /// </summary>
+        public Secret(byte[] value)
+            : this(new ArraySegment<byte>(value))
         {
         }
 
-        public ProtectedMemoryBlob(byte* plaintext, int plaintextLength)
+        /// <summary>
+        /// Creates a new Secret from the provided input value, where the input value
+        /// is specified as a pointer to unmanaged memory.
+        /// </summary>
+        public Secret(byte* secret, int secretLength)
         {
-            if (plaintext == null)
+            if (secret == null)
             {
-                throw new ArgumentNullException("plaintext");
+                throw new ArgumentNullException("secret");
             }
-            if (plaintextLength < 0)
+            if (secretLength < 0)
             {
-                throw new ArgumentOutOfRangeException("plaintextLength");
+                throw new ArgumentOutOfRangeException("secretLength");
             }
 
-            _localAllocHandle = Protect(plaintext, (uint)plaintextLength);
-            _plaintextLength = (uint)plaintextLength;
+            _localAllocHandle = Protect(secret, (uint)secretLength);
+            _plaintextLength = (uint)secretLength;
         }
 
-        public ProtectedMemoryBlob(ISecret secret)
+        /// <summary>
+        /// Creates a new Secret from another secret object.
+        /// </summary>
+        public Secret(ISecret secret)
         {
             if (secret == null)
             {
                 throw new ArgumentNullException("secret");
             }
 
-            ProtectedMemoryBlob other = secret as ProtectedMemoryBlob;
+            Secret other = secret as Secret;
             if (other != null)
             {
                 // Fast-track: simple deep copy scenario.
@@ -79,6 +97,9 @@ namespace Microsoft.AspNet.Security.DataProtection
             }
         }
 
+        /// <summary>
+        /// The length (in bytes) of the secret value.
+        /// </summary>
         public int Length
         {
             get
@@ -87,6 +108,9 @@ namespace Microsoft.AspNet.Security.DataProtection
             }
         }
 
+        /// <summary>
+        /// Wipes the secret from memory.
+        /// </summary>
         public void Dispose()
         {
             _localAllocHandle.Dispose();
@@ -134,21 +158,25 @@ namespace Microsoft.AspNet.Security.DataProtection
             return encryptedMemoryHandle;
         }
 
-        public static ProtectedMemoryBlob Random(int numBytes)
+        /// <summary>
+        /// Returns a Secret comprised entirely of random bytes retrieved from
+        /// a cryptographically secure RNG.
+        /// </summary>
+        public static Secret Random(int numBytes)
         {
             CryptoUtil.Assert(numBytes >= 0, "numBytes >= 0");
 
             if (numBytes == 0)
             {
                 byte dummy;
-                return new ProtectedMemoryBlob(&dummy, 0);
+                return new Secret(&dummy, 0);
             }
             else
             {
                 // Don't use CNG if we're not on Windows.
                 if (!OSVersionUtil.IsBCryptOnWin7OrLaterAvailable())
                 {
-                    return new ProtectedMemoryBlob(ManagedGenRandomImpl.Instance.GenRandom(numBytes));
+                    return new Secret(ManagedGenRandomImpl.Instance.GenRandom(numBytes));
                 }
 
                 byte[] bytes = new byte[numBytes];
@@ -157,7 +185,7 @@ namespace Microsoft.AspNet.Security.DataProtection
                     try
                     {
                         BCryptUtil.GenRandom(pbBytes, (uint)numBytes);
-                        return new ProtectedMemoryBlob(pbBytes, numBytes);
+                        return new Secret(pbBytes, numBytes);
                     }
                     finally
                     {
@@ -196,6 +224,12 @@ namespace Microsoft.AspNet.Security.DataProtection
             }
         }
 
+        /// <summary>
+        /// Writes the secret value to the specified buffer.
+        /// </summary>
+        /// <remarks>
+        /// The buffer size must exactly match the length of the secret value.
+        /// </remarks>
         public void WriteSecretIntoBuffer(ArraySegment<byte> buffer)
         {
             // Parameter checking
@@ -215,6 +249,12 @@ namespace Microsoft.AspNet.Security.DataProtection
             }
         }
 
+        /// <summary>
+        /// Writes the secret value to the specified buffer.
+        /// </summary>
+        /// <remarks>
+        /// The 'bufferLength' parameter must exactly match the length of the secret value.
+        /// </remarks>
         public void WriteSecretIntoBuffer(byte* buffer, int bufferLength)
         {
             if (buffer == null)

@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Dpapi
                 return _shim.Protect(unprotectedData, _combinedPurposes, _scope)
                     ?? CryptoUtil.Fail<byte[]>("Null return value.");
             }
-            catch (Exception ex) when (!(ex is CryptographicException))
+            catch (Exception ex) when (ex.RequiresHomogenization())
             {
                 // Homogenize to CryptographicException
                 throw Error.CryptCommon_GenericError(ex);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Dpapi
                 return _shim.Unprotect(protectedData, _combinedPurposes, _scope)
                     ?? CryptoUtil.Fail<byte[]>("Null return value.");
             }
-            catch (Exception ex) when (!(ex is CryptographicException))
+            catch (Exception ex) when (ex.RequiresHomogenization())
             {
                 // Homogenize to CryptographicException
                 throw Error.CryptCommon_GenericError(ex);

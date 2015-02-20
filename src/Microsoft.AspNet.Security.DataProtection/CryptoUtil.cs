@@ -48,6 +48,8 @@ namespace Microsoft.AspNet.Security.DataProtection
             throw new CryptographicException("Assertion failed: " + message);
         }
 
+        // Allows callers to write "var x = Method() ?? Fail<T>(message);" as a convenience to guard
+        // against a method returning null unexpectedly.
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static T Fail<T>(string message) where T : class
         {

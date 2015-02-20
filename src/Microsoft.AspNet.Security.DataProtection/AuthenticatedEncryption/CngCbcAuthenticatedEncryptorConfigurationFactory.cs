@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
         {
             // generate a 512-bit secret randomly
             const int KDK_SIZE_IN_BYTES = 512 / 8;
-            var secret = ProtectedMemoryBlob.Random(KDK_SIZE_IN_BYTES);
+            var secret = Secret.Random(KDK_SIZE_IN_BYTES);
             return new CngCbcAuthenticatedEncryptorConfiguration(_options, secret);
         }
     }

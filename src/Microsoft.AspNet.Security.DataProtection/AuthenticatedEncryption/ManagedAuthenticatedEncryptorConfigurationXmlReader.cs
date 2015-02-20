@@ -56,8 +56,8 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
             byte[] decryptedSecretBytes = Convert.FromBase64String((string)decryptedSecretElement);
             try
             {
-                var protectedMemoryBlob = new ProtectedMemoryBlob(decryptedSecretBytes);
-                return new ManagedAuthenticatedEncryptorConfiguration(options, protectedMemoryBlob);
+                var secret = new Secret(decryptedSecretBytes);
+                return new ManagedAuthenticatedEncryptorConfiguration(options, secret);
             }
             finally
             {

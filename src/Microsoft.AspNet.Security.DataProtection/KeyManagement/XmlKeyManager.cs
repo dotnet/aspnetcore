@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Security.DataProtection.KeyManagement
                     var thisKey = ParseKeyElement(element);
                     if (idToKeyMap.ContainsKey(thisKey.KeyId))
                     {
-                        CryptoUtil.Fail("TODO: Duplicate key.");
+                        throw CryptoUtil.Fail("TODO: Duplicate key.");
                     }
                     idToKeyMap.Add(thisKey.KeyId, thisKey);
                 }
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Security.DataProtection.KeyManagement
                 }
                 else
                 {
-                    CryptoUtil.Fail("TODO: Unknown element.");
+                    throw CryptoUtil.Fail("TODO: Unknown element.");
                 }
             }
 

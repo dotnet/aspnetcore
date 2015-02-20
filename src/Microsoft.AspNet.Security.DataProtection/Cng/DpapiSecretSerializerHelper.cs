@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
             }
         }
 
-        public static ProtectedMemoryBlob UnprotectWithDpapi(byte[] protectedSecret)
+        public static Secret UnprotectWithDpapi(byte[] protectedSecret)
         {
             Debug.Assert(protectedSecret != null);
 
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
             }
         }
 
-        internal static ProtectedMemoryBlob UnprotectWithDpapiImpl(byte* pbProtectedData, uint cbProtectedData, byte* pbOptionalEntropy, uint cbOptionalEntropy)
+        internal static Secret UnprotectWithDpapiImpl(byte* pbProtectedData, uint cbProtectedData, byte* pbOptionalEntropy, uint cbOptionalEntropy)
         {
             byte dummy; // provides a valid memory address if the secret or entropy has zero length
 
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
                     throw new CryptographicException(errorCode);
                 }
 
-                return new ProtectedMemoryBlob(dataOut.pbData, checked((int)dataOut.cbData));
+                return new Secret(dataOut.pbData, checked((int)dataOut.cbData));
             }
             finally
             {
@@ -234,7 +234,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
             }
         }
 
-        public static ProtectedMemoryBlob UnprotectWithDpapiNG(byte[] protectedData)
+        public static Secret UnprotectWithDpapiNG(byte[] protectedData)
         {
             Debug.Assert(protectedData != null);
 
@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
             }
         }
 
-        private static ProtectedMemoryBlob UnprotectWithDpapiNGImpl(byte* pbData, uint cbData)
+        private static Secret UnprotectWithDpapiNGImpl(byte* pbData, uint cbData)
         {
             Debug.Assert(pbData != null);
 
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
                 try
                 {
                     unencryptedPayloadHandle.DangerousAddRef(ref handleAcquired);
-                    return new ProtectedMemoryBlob((byte*)unencryptedPayloadHandle.DangerousGetHandle(), checked((int)cbUnencryptedPayload));
+                    return new Secret((byte*)unencryptedPayloadHandle.DangerousGetHandle(), checked((int)cbUnencryptedPayload));
                 }
                 finally
                 {

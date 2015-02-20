@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
         public void Encrypt_Decrypt_RoundTrips()
         {
             // Arrange
-            ProtectedMemoryBlob kdk = new ProtectedMemoryBlob(new byte[512 / 8]);
+            Secret kdk = new Secret(new byte[512 / 8]);
             GcmAuthenticatedEncryptor encryptor = new GcmAuthenticatedEncryptor(kdk, CachedAlgorithmHandles.AES_GCM, symmetricAlgorithmKeySizeInBytes: 256 / 8);
             ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
             ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
         public void Encrypt_Decrypt_Tampering_Fails()
         {
             // Arrange
-            ProtectedMemoryBlob kdk = new ProtectedMemoryBlob(new byte[512 / 8]);
+            Secret kdk = new Secret(new byte[512 / 8]);
             GcmAuthenticatedEncryptor encryptor = new GcmAuthenticatedEncryptor(kdk, CachedAlgorithmHandles.AES_GCM, symmetricAlgorithmKeySizeInBytes: 256 / 8);
             ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
             ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
         public void Encrypt_KnownKey()
         {
             // Arrange
-            ProtectedMemoryBlob kdk = new ProtectedMemoryBlob(Encoding.UTF8.GetBytes("master key"));
+            Secret kdk = new Secret(Encoding.UTF8.GetBytes("master key"));
             GcmAuthenticatedEncryptor encryptor = new GcmAuthenticatedEncryptor(kdk, CachedAlgorithmHandles.AES_GCM, symmetricAlgorithmKeySizeInBytes: 128 / 8, genRandom: new SequentialGenRandom());
             ArraySegment<byte> plaintext = new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 2, 3);
             ArraySegment<byte> aad = new ArraySegment<byte>(new byte[] { 7, 6, 5, 4, 3, 2, 1, 0 }, 1, 4);

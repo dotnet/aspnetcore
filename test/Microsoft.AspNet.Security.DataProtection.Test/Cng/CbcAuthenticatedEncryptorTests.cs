@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
         public void Encrypt_Decrypt_RoundTrips()
         {
             // Arrange
-            ProtectedMemoryBlob kdk = new ProtectedMemoryBlob(new byte[512 / 8]);
+            Secret kdk = new Secret(new byte[512 / 8]);
             CbcAuthenticatedEncryptor encryptor = new CbcAuthenticatedEncryptor(kdk,
                 symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
                 symmetricAlgorithmKeySizeInBytes: 256 / 8,
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
         public void Encrypt_Decrypt_Tampering_Fails()
         {
             // Arrange
-            ProtectedMemoryBlob kdk = new ProtectedMemoryBlob(new byte[512 / 8]);
+            Secret kdk = new Secret(new byte[512 / 8]);
             CbcAuthenticatedEncryptor encryptor = new CbcAuthenticatedEncryptor(kdk,
                 symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
                 symmetricAlgorithmKeySizeInBytes: 256 / 8,
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Test.Cng
         public void Encrypt_KnownKey()
         {
             // Arrange
-            ProtectedMemoryBlob kdk = new ProtectedMemoryBlob(Encoding.UTF8.GetBytes("master key"));
+            Secret kdk = new Secret(Encoding.UTF8.GetBytes("master key"));
             CbcAuthenticatedEncryptor encryptor = new CbcAuthenticatedEncryptor(kdk,
                 symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
                 symmetricAlgorithmKeySizeInBytes: 256 / 8,

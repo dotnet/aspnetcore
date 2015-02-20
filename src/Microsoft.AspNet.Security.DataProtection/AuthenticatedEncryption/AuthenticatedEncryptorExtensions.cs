@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
         public static byte[] Encrypt(this IAuthenticatedEncryptor encryptor, ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
         {
             // Can we call the optimized version?
-            IAuthenticatedEncryptor2 optimizedEncryptor = encryptor as IAuthenticatedEncryptor2;
+            IOptimizedAuthenticatedEncryptor optimizedEncryptor = encryptor as IOptimizedAuthenticatedEncryptor;
             if (optimizedEncryptor != null)
             {
                 return optimizedEncryptor.Encrypt(plaintext, additionalAuthenticatedData, preBufferSize, postBufferSize);

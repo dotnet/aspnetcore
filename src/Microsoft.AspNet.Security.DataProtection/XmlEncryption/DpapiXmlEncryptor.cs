@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Security.DataProtection.XmlEncryption
         public XElement Encrypt([NotNull] XElement plaintextElement)
         {
             // First, convert the XML element to a byte[] so that it can be encrypted.
-            ProtectedMemoryBlob secret;
+            Secret secret;
             using (var memoryStream = new MemoryStream())
             {
                 plaintextElement.Save(memoryStream);
@@ -39,12 +39,12 @@ namespace Microsoft.AspNet.Security.DataProtection.XmlEncryption
 #if !ASPNETCORE50
                 // If we're on full desktop CLR, utilize the underlying buffer directly as an optimization.
                 byte[] underlyingBuffer = memoryStream.GetBuffer();
-                secret = new ProtectedMemoryBlob(new ArraySegment<byte>(underlyingBuffer, 0, checked((int)memoryStream.Length)));
+                secret = new Secret(new ArraySegment<byte>(underlyingBuffer, 0, checked((int)memoryStream.Length)));
                 Array.Clear(underlyingBuffer, 0, underlyingBuffer.Length);
 #else
                 // Otherwise, need to make a copy of the buffer.
                 byte[] clonedBuffer = memoryStream.ToArray();
-                secret = new ProtectedMemoryBlob(clonedBuffer);
+                secret = new Secret(clonedBuffer);
                 Array.Clear(clonedBuffer, 0, clonedBuffer.Length);
 #endif
             }

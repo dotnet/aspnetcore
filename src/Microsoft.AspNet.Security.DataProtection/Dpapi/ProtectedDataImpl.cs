@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Dpapi
         public byte[] Unprotect(byte[] encryptedData, byte[] optionalEntropy, DataProtectionScope scope)
         {
 #if ASPNETCORE50
-            ProtectedMemoryBlob blob;
+            Secret blob;
             fixed (byte* pbEncryptedData = encryptedData)
             {
                 fixed (byte* pbOptionalEntropy = optionalEntropy)

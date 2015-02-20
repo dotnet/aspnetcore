@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Cryptography;
 using Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption;
 
 namespace Microsoft.AspNet.Security.DataProtection.Cng
 {
-    internal unsafe abstract class CngAuthenticatedEncryptorBase : IAuthenticatedEncryptor, IDisposable
+    /// <summary>
+    /// Base class used for all CNG-related authentication encryption operations.
+    /// </summary>
+    internal unsafe abstract class CngAuthenticatedEncryptorBase : IOptimizedAuthenticatedEncryptor, IDisposable
     {
         public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
         {
@@ -30,7 +32,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
                             pbAdditionalAuthenticatedData: (pbAdditionalAuthenticatedDataArray != null) ? &pbAdditionalAuthenticatedDataArray[additionalAuthenticatedData.Offset] : &dummy,
                             cbAdditionalAuthenticatedData: (uint)additionalAuthenticatedData.Count);
                     }
-                    catch (Exception ex) when (!(ex is CryptographicException))
+                    catch (Exception ex) when (ex.RequiresHomogenization())
                     {
                         // Homogenize to CryptographicException.
                         throw Error.CryptCommon_GenericError(ex);
@@ -71,7 +73,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
                             cbPreBuffer: preBufferSize,
                             cbPostBuffer: postBufferSize);
                     }
-                    catch (Exception ex) when (!(ex is CryptographicException))
+                    catch (Exception ex) when (ex.RequiresHomogenization())
                     {
                         // Homogenize to CryptographicException.
                         throw Error.CryptCommon_GenericError(ex);

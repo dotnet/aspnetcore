@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Security.DataProtection
                 expiration = new DateTimeOffset((long)utcTicksExpiration, TimeSpan.Zero);
                 return retVal;
             }
-            catch (Exception ex) when (!(ex is CryptographicException))
+            catch (Exception ex) when (ex.RequiresHomogenization())
             {
                 // Homogenize all failures to CryptographicException
                 throw Error.CryptCommon_GenericError(ex);

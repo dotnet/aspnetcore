@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Security.DataProtection.SP800_108
         }
 
         // Creates a provider from the given secret.
-        public static ISP800_108_CTR_HMACSHA512Provider CreateProvider(ProtectedMemoryBlob kdk)
+        public static ISP800_108_CTR_HMACSHA512Provider CreateProvider(Secret kdk)
         {
             uint secretLengthInBytes = checked((uint)kdk.Length);
             if (secretLengthInBytes == 0)

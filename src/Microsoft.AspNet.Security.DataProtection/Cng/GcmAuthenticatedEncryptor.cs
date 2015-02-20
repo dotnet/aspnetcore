@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
         private readonly BCryptAlgorithmHandle _symmetricAlgorithmHandle;
         private readonly uint _symmetricAlgorithmSubkeyLengthInBytes;
 
-        public GcmAuthenticatedEncryptor(ProtectedMemoryBlob keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, IBCryptGenRandom genRandom = null)
+        public GcmAuthenticatedEncryptor(Secret keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, IBCryptGenRandom genRandom = null)
         {
             CryptoUtil.Assert(KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES,
                 "KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES");
@@ -67,14 +67,10 @@ namespace Microsoft.AspNet.Security.DataProtection.Cng
                 *(ptr++) = 1; // 0x01 = GCM encryption + authentication
 
                 // Next is information about the symmetric algorithm (key size, nonce size, block size, tag size)
-                BitHelpers.WriteTo(ptr, _symmetricAlgorithmSubkeyLengthInBytes);
-                ptr += sizeof(uint);
-                BitHelpers.WriteTo(ptr, NONCE_SIZE_IN_BYTES);
-                ptr += sizeof(uint);
-                BitHelpers.WriteTo(ptr, TAG_SIZE_IN_BYTES); // block size
-                ptr += sizeof(uint);
-                BitHelpers.WriteTo(ptr, TAG_SIZE_IN_BYTES);
-                ptr += sizeof(uint);
+                BitHelpers.WriteTo(ref ptr, _symmetricAlgorithmSubkeyLengthInBytes);
+                BitHelpers.WriteTo(ref ptr, NONCE_SIZE_IN_BYTES);
+                BitHelpers.WriteTo(ref ptr, TAG_SIZE_IN_BYTES); // block size = tag size
+                BitHelpers.WriteTo(ref ptr, TAG_SIZE_IN_BYTES);
 
                 // See the design document for an explanation of the following code.
                 byte[] tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
