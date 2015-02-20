@@ -31,14 +31,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// Creates a <see cref="TagHelperDescriptor"/> from the given <paramref name="type"/>.
         /// </summary>
+        /// <param name="assemblyName">The assembly name that contains <paramref name="type"/>.</param>
         /// <param name="type">The type to create a <see cref="TagHelperDescriptor"/> from.</param>
         /// <returns>A <see cref="TagHelperDescriptor"/> that describes the given <paramref name="type"/>.</returns>
-        public static IEnumerable<TagHelperDescriptor> CreateDescriptors(Type type)
+        public static IEnumerable<TagHelperDescriptor> CreateDescriptors(string assemblyName, Type type)
         {
             var tagNames = GetTagNames(type);
             var typeName = type.FullName;
             var attributeDescriptors = GetAttributeDescriptors(type);
-            var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
 
             return tagNames.Select(tagName =>
                 new TagHelperDescriptor(tagName,

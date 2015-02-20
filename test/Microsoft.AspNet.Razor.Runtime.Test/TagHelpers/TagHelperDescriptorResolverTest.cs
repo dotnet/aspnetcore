@@ -689,24 +689,38 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Empty(descriptors);
         }
 
+        public static TheoryData<string> DescriptorResolver_IgnoresSpacesData
+        {
+            get
+            {
+                var typeName = typeof(Valid_PlainTagHelper).FullName;
+                return new TheoryData<string>
+                {
+                    $"{typeName},{AssemblyName}",
+                    $"    {typeName},{AssemblyName}",
+                    $"{typeName}    ,{AssemblyName}",
+                    $"    {typeName}    ,{AssemblyName}",
+                    $"{typeName},    {AssemblyName}",
+                    $"{typeName},{AssemblyName}    ",
+                    $"{typeName},    {AssemblyName}    ",
+                    $"    {typeName},    {AssemblyName}    ",
+                    $"    {typeName}    ,    {AssemblyName}    "
+                };
+            }
+        }
+
         [Theory]
-        [InlineData("Microsoft.AspNet.Razor.Runtime.TagHelpers.Valid_PlainTagHelper,MyAssembly")]
-        [InlineData("    Microsoft.AspNet.Razor.Runtime.TagHelpers.Valid_PlainTagHelper,MyAssembly")]
-        [InlineData("Microsoft.AspNet.Razor.Runtime.TagHelpers.Valid_PlainTagHelper    ,MyAssembly")]
-        [InlineData("    Microsoft.AspNet.Razor.Runtime.TagHelpers.Valid_PlainTagHelper    ,MyAssembly")]
-        [InlineData("Microsoft.AspNet.Razor.Runtime.TagHelpers.Valid_PlainTagHelper,    MyAssembly")]
-        [InlineData("Microsoft.AspNet.Razor.Runtime.TagHelpers.Valid_PlainTagHelper,MyAssembly    ")]
-        [InlineData("Microsoft.AspNet.Razor.Runtime.TagHelpers.Valid_PlainTagHelper,    MyAssembly    ")]
-        [InlineData("    Microsoft.AspNet.Razor.Runtime.TagHelpers.Valid_PlainTagHelper,    MyAssembly    ")]
-        [InlineData("    Microsoft.AspNet.Razor.Runtime.TagHelpers.Valid_PlainTagHelper    ,    MyAssembly    ")]
+        [MemberData(nameof(DescriptorResolver_IgnoresSpacesData))]
         public void DescriptorResolver_IgnoresSpaces(string lookupText)
         {
             // Arrange
+            var invoked = false;
             var tagHelperTypeResolver = new TestTagHelperTypeResolver(TestableTagHelpers)
             {
                 OnGetExportedTypes = (assemblyName) =>
                 {
-                    Assert.Equal("MyAssembly", assemblyName.Name);
+                    Assert.Equal(AssemblyName, assemblyName.Name);
+                    invoked = true;
                 }
             };
             var tagHelperDescriptorResolver = new TestTagHelperDescriptorResolver(tagHelperTypeResolver);
@@ -715,7 +729,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var descriptors = tagHelperDescriptorResolver.Resolve(lookupText);
 
             // Assert
-            Assert.Empty(descriptors);
+            Assert.True(invoked);
+            var descriptor = Assert.Single(descriptors);
+            Assert.Equal(AssemblyName, descriptor.AssemblyName);
+            Assert.Equal(typeof(Valid_PlainTagHelper).FullName, descriptor.TypeName);
         }
 
         [Fact]
