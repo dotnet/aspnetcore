@@ -121,7 +121,7 @@
     <value>Value cannot be null or empty.</value>
   </data>
   <data name="CompilationFailed" xml:space="preserve">
-    <value>Error compiling page at '{0}'.</value>
+    <value>One or more compilation failures occured:</value>
   </data>
   <data name="FlushPointCannotBeInvoked" xml:space="preserve">
     <value>'{0}' cannot be invoked when a Layout page is set to be executed.</value>

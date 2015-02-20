@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
 using System.Linq;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
 using Microsoft.Framework.Internal;
 
@@ -35,16 +37,32 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (!results.Success)
             {
                 var messages = results.ParserErrors
-                                      .Select(parseError =>
-                                        new CompilationMessage(parseError.Message,
-                                                               parseError.Location.CharacterIndex,
-                                                               parseError.Location.LineIndex,
-                                                               parseError.Location.CharacterIndex + parseError.Length,
-                                                               parseError.Location.LineIndex));
-                return CompilationResult.Failed(file.FileInfo, results.GeneratedCode, messages);
+                                      .Select(parseError => new RazorCompilationMessage(parseError, file.RelativePath));
+                var failure = new RazorCompilationFailure(
+                    file.RelativePath,
+                    ReadFileContentsSafely(file.FileInfo),
+                    messages);
+
+                return CompilationResult.Failed(failure);
             }
 
-            return _compilationService.Compile(file.FileInfo, results.GeneratedCode);
+            return _compilationService.Compile(file, results.GeneratedCode);
+        }
+
+        private static string ReadFileContentsSafely(IFileInfo fileInfo)
+        {
+            try
+            {
+                using (var reader = new StreamReader(fileInfo.CreateReadStream()))
+                {
+                    return reader.ReadToEnd();
+                }
+            }
+            catch
+            {
+                // Ignore any failures
+                return null;
+            }
         }
     }
 }

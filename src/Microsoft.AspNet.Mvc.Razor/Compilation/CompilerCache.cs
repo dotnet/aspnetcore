@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                            string normalizedPath,
                                            Func<RelativeFileInfo, CompilationResult> compile)
         {
-            var compilationResult = compile(file);
+            var compilationResult = compile(file).EnsureSuccessful();
 
             // Concurrent addition to MemoryCache with the same key result in safe race.
             var cacheEntry = _cache.Set(normalizedPath,

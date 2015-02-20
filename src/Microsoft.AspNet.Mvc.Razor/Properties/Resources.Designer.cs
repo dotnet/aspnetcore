@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Error compiling page at '{0}'.
+        /// One or more compilation failures occured:
         /// </summary>
         internal static string CompilationFailed
         {
@@ -35,11 +35,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Error compiling page at '{0}'.
+        /// One or more compilation failures occured:
         /// </summary>
-        internal static string FormatCompilationFailed(object p0)
+        internal static string FormatCompilationFailed()
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("CompilationFailed"), p0);
+            return GetString("CompilationFailed");
         }
 
         /// <summary>

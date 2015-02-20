@@ -60,12 +60,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public CompilationResult Compile([NotNull] IFileInfo fileInfo, [NotNull] string compilationContent)
+        public CompilationResult Compile([NotNull] RelativeFileInfo fileInfo, [NotNull] string compilationContent)
         {
             // The path passed to SyntaxTreeGenerator.Generate is used by the compiler to generate symbols (pdb) that
             // map to the source file. If a file does not exist on a physical file system, PhysicalPath will be null.
             // This prevents files that exist in a non-physical file system from being debugged.
-            var path = fileInfo.PhysicalPath ?? fileInfo.Name;
+            var path = fileInfo.FileInfo.PhysicalPath ?? fileInfo.RelativePath;
             var compilationSettings = _compilerOptionsProvider.GetCompilationSettings(_environment);
             var syntaxTree = SyntaxTreeGenerator.Generate(compilationContent,
                                                           path,
@@ -98,14 +98,15 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                     if (!result.Success)
                     {
-                        var formatter = new DiagnosticFormatter();
+                        var failures = result.Diagnostics.Where(IsError);
+                        var compilationFailure = new RoslynCompilationFailure(failures)
+                        {
+                            CompiledContent = compilationContent,
+                            SourceFileContent = ReadFileContentsSafely(fileInfo.FileInfo),
+                            SourceFilePath = fileInfo.RelativePath
+                        };
 
-                        var messages = result.Diagnostics
-                                             .Where(IsError)
-                                             .Select(d => GetCompilationMessage(formatter, d))
-                                             .ToList();
-
-                        return CompilationResult.Failed(fileInfo, compilationContent, messages);
+                        return CompilationResult.Failed(compilationFailure);
                     }
 
                     Assembly assembly;
@@ -215,21 +216,25 @@ namespace Microsoft.AspNet.Mvc.Razor
             return metadata.GetReference();
         }
 
-        private static CompilationMessage GetCompilationMessage(DiagnosticFormatter formatter, Diagnostic diagnostic)
-        {
-            var lineSpan = diagnostic.Location.GetMappedLineSpan();
-            return new CompilationMessage(formatter.Format(diagnostic),
-                                          startColumn: lineSpan.StartLinePosition.Character,
-                                          startLine: lineSpan.StartLinePosition.Line,
-                                          endColumn: lineSpan.EndLinePosition.Character,
-                                          endLine: lineSpan.EndLinePosition.Line);
-        }
-
         private static bool IsError(Diagnostic diagnostic)
         {
             return diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error;
         }
 
-
+        private static string ReadFileContentsSafely(IFileInfo fileInfo)
+        {
+            try
+            {
+                using (var reader = new StreamReader(fileInfo.CreateReadStream()))
+                {
+                    return reader.ReadToEnd();
+                }
+            }
+            catch
+            {
+                // Ignore any failures
+                return null;
+            }
+        }
     }
 }

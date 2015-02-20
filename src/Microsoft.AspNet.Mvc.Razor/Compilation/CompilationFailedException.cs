@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Diagnostics;
+using System.Linq;
+using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// An exception thrown when accessing the result of a failed compilation.
+    /// An <see cref="Exception"/> thrown when accessing the result of a failed compilation.
     /// </summary>
     public class CompilationFailedException : Exception, ICompilationException
     {
@@ -20,12 +21,19 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// details of the compilation failure.</param>
         public CompilationFailedException(
                 [NotNull] ICompilationFailure compilationFailure)
-            : base(Resources.FormatCompilationFailed(compilationFailure.SourceFilePath))
+            : base(FormatMessage(compilationFailure))
         {
             CompilationFailures = new[] { compilationFailure };
         }
 
         /// <inheritdoc />
         public IEnumerable<ICompilationFailure> CompilationFailures { get; }
+
+        private static string FormatMessage(ICompilationFailure compilationFailure)
+        {
+            return Resources.CompilationFailed +
+                   Environment.NewLine +
+                   string.Join(Environment.NewLine, compilationFailure.Messages.Select(message => message.FormattedMessage));
+    }
     }
 }

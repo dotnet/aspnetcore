@@ -31,13 +31,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             fileInfo.Setup(f => f.PhysicalPath).Returns(viewPath);
             fileInfo.Setup(f => f.CreateReadStream()).Returns(Stream.Null);
 
+            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
+
             var compiler = new Mock<ICompilationService>();
-            compiler.Setup(c => c.Compile(fileInfo.Object, It.IsAny<string>()))
+            compiler.Setup(c => c.Compile(relativeFileInfo, It.IsAny<string>()))
                     .Returns(CompilationResult.Successful(typeof(RazorCompilationServiceTest)));
 
             var razorService = new RazorCompilationService(compiler.Object, host.Object);
-
-            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
 
             // Act
             razorService.Compile(relativeFileInfo);
@@ -75,9 +75,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var result = razorService.Compile(relativeFileInfo);
 
             // Assert
-            var ex = Assert.Throws<CompilationFailedException>(() => result.CompiledType);
-            var failure = Assert.Single(ex.CompilationFailures);
-            var message = Assert.Single(failure.Messages);
+            Assert.NotNull(result.CompilationFailure);
+            var message = Assert.Single(result.CompilationFailure.Messages);
             Assert.Equal("some message", message.Message);
             host.Verify();
         }
@@ -100,13 +99,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var fileInfo = new Mock<IFileInfo>();
             fileInfo.Setup(f => f.CreateReadStream())
                     .Returns(Stream.Null);
+            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
 
             var compilationResult = CompilationResult.Successful(typeof(object));
             var compiler = new Mock<ICompilationService>();
-            compiler.Setup(c => c.Compile(fileInfo.Object, code))
+            compiler.Setup(c => c.Compile(relativeFileInfo, code))
                     .Returns(compilationResult)
                     .Verifiable();
-            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
             var razorService = new RazorCompilationService(compiler.Object, host.Object);
 
             // Act

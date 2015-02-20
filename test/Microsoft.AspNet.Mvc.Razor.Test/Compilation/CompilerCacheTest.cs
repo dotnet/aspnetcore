@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             Assert.NotSame(CompilerCacheResult.FileNotFound, result);
-            var actual = result.CompilationResult;
+            var actual = Assert.IsType<UncachedCompilationResult>(result.CompilationResult);
             Assert.NotNull(actual);
             Assert.Same(expected, actual);
             Assert.Equal("hello world", actual.CompiledContent);
@@ -541,23 +541,18 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Act
             cache.GetOrAdd("test", _ => uncachedResult);
-            var result1 = cache.GetOrAdd("test", _ => uncachedResult);
-            var result2 = cache.GetOrAdd("test", _ => uncachedResult);
+            var result1 = cache.GetOrAdd("test", _ => { throw new Exception("shouldn't be called."); });
+            var result2 = cache.GetOrAdd("test", _ => { throw new Exception("shouldn't be called."); });
 
             // Assert
             Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
             Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
 
-            var actual1 = result1.CompilationResult;
-            var actual2 = result2.CompilationResult;
+            var actual1 = Assert.IsType<CompilationResult>(result1.CompilationResult);
+            var actual2 = Assert.IsType<CompilationResult>(result2.CompilationResult);
             Assert.NotSame(uncachedResult, actual1);
             Assert.NotSame(uncachedResult, actual2);
-            var result = Assert.IsType<CompilationResult>(actual1);
-            Assert.Null(actual1.CompiledContent);
             Assert.Same(type, actual1.CompiledType);
-
-            result = Assert.IsType<CompilationResult>(actual2);
-            Assert.Null(actual2.CompiledContent);
             Assert.Same(type, actual2.CompiledType);
         }
 
