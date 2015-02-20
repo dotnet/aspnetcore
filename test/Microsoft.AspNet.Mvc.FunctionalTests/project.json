@@ -64,7 +64,6 @@
             "dependencies": {
                 "AutofacWebSite": "1.0.0"
             }
-        },
-        "aspnetcore50": { }
+        }
     }
 }
