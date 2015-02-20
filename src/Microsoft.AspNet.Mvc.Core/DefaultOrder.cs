@@ -11,5 +11,11 @@ namespace Microsoft.AspNet.Mvc
         /// User code should order at bigger than 0 or smaller than -2000.
         /// </summary>
         public static readonly int DefaultFrameworkSortOrder = -1000;
+
+        /// <summary>
+        /// The default order for <see cref="CorsAuthorizationFilter"/>, <see cref="CorsAuthorizationFilterFactory"/>
+        /// and <see cref="DisableCorsAuthorizationFilter"/>.
+        /// </summary>
+        public static readonly int DefaultCorsSortOrder = int.MaxValue - 100;
     }
 }

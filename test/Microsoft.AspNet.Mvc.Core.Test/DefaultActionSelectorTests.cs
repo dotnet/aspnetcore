@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
+using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
@@ -867,7 +868,7 @@ namespace Microsoft.AspNet.Mvc
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
             request.SetupGet(r => r.Method).Returns(httpMethod);
             request.SetupGet(r => r.Path).Returns(new PathString());
-
+            request.SetupGet(r => r.Headers).Returns(new HeaderDictionary());
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             httpContext.SetupGet(c => c.RequestServices).Returns(serviceContainer);
 

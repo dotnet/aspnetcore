@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Internal;
@@ -87,6 +88,7 @@ namespace Microsoft.Framework.DependencyInjection
             services.AddOptions();
             services.AddDataProtection();
             services.AddRouting();
+            services.AddCors();
             services.AddAuthorization();
             services.AddWebEncoders();
             services.Configure<RouteOptions>(

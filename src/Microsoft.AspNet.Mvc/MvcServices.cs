@@ -75,6 +75,7 @@ namespace Microsoft.AspNet.Mvc
             services.AddTransient<IFilterProvider, DefaultFilterProvider>();
 
             services.AddTransient<FormatFilter, FormatFilter>();
+            services.AddTransient<CorsAuthorizationFilter, CorsAuthorizationFilter>();
 
             // Dataflow - ModelBinding, Validation and Formatting
             //

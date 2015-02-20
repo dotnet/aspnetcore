@@ -6,8 +6,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
+using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
@@ -45,6 +48,48 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             // Assert
             Assert.True(model.Filters.Any(f => f is AuthorizeFilter));
+        }
+
+        [Fact]
+        public void BuildControllerModel_EnableCorsAttributeAddsCorsAuthorizationFilterFactory()
+        {
+            // Arrange
+            var corsOptions = new CorsOptions();
+            corsOptions.AddPolicy("policy", new CorsPolicy());
+            var mockOptions = new Mock<IOptions<CorsOptions>>();
+            mockOptions.SetupGet(o => o.Options)
+                       .Returns(corsOptions);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
+                                                            NullLoggerFactory.Instance,
+                                                            authorizationOptions: null);
+            var typeInfo = typeof(CorsController).GetTypeInfo();
+
+            // Act
+            var model = builder.BuildControllerModel(typeInfo);
+
+            // Assert
+            Assert.Single(model.Filters, f => f is CorsAuthorizationFilterFactory);
+        }
+
+        [Fact]
+        public void BuildControllerModel_DisableCorsAttributeAddsDisableCorsAuthorizationFilter()
+        {
+            // Arrange
+            var corsOptions = new CorsOptions();
+            corsOptions.AddPolicy("policy", new CorsPolicy());
+            var mockOptions = new Mock<IOptions<CorsOptions>>();
+            mockOptions.SetupGet(o => o.Options)
+                       .Returns(corsOptions);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
+                                                            NullLoggerFactory.Instance,
+                                                            authorizationOptions: null);
+            var typeInfo = typeof(DisableCorsController).GetTypeInfo();
+
+            // Act
+            var model = builder.BuildControllerModel(typeInfo);
+
+            // Assert
+            Assert.True(model.Filters.Any(f => f is DisableCorsAuthorizationFilter));
         }
 
         // This class has a filter attribute, but doesn't implement any filter interfaces,
@@ -110,6 +155,16 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         [Authorize]
         public class AccountController
+        {
+        }
+
+        [EnableCors("policy")]
+        public class CorsController
+        {
+        }
+
+        [DisableCors]
+        public class DisableCorsController
         {
         }
 

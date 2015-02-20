@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Authorization;
+using Microsoft.AspNet.Cors.Core;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Moq;
@@ -282,6 +283,38 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             // Assert
             Assert.False(isValid);
+        }
+
+        [Fact]
+        public void BuildActionModel_EnableCorsAttributeAddsCorsAuthorizationFilterFactory()
+        {
+            // Arrange
+            var builder = new DefaultActionModelBuilder(authorizationOptions: null);
+            var typeInfo = typeof(EnableCorsController).GetTypeInfo();
+            var method = typeInfo.GetMethod("Action");
+
+            // Act
+            var actions = builder.BuildActionModels(typeInfo, method);
+
+            // Assert
+            var action = Assert.Single(actions);
+            Assert.Single(action.Filters, f => f is CorsAuthorizationFilterFactory);
+        }
+
+        [Fact]
+        public void BuildActionModel_DisableCorsAttributeAddsDisableCorsAuthorizationFilter()
+        {
+            // Arrange
+            var builder = new DefaultActionModelBuilder(authorizationOptions: null);
+            var typeInfo = typeof(DisableCorsController).GetTypeInfo();
+            var method = typeInfo.GetMethod("Action");
+
+            // Act
+            var actions = builder.BuildActionModels(typeInfo, method);
+
+            // Assert
+            var action = Assert.Single(actions);
+            Assert.True(action.Filters.Any(f => f is DisableCorsAuthorizationFilter));
         }
 
         [Fact]
@@ -925,6 +958,22 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             [HttpGet]
             [HttpPost("Products")]
             public void Invalid() { }
+        }
+
+        private class EnableCorsController
+        {
+            [EnableCors("policy")]
+            public void Action()
+            {
+            }
+        }
+
+        private class DisableCorsController
+        {
+            [DisableCors]
+            public void Action()
+            {
+            }
         }
 
         // Here the constraints on the methods are acting as an IActionHttpMethodProvider and
