@@ -50,13 +50,10 @@
                          $(DropSource)**\kre*.nupkg;
                          $(DropSource)**\KoreBuild*.nupkg;
                          $(DropSource)**\Microsoft.AspNet*.nupkg;
-                         $(DropSource)**\Microsoft.Data*.nupkg;
                          $(DropSource)**\Microsoft.Framework*.nupkg;
                          $(DropSource)**\Microsoft.Net*.nupkg;
                          $(DropSource)**\NuGet.*.nupkg;
-                         $(DropSource)**\StyleCop.KRules*.nupkg;
-                         $(DropSource)**\System.Data.*.nupkg;
-                         $(DropSource)**\System.Security.Claims*.nupkg"
+                         $(DropSource)**\StyleCop.KRules*.nupkg"
             />
             <SymbolPackages
                 Include="$(SymbolPackagePath)**\EntityFramework*.nupkg;
@@ -64,12 +61,9 @@
                          $(SymbolPackagePath)**\KoreBuild*.nupkg;
                          $(SymbolPackagePath)**\kre*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.AspNet*.nupkg;
-                         $(SymbolPackagePath)**\Microsoft.Data*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Framework*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Net*.nupkg;
-                         $(DropSource)**\NuGet.*.nupkg;
-                         $(SymbolPackagePath)**\System.Data.*.nupkg;
-                         $(SymbolPackagePath)**\System.Security.Claims*.nupkg"
+                         $(DropSource)**\NuGet.*.nupkg"
             />
         </ItemGroup>
 
@@ -98,15 +92,11 @@
                          $(UnsignedPackagesPath)**\Kestrel*.dll;
                          $(UnsignedPackagesPath)**\kre*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNet*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.Data*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Framework*.dll;                         
                          $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
                          $(UnsignedPackagesPath)**\NuGet.*.dll;
                          $(UnsignedPackagesPath)**\signalrclient.dll;
                          $(UnsignedPackagesPath)**\StyleCop.KRules*.dll;
-                         $(UnsignedPackagesPath)**\System.Data.*.dll;
-                         $(UnsignedPackagesPath)**\SNI.dll;
-                         $(UnsignedPackagesPath)**\System.Security.Claims*.dll;
                          $(UnsignedPackagesPath)**\klr*.exe;
                          $(UnsignedPackagesPath)**\CsprojDumper.exe"
             />
@@ -178,13 +168,10 @@
                                  $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
                                  $(UnsignedPackagesPath)**\kre*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.AspNet*.nuspec;
-                                 $(UnsignedPackagesPath)**\Microsoft.Data*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Framework.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Net.*.nuspec;
                                  $(UnsignedPackagesPath)**\NuGet.*.nuspec;
-                                 $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec;
-                                 $(UnsignedPackagesPath)**\System.Data.*.nuspec;
-                                 $(UnsignedPackagesPath)**\System.Security.Claims.nuspec"/>
+                                 $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec"/>
         </ItemGroup>
 
         <MSBuild Projects="k.msbuild" Properties="NuSpecFileToUpdate=%(NuSpecEULA.Identity);Sign=$(Sign);TestCodeSign=$(TestCodeSign);Configuration=$(Configuration)"
@@ -251,14 +238,11 @@
                                         $(SymbolPackagePath)Kestrel*.symbols.nupkg;
                                         $(SymbolPackagePath)kre*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.AspNet*.symbols.nupkg;
-                                        $(SymbolPackagePath)Microsoft.Data*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Framework*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Net*.symbols.nupkg;
                                         $(SymbolPackagePath)NuGet.*.symbols.nupkg;
                                         $(SymbolPackagePath)PageGenerator.*.symbols.nupkg;
-                                        $(SymbolPackagePath)StyleCop.KRules*.symbols.nupkg;
-                                        $(SymbolPackagePath)System.Data*.symbols.nupkg;
-                                        $(SymbolPackagePath)System.Security.Claims.*.symbols.nupkg;"/>
+                                        $(SymbolPackagePath)StyleCop.KRules*.symbols.nupkg"/>
         </ItemGroup>
 
         <Exec Command="$(KToolsPath)7za.exe x -y -scsUTF-8 -o@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)') %(PoliCheckPackages.Identity)" />
