@@ -165,6 +165,33 @@ component-content";
             Assert.Equal(expected, body.Trim());
         }
 
+        public static TheoryData ViewLocationExpanders_PassesInIsPartialToViewLocationExpanderContextData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    { "Index", "<expander-view><shared-views>/Shared-Views/ExpanderViews/_ExpanderPartial.cshtml</shared-views></expander-view>" },
+                    { "Partial", "<shared-views>/Shared-Views/ExpanderViews/_ExpanderPartial.cshtml</shared-views>" }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ViewLocationExpanders_PassesInIsPartialToViewLocationExpanderContextData))]
+        public async Task ViewLocationExpanders_PassesInIsPartialToViewLocationExpanderContext(string action, string expected)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync($"http://localhost/ExpanderViews/{action}");
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
+
         public static IEnumerable<object[]> RazorViewEngine_RendersPartialViewsData
         {
             get

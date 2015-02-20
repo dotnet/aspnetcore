@@ -27,6 +27,7 @@ namespace RazorWebSite
                     var expander = new LanguageViewLocationExpander(
                             context => context.HttpContext.Request.Query["language-expander-value"]);
                     options.ViewLocationExpanders.Add(expander);
+                    options.ViewLocationExpanders.Add(new CustomPartialDirectoryViewLocationExpander());
                 });
             });
 

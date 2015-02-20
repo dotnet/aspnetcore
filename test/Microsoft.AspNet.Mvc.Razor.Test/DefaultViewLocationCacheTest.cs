@@ -15,10 +15,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             get
             {
-                yield return new[] { new ViewLocationExpanderContext(GetActionContext(), "test") };
+                yield return new[] { new ViewLocationExpanderContext(GetActionContext(), "test", isPartial: false) };
+                yield return new[] { new ViewLocationExpanderContext(GetActionContext(), "test", isPartial: true) };
 
                 var areaActionContext = GetActionContext("controller2", "myarea");
-                yield return new[] { new ViewLocationExpanderContext(areaActionContext, "test2") };
+                yield return new[] { new ViewLocationExpanderContext(areaActionContext, "test2", isPartial: false) };
+                yield return new[] { new ViewLocationExpanderContext(areaActionContext, "test2", isPartial: true) };
 
                 var actionContext = GetActionContext("controller3", "area3");
                 var values = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -26,11 +28,16 @@ namespace Microsoft.AspNet.Mvc.Razor
                     { "culture", "fr" },
                     { "theme", "sleek" }
                 };
-                var expanderContext = new ViewLocationExpanderContext(actionContext, "test3")
+                var expanderContext = new ViewLocationExpanderContext(actionContext, "test3", isPartial: false)
                 {
                     Values = values
                 };
+                yield return new[] { expanderContext };
 
+                expanderContext = new ViewLocationExpanderContext(actionContext, "test3", isPartial: true)
+                {
+                    Values = values
+                };
                 yield return new[] { expanderContext };
             }
         }
@@ -71,15 +78,26 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 yield return new object[]
                 {
-                    new ViewLocationExpanderContext(GetActionContext(), "test"),
-                    "test:mycontroller"
+                    new ViewLocationExpanderContext(GetActionContext(), "test", isPartial: false),
+                    "test:0:mycontroller"
+                };
+
+                yield return new object[]
+                {
+                    new ViewLocationExpanderContext(GetActionContext(), "test", isPartial: true),
+                    "test:1:mycontroller"
                 };
 
                 var areaActionContext = GetActionContext("controller2", "myarea");
                 yield return new object[]
                 {
-                    new ViewLocationExpanderContext(areaActionContext, "test2"),
-                    "test2:controller2:myarea"
+                    new ViewLocationExpanderContext(areaActionContext, "test2", isPartial: false),
+                    "test2:0:controller2:myarea"
+                };
+                yield return new object[]
+                {
+                    new ViewLocationExpanderContext(areaActionContext, "test2", isPartial: true),
+                    "test2:1:controller2:myarea"
                 };
 
                 var actionContext = GetActionContext("controller3", "area3");
@@ -88,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     { "culture", "fr" },
                     { "theme", "sleek" }
                 };
-                var expanderContext = new ViewLocationExpanderContext(actionContext, "test3")
+                var expanderContext = new ViewLocationExpanderContext(actionContext, "test3", isPartial: false)
                 {
                     Values = values
                 };
@@ -96,7 +114,17 @@ namespace Microsoft.AspNet.Mvc.Razor
                 yield return new object[]
                 {
                     expanderContext,
-                    "test3:controller3:area3:culture:fr:theme:sleek"
+                    "test3:0:controller3:area3:culture:fr:theme:sleek"
+                };
+
+                expanderContext = new ViewLocationExpanderContext(actionContext, "test3", isPartial: true)
+                {
+                    Values = values
+                };
+                yield return new object[]
+                {
+                    expanderContext,
+                    "test3:1:controller3:area3:culture:fr:theme:sleek"
                 };
             }
         }

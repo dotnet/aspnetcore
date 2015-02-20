@@ -51,8 +51,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             var routeValues = context.ActionContext.RouteData.Values;
             var controller = routeValues.GetValueOrDefault<string>(RazorViewEngine.ControllerKey);
 
-            // format is "{viewName}:{controllerName}:{areaName}:"
+            // format is "{viewName}:{isPartial}:{controllerName}:{areaName}:"
             keyBuilder.Append(context.ViewName)
+                      .Append(CacheKeySeparator)
+                      .Append(context.IsPartial ? 1 : 0)
                       .Append(CacheKeySeparator)
                       .Append(controller);
 
