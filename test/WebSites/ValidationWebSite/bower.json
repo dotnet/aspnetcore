@@ -9,10 +9,10 @@
     },
     "exportsOverride": {
         "jquery": {
-            "js": "jquery.{js,min.js,min.map}"
+            "": "dist/jquery.{js,min.js,min.map}"
         },
         "jquery-validation": {
-            "": "jquery.validate.js"
+            "": "dist/jquery.validate.{js,min.js}"
         },
         "jquery-validation-unobtrusive": {
             "": "jquery.validate.unobtrusive.{js,min.js}"
