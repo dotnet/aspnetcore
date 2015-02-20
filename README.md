@@ -7,6 +7,7 @@ How to run Coherence-Signed
 2. Depending on the Git branch you want to test (e.g. dev or release), run:
    ```
    set build_branch=dev
+   set RootDrop=\\projectk-tc\drops\Coherence\%build_branch%
    ```
 
 3. Make a temporary edit to k.msbuild to disable BinScope and signing
