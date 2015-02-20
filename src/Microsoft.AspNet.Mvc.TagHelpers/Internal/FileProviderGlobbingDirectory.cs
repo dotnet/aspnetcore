@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
 
@@ -76,32 +74,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             }
         }
 
-        public override IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos(
-            string searchPattern,
-            SearchOption searchOption)
+        public override IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos()
         {
-            if (!string.Equals(searchPattern, "*", StringComparison.OrdinalIgnoreCase))
-            {
-                // Only * based searches are ever performed against this API and we have an item to change this API
-                // such that the searchPattern doesn't even get passed in, so this is just a safe-guard until then.
-                // The searchPattern here has no relation to the globbing pattern.
-                throw new ArgumentException(
-                    "Only full wildcard searches are supported, i.e. \"*\".",
-                    nameof(searchPattern));
-            }
-
-            if (searchOption != SearchOption.TopDirectoryOnly)
-            {
-                // Only SearchOption.TopDirectoryOnly is actually used in the implementation of Matcher and will likely
-                // be removed from DirectoryInfoBase in the near future. This is just a safe-guard until then.
-                // The searchOption here has no relation to the globbing pattern.
-                throw new ArgumentException(
-                    $"Only {nameof(SearchOption.TopDirectoryOnly)} is supported.",
-                    nameof(searchOption));
-            }
-
-
-
             foreach (var fileInfo in _fileProvider.GetDirectoryContents(RelativePath))
             {
                 yield return BuildFileResult(fileInfo);
