@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Gets or sets a value that determines if symbols (.pdb) file for the precompiled views.
+        /// Gets or sets a value that determines if symbols (.pdb) file for the precompiled views is generated.
         /// </summary>
         public bool GenerateSymbols { get; set; }
 
