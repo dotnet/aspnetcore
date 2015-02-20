@@ -14,12 +14,12 @@
 <body>
     <form asp-controller="MvcTagHelper_Home" asp-route-action="ProductSubmit" asp-anti-forgery="false" method="get">
         <div>
-            <label asp-for="HomePage" class="product" />
+            <label asp-for="HomePage" class="product"></label>
             <input asp-for="HomePage" type="url" size="50" />
         </div>
         <div>
-            <label asp-for="Description" class="product" />
-            <textarea asp-for="Description" rows="4" cols="50" class="product" />
+            <label asp-for="Description" class="product"></label>
+            <textarea asp-for="Description" rows="4" cols="50" class="product"></textarea>
         </div>
         <input type="submit" />
     </form>

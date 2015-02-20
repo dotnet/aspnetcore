@@ -105,7 +105,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     output.MergeAttributes(tagBuilder);
                     output.PostContent += tagBuilder.InnerHtml;
-                    output.SelfClosing = false;
                 }
             }
 

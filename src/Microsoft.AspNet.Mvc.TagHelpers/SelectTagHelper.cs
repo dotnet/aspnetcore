@@ -108,7 +108,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     output.MergeAttributes(tagBuilder);
                     output.PostContent += tagBuilder.InnerHtml;
-                    output.SelfClosing = false;
                 }
 
                 // Whether or not (not being highly unlikely) we generate anything, could update contained <option/>

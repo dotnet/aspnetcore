@@ -23,6 +23,7 @@ namespace TagHelpersWebSite.TagHelpers
                 Info.CopyrightYear.ToString(),
                 Info.Approved.ToString(),
                 Info.TagsToShow.ToString());
+            output.SelfClosing = false;
         }
     }
 }

@@ -123,6 +123,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal("form", output.TagName);
+            Assert.False(output.SelfClosing);
             Assert.Empty(output.Attributes);
             Assert.Empty(output.PreContent);
             Assert.Empty(output.Content);
@@ -185,6 +186,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             await formTagHelper.ProcessAsync(context, output);
 
             Assert.Equal("form", output.TagName);
+            Assert.False(output.SelfClosing);
             var attribute = Assert.Single(output.Attributes);
             Assert.Equal(expectedAttribute, attribute);
             Assert.Empty(output.PreContent);
@@ -225,6 +227,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             generator.Verify();
 
             Assert.Equal("form", output.TagName);
+            Assert.False(output.SelfClosing);
             Assert.Empty(output.Attributes);
             Assert.Empty(output.PreContent);
             Assert.Empty(output.Content);
@@ -308,6 +311,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal("form", output.TagName);
+            Assert.False(output.SelfClosing);
             var attribute = Assert.Single(output.Attributes);
             Assert.Equal(new KeyValuePair<string, string>("aCTiON", "my-action"), attribute);
             Assert.Empty(output.PreContent);

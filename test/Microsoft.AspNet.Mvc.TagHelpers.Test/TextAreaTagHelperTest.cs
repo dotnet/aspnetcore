@@ -136,9 +136,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
+            Assert.True(output.SelfClosing);
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Equal(expectedContent, output.Content);
-            Assert.False(output.SelfClosing);
             Assert.Equal(expectedTagName, output.TagName);
         }
 

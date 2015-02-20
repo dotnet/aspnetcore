@@ -11,16 +11,16 @@
     @using (Html.BeginForm("CreateWarehouse", "MvcTagHelper_Home"))
     {
         <div>
-            <label asp-for="City" class="warehouse" />
+            <label asp-for="City" class="warehouse"></label>
             <input asp-for="City" type="text" size="50" />
-            <span asp-validation-for="City" />
+            <span asp-validation-for="City"></span>
         </div>
         <div>
-            <label asp-for="Product" class="warehouse" />
-            <select asp-for="Product" asp-items="(IEnumerable<SelectListItem>)ViewBag.Items" />
-            <span asp-validation-for="Product" />
+            <label asp-for="Product" class="warehouse"></label>
+            <select asp-for="Product" asp-items="(IEnumerable<SelectListItem>)ViewBag.Items"></select>
+            <span asp-validation-for="Product"></span>
         </div>
-        <div asp-validation-summary="ValidationSummary.All" class="warehouse" />
+        <div asp-validation-summary="ValidationSummary.All" class="warehouse"></div>
         <input type="submit" />
     }
 </body>
