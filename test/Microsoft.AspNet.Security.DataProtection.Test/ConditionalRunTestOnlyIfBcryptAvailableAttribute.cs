@@ -3,7 +3,7 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNet.Security.DataProtection.SafeHandles;
+using Microsoft.AspNet.Cryptography.SafeHandles;
 using Microsoft.AspNet.Testing.xunit;
 
 namespace Microsoft.AspNet.Security.DataProtection.Test

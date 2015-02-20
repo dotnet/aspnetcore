@@ -3,6 +3,7 @@
 
 using System;
 using System.Xml.Linq;
+using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Security.DataProtection.XmlEncryption;
 
 namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption

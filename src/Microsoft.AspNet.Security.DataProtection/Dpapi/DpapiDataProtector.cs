@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using Microsoft.AspNet.Cryptography;
 
 namespace Microsoft.AspNet.Security.DataProtection.Dpapi
 {
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.Security.DataProtection.Dpapi
             using (var memoryStream = new MemoryStream())
             {
                 memoryStream.Write(_combinedPurposes, 0, _combinedPurposes.Length);
-                using (var writer = new BinaryWriter(memoryStream, CryptoUtil.SecureUtf8Encoding, leaveOpen: true))
+                using (var writer = new BinaryWriter(memoryStream, EncodingUtil.SecureUtf8Encoding, leaveOpen: true))
                 {
                     writer.Write(purpose);
                 }

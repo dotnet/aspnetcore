@@ -1,0 +1,21 @@
+{
+    "version": "1.0.0-*",
+    "description": "ASP.NET 5 utilities for key derivation.",
+    "dependencies": {
+        "Microsoft.AspNet.Cryptography.Internal": "1.0.0-*"
+    },
+    "frameworks": {
+        "net451": { },
+        "aspnet50": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Runtime.Extensions": "4.0.10-beta-*",
+                "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*"
+            }
+        }
+    },
+    "compilationOptions": {
+        "allowUnsafe": true,
+        "warningsAsErrors": true
+    }
+}

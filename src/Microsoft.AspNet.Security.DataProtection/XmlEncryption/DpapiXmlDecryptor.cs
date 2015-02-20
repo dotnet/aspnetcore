@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Xml.Linq;
+using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Security.DataProtection.Cng;
 
 namespace Microsoft.AspNet.Security.DataProtection.XmlEncryption

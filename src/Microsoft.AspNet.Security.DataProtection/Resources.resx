@@ -117,12 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="BCryptAlgorithmHandle_ProviderNotFound" xml:space="preserve">
-    <value>A provider could not be found for algorithm '{0}'.</value>
-  </data>
-  <data name="BCRYPT_KEY_LENGTHS_STRUCT_InvalidKeyLength" xml:space="preserve">
-    <value>The key length {0} is invalid. Valid key lengths are {1} to {2} bits (step size {3}).</value>
-  </data>
   <data name="CryptCommon_GenericError" xml:space="preserve">
     <value>An error occurred during a cryptographic operation.</value>
   </data>

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.Security.DataProtection.SP800_108;
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography;
+using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Security.DataProtection.Managed;
 
 namespace Microsoft.AspNet.Security.DataProtection.SP800_108

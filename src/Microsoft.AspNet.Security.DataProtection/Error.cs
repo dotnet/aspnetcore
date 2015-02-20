@@ -9,12 +9,6 @@ namespace Microsoft.AspNet.Security.DataProtection
 {
     internal static class Error
     {
-        public static CryptographicException BCryptAlgorithmHandle_ProviderNotFound(string algorithmId)
-        {
-            string message = String.Format(CultureInfo.CurrentCulture, Resources.BCryptAlgorithmHandle_ProviderNotFound, algorithmId);
-            return new CryptographicException(message);
-        }
-
         public static ArgumentException Common_BufferIncorrectlySized(string parameterName, int actualSize, int expectedSize)
         {
             string message = String.Format(CultureInfo.CurrentCulture, Resources.Common_BufferIncorrectlySized, actualSize, expectedSize);

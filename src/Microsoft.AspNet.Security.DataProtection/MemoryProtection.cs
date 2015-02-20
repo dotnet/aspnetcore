@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.AspNet.Cryptography;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {

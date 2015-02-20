@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Security.DataProtection.XmlEncryption;
 using Microsoft.Framework.DependencyInjection;
 

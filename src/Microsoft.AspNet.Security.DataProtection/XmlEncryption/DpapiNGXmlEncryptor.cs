@@ -6,9 +6,10 @@ using System.Globalization;
 using System.IO;
 using System.Security.Principal;
 using System.Xml.Linq;
+using Microsoft.AspNet.Cryptography;
+using Microsoft.AspNet.Cryptography.SafeHandles;
 using Microsoft.AspNet.Security.DataProtection.Cng;
 using Microsoft.AspNet.Security.DataProtection.KeyManagement;
-using Microsoft.AspNet.Security.DataProtection.SafeHandles;
 
 namespace Microsoft.AspNet.Security.DataProtection.XmlEncryption
 {

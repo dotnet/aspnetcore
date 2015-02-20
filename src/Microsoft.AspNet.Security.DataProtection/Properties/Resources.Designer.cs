@@ -11,38 +11,6 @@ namespace Microsoft.AspNet.Security.DataProtection
             = new ResourceManager("Microsoft.AspNet.Security.DataProtection.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// A provider could not be found for algorithm '{0}'.
-        /// </summary>
-        internal static string BCryptAlgorithmHandle_ProviderNotFound
-        {
-            get { return GetString("BCryptAlgorithmHandle_ProviderNotFound"); }
-        }
-
-        /// <summary>
-        /// A provider could not be found for algorithm '{0}'.
-        /// </summary>
-        internal static string FormatBCryptAlgorithmHandle_ProviderNotFound(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("BCryptAlgorithmHandle_ProviderNotFound"), p0);
-        }
-
-        /// <summary>
-        /// The key length {0} is invalid. Valid key lengths are {1} to {2} bits (step size {3}).
-        /// </summary>
-        internal static string BCRYPT_KEY_LENGTHS_STRUCT_InvalidKeyLength
-        {
-            get { return GetString("BCRYPT_KEY_LENGTHS_STRUCT_InvalidKeyLength"); }
-        }
-
-        /// <summary>
-        /// The key length {0} is invalid. Valid key lengths are {1} to {2} bits (step size {3}).
-        /// </summary>
-        internal static string FormatBCRYPT_KEY_LENGTHS_STRUCT_InvalidKeyLength(object p0, object p1, object p2, object p3)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("BCRYPT_KEY_LENGTHS_STRUCT_InvalidKeyLength"), p0, p1, p2, p3);
-        }
-
-        /// <summary>
         /// An error occurred during a cryptographic operation.
         /// </summary>
         internal static string CryptCommon_GenericError

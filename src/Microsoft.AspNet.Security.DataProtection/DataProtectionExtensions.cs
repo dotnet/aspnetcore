@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Cryptography;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
@@ -32,7 +31,7 @@ namespace Microsoft.AspNet.Security.DataProtection
         {
             try
             {
-                byte[] unprotectedDataAsBytes = CryptoUtil.SecureUtf8Encoding.GetBytes(unprotectedData);
+                byte[] unprotectedDataAsBytes = EncodingUtil.SecureUtf8Encoding.GetBytes(unprotectedData);
                 byte[] protectedDataAsBytes = protector.Protect(unprotectedDataAsBytes);
                 return WebEncoders.Base64UrlEncode(protectedDataAsBytes);
             }
@@ -58,7 +57,7 @@ namespace Microsoft.AspNet.Security.DataProtection
             {
                 byte[] protectedDataAsBytes = WebEncoders.Base64UrlDecode(protectedData);
                 byte[] unprotectedDataAsBytes = protector.Unprotect(protectedDataAsBytes);
-                return CryptoUtil.SecureUtf8Encoding.GetString(unprotectedDataAsBytes);
+                return EncodingUtil.SecureUtf8Encoding.GetString(unprotectedDataAsBytes);
             }
             catch (Exception ex) when (ex.RequiresHomogenization())
             {

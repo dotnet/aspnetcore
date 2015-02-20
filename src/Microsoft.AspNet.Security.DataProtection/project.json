@@ -2,6 +2,7 @@
     "version": "1.0.0-*",
     "description": "ASP.NET 5 logic to protect and unprotect data, similar to DPAPI.",
     "dependencies": {
+        "Microsoft.AspNet.Cryptography.Internal": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.OptionsModel": "1.0.0-*"
     },
@@ -24,6 +25,7 @@
             "dependencies": {
                 "Microsoft.Win32.Registry": "4.0.0-beta-*",
                 "System.IO": "4.0.10-beta-*",
+                "System.Reflection.TypeExtensions": "4.0.0-beta-*",
                 "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
                 "System.Security.Cryptography.Encryption.Aes": "4.0.0-beta-*",
                 "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",

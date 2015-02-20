@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.Security.DataProtection.Cng;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;

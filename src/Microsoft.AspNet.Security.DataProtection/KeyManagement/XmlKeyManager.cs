@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
+using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.Security.DataProtection.Repositories;
 using Microsoft.AspNet.Security.DataProtection.XmlEncryption;

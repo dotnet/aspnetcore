@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Security.DataProtection.Cng;
-using Microsoft.AspNet.Security.DataProtection.SafeHandles;
 
 namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
 {

@@ -4,8 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Security.Cryptography;
 using System.Threading;
+using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption;
 
 namespace Microsoft.AspNet.Security.DataProtection.KeyManagement
@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Security.DataProtection.KeyManagement
             // Strings should never contain invalid UTF16 chars, so we'll use a secure encoding.
             private static readonly byte[] _guidBuffer = new byte[sizeof(Guid)];
 
-            public PurposeBinaryWriter(MemoryStream stream) : base(stream, CryptoUtil.SecureUtf8Encoding, leaveOpen: true) { }
+            public PurposeBinaryWriter(MemoryStream stream) : base(stream, EncodingUtil.SecureUtf8Encoding, leaveOpen: true) { }
 
             public new void Write7BitEncodedInt(int value)
             {

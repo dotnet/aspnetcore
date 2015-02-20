@@ -7,7 +7,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNet.Security.DataProtection.SafeHandles;
+using Microsoft.AspNet.Cryptography;
+using Microsoft.AspNet.Cryptography.SafeHandles;
 
 namespace Microsoft.AspNet.Security.DataProtection.Cng
 {
