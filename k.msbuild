@@ -53,6 +53,7 @@
                          $(DropSource)**\Microsoft.Data*.nupkg;
                          $(DropSource)**\Microsoft.Framework*.nupkg;
                          $(DropSource)**\Microsoft.Net*.nupkg;
+                         $(DropSource)**\NuGet.*.nupkg;
                          $(DropSource)**\StyleCop.KRules*.nupkg;
                          $(DropSource)**\System.Data.*.nupkg;
                          $(DropSource)**\System.Security.Claims*.nupkg"
@@ -66,6 +67,7 @@
                          $(SymbolPackagePath)**\Microsoft.Data*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Framework*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Net*.nupkg;
+                         $(DropSource)**\NuGet.*.nupkg;
                          $(SymbolPackagePath)**\System.Data.*.nupkg;
                          $(SymbolPackagePath)**\System.Security.Claims*.nupkg"
             />
@@ -99,6 +101,7 @@
                          $(UnsignedPackagesPath)**\Microsoft.Data*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Framework*.dll;                         
                          $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
+                         $(UnsignedPackagesPath)**\NuGet.*.dll;
                          $(UnsignedPackagesPath)**\signalrclient.dll;
                          $(UnsignedPackagesPath)**\StyleCop.KRules*.dll;
                          $(UnsignedPackagesPath)**\System.Data.*.dll;
@@ -178,6 +181,7 @@
                                  $(UnsignedPackagesPath)**\Microsoft.Data*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Framework.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Net.*.nuspec;
+                                 $(UnsignedPackagesPath)**\NuGet.*.nuspec;
                                  $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec;
                                  $(UnsignedPackagesPath)**\System.Data.*.nuspec;
                                  $(UnsignedPackagesPath)**\System.Security.Claims.nuspec"/>
@@ -250,6 +254,7 @@
                                         $(SymbolPackagePath)Microsoft.Data*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Framework*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Net*.symbols.nupkg;
+                                        $(SymbolPackagePath)NuGet.*.symbols.nupkg;
                                         $(SymbolPackagePath)PageGenerator.*.symbols.nupkg;
                                         $(SymbolPackagePath)StyleCop.KRules*.symbols.nupkg;
                                         $(SymbolPackagePath)System.Data*.symbols.nupkg;
