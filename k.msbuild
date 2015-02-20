@@ -97,8 +97,7 @@
                          $(UnsignedPackagesPath)**\NuGet.*.dll;
                          $(UnsignedPackagesPath)**\signalrclient.dll;
                          $(UnsignedPackagesPath)**\StyleCop.KRules*.dll;
-                         $(UnsignedPackagesPath)**\klr*.exe;
-                         $(UnsignedPackagesPath)**\CsprojDumper.exe"
+                         $(UnsignedPackagesPath)**\klr*.exe"
             />
 
             <UnsignedPackageBinaries Include="@(_UnsignedPackageBinaries)">
