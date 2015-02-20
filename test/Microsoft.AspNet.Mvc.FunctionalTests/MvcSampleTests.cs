@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
@@ -44,6 +45,55 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
                 // Act
                 var response = await client.GetAsync("http://localhost" + path);
+
+                // Assert
+                Assert.NotNull(response);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
+        [Theory]
+        [InlineData("Name=SamplePerson&Address.Street=SampleStreet&Address.City=SampleCity&" +
+                    "Address.State=SampleState&Address.ZipCode=11&PastJobs[0].JobTitle=SampleJob1&" +
+                    "PastJobs[0].EmployerName=Employer1&PastJobs[0].Years=2&PastJobs[1].JobTitle=SampleJob2&" +
+                    "PastJobs[1].EmployerName=Employer2&PastJobs[1].Years=4&PastJobs[2].JobTitle=SampleJob3&" +
+                    "PastJobs[2].EmployerName=Employer3&PastJobs[2].Years=1", "true")]
+        // Input with some special characters
+        [InlineData("Name=SamplePerson&Address.Street=SampleStre'et&Address.City=S\ampleCity&" +
+                    "Address.State=SampleState&Address.ZipCode=11&PastJobs[0].JobTitle=S~ampleJob1&" +
+                    "PastJobs[0].EmployerName=Employer1&PastJobs[0].Years=2&PastJobs[1].JobTitle=SampleJob2&" +
+                    "PastJobs[1].EmployerName=Employer2&PastJobs[1].Years=4&PastJobs[2].JobTitle=SampleJob3&" +
+                    "PastJobs[2].EmployerName=Employer3&PastJobs[2].Years=1", "true")]
+        [InlineData("Name=SamplePerson", "false")]
+        public async Task FormUrlEncoded_ReturnsAppropriateResults(string input, string expectedOutput)
+        {
+            using (TestHelper.ReplaceCallContextServiceLocationService(_services))
+            {
+                // Arrange
+                var server = TestServer.Create(_services, _app);
+                var client = server.CreateClient();
+                var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/FormUrlEncoded/IsValidPerson");
+                request.Content = new StringContent(input, Encoding.UTF8, "application/x-www-form-urlencoded");
+
+                // Act
+                var response = await client.SendAsync(request);
+
+                // Assert
+                Assert.Equal(expectedOutput, await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        [Fact]
+        public async Task FormUrlEncoded_Index_ReturnSuccess()
+        {
+            using (TestHelper.ReplaceCallContextServiceLocationService(_services))
+            {
+                // Arrange
+                var server = TestServer.Create(_services, _app);
+                var client = server.CreateClient();
+
+                // Act
+                var response = await client.GetAsync("http://localhost/FormUrlEncoded");
 
                 // Assert
                 Assert.NotNull(response);

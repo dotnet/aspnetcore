@@ -29,5 +29,17 @@
             "dependencies": { }
         }
     },
+    "exclude": [
+        "wwwroot",
+        "node_modules",
+        "bower_components"
+    ],
+    "packExclude": [
+        "node_modules",
+        "bower_components",
+        "**.kproj",
+        "**.user",
+        "**.vspscc"
+    ],
     "webroot": "wwwroot"
 }
