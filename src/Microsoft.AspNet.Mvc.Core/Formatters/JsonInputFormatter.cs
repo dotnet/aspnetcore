@@ -57,12 +57,6 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        /// <summary>
-        /// Gets or sets if deserialization errors are captured. When set, these errors appear in
-        /// the <see cref="ActionContext.ModelState"/> instance of <see cref="InputFormatterContext"/>.
-        /// </summary>
-        public bool CaptureDeserilizationErrors { get; set; }
-
         /// <inheritdoc />
         public override Task<object> ReadRequestBodyAsync([NotNull] InputFormatterContext context)
         {
@@ -82,19 +76,17 @@ namespace Microsoft.AspNet.Mvc
                 var jsonSerializer = CreateJsonSerializer();
 
                 EventHandler<Newtonsoft.Json.Serialization.ErrorEventArgs> errorHandler = null;
-                if (CaptureDeserilizationErrors)
+                errorHandler = (sender, e) =>
                 {
-                    errorHandler = (sender, e) =>
-                    {
-                        var exception = e.ErrorContext.Error;
-                        context.ActionContext.ModelState.TryAddModelError(e.ErrorContext.Path, e.ErrorContext.Error);
-                        // Error must always be marked as handled
-                        // Failure to do so can cause the exception to be rethrown at every recursive level and
-                        // overflow the stack for x64 CLR processes
-                        e.ErrorContext.Handled = true;
-                    };
-                    jsonSerializer.Error += errorHandler;
-                }
+                    var exception = e.ErrorContext.Error;
+                    context.ActionContext.ModelState.TryAddModelError(e.ErrorContext.Path, e.ErrorContext.Error);
+
+                    // Error must always be marked as handled
+                    // Failure to do so can cause the exception to be rethrown at every recursive level and
+                    // overflow the stack for x64 CLR processes
+                    e.ErrorContext.Handled = true;
+                };
+                jsonSerializer.Error += errorHandler;
 
                 try
                 {

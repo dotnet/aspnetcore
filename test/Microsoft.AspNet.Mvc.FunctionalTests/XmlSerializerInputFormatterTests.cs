@@ -38,24 +38,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task XmlSerializerFormatter_ThrowsOnIncorrectInputNamespace()
+        public async Task ThrowsOnInvalidInput_AndAddsToModelState()
         {
             // Arrange
             var server = TestServer.Create(_services, _app);
             var client = server.CreateClient();
-            var sampleInputInt = 10;
-            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                "<DummyClas xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
-                "i:type=\"DerivedDummyClass\" xmlns=\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite\">" +
-                "<SampleInt>" + sampleInputInt.ToString() + "</SampleInt></DummyClass>";
+            var input = "Not a valid xml document";
             var content = new StringContent(input, Encoding.UTF8, "application/xml-xmlser");
 
             // Act
             var response = await client.PostAsync("http://localhost/Home/Index", content);
 
             // Assert
-            var exception = response.GetServerException();
-            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync();
+            Assert.Contains("dummyObject:There is an error in XML document", data);
         }
     }
 }

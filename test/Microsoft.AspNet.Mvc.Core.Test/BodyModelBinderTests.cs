@@ -2,13 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -35,6 +39,8 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             mockInputFormatter.Verify(v => v.ReadAsync(It.IsAny<InputFormatterContext>()), Times.Once);
+            Assert.NotNull(binderResult);
+            Assert.True(binderResult.IsModelSet);
         }
 
         [Fact]
@@ -116,14 +122,48 @@ namespace Microsoft.AspNet.Mvc
             Assert.Null(binderResult);
         }
 
+        [Fact]
+        public async Task CustomFormatterDeserializationException_AddedToModelState()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("Bad data!"));
+            httpContext.Request.ContentType = "text/xyz";
+            var bindingContext = GetBindingContext(httpContext, typeof(Person), inputFormatter: new XyzFormatter());
+            bindingContext.ModelMetadata.BinderMetadata = new FromBodyAttribute();
+
+            var binder = bindingContext.OperationBindingContext.ModelBinder;
+
+            // Act
+            var binderResult = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+
+            // Returns true because it understands the metadata type.
+            Assert.NotNull(binderResult);
+            Assert.False(binderResult.IsModelSet);
+            Assert.Null(binderResult.Model);
+            Assert.True(bindingContext.ModelState.ContainsKey("someName"));
+            var errorMessage = bindingContext.ModelState["someName"].Errors[0].Exception.Message;
+            Assert.Equal("Your input is bad!", errorMessage);
+        }
+
         private static ModelBindingContext GetBindingContext(Type modelType, IInputFormatter inputFormatter)
+        {
+            return GetBindingContext(new DefaultHttpContext(), modelType, inputFormatter);
+        }
+
+        private static ModelBindingContext GetBindingContext(
+            HttpContext httpContext, 
+            Type modelType, 
+            IInputFormatter inputFormatter)
         {
             var metadataProvider = new EmptyModelMetadataProvider();
             var operationBindingContext = new OperationBindingContext
             {
-                ModelBinder = GetBodyBinder(inputFormatter),
+                ModelBinder = GetBodyBinder(httpContext, inputFormatter),
                 MetadataProvider = metadataProvider,
-                HttpContext = new DefaultHttpContext(),
+                HttpContext = httpContext,
             };
 
             var bindingContext = new ModelBindingContext
@@ -140,7 +180,12 @@ namespace Microsoft.AspNet.Mvc
 
         private static BodyModelBinder GetBodyBinder(IInputFormatter inputFormatter)
         {
-            var actionContext = CreateActionContext(new DefaultHttpContext());
+            return GetBodyBinder(new DefaultHttpContext(), inputFormatter);
+        }
+
+        private static BodyModelBinder GetBodyBinder(HttpContext httpContext, IInputFormatter inputFormatter)
+        {
+            var actionContext = CreateActionContext(httpContext);
             var inputFormatterSelector = new Mock<IInputFormatterSelector>();
             inputFormatterSelector
                 .Setup(o => o.SelectFormatter(
@@ -193,6 +238,25 @@ namespace Microsoft.AspNet.Mvc
         private class Person
         {
             public string Name { get; set; }
+        }
+
+        private class XyzFormatter : InputFormatter
+        {
+            public XyzFormatter()
+            {
+                SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xyz"));
+                SupportedEncodings.Add(Encoding.UTF8);
+            }
+
+            protected override bool CanReadType(Type type)
+            {
+                return true;
+            }
+
+            public override Task<object> ReadRequestBodyAsync(InputFormatterContext context)
+            {
+                throw new InvalidOperationException("Your input is bad!");
+            }
         }
     }
 }

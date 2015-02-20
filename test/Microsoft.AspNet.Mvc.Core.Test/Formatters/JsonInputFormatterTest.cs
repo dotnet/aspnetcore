@@ -112,27 +112,11 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public async Task ReadAsync_ThrowsOnDeserializationErrors()
+        public async Task ReadAsync_AddsModelValidationErrorsToModelState()
         {
             // Arrange
             var content = "{name: 'Person Name', Age: 'not-an-age'}";
             var formatter = new JsonInputFormatter();
-            var contentBytes = Encoding.UTF8.GetBytes(content);
-
-            var httpContext = GetActionContext(contentBytes);
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(User));
-            var context = new InputFormatterContext(httpContext, metadata.ModelType);
-
-            // Act and Assert
-            await Assert.ThrowsAsync<JsonReaderException>(() => formatter.ReadAsync(context));
-        }
-
-        [Fact]
-        public async Task ReadAsync_AddsModelValidationErrorsToModelState_WhenCaptureErrorsIsSet()
-        {
-            // Arrange
-            var content = "{name: 'Person Name', Age: 'not-an-age'}";
-            var formatter = new JsonInputFormatter { CaptureDeserilizationErrors = true };
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var actionContext = GetActionContext(contentBytes);
@@ -148,11 +132,11 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public async Task ReadAsync_UsesTryAddModelValidationErrorsToModelState_WhenCaptureErrorsIsSet()
+        public async Task ReadAsync_UsesTryAddModelValidationErrorsToModelState()
         {
             // Arrange
             var content = "{name: 'Person Name', Age: 'not-an-age'}";
-            var formatter = new JsonInputFormatter { CaptureDeserilizationErrors = true };
+            var formatter = new JsonInputFormatter();
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var actionContext = GetActionContext(contentBytes);
@@ -189,7 +173,7 @@ namespace Microsoft.AspNet.Mvc
             // missing password property here
             var contentBytes = Encoding.UTF8.GetBytes("{ \"UserName\" : \"John\"}");
 
-            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var jsonFormatter = new JsonInputFormatter();
             // by default we ignore missing members, so here explicitly changing it
             jsonFormatter.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Error;
 
@@ -214,7 +198,7 @@ namespace Microsoft.AspNet.Mvc
             // missing password property here
             var contentBytes = Encoding.UTF8.GetBytes("{ \"UserName\" : \"John\"}");
 
-            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var jsonFormatter = new JsonInputFormatter();
             // by default we ignore missing members, so here explicitly changing it
             jsonFormatter.SerializerSettings = new JsonSerializerSettings()
             {
@@ -240,7 +224,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var contentBytes = Encoding.UTF8.GetBytes("{\"Id\":\"null\",\"Name\":\"Programming C#\"}");
-            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var jsonFormatter = new JsonInputFormatter();
             var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
             var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(Book));
             var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
@@ -267,7 +251,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var contentBytes = Encoding.UTF8.GetBytes("{ \"Name\" : \"Programming C#\"}");
-            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var jsonFormatter = new JsonInputFormatter();
             var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
             var metadata = new EmptyModelMetadataProvider().GetMetadataForType(type);
             var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
@@ -288,7 +272,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var contentBytes = Encoding.UTF8.GetBytes("{\"Longitude\":{}}");
-            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var jsonFormatter = new JsonInputFormatter();
             var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
             var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(GpsCoordinate));
             var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
@@ -317,7 +301,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var contentBytes = Encoding.UTF8.GetBytes("{\"Name\":\"Seattle\"}");
-            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var jsonFormatter = new JsonInputFormatter();
             var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
             var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(Location));
             var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
@@ -338,7 +322,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var contentBytes = Encoding.UTF8.GetBytes("{}");
-            var jsonFormatter = new JsonInputFormatter() { CaptureDeserilizationErrors = true };
+            var jsonFormatter = new JsonInputFormatter();
             var actionContext = GetActionContext(contentBytes, "application/json;charset=utf-8");
             var metadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(Venue));
             var inputFormatterContext = new InputFormatterContext(actionContext, metadata.ModelType);
