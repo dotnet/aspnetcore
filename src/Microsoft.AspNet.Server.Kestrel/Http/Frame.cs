@@ -64,7 +64,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         */
 
         List<KeyValuePair<Action<object>, object>> _onSendingHeaders;
+        List<KeyValuePair<Action<object>, object>> _onResponseCompleted;
         object _onSendingHeadersSync = new Object();
+        object _onResponseCompletedSync = new Object();
 
         public Frame(ConnectionContext context) : base(context)
         {
@@ -200,6 +202,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
+        public void OnResponseCompleted(Action<object> callback, object state)
+        {
+            lock (_onResponseCompletedSync)
+            {
+                if (_onResponseCompleted == null)
+                {
+                    _onResponseCompleted = new List<KeyValuePair<Action<object>, object>>();
+                }
+                _onResponseCompleted.Add(new KeyValuePair<Action<object>, object>(callback, state));
+            }
+        }
+
         private void FireOnSendingHeaders()
         {
             List<KeyValuePair<Action<object>, object>> onSendingHeaders = null;
@@ -217,6 +231,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
+        private void FireOnResponseCompleted()
+        {
+            List<KeyValuePair<Action<object>, object>> onResponseCompleted = null;
+            lock (_onResponseCompletedSync)
+            {
+                onResponseCompleted = _onResponseCompleted;
+                _onResponseCompleted = null;
+            }
+            if (onResponseCompleted != null)
+            {
+                foreach (var entry in onResponseCompleted)
+                {
+                    try
+                    {
+                        entry.Key.Invoke(entry.Value);
+                    }
+                    catch
+                    {
+                        // Ignore exceptions
+                    }
+                }
+            }
+        }
+
         private async Task ExecuteAsync()
         {
             Exception error = null;
@@ -230,6 +268,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             finally
             {
+                FireOnResponseCompleted();
                 ProduceEnd(error);
             }
         }
