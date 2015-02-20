@@ -93,7 +93,6 @@ namespace Microsoft.AspNet.Hosting.Tests
         [InlineData(typeof(IApplicationLifetime))]
         [InlineData(typeof(ILoggerFactory))]
         [InlineData(typeof(IHttpContextAccessor))]
-        [InlineData(typeof(ILogger<IHostingEngine>))]
         public void UseRequestServicesHostingImportedServicesAreDefined(Type service)
         {
             var baseServiceProvider = HostingServices.Create().BuildServiceProvider();
