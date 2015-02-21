@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

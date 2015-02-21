@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.Framework.Cache.Memory;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
 {

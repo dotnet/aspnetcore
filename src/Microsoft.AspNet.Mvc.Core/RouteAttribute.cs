@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

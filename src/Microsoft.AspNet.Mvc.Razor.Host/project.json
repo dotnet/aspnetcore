@@ -8,7 +8,8 @@
         "Microsoft.AspNet.FileProviders": "1.0.0-*",
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
-        "Microsoft.Framework.Cache.Memory": "1.0.0-*"
+        "Microsoft.Framework.Cache.Memory": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "net45": {},

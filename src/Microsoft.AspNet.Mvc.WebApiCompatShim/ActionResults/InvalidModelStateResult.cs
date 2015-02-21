@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Framework.Internal;
 
 namespace System.Web.Http
 {

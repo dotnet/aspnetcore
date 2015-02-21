@@ -6,6 +6,7 @@ using System.IO;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

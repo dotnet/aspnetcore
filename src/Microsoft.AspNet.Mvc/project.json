@@ -7,7 +7,8 @@
     "dependencies": {
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-        "Microsoft.Framework.Cache.Memory": "1.0.0-*"
+        "Microsoft.Framework.Cache.Memory": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "aspnet50": {},

@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {

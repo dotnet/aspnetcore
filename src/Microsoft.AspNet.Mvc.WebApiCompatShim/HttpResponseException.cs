@@ -4,6 +4,7 @@
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Framework.Internal;
 using ShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
 
 namespace System.Web.Http

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Reflection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {

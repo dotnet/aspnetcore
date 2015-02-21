@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.Internal.Routing;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Routing

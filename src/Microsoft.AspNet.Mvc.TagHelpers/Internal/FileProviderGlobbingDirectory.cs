@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {

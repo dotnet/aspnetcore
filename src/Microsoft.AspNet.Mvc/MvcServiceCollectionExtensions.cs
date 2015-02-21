@@ -8,6 +8,7 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.Framework.DependencyInjection

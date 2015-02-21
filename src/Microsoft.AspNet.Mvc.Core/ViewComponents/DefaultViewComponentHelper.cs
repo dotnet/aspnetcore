@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

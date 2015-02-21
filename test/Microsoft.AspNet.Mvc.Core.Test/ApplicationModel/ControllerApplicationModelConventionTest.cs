@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Framework.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels

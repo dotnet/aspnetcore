@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.OptionDescriptors
 {

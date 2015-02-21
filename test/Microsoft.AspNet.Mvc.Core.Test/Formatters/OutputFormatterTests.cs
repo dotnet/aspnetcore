@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;

@@ -4,6 +4,7 @@
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

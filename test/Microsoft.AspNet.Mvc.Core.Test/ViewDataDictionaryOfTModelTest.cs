@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Framework.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core

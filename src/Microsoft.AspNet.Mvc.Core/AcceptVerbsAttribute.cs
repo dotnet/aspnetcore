@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22604.0
+VisualStudioVersion = 14.0.22609.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -55,6 +55,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Xml.Test", "test\Microsoft.AspNet.Mvc.Xml.Test\Microsoft.AspNet.Mvc.Xml.Test.kproj", "{22019146-BDFA-442E-8C8E-345FB9644578}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces", "src\Microsoft.AspNet.PageExecutionInstrumentation.Interfaces\Microsoft.AspNet.PageExecutionInstrumentation.Interfaces.kproj", "{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Common.Test", "test\Microsoft.AspNet.Mvc.Common.Test\Microsoft.AspNet.Mvc.Common.Test.kproj", "{0449D6D2-BE1B-4E29-8E1B-444420802C03}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -290,6 +292,18 @@ Global
 		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|x86.ActiveCfg = Release|Any CPU
 		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|x86.Build.0 = Release|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Debug|x86.Build.0 = Debug|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Release|x86.ActiveCfg = Release|Any CPU
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -316,5 +330,6 @@ Global
 		{9C632DF0-DC06-410B-95AE-B5423702E84F} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 		{22019146-BDFA-442E-8C8E-345FB9644578} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
+		{0449D6D2-BE1B-4E29-8E1B-444420802C03} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 	EndGlobalSection
 EndGlobal

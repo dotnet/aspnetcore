@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

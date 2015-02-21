@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http.Formatting;
 using System.Text;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {

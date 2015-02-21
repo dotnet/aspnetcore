@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.Internal;
 using Moq;
 using Xunit;
 

@@ -14,6 +14,7 @@ using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Roslyn;
 

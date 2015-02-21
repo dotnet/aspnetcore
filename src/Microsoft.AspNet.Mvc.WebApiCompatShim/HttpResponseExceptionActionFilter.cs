@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using System.Web.Http;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {

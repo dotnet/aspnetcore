@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Microsoft.Framework.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding

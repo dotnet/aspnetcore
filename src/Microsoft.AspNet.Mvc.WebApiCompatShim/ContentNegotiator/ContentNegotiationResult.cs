@@ -7,6 +7,7 @@ using Microsoft.AspNet.Mvc;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Web.Http;
+using Microsoft.Framework.Internal;
 
 namespace System.Net.Http.Formatting
 {

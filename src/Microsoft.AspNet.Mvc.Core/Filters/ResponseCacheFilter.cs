@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

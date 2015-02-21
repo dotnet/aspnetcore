@@ -10,6 +10,7 @@
         "Microsoft.Framework.Cache.Memory": "1.0.0-*",
         "Microsoft.Framework.FileSystemGlobbing": "1.0.0-*",
         "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" },
         "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*"
     },
     "frameworks": {

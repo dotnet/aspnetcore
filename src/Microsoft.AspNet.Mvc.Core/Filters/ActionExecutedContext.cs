@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Framework.Internal;
 
 namespace System.Web.Http
 {

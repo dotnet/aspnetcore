@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Security;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;

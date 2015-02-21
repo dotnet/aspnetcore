@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Framework.Internal;
 
 namespace System.Web.Http
 {

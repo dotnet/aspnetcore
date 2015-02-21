@@ -8,7 +8,8 @@
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
         "Microsoft.AspNet.Mvc.ModelBinding": "6.0.0-*",
-        "Microsoft.AspNet.WebApi.Client": "5.2.2"
+        "Microsoft.AspNet.WebApi.Client": "5.2.2",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "aspnet50": {

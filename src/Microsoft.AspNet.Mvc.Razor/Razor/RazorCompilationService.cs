@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNet.Razor;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

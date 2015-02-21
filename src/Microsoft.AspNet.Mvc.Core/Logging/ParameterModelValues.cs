@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging

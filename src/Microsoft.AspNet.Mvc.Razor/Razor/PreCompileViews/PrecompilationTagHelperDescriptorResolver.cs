@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Roslyn;
 

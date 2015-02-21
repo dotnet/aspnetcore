@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

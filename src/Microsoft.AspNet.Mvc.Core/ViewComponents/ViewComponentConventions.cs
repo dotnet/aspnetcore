@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

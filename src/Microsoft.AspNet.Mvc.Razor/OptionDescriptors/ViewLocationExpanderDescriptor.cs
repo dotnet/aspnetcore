@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.OptionDescriptors
 {

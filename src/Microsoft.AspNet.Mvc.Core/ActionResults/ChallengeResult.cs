@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http.Security;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

@@ -15,6 +15,7 @@ using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Moq;
 using Xunit;

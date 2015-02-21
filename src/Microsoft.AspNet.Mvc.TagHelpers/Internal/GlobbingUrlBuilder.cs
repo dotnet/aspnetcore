@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.FileSystemGlobbing;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {

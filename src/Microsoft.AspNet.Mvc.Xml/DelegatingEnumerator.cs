@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Xml
 {

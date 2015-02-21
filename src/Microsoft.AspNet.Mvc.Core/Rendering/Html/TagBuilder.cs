@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {

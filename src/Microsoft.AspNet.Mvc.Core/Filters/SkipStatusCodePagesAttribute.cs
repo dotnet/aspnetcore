@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

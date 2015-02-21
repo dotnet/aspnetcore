@@ -4,8 +4,10 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
-        "xunit.runner.kre": "1.0.0-*",
-        "Microsoft.AspNet.Testing": "1.0.0-*"
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Microsoft.Framework.CopyOnWriteDictionary.Internal": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" },
+        "xunit.runner.kre": "1.0.0-*"
     },
     "commands": {
         "test": "xunit.runner.kre"

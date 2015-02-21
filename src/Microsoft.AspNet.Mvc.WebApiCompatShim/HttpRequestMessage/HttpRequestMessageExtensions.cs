@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using ShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
 
