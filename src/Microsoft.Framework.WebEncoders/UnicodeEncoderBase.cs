@@ -6,8 +6,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.WebUtilities.Encoders
+namespace Microsoft.Framework.WebEncoders
 {
     internal unsafe abstract class UnicodeEncoderBase
     {

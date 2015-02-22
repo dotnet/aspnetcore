@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNet.WebUtilities.Encoders
+namespace Microsoft.Framework.WebEncoders
 {
     /// <summary>
     /// Contains helpers for dealing with byte-hex char conversions.

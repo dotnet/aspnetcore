@@ -4,11 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace Microsoft.AspNet.WebUtilities.Encoders
+namespace Microsoft.Framework.WebEncoders
 {
     /// <summary>
     /// Contains predefined Unicode code point filters.
@@ -2576,9 +2575,11 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// </summary>
         private sealed class EmptyCodePointFilter : ICodePointFilter
         {
+            private static readonly int[] _emptyArray = new int[0]; // immutable since empty
+
             public IEnumerable<int> GetAllowedCodePoints()
             {
-                return Enumerable.Empty<int>();
+                return _emptyArray;
             }
         }
     }

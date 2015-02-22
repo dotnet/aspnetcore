@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.WebUtilities.Encoders
+namespace Microsoft.Framework.WebEncoders
 {
     /// <summary>
     /// Represents a filter which allows only certain Unicode code points through.

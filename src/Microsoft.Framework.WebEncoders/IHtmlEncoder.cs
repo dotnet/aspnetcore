@@ -4,8 +4,9 @@
 
 using System;
 using System.IO;
+using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.WebUtilities.Encoders
+namespace Microsoft.Framework.WebEncoders
 {
     /// <summary>
     /// Provides services for HTML-encoding input.

@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.WebUtilities.Encoders;
+using Microsoft.Framework.WebEncoders;
 using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection

@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 
-namespace Microsoft.AspNet.WebUtilities.Encoders
+namespace Microsoft.Framework.WebEncoders
 {
     /// <summary>
     /// Contains extension methods for fetching encoders from a service provider.

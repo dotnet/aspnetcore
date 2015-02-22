@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.WebUtilities.Encoders
+namespace Microsoft.Framework.WebEncoders
 {
     internal static class EncoderCommon
     {

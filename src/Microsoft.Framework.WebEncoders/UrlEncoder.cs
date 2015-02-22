@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
-namespace Microsoft.AspNet.WebUtilities.Encoders
+namespace Microsoft.Framework.WebEncoders
 {
     /// <summary>
     /// A class which can perform URL string escaping given an allow list of characters which

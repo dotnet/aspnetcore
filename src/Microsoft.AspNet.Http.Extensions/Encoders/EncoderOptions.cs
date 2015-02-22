@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.WebUtilities.Encoders
+namespace Microsoft.Framework.WebEncoders
 {
     /// <summary>
     /// Specifies options common to all three encoders (HtmlEncode, JavaScriptStringEncode, UrlEncode).
@@ -14,8 +14,9 @@ namespace Microsoft.AspNet.WebUtilities.Encoders
         /// Specifies code point tables which do not require escaping by the encoders.
         /// </summary>
         /// <remarks>
-        /// By default, only Basic Latin is allowed.
+        /// If this property is set to a null array, then by default only the 'Basic Latin'
+        /// code point filter is active.
         /// </remarks>
-        public ICodePointFilter[] CodePointFilters { get; set; } = new[] { Microsoft.AspNet.WebUtilities.Encoders.CodePointFilters.BasicLatin };
+        public ICodePointFilter[] CodePointFilters { get; set; }
     }
 }
