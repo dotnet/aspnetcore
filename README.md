@@ -1,6 +1,6 @@
 # ASP.NET 5 Home
 Latest dev version: [![dev version](http://img.shields.io/myget/aspnetvnext/v/kre-clr-win-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetvnext)<br>
-Latest master version: [![master version](https://img.shields.io/nuget/v/kre-clr-win-x86.svg?style=flat)](https://img.shields.io/nuget/v/kre-clr-win-x86.svg)
+Latest master version: [![master version](https://img.shields.io/nuget/v/kre-clr-win-x86.svg?style=flat)](https://www.nuget.org/packages/kre-clr-win-x86)
 
 The Home repository is the starting point for people to learn about ASP.NET 5. This repo contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what's coming in ASP.NET 5.
 
