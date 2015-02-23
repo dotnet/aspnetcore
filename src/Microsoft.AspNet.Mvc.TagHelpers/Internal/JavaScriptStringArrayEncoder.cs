@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.AspNet.WebUtilities.Encoders;
+using System.IO;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {
@@ -17,27 +17,27 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// </summary>
         public static string Encode(IJavaScriptStringEncoder encoder, IEnumerable<string> values)
         {
-            var builder = new StringBuilder();
+            var writer = new StringWriter();
 
             var firstAdded = false;
 
-            builder.Append('[');
+            writer.Write('[');
             
             foreach (var value in values)
             {
                 if (firstAdded)
                 {
-                    builder.Append(',');
+                    writer.Write(',');
                 }
-                builder.Append('"');
-                builder.Append(encoder.JavaScriptStringEncode(value));
-                builder.Append('"');
+                writer.Write('"');
+                encoder.JavaScriptStringEncode(value, writer);
+                writer.Write('"');
                 firstAdded = true;
             }
 
-            builder.Append(']');
+            writer.Write(']');
 
-            return builder.ToString();
+            return writer.ToString();
         }
     }
 }
