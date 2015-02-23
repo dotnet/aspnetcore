@@ -1,5 +1,8 @@
 #!/bin/bash
 
+[ -z "$KVM_REPO" ] && KVM_REPO="aspnet/Home"
+[ -z "$KVM_BRANCH" ] && KVM_BRANCH="master"
+
 _kvmsetup_has() {
     type "$1" > /dev/null 2>&1
     return $?
@@ -18,7 +21,7 @@ _kvmsetup_update_profile() {
 }
 
 if [ -z "$KRE_USER_HOME" ]; then
-    eval KRE_USER_HOME=~/.kre
+    eval KRE_USER_HOME=~/.k
 fi
 
 if ! _kvmsetup_has "curl"; then
@@ -27,7 +30,7 @@ if ! _kvmsetup_has "curl"; then
 fi
 
 if [ -z "$KVM_SOURCE" ]; then
-    KVM_SOURCE="https://raw.githubusercontent.com/aspnet/Home/master/kvm.sh"
+    KVM_SOURCE="https://raw.githubusercontent.com/$KVM_REPO/$KVM_BRANCH/kvm.sh"
 fi
 
 # Downloading to $KVM_DIR
@@ -37,6 +40,8 @@ if [ -s "$KRE_USER_HOME/kvm/kvm.sh" ]; then
 else
     echo "Downloading kvm as script to '$KRE_USER_HOME/kvm'"
 fi
+
+echo "Downloading kvm from '$KVM_SOURCE'"
 
 curl -s "$KVM_SOURCE" -o "$KRE_USER_HOME/kvm/kvm.sh" || {
     echo >&2 "Failed to download '$KVM_SOURCE'.."
