@@ -30,7 +30,7 @@ namespace TagHelpersWebSite.TagHelpers
 
                 output.Attributes["href"] = UrlHelper.Action(Action, Controller, methodParameters);
 
-                output.PreContent = "My ";
+                output.PreContent.SetContent("My ");
             }
         }
     }

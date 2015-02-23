@@ -30,7 +30,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 },
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult("Something"));
+                getChildContentAsync: () =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.Append("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
             var expectedAttribute = new KeyValuePair<string, string>(attributeName, attributeValue);
 
             // Act
@@ -61,7 +66,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 },
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult("Something"));
+                getChildContentAsync: () =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.Append("Something Else");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
 
             // Act
             tagHelperOutput.CopyHtmlAttribute(attributeName, tagHelperContext);

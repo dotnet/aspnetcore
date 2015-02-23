@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -175,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // NOTE: Values in TagHelperOutput.Attributes are already HtmlEncoded
             var attributes = new Dictionary<string, string>(output.Attributes);
 
-            var builder = new StringBuilder();
+            var builder = new DefaultTagHelperContent();
 
             if (mode == Mode.Fallback && string.IsNullOrEmpty(HrefInclude))
             {
@@ -194,10 +195,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // We've taken over tag rendering, so prevent rendering the outer tag
             output.TagName = null;
-            output.Content = builder.ToString();
+            output.Content.SetContent(builder);
         }
 
-        private void BuildGlobbedLinkTags(IDictionary<string, string> attributes, StringBuilder builder)
+        private void BuildGlobbedLinkTags(IDictionary<string, string> attributes, TagHelperContent builder)
         {
             // Build a <link /> tag for each matched href as well as the original one in the source file
             string staticHref;
@@ -213,30 +214,30 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private void BuildFallbackBlock(StringBuilder builder)
+        private void BuildFallbackBlock(TagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
             var fallbackHrefs = GlobbingUrlBuilder.BuildUrlList(FallbackHref, FallbackHrefInclude, FallbackHrefExclude);
 
             if (fallbackHrefs.Any())
             {
-                builder.AppendLine();
+                builder.Append(Environment.NewLine);
 
                 // Build the <meta /> tag that's used to test for the presence of the stylesheet
-                builder.AppendFormat(
+                builder.Append(string.Format(
                     CultureInfo.InvariantCulture,
                     "<meta name=\"x-stylesheet-fallback-test\" class=\"{0}\" />",
-                    HtmlEncoder.HtmlEncode(FallbackTestClass));
+                    HtmlEncoder.HtmlEncode(FallbackTestClass)));
                 
                 // Build the <script /> tag that checks the effective style of <meta /> tag above and renders the extra
                 // <link /> tag to load the fallback stylesheet if the test CSS property value is found to be false,
                 // indicating that the primary stylesheet failed to load.
                 builder.Append("<script>")
-                       .AppendFormat(CultureInfo.InvariantCulture,
+                       .Append(string.Format(CultureInfo.InvariantCulture,
                             JavaScriptResources.GetEmbeddedJavaScript(FallbackJavaScriptResourceName),
                             JavaScriptStringEncoder.Default.JavaScriptStringEncode(FallbackTestProperty),
                             JavaScriptStringEncoder.Default.JavaScriptStringEncode(FallbackTestValue),
-                            JavaScriptStringArrayEncoder.Encode(JavaScriptStringEncoder.Default, fallbackHrefs))
+                            JavaScriptStringArrayEncoder.Encode(JavaScriptStringEncoder.Default, fallbackHrefs)))
                        .Append("</script>");
             }
         }
@@ -252,13 +253,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private static void BuildLinkTag(IDictionary<string, string> attributes, StringBuilder builder)
+        private static void BuildLinkTag(IDictionary<string, string> attributes, TagHelperContent builder)
         {
             builder.Append("<link ");
 
             foreach (var attribute in attributes)
             {
-                builder.AppendFormat(CultureInfo.InvariantCulture, "{0}=\"{1}\" ", attribute.Key, attribute.Value);
+                builder.Append(
+                    string.Format(CultureInfo.InvariantCulture, "{0}=\"{1}\" ", attribute.Key, attribute.Value));
             }
 
             builder.Append("/>");

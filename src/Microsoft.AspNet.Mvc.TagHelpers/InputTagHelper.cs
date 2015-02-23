@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     // This TagBuilder contains the one <input/> element of interest. Since this is not the "checkbox"
                     // special-case, output is a self-closing element no longer guarunteed.
                     output.MergeAttributes(tagBuilder);
-                    output.Content += tagBuilder.InnerHtml;
+                    output.Content.Append(tagBuilder.InnerHtml);
                 }
             }
         }
@@ -242,12 +242,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 output.Attributes.Clear();
                 output.TagName = null;
 
-                output.Content += tagBuilder.ToString(TagRenderMode.SelfClosing);
+                output.Content.Append(tagBuilder.ToString(TagRenderMode.SelfClosing));
 
                 tagBuilder = Generator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, For.Name);
                 if (tagBuilder != null)
                 {
-                    output.Content += tagBuilder.ToString(TagRenderMode.SelfClosing);
+                    output.Content.Append(tagBuilder.ToString(TagRenderMode.SelfClosing));
                 }
             }
         }

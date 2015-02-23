@@ -14,7 +14,7 @@ namespace TagHelpersWebSite.TagHelpers
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             output.TagName = "section";
-            output.PostContent = string.Format(
+            output.PostContent.SetContent(string.Format(
                 "<p><strong>Version:</strong> {0}</p>" + Environment.NewLine +
                 "<p><strong>Copyright Year:</strong> {1}</p>" + Environment.NewLine +
                 "<p><strong>Approved:</strong> {2}</p>" + Environment.NewLine +
@@ -22,7 +22,7 @@ namespace TagHelpersWebSite.TagHelpers
                 Info.Version.ToString(),
                 Info.CopyrightYear.ToString(),
                 Info.Approved.ToString(),
-                Info.TagsToShow.ToString());
+                Info.TagsToShow.ToString()));
             output.SelfClosing = false;
         }
     }

@@ -141,12 +141,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult(originalContent));
+                getChildContentAsync: () =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent(originalContent);
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
             var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
             {
-                Content = originalContent,
                 SelfClosing = false,
             };
+            output.Content.SetContent(originalContent);
 
             var metadataProvider = new EmptyModelMetadataProvider();
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
@@ -169,7 +174,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Equal(
                 expectedOutput,
-                output.GenerateStartTag() + output.GenerateContent() + output.GenerateEndTag());
+                output.GenerateStartTag() +
+                (output.GenerateContent() as TagHelperContent).GetContent() +
+                output.GenerateEndTag());
         }
 
         [Theory]
@@ -200,14 +207,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult(originalContent));
+                getChildContentAsync: () =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent(originalContent);
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
             var output = new TagHelperOutput(originalTagName, originalAttributes, new HtmlEncoder())
             {
-                PreContent = originalPreContent,
-                Content = originalContent,
-                PostContent = originalPostContent,
                 SelfClosing = false,
             };
+            output.PreContent.SetContent(originalPreContent);
+            output.Content.SetContent(originalContent);
+            output.PostContent.SetContent(originalPostContent);
 
             var metadataProvider = new EmptyModelMetadataProvider();
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
@@ -256,14 +268,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult(originalContent));
+                getChildContentAsync: () =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent(originalContent);
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
             var output = new TagHelperOutput(originalTagName, originalAttributes, new HtmlEncoder())
             {
-                PreContent = originalPreContent,
-                Content = originalContent,
-                PostContent = originalPostContent,
                 SelfClosing = false,
             };
+            output.PreContent.SetContent(originalPreContent);
+            output.Content.SetContent(originalContent);
+            output.PostContent.SetContent(originalPostContent);
 
             var tagHelper = new OptionTagHelper
             {

@@ -22,7 +22,7 @@ namespace ActivatorWebSite.TagHelpers
             var builder = new TagBuilder("h2", HtmlHelper.HtmlEncoder);
             var title = ViewContext.ViewBag.Title;
             builder.InnerHtml = HtmlHelper.Encode(title);
-            output.PreContent = builder.ToString();
+            output.PreContent.SetContent(builder.ToString());
         }
     }
 }

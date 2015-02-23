@@ -18,7 +18,7 @@ namespace ActivatorWebSite.TagHelpers
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            output.PostContent = $"<footer>{HtmlHelper.Encode(ViewData["footer"])}</footer>";
+            output.PostContent.SetContent($"<footer>{HtmlHelper.Encode(ViewData["footer"])}</footer>");
         }
     }
 }

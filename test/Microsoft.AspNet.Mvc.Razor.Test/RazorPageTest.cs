@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PageExecutionInstrumentation;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.WebEncoders;
 using Moq;
@@ -31,10 +32,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 v.HtmlEncoder = new HtmlEncoder();
                 v.Write("Hello Prefix");
-                v.StartWritingScope();
+                v.StartTagHelperWritingScope();
                 v.Write("Hello from Output");
                 v.ViewContext.Writer.Write("Hello from view context writer");
-                var scopeValue = v.EndWritingScope();
+                var scopeValue = v.EndTagHelperWritingScope();
                 v.Write("From Scope: " + scopeValue.ToString());
             });
 
@@ -55,9 +56,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 v.HtmlEncoder = new HtmlEncoder();
                 v.Write("Hello Prefix");
-                v.StartWritingScope();
+                v.StartTagHelperWritingScope();
                 v.Write("Hello In Scope");
-                var scopeValue = v.EndWritingScope();
+                var scopeValue = v.EndTagHelperWritingScope();
                 v.Write("From Scope: " + scopeValue.ToString());
             });
 
@@ -78,15 +79,15 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 v.HtmlEncoder = new HtmlEncoder();
                 v.Write("Hello Prefix");
-                v.StartWritingScope();
+                v.StartTagHelperWritingScope();
                 v.Write("Hello In Scope Pre Nest");
 
-                v.StartWritingScope();
+                v.StartTagHelperWritingScope();
                 v.Write("Hello In Nested Scope");
-                var scopeValue1 = v.EndWritingScope();
+                var scopeValue1 = v.EndTagHelperWritingScope();
 
                 v.Write("Hello In Scope Post Nest");
-                var scopeValue2 = v.EndWritingScope();
+                var scopeValue2 = v.EndTagHelperWritingScope();
 
                 v.Write("From Scopes: " + scopeValue2.ToString() + scopeValue1.ToString());
             });
@@ -106,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(async v =>
             {
-                v.StartWritingScope();
+                v.StartTagHelperWritingScope();
                 await v.FlushAsync();
             });
 
@@ -125,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(v =>
             {
-                v.EndWritingScope();
+                v.EndTagHelperWritingScope();
             });
 
             // Act
@@ -134,6 +135,50 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             Assert.Equal("There is no active writing scope to end.", ex.Message);
+        }
+
+        [Fact]
+        public async Task EndTagHelperWritingScope_ReturnsAppropriateContent()
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+
+            // Act
+            var page = CreatePage(v =>
+            {
+                v.HtmlEncoder = new HtmlEncoder();
+                v.StartTagHelperWritingScope();
+                v.Write("Hello World!");
+                var returnValue = v.EndTagHelperWritingScope();
+
+                // Assert
+                var content = Assert.IsType<DefaultTagHelperContent>(returnValue);
+                Assert.Equal("Hello World!", content.GetContent());
+            });
+            await page.ExecuteAsync();
+        }
+
+        [Fact]
+        public async Task EndTagHelperWritingScope_CopiesContent_IfRazorTextWriter()
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+
+            // Act
+            var page = CreatePage(v =>
+            {
+                v.HtmlEncoder = new HtmlEncoder();
+                v.StartTagHelperWritingScope(new RazorTextWriter(TextWriter.Null, Encoding.UTF8));
+                v.Write("Hello ");
+                v.Write("World!");
+                var returnValue = v.EndTagHelperWritingScope();
+
+                // Assert
+                var content = Assert.IsType<DefaultTagHelperContent>(returnValue);
+                Assert.Equal("Hello World!", content.GetContent());
+                Assert.Equal(new[] { "Hello ", "World!" }, content.AsArray());
+            }, viewContext);
+            await page.ExecuteAsync();
         }
 
         [Fact]
@@ -640,6 +685,72 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(2, buffer.BufferEntries.Count);
             Assert.Equal("Hello world", buffer.BufferEntries[0]);
             Assert.Same(stringCollectionWriter.Buffer.BufferEntries, buffer.BufferEntries[1]);
+        }
+
+        [Fact]
+        public async Task Write_ITextWriterCopyable_WritesContent()
+        {
+            // Arrange
+            // This writer uses BufferEntryCollection underneath and so can copy the buffer.
+            var writer = new StringCollectionTextWriter(Encoding.UTF8);
+            var context = CreateViewContext(writer);
+            var expectedContent = "Hello World!";
+            var contentToBeCopied = new DefaultTagHelperContent().SetContent("Hello ").Append("World!");
+
+            // Act
+            var page = CreatePage(p =>
+            {
+                p.Write((ITextWriterCopyable)contentToBeCopied);
+            }, context);
+            await page.ExecuteAsync();
+
+            // Assert
+            Assert.Equal(expectedContent, writer.ToString());
+            Assert.Equal(2, writer.Buffer.BufferEntries.Count);
+            var expectedList = new List<object>();
+            expectedList.Add("Hello ");
+            expectedList.Add("World!");
+            Assert.Equal(expectedList, writer.Buffer.BufferEntries);
+        }
+
+        [Fact]
+        public async Task Write_ITextWriterCopyable_WritesContent_AsString()
+        {
+            // Arrange
+            // This writer stores the data as a string.
+            var writer = new StringWriter();
+            var context = CreateViewContext(writer);
+            var expectedContent = "Hello World!";
+            var contentToBeCopied = new DefaultTagHelperContent().SetContent("Hello ").Append("World!");
+
+            // Act
+            var page = CreatePage(p =>
+            {
+                p.Write((ITextWriterCopyable)contentToBeCopied);
+            }, context);
+            await page.ExecuteAsync();
+
+            // Assert
+            Assert.Equal(expectedContent, writer.ToString());
+        }
+
+        [Fact]
+        public async Task WriteTo_ITextWriterCopyable_WritesContent_ToSpecifiedWriter()
+        {
+            // Arrange
+            var writer = new StringWriter();
+            var expectedContent = "Hello World!";
+            var contentToBeCopied = new DefaultTagHelperContent().SetContent("Hello ").Append("World!");
+
+            // Act
+            var page = CreatePage(p =>
+            {
+                p.WriteTo(writer, (ITextWriterCopyable)contentToBeCopied);
+            });
+            await page.ExecuteAsync();
+
+            // Assert
+            Assert.Equal(expectedContent, writer.ToString());
         }
 
         private static TestableRazorPage CreatePage(Action<TestableRazorPage> executeAction,

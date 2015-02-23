@@ -25,12 +25,12 @@ namespace ActivatorWebSite.TagHelpers
 
             if (string.IsNullOrEmpty(repeatContent))
             {
-                repeatContent = content;
+                repeatContent = content.GetContent();
             }
 
             for (int i = 0; i < RepeatContent; i++)
             {
-                output.Content += repeatContent;
+                output.Content.Append(repeatContent);
             }
         }
 

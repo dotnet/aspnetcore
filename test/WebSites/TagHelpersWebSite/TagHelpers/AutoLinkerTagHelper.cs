@@ -4,7 +4,6 @@
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
@@ -16,10 +15,10 @@ namespace TagHelpersWebSite.TagHelpers
             var childContent = await context.GetChildContentAsync();
 
             // Find Urls in the content and replace them with their anchor tag equivalent.
-            output.Content = Regex.Replace(
-                childContent,
+            output.Content.SetContent(Regex.Replace(
+                childContent.GetContent(),
                 @"\b(?:https?://|www\.)(\S+)\b",
-                "<strong><a target=\"_blank\" href=\"http://$0\">$0</a></strong>");
+                "<strong><a target=\"_blank\" href=\"http://$0\">$0</a></strong>"));
         }
     }
 }

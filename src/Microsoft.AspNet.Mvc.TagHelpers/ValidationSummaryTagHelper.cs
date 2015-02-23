@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -80,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (tagBuilder != null)
             {
                 output.MergeAttributes(tagBuilder);
-                output.PostContent += tagBuilder.InnerHtml;
+                output.PostContent.Append(tagBuilder.InnerHtml);
             }
         }
     }

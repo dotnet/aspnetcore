@@ -190,22 +190,25 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new Dictionary<string, object>(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult(tagHelperOutputContent.OriginalChildContent));
+                getChildContentAsync: () =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent(tagHelperOutputContent.OriginalChildContent);
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
             var htmlAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, htmlAttributes, new HtmlEncoder())
-            {
-                PreContent = expectedPreContent,
-                PostContent = expectedPostContent,
-            };
+            var output = new TagHelperOutput(expectedTagName, htmlAttributes, new HtmlEncoder());
+            output.PreContent.SetContent(expectedPreContent);
+            output.PostContent.SetContent(expectedPostContent);
 
-            // LabelTagHelper checks ContentSet so we don't want to forcibly set it if 
+            // LabelTagHelper checks IsContentModified so we don't want to forcibly set it if 
             // tagHelperOutputContent.OriginalContent is going to be null or empty.
             if (!string.IsNullOrEmpty(tagHelperOutputContent.OriginalContent))
             {
-                output.Content = tagHelperOutputContent.OriginalContent;
+                output.Content.SetContent(tagHelperOutputContent.OriginalContent);
             }
 
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
@@ -218,9 +221,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
-            Assert.Equal(expectedPreContent, output.PreContent);
-            Assert.Equal(tagHelperOutputContent.ExpectedContent, output.Content);
-            Assert.Equal(expectedPostContent, output.PostContent);
+            Assert.Equal(expectedPreContent, output.PreContent.GetContent());
+            Assert.Equal(tagHelperOutputContent.ExpectedContent, output.Content.GetContent());
+            Assert.Equal(expectedPostContent, output.PostContent.GetContent());
             Assert.False(output.SelfClosing);
             Assert.Equal(expectedTagName, output.TagName);
         }
@@ -250,13 +253,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new Dictionary<string, object>(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult("Something"));
-            var output = new TagHelperOutput(expectedTagName, expectedAttributes, new HtmlEncoder())
-            {
-                PreContent = expectedPreContent,
-                Content = expectedContent,
-                PostContent = expectedPostContent,
-            };
+                getChildContentAsync: () =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            var output = new TagHelperOutput(expectedTagName, expectedAttributes, new HtmlEncoder());
+            output.PreContent.SetContent(expectedPreContent);
+            output.Content.SetContent(expectedContent);
+            output.PostContent.SetContent(expectedPostContent);
 
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
             Model model = null;
@@ -269,9 +275,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
-            Assert.Equal(expectedPreContent, output.PreContent);
-            Assert.Equal(expectedContent, output.Content);
-            Assert.Equal(expectedPostContent, output.PostContent);
+            Assert.Equal(expectedPreContent, output.PreContent.GetContent());
+            Assert.Equal(expectedContent, output.Content.GetContent());
+            Assert.Equal(expectedPostContent, output.PostContent.GetContent());
             Assert.Equal(expectedTagName, output.TagName);
         }
 

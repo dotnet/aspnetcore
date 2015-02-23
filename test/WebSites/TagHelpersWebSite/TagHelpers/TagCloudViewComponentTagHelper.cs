@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace MvcSample.Web.Components
 {
@@ -42,7 +41,7 @@ namespace MvcSample.Web.Components
                                          writer));
 
             output.TagName = null;
-            output.Content = writer.ToString();
+            output.Content.SetContent(writer.ToString());
         }
 
         public async Task<IViewComponentResult> InvokeAsync(int count)

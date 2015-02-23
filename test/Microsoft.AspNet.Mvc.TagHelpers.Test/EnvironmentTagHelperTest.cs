@@ -98,10 +98,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
 
             // Assert
             Assert.Null(output.TagName);
-            Assert.Null(output.PreContent);
-            Assert.Null(output.Content);
-            Assert.Null(output.PostContent);
-            Assert.True(output.ContentSet);
+            Assert.Empty(output.PreContent.GetContent());
+            Assert.True(output.Content.IsEmpty);
+            Assert.Empty(output.PostContent.GetContent());
+            Assert.True(output.IsContentModified);
         }
 
         private void ShouldShowContent(string namesAttribute, string environmentName)
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
 
             // Assert
             Assert.Null(output.TagName);
-            Assert.False(output.ContentSet);
+            Assert.False(output.IsContentModified);
         }
 
         private TagHelperContext MakeTagHelperContext(
@@ -139,7 +139,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
                 attributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: Guid.NewGuid().ToString("N"),
-                getChildContentAsync: () => Task.FromResult(content));
+                getChildContentAsync: () =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent(content);
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
         }
 
         private TagHelperOutput MakeTagHelperOutput(string tagName, IDictionary<string, string> attributes = null)

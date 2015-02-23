@@ -14,7 +14,7 @@ namespace RequestServicesWebSite
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            output.Content = RequestIdService.RequestId;
+            output.Content.SetContent(RequestIdService.RequestId);
         }
     }
 }

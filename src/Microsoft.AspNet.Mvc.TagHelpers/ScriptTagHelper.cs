@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
@@ -155,7 +154,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // NOTE: Values in TagHelperOutput.Attributes are already HtmlEncoded
             var attributes = new Dictionary<string, string>(output.Attributes);
             
-            var builder = new StringBuilder();
+            var builder = new DefaultTagHelperContent();
             var originalContent = await context.GetChildContentAsync();
 
             if (mode == Mode.Fallback && string.IsNullOrEmpty(SrcInclude))
@@ -175,13 +174,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // We've taken over tag rendering, so prevent rendering the outer tag
             output.TagName = null;
-            output.Content = builder.ToString();
+            output.Content.SetContent(builder);
         }
 
         private void BuildGlobbedScriptTags(
-            string originalContent,
+            TagHelperContent originalContent,
             IDictionary<string, string> attributes,
-            StringBuilder builder)
+            TagHelperContent builder)
         {
             // Build a <script> tag for each matched src as well as the original one in the source file
             string staticSrc;
@@ -193,14 +192,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             foreach (var url in urls)
             {
                 attributes["src"] = HtmlEncoder.HtmlEncode(url);
-                var content = string.Equals(url, staticSrc, StringComparison.OrdinalIgnoreCase)
-                    ? originalContent
-                    : string.Empty;
+                var content =
+                    string.Equals(url, staticSrc, StringComparison.OrdinalIgnoreCase) ? originalContent : null;
                 BuildScriptTag(content, attributes, builder);
             }
         }
 
-        private void BuildFallbackBlock(IDictionary<string, string> attributes, StringBuilder builder)
+        private void BuildFallbackBlock(IDictionary<string, string> attributes, DefaultTagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
 
@@ -209,7 +207,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (fallbackSrcs.Any())
             {
                 // Build the <script> tag that checks the test method and if it fails, renders the extra script.
-                builder.AppendLine()
+                builder.Append(Environment.NewLine)
                        .Append("<script>(")
                        .Append(FallbackTestExpression)
                        .Append("||document.write(\"");
@@ -230,11 +228,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             var encodedKey = JavaScriptStringEncoder.Default.JavaScriptStringEncode(attribute.Key);
                             var encodedValue = JavaScriptStringEncoder.Default.JavaScriptStringEncode(attribute.Value);
 
-                            builder.AppendFormat(
+                            builder.Append(string.Format(
                                 CultureInfo.InvariantCulture,
                                 " {0}=\\\"{1}\\\"",
                                 encodedKey,
-                                encodedValue);
+                                encodedValue));
                         }
                         else
                         {
@@ -261,15 +259,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         private static void BuildScriptTag(
-            string content,
+            TagHelperContent content,
             IDictionary<string, string> attributes,
-            StringBuilder builder)
+            TagHelperContent builder)
         {
             builder.Append("<script");
 
             foreach (var attribute in attributes)
             {
-                builder.AppendFormat(CultureInfo.InvariantCulture, " {0}=\"{1}\"", attribute.Key, attribute.Value);
+                builder.Append(
+                    string.Format(CultureInfo.InvariantCulture, " {0}=\"{1}\"", attribute.Key, attribute.Value));
             }
 
             builder.Append(">")
@@ -277,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                    .Append("</script>");
         }
 
-        private void AppendSrc(StringBuilder content, string srcKey, string srcValue)
+        private void AppendSrc(TagHelperContent content, string srcKey, string srcValue)
         {
             // Append src attribute in the original place and replace the content the fallback content
             // No need to encode the key because we know it is "src".

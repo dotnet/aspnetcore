@@ -98,8 +98,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                     // Can't use nameof because RazorPage is not accessible here.
                     CreateTagHelperMethodName = "CreateTagHelper",
-                    StartWritingScopeMethodName = "StartWritingScope",
-                    EndWritingScopeMethodName = "EndWritingScope",
+                    StartTagHelperWritingScopeMethodName = "StartTagHelperWritingScope",
+                    EndTagHelperWritingScopeMethodName = "EndTagHelperWritingScope",
                     HtmlEncoderPropertyName = "HtmlEncoder",
                 })
             {

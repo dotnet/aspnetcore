@@ -40,7 +40,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// A collection of entries buffered by this instance of <see cref="StringCollectionTextWriter"/>.
         /// </summary>
-        public BufferEntryCollection Buffer { get; private set; }
+        // internal for testing purposes.
+        internal BufferEntryCollection Buffer { get; }
 
         /// <inheritdoc />
         public override void Write(char value)

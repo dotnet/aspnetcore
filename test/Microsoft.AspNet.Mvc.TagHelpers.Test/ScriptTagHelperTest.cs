@@ -133,8 +133,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Null(output.TagName);
-            Assert.NotNull(output.Content);
-            Assert.True(output.ContentSet);
+            Assert.True(output.IsContentModified);
             Assert.Empty(logger.Logged);
         }
 
@@ -223,7 +222,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.NotNull(output.TagName);
-            Assert.False(output.ContentSet);
+            Assert.False(output.IsContentModified);
         }
 
         [Theory]
@@ -251,7 +250,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal("script", output.TagName);
-            Assert.False(output.ContentSet);
+            Assert.False(output.IsContentModified);
 
             Assert.Equal(2, logger.Logged.Count);
 
@@ -286,7 +285,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal("script", output.TagName);
-            Assert.False(output.ContentSet);
+            Assert.False(output.IsContentModified);
         }
 
         [Fact]
@@ -309,7 +308,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal("script", output.TagName);
-            Assert.False(output.ContentSet);
+            Assert.False(output.IsContentModified);
 
             Assert.Single(logger.Logged);
 
@@ -360,7 +359,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             await helper.ProcessAsync(tagHelperContext, output);
 
             // Assert
-            Assert.StartsWith("<script data-extra=\"something\" src=\"/blank.js\" data-more=\"else\"", output.Content);
+            Assert.StartsWith(
+                "<script data-extra=\"something\" src=\"/blank.js\" data-more=\"else\"", output.Content.GetContent());
             Assert.Empty(logger.Logged);
         }
 
@@ -398,7 +398,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             await helper.ProcessAsync(context, output);
 
             // Assert
-            Assert.Equal("<script src=\"/js/site.js\"></script><script src=\"/common.js\"></script>", output.Content);
+            Assert.Equal("<script src=\"/js/site.js\"></script><script src=\"/common.js\"></script>", output.Content.GetContent());
         }
 
         [Fact]
@@ -436,7 +436,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal("<script src=\"HtmlEncode[[/js/site.js]]\"></script>" +
-                "<script src=\"HtmlEncode[[/common.js]]\"></script>", output.Content);
+                "<script src=\"HtmlEncode[[/common.js]]\"></script>", output.Content.GetContent());
         }
 
         private TagHelperContext MakeTagHelperContext(
@@ -449,7 +449,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: Guid.NewGuid().ToString("N"),
-                getChildContentAsync: () => Task.FromResult(content));
+                getChildContentAsync: () =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent(content);
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
         }
 
         private static ViewContext MakeViewContext()

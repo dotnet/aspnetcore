@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 if (tagBuilder != null)
                 {
                     output.MergeAttributes(tagBuilder);
-                    output.PostContent += tagBuilder.InnerHtml;
+                    output.PostContent.Append(tagBuilder.InnerHtml);
                 }
             }
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 var antiForgeryTagBuilder = Generator.GenerateAntiForgery(ViewContext);
                 if (antiForgeryTagBuilder != null)
                 {
-                    output.PostContent += antiForgeryTagBuilder.ToString(TagRenderMode.SelfClosing);
+                    output.PostContent.Append(antiForgeryTagBuilder.ToString(TagRenderMode.SelfClosing));
                 }
             }
         }
