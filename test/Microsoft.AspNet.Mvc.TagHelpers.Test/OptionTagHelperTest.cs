@@ -138,6 +138,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var tagHelperContext = new TagHelperContext(
                 contextAttributes,
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult(originalContent));
             var output = new TagHelperOutput(expectedTagName, originalAttributes)
@@ -196,6 +197,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var originalPostContent = "original post-content";
             var tagHelperContext = new TagHelperContext(
                 contextAttributes,
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult(originalContent));
             var output = new TagHelperOutput(originalTagName, originalAttributes)
@@ -251,6 +253,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var originalPostContent = "original post-content";
             var tagHelperContext = new TagHelperContext(
                 contextAttributes,
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult(originalContent));
             var output = new TagHelperOutput(originalTagName, originalAttributes)

@@ -44,6 +44,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var tagHelperContext = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(

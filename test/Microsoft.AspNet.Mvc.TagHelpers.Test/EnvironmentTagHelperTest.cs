@@ -134,13 +134,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
         {
             attributes = attributes ?? new Dictionary<string, object>();
 
-            return new TagHelperContext(attributes, Guid.NewGuid().ToString("N"), () => Task.FromResult(content));
+            return new TagHelperContext(
+                attributes,
+                items: new Dictionary<object, object>(),
+                uniqueId: Guid.NewGuid().ToString("N"),
+                getChildContentAsync: () => Task.FromResult(content));
         }
 
         private TagHelperOutput MakeTagHelperOutput(string tagName, IDictionary<string, string> attributes = null)
         {
             attributes = attributes ?? new Dictionary<string, string>();
-            
+
             return new TagHelperOutput(tagName, attributes);
         }
     }

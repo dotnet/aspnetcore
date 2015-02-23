@@ -702,18 +702,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "some-content";
             var tokenSource = new CancellationTokenSource();
             var cache = new MemoryCache(new MemoryCacheOptions());
-            var tagHelperContext = new TagHelperContext(new Dictionary<string, object>(),
-                                        id,
-                                        () =>
-                                        {
-                                            var entryLink = EntryLinkHelpers.ContextLink;
-                                            Assert.NotNull(entryLink);
-                                            entryLink.AddExpirationTriggers(new[]
-                                            {
-                                                new CancellationTokenTrigger(tokenSource.Token)
-                                            });
-                                            return Task.FromResult(expectedContent);
-                                        });
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
+                uniqueId: id,
+                getChildContentAsync: () =>
+                {
+                    var entryLink = EntryLinkHelpers.ContextLink;
+                    Assert.NotNull(entryLink);
+                    entryLink.AddExpirationTriggers(new[]
+                    {
+                        new CancellationTokenTrigger(tokenSource.Token)
+                    });
+                    return Task.FromResult(expectedContent);
+                });
             var tagHelperOutput = new TagHelperOutput("cache", new Dictionary<string, string>())
             {
                 PreContent = "<cache>",
@@ -757,9 +759,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private static TagHelperContext GetTagHelperContext(string id = "testid",
                                                             string childContent = "some child content")
         {
-            return new TagHelperContext(new Dictionary<string, object>(),
-                                        id,
-                                        () => Task.FromResult(childContent));
+            return new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
+                uniqueId: id,
+                getChildContentAsync: () => Task.FromResult(childContent));
         }
 
         private static string GetHashedBytes(string input)

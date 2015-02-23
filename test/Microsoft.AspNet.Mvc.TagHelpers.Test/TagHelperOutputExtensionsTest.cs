@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { attributeName, attributeValue }
                 },
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
             var expectedAttribute = new KeyValuePair<string, string>(attributeName, attributeValue);
@@ -55,6 +56,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { attributeName, "world" }
                 },
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
 

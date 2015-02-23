@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "id", "myvalidationmessage" },
                     { "for", modelExpression },
                 },
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
@@ -90,6 +91,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
@@ -140,9 +142,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Content = outputContent
             };
 
-            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>(),
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult(childContent));
+            var context = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult(childContent));
             var tagBuilder = new TagBuilder("span2")
             {
                 InnerHtml = "New HTML"
@@ -191,9 +195,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 "span",
                 attributes: new Dictionary<string, string>());
 
-            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>(),
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult(childContent));
+            var context = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult(childContent));
             var tagBuilder = new TagBuilder("span2")
             {
                 InnerHtml = "New HTML"

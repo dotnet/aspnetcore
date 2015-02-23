@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         public void DetermineMode_FindsFullModeMatchWithSingleAttribute()
         {
             // Arrange
-            var modeInfo = new []
+            var modeInfo = new[]
             {
                 ModeAttributes.Create("mode0", new [] { "first-attr" })
             };
@@ -124,7 +124,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             attributes = attributes ?? new Dictionary<string, object>();
 
-            return new TagHelperContext(attributes, Guid.NewGuid().ToString("N"), () => Task.FromResult(content));
+            return new TagHelperContext(
+                attributes,
+                items: new Dictionary<object, object>(),
+                uniqueId: Guid.NewGuid().ToString("N"),
+                getChildContentAsync: () => Task.FromResult(content));
         }
     }
 }

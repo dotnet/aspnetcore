@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "asp-host", "contoso.com" },
                     { "asp-protocol", "http" }
                 },
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something Else"));
             var output = new TagHelperOutput(
@@ -82,6 +83,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
@@ -120,14 +122,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
                 "a",
                 attributes: new Dictionary<string, string>())
-                {
-                    Content = string.Empty
-                };
+            {
+                Content = string.Empty
+            };
 
             var generator = new Mock<IHtmlGenerator>();
             generator

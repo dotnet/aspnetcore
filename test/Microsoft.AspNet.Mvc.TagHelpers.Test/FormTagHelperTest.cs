@@ -33,6 +33,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "method", "post" },
                     { "asp-anti-forgery", true }
                 },
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something Else"));
             var output = new TagHelperOutput(
@@ -92,6 +93,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = CreateViewContext();
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
@@ -137,6 +139,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var testViewContext = CreateViewContext();
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
             var expectedAttribute = new KeyValuePair<string, string>("asp-ROUTEE-NotRoute", "something");
@@ -202,6 +205,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = CreateViewContext();
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
@@ -256,6 +260,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "METhod", "POST" }
                 },
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
 
@@ -302,6 +307,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                              });
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
 
