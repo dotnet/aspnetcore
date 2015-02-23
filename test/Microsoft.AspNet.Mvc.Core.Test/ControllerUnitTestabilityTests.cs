@@ -215,6 +215,23 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
+        public void ControllerHttpNotFoundObject_InvokedInUnitTests()
+        {
+            // Arrange
+            var controller = new TestabilityController();
+
+            // Act
+            var result = controller.HttpNotFoundObject_Action("Test Content");
+
+            // Assert
+            Assert.NotNull(result);
+
+            var httpNotFoundObjectResult = Assert.IsType<HttpNotFoundObjectResult>(result);
+            Assert.Equal(StatusCodes.Status404NotFound, httpNotFoundObjectResult.StatusCode);
+            Assert.Equal("Test Content", httpNotFoundObjectResult.Value);
+        }
+
+        [Fact]
         public void ControllerHttpBadRequest_InvokedInUnitTests()
         {
             // Arrange
@@ -620,6 +637,11 @@ namespace Microsoft.AspNet.Mvc
             public IActionResult HttpNotFound_Action()
             {
                 return HttpNotFound();
+            }
+
+            public IActionResult HttpNotFoundObject_Action(object value)
+            {
+                return HttpNotFound(value);
             }
         }
 

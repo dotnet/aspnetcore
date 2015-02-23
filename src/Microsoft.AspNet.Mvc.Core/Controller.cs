@@ -693,6 +693,16 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Creates an <see cref="HttpNotFoundObjectResult"/> that produces a Not Found (404) response.
+        /// </summary>
+        /// <returns>The created <see cref="HttpNotFoundObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual HttpNotFoundObjectResult HttpNotFound(object value)
+        {
+            return new HttpNotFoundObjectResult(value);
+        }
+
+        /// <summary>
         /// Creates an <see cref="BadRequestResult"/> that produces a Bad Request (400) response.
         /// </summary>
         /// <returns>The created <see cref="BadRequestResult"/> for the response.</returns>

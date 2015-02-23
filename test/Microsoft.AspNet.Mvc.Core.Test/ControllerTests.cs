@@ -658,6 +658,21 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void HttpNotFound_SetsStatusCodeAndResponseContent()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.HttpNotFound("Test Content");
+
+            // Assert
+            Assert.IsType<HttpNotFoundObjectResult>(result);
+            Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+            Assert.Equal("Test Content", result.Value);
+        }
+
+        [Fact]
         public void BadRequest_SetsStatusCode()
         {
             // Arrange

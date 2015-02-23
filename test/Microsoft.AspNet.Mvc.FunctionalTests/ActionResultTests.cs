@@ -284,5 +284,45 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         }
+
+        [Fact]
+        public async Task HttpNotFoundObjectResult_NoResponseContent()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "http://localhost/ActionResultsVerification/GetNotFoundObjectResult");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal("", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task HttpNotFoundObjectResult_WithResponseContent()
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var input = "{\"SampleInt\":10}";
+
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "http://localhost/ActionResultsVerification/GetNotFoundObjectResultWithContent");
+            request.Content = new StringContent(input, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal("{\"SampleInt\":10,\"SampleString\":\"Foo\"}", await response.Content.ReadAsStringAsync());
+        }
     }
 }
