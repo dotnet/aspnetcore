@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.WebUtilities.Encoders;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.StaticFiles
 {

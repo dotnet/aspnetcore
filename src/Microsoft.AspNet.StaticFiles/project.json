@@ -6,7 +6,8 @@
         "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.FileProviders.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.Hosting.Interfaces": "1.0.0-*",
-        "Microsoft.Framework.Logging": "1.0.0-*"
+        "Microsoft.Framework.Logging": "1.0.0-*",
+        "Microsoft.Framework.WebEncoders": "1.0.0-*"
     },
     "frameworks": {
         "aspnet50": { },
