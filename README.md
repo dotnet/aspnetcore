@@ -40,17 +40,17 @@ That said, you can also try out ASP.NET 5 with just a command-prompt and a text 
 The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager). We use the K Version Manager to install different versions of the ASP.NET 5 runtime and switch between them.
 
 #### Windows
-To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges for Powershell). This will use the currently released version of `kvm` (from the `release` branch of this repo).
+To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges for Powershell). This will use the currently released version of `kvm` (from the `master` branch of this repo).
 
 ```
-@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.ps1'))"
+@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
 
 ```
 
 If you want to run on the bleeding edge and install the latest development version of KVM, run the following command:
 
 ```
-@powershell -NoProfile -ExecutionPolicy unrestricted -Command "&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.ps1'))}"
+@powershell -NoProfile -ExecutionPolicy unrestricted -Command "&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))}"
 ```
 
 After the script has run open a new command prompt to start using KVM.
@@ -61,21 +61,21 @@ To install KVM and the correct version of Mono on OS X using [Homebrew](http://b
 
  * Install [Homebrew](http://brew.sh) if it is not already installed.
  * Run command `brew tap aspnet/k` to tap the ASP.NET 5 related git repositories. If you had already tapped the repo for previous releases, run `brew untap aspnet/k` to delete the old commands and tap again to get the updated brew scripts.
- * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.nuget.org/api/v2 feed.
+ * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.nuget.org/api/v2 feed. If you want to run on the bleeding edge, you can use `brew install kvm --HEAD` to install the latest development version of KVM.
  * Run command `source kvm.sh` on your terminal if your terminal cannot understand kvm. 
 
 #### Linux:
 
-Installing KVM requires `curl`. Do verify if that is installed on the machine. Next install KVM on Linux run the following command:
+Installing KVM requires `curl`. Do verify if that is installed on the machine. Next, install KVM on Linux run the following command:
 
 ```
-curl -sSL https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.sh | sh && source ~/.k/kvm/kvm.sh
+curl -sSL https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.sh | sh && source ~/.k/kvm/kvm.sh
 ```
 
 If you want to run on the bleeding edge and install the latest development version of KVM, use this command:
 
 ```
-curl -sSL https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.sh | KVM_BRANCH=dev sh && source ~/.k/kvm/kvm.sh
+curl -sSL https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.sh | KVM_BRANCH=dev sh && source ~/.k/kvm/kvm.sh
 ```
 
 Note that on Linux you need to also install [Mono](http://mono-project.com) 3.4.1 or later.
