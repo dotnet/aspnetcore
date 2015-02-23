@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     // Need to disable the warning "X is assigned to but never used." for the value buffer since
                     // whether it's used depends on how a TagHelper is used.
                     Writer.WritePragma("warning disable 0414");
-                    WritePrivateField(typeof(TextWriter).FullName,
+                    WritePrivateField(_tagHelperContext.TagHelperContentTypeName,
                                       CSharpTagHelperCodeRenderer.StringValueBufferVariableName,
                                       value: null);
                     Writer.WritePragma("warning restore 0414");

@@ -228,8 +228,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Test.TagHelpers
                 selfClosing,
                 uniqueId: string.Empty,
                 executeChildContentAsync: async () => await Task.FromResult(result: true),
-                startWritingScope: () => { },
-                endWritingScope: () => new StringWriter());
+                startTagHelperWritingScope: () => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
         }
     }
 }

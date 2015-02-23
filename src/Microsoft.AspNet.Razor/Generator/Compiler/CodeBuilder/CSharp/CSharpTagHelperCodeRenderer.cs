@@ -71,17 +71,21 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             RenderUnboundHTMLAttributes(unboundHTMLAttributes);
 
-            RenderRunTagHelpers();
+            // No need to run anything in design time mode.
+            if (!_designTimeMode)
+            {
+                RenderRunTagHelpers();
 
-            RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName);
-            RenderTagOutput(_tagHelperContext.OutputGeneratePreContentMethodName);
+                RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName, methodReturnsString: true);
+                RenderTagOutput(_tagHelperContext.OutputGeneratePreContentMethodName, methodReturnsString: false);
 
-            RenderTagHelperContent();
+                RenderTagHelperContent();
 
-            RenderTagOutput(_tagHelperContext.OutputGeneratePostContentMethodName);
-            RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName);
+                RenderTagOutput(_tagHelperContext.OutputGeneratePostContentMethodName, methodReturnsString: false);
+                RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName, methodReturnsString: true);
 
-            RenderEndTagHelpersScope();
+                RenderEndTagHelpersScope();
+            }
         }
 
         internal static string GetVariableName(TagHelperDescriptor descriptor)
@@ -133,9 +137,9 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             _context.TargetWriterName = oldWriter;
 
             _writer.WriteParameterSeparator()
-                   .Write(_tagHelperContext.StartWritingScopeMethodName)
+                   .Write(_tagHelperContext.StartTagHelperWritingScopeMethodName)
                    .WriteParameterSeparator()
-                   .Write(_tagHelperContext.EndWritingScopeMethodName)
+                   .Write(_tagHelperContext.EndTagHelperWritingScopeMethodName)
                    .WriteEndMethodInvocation();
         }
 
@@ -358,25 +362,19 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         private void RenderTagHelperContent()
         {
-            // Rendering output is a runtime feature.
-            if (_designTimeMode)
-            {
-                return;
-            }
-
             _writer.Write("if (")
                    .Write(ExecutionContextVariableName)
                    .Write(".")
                    .Write(_tagHelperContext.ExecutionContextOutputPropertyName)
                    .Write(".")
-                   .Write(_tagHelperContext.OutputContentSetPropertyName)
+                   .Write(_tagHelperContext.OutputIsContentModifiedPropertyName)
                    .WriteLine(")");
 
             // At this point in the codegen, TagHelperOutput.Content is set. We need to use this to render the Content 
             // instead of executing the child content
             using (_writer.BuildScope())
             {
-                RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName);
+                RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName, methodReturnsString: false);
             }
 
             _writer.Write("else if (")
@@ -390,7 +388,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             // the cached value of the content so we don't execute the child content twice.
             using (_writer.BuildScope())
             {
-                CSharpCodeVisitor.RenderPreWriteStart(_writer, _context);
+                RenderStartWriteMethod();
 
                 _writer.WriteInstanceMethodInvocation(ExecutionContextVariableName,
                                                       _tagHelperContext.ExecutionContextGetChildContentAsyncMethodName,
@@ -410,7 +408,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 if (!string.IsNullOrEmpty(_context.TargetWriterName))
                 {
                     _writer.WriteMethodInvocation(
-                        _tagHelperContext.StartWritingScopeMethodName,
+                        _tagHelperContext.StartTagHelperWritingScopeMethodName,
                         _context.TargetWriterName);
                 }
 
@@ -422,33 +420,29 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
                 if (!string.IsNullOrEmpty(_context.TargetWriterName))
                 {
-                    _writer.WriteMethodInvocation(_tagHelperContext.EndWritingScopeMethodName);
+                    _writer.WriteMethodInvocation(_tagHelperContext.EndTagHelperWritingScopeMethodName);
                 }
             }
         }
 
         private void RenderEndTagHelpersScope()
         {
-            // Scopes/execution contexts are a runtime feature.
-            if (_designTimeMode)
-            {
-                return;
-            }
-
             _writer.WriteStartAssignment(ExecutionContextVariableName)
                    .WriteInstanceMethodInvocation(ScopeManagerVariableName,
                                                   _tagHelperContext.ScopeManagerEndMethodName);
         }
 
-        private void RenderTagOutput(string tagOutputMethodName)
+        private void RenderTagOutput(string tagOutputMethodName, bool methodReturnsString)
         {
-            // Rendering output is a runtime feature.
-            if (_designTimeMode)
+            // If its a string WriteLiteral must be generated.
+            if (methodReturnsString)
             {
-                return;
+                CSharpCodeVisitor.RenderPreWriteStart(_writer, _context);
             }
-
-            CSharpCodeVisitor.RenderPreWriteStart(_writer, _context);
+            else
+            {
+                RenderStartWriteMethod();
+            }
 
             _writer.Write(ExecutionContextVariableName)
                    .Write(".")
@@ -457,15 +451,23 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                    .WriteMethodInvocation(tagOutputMethodName, endLine: false)
                    .WriteEndMethodInvocation();
         }
+        private void RenderStartWriteMethod()
+        {
+            if (!string.IsNullOrEmpty(_context.TargetWriterName))
+            {
+                _writer
+                    .WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteToMethodName)
+                    .Write(_context.TargetWriterName)
+                    .WriteParameterSeparator();
+            }
+            else
+            {
+                _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteMethodName);
+            }
+        }
 
         private void RenderRunTagHelpers()
         {
-            // No need to run anything in design time mode.
-            if (_designTimeMode)
-            {
-                return;
-            }
-
             _writer.Write(ExecutionContextVariableName)
                    .Write(".")
                    .WriteStartAssignment(_tagHelperContext.ExecutionContextOutputPropertyName)
@@ -541,7 +543,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 // Scopes are a runtime feature.
                 if (!_designTimeMode)
                 {
-                    _writer.WriteMethodInvocation(_tagHelperContext.StartWritingScopeMethodName);
+                    _writer.WriteMethodInvocation(_tagHelperContext.StartTagHelperWritingScopeMethodName);
                 }
 
                 _bodyVisitor.Accept(chunks);
@@ -550,7 +552,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 if (!_designTimeMode)
                 {
                     _writer.WriteStartAssignment(StringValueBufferVariableName)
-                           .WriteMethodInvocation(_tagHelperContext.EndWritingScopeMethodName);
+                           .WriteMethodInvocation(_tagHelperContext.EndTagHelperWritingScopeMethodName);
                 }
             }
             finally

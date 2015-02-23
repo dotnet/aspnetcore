@@ -9,7 +9,7 @@ namespace TestOutput
     {
         #line hidden
         #pragma warning disable 0414
-        private System.IO.TextWriter __tagHelperStringValueBuffer = null;
+        private TagHelperContent __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private TagHelperExecutionContext __tagHelperExecutionContext = null;
         private TagHelperRunner __tagHelperRunner = null;
@@ -31,7 +31,7 @@ namespace TestOutput
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
             }
-            , StartWritingScope, EndWritingScope);
+            , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
             __tagHelperExecutionContext.Add(__InputTagHelper);
             __InputTagHelper.Type = "";
@@ -48,20 +48,20 @@ __InputTagHelper2.Checked = ;
             __tagHelperExecutionContext.AddHtmlAttribute("class", "");
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
-            WriteLiteral(__tagHelperExecutionContext.Output.GeneratePreContent());
-            if (__tagHelperExecutionContext.Output.ContentSet)
+            Write(__tagHelperExecutionContext.Output.GeneratePreContent());
+            if (__tagHelperExecutionContext.Output.IsContentModified)
             {
-                WriteLiteral(__tagHelperExecutionContext.Output.GenerateContent());
+                Write(__tagHelperExecutionContext.Output.GenerateContent());
             }
             else if (__tagHelperExecutionContext.ChildContentRetrieved)
             {
-                WriteLiteral(__tagHelperExecutionContext.GetChildContentAsync().Result);
+                Write(__tagHelperExecutionContext.GetChildContentAsync().Result);
             }
             else
             {
                 __tagHelperExecutionContext.ExecuteChildContentAsync().Wait();
             }
-            WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
+            Write(__tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(74, 6, true);
@@ -71,7 +71,7 @@ __InputTagHelper2.Checked = ;
                 WriteLiteral("\r\n        ");
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
-                , StartWritingScope, EndWritingScope);
+                , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();
                 __tagHelperExecutionContext.Add(__InputTagHelper);
                 __InputTagHelper.Type = "";
@@ -88,25 +88,25 @@ __InputTagHelper2.Checked = ;
                 __tagHelperExecutionContext.AddHtmlAttribute("class", "");
                 __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
                 WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
-                WriteLiteral(__tagHelperExecutionContext.Output.GeneratePreContent());
-                if (__tagHelperExecutionContext.Output.ContentSet)
+                Write(__tagHelperExecutionContext.Output.GeneratePreContent());
+                if (__tagHelperExecutionContext.Output.IsContentModified)
                 {
-                    WriteLiteral(__tagHelperExecutionContext.Output.GenerateContent());
+                    Write(__tagHelperExecutionContext.Output.GenerateContent());
                 }
                 else if (__tagHelperExecutionContext.ChildContentRetrieved)
                 {
-                    WriteLiteral(__tagHelperExecutionContext.GetChildContentAsync().Result);
+                    Write(__tagHelperExecutionContext.GetChildContentAsync().Result);
                 }
                 else
                 {
                     __tagHelperExecutionContext.ExecuteChildContentAsync().Wait();
                 }
-                WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
+                Write(__tagHelperExecutionContext.Output.GeneratePostContent());
                 WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 WriteLiteral("\r\n    ");
             }
-            , StartWritingScope, EndWritingScope);
+            , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
 #line 5 "EmptyAttributeTagHelpers.cshtml"
@@ -117,20 +117,20 @@ __PTagHelper.Age = ;
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __PTagHelper.Age);
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
-            WriteLiteral(__tagHelperExecutionContext.Output.GeneratePreContent());
-            if (__tagHelperExecutionContext.Output.ContentSet)
+            Write(__tagHelperExecutionContext.Output.GeneratePreContent());
+            if (__tagHelperExecutionContext.Output.IsContentModified)
             {
-                WriteLiteral(__tagHelperExecutionContext.Output.GenerateContent());
+                Write(__tagHelperExecutionContext.Output.GenerateContent());
             }
             else if (__tagHelperExecutionContext.ChildContentRetrieved)
             {
-                WriteLiteral(__tagHelperExecutionContext.GetChildContentAsync().Result);
+                Write(__tagHelperExecutionContext.GetChildContentAsync().Result);
             }
             else
             {
                 __tagHelperExecutionContext.ExecuteChildContentAsync().Wait();
             }
-            WriteLiteral(__tagHelperExecutionContext.Output.GeneratePostContent());
+            Write(__tagHelperExecutionContext.Output.GeneratePostContent());
             WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(144, 8, true);

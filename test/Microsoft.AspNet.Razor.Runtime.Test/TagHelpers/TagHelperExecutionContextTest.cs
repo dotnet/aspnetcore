@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -41,8 +40,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 items: expectedItems,
                 uniqueId: string.Empty,
                 executeChildContentAsync: async () => await Task.FromResult(result: true),
-                startWritingScope: () => { },
-                endWritingScope: () => new StringWriter());
+                startTagHelperWritingScope: () => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
 
             // Assert
             Assert.NotNull(executionContext.Items);
@@ -53,7 +52,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public async Task GetChildContentAsync_CachesValue()
         {
             // Arrange
-            var writer = new StringWriter();
+            var defaultTagHelperContent = new DefaultTagHelperContent();
             var expectedContent = string.Empty;
             var executionContext = new TagHelperExecutionContext(
                 "p",
@@ -67,21 +66,45 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         expectedContent = "Hello from child content: " + Guid.NewGuid().ToString();
                     }
 
-                    writer.Write(expectedContent);
+                    defaultTagHelperContent.SetContent(expectedContent);
 
                     return Task.FromResult(result: true);
                 },
-                startWritingScope: () => { },
-                endWritingScope: () => writer);
+                startTagHelperWritingScope: () => { },
+                endTagHelperWritingScope: () => defaultTagHelperContent);
 
             // Act
             var content1 = await executionContext.GetChildContentAsync();
             var content2 = await executionContext.GetChildContentAsync();
 
             // Assert
-            Assert.Same(content1, content2);
-            Assert.Equal(expectedContent, content1);
-            Assert.Equal(expectedContent, content2);
+            Assert.Equal(expectedContent, content1.GetContent());
+            Assert.Equal(expectedContent, content2.GetContent());
+        }
+
+        [Fact]
+        public async Task GetChildContentAsync_ReturnsNewObjectEveryTimeItIsCalled()
+        {
+            // Arrange
+            var defaultTagHelperContent = new DefaultTagHelperContent();
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                selfClosing: false,
+                items: null,
+                uniqueId: string.Empty,
+                executeChildContentAsync: () => { return Task.FromResult(result: true); },
+                startTagHelperWritingScope: () => { },
+                endTagHelperWritingScope: () => defaultTagHelperContent);
+
+            // Act
+            var content1 = await executionContext.GetChildContentAsync();
+            content1.Append("Hello");
+            var content2 = await executionContext.GetChildContentAsync();
+            content2.Append("World!");
+
+            // Assert
+            Assert.NotSame(content1, content2);
+            Assert.Empty((await executionContext.GetChildContentAsync()).GetContent());
         }
 
         [Fact]
@@ -100,8 +123,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
                     return Task.FromResult(result: true);
                 },
-                startWritingScope: () => { },
-                endWritingScope: () => new StringWriter());
+                startTagHelperWritingScope: () => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
 
             // Act
             await executionContext.ExecuteChildContentAsync();

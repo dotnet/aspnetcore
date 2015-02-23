@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
 
@@ -17,9 +15,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     {
         private readonly List<ITagHelper> _tagHelpers;
         private readonly Func<Task> _executeChildContentAsync;
-        private readonly Action _startWritingScope;
-        private readonly Func<TextWriter> _endWritingScope;
-        private string _childContent;
+        private readonly Action _startTagHelperWritingScope;
+        private readonly Func<TagHelperContent> _endTagHelperWritingScope;
+        private TagHelperContent _childContent;
 
         /// <summary>
         /// Internal for testing purposes only.
@@ -30,8 +28,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                    items: new Dictionary<object, object>(),
                    uniqueId: string.Empty,
                    executeChildContentAsync: async () => await Task.FromResult(result: true),
-                   startWritingScope: () => { },
-                   endWritingScope: () => new StringWriter())
+                   startTagHelperWritingScope: () => { },
+                   endTagHelperWritingScope: () => new DefaultTagHelperContent())
         {
         }
 
@@ -45,21 +43,21 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <see cref="ITagHelper"/>s</param>
         /// <param name="uniqueId">An identifier unique to the HTML element this context is for.</param>
         /// <param name="executeChildContentAsync">A delegate used to execute the child content asynchronously.</param>
-        /// <param name="startWritingScope">A delegate used to start a writing scope in a Razor page.</param>
-        /// <param name="endWritingScope">A delegate used to end a writing scope in a Razor page.</param>
+        /// <param name="startTagHelperWritingScope">A delegate used to start a writing scope in a Razor page.</param>
+        /// <param name="endTagHelperWritingScope">A delegate used to end a writing scope in a Razor page.</param>
         public TagHelperExecutionContext(
             [NotNull] string tagName,
             bool selfClosing,
             [NotNull] IDictionary<object, object> items,
             [NotNull] string uniqueId,
             [NotNull] Func<Task> executeChildContentAsync,
-            [NotNull] Action startWritingScope,
-            [NotNull] Func<TextWriter> endWritingScope)
+            [NotNull] Action startTagHelperWritingScope,
+            [NotNull] Func<TagHelperContent> endTagHelperWritingScope)
         {
             _tagHelpers = new List<ITagHelper>();
             _executeChildContentAsync = executeChildContentAsync;
-            _startWritingScope = startWritingScope;
-            _endWritingScope = endWritingScope;
+            _startTagHelperWritingScope = startTagHelperWritingScope;
+            _endTagHelperWritingScope = endTagHelperWritingScope;
 
             SelfClosing = selfClosing;
             AllAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
@@ -171,18 +169,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <returns>A <see cref="Task"/> that on completion returns the rendered child content.</returns>
         /// <remarks>
         /// Child content is only executed once. Successive calls to this method or successive executions of the 
-        /// returned <see cref="Task{string}"/> return a cached result.
+        /// returned <see cref="Task{TagHelperContent}"/> return a cached result.
         /// </remarks>
-        public async Task<string> GetChildContentAsync()
+        public async Task<TagHelperContent> GetChildContentAsync()
         {
             if (_childContent == null)
             {
-                _startWritingScope();
+                _startTagHelperWritingScope();
                 await _executeChildContentAsync();
-                _childContent = _endWritingScope().ToString();
+                _childContent = _endTagHelperWritingScope();
             }
 
-            return _childContent;
+            return new DefaultTagHelperContent().SetContent(_childContent);
         }
     }
 }

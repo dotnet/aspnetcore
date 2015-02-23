@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 allAttributes: new Dictionary<string, object>(),
                 items: expectedItems,
                 uniqueId: string.Empty,
-                getChildContentAsync: () => Task.FromResult(string.Empty));
+                getChildContentAsync: () => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
 
             // Assert
             Assert.NotNull(context.Items);

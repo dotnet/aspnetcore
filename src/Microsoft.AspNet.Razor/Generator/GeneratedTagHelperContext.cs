@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Razor.Generator
             RunnerRunAsyncMethodName = "RunAsync";
             ScopeManagerBeginMethodName = "Begin";
             ScopeManagerEndMethodName = "End";
-            OutputContentSetPropertyName = "ContentSet";
+            OutputIsContentModifiedPropertyName = "IsContentModified";
             OutputGenerateStartTagMethodName = "GenerateStartTag";
             OutputGeneratePreContentMethodName = "GeneratePreContent";
             OutputGenerateContentMethodName = "GenerateContent";
@@ -30,12 +30,13 @@ namespace Microsoft.AspNet.Razor.Generator
             ExecutionContextAddTagHelperAttributeMethodName = "AddTagHelperAttribute";
             ExecutionContextAddHtmlAttributeMethodName = "AddHtmlAttribute";
             ExecutionContextOutputPropertyName = "Output";
-            StartWritingScopeMethodName = "StartWritingScope";
-            EndWritingScopeMethodName = "EndWritingScope";
+            StartTagHelperWritingScopeMethodName = "StartTagHelperWritingScope";
+            EndTagHelperWritingScopeMethodName = "EndTagHelperWritingScope";
             RunnerTypeName = "TagHelperRunner";
             ScopeManagerTypeName = "TagHelperScopeManager";
             ExecutionContextTypeName = "TagHelperExecutionContext";
             HtmlEncoderPropertyName = "HtmlEncoder";
+            TagHelperContentTypeName = "TagHelperContent";
         }
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace Microsoft.AspNet.Razor.Generator
         /// <summary>
         /// The name of the property used to determine if a tag helper output's content was set.
         /// </summary>
-        public string OutputContentSetPropertyName { get; set; }
+        public string OutputIsContentModifiedPropertyName { get; set; }
 
         /// <summary>
         /// The name of the method used to generate a tag helper output's start tag.
@@ -127,12 +128,12 @@ namespace Microsoft.AspNet.Razor.Generator
         /// <summary>
         /// The name of the method used to start a new writing scope.
         /// </summary>
-        public string StartWritingScopeMethodName { get; set; }
+        public string StartTagHelperWritingScopeMethodName { get; set; }
 
         /// <summary>
         /// The name of the method used to end a writing scope.
         /// </summary>
-        public string EndWritingScopeMethodName { get; set; }
+        public string EndTagHelperWritingScopeMethodName { get; set; }
 
         /// <summary>
         /// The name of the type used to run tag helpers.
@@ -156,5 +157,13 @@ namespace Microsoft.AspNet.Razor.Generator
         /// The name of the property used to encode HTML.
         /// </summary>
         public string HtmlEncoderPropertyName { get; set; }
+
+        /// <summary>
+        /// The name of the type containing tag helper content.
+        /// </summary>
+        /// <remarks>
+        /// Contains the data returned by EndTagHelperWriteScope().
+        /// </remarks>
+        public string TagHelperContentTypeName { get; set; }
     }
 }
