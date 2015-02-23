@@ -13,12 +13,12 @@
     <script src="/blank.js" data-foo="foo-data2">
         // TagHelper script with comment in body, and extra properties.
     </script>
-<script>(blank.wooptido||document.write("<script src=\"/fallback.js\" data-foo=\"foo-data2\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"/fallback.js\" data-foo=\"foo-data2\"><\/script>"));</script>
 
     <script data-foo="foo-data3">
         // Valid TagHelper (although no src is provided) script with comment in body, and extra properties.
     </script>
-<script>(blank.wooptido||document.write("<script src=\"/fallback.js\" data-foo=\"foo-data3\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"/fallback.js\" data-foo=\"foo-data3\"><\/script>"));</script>
 
     <script src="/blank.js">
         // Invalid TagHelper script with comment in body.
