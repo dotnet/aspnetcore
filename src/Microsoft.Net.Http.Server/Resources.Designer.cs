@@ -166,5 +166,13 @@ namespace Microsoft.Net.Http.Server {
                 return ResourceManager.GetString("Exception_WrongIAsyncResult", resourceCulture);
             }
         }
+
+        /// <summary>
+        /// An exception occured while running an action registered with {0}.
+        /// </summary>
+        internal static string Warning_ExceptionInOnResponseCompletedAction
+        {
+            get { return ResourceManager.GetString("Warning_ExceptionInOnResponseCompletedAction"); }
+        }
     }
 }

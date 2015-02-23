@@ -147,4 +147,7 @@
   <data name="Exception_WrongIAsyncResult" xml:space="preserve">
     <value>The given IAsyncResult does not match this opperation.</value>
   </data>
+  <data name="Warning_ExceptionInOnResponseCompletedAction" xml:space="preserve">
+    <value>An exception occured while running an action registered with {0}.</value>
+  </data>
 </root>

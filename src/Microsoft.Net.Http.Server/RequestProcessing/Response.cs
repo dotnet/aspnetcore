@@ -48,6 +48,7 @@ namespace Microsoft.Net.Http.Server
         private BoundaryType _boundaryType;
         private UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2 _nativeResponse;
         private IList<Tuple<Action<object>, object>> _onSendingHeadersActions;
+        private IList<Tuple<Action<object>, object>> _onResponseCompletedActions;
 
         private RequestContext _requestContext;
 
@@ -63,6 +64,7 @@ namespace Microsoft.Net.Http.Server
             _nativeResponse.Response_V1.Version.MinorVersion = 1;
             _responseState = ResponseState.Created;
             _onSendingHeadersActions = new List<Tuple<Action<object>, object>>();
+            _onResponseCompletedActions = new List<Tuple<Action<object>, object>>();
         }
 
         private enum ResponseState
@@ -284,6 +286,7 @@ namespace Microsoft.Net.Http.Server
             {
                 return;
             }
+            NotifyOnResponseCompleted();
             // TODO: Verbose log
             EnsureResponseStream();
             _nativeStream.Dispose();
@@ -829,6 +832,17 @@ namespace Microsoft.Net.Http.Server
             actions.Add(new Tuple<Action<object>, object>(callback, state));
         }
 
+        public void OnResponseCompleted(Action<object> callback, object state)
+        {
+            var actions = _onResponseCompletedActions;
+            if (actions == null)
+            {
+                throw new InvalidOperationException("Response already completed");
+            }
+
+            actions.Add(new Tuple<Action<object>, object>(callback, state));
+        }
+
         private void NotifyOnSendingHeaders()
         {
             var actions = Interlocked.Exchange(ref _onSendingHeadersActions, null);
@@ -842,6 +856,30 @@ namespace Microsoft.Net.Http.Server
             foreach (var actionPair in actions.Reverse())
             {
                 actionPair.Item1(actionPair.Item2);
+            }
+        }
+
+        private void NotifyOnResponseCompleted()
+        {
+            var actions = Interlocked.Exchange(ref _onResponseCompletedActions, null);
+            if (actions == null)
+            {
+                // Something threw the first time, do not try again.
+                return;
+            }
+
+            foreach (var actionPair in actions)
+            {
+                try
+                {
+                    actionPair.Item1(actionPair.Item2);
+                }
+                catch (Exception ex)
+                {
+                    RequestContext.Logger.LogWarning(
+                        String.Format(Resources.Warning_ExceptionInOnResponseCompletedAction, nameof(OnResponseCompleted)),
+                        ex);
+                }
             }
         }
 

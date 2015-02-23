@@ -360,6 +360,11 @@ namespace Microsoft.AspNet.Server.WebListener
             Response.OnSendingHeaders(callback, state);
         }
 
+        void IHttpResponseFeature.OnResponseCompleted(Action<object> callback, object state)
+        {
+            Response.OnResponseCompleted(callback, state);
+        }
+
         string IHttpResponseFeature.ReasonPhrase
         {
             get { return Response.ReasonPhrase; }
