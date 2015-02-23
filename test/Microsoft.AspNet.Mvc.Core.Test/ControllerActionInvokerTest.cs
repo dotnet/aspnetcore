@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
@@ -1976,9 +1978,9 @@ namespace Microsoft.AspNet.Mvc
                 routeData: new RouteData(),
                 actionDescriptor: actionDescriptor);
 
-            var filterProvider = new Mock<INestedProviderManager<FilterProviderContext>>(MockBehavior.Strict);
+            var filterProvider = new Mock<IFilterProvider>(MockBehavior.Strict);
             filterProvider
-                .Setup(fp => fp.Invoke(It.IsAny<FilterProviderContext>()))
+                .Setup(fp => fp.OnProvidersExecuting(It.IsAny<FilterProviderContext>()))
                 .Callback<FilterProviderContext>(context =>
                     {
                         foreach (var filter in filters.Select(f => new FilterItem(null, f)))
@@ -1986,6 +1988,13 @@ namespace Microsoft.AspNet.Mvc
                             context.Results.Add(filter);
                         }
                     });
+
+            filterProvider.Setup(fp => fp.OnProvidersExecuted(It.IsAny<FilterProviderContext>()))
+                          .Verifiable();
+
+            filterProvider.SetupGet(fp => fp.Order)
+                          .Returns(DefaultOrder.DefaultFrameworkSortOrder);
+
 
             var inputFormattersProvider = new Mock<IInputFormattersProvider>();
             inputFormattersProvider.SetupGet(o => o.InputFormatters)
@@ -1995,7 +2004,7 @@ namespace Microsoft.AspNet.Mvc
                                  .Returns(new List<IExcludeTypeValidationFilter>());
             var invoker = new TestControllerActionInvoker(
                 actionContext,
-                filterProvider.Object,
+                new[] { filterProvider.Object },
                 new MockControllerFactory(this),
                 actionDescriptor,
                 inputFormattersProvider.Object,
@@ -2047,7 +2056,7 @@ namespace Microsoft.AspNet.Mvc
             var metadataProvider = new EmptyModelMetadataProvider();
             var invoker = new ControllerActionInvoker(
                 actionContext,
-                Mock.Of<INestedProviderManager<FilterProviderContext>>(),
+                new List<IFilterProvider>(),
                 controllerFactory.Object,
                 actionDescriptor,
                 inputFormattersProvider.Object,
@@ -2147,7 +2156,7 @@ namespace Microsoft.AspNet.Mvc
         {
             public TestControllerActionInvoker(
                 ActionContext actionContext,
-                INestedProviderManager<FilterProviderContext> filterProvider,
+                IFilterProvider[] filterProvider,
                 MockControllerFactory controllerFactory,
                 ControllerActionDescriptor descriptor,
                 IInputFormattersProvider inputFormattersProvider,

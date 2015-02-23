@@ -7,7 +7,7 @@ using System.Text;
 namespace Microsoft.AspNet.Mvc.Logging
 {
     /// <summary>
-    /// Represents the state of <see cref="DefaultActionSelector.SelectAsync(AspNet.Routing.RouteContext)"/>.
+    /// Represents the state of <see cref="Core.DefaultActionSelector.SelectAsync(AspNet.Routing.RouteContext)"/>.
     /// </summary>
     public class DefaultActionSelectorSelectAsyncValues
     {

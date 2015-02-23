@@ -6,32 +6,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Core
 {
     public class DefaultActionSelector : IActionSelector
     {
         private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
         private readonly IActionSelectorDecisionTreeProvider _decisionTreeProvider;
-        private readonly INestedProviderManager<ActionConstraintProviderContext> _actionConstraintProvider;
+        private readonly IActionConstraintProvider[] _actionConstraintProviders;
         private ILogger _logger;
 
         public DefaultActionSelector(
-            [NotNull] IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
-            [NotNull] IActionSelectorDecisionTreeProvider decisionTreeProvider,
-            [NotNull] INestedProviderManager<ActionConstraintProviderContext> actionConstraintProvider,
-            [NotNull] ILoggerFactory loggerFactory)
+            IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
+            IActionSelectorDecisionTreeProvider decisionTreeProvider,
+            IEnumerable<IActionConstraintProvider> actionConstraintProviders,
+            ILoggerFactory loggerFactory)
         {
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _decisionTreeProvider = decisionTreeProvider;
-            _actionConstraintProvider = actionConstraintProvider;
+            _actionConstraintProviders = actionConstraintProviders.OrderBy(item => item.Order).ToArray();
             _logger = loggerFactory.Create<DefaultActionSelector>();
         }
 
@@ -265,7 +264,15 @@ namespace Microsoft.AspNet.Mvc
             var items = action.ActionConstraints.Select(c => new ActionConstraintItem(c)).ToList();
             var context = new ActionConstraintProviderContext(httpContext, action, items);
 
-            _actionConstraintProvider.Invoke(context);
+            foreach (var provider in _actionConstraintProviders)
+            {
+                provider.OnProvidersExecuting(context);
+            }
+
+            for (var i = _actionConstraintProviders.Length - 1; i >= 0; i--)
+            {
+                _actionConstraintProviders[i].OnProvidersExecuted(context);
+            }
 
             return
                 context.Results

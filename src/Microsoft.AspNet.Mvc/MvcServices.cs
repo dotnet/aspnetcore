@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Internal;
@@ -13,10 +15,10 @@ using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
@@ -58,24 +60,16 @@ namespace Microsoft.AspNet.Mvc
 
             // This provider needs access to the per-request services, but might be used many times for a given
             // request.
-            yield return describe.Transient<INestedProviderManager<ActionConstraintProviderContext>,
-                NestedProviderManager<ActionConstraintProviderContext>>();
-            yield return describe.Transient<INestedProvider<ActionConstraintProviderContext>,
-                DefaultActionConstraintProvider>();
+            yield return describe.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>();
 
             yield return describe.Singleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>();
             yield return describe.Singleton<IActionSelector, DefaultActionSelector>();
             yield return describe.Transient<IControllerActionArgumentBinder, DefaultControllerActionArgumentBinder>();
             yield return describe.Transient<IObjectModelValidator, DefaultObjectValidator>();
 
-            yield return describe.Transient<INestedProviderManager<ActionDescriptorProviderContext>,
-                                NestedProviderManager<ActionDescriptorProviderContext>>();
-            yield return describe.Transient<INestedProvider<ActionDescriptorProviderContext>,
-                                ControllerActionDescriptorProvider>();
+            yield return describe.Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>();
 
-            yield return describe.Transient<INestedProviderManager<ActionInvokerProviderContext>,
-                                NestedProviderManager<ActionInvokerProviderContext>>();
-            yield return describe.Transient<INestedProvider<ActionInvokerProviderContext>,
+            yield return describe.Transient<IActionInvokerProvider,
                                             ControllerActionInvokerProvider>();
 
             yield return describe.Singleton<IActionDescriptorsCollectionProvider,
@@ -84,9 +78,7 @@ namespace Microsoft.AspNet.Mvc
             // The IGlobalFilterProvider is used to build the action descriptors (likely once) and so should
             // remain transient to avoid keeping it in memory.
             yield return describe.Transient<IGlobalFilterProvider, DefaultGlobalFilterProvider>();
-            yield return describe.Transient<INestedProviderManager<FilterProviderContext>,
-                NestedProviderManager<FilterProviderContext>>();
-            yield return describe.Transient<INestedProvider<FilterProviderContext>, DefaultFilterProvider>();
+            yield return describe.Transient<IFilterProvider, DefaultFilterProvider>();
 
             yield return describe.Transient<FormatFilter, FormatFilter>();
             // Dataflow - ModelBinding, Validation and Formatting
@@ -165,10 +157,7 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Singleton<IViewComponentActivator, DefaultViewComponentActivator>();
 
             yield return describe.Transient<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
-            yield return describe.Transient<INestedProviderManager<ViewComponentInvokerProviderContext>,
-                NestedProviderManager<ViewComponentInvokerProviderContext>>();
-            yield return describe.Transient<INestedProvider<ViewComponentInvokerProviderContext>,
-                DefaultViewComponentInvokerProvider>();
+            yield return describe.Transient<IViewComponentInvokerProvider, DefaultViewComponentInvokerProvider>();
             yield return describe.Transient<IViewComponentHelper, DefaultViewComponentHelper>();
 
             // Security and Authorization
@@ -178,12 +167,9 @@ namespace Microsoft.AspNet.Mvc
                 DefaultAntiForgeryAdditionalDataProvider>();
 
             // Api Description
-            yield return describe.Transient<INestedProviderManager<ApiDescriptionProviderContext>,
-                NestedProviderManager<ApiDescriptionProviderContext>>();
             yield return describe.Singleton<IApiDescriptionGroupCollectionProvider,
                 ApiDescriptionGroupCollectionProvider>();
-            yield return describe.Transient<INestedProvider<ApiDescriptionProviderContext>,
-                DefaultApiDescriptionProvider>();
+            yield return describe.Transient<IApiDescriptionProvider, DefaultApiDescriptionProvider>();
         }
     }
 }

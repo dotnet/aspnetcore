@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Description
 {
@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Description
     public class ApiDescriptionGroupCollectionProvider : IApiDescriptionGroupCollectionProvider
     {
         private readonly IActionDescriptorsCollectionProvider _actionDescriptorCollectionProvider;
-        private readonly INestedProviderManager<ApiDescriptionProviderContext> _apiDescriptionProvider;
+        private readonly IApiDescriptionProvider[] _apiDescriptionProviders;
 
         private ApiDescriptionGroupCollection _apiDescriptionGroups;
 
@@ -20,15 +20,15 @@ namespace Microsoft.AspNet.Mvc.Description
         /// <param name="actionDescriptorCollectionProvider">
         /// The <see cref="IActionDescriptorsCollectionProvider"/>.
         /// </param>
-        /// <param name="apiDescriptionProvider">
-        /// The <see cref="INestedProviderManager{ApiDescriptionProviderContext}"/>.
+        /// <param name="apiDescriptionProviders">
+        /// The <see cref="IEnumerable{IApiDescriptionProvider}}"/>.
         /// </param>
         public ApiDescriptionGroupCollectionProvider(
             IActionDescriptorsCollectionProvider actionDescriptorCollectionProvider,
-            INestedProviderManager<ApiDescriptionProviderContext> apiDescriptionProvider)
+            IEnumerable<IApiDescriptionProvider> apiDescriptionProviders)
         {
             _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
-            _apiDescriptionProvider = apiDescriptionProvider;
+            _apiDescriptionProviders = apiDescriptionProviders.OrderBy(item => item.Order).ToArray();
         }
 
         /// <inheritdoc />
@@ -49,7 +49,16 @@ namespace Microsoft.AspNet.Mvc.Description
         private ApiDescriptionGroupCollection GetCollection(ActionDescriptorsCollection actionDescriptors)
         {
             var context = new ApiDescriptionProviderContext(actionDescriptors.Items);
-            _apiDescriptionProvider.Invoke(context);
+
+            foreach (var provider in _apiDescriptionProviders)
+            {
+                provider.OnProvidersExecuting(context);
+            }
+
+            for (var i = _apiDescriptionProviders.Length - 1; i >= 0; i--)
+            {
+                _apiDescriptionProviders[i].OnProvidersExecuted(context);
+            }
 
             var groups = context.Results
                 .GroupBy(d => d.GroupName)

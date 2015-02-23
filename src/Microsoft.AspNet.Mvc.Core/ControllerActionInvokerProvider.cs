@@ -2,16 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Core
 {
     public class ControllerActionInvokerProvider : IActionInvokerProvider
     {
         private readonly IControllerActionArgumentBinder _argumentBinder;
         private readonly IControllerFactory _controllerFactory;
-        private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
+        private readonly IFilterProvider[] _filterProviders;
         private readonly IInputFormattersProvider _inputFormattersProvider;
         private readonly IModelBinderProvider _modelBinderProvider;
         private readonly IModelValidatorProviderProvider _modelValidationProviderProvider;
@@ -21,7 +24,7 @@ namespace Microsoft.AspNet.Mvc
         public ControllerActionInvokerProvider(
             IControllerFactory controllerFactory,
             IInputFormattersProvider inputFormattersProvider,
-            INestedProviderManager<FilterProviderContext> filterProvider,
+            IEnumerable<IFilterProvider> filterProviders,
             IControllerActionArgumentBinder argumentBinder,
             IModelBinderProvider modelBinderProvider,
             IModelValidatorProviderProvider modelValidationProviderProvider,
@@ -30,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
         {
             _controllerFactory = controllerFactory;
             _inputFormattersProvider = inputFormattersProvider;
-            _filterProvider = filterProvider;
+            _filterProviders = filterProviders.OrderBy(item => item.Order).ToArray();
             _argumentBinder = argumentBinder;
             _modelBinderProvider = modelBinderProvider;
             _modelValidationProviderProvider = modelValidationProviderProvider;
@@ -43,7 +46,8 @@ namespace Microsoft.AspNet.Mvc
             get { return DefaultOrder.DefaultFrameworkSortOrder; }
         }
 
-        public void Invoke(ActionInvokerProviderContext context, Action callNext)
+        /// <inheritdoc />
+        public void OnProvidersExecuting([NotNull] ActionInvokerProviderContext context)
         {
             var actionDescriptor = context.ActionContext.ActionDescriptor as ControllerActionDescriptor;
 
@@ -51,7 +55,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 context.Result = new ControllerActionInvoker(
                                     context.ActionContext,
-                                    _filterProvider,
+                                    _filterProviders,
                                     _controllerFactory,
                                     actionDescriptor,
                                     _inputFormattersProvider,
@@ -61,8 +65,11 @@ namespace Microsoft.AspNet.Mvc
                                     _valueProviderFactoryProvider,
                                     _actionBindingContextAccessor);
             }
+        }
 
-            callNext();
+        /// <inheritdoc />
+        public void OnProvidersExecuted([NotNull] ActionInvokerProviderContext context)
+        {
         }
     }
 }

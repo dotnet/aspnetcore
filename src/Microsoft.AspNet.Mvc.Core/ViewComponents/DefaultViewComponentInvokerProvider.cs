@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     public class DefaultViewComponentInvokerProvider : IViewComponentInvokerProvider
     {
@@ -28,7 +27,8 @@ namespace Microsoft.AspNet.Mvc
             get { return DefaultOrder.DefaultFrameworkSortOrder; }
         }
 
-        public void Invoke([NotNull] ViewComponentInvokerProviderContext context, [NotNull] Action callNext)
+        /// <inheritdoc />
+        public void OnProvidersExecuting([NotNull] ViewComponentInvokerProviderContext context)
         {
             context.Result = new DefaultViewComponentInvoker(
                     _serviceProvider,
@@ -36,8 +36,11 @@ namespace Microsoft.AspNet.Mvc
                     _viewComponentActivator,
                     context.ComponentType,
                     context.Arguments);
+        }
 
-            callNext();
+        /// <inheritdoc />
+        public void OnProvidersExecuted([NotNull] ViewComponentInvokerProviderContext context)
+        {
         }
     }
 }

@@ -1,26 +1,37 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     public class DefaultViewComponentInvokerFactory : IViewComponentInvokerFactory
     {
-        private readonly INestedProviderManager<ViewComponentInvokerProviderContext> _providerManager;
+        private readonly IViewComponentInvokerProvider[] _providers;
 
         public DefaultViewComponentInvokerFactory(
-            INestedProviderManager<ViewComponentInvokerProviderContext> providerManager)
+            IEnumerable<IViewComponentInvokerProvider> providers)
         {
-            _providerManager = providerManager;
+            _providers = providers.OrderBy(item => item.Order).ToArray();
         }
 
         public IViewComponentInvoker CreateInstance([NotNull] TypeInfo componentType, object[] args)
         {
             var context = new ViewComponentInvokerProviderContext(componentType, args);
-            _providerManager.Invoke(context);
+
+            foreach (var provider in _providers)
+            {
+                provider.OnProvidersExecuting(context);
+            }
+
+            for (var i = _providers.Length - 1; i >= 0; i--)
+            {
+                _providers[i].OnProvidersExecuted(context);
+            }
+
             return context.Result;
         }
     }

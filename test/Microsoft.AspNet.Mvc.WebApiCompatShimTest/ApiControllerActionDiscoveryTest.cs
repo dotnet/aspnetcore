@@ -11,8 +11,6 @@ using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Moq;
@@ -30,7 +28,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -49,7 +47,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -68,7 +66,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -104,7 +102,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -140,7 +138,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -177,7 +175,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -213,7 +211,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -238,7 +236,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -263,7 +261,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -291,7 +289,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -318,7 +316,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -347,7 +345,7 @@ namespace System.Web.Http
 
             // Act
             var context = new ActionDescriptorProviderContext();
-            provider.Invoke(context);
+            Invoke(provider, context);
 
             var results = context.Results.Cast<ControllerActionDescriptor>();
 
@@ -367,7 +365,7 @@ namespace System.Web.Http
             }
         }
 
-        private INestedProviderManager<ActionDescriptorProviderContext> CreateProvider()
+        private ControllerActionDescriptorProvider CreateProvider()
         {
             var assemblyProvider = new FixedSetAssemblyProvider();
             assemblyProvider.CandidateAssemblies.Add(GetType().GetTypeInfo().Assembly);
@@ -398,11 +396,13 @@ namespace System.Web.Http
                 optionsAccessor.Object,
                 new NullLoggerFactory());
 
-            return new NestedProviderManager<ActionDescriptorProviderContext>(
-                new INestedProvider<ActionDescriptorProviderContext>[]
-                {
-                    provider
-                });
+            return provider;
+        }
+
+        private void Invoke(ControllerActionDescriptorProvider provider, ActionDescriptorProviderContext context)
+        {
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
         }
 
         private class NamespaceFilteredControllerTypeProvider : DefaultControllerTypeProvider

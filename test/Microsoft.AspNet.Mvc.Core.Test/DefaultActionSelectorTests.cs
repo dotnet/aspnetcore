@@ -9,12 +9,12 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
+using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Moq;
@@ -733,26 +733,27 @@ namespace Microsoft.AspNet.Mvc
         private async Task<ActionDescriptor> InvokeActionSelector(RouteContext context)
         {
             var actionDescriptorProvider = GetActionDescriptorProvider();
-            var descriptorProvider =
-                new NestedProviderManager<ActionDescriptorProviderContext>(new[] { actionDescriptorProvider });
 
+            // service container does not work quite like our built in Depenency Injection container.
             var serviceContainer = new ServiceContainer();
-            serviceContainer.AddService(typeof(INestedProviderManager<ActionDescriptorProviderContext>),
-                                        descriptorProvider);
+            var list = new List<IActionDescriptorProvider>()
+            {
+                actionDescriptorProvider,
+            };
+
+            serviceContainer.AddService(typeof(IEnumerable<IActionDescriptorProvider>), list);
 
             var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer, new NullLoggerFactory());
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionCollectionDescriptorProvider);
 
-            var actionConstraintProvider = new NestedProviderManager<ActionConstraintProviderContext>(
-                new INestedProvider<ActionConstraintProviderContext>[]
-            {
-                new DefaultActionConstraintProvider(),
-            });
+            var actionConstraintProviders = new IActionConstraintProvider[] {
+                    new DefaultActionConstraintProvider(),
+                };
 
             var defaultActionSelector = new DefaultActionSelector(
                 actionCollectionDescriptorProvider,
                 decisionTreeProvider,
-                actionConstraintProvider,
+                actionConstraintProviders,
                 NullLoggerFactory.Instance);
 
             return await defaultActionSelector.SelectAsync(context);
@@ -829,17 +830,15 @@ namespace Microsoft.AspNet.Mvc
 
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionProvider.Object);
 
-            var actionConstraintProvider = new NestedProviderManager<ActionConstraintProviderContext>(
-                new INestedProvider<ActionConstraintProviderContext>[]
-            {
-                new DefaultActionConstraintProvider(),
-                new BooleanConstraintProvider(),
-            });
+            var actionConstraintProviders = new IActionConstraintProvider[] {
+                    new DefaultActionConstraintProvider(),
+                    new BooleanConstraintProvider(),
+                };
 
             return new DefaultActionSelector(
                 actionProvider.Object,
                 decisionTreeProvider,
-                actionConstraintProvider,
+                actionConstraintProviders,
                 loggerFactory);
         }
 
@@ -932,11 +931,11 @@ namespace Microsoft.AspNet.Mvc
             public bool Pass { get; set; }
         }
 
-        private class BooleanConstraintProvider : INestedProvider<ActionConstraintProviderContext>
+        private class BooleanConstraintProvider : IActionConstraintProvider
         {
             public int Order { get; set; }
 
-            public void Invoke(ActionConstraintProviderContext context, Action callNext)
+            public void OnProvidersExecuting(ActionConstraintProviderContext context)
             {
                 foreach (var item in context.Results)
                 {
@@ -947,8 +946,10 @@ namespace Microsoft.AspNet.Mvc
                         item.Constraint = new BooleanConstraint() { Pass = marker.Pass };
                     }
                 }
+            }
 
-                callNext();
+            public void OnProvidersExecuted(ActionConstraintProviderContext context)
+            {
             }
         }
 

@@ -3,11 +3,12 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Core
 {
     /// <summary>
     /// Default implementation for ActionDescriptors.
@@ -47,22 +48,33 @@ namespace Microsoft.AspNet.Mvc
 
         private ActionDescriptorsCollection GetCollection()
         {
-            var actionDescriptorProvider =
-                _serviceProvider.GetRequiredService<INestedProviderManager<ActionDescriptorProviderContext>>();
-            var actionDescriptorProviderContext = new ActionDescriptorProviderContext();
+            var providers =
+                _serviceProvider.GetRequiredServices<IActionDescriptorProvider>()
+                                .OrderBy(p => p.Order)
+                                .ToArray();
 
-            actionDescriptorProvider.Invoke(actionDescriptorProviderContext);
+            var context = new ActionDescriptorProviderContext();
+
+            foreach (var provider in providers)
+            {
+                provider.OnProvidersExecuting(context);
+            }
+
+            for (var i = providers.Length - 1; i >= 0; i--)
+            {
+                providers[i].OnProvidersExecuted(context);
+            }
 
             if (_logger.IsEnabled(LogLevel.Verbose))
             {
-                foreach (var actionDescriptor in actionDescriptorProviderContext.Results)
+                foreach (var actionDescriptor in context.Results)
                 {
                     _logger.WriteVerbose(new ActionDescriptorValues(actionDescriptor));
                 }
             }
 
             return new ActionDescriptorsCollection(
-                new ReadOnlyCollection<ActionDescriptor>(actionDescriptorProviderContext.Results), 0);
+                new ReadOnlyCollection<ActionDescriptor>(context.Results), 0);
         }
     }
 }

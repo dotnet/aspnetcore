@@ -3,16 +3,16 @@
 
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Core
 {
     public class ActionInvokerProviderContext
     {
-        public ActionInvokerProviderContext([NotNull]ActionContext actionContext)
+        public ActionInvokerProviderContext([NotNull] ActionContext actionContext)
         {
             ActionContext = actionContext;
         }
 
-        public ActionContext ActionContext { get; private set; }
+        public ActionContext ActionContext { get; }
 
         public IActionInvoker Result { get; set; }
     }

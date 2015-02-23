@@ -3,15 +3,10 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Core
 {
     public class ActionDescriptorProviderContext
     {
-        public ActionDescriptorProviderContext()
-        {
-            Results = new List<ActionDescriptor>();
-        }
-
-        public IList<ActionDescriptor> Results { get; }
+        public IList<ActionDescriptor> Results { get; } = new List<ActionDescriptor>();
     }
 }

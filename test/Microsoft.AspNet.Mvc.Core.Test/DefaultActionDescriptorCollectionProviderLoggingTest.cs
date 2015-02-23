@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Security;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Microsoft.Framework.Logging;
 using Xunit;
 
@@ -109,12 +109,15 @@ namespace Microsoft.AspNet.Mvc.Logging
         private void CreateActionDescriptors(ILoggerFactory loggerFactory, params TypeInfo[] controllerTypeInfo)
         {
             var actionDescriptorProvider = GetProvider(loggerFactory, controllerTypeInfo);
-            var descriptorProvider =
-                new NestedProviderManager<ActionDescriptorProviderContext>(new[] { actionDescriptorProvider });
 
+            // service container does not work quite like our built in Depenency Injection container.
             var serviceContainer = new ServiceContainer();
-            serviceContainer.AddService(typeof(INestedProviderManager<ActionDescriptorProviderContext>),
-                                            descriptorProvider);
+            var list = new List<IActionDescriptorProvider>()
+            {
+                actionDescriptorProvider,
+            };
+
+            serviceContainer.AddService(typeof(IEnumerable<IActionDescriptorProvider>), list);
 
             var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer, loggerFactory);
             var descriptors = actionCollectionDescriptorProvider.ActionDescriptors;

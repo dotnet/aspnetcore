@@ -925,7 +925,9 @@ namespace Microsoft.AspNet.Mvc.Description
                 constraintResolver.Object,
                 modelMetadataProvider);
 
-            provider.Invoke(context, () => { });
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
             return new ReadOnlyCollection<ApiDescription>(context.Results);
         }
 

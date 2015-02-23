@@ -7,16 +7,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Core
 {
     public abstract class FilterActionInvoker : IActionInvoker
     {
-        private readonly INestedProviderManager<FilterProviderContext> _filterProvider;
+        private readonly IReadOnlyList<IFilterProvider> _filterProviders;
         private readonly IInputFormattersProvider _inputFormatterProvider;
         private readonly IModelBinderProvider _modelBinderProvider;
         private readonly IModelValidatorProviderProvider _modelValidatorProviderProvider;
@@ -41,7 +40,7 @@ namespace Microsoft.AspNet.Mvc
 
         public FilterActionInvoker(
             [NotNull] ActionContext actionContext,
-            [NotNull] INestedProviderManager<FilterProviderContext> filterProvider,
+            [NotNull] IReadOnlyList<IFilterProvider> filterProviders,
             [NotNull] IInputFormattersProvider inputFormatterProvider,
             [NotNull] IModelBinderProvider modelBinderProvider,
             [NotNull] IModelValidatorProviderProvider modelValidatorProviderProvider,
@@ -50,7 +49,7 @@ namespace Microsoft.AspNet.Mvc
         {
             ActionContext = actionContext;
 
-            _filterProvider = filterProvider;
+            _filterProviders = filterProviders;
             _inputFormatterProvider = inputFormatterProvider;
             _modelBinderProvider = modelBinderProvider;
             _modelValidatorProviderProvider = modelValidatorProviderProvider;
@@ -142,13 +141,21 @@ namespace Microsoft.AspNet.Mvc
 
         private IFilter[] GetFilters()
         {
-            var filterProviderContext = new FilterProviderContext(
+            var context = new FilterProviderContext(
                 ActionContext,
                 ActionContext.ActionDescriptor.FilterDescriptors.Select(fd => new FilterItem(fd)).ToList());
 
-            _filterProvider.Invoke(filterProviderContext);
+            foreach (var provider in _filterProviders)
+            {
+                provider.OnProvidersExecuting(context);
+            }
 
-            return filterProviderContext.Results.Select(item => item.Filter).Where(filter => filter != null).ToArray();
+            for (var i = _filterProviders.Count - 1; i >= 0; i--)
+            {
+                _filterProviders[i].OnProvidersExecuted(context);
+            }
+
+            return context.Results.Select(item => item.Filter).Where(filter => filter != null).ToArray();
         }
 
         private async Task InvokeAllAuthorizationFiltersAsync()

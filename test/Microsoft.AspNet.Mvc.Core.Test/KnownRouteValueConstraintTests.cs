@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.AspNet.Mvc.Core;
 using Moq;
 using Xunit;
 
@@ -151,17 +151,25 @@ namespace Microsoft.AspNet.Routing.Tests
 
         private static HttpContext GetHttpContext(ActionDescriptor actionDescriptor)
         {
-            var actionProvider = new Mock<INestedProviderManager<ActionDescriptorProviderContext>>(
-                                                                                    MockBehavior.Strict);
+            var actionProvider = new Mock<IActionDescriptorProvider>(MockBehavior.Strict);
 
             actionProvider
-                .Setup(p => p.Invoke(It.IsAny<ActionDescriptorProviderContext>()))
+                .SetupGet(p => p.Order)
+                .Returns(DefaultOrder.DefaultFrameworkSortOrder);
+
+            actionProvider
+                .Setup(p => p.OnProvidersExecuting(It.IsAny<ActionDescriptorProviderContext>()))
                 .Callback<ActionDescriptorProviderContext>(c => c.Results.Add(actionDescriptor));
+
+            actionProvider
+                .Setup(p => p.OnProvidersExecuted(It.IsAny<ActionDescriptorProviderContext>()))
+                .Verifiable();
 
             var context = new Mock<HttpContext>();
             context.Setup(o => o.RequestServices
-                                .GetService(typeof(INestedProviderManager<ActionDescriptorProviderContext>)))
-                   .Returns(actionProvider.Object);
+                                .GetService(typeof(IEnumerable<IActionDescriptorProvider>)))
+                   .Returns(new[] { actionProvider.Object });
+
             context.Setup(o => o.RequestServices
                                .GetService(typeof(IActionDescriptorsCollectionProvider)))
                    .Returns(new DefaultActionDescriptorsCollectionProvider(context.Object.RequestServices, new NullLoggerFactory()));

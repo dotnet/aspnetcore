@@ -5,10 +5,10 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Core
 {
-    public interface IActionDescriptorProvider
+    public interface IFilterProvider
     {
         int Order { get; }
-        void OnProvidersExecuting([NotNull] ActionDescriptorProviderContext context);
-        void OnProvidersExecuted([NotNull] ActionDescriptorProviderContext context);
+        void OnProvidersExecuting([NotNull] FilterProviderContext context);
+        void OnProvidersExecuted([NotNull] FilterProviderContext context);
     }
 }

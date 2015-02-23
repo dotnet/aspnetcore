@@ -4,11 +4,11 @@
 using System;
 using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
-    public class DefaultFilterProvider : INestedProvider<FilterProviderContext>
+    public class DefaultFilterProvider : IFilterProvider
     {
         public DefaultFilterProvider(IServiceProvider serviceProvider)
         {
@@ -22,7 +22,8 @@ namespace Microsoft.AspNet.Mvc.Filters
 
         protected IServiceProvider ServiceProvider { get; private set; }
 
-        public virtual void Invoke(FilterProviderContext context, Action callNext)
+        /// <inheritdoc />
+        public void OnProvidersExecuting([NotNull] FilterProviderContext context)
         {
             if (context.ActionContext.ActionDescriptor.FilterDescriptors != null)
             {
@@ -31,11 +32,11 @@ namespace Microsoft.AspNet.Mvc.Filters
                     ProvideFilter(context, item);
                 }
             }
+        }
 
-            if (callNext != null)
-            {
-                callNext();
-            }
+        /// <inheritdoc />
+        public void OnProvidersExecuted([NotNull] FilterProviderContext context)
+        {
         }
 
         public virtual void ProvideFilter(FilterProviderContext context, FilterItem filterItem)

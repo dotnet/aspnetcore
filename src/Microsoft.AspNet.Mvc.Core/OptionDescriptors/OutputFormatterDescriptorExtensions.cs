@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc
         public static void RemoveTypesOf<TInstance>([NotNull] this IList<OutputFormatterDescriptor> descriptors)
             where TInstance : class, IOutputFormatter
         {
-            for (int i = descriptors.Count - 1; i >= 0; i--)
+            for (var i = descriptors.Count - 1; i >= 0; i--)
             {
                 if (descriptors[i].OptionType == typeof(TInstance))
                 {

@@ -5,10 +5,12 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.ActionConstraints;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Xunit;
 
@@ -21,13 +23,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IApplicationBuilder> _app = new BasicWebSite.Startup().Configure;
 
         [Theory]
-        [InlineData(typeof(INestedProvider<ActionDescriptorProviderContext>), typeof(ControllerActionDescriptorProvider), -1000)]
-        [InlineData(typeof(INestedProvider<ActionInvokerProviderContext>), (Type)null, -1000)]
-        [InlineData(typeof(INestedProvider<ApiDescriptionProviderContext>), (Type)null, -1000)]
-        [InlineData(typeof(INestedProvider<FilterProviderContext>), (Type)null, -1000)]
-        [InlineData(typeof(INestedProvider<ViewComponentInvokerProviderContext>), (Type)null, -1000)]
-        [InlineData(typeof(IConfigureOptions<RazorViewEngineOptions>), (Type)null, -1000)]
-        [InlineData(typeof(IConfigureOptions<MvcOptions>), (Type)null, -1000)]
+        [InlineData(typeof(IActionDescriptorProvider), typeof(ControllerActionDescriptorProvider), -1000)]
+        [InlineData(typeof(IActionInvokerProvider), null, -1000)]
+        [InlineData(typeof(IApiDescriptionProvider), null, -1000)]
+        [InlineData(typeof(IFilterProvider), null, -1000)]
+        [InlineData(typeof(IViewComponentInvokerProvider), null, -1000)]
+        [InlineData(typeof(IActionConstraintProvider), null, -1000)]
+        [InlineData(typeof(IConfigureOptions<RazorViewEngineOptions>), null, -1000)]
+        [InlineData(typeof(IConfigureOptions<MvcOptions>), null, -1000)]
         public async Task ServiceOrder_GetOrder(Type serviceType, Type actualType, int order)
         {
             // Arrange

@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.DependencyInjection;
 
 namespace BasicWebSite
@@ -19,7 +20,7 @@ namespace BasicWebSite
                 // Add MVC services to the services container
                 services.AddMvc(configuration);
 
-                services.AddSingleton<INestedProvider<ActionDescriptorProviderContext>, ActionDescriptorCreationCounter>();
+                services.AddSingleton<IActionDescriptorProvider, ActionDescriptorCreationCounter>();
 
                 services.ConfigureMvcOptions(options =>
                 {

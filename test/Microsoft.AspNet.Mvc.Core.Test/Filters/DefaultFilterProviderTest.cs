@@ -28,7 +28,9 @@ namespace Microsoft.AspNet.Mvc.Filters
             var provider = CreateProvider();
 
             // Act
-            provider.Invoke(context, () => { });
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
             var results = context.Results;
 
             // Assert
@@ -57,7 +59,9 @@ namespace Microsoft.AspNet.Mvc.Filters
             var provider = CreateProvider();
 
             // Act
-            provider.Invoke(context, () => { });
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
             var results = context.Results;
 
             // Assert
@@ -88,7 +92,8 @@ namespace Microsoft.AspNet.Mvc.Filters
             var provider = CreateProvider();
 
             // Act
-            provider.Invoke(context, () => { });
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
             var results = context.Results;
 
             // Assert
@@ -118,7 +123,8 @@ namespace Microsoft.AspNet.Mvc.Filters
             var provider = CreateProvider();
 
             // Act
-            provider.Invoke(context, () => { });
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
             var results = context.Results;
 
             // Assert

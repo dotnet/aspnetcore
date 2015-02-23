@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Core;
 
 namespace BasicWebSite
 {
@@ -29,10 +30,12 @@ namespace BasicWebSite
             }
         }
 
-        public void Invoke(ActionDescriptorProviderContext context, Action callNext)
+        public void OnProvidersExecuting(ActionDescriptorProviderContext context)
         {
-            callNext();
+        }
 
+        public void OnProvidersExecuted(ActionDescriptorProviderContext context)
+        {
             if (context.Results.Count == 0)
             {
                 throw new InvalidOperationException("No actions found!");

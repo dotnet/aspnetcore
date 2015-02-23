@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ActionConstraints
 {
     /// <summary>
     /// Context for an action constraint provider.

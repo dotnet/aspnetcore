@@ -5,12 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Core
 {
     public class ControllerActionInvoker : FilterActionInvoker
     {
@@ -20,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
 
         public ControllerActionInvoker(
             [NotNull] ActionContext actionContext,
-            [NotNull] INestedProviderManager<FilterProviderContext> filterProvider,
+            [NotNull] IReadOnlyList<IFilterProvider> filterProviders,
             [NotNull] IControllerFactory controllerFactory,
             [NotNull] ControllerActionDescriptor descriptor,
             [NotNull] IInputFormattersProvider inputFormatterProvider,
@@ -31,7 +30,7 @@ namespace Microsoft.AspNet.Mvc
             [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor)
             : base(
                   actionContext, 
-                  filterProvider,
+                  filterProviders,
                   inputFormatterProvider, 
                   modelBinderProvider, 
                   modelValidatorProviderProvider, 

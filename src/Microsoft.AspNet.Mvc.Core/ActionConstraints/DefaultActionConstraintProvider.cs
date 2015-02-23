@@ -2,20 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ActionConstraints
 {
     /// <summary>
-    /// A default implementation of <see cref="INestedProvider{ActionConstraintProviderContext}"/>.
+    /// A default implementation of <see cref="IActionConstraintProvider"/>.
     /// </summary>
     /// <remarks>
     /// This provider is able to provide an <see cref="IActionConstraint"/> instance when the
     /// <see cref="IActionConstraintMetadata"/> implements <see cref="IActionConstraint"/> or
     /// <see cref="IActionConstraintFactory"/>/
     /// </remarks>
-    public class DefaultActionConstraintProvider : INestedProvider<ActionConstraintProviderContext>
+    public class DefaultActionConstraintProvider : IActionConstraintProvider
     {
         /// <inheritdoc />
         public int Order
@@ -24,14 +23,17 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public void Invoke([NotNull] ActionConstraintProviderContext context, [NotNull] Action callNext)
+        public void OnProvidersExecuting([NotNull] ActionConstraintProviderContext context)
         {
             foreach (var item in context.Results)
             {
                 ProvideConstraint(item, context.HttpContext.RequestServices);
             }
+        }
 
-            callNext();
+        /// <inheritdoc />
+        public void OnProvidersExecuted([NotNull] ActionConstraintProviderContext context)
+        {
         }
 
         private void ProvideConstraint(ActionConstraintItem item, IServiceProvider services)

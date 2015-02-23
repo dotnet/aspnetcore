@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
+using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
-using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Description
 {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Description
     /// Implements a provider of <see cref="ApiDescription"/> for actions represented
     /// by <see cref="ControllerActionDescriptor"/>.
     /// </summary>
-    public class DefaultApiDescriptionProvider : INestedProvider<ApiDescriptionProviderContext>
+    public class DefaultApiDescriptionProvider : IApiDescriptionProvider
     {
         private readonly IOutputFormattersProvider _formattersProvider;
         private readonly IModelMetadataProvider _modelMetadataProvider;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.Description
         }
 
         /// <inheritdoc />
-        public void Invoke(ApiDescriptionProviderContext context, Action callNext)
+        public void OnProvidersExecuting([NotNull] ApiDescriptionProviderContext context)
         {
             foreach (var action in context.Actions.OfType<ControllerActionDescriptor>())
             {
@@ -59,8 +59,10 @@ namespace Microsoft.AspNet.Mvc.Description
                     }
                 }
             }
+        }
 
-            callNext();
+        public void OnProvidersExecuted([NotNull] ApiDescriptionProviderContext context)
+        {
         }
 
         private ApiDescription CreateApiDescription(

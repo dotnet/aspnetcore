@@ -3,7 +3,7 @@
 
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ActionConstraints
 {
     /// <summary>
     /// Represents an <see cref="IActionConstraintMetadata"/> with or without a corresponding
