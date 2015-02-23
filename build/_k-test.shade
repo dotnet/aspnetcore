@@ -30,21 +30,17 @@ projectFile=''
             ? (Dictionary<string, object>)configsObject
             : new Dictionary<string, object>
                 {
-                    { "net45", new Dictionary<string, object>() } // Assume net45 only if none specified
+                    { "aspnet50", new Dictionary<string, object>() } // Assume aspnet50 only if none specified
                 };
         
-        // Currently only net* and k* targets are supported. See aspnet/Universe#53
-        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("net", StringComparison.OrdinalIgnoreCase)
-                                                    || k.StartsWith("k", StringComparison.OrdinalIgnoreCase)
-                                                    || k.StartsWith("aspnet", StringComparison.OrdinalIgnoreCase));
+        // Currently only aspnet* targets are supported. See aspnet/Universe#53
+        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("aspnet", StringComparison.OrdinalIgnoreCase));
         
         foreach (var framework in targetFrameworks)
         {
             var testArgs = IsMono ? " -parallel none" : "";
 
-            if (framework.StartsWith("net", StringComparison.OrdinalIgnoreCase)
-                || (framework.StartsWith("aspnet", StringComparison.OrdinalIgnoreCase)
-                    && !framework.StartsWith("aspnetcore", StringComparison.OrdinalIgnoreCase)))
+            if (!framework.StartsWith("aspnetcore", StringComparison.OrdinalIgnoreCase))
             {
                 K(("test" + testArgs), projectFolder, "");
             }
