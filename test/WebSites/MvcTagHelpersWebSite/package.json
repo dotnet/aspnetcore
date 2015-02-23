@@ -1,0 +1,13 @@
+{
+  "version": "0.0.0",
+  "name": "MvcTagHelpersWebSite",
+  "description": "Web site demonstrating various MVC tag helpers.",
+  "devDependencies": {
+    "jasmine-core": "^2.2.0",
+    "karma": "^0.12.31",
+    "karma-jasmine": "^0.3.5",
+    "karma-phantomjs-launcher": "^0.1.4",
+    "karma-teamcity-reporter": "^0.1.2"
+  },
+  "private": true
+}
