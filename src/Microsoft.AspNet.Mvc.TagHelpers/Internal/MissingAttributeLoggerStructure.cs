@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
     public class MissingAttributeLoggerStructure : ILoggerStructure
     {
         private readonly string _uniqueId;
+        private readonly string _viewPath;
         private readonly IEnumerable<KeyValuePair<string, object>> _values;
 
         // Internal for unit testing
@@ -23,14 +24,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// Creates a new <see cref="MissingAttributeLoggerStructure"/>.
         /// </summary>
         /// <param name="uniqueId">The unique ID of the HTML element this message applies to.</param>
+        /// <param name="viewPath">The path to the view.</param>
         /// <param name="missingAttributes">The missing required attributes.</param>
-        public MissingAttributeLoggerStructure(string uniqueId, IEnumerable<string> missingAttributes)
+        public MissingAttributeLoggerStructure(string uniqueId, string viewPath, IEnumerable<string> missingAttributes)
         {
             _uniqueId = uniqueId;
+            _viewPath = viewPath;
             MissingAttributes = missingAttributes;
             _values = new Dictionary<string, object>
             {
                 ["UniqueId"] = _uniqueId,
+                ["ViewPath"] = _viewPath,
                 ["MissingAttributes"] = MissingAttributes
             };
         }
@@ -61,8 +65,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// <returns>The message.</returns>
         public string Format()
         {
-            return string.Format("Tag Helper unique ID: {0}, Missing attributes: {1}",
+            return string.Format("Tag Helper with ID {0} in view '{1}' is missing attributes: {2}",
                 _uniqueId,
+                _viewPath,
                 string.Join(",", MissingAttributes));
         }
     }

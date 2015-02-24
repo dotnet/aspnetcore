@@ -19,9 +19,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var logger = MakeLogger(LogLevel.Verbose);
             var tagHelper = new Mock<ITagHelper>();
             var uniqueId = "id";
+            var viewPath = "Views/Home/Index.cshtml";
 
             // Act
-            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId);
+            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
 
             // Assert
             Mock.Get(logger).Verify(l => l.Write(
@@ -44,9 +45,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var logger = MakeLogger(LogLevel.Verbose);
             var tagHelper = new Mock<ITagHelper>();
             var uniqueId = "id";
+            var viewPath = "Views/Home/Index.cshtml";
 
             // Act
-            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId);
+            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
 
             // Assert
             Mock.Get(logger).Verify(l => l.Write(
@@ -74,9 +76,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var logger = MakeLogger(LogLevel.Verbose);
             var tagHelper = new Mock<ITagHelper>();
             var uniqueId = "id";
+            var viewPath = "Views/Home/Index.cshtml";
 
             // Act
-            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId);
+            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
 
             // Assert
             Mock.Get(logger).Verify(l => l.Write(
@@ -104,9 +107,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var logger = MakeLogger(LogLevel.Critical);
             var tagHelper = new Mock<ITagHelper>();
             var uniqueId = "id";
+            var viewPath = "Views/Home/Index.cshtml";
 
             // Act
-            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId);
+            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
 
             // Assert
             Mock.Get(logger).Verify(l => l.Write(

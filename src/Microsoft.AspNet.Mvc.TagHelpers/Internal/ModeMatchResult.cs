@@ -39,7 +39,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="tagHelper">The <see cref="ITagHelper"/>.</param>
         /// <param name="uniqueId">The value of <see cref="TagHelperContext.UniqueId"/>.</param>
-        public void LogDetails<TTagHelper>([NotNull] ILogger logger, [NotNull] TTagHelper tagHelper, string uniqueId)
+        /// <param name="viewPath">The path to the view the <see cref="ITagHelper"/> is on.</param>
+        public void LogDetails<TTagHelper>(
+            [NotNull] ILogger logger,
+            [NotNull] TTagHelper tagHelper,
+            string uniqueId,
+            string viewPath)
             where TTagHelper : ITagHelper
         {
             if (logger.IsEnabled(LogLevel.Warning) && PartiallyMatchedAttributes.Any())
@@ -50,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                         attribute => PartiallyMatchedAttributes.Contains(
                             attribute, StringComparer.OrdinalIgnoreCase)));
 
-                logger.WriteWarning(new PartialModeMatchLoggerStructure<TMode>(uniqueId, partialOnlyMatches));
+                logger.WriteWarning(new PartialModeMatchLoggerStructure<TMode>(uniqueId, viewPath, partialOnlyMatches));
             }
 
             if (logger.IsEnabled(LogLevel.Verbose) && !FullMatches.Any())

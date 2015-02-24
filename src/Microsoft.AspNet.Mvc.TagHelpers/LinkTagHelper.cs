@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Debug.Assert(modeResult.FullMatches.Select(match => match.Mode).Distinct().Count() <= 1,
                 $"There should only be one mode match, check the {nameof(ModeDetails)}");
 
-            modeResult.LogDetails(Logger, this, context.UniqueId);
+            modeResult.LogDetails(Logger, this, context.UniqueId, ViewContext.View.Path);
 
             if (!modeResult.FullMatches.Any())
             {

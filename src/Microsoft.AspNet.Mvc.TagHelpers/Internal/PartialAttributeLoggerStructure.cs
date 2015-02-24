@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
     public class PartialModeMatchLoggerStructure<TMode> : ILoggerStructure
     {
         private readonly string _uniqueId;
+        private readonly string _viewPath;
         private readonly IEnumerable<ModeMatchAttributes<TMode>> _partialMatches;
         private readonly IEnumerable<KeyValuePair<string, object>> _values;
 
@@ -24,16 +25,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// Creates a new <see cref="PartialModeMatchLoggerStructure{TMode}"/>.
         /// </summary>
         /// <param name="uniqueId">The unique ID of the HTML element this message applies to.</param>
+        /// <param name="viewPath">The path to the view.</param>
         /// <param name="partialMatches">The set of modes with partial required attributes.</param>
         public PartialModeMatchLoggerStructure(
             string uniqueId,
+            string viewPath,
             [NotNull] IEnumerable<ModeMatchAttributes<TMode>> partialMatches)
         {
             _uniqueId = uniqueId;
+            _viewPath = viewPath;
             _partialMatches = partialMatches;
             _values = new Dictionary<string, object>
             {
                 ["UniqueId"] = _uniqueId,
+                ["ViewPath"] = _viewPath,
                 ["PartialMatches"] = partialMatches
             };
         }
@@ -65,8 +70,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         public string Format()
         {
             var newLine = Environment.NewLine;
-            return
-                string.Format($"Tag Helper {_uniqueId} had partial matches while determining mode:{newLine}\t{{0}}",
+            return string.Format(
+                $"Tag Helper with ID {_uniqueId} in view '{_viewPath}' had partial matches while determining mode:{newLine}\t{{0}}",
                     string.Join($"{newLine}\t", _partialMatches.Select(partial =>
                         string.Format($"Mode '{partial.Mode}' missing attributes:{newLine}\t\t{{0}} ",
                             string.Join($"{newLine}\t\t", partial.MissingAttributes)))));

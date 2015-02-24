@@ -50,14 +50,21 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [Activate]
         protected internal ILogger<ScriptTagHelper> Logger { get; set; }
 
+        [Activate]
+        protected internal ViewContext ViewContext { get; set; }
+
         /// <inheritdoc />
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            if (!AttributeMatcher.AllRequiredAttributesArePresent(context, RequiredAttributes, Logger))
+            if (!AttributeMatcher.AllRequiredAttributesArePresent(context, ViewContext, RequiredAttributes, Logger))
             {
                 if (Logger.IsEnabled(LogLevel.Verbose))
                 {
-                    Logger.WriteVerbose("Skipping processing for {0} {1}", nameof(ScriptTagHelper), context.UniqueId);
+                    Logger.WriteVerbose(
+                        "Skipping processing for {0} with ID {1} on view '{2}'",
+                        nameof(ScriptTagHelper),
+                        context.UniqueId,
+                        ViewContext.View.Path);
                 }
 
                 return;

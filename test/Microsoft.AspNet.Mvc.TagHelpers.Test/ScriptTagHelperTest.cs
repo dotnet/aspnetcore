@@ -3,11 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Core;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Logging;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -31,7 +37,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes.Add("src", srcValue);
             }
 
-            var context = MakeTagHelperContext(attributes);
+            var tagHelperContext = MakeTagHelperContext(attributes);
+            var viewContext = MakeViewContext();
 
             var output = MakeTagHelperOutput("script");
             var logger = CreateLogger();
@@ -39,12 +46,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var helper = new ScriptTagHelper()
             {
                 Logger = logger,
+                ViewContext = viewContext,
                 FallbackSrc = "http://www.example.com/blank.js",
                 FallbackTestExpression = "isavailable()",
             };
 
             // Act
-            await helper.ProcessAsync(context, output);
+            await helper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Null(output.TagName);
@@ -96,15 +104,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             Assert.Single(attributes);
 
-            var context = MakeTagHelperContext(attributes);
+            var tagHelperContext = MakeTagHelperContext(attributes);
+            var viewContext = MakeViewContext();
 
             var output = MakeTagHelperOutput("script");
             var logger = CreateLogger();
 
             helper.Logger = logger;
+            helper.ViewContext = viewContext;
 
             // Act
-            await helper.ProcessAsync(context, output);
+            await helper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal("script", output.TagName);
@@ -115,17 +125,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task DoesNotRunWhenAllRequiredAttributesAreMissing()
         {
             // Arrange
-            var context = MakeTagHelperContext();
+            var tagHelperContext = MakeTagHelperContext();
+            var viewContext = MakeViewContext();
             var output = MakeTagHelperOutput("script");
             var logger = CreateLogger();
 
             var helper = new ScriptTagHelper
             {
                 Logger = logger,
+                ViewContext = viewContext
             };
 
             // Act
-            await helper.ProcessAsync(context, output);
+            await helper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal("script", output.TagName);
@@ -142,15 +154,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             Assert.Single(attributes);
 
-            var context = MakeTagHelperContext(attributes);
+            var tagHelperContext = MakeTagHelperContext(attributes);
+            var viewContext = MakeViewContext();
 
             var output = MakeTagHelperOutput("script");
             var logger = CreateLogger();
 
             helper.Logger = logger;
+            helper.ViewContext = viewContext;
 
             // Act
-            await helper.ProcessAsync(context, output);
+            await helper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal("script", output.TagName);
@@ -175,17 +189,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task LogsWhenAllRequiredAttributesAreMissing()
         {
             // Arrange
-            var context = MakeTagHelperContext();
+            var tagHelperContext = MakeTagHelperContext();
+            var viewContext = MakeViewContext();
             var output = MakeTagHelperOutput("script");
             var logger = CreateLogger();
 
             var helper = new ScriptTagHelper
             {
                 Logger = logger,
+                ViewContext = viewContext
             };
 
             // Act
-            await helper.ProcessAsync(context, output);
+            await helper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal("script", output.TagName);
@@ -203,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task PreservesOrderOfSourceAttributesWhenRun()
         {
             // Arrange
-            var context = MakeTagHelperContext(
+            var tagHelperContext = MakeTagHelperContext(
                 attributes: new Dictionary<string, object>
                 {
                     ["data-extra"] = "something",
@@ -212,6 +228,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["asp-fallback-src"] = "http://www.example.com/blank.js",
                     ["asp-fallback-test"] = "isavailable()",
                 });
+
+            var viewContext = MakeViewContext();
 
             var output = MakeTagHelperOutput("link",
                 attributes: new Dictionary<string, string>
@@ -226,12 +244,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var helper = new ScriptTagHelper
             {
                 Logger = logger,
+                ViewContext = viewContext,
                 FallbackSrc = "~/blank.js",
                 FallbackTestExpression = "http://www.example.com/blank.js",
             };
 
             // Act
-            await helper.ProcessAsync(context, output);
+            await helper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.StartsWith("<script data-extra=\"something\" src=\"/blank.js\" data-more=\"else\"", output.Content);
@@ -249,6 +268,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 items: new Dictionary<object, object>(),
                 uniqueId: Guid.NewGuid().ToString("N"),
                 getChildContentAsync: () => Task.FromResult(content));
+        }
+
+        private static ViewContext MakeViewContext()
+        {
+            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var viewData = new ViewDataDictionary(metadataProvider);
+            var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, TextWriter.Null);
+
+            return viewContext;
         }
 
         private TagHelperOutput MakeTagHelperOutput(string tagName, IDictionary<string, string> attributes = null)
