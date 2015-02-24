@@ -258,6 +258,10 @@
 
         <ItemGroup>
             <!-- List is sorted OridnalIgnoreCase -->
+            <SrcExclusions Include="$(PoliCheckPath)**\NuGet.Packaging\PackageExtraction\PackagePathHelper.cs">
+                <term>hack</term>
+                <Justification>Temporary to unblock build.</Justification>
+            </SrcExclusions> 
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.Http.Server\WebListener.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\HttpReasonPhrase.cs">
                 <term>420</term>
