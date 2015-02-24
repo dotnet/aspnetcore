@@ -27,7 +27,7 @@ namespace MusicStore.Spa.Infrastructure
                         realProperty.IsRequired = buddyProperty.IsRequired;
                         realProperty.DisplayName = buddyProperty.DisplayName;
                         realProperty.DisplayFormatString = buddyProperty.DisplayFormatString;
-                        realProperty.SimpleDisplayText = buddyProperty.SimpleDisplayText;
+                        realProperty.SimpleDisplayProperty = buddyProperty.SimpleDisplayProperty;
                         realProperty.DataTypeName = buddyProperty.DataTypeName;
                         realProperty.Description = buddyProperty.Description;
                         realProperty.EditFormatString = buddyProperty.EditFormatString;

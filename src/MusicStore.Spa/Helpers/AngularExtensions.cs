@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public static HtmlString ngTextBoxFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, IDictionary<string, object> htmlAttributes)
         {
             var expressionText = ExpressionHelper.GetExpressionText(expression);
-            var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, html.ViewData, html.MetadataProvider);
+            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, html.ViewData, html.MetadataProvider);
             var ngAttributes = new Dictionary<string, object>();
 
             ngAttributes["type"] = "text";
@@ -51,20 +51,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
             ngAttributes["ng-model"] = valueFieldName;
 
             // Set input type
-            if (string.Equals(metadata.DataTypeName, Enum.GetName(typeof(DataType), DataType.EmailAddress), StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(modelExplorer.Metadata.DataTypeName, Enum.GetName(typeof(DataType), DataType.EmailAddress), StringComparison.OrdinalIgnoreCase))
             {
                 ngAttributes["type"] = "email";
             }
-            else if (metadata.ModelType == typeof(Uri)
-                     || string.Equals(metadata.DataTypeName, Enum.GetName(typeof(DataType), DataType.Url), StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(metadata.DataTypeName, Enum.GetName(typeof(DataType), DataType.ImageUrl), StringComparison.OrdinalIgnoreCase))
+            else if (modelExplorer.ModelType == typeof(Uri)
+                     || string.Equals(modelExplorer.Metadata.DataTypeName, Enum.GetName(typeof(DataType), DataType.Url), StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(modelExplorer.Metadata.DataTypeName, Enum.GetName(typeof(DataType), DataType.ImageUrl), StringComparison.OrdinalIgnoreCase))
             {
                 ngAttributes["type"] = "url";
             }
-            else if (IsNumberType(metadata.ModelType))
+            else if (IsNumberType(modelExplorer.ModelType))
             {
                 ngAttributes["type"] = "number";
-                if (IsIntegerType(metadata.ModelType))
+                if (IsIntegerType(modelExplorer.ModelType))
                 {
                     ngAttributes["step"] = "1";
                 }
@@ -73,20 +73,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     ngAttributes["step"] = "any";
                 }
             }
-            else if (metadata.ModelType == typeof(DateTime))
+            else if (modelExplorer.ModelType == typeof(DateTime))
             {
-                if (string.Equals(metadata.DataTypeName, Enum.GetName(typeof(DataType), DataType.Date), StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(modelExplorer.Metadata.DataTypeName, Enum.GetName(typeof(DataType), DataType.Date), StringComparison.OrdinalIgnoreCase))
                 {
                     ngAttributes["type"] = "date";
                 }
-                else if (string.Equals(metadata.DataTypeName, Enum.GetName(typeof(DataType), DataType.DateTime), StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(modelExplorer.Metadata.DataTypeName, Enum.GetName(typeof(DataType), DataType.DateTime), StringComparison.OrdinalIgnoreCase))
                 {
                     ngAttributes["type"] = "datetime";
                 }
             }
 
             // Add attributes for Angular validation
-            var clientValidators = html.GetClientValidationRules(metadata, null);
+            var clientValidators = html.GetClientValidationRules(modelExplorer, null);
 
             foreach (var validator in clientValidators)
             {
@@ -133,9 +133,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             // Render!
-            if (metadata.Model != null)
+            if (modelExplorer.Model != null)
             {
-                ngAttributes.Add("value", metadata.Model.ToString());
+                ngAttributes.Add("value", modelExplorer.Model.ToString());
             }
 
             var tag = new TagBuilder("input");
