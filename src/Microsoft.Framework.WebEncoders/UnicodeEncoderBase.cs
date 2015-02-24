@@ -6,14 +6,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.WebEncoders
 {
     internal unsafe abstract class UnicodeEncoderBase
     {
         // A bitmap of characters which are allowed to be returned unescaped.
-        private readonly uint[] _allowedCharsBitmap = new uint[0x10000 / 32];
+        private AllowedCharsBitmap _allowedCharsBitmap;
 
         // The worst-case number of output chars generated for any input char.
         private readonly int _maxOutputCharsPerInputChar;
@@ -21,25 +20,10 @@ namespace Microsoft.Framework.WebEncoders
         /// <summary>
         /// Instantiates an encoder using a custom allow list of characters.
         /// </summary>
-        protected UnicodeEncoderBase(ICodePointFilter[] filters, int maxOutputCharsPerInputChar)
+        protected UnicodeEncoderBase(CodePointFilter filter, int maxOutputCharsPerInputChar)
         {
             _maxOutputCharsPerInputChar = maxOutputCharsPerInputChar;
-
-            if (filters != null)
-            {
-                // Punch a hole for each allowed code point across all filters (this is an OR).
-                // We don't allow supplementary (astral) characters for now.
-                foreach (var filter in filters)
-                {
-                    foreach (var codePoint in filter.GetAllowedCodePoints())
-                    {
-                        if (!UnicodeHelpers.IsSupplementaryCodePoint(codePoint))
-                        {
-                            AllowCharacter((char)codePoint);
-                        }
-                    }
-                }
-            }
+            _allowedCharsBitmap = filter.GetAllowedCharsBitmap();
 
             // Forbid characters that are special in HTML.
             // Even though this is a common encoder used by everybody (including URL
@@ -55,38 +39,29 @@ namespace Microsoft.Framework.WebEncoders
 
             // Forbid codepoints which aren't mapped to characters or which are otherwise always disallowed
             // (includes categories Cc, Cs, Co, Cn, Zs [except U+0020 SPACE], Zl, Zp)
-            uint[] definedCharactersBitmap = UnicodeHelpers.GetDefinedCharacterBitmap();
-            Debug.Assert(definedCharactersBitmap.Length == _allowedCharsBitmap.Length);
-            for (int i = 0; i < _allowedCharsBitmap.Length; i++)
-            {
-                _allowedCharsBitmap[i] &= definedCharactersBitmap[i];
-            }
-        }
-
-        // Marks a character as allowed (can be returned unencoded)
-        private void AllowCharacter(char c)
-        {
-            uint codePoint = (uint)c;
-            int index = (int)(codePoint >> 5);
-            int offset = (int)(codePoint & 0x1FU);
-            _allowedCharsBitmap[index] |= 0x1U << offset;
+            _allowedCharsBitmap.ForbidUndefinedCharacters();
         }
 
         // Marks a character as forbidden (must be returned encoded)
         protected void ForbidCharacter(char c)
         {
-            uint codePoint = (uint)c;
-            int index = (int)(codePoint >> 5);
-            int offset = (int)(codePoint & 0x1FU);
-            _allowedCharsBitmap[index] &= ~(0x1U << offset);
+            _allowedCharsBitmap.ForbidCharacter(c);
         }
-
+        
         /// <summary>
         /// Entry point to the encoder.
         /// </summary>
-        public void Encode([NotNull] char[] value, int startIndex, int charCount, [NotNull] TextWriter output)
+        public void Encode(char[] value, int startIndex, int charCount, TextWriter output)
         {
             // Input checking
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            if (output == null)
+            {
+                throw new ArgumentNullException(nameof(output));
+            }
             ValidateInputs(startIndex, charCount, actualInputLength: value.Length);
 
             if (charCount != 0)
@@ -137,9 +112,17 @@ namespace Microsoft.Framework.WebEncoders
         /// <summary>
         /// Entry point to the encoder.
         /// </summary>
-        public void Encode([NotNull] string value, int startIndex, int charCount, [NotNull] TextWriter output)
+        public void Encode(string value, int startIndex, int charCount, TextWriter output)
         {
             // Input checking
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            if (output == null)
+            {
+                throw new ArgumentNullException(nameof(output));
+            }
             ValidateInputs(startIndex, charCount, actualInputLength: value.Length);
 
             if (charCount != 0)
@@ -249,10 +232,7 @@ namespace Microsoft.Framework.WebEncoders
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsCharacterAllowed(char c)
         {
-            uint codePoint = (uint)c;
-            int index = (int)(codePoint >> 5);
-            int offset = (int)(codePoint & 0x1FU);
-            return ((_allowedCharsBitmap[index] >> offset) & 0x1U) != 0;
+            return _allowedCharsBitmap.IsCharacterAllowed(c);
         }
 
         private static void ValidateInputs(int startIndex, int charCount, int actualInputLength)

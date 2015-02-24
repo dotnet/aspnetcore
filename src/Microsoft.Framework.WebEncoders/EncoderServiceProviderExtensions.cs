@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.WebEncoders
 {
     /// <summary>
     /// Contains extension methods for fetching encoders from a service provider.
     /// </summary>
-    public static class EncoderExtensions
+    public static class EncoderServiceProviderExtensions
     {
         /// <summary>
         /// Retrieves an IHtmlEncoder from a service provider.

@@ -13,6 +13,8 @@ namespace Microsoft.Framework.WebEncoders
     /// can be represented unescaped.
     /// </summary>
     /// <remarks>
+    /// Instances of this type will always encode a certain set of characters (such as '
+    /// and "), even if the filter provided in the constructor allows such characters.
     /// Once constructed, instances of this class are thread-safe for multiple callers.
     /// </remarks>
     public sealed class JavaScriptStringEncoder : IJavaScriptStringEncoder
@@ -32,10 +34,19 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
-        /// Instantiates an encoder using a custom allow list of characters.
+        /// Instantiates an encoder specifying which Unicode character blocks are allowed to
+        /// pass through the encoder unescaped.
         /// </summary>
-        public JavaScriptStringEncoder(params ICodePointFilter[] filters)
-            : this(new JavaScriptStringUnicodeEncoder(filters))
+        public JavaScriptStringEncoder(params UnicodeBlock[] allowedBlocks)
+            : this(new JavaScriptStringUnicodeEncoder(new CodePointFilter(allowedBlocks)))
+        {
+        }
+
+        /// <summary>
+        /// Instantiates an encoder using a custom code point filter.
+        /// </summary>
+        public JavaScriptStringEncoder(ICodePointFilter filter)
+            : this(new JavaScriptStringUnicodeEncoder(CodePointFilter.Wrap(filter)))
         {
         }
 
@@ -97,8 +108,8 @@ namespace Microsoft.Framework.WebEncoders
             // surrogate pairs in the output.
             private const int MaxOutputCharsPerInputChar = 6;
 
-            internal JavaScriptStringUnicodeEncoder(ICodePointFilter[] filters)
-                : base(filters, MaxOutputCharsPerInputChar)
+            internal JavaScriptStringUnicodeEncoder(CodePointFilter filter)
+                : base(filter, MaxOutputCharsPerInputChar)
             {
                 // The only interesting characters above and beyond what the base encoder
                 // already covers are the solidus and reverse solidus.
@@ -113,7 +124,7 @@ namespace Microsoft.Framework.WebEncoders
                     JavaScriptStringUnicodeEncoder encoder = Volatile.Read(ref _basicLatinSingleton);
                     if (encoder == null)
                     {
-                        encoder = new JavaScriptStringUnicodeEncoder(new[] { CodePointFilters.BasicLatin });
+                        encoder = new JavaScriptStringUnicodeEncoder(new CodePointFilter());
                         Volatile.Write(ref _basicLatinSingleton, encoder);
                     }
                     return encoder;

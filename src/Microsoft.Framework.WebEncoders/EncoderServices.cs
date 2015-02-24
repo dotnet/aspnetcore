@@ -22,17 +22,17 @@ namespace Microsoft.Framework.WebEncoders
 
             // Register the default encoders
             // We want to call the 'Default' property getters lazily since they perform static caching
-            yield return describe.Singleton<IHtmlEncoder>(CreateFactory(() => HtmlEncoder.Default, filters => new HtmlEncoder(filters)));
-            yield return describe.Singleton<IJavaScriptStringEncoder>(CreateFactory(() => JavaScriptStringEncoder.Default, filters => new JavaScriptStringEncoder(filters)));
-            yield return describe.Singleton<IUrlEncoder>(CreateFactory(() => UrlEncoder.Default, filters => new UrlEncoder(filters)));
+            yield return describe.Singleton<IHtmlEncoder>(CreateFactory(() => HtmlEncoder.Default, filter => new HtmlEncoder(filter)));
+            yield return describe.Singleton<IJavaScriptStringEncoder>(CreateFactory(() => JavaScriptStringEncoder.Default, filter => new JavaScriptStringEncoder(filter)));
+            yield return describe.Singleton<IUrlEncoder>(CreateFactory(() => UrlEncoder.Default, filter => new UrlEncoder(filter)));
         }
 
-        private static Func<IServiceProvider, T> CreateFactory<T>(Func<T> parameterlessCtor, Func<ICodePointFilter[], T> parameterfulCtor)
+        private static Func<IServiceProvider, T> CreateFactory<T>(Func<T> defaultFactory, Func<ICodePointFilter, T> customFilterFactory)
         {
             return serviceProvider =>
             {
-                var codePointFilters = serviceProvider?.GetService<IOptions<EncoderOptions>>()?.Options?.CodePointFilters;
-                return (codePointFilters != null) ? parameterfulCtor(codePointFilters) : parameterlessCtor();
+                var codePointFilter = serviceProvider?.GetService<IOptions<EncoderOptions>>()?.Options?.CodePointFilter;
+                return (codePointFilter != null) ? customFilterFactory(codePointFilter) : defaultFactory();
             };
         }
     }

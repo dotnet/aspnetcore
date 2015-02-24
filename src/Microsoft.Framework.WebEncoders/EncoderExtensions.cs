@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.WebEncoders
 {
@@ -19,8 +18,13 @@ namespace Microsoft.Framework.WebEncoders
         /// The encoded value is also safe for inclusion inside an HTML attribute
         /// as long as the attribute value is surrounded by single or double quotes.
         /// </remarks>
-        public static void HtmlEncode([NotNull] this IHtmlEncoder htmlEncoder, string value, [NotNull] TextWriter output)
+        public static void HtmlEncode(this IHtmlEncoder htmlEncoder, string value, TextWriter output)
         {
+            if (htmlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(htmlEncoder));
+            }
+
             if (!String.IsNullOrEmpty(value))
             {
                 htmlEncoder.HtmlEncode(value, 0, value.Length, output);
@@ -30,8 +34,13 @@ namespace Microsoft.Framework.WebEncoders
         /// <summary>
         /// JavaScript-escapes a string and writes the result to the supplied output.
         /// </summary>
-        public static void JavaScriptStringEncode([NotNull] this IJavaScriptStringEncoder javaScriptStringEncoder, string value, [NotNull] TextWriter output)
+        public static void JavaScriptStringEncode(this IJavaScriptStringEncoder javaScriptStringEncoder, string value, TextWriter output)
         {
+            if (javaScriptStringEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(javaScriptStringEncoder));
+            }
+
             if (!String.IsNullOrEmpty(value))
             {
                 javaScriptStringEncoder.JavaScriptStringEncode(value, 0, value.Length, output);
@@ -45,8 +54,13 @@ namespace Microsoft.Framework.WebEncoders
         /// The encoded value is safe for use in the segment, query, or
         /// fragment portion of a URI.
         /// </remarks>
-        public static void UrlEncode([NotNull] this IUrlEncoder urlEncoder, string value, [NotNull] TextWriter output)
+        public static void UrlEncode(this IUrlEncoder urlEncoder, string value, TextWriter output)
         {
+            if (urlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(urlEncoder));
+            }
+
             if (!String.IsNullOrEmpty(value))
             {
                 urlEncoder.UrlEncode(value, 0, value.Length, output);

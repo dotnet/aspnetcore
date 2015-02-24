@@ -11,12 +11,11 @@ namespace Microsoft.Framework.WebEncoders
     public sealed class EncoderOptions
     {
         /// <summary>
-        /// Specifies code point tables which do not require escaping by the encoders.
+        /// Specifies which code points are allowed to be represented unescaped by the encoders.
         /// </summary>
         /// <remarks>
-        /// If this property is set to a null array, then by default only the 'Basic Latin'
-        /// code point filter is active.
+        /// If this property is null, then the encoders will use their default allow lists.
         /// </remarks>
-        public ICodePointFilter[] CodePointFilters { get; set; }
+        public ICodePointFilter CodePointFilter { get; set; }
     }
 }
