@@ -57,6 +57,10 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             {
                 Visit((TagHelperChunk)chunk);
             }
+            else if (chunk is TagHelperPrefixDirectiveChunk)
+            {
+                Visit((TagHelperPrefixDirectiveChunk)chunk);
+            }
             else if (chunk is AddTagHelperChunk)
             {
                 Visit((AddTagHelperChunk)chunk);
@@ -119,6 +123,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         protected abstract void Visit(ExpressionChunk chunk);
         protected abstract void Visit(StatementChunk chunk);
         protected abstract void Visit(TagHelperChunk chunk);
+        protected abstract void Visit(TagHelperPrefixDirectiveChunk chunk);
         protected abstract void Visit(AddTagHelperChunk chunk);
         protected abstract void Visit(RemoveTagHelperChunk chunk);
         protected abstract void Visit(UsingChunk chunk);

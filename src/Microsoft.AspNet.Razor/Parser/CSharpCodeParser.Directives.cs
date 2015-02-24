@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.Razor.Parser
     {
         private void SetupDirectives()
         {
+            MapDirectives(TagHelperPrefixDirective, SyntaxConstants.CSharp.TagHelperPrefixKeyword);
             MapDirectives(AddTagHelperDirective, SyntaxConstants.CSharp.AddTagHelperKeyword);
             MapDirectives(RemoveTagHelperDirective, SyntaxConstants.CSharp.RemoveTagHelperKeyword);
             MapDirectives(InheritsDirective, SyntaxConstants.CSharp.InheritsKeyword);
@@ -27,14 +28,27 @@ namespace Microsoft.AspNet.Razor.Parser
             MapDirectives(LayoutDirective, SyntaxConstants.CSharp.LayoutKeyword);
         }
 
+        protected virtual void TagHelperPrefixDirective()
+        {
+            TagHelperDirective(
+                SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                prefix => new TagHelperPrefixDirectiveCodeGenerator(prefix));
+        }
+
         protected virtual void AddTagHelperDirective()
         {
-            TagHelperDirective(SyntaxConstants.CSharp.AddTagHelperKeyword, removeTagHelperDescriptors: false);
+            TagHelperDirective(
+                SyntaxConstants.CSharp.AddTagHelperKeyword,
+                lookupText =>
+                    new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: false, lookupText: lookupText));
         }
 
         protected virtual void RemoveTagHelperDirective()
         {
-            TagHelperDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword, removeTagHelperDescriptors: true);
+            TagHelperDirective(
+                SyntaxConstants.CSharp.RemoveTagHelperKeyword, 
+                lookupText =>
+                    new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: true, lookupText: lookupText));
         }
 
         protected virtual void LayoutDirective()
@@ -450,7 +464,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Output(SpanKind.Code);
         }
 
-        private void TagHelperDirective(string keyword, bool removeTagHelperDescriptors)
+        private void TagHelperDirective(string keyword, Func<string, ISpanCodeGenerator> buildCodeGenerator)
         {
             AssertDirective(keyword);
 
@@ -492,8 +506,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     // renders the C# to colorize the user provided value. We trim the quotes around the user's value
                     // so when we render the code we can project the users value into double quotes to not invoke C#
                     // IntelliSense.
-                    Span.CodeGenerator =
-                        new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors, rawValue.Trim('"'));
+                    Span.CodeGenerator = buildCodeGenerator(rawValue.Trim('"'));
                 }
 
                 // We expect the directive to be surrounded in quotes.

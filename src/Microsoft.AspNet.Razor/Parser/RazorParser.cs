@@ -213,7 +213,7 @@ namespace Microsoft.AspNet.Razor.Parser
                                                                                    [NotNull] ParserErrorSink errorSink)
         {
             var addOrRemoveTagHelperSpanVisitor = 
-                new AddOrRemoveTagHelperSpanVisitor(TagHelperDescriptorResolver, errorSink);
+                new TagHelperDirectiveSpanVisitor(TagHelperDescriptorResolver, errorSink);
             return addOrRemoveTagHelperSpanVisitor.GetDescriptors(documentRoot);
         }
 

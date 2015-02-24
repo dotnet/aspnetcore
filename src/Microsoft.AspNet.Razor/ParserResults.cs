@@ -54,6 +54,7 @@ namespace Microsoft.AspNet.Razor
             TagHelperDescriptors = tagHelperDescriptors;
             ErrorSink = errorSink;
             ParserErrors = errorSink.Errors;
+            Prefix = tagHelperDescriptors.FirstOrDefault()?.Prefix;
         }
 
         /// <summary>
@@ -81,5 +82,10 @@ namespace Microsoft.AspNet.Razor
         /// The <see cref="TagHelperDescriptor"/>s found for the current Razor document.
         /// </summary>
         public IEnumerable<TagHelperDescriptor> TagHelperDescriptors { get; }
+
+        /// <summary>
+        /// Text used as a required prefix when matching HTML.
+        /// </summary>
+        public string Prefix { get; }
     }
 }

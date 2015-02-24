@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.Razor.Parser
         public static class CSharp
         {
             public static readonly int UsingKeywordLength = 5;
+            public static readonly string TagHelperPrefixKeyword = "tagHelperPrefix";
             public static readonly string AddTagHelperKeyword = "addTagHelper";
             public static readonly string RemoveTagHelperKeyword = "removeTagHelper";
             public static readonly string InheritsKeyword = "inherits";

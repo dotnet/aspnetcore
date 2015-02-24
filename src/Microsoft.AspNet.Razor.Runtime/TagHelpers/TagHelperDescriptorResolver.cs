@@ -23,7 +23,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 { TagHelperDirectiveType.AddTagHelper, SyntaxConstants.CSharp.AddTagHelperKeyword },
                 { TagHelperDirectiveType.RemoveTagHelper, SyntaxConstants.CSharp.RemoveTagHelperKeyword },
+                { TagHelperDirectiveType.TagHelperPrefix, SyntaxConstants.CSharp.TagHelperPrefixKeyword },
             };
+        private static readonly HashSet<char> InvalidNonWhitespacePrefixCharacters =
+            new HashSet<char>(new[] { '@', '!', '<', '!', '/', '?', '[', '>', ']', '=', '"', '\'' });
 
         private readonly TagHelperTypeResolver _typeResolver;
 
@@ -51,7 +54,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             var resolvedDescriptors = new HashSet<TagHelperDescriptor>(TagHelperDescriptorComparer.Default);
 
-            foreach (var directiveDescriptor in context.DirectiveDescriptors)
+            // tagHelperPrefix directives do not affect which TagHelperDescriptors are added or removed from the final
+            // list, need to remove them.
+            var actionableDirectiveDescriptors = context.DirectiveDescriptors.Where(
+                directive => directive.DirectiveType != TagHelperDirectiveType.TagHelperPrefix);
+
+            foreach (var directiveDescriptor in actionableDirectiveDescriptors)
             {
                 try
                 {
@@ -69,9 +77,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     }
                     else if (directiveDescriptor.DirectiveType == TagHelperDirectiveType.AddTagHelper)
                     {
-                        var descriptors = ResolveDescriptorsInAssembly(lookupInfo.AssemblyName,
-                                                                       directiveDescriptor.Location,
-                                                                       context.ErrorSink);
+                        var descriptors = ResolveDescriptorsInAssembly(
+                            lookupInfo.AssemblyName,
+                            directiveDescriptor.Location,
+                            context.ErrorSink);
 
                         // Only use descriptors that match our lookup info
                         descriptors = descriptors.Where(descriptor => MatchesLookupInfo(descriptor, lookupInfo));
@@ -89,12 +98,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         directiveDescriptor.Location,
                         Resources.FormatTagHelperDescriptorResolver_EncounteredUnexpectedError(
                             "@" + directiveName,
-                            directiveDescriptor.LookupText,
+                            directiveDescriptor.DirectiveText,
                             ex.Message));
                 }
             }
 
-            return resolvedDescriptors;
+            var prefixedDescriptors = PrefixDescriptors(context, resolvedDescriptors);
+
+            return prefixedDescriptors;
         }
 
         /// <summary>
@@ -110,9 +121,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <returns><see cref="TagHelperDescriptor"/>s for <see cref="ITagHelper"/>s from the given
         /// <paramref name="assemblyName"/>.</returns>
         // This is meant to be overridden by tooling to enable assembly level caching.
-        protected virtual IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(string assemblyName,
-                                                                                        SourceLocation documentLocation,
-                                                                                        ParserErrorSink errorSink)
+        protected virtual IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(
+            string assemblyName,
+            SourceLocation documentLocation,
+            ParserErrorSink errorSink)
         {
             // Resolve valid tag helper types from the assembly.
             var tagHelperTypes = _typeResolver.Resolve(assemblyName, documentLocation, errorSink);
@@ -122,6 +134,84 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 type => TagHelperDescriptorFactory.CreateDescriptors(assemblyName, type));
 
             return descriptors;
+        }
+
+        private static IEnumerable<TagHelperDescriptor> PrefixDescriptors(
+            TagHelperDescriptorResolutionContext context,
+            IEnumerable<TagHelperDescriptor> descriptors)
+        {
+            var tagHelperPrefix = ResolveTagHelperPrefix(context);
+
+            if (!string.IsNullOrEmpty(tagHelperPrefix))
+            {
+                return descriptors.Select(descriptor =>
+                    new TagHelperDescriptor(
+                        tagHelperPrefix,
+                        descriptor.TagName,
+                        descriptor.TypeName,
+                        descriptor.AssemblyName,
+                        descriptor.Attributes));
+            }
+
+            return descriptors;
+        }
+
+        private static string ResolveTagHelperPrefix(TagHelperDescriptorResolutionContext context)
+        {
+            var prefixDirectiveDescriptors = context.DirectiveDescriptors.Where(
+                descriptor => descriptor.DirectiveType == TagHelperDirectiveType.TagHelperPrefix);
+
+            TagHelperDirectiveDescriptor prefixDirective = null;
+
+            foreach (var directive in prefixDirectiveDescriptors)
+            {
+                if (prefixDirective == null)
+                {
+                    prefixDirective = directive;
+                }
+                else
+                {
+                    // For each invalid @tagHelperPrefix we need to create an error.
+                    context.ErrorSink.OnError(
+                        directive.Location,
+                        Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperDirective(
+                            SyntaxConstants.CSharp.TagHelperPrefixKeyword));
+                }
+            }
+
+            var prefix = prefixDirective?.DirectiveText;
+
+            if (prefix != null && !EnsureValidPrefix(prefix, prefixDirective.Location, context.ErrorSink))
+            {
+                prefix = null;
+            }
+
+            return prefix;
+        }
+
+        private static bool EnsureValidPrefix(
+            string prefix,
+            SourceLocation directiveLocation,
+            ParserErrorSink errorSink)
+        {
+            foreach (var character in prefix)
+            {
+                // Prefixes are correlated with tag names, tag names cannot have whitespace.
+                if (char.IsWhiteSpace(character) ||
+                    InvalidNonWhitespacePrefixCharacters.Contains(character))
+                {
+                    errorSink.OnError(
+                        directiveLocation,
+                        Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperPrefixValue(
+                            SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                            character,
+                            prefix));
+
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool MatchesLookupInfo(TagHelperDescriptor descriptor, LookupInfo lookupInfo)
@@ -146,7 +236,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private static LookupInfo GetLookupInfo(TagHelperDirectiveDescriptor directiveDescriptor,
                                                 ParserErrorSink errorSink)
         {
-            var lookupText = directiveDescriptor.LookupText;
+            var lookupText = directiveDescriptor.DirectiveText;
             var lookupStrings = lookupText?.Split(new[] { ',' });
 
             // Ensure that we have valid lookupStrings to work with. Valid formats are:

@@ -75,9 +75,11 @@ namespace Microsoft.AspNet.Razor.Generator
                 codeGenerator.Context.CodeTreeBuilder = new CodeTreeBuilder();
             }
 
+            var unprefixedTagName = tagHelperBlock.TagName.Substring(_tagHelperDescriptors.First().Prefix.Length);
+
             context.CodeTreeBuilder.StartChunkBlock(
                 new TagHelperChunk(
-                    tagHelperBlock.TagName,
+                    unprefixedTagName,
                     tagHelperBlock.SelfClosing,
                     attributes,
                     _tagHelperDescriptors),

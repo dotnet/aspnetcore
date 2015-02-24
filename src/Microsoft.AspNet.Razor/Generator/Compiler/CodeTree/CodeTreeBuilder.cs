@@ -37,6 +37,17 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             }
         }
 
+        public void AddTagHelperPrefixDirectiveChunk(string prefix, SyntaxTreeNode association)
+        {
+            AddChunk(
+                new TagHelperPrefixDirectiveChunk
+                {
+                    Prefix = prefix
+                },
+                association,
+                topLevel: true);
+        }
+
         public void AddAddTagHelperChunk(string lookupText, SyntaxTreeNode association)
         {
             AddChunk(new AddTagHelperChunk

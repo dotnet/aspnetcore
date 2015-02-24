@@ -11,23 +11,24 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     public class TagHelperDirectiveDescriptor
     {
         // Internal for testing purposes.
-        internal TagHelperDirectiveDescriptor(string lookupText,
+        internal TagHelperDirectiveDescriptor(string directiveText,
                                               TagHelperDirectiveType directiveType)
-            : this(lookupText, SourceLocation.Zero, directiveType)
+            : this(directiveText, SourceLocation.Zero, directiveType)
         {
         }
 
         /// <summary>
         /// Instantiates a new instance of <see cref="TagHelperDirectiveDescriptor"/>.
         /// </summary>
-        /// <param name="lookupText">A <see cref="string"/> used to find tag helper <see cref="System.Type"/>s.</param>
+        /// <param name="directiveText">A <see cref="string"/> used to understand tag helper 
+        /// <see cref="System.Type"/>s.</param>
         /// <param name="location">The <see cref="SourceLocation"/> of the directive.</param>
         /// <param name="directiveType">The <see cref="TagHelperDirectiveType"/> of this directive.</param>
-        public TagHelperDirectiveDescriptor([NotNull] string lookupText, 
+        public TagHelperDirectiveDescriptor([NotNull] string directiveText, 
                                             SourceLocation location, 
                                             TagHelperDirectiveType directiveType)
         {
-            LookupText = lookupText;
+            DirectiveText = directiveText;
             Location = location;
             DirectiveType = directiveType;
         }
@@ -35,7 +36,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// A <see cref="string"/> used to find tag helper <see cref="System.Type"/>s.
         /// </summary>
-        public string LookupText { get; private set; }
+        public string DirectiveText { get; private set; }
 
         /// <summary>
         /// The <see cref="TagHelperDirectiveType"/> of this directive.

@@ -138,6 +138,38 @@ namespace Microsoft.AspNet.Razor.Runtime
             return string.Format(CultureInfo.CurrentCulture, GetString("HtmlElementNameAttribute_InvalidElementName"), p0, p1);
         }
 
+        /// <summary>
+        /// Invalid tag helper directive '{0}'. Cannot have multiple '{0}' directives on a page.
+        /// </summary>
+        internal static string TagHelperDescriptorResolver_InvalidTagHelperDirective
+        {
+            get { return GetString("TagHelperDescriptorResolver_InvalidTagHelperDirective"); }
+        }
+
+        /// <summary>
+        /// Invalid tag helper directive '{0}'. Cannot have multiple '{0}' directives on a page.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorResolver_InvalidTagHelperDirective(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorResolver_InvalidTagHelperDirective"), p0);
+        }
+
+        /// <summary>
+        /// Invalid tag helper directive '{0}' value. '{1} is not allowed in prefix '{2}'.
+        /// </summary>
+        internal static string TagHelperDescriptorResolver_InvalidTagHelperPrefixValue
+        {
+            get { return GetString("TagHelperDescriptorResolver_InvalidTagHelperPrefixValue"); }
+        }
+
+        /// <summary>
+        /// Invalid tag helper directive '{0}' value. '{1} is not allowed in prefix '{2}'.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorResolver_InvalidTagHelperPrefixValue(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorResolver_InvalidTagHelperPrefixValue"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

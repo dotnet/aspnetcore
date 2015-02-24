@@ -141,4 +141,10 @@
   <data name="HtmlElementNameAttribute_InvalidElementName" xml:space="preserve">
     <value>Tag helpers cannot target element name '{0}' because it contains a '{1}' character.</value>
   </data>
+  <data name="TagHelperDescriptorResolver_InvalidTagHelperDirective" xml:space="preserve">
+    <value>Invalid tag helper directive '{0}'. Cannot have multiple '{0}' directives on a page.</value>
+  </data>
+  <data name="TagHelperDescriptorResolver_InvalidTagHelperPrefixValue" xml:space="preserve">
+    <value>Invalid tag helper directive '{0}' value. '{1} is not allowed in prefix '{2}'.</value>
+  </data>
 </root>

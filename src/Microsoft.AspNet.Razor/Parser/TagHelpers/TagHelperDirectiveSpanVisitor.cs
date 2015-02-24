@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
     /// A <see cref="ParserVisitor"/> that generates <see cref="TagHelperDescriptor"/>s from
     /// tag helper code generators in a Razor document.
     /// </summary>
-    public class AddOrRemoveTagHelperSpanVisitor : ParserVisitor
+    public class TagHelperDirectiveSpanVisitor : ParserVisitor
     {
         private readonly ITagHelperDescriptorResolver _descriptorResolver;
         private readonly ParserErrorSink _errorSink;
@@ -20,12 +20,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         private List<TagHelperDirectiveDescriptor> _directiveDescriptors;
 
         // Internal for testing use
-        internal AddOrRemoveTagHelperSpanVisitor(ITagHelperDescriptorResolver descriptorResolver)
+        internal TagHelperDirectiveSpanVisitor(ITagHelperDescriptorResolver descriptorResolver)
             : this(descriptorResolver, new ParserErrorSink())
         {
         }
 
-        public AddOrRemoveTagHelperSpanVisitor([NotNull] ITagHelperDescriptorResolver descriptorResolver,
+        public TagHelperDirectiveSpanVisitor([NotNull] ITagHelperDescriptorResolver descriptorResolver,
                                                [NotNull] ParserErrorSink errorSink)
         {
             _descriptorResolver = descriptorResolver;
@@ -61,13 +61,26 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             {
                 var codeGenerator = (AddOrRemoveTagHelperCodeGenerator)span.CodeGenerator;
 
-                var directive = codeGenerator.RemoveTagHelperDescriptors ?
-                                TagHelperDirectiveType.RemoveTagHelper :
-                                TagHelperDirectiveType.AddTagHelper;
+                var directive = 
+                    codeGenerator.RemoveTagHelperDescriptors ?
+                    TagHelperDirectiveType.RemoveTagHelper :
+                    TagHelperDirectiveType.AddTagHelper;
 
-                var directiveDescriptor = new TagHelperDirectiveDescriptor(codeGenerator.LookupText, 
-                                                                           span.Start, 
-                                                                           directive);
+                var directiveDescriptor = new TagHelperDirectiveDescriptor(
+                    codeGenerator.LookupText, 
+                    span.Start, 
+                    directive);
+
+                _directiveDescriptors.Add(directiveDescriptor);
+            }
+            else if (span.CodeGenerator is TagHelperPrefixDirectiveCodeGenerator)
+            {
+                var codeGenerator = (TagHelperPrefixDirectiveCodeGenerator)span.CodeGenerator;
+
+                var directiveDescriptor = new TagHelperDirectiveDescriptor(
+                    codeGenerator.Prefix,
+                    span.Start,
+                    TagHelperDirectiveType.TagHelperPrefix);
 
                 _directiveDescriptors.Add(directiveDescriptor);
             }

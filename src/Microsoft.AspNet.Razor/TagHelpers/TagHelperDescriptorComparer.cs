@@ -29,12 +29,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <c>false</c> otherwise.</returns>
         /// <remarks>
         /// Determines equality based on <see cref="TagHelperDescriptor.TypeName"/>,
-        /// <see cref="TagHelperDescriptor.AssemblyName"/> and <see cref="TagHelperDescriptor.TagName"/>.
+        /// <see cref="TagHelperDescriptor.AssemblyName"/>, <see cref="TagHelperDescriptor.TagName"/> and
+        /// <see cref="TagHelperDescriptor.Prefix"/>.
         /// </remarks>
         public bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
         {
             return string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal) &&
                    string.Equals(descriptorX.TagName, descriptorY.TagName, StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(descriptorX.Prefix, descriptorY.Prefix, StringComparison.OrdinalIgnoreCase) &&
                    string.Equals(descriptorX.AssemblyName, descriptorY.AssemblyName, StringComparison.Ordinal);
         }
 

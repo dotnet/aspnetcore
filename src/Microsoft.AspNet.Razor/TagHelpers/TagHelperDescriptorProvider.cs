@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         private const string CatchAllDescriptorTarget = "*";
 
         private IDictionary<string, HashSet<TagHelperDescriptor>> _registrations;
+        private string _tagHelperPrefix;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="TagHelperDescriptorProvider"/>.
@@ -43,10 +44,18 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             HashSet<TagHelperDescriptor> descriptors;
 
-            // Ensure there's an ISet to use.
+            if (!string.IsNullOrEmpty(_tagHelperPrefix) &&
+                (tagName.Length <= _tagHelperPrefix.Length ||
+                !tagName.StartsWith(_tagHelperPrefix, StringComparison.OrdinalIgnoreCase)))
+            {
+                // The tagName doesn't have the tag helper prefix, we can short circuit.
+                return Enumerable.Empty<TagHelperDescriptor>();
+            }
+
+            // Ensure there's a HashSet to use.
             if (!_registrations.TryGetValue(CatchAllDescriptorTarget, out descriptors))
             {
-                descriptors = new HashSet<TagHelperDescriptor>();
+                descriptors = new HashSet<TagHelperDescriptor>(TagHelperDescriptorComparer.Default);
             }
 
             // If the requested tag name is the catch-all target, we should short circuit.
@@ -72,11 +81,21 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             HashSet<TagHelperDescriptor> descriptorSet;
 
-            // Ensure there's a List to add the descriptor to.
-            if (!_registrations.TryGetValue(descriptor.TagName, out descriptorSet))
+            if (_tagHelperPrefix == null)
+            {
+                _tagHelperPrefix = descriptor.Prefix;
+            }
+
+            var registrationKey =
+                string.Equals(descriptor.TagName, CatchAllDescriptorTarget, StringComparison.Ordinal) ?
+                CatchAllDescriptorTarget :
+                descriptor.FullTagName;
+
+            // Ensure there's a HashSet to add the descriptor to.
+            if (!_registrations.TryGetValue(registrationKey, out descriptorSet))
             {
                 descriptorSet = new HashSet<TagHelperDescriptor>(TagHelperDescriptorComparer.Default);
-                _registrations[descriptor.TagName] = descriptorSet;
+                _registrations[registrationKey] = descriptorSet;
             }
 
             descriptorSet.Add(descriptor);
