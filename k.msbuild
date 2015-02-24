@@ -263,13 +263,13 @@
                 <term>420</term>
                 <Justification>HTTP response code</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.WebUtilities\Encoders\UnicodeEncoderBase.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeEncoderBase.cs">
                 <term>a hole</term>
                 <Justification>valid context</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.WebUtilities\Encoders\CodePointFilters.cs;
-                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.dll;
-                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.xml">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
                 <term>Bengali</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>            
@@ -293,9 +293,9 @@
                 <term>hung</term>
                 <Justification>refers to a stuck process/thread</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.WebUtilities\Encoders\CodePointFilters.cs;
-                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.dll;
-                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.xml">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
                 <term>Oriya</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
@@ -332,9 +332,9 @@
                 <term>sucks</term>
                 <Justification>expression of sadness</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.WebUtilities\Encoders\CodePointFilters.cs;
-                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.dll;
-                                    $(PoliCheckPath)**\Microsoft.AspNet.WebUtilities.xml">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
                 <term>Tibetan</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
