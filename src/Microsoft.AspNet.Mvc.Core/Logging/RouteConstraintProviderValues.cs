@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Logging
 
         public override string Format()
         {
-            return LogFormatter.FormatStructure(this);
+            return LogFormatter.FormatLogValues(this);
         }
     }
 }
