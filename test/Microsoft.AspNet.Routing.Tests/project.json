@@ -6,10 +6,11 @@
         "Microsoft.AspNet.Http.Core": "1.0.0-*",
         "Microsoft.AspNet.Routing": "1.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Microsoft.AspNet.Testing.Logging": "1.0.0-*",
         "xunit.runner.kre": "1.0.0-*"
     },
     "frameworks": {
-        "aspnetcore50": {},
+        "aspnetcore50": { },
         "aspnet50": {
             "dependencies": {
                 "Moq": "4.2.1312.1622"

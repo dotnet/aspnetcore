@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing.Logging;
+using Microsoft.AspNet.Testing.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing
