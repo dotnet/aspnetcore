@@ -18,18 +18,25 @@ namespace Microsoft.AspNet.Security.DataProtection.AuthenticatedEncryption
         /// the returned ciphertext but which will still be covered by the authentication tag.
         /// This input may be zero bytes in length. The same AAD must be specified in the corresponding
         /// call to Decrypt.</param>
-        /// <param name="preBufferSize">The number of bytes to include before the ciphertext in the return value.</param>
-        /// <param name="postBufferSize">The number of bytes to include after the ciphertext in the return value.</param>
+        /// <param name="preBufferSize">The number of bytes to pad before the ciphertext in the output.</param>
+        /// <param name="postBufferSize">The number of bytes to pad after the ciphertext in the output.</param>
         /// <returns>
-        /// A buffer containing the ciphertext and authentication tag.
-        /// If a non-zero pre-buffer or post-buffer size is specified, the returned buffer will contain appropriate padding
-        /// on either side of the ciphertext and authentication tag. For instance, if a pre-buffer size of 4 and a post-buffer
-        /// size of 7 are specified, and if the ciphertext and tag are a combined 48 bytes, then the returned buffer will
-        /// be a total 59 bytes in length. The first four bytes will be undefined, the next 48 bytes will contain the
-        /// ciphertext and tag, and the last seven bytes will be undefined. The intent is that the caller can overwrite the
-        /// pre-buffer or post-buffer with a header or footer without needing to allocate an additional buffer object.
+        /// The ciphertext blob, including authentication tag. The ciphertext blob will be surrounded by
+        /// the number of padding bytes requested. For instance, if the given (plaintext, AAD) input results
+        /// in a (ciphertext, auth tag) output of 0x0102030405, and if 'preBufferSize' is 3 and
+        /// 'postBufferSize' is 5, then the return value will be 0xYYYYYY0102030405ZZZZZZZZZZ, where bytes
+        /// YY and ZZ are undefined.
         /// </returns>
-        /// <remarks>All cryptography-related exceptions should be homogenized to CryptographicException.</remarks>
+        /// <remarks>
+        /// This method allows for a slight performance improvement over IAuthenticatedEncryptor.Encrypt
+        /// in the case where the caller needs to prepend or append some data to the resulting ciphertext.
+        /// For instance, if the caller needs to append a 32-bit header to the resulting ciphertext, then
+        /// he can specify 4 for 'preBufferSize' and overwrite the first 32 bits of the buffer returned
+        /// by this function. This saves the caller from having to allocate a new buffer to hold the final
+        /// transformed result.
+        /// 
+        /// All cryptography-related exceptions should be homogenized to CryptographicException.
+        /// </remarks>
         byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize);
     }
 }
