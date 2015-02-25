@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Cors
         /// <param name="origins">list of origins which can be added.</param>
         public CorsPolicyBuilder(params string[] origins)
         {
-            AddOrigins(origins);
+            WithOrigins(origins);
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Cors
         /// </summary>
         /// <param name="origins">The origins that are allowed.</param>
         /// <returns>The current policy builder</returns>
-        public CorsPolicyBuilder AddOrigins(params string[] origins)
+        public CorsPolicyBuilder WithOrigins(params string[] origins)
         {
             foreach (var req in origins)
             {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Cors
         /// </summary>
         /// <param name="headers">The headers which need to be allowed in the request.</param>
         /// <returns>The current policy builder</returns>
-        public CorsPolicyBuilder AddHeaders(params string[] headers)
+        public CorsPolicyBuilder WithHeaders(params string[] headers)
         {
             foreach (var req in headers)
             {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Cors
         /// </summary>
         /// <param name="exposedHeaders">The headers which need to be exposed to the client.</param>
         /// <returns>The current policy builder</returns>
-        public CorsPolicyBuilder AddExposedHeaders(params string[] exposedHeaders)
+        public CorsPolicyBuilder WithExposedHeaders(params string[] exposedHeaders)
         {
             foreach (var req in exposedHeaders)
             {
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Cors
         /// </summary>
         /// <param name="methods">The methods which need to be added to the policy.</param>
         /// <returns>The current policy builder</returns>
-        public CorsPolicyBuilder AddMethods(params string[] methods)
+        public CorsPolicyBuilder WithMethods(params string[] methods)
         {
             foreach (var req in methods)
             {
@@ -173,10 +173,10 @@ namespace Microsoft.AspNet.Cors
         /// <returns>The current policy builder</returns>
         private CorsPolicyBuilder Combine([NotNull] CorsPolicy policy)
         {
-            AddOrigins(policy.Origins.ToArray());
-            AddHeaders(policy.Headers.ToArray());
-            AddExposedHeaders(policy.ExposedHeaders.ToArray());
-            AddMethods(policy.Methods.ToArray());
+            WithOrigins(policy.Origins.ToArray());
+            WithHeaders(policy.Headers.ToArray());
+            WithExposedHeaders(policy.ExposedHeaders.ToArray());
+            WithMethods(policy.Methods.ToArray());
             SetPreflightMaxAge(policy.PreflightMaxAge.Value);
 
             if (policy.SupportsCredentials)

@@ -83,13 +83,13 @@ namespace Microsoft.AspNet.Cors.Core.Test
         }
 
         [Fact]
-        public void AddOrigins_AddsOrigins()
+        public void WithOrigins_AddsOrigins()
         {
             // Arrange
             var builder = new CorsPolicyBuilder();
 
             // Act
-            builder.AddOrigins("http://example.com", "http://example2.com");
+            builder.WithOrigins("http://example.com", "http://example2.com");
 
             // Assert
             var corsPolicy = builder.Build();
@@ -114,13 +114,13 @@ namespace Microsoft.AspNet.Cors.Core.Test
 
 
         [Fact]
-        public void AddMethods_AddsMethods()
+        public void WithMethods_AddsMethods()
         {
             // Arrange
             var builder = new CorsPolicyBuilder();
 
             // Act
-            builder.AddMethods("PUT", "GET");
+            builder.WithMethods("PUT", "GET");
 
             // Assert
             var corsPolicy = builder.Build();
@@ -144,13 +144,13 @@ namespace Microsoft.AspNet.Cors.Core.Test
         }
 
         [Fact]
-        public void AddHeaders_AddsHeaders()
+        public void WithHeaders_AddsHeaders()
         {
             // Arrange
             var builder = new CorsPolicyBuilder();
 
             // Act
-            builder.AddHeaders("example1", "example2");
+            builder.WithHeaders("example1", "example2");
 
             // Assert
             var corsPolicy = builder.Build();
@@ -174,13 +174,13 @@ namespace Microsoft.AspNet.Cors.Core.Test
         }
 
         [Fact]
-        public void AddExposedHeaders_AddsExposedHeaders()
+        public void WithExposedHeaders_AddsExposedHeaders()
         {
             // Arrange
             var builder = new CorsPolicyBuilder();
 
             // Act
-            builder.AddExposedHeaders("exposed1", "exposed2");
+            builder.WithExposedHeaders("exposed1", "exposed2");
 
             // Assert
             var corsPolicy = builder.Build();

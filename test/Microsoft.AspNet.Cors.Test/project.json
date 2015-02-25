@@ -1,21 +1,17 @@
 ﻿{
     "version": "1.0.0-*",
-
     "dependencies": {
-        "Microsoft.AspNet.Cors.Core": "1.0.0-*",
-        "Microsoft.AspNet.Http.Core": "1.0.0-*",
+        "Microsoft.AspNet.Cors": "1.0.0-*",
+        "Microsoft.AspNet.TestHost": "1.0.0-*",
         "Moq": "4.2.1312.1622",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
-
     "commands": {
         "test": "xunit.runner.aspnet"
     },
-
-    "frameworks" : {
-        "dnx451" : {
-            "dependencies": {
-            }
+    "frameworks": {
+        "dnx451": {
+            "dependencies": {}
         }
     }
 }

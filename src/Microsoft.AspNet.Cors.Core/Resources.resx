@@ -117,19 +117,7 @@
   <resheader name="writer">
       <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="HeadersNotAllowed" xml:space="preserve">
-    <value>The collection of headers '{0}' is not allowed.</value>
-  </data>
-    <data name="MethodNotAllowed" xml:space="preserve">
-    <value>The method '{0}' is not allowed.</value>
-  </data>
-    <data name="NoOriginHeader" xml:space="preserve">
-    <value>The request does not contain the Origin header.</value>
-  </data>
-    <data name="OriginNotAllowed" xml:space="preserve">
-    <value>The origin '{0}' is not allowed.</value>
-  </data>
-    <data name="PreflightMaxAgeOutOfRange" xml:space="preserve">
+  <data name="PreflightMaxAgeOutOfRange" xml:space="preserve">
     <value>PreflightMaxAge must be greater than or equal to 0.</value>
   </data>
 </root>

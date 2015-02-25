@@ -13,7 +13,26 @@ namespace Microsoft.AspNet.Cors.Core
     /// </summary>
     public class CorsOptions
     {
+        private string _defaultPolicyName = "__DefaultCorsPolicy";
         private IDictionary<string, CorsPolicy> PolicyMap { get; } = new Dictionary<string, CorsPolicy>();
+
+        public string DefaultPolicyName
+        {
+            get
+            {
+                return _defaultPolicyName;
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                _defaultPolicyName = value;
+            }
+        }
 
         /// <summary>
         /// Adds a new policy.

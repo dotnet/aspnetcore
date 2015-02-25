@@ -1,0 +1,21 @@
+﻿{
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.AspNet.Cors.Core": "1.0.0-*",
+        "Microsoft.AspNet.RequestContainer": "1.0.0-*",
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
+    },
+
+    "frameworks" : {
+        "dnx451" : { 
+            "dependencies": {
+            }
+        },
+        "dnxcore50" : { 
+            "dependencies": {
+                "System.Runtime": "4.0.20-beta-*"
+            }
+        }
+    }
+}
