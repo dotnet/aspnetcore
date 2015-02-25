@@ -13,6 +13,100 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
     public class CSharpDirectivesTest : CsHtmlCodeParserTestBase
     {
         [Fact]
+        public void TagHelperPrefixDirective_NoValueSucceeds()
+        {
+            ParseBlockTest("@tagHelperPrefix \"\"",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .Accepts(AcceptedCharacters.None),
+                    Factory.Code("\"\"").AsTagHelperPrefixDirective("")));
+        }
+
+        [Fact]
+        public void TagHelperPrefixDirective_Succeeds()
+        {
+            ParseBlockTest("@tagHelperPrefix \"Foo\"",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .Accepts(AcceptedCharacters.None),
+                    Factory.Code("\"Foo\"").AsTagHelperPrefixDirective("Foo")));
+        }
+
+        [Fact]
+        public void TagHelperPrefixDirective_RequiresValue()
+        {
+            ParseBlockTest("@tagHelperPrefix ",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .Accepts(AcceptedCharacters.None),
+                    Factory.EmptyCSharp().AsTagHelperPrefixDirective(string.Empty)),
+                 new RazorError(
+                    RazorResources.FormatParseError_DirectiveMustHaveValue(
+                        SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+        }
+
+        [Fact]
+        public void TagHelperPrefixDirective_StartQuoteRequiresDoubleQuotesAroundValue()
+        {
+            ParseBlockTest("@tagHelperPrefix \"Foo",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .Accepts(AcceptedCharacters.None),
+                    Factory.Code("\"Foo").AsTagHelperPrefixDirective("Foo")),
+                 new RazorError(
+                     RazorResources.ParseError_Unterminated_String_Literal,
+                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17),
+                 new RazorError(
+                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
+                        SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+        }
+
+        [Fact]
+        public void TagHelperPrefixDirective_EndQuoteRequiresDoubleQuotesAroundValue()
+        {
+            ParseBlockTest("@tagHelperPrefix Foo\"",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .Accepts(AcceptedCharacters.None),
+                    Factory.Code("Foo\"").AsTagHelperPrefixDirective("Foo")),
+                 new RazorError(
+                     RazorResources.ParseError_Unterminated_String_Literal,
+                     absoluteIndex: 20, lineIndex: 0, columnIndex: 20),
+                 new RazorError(
+                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
+                        SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+        }
+
+        [Fact]
+        public void TagHelperPrefixDirective_RequiresDoubleQuotesAroundValue()
+        {
+            ParseBlockTest("@tagHelperPrefix Foo",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .Accepts(AcceptedCharacters.None),
+                    Factory.Code("Foo").AsTagHelperPrefixDirective("Foo")),
+                 new RazorError(
+                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
+                        SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+        }
+
+        [Fact]
         public void RemoveTagHelperDirective_Succeeds()
         {
             ParseBlockTest("@removeTagHelper \"Foo\"",

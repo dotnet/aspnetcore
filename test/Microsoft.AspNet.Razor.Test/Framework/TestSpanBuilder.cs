@@ -320,6 +320,11 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                 new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: true, lookupText: lookupText));
         }
 
+        public SpanConstructor AsTagHelperPrefixDirective(string prefix)
+        {
+            return _self.With(new TagHelperPrefixDirectiveCodeGenerator(prefix));
+        }
+
         public SpanConstructor As(ISpanCodeGenerator codeGenerator)
         {
             return _self.With(codeGenerator);

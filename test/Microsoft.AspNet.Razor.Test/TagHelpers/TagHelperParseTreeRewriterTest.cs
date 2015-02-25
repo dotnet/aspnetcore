@@ -19,6 +19,282 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : CsHtmlMarkupParserTestBase
     {
+        public static TheoryData PrefixedTagHelperBoundData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+                var availableDescriptorsColon = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: "th:",
+                        tagName: "myth",
+                        typeName: "mythTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>()),
+                    new TagHelperDescriptor(
+                        prefix: "th:",
+                        tagName: "myth2",
+                        typeName: "mythTagHelper2",
+                        assemblyName: "SomeAssembly",
+                        attributes: new []
+                        {
+                            new TagHelperAttributeDescriptor(
+                                name: "bound",
+                                propertyName: "Bound",
+                                typeName: typeof(bool).FullName),
+                        })
+                };
+                var availableDescriptorsText = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: "PREFIX",
+                        tagName: "myth",
+                        typeName: "mythTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>()),
+                    new TagHelperDescriptor(
+                        prefix: "PREFIX",
+                        tagName: "myth2",
+                        typeName: "mythTagHelper2",
+                        assemblyName: "SomeAssembly",
+                        attributes: new []
+                        {
+                            new TagHelperAttributeDescriptor(
+                                name: "bound",
+                                propertyName: "Bound",
+                                typeName: typeof(bool).FullName),
+                        })
+                };
+                var availableDescriptorsCatchAll = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: "myth",
+                        tagName: "*",
+                        typeName: "mythTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>()),
+                };
+
+                // documentContent, expectedOutput, availableDescriptors
+                return new TheoryData<string, MarkupBlock, IEnumerable<TagHelperDescriptor>>
+                {
+                    {
+                        "<myth />",
+                        new MarkupBlock(blockFactory.MarkupTagBlock("<myth />")),
+                        availableDescriptorsCatchAll
+                    },
+                    {
+                        "<myth>words and spaces</myth>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<myth>"),
+                            factory.Markup("words and spaces"),
+                            blockFactory.MarkupTagBlock("</myth>")),
+                        availableDescriptorsCatchAll
+                    },
+                    {
+                        "<th:myth />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("th:myth", selfClosing: true)),
+                        availableDescriptorsColon
+                    },
+                    {
+                        "<PREFIXmyth />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("PREFIXmyth", selfClosing: true)),
+                        availableDescriptorsText
+                    },
+                    {
+                        "<th:myth></th:myth>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("th:myth")),
+                        availableDescriptorsColon
+                    },
+                    {
+                        "<PREFIXmyth></PREFIXmyth>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("PREFIXmyth")),
+                        availableDescriptorsText
+                    },
+                    {
+                        "<th:myth><th:my2th></th:my2th></th:myth>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "th:myth",
+                                blockFactory.MarkupTagBlock("<th:my2th>"),
+                                blockFactory.MarkupTagBlock("</th:my2th>"))),
+                        availableDescriptorsColon
+                    },
+                    {
+                        "<PREFIXmyth><PREFIXmy2th></PREFIXmy2th></PREFIXmyth>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "PREFIXmyth",
+                                blockFactory.MarkupTagBlock("<PREFIXmy2th>"),
+                                blockFactory.MarkupTagBlock("</PREFIXmy2th>"))),
+                        availableDescriptorsText
+                    },
+                    {
+                        "<!th:myth />",
+                        new MarkupBlock(
+                            blockFactory.EscapedMarkupTagBlock("<", "th:myth />")),
+                        availableDescriptorsColon
+                    },
+                    {
+                        "<!PREFIXmyth />",
+                        new MarkupBlock(
+                            blockFactory.EscapedMarkupTagBlock("<", "PREFIXmyth />")),
+                        availableDescriptorsText
+                    },
+                    {
+                        "<!th:myth></!th:myth>",
+                        new MarkupBlock(
+                            blockFactory.EscapedMarkupTagBlock("<", "th:myth>"),
+                            blockFactory.EscapedMarkupTagBlock("</", "th:myth>")),
+                        availableDescriptorsColon
+                    },
+                    {
+                        "<!PREFIXmyth></!PREFIXmyth>",
+                        new MarkupBlock(
+                            blockFactory.EscapedMarkupTagBlock("<", "PREFIXmyth>"),
+                            blockFactory.EscapedMarkupTagBlock("</", "PREFIXmyth>")),
+                        availableDescriptorsText
+                    },
+                    {
+                        "<th:myth class=\"btn\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "th:myth",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", factory.Markup("btn") }
+                                })),
+                        availableDescriptorsColon
+                    },
+                    {
+                        "<PREFIXmyth class=\"btn\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "PREFIXmyth",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", factory.Markup("btn") }
+                                })),
+                        availableDescriptorsText
+                    },
+                    {
+                        "<th:myth2 class=\"btn\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "th:myth2",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", factory.Markup("btn") }
+                                })),
+                        availableDescriptorsColon
+                    },
+                    {
+                        "<PREFIXmyth2 class=\"btn\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "PREFIXmyth2",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", factory.Markup("btn") }
+                                })),
+                        availableDescriptorsText
+                    },
+                    {
+                        "<th:myth class=\"btn\">words and spaces</th:myth>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "th:myth",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", factory.Markup("btn") }
+                                },
+                                children: factory.Markup("words and spaces"))),
+                        availableDescriptorsColon
+                    },
+                    {
+                        "<PREFIXmyth class=\"btn\">words and spaces</PREFIXmyth>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "PREFIXmyth",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    { "class", factory.Markup("btn") }
+                                },
+                                children: factory.Markup("words and spaces"))),
+                        availableDescriptorsText
+                    },
+                    {
+                        "<th:myth2 bound=\"@DateTime.Now\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "th:myth2",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    {
+                                        "bound",
+                                        new MarkupBlock(
+                                            new MarkupBlock(
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition(),
+                                                    factory.Code("DateTime.Now")
+                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))) }
+                                })),
+                        availableDescriptorsColon
+                    },
+                    {
+                        "<PREFIXmyth2 bound=\"@DateTime.Now\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "PREFIXmyth2",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    {
+                                        "bound",
+                                        new MarkupBlock(
+                                            new MarkupBlock(
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition(),
+                                                    factory.Code("DateTime.Now")
+                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))) }
+                                })),
+                        availableDescriptorsText
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(PrefixedTagHelperBoundData))]
+        public void Rewrite_AllowsPrefixedTagHelpers(
+            string documentContent, 
+            MarkupBlock expectedOutput, 
+            IEnumerable<TagHelperDescriptor> availableDescriptors)
+        {
+            // Arrange
+            var descriptorProvider = new TagHelperDescriptorProvider(availableDescriptors);
+
+            // Act & Assert
+            EvaluateData(
+                descriptorProvider, 
+                documentContent, 
+                expectedOutput, 
+                expectedErrors: Enumerable.Empty<RazorError>());
+        }
+
         public static TheoryData EmptyTagHelperBoundAttributeData
         {
             get

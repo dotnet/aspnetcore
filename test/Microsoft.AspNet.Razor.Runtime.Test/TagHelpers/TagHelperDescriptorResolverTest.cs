@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
 using Xunit;
@@ -38,6 +39,491 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 return new TagHelperDescriptor("valid_inherited",
                                                Valid_InheritedTagHelperType.FullName,
                                                AssemblyName);
+            }
+        }
+
+
+        public static TheoryData ResolveDirectiveDescriptorsInvalidTagHelperPrefixData
+        {
+            get
+            {
+                var assemblyA = AssemblyName;
+                var stringType = typeof(string);
+                var assemblyB = stringType.GetTypeInfo().Assembly.GetName().Name;
+                var defaultAssemblyLookups = new Dictionary<string, IEnumerable<Type>>
+                {
+                    { assemblyA, new[] { Valid_PlainTagHelperType, Valid_InheritedTagHelperType } },
+                    { assemblyB, new[] { stringType } }
+                };
+                var directiveLocation1 = new SourceLocation(1, 2, 3);
+                var directiveLocation2 = new SourceLocation(4, 5, 6);
+                var multipleDirectiveError =
+                    "Invalid tag helper directive '{0}'. Cannot have multiple '{0}' directives on a page.";
+                var invalidTagHelperPrefixValueError =
+                    "Invalid tag helper directive '{0}' value. '{1} is not allowed in prefix '{2}'.";
+
+                return new TheoryData<Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
+                                      IEnumerable<TagHelperDirectiveDescriptor>, // directiveDescriptors
+                                      IEnumerable<TagHelperDescriptor>, // expectedDescriptors
+                                      IEnumerable<RazorError>> // expectedErrors
+                {
+                    {
+                        defaultAssemblyLookups,
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "th:",
+                                directiveLocation1,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor(
+                                "different",
+                                directiveLocation2,
+                                TagHelperDirectiveType.TagHelperPrefix)
+                        },
+                        new TagHelperDescriptor[0],
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(multipleDirectiveError, SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                                directiveLocation2)
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "th:",
+                                directiveLocation1,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor(
+                                "different",
+                                directiveLocation2,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor(
+                                "*Plain*, " + assemblyA,
+                                directiveLocation1,
+                                TagHelperDirectiveType.AddTagHelper),
+                        },
+                        new[] { CreatePrefixedValidPlainDescriptor("th:") },
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(multipleDirectiveError, SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                                directiveLocation2)
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "th:",
+                                directiveLocation1,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor(
+                                "different",
+                                directiveLocation2,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor(
+                                "*Plain*, " + assemblyA,
+                                directiveLocation1,
+                                TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor(
+                                "*String*, " + assemblyB,
+                                directiveLocation1,
+                                TagHelperDirectiveType.AddTagHelper),
+                        },
+                        new[] { CreatePrefixedValidPlainDescriptor("th:"), CreatePrefixedStringDescriptor("th:") },
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(multipleDirectiveError, SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                                directiveLocation2)
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "th ",
+                                directiveLocation1,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                        },
+                        new TagHelperDescriptor[0],
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    ' ',
+                                    "th "),
+                                directiveLocation1)
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "th\t",
+                                directiveLocation1,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                        },
+                        new TagHelperDescriptor[0],
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    '\t',
+                                    "th\t"),
+                                directiveLocation1)
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "th" + Environment.NewLine,
+                                directiveLocation1,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                        },
+                        new TagHelperDescriptor[0],
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    Environment.NewLine[0],
+                                    "th" + Environment.NewLine),
+                                directiveLocation1)
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                " th ",
+                                directiveLocation1,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                        },
+                        new TagHelperDescriptor[0],
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    ' ',
+                                    " th "),
+                                directiveLocation1)
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "@",
+                                directiveLocation1,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                        },
+                        new TagHelperDescriptor[0],
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    '@',
+                                    "@"),
+                                directiveLocation1)
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "t@h",
+                                directiveLocation1,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                        },
+                        new TagHelperDescriptor[0],
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    '@',
+                                    "t@h"),
+                                directiveLocation1)
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "!",
+                                directiveLocation1,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                        },
+                        new TagHelperDescriptor[0],
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    '!',
+                                    "!"),
+                                directiveLocation1)
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "!th",
+                                directiveLocation1,
+                                TagHelperDirectiveType.TagHelperPrefix),
+                        },
+                        new TagHelperDescriptor[0],
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    '!',
+                                    "!th"),
+                                directiveLocation1)
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ResolveDirectiveDescriptorsInvalidTagHelperPrefixData))]
+        public void Resolve_CreatesExpectedErrorsForTagHelperPrefixDirectives(
+            Dictionary<string, IEnumerable<Type>> descriptorAssemblyLookups,
+            IEnumerable<TagHelperDirectiveDescriptor> directiveDescriptors,
+            IEnumerable<TagHelperDescriptor> expectedDescriptors,
+            IEnumerable<RazorError> expectedErrors)
+        {
+            // Arrange
+            var tagHelperDescriptorResolver =
+                new TestTagHelperDescriptorResolver(
+                    new LookupBasedTagHelperTypeResolver(descriptorAssemblyLookups));
+            var errorSink = new ParserErrorSink();
+            var resolutionContext = new TagHelperDescriptorResolutionContext(
+                directiveDescriptors,
+                errorSink);
+
+            // Act
+            var descriptors = tagHelperDescriptorResolver.Resolve(resolutionContext);
+
+            // Assert
+            Assert.Equal(expectedErrors, errorSink.Errors);
+            Assert.Equal(expectedDescriptors.Count(), descriptors.Count());
+
+            foreach (var expectedDescriptor in expectedDescriptors)
+            {
+                Assert.Contains(expectedDescriptor, descriptors, TagHelperDescriptorComparer.Default);
+            }
+        }
+
+        public static TheoryData ResolveDirectiveDescriptorsTagHelperPrefixData
+        {
+            get
+            {
+                var assemblyA = AssemblyName;
+                var stringType = typeof(string);
+                var assemblyB = stringType.GetTypeInfo().Assembly.GetName().Name;
+                var defaultAssemblyLookups = new Dictionary<string, IEnumerable<Type>>
+                {
+                    { assemblyA, new[] { Valid_PlainTagHelperType, Valid_InheritedTagHelperType } },
+                    { assemblyB, new[] { stringType } }
+                };
+
+                return new TheoryData<
+                    Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
+                    IEnumerable<TagHelperDirectiveDescriptor>, // directiveDescriptors
+                    IEnumerable<TagHelperDescriptor>> // expectedDescriptors
+                {
+                    {
+                        defaultAssemblyLookups,
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor("", TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor(
+                                "*Plain*, " + assemblyA,
+                                TagHelperDirectiveType.AddTagHelper),
+                        },
+                        new [] { Valid_PlainTagHelperDescriptor }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor("th:", TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor(
+                                "*Plain*, " + assemblyA,
+                                TagHelperDirectiveType.AddTagHelper),
+                        },
+                        new [] { CreatePrefixedValidPlainDescriptor("th:") }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "*Plain*, " + assemblyA,
+                                TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor("th:", TagHelperDirectiveType.TagHelperPrefix)
+                        },
+                        new [] { CreatePrefixedValidPlainDescriptor("th:") }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor("*, " + assemblyA, TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor("th:", TagHelperDirectiveType.TagHelperPrefix)
+                        },
+                        new []
+                        {
+                            CreatePrefixedValidPlainDescriptor("th:"),
+                            CreatePrefixedValidInheritedDescriptor("th:")
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor("th-", TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor(
+                                "*Plain*, " + assemblyA,
+                                TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor(
+                                "*Inherited*, " + assemblyA,
+                                TagHelperDirectiveType.AddTagHelper)
+                        },
+                        new []
+                        {
+                            CreatePrefixedValidPlainDescriptor("th-"),
+                            CreatePrefixedValidInheritedDescriptor("th-")
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor("", TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor(
+                                "*Plain*, " + assemblyA,
+                                TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor(
+                                "*Inherited*, " + assemblyA,
+                                TagHelperDirectiveType.AddTagHelper)
+                        },
+                        new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "*Plain*, " + assemblyA,
+                                TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor(
+                                "*Inherited*, " + assemblyA,
+                                TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor("th:", TagHelperDirectiveType.TagHelperPrefix)
+                        },
+                        new []
+                        {
+                            CreatePrefixedValidPlainDescriptor("th:"),
+                            CreatePrefixedValidInheritedDescriptor("th:")
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor("th", TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor(
+                                "*, " + assemblyA,
+                                TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor(
+                                "*, " + assemblyB,
+                                TagHelperDirectiveType.AddTagHelper),
+                        },
+                        new []
+                        {
+                            CreatePrefixedValidPlainDescriptor("th"),
+                            CreatePrefixedValidInheritedDescriptor("th"),
+                            CreatePrefixedStringDescriptor("th")
+                        }
+                    },
+                    {
+                        defaultAssemblyLookups,
+                        new []
+                        {
+                            new TagHelperDirectiveDescriptor(
+                                "*, " + assemblyA,
+                                TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor("th:-", TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor(
+                                "*, " + assemblyB,
+                                TagHelperDirectiveType.AddTagHelper),
+                        },
+                        new []
+                        {
+                            CreatePrefixedValidPlainDescriptor("th:-"),
+                            CreatePrefixedValidInheritedDescriptor("th:-"),
+                            CreatePrefixedStringDescriptor("th:-")
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ResolveDirectiveDescriptorsTagHelperPrefixData))]
+        public void Resolve_ReturnsPrefixedDescriptorsBasedOnDirectiveDescriptors(
+            Dictionary<string, IEnumerable<Type>> descriptorAssemblyLookups,
+            IEnumerable<TagHelperDirectiveDescriptor> directiveDescriptors,
+            IEnumerable<TagHelperDescriptor> expectedDescriptors)
+        {
+            // Arrange
+            var tagHelperDescriptorResolver =
+                new TestTagHelperDescriptorResolver(
+                    new LookupBasedTagHelperTypeResolver(descriptorAssemblyLookups));
+            var resolutionContext = new TagHelperDescriptorResolutionContext(
+                directiveDescriptors,
+                new ParserErrorSink());
+
+            // Act
+            var descriptors = tagHelperDescriptorResolver.Resolve(resolutionContext);
+
+            // Assert
+            Assert.Equal(expectedDescriptors.Count(), descriptors.Count());
+
+            foreach (var expectedDescriptor in expectedDescriptors)
+            {
+                Assert.Contains(expectedDescriptor, descriptors, TagHelperDescriptorComparer.Default);
             }
         }
 
@@ -477,7 +963,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 new TestTagHelperDescriptorResolver(
                     new LookupBasedTagHelperTypeResolver(descriptorAssemblyLookups));
             var resolutionContext = new TagHelperDescriptorResolutionContext(
-                directiveDescriptors, 
+                directiveDescriptors,
                 new ParserErrorSink());
 
             // Act
@@ -832,7 +1318,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 "format is: \"typeName, assemblyName\".",
                 lookupText);
             var resolutionContext = new TagHelperDescriptorResolutionContext(
-                new [] { new TagHelperDirectiveDescriptor(lookupText, documentLocation, directiveType)},
+                new[] { new TagHelperDirectiveDescriptor(lookupText, documentLocation, directiveType) },
                 errorSink);
 
             // Act
@@ -870,6 +1356,49 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal(1, error.Length);
             Assert.Equal(documentLocation, error.Location);
             Assert.Equal(expectedErrorMessage, error.Message);
+        }
+
+        private static TagHelperDescriptor CreateDescriptor(
+            string prefix,
+            string tagName,
+            string typeName,
+            string assemblyName)
+        {
+            return new TagHelperDescriptor(
+                prefix,
+                tagName,
+                typeName,
+                assemblyName,
+                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>());
+        }
+
+        private static TagHelperDescriptor CreatePrefixedValidPlainDescriptor(string prefix)
+        {
+            return CreateDescriptor(
+                prefix,
+                tagName: "valid_plain",
+                typeName: Valid_PlainTagHelperType.FullName,
+                assemblyName: AssemblyName);
+        }
+
+        private static TagHelperDescriptor CreatePrefixedValidInheritedDescriptor(string prefix)
+        {
+            return CreateDescriptor(
+                prefix,
+                tagName: "valid_inherited",
+                typeName: Valid_InheritedTagHelperType.FullName,
+                assemblyName: AssemblyName);
+        }
+
+        private static TagHelperDescriptor CreatePrefixedStringDescriptor(string prefix)
+        {
+            var stringType = typeof(string);
+
+            return CreateDescriptor(
+                prefix,
+                tagName: "string",
+                typeName: stringType.FullName,
+                assemblyName: stringType.GetTypeInfo().Assembly.GetName().Name);
         }
 
         private class TestTagHelperDescriptorResolver : TagHelperDescriptorResolver
@@ -939,8 +1468,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             }
 
             protected override IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(
-                string assemblyName, 
-                SourceLocation documentLocation, 
+                string assemblyName,
+                SourceLocation documentLocation,
                 ParserErrorSink errorSink)
             {
                 throw _error;

@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
-    public class AddOrRemoveTagHelperSpanVisitorTest
+    public class TagHelperDirectiveSpanVisitorTest
     {
         private static readonly SpanFactory Factory = SpanFactory.CreateCsHtml();
 
@@ -28,16 +28,17 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var resolver = new Mock<ITagHelperDescriptorResolver>();
             resolver.Setup(mock => mock.Resolve(It.IsAny<TagHelperDescriptorResolutionContext>()))
                     .Returns(Enumerable.Empty<TagHelperDescriptor>());
-            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(
+            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(
                 resolver.Object, 
                 new ParserErrorSink());
             var document = new MarkupBlock(
                 Factory.Code("\"one\"").AsAddTagHelper("one"),
                 Factory.Code("\"two\"").AsRemoveTagHelper("two"),
-                Factory.Code("\"three\"").AsRemoveTagHelper("three"));
+                Factory.Code("\"three\"").AsRemoveTagHelper("three"),
+                Factory.Code("\"four\"").AsTagHelperPrefixDirective("four"));
 
             // Act
-            addOrRemoveTagHelperSpanVisitor.GetDescriptors(document);
+            tagHelperDirectiveSpanVisitor.GetDescriptors(document);
 
             // Assert
             resolver.Verify(mock => mock.Resolve(It.IsAny<TagHelperDescriptorResolutionContext>()), Times.Once);
@@ -49,25 +50,28 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
-            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(resolver, new ParserErrorSink());
+            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ParserErrorSink());
             var document = new MarkupBlock(
                 Factory.Code("\"one\"").AsAddTagHelper("one"),
                 Factory.Code("\"two\"").AsRemoveTagHelper("two"),
-                Factory.Code("\"three\"").AsRemoveTagHelper("three"));
-            var expectedRegistrations = new TagHelperDirectiveDescriptor[]
+                Factory.Code("\"three\"").AsRemoveTagHelper("three"),
+                Factory.Code("\"four\"").AsTagHelperPrefixDirective("four"));
+            var expectedDescriptors = new TagHelperDirectiveDescriptor[]
             {
                 new TagHelperDirectiveDescriptor("one", TagHelperDirectiveType.AddTagHelper),
                 new TagHelperDirectiveDescriptor("two", TagHelperDirectiveType.RemoveTagHelper),
                 new TagHelperDirectiveDescriptor("three", TagHelperDirectiveType.RemoveTagHelper),
+                new TagHelperDirectiveDescriptor("four", TagHelperDirectiveType.TagHelperPrefix),
             };
 
             // Act
-            addOrRemoveTagHelperSpanVisitor.GetDescriptors(document);
+            tagHelperDirectiveSpanVisitor.GetDescriptors(document);
 
             // Assert
-            Assert.Equal(expectedRegistrations,
-                         resolver.DirectiveDescriptors,
-                         TagHelperDirectiveDescriptorComparer.Default);
+            Assert.Equal(
+                expectedDescriptors,
+                resolver.DirectiveDescriptors,
+                TagHelperDirectiveDescriptorComparer.Default);
         }
 
         [Fact]
@@ -80,29 +84,32 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 new TagHelperDirectiveDescriptor("one", TagHelperDirectiveType.AddTagHelper),
                 new TagHelperDirectiveDescriptor("two", TagHelperDirectiveType.RemoveTagHelper),
                 new TagHelperDirectiveDescriptor("three", TagHelperDirectiveType.RemoveTagHelper),
+                new TagHelperDirectiveDescriptor("four", TagHelperDirectiveType.TagHelperPrefix),
             };
             var expectedEndDirectiveDescriptors = new TagHelperDirectiveDescriptor[]
             {
                 new TagHelperDirectiveDescriptor("custom", TagHelperDirectiveType.AddTagHelper)
             };
-            var addOrRemoveTagHelperSpanVisitor = new CustomAddOrRemoveTagHelperSpanVisitor(
+            var tagHelperDirectiveSpanVisitor = new CustomTagHelperDirectiveSpanVisitor(
                 resolver,
                 (descriptors, errorSink) =>
                 {
-                    Assert.Equal(expectedInitialDirectiveDescriptors,
-                                 descriptors,
-                                 TagHelperDirectiveDescriptorComparer.Default);
+                    Assert.Equal(
+                        expectedInitialDirectiveDescriptors,
+                        descriptors,
+                        TagHelperDirectiveDescriptorComparer.Default);
 
                     return new TagHelperDescriptorResolutionContext(expectedEndDirectiveDescriptors, errorSink);
                 });
             var document = new MarkupBlock(
                 Factory.Code("\"one\"").AsAddTagHelper("one"),
                 Factory.Code("\"two\"").AsRemoveTagHelper("two"),
-                Factory.Code("\"three\"").AsRemoveTagHelper("three"));
+                Factory.Code("\"three\"").AsRemoveTagHelper("three"),
+                Factory.Code("\"four\"").AsTagHelperPrefixDirective("four"));
 
 
             // Act
-            addOrRemoveTagHelperSpanVisitor.GetDescriptors(document);
+            tagHelperDirectiveSpanVisitor.GetDescriptors(document);
 
             // Assert
             Assert.Equal(expectedEndDirectiveDescriptors,
@@ -111,11 +118,38 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         [Fact]
+        public void GetDescriptors_LocatesTagHelperPrefixDirectiveCodeGenerator()
+        {
+            // Arrange
+            var resolver = new TestTagHelperDescriptorResolver();
+            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ParserErrorSink());
+            var document = new MarkupBlock(
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .Accepts(AcceptedCharacters.None),
+                    Factory.Code("\"something\"").AsTagHelperPrefixDirective("something")));
+            var expectedDirectiveDescriptor =
+                new TagHelperDirectiveDescriptor("something", TagHelperDirectiveType.TagHelperPrefix);
+
+            // Act
+            tagHelperDirectiveSpanVisitor.GetDescriptors(document);
+
+            // Assert
+            var directiveDescriptor = Assert.Single(resolver.DirectiveDescriptors);
+            Assert.Equal(
+                expectedDirectiveDescriptor, 
+                directiveDescriptor, 
+                TagHelperDirectiveDescriptorComparer.Default);
+        }
+
+        [Fact]
         public void GetDescriptors_LocatesAddTagHelperCodeGenerator()
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
-            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(resolver, new ParserErrorSink());
+            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ParserErrorSink());
             var document = new MarkupBlock(
                 new DirectiveBlock(
                     Factory.CodeTransition(),
@@ -127,7 +161,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 new TagHelperDirectiveDescriptor("something", TagHelperDirectiveType.AddTagHelper);
 
             // Act
-            addOrRemoveTagHelperSpanVisitor.GetDescriptors(document);
+            tagHelperDirectiveSpanVisitor.GetDescriptors(document);
 
             // Assert
             var directiveDescriptor = Assert.Single(resolver.DirectiveDescriptors);
@@ -139,7 +173,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
-            var addOrRemoveTagHelperSpanVisitor = new AddOrRemoveTagHelperSpanVisitor(resolver, new ParserErrorSink());
+            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ParserErrorSink());
             var document = new MarkupBlock(
                 new DirectiveBlock(
                     Factory.CodeTransition(),
@@ -151,7 +185,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 new TagHelperDirectiveDescriptor("something", TagHelperDirectiveType.RemoveTagHelper);
 
             // Act
-            addOrRemoveTagHelperSpanVisitor.GetDescriptors(document);
+            tagHelperDirectiveSpanVisitor.GetDescriptors(document);
 
             // Assert
             var directiveDescriptor = Assert.Single(resolver.DirectiveDescriptors);
@@ -162,14 +196,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public void GetDescriptors_RemoveTagHelperNotInDocument_DoesNotThrow()
         {
             // Arrange
-            var addOrRemoveTagHelperSpanVisitor =
-                new AddOrRemoveTagHelperSpanVisitor(
+            var tagHelperDirectiveSpanVisitor =
+                new TagHelperDirectiveSpanVisitor(
                     new TestTagHelperDescriptorResolver(),
                     new ParserErrorSink());
             var document = new MarkupBlock(Factory.Markup("Hello World"));
 
             // Act
-            var descriptors = addOrRemoveTagHelperSpanVisitor.GetDescriptors(document);
+            var descriptors = tagHelperDirectiveSpanVisitor.GetDescriptors(document);
 
             Assert.Empty(descriptors);
         }
@@ -203,8 +237,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             public bool Equals(TagHelperDirectiveDescriptor directiveDescriptorX,
                                TagHelperDirectiveDescriptor directiveDescriptorY)
             {
-                return string.Equals(directiveDescriptorX.LookupText,
-                                     directiveDescriptorY.LookupText,
+                return string.Equals(directiveDescriptorX.DirectiveText,
+                                     directiveDescriptorY.DirectiveText,
                                      StringComparison.Ordinal) &&
                        directiveDescriptorX.DirectiveType == directiveDescriptorY.DirectiveType;
             }
@@ -213,19 +247,19 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             {
                 return HashCodeCombiner.Start()
                                        .Add(base.GetHashCode())
-                                       .Add(directiveDescriptor.LookupText)
+                                       .Add(directiveDescriptor.DirectiveText)
                                        .Add(directiveDescriptor.DirectiveType)
                                        .CombinedHash;
             }
         }
 
-        private class CustomAddOrRemoveTagHelperSpanVisitor : AddOrRemoveTagHelperSpanVisitor
+        private class CustomTagHelperDirectiveSpanVisitor : TagHelperDirectiveSpanVisitor
         {
             private Func<IEnumerable<TagHelperDirectiveDescriptor>, 
                          ParserErrorSink,
                          TagHelperDescriptorResolutionContext> _replacer;
 
-            public CustomAddOrRemoveTagHelperSpanVisitor(
+            public CustomTagHelperDirectiveSpanVisitor(
                 ITagHelperDescriptorResolver descriptorResolver,
                 Func<IEnumerable<TagHelperDirectiveDescriptor>, 
                      ParserErrorSink, 

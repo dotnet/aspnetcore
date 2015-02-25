@@ -14,37 +14,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 {
     public class CSharpTagHelperRenderingTest : TagHelperTestBase
     {
-        private static IEnumerable<TagHelperDescriptor> PAndInputTagHelperDescriptors
-        {
-            get
-            {
-                var pAgePropertyInfo = typeof(TestType).GetProperty("Age");
-                var inputTypePropertyInfo = typeof(TestType).GetProperty("Type");
-                var checkedPropertyInfo = typeof(TestType).GetProperty("Checked");
-                return new[]
-                {
-                    new TagHelperDescriptor("p",
-                                            "PTagHelper",
-                                            "SomeAssembly",
-                                            new [] {
-                                                new TagHelperAttributeDescriptor("age", pAgePropertyInfo)
-                                            }),
-                    new TagHelperDescriptor("input",
-                                            "InputTagHelper",
-                                            "SomeAssembly",
-                                            new TagHelperAttributeDescriptor[] {
-                                                new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
-                                            }),
-                    new TagHelperDescriptor("input",
-                                            "InputTagHelper2",
-                                            "SomeAssembly",
-                                            new TagHelperAttributeDescriptor[] {
-                                                new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
-                                                new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
-                                            })
-                };
-            }
-        }
+        private static IEnumerable<TagHelperDescriptor> DefaultPAndInputTagHelperDescriptors
+            => BuildPAndInputTagHelperDescriptors(prefix: string.Empty);
+        private static IEnumerable<TagHelperDescriptor> PrefixedPAndInputTagHelperDescriptors
+            => BuildPAndInputTagHelperDescriptors("THS");
 
         public static TheoryData TagHelperDescriptorFlowTestData
         {
@@ -59,50 +32,64 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     {
                         "SingleTagHelper",
                         "SingleTagHelper",
-                        PAndInputTagHelperDescriptors,
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         false
                     },
                     {
                         "SingleTagHelper",
                         "SingleTagHelper.DesignTime",
-                        PAndInputTagHelperDescriptors,
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         true
                     },
                     {
                         "BasicTagHelpers",
                         "BasicTagHelpers",
-                        PAndInputTagHelperDescriptors,
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         false
                     },
                     {
                         "BasicTagHelpers",
                         "BasicTagHelpers.DesignTime",
-                        PAndInputTagHelperDescriptors,
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         true
                     },
                     {
                         "BasicTagHelpers.RemoveTagHelper",
                         "BasicTagHelpers.RemoveTagHelper",
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         Enumerable.Empty<TagHelperDescriptor>(),
                         false
                     },
                     {
+                        "BasicTagHelpers.Prefixed",
+                        "BasicTagHelpers.Prefixed",
+                        PrefixedPAndInputTagHelperDescriptors,
+                        PrefixedPAndInputTagHelperDescriptors,
+                        false
+                    },
+                    {
+                        "BasicTagHelpers.Prefixed",
+                        "BasicTagHelpers.Prefixed.DesignTime",
+                        PrefixedPAndInputTagHelperDescriptors,
+                        PrefixedPAndInputTagHelperDescriptors,
+                        true
+                    },
+                    {
                         "ComplexTagHelpers",
                         "ComplexTagHelpers",
-                        PAndInputTagHelperDescriptors,
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         false
                     },
                     {
                         "ComplexTagHelpers",
                         "ComplexTagHelpers.DesignTime",
-                        PAndInputTagHelperDescriptors,
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         true
                     }
                 };
@@ -141,7 +128,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     {
                         "SingleTagHelper",
                         "SingleTagHelper.DesignTime",
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         new List<LineMapping>
                         {
                             BuildLineMapping(documentAbsoluteIndex: 14,
@@ -161,7 +148,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     {
                         "BasicTagHelpers",
                         "BasicTagHelpers.DesignTime",
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         new List<LineMapping>
                         {
                             BuildLineMapping(documentAbsoluteIndex: 14,
@@ -179,9 +166,35 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         }
                     },
                     {
+                        "BasicTagHelpers.Prefixed",
+                        "BasicTagHelpers.Prefixed.DesignTime",
+                        PrefixedPAndInputTagHelperDescriptors,
+                        new List<LineMapping>
+                        {
+                            BuildLineMapping(documentAbsoluteIndex: 17,
+                                             documentLineIndex: 0,
+                                             generatedAbsoluteIndex: 496,
+                                             generatedLineIndex: 15,
+                                             characterOffsetIndex: 17,
+                                             contentLength: 5),
+                            BuildLineMapping(documentAbsoluteIndex: 38,
+                                             documentLineIndex: 1,
+                                             generatedAbsoluteIndex: 655,
+                                             generatedLineIndex: 22,
+                                             characterOffsetIndex: 14,
+                                             contentLength: 17),
+                            BuildLineMapping(documentAbsoluteIndex: 228,
+                                             documentLineIndex: 7,
+                                             generatedAbsoluteIndex: 1480,
+                                             generatedLineIndex: 46,
+                                             characterOffsetIndex: 43,
+                                             contentLength: 4)
+                        }
+                    },
+                    {
                         "ComplexTagHelpers",
                         "ComplexTagHelpers.DesignTime",
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         new List<LineMapping>
                         {
                             BuildLineMapping(14, 0, 479, 15, 14, 17),
@@ -217,7 +230,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     {
                         "EmptyAttributeTagHelpers",
                         "EmptyAttributeTagHelpers.DesignTime",
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         new List<LineMapping>
                         {
                             BuildLineMapping(documentAbsoluteIndex: 14,
@@ -251,7 +264,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     {
                         "EscapedTagHelpers",
                         "EscapedTagHelpers.DesignTime",
-                        PAndInputTagHelperDescriptors,
+                        DefaultPAndInputTagHelperDescriptors,
                         new List<LineMapping>
                         {
                             BuildLineMapping(documentAbsoluteIndex: 14,
@@ -308,12 +321,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 // Note: The baseline resource name is equivalent to the test resource name.
                 return new TheoryData<string, IEnumerable<TagHelperDescriptor>>
                 {
-                    { "SingleTagHelper", PAndInputTagHelperDescriptors },
-                    { "BasicTagHelpers", PAndInputTagHelperDescriptors },
-                    { "BasicTagHelpers.RemoveTagHelper", PAndInputTagHelperDescriptors },
-                    { "ComplexTagHelpers", PAndInputTagHelperDescriptors },
-                    { "EmptyAttributeTagHelpers", PAndInputTagHelperDescriptors },
-                    { "EscapedTagHelpers", PAndInputTagHelperDescriptors },
+                    { "SingleTagHelper", DefaultPAndInputTagHelperDescriptors },
+                    { "BasicTagHelpers", DefaultPAndInputTagHelperDescriptors },
+                    { "BasicTagHelpers.RemoveTagHelper", DefaultPAndInputTagHelperDescriptors },
+                    { "BasicTagHelpers.Prefixed", PrefixedPAndInputTagHelperDescriptors },
+                    { "ComplexTagHelpers", DefaultPAndInputTagHelperDescriptors },
+                    { "EmptyAttributeTagHelpers", DefaultPAndInputTagHelperDescriptors },
+                    { "EscapedTagHelpers", DefaultPAndInputTagHelperDescriptors },
                 };
             }
         }
@@ -393,6 +407,41 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
             // Act & Assert
             RunTagHelperTest(testType, tagHelperDescriptors: tagHelperDescriptors);
+        }
+
+        private static IEnumerable<TagHelperDescriptor> BuildPAndInputTagHelperDescriptors(string prefix)
+        {
+            var pAgePropertyInfo = typeof(TestType).GetProperty("Age");
+            var inputTypePropertyInfo = typeof(TestType).GetProperty("Type");
+            var checkedPropertyInfo = typeof(TestType).GetProperty("Checked");
+            return new[]
+            {
+                new TagHelperDescriptor(
+                    prefix,
+                    tagName: "p",
+                    typeName: "PTagHelper",
+                    assemblyName: "SomeAssembly",
+                    attributes: new [] {
+                        new TagHelperAttributeDescriptor("age", pAgePropertyInfo)
+                    }),
+                new TagHelperDescriptor(
+                    prefix,
+                    tagName: "input",
+                    typeName: "InputTagHelper",
+                    assemblyName: "SomeAssembly",
+                    attributes: new TagHelperAttributeDescriptor[] {
+                        new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
+                    }),
+                new TagHelperDescriptor(
+                    prefix,
+                    tagName: "input",
+                    typeName: "InputTagHelper2",
+                    assemblyName: "SomeAssembly",
+                    attributes: new TagHelperAttributeDescriptor[] {
+                        new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
+                        new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
+                    })
+            };
         }
 
         private class TestType
