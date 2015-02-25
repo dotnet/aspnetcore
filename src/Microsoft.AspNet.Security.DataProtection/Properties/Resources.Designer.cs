@@ -186,6 +186,22 @@ namespace Microsoft.AspNet.Security.DataProtection
             return string.Format(CultureInfo.CurrentCulture, GetString("TimeLimitedDataProtector_PayloadExpired"), p0);
         }
 
+        /// <summary>
+        /// The purposes array cannot be null or empty and cannot contain null or empty elements.
+        /// </summary>
+        internal static string DataProtectionExtensions_NullPurposesArray
+        {
+            get { return GetString("DataProtectionExtensions_NullPurposesArray"); }
+        }
+
+        /// <summary>
+        /// The purposes array cannot be null or empty and cannot contain null or empty elements.
+        /// </summary>
+        internal static string FormatDataProtectionExtensions_NullPurposesArray()
+        {
+            return GetString("DataProtectionExtensions_NullPurposesArray");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -150,4 +150,7 @@
   <data name="TimeLimitedDataProtector_PayloadExpired" xml:space="preserve">
     <value>The payload expired at {0}.</value>
   </data>
+  <data name="DataProtectionExtensions_NullPurposesArray" xml:space="preserve">
+    <value>The purposes array cannot be null or empty and cannot contain null or empty elements.</value>
+  </data>
 </root>

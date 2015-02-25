@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using Microsoft.AspNet.Cryptography;
 
 namespace Microsoft.AspNet.Security.DataProtection
 {
@@ -19,6 +21,37 @@ namespace Microsoft.AspNet.Security.DataProtection
         {
             return (protector as ITimeLimitedDataProtector)
                 ?? new TimeLimitedDataProtector(protector.CreateProtector(TimeLimitedDataProtector.PurposeString));
+        }
+
+        /// <summary>
+        /// Creates an IDataProtector given an array of purposes.
+        /// </summary>
+        /// <param name="provider">The provider from which to generate the purpose chain.</param>
+        /// <param name="purposes">
+        /// This is a convenience method used for chaining several purposes together
+        /// in a single call to CreateProtector. See the documentation of
+        /// IDataProtectionProvider.CreateProtector for more information.
+        /// </param>
+        /// <returns>An IDataProtector tied to the provided purpose chain.</returns>
+        public static IDataProtector CreateProtector([NotNull] this IDataProtectionProvider provider, params string[] purposes)
+        {
+            if (purposes == null || purposes.Length == 0)
+            {
+                throw new ArgumentException(Resources.DataProtectionExtensions_NullPurposesArray, nameof(purposes));
+            }
+
+            IDataProtectionProvider retVal = provider;
+            foreach (string purpose in purposes)
+            {
+                if (String.IsNullOrEmpty(purpose))
+                {
+                    throw new ArgumentException(Resources.DataProtectionExtensions_NullPurposesArray, nameof(purposes));
+                }
+                retVal = retVal.CreateProtector(purpose) ?? CryptoUtil.Fail<IDataProtector>("CreateProtector returned null.");
+            }
+
+            Debug.Assert(retVal is IDataProtector); // CreateProtector is supposed to return an instance of this interface
+            return (IDataProtector)retVal;
         }
 
         /// <summary>

@@ -39,6 +39,43 @@ namespace Microsoft.AspNet.Security.DataProtection.Test
             Assert.Same(innerProtector, timeLimitedProtector.InnerProtector);
         }
 
+        [Theory]
+        [InlineData(new object[] { null })]
+        [InlineData(new object[] { new string[0] })]
+        [InlineData(new object[] { new string[] { null } })]
+        [InlineData(new object[] { new string[] { "the next value is bad", "" } })]
+        public void CreateProtector_Chained_FailureCases(string[] purposes)
+        {
+            // Arrange
+            var mockProtector = new Mock<IDataProtector>();
+            mockProtector.Setup(o => o.CreateProtector(It.IsAny<string>())).Returns(mockProtector.Object);
+            var provider = mockProtector.Object;
+
+            // Act & assert
+            var ex = Assert.Throws<ArgumentException>(() => provider.CreateProtector(purposes));
+            ex.AssertMessage("purposes", Resources.DataProtectionExtensions_NullPurposesArray);
+        }
+
+        [Fact]
+        public void CreateProtector_Chained_SuccessCase()
+        {
+            // Arrange
+            var finalExpectedProtector = new Mock<IDataProtector>().Object;
+
+            var thirdMock = new Mock<IDataProtector>();
+            thirdMock.Setup(o => o.CreateProtector("third")).Returns(finalExpectedProtector);
+            var secondMock = new Mock<IDataProtector>();
+            secondMock.Setup(o => o.CreateProtector("second")).Returns(thirdMock.Object);
+            var firstMock = new Mock<IDataProtector>();
+            firstMock.Setup(o => o.CreateProtector("first")).Returns(secondMock.Object);
+
+            // Act
+            var retVal = firstMock.Object.CreateProtector("first", "second", "third");
+
+            // Assert
+            Assert.Same(finalExpectedProtector, retVal);
+        }
+
         [Fact]
         public void Protect_InvalidUtf_Failure()
         {
