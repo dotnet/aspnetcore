@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.AspNet.Cryptography.KeyDerivation;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity
