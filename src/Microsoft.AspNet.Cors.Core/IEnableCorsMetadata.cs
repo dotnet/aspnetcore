@@ -1,0 +1,16 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+namespace Microsoft.AspNet.Cors.Core
+{
+    /// <summary>
+    /// An interface which can be used to identify a type which provides metadata needed for enabling CORS support.
+    /// </summary>
+    public interface IEnableCorsMetadata
+    {
+        /// <summary>
+        /// The name of the policy which needs to be applied.
+        /// </summary>
+        string PolicyName { get; set; }
+    }
+}

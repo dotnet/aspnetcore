@@ -1,7 +1,12 @@
 {
-	"version": "1.0.0-*",
-	"dependencies": {
-	},
+    "version": "1.0.0-*",
+    "dependencies": {
+         "Microsoft.Framework.ConfigurationModel.Interfaces": "1.0.0-*",
+         "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-*",
+         "Microsoft.Framework.OptionsModel": "1.0.0-*",
+         "Microsoft.AspNet.Http": "1.0.0-*",
+         "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
+    },
 
     "frameworks" : {
         "dnx451" : { 
