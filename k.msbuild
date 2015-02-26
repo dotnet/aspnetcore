@@ -271,15 +271,21 @@
                 <term>a hole</term>
                 <Justification>valid context</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
+									 $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
+									 $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
                 <term>Bengali</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
-			<SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs">
+			<SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
+									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
+									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
 				<term>Oriya</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
-			<SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs">
+			<SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
+									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
+									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
 				<term>Tibetan</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
