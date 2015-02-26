@@ -12,7 +12,7 @@ using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Logging;
-using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.AspNet.DataProtection;
 using Xunit;
 using Microsoft.Framework.Runtime.Infrastructure;
 
