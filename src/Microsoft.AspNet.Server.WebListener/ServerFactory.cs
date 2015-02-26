@@ -35,11 +35,10 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.Logging;
@@ -47,7 +46,7 @@ using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    using AppFunc = Func<object, Task>;
+    using AppFunc = Func<IFeatureCollection, Task>;
 
     /// <summary>
     /// Implements the setup process for this server.

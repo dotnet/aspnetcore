@@ -19,12 +19,13 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
 using Microsoft.Framework.Logging;
 using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    using AppFunc = Func<object, Task>;
+    using AppFunc = Func<IFeatureCollection, Task>;
 
     internal class MessagePump : IDisposable
     {
