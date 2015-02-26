@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Moq;

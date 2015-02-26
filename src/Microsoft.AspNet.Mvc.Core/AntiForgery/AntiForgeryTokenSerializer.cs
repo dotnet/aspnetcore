@@ -3,8 +3,8 @@
 
 using System;
 using System.IO;
+using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
 
