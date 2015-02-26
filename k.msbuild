@@ -271,14 +271,18 @@
                 <term>a hole</term>
                 <Justification>valid context</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs">
                 <term>Bengali</term>
+                <Justification>Font reference</Justification>
+            </SrcExclusions>
+			<SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs">
 				<term>Oriya</term>
+                <Justification>Font reference</Justification>
+            </SrcExclusions>
+			<SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs">
 				<term>Tibetan</term>
                 <Justification>Font reference</Justification>
-            </SrcExclusions>            
+            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
                 <term>butt</term>
                 <Justification>not our code, jquery scripts embedded in .cs file</Justification>
