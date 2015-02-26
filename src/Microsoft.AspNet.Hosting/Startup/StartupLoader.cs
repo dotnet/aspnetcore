@@ -15,14 +15,10 @@ namespace Microsoft.AspNet.Hosting.Startup
     public class StartupLoader : IStartupLoader
     {
         private readonly IServiceProvider _services;
-        private readonly IStartupLoader _next;
 
-        public StartupLoader(
-            IServiceProvider services,
-            IStartupLoader next)
+        public StartupLoader(IServiceProvider services)
         {
             _services = services;
-            _next = next;
         }
 
         private MethodInfo FindMethod(Type startupType, string methodName, string environmentName, Type returnType = null, bool required = true)
@@ -94,9 +90,9 @@ namespace Microsoft.AspNet.Hosting.Startup
             string environmentName,
             IList<string> diagnosticMessages)
         {
-            if (String.IsNullOrEmpty(applicationName))
+            if (string.IsNullOrEmpty(applicationName))
             {
-                return _next.LoadStartup(applicationName, environmentName, diagnosticMessages);
+                throw new ArgumentNullException("applicationName");
             }
 
             var assembly = Assembly.Load(new AssemblyName(applicationName));
@@ -156,7 +152,7 @@ namespace Microsoft.AspNet.Hosting.Startup
                     {
                         // IServiceProvider ConfigureServices(IServiceCollection)
                         builder.ApplicationServices = (Invoke(servicesMethod, instance, builder, services) as IServiceProvider)
-                            ?? builder.ApplicationServices; 
+                            ?? builder.ApplicationServices;
                     }
                     else
                     {

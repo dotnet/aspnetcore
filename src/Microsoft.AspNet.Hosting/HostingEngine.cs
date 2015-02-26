@@ -2,31 +2,32 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
-using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting
 {
     public class HostingEngine : IHostingEngine
     {
-        private readonly IServerManager _serverManager;
-        private readonly IStartupManager _startupManager;
+        private readonly IServerLoader _serverManager;
+        private readonly IStartupLoader _startupLoader;
         private readonly IApplicationBuilderFactory _builderFactory;
         private readonly IHttpContextFactory _httpContextFactory;
         private readonly IHttpContextAccessor _contextAccessor;
 
         public HostingEngine(
-            IServerManager serverManager,
-            IStartupManager startupManager,
+            IServerLoader serverManager,
+            IStartupLoader startupLoader,
             IApplicationBuilderFactory builderFactory,
             IHttpContextFactory httpContextFactory,
             IHttpContextAccessor contextAccessor)
         {
             _serverManager = serverManager;
-            _startupManager = startupManager;
+            _startupLoader = startupLoader;
             _builderFactory = builderFactory;
             _httpContextFactory = httpContextFactory;
             _contextAccessor = contextAccessor;
@@ -39,16 +40,16 @@ namespace Microsoft.AspNet.Hosting
             InitalizeServerFactory(context);
             EnsureApplicationDelegate(context);
 
-            var applicationLifetime = (ApplicationLifetime)context.Services.GetRequiredService<IApplicationLifetime>();
+            var applicationLifetime = (ApplicationLifetime)context.ApplicationLifeTime;
             var pipeline = new PipelineInstance(_httpContextFactory, context.ApplicationDelegate, _contextAccessor);
             var server = context.ServerFactory.Start(context.Server, pipeline.Invoke);
-           
+
             return new Disposable(() =>
             {
-                applicationLifetime.SignalStopping();
+                applicationLifetime.NotifyStopping();
                 server.Dispose();
                 pipeline.Dispose();
-                applicationLifetime.SignalStopped();
+                applicationLifetime.NotifyStopped();
             });
         }
 
@@ -69,7 +70,7 @@ namespace Microsoft.AspNet.Hosting
                 return;
             }
 
-            context.ServerFactory = _serverManager.GetServerFactory(context.ServerName);
+            context.ServerFactory = _serverManager.LoadServerFactory(context.ServerFactoryAssembly);
         }
 
         private void InitalizeServerFactory(HostingContext context)
@@ -105,9 +106,16 @@ namespace Microsoft.AspNet.Hosting
                 return;
             }
 
-            context.ApplicationStartup = _startupManager.LoadStartup(
+            var diagnosticMessages = new List<string>();
+            context.ApplicationStartup = _startupLoader.LoadStartup(
                 context.ApplicationName,
-                context.EnvironmentName);
+                context.EnvironmentName,
+                diagnosticMessages);
+
+            if (context.ApplicationStartup == null)
+            {
+                throw new Exception(diagnosticMessages.Aggregate("TODO: web application entrypoint not found message", (a, b) => a + "\r\n" + b));
+            }
         }
 
         private class Disposable : IDisposable

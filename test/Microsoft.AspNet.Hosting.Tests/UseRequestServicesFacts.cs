@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.Framework.DependencyInjection;
@@ -83,11 +82,8 @@ namespace Microsoft.AspNet.Hosting.Tests
 
         [Theory]
         [InlineData(typeof(IHostingEngine))]
-        [InlineData(typeof(IServerManager))]
-        [InlineData(typeof(IStartupManager))]
-        [InlineData(typeof(IStartupLoaderProvider))]
+        [InlineData(typeof(IServerLoader))]
         [InlineData(typeof(IApplicationBuilderFactory))]
-        [InlineData(typeof(IStartupLoaderProvider))]
         [InlineData(typeof(IHttpContextFactory))]
         [InlineData(typeof(ITypeActivator))]
         [InlineData(typeof(IApplicationLifetime))]

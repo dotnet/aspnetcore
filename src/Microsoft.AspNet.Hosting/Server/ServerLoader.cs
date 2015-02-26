@@ -8,16 +8,16 @@ using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting.Server
 {
-    public class ServerManager : IServerManager
+    public class ServerLoader : IServerLoader
     {
         private readonly IServiceProvider _services;
 
-        public ServerManager(IServiceProvider services)
+        public ServerLoader(IServiceProvider services)
         {
             _services = services;
         }
 
-        public IServerFactory GetServerFactory(string serverFactoryIdentifier)
+        public IServerFactory LoadServerFactory(string serverFactoryIdentifier)
         {
             if (string.IsNullOrEmpty(serverFactoryIdentifier))
             {

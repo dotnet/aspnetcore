@@ -24,8 +24,6 @@ namespace Microsoft.AspNet.Hosting
             _serviceProvider = serviceProvider;
         }
 
-
-
         public void Main(string[] args)
         {
             var config = new Configuration();
@@ -41,12 +39,13 @@ namespace Microsoft.AspNet.Hosting
 
             var appEnv = services.GetRequiredService<IApplicationEnvironment>();
             var hostingEnv = services.GetRequiredService<IHostingEnvironment>();
+            var applicationLifeTime = services.GetRequiredService<IApplicationLifetime>();
 
             var context = new HostingContext()
             {
-                Services = services,
+                ApplicationLifeTime = applicationLifeTime,
                 Configuration = config,
-                ServerName = config.Get("server"), // TODO: Key names
+                ServerFactoryAssembly = config.Get("server"), // TODO: Key names
                 ApplicationName = config.Get("app")  // TODO: Key names
                     ?? appEnv.ApplicationName,
                 EnvironmentName = hostingEnv.EnvironmentName,

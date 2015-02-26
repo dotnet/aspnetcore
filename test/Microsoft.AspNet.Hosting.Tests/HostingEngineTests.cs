@@ -34,11 +34,12 @@ namespace Microsoft.AspNet.Hosting
             var services = HostingServices.Create().BuildServiceProvider();
 
             var engine = services.GetRequiredService<IHostingEngine>();
+            var applicationLifeTime = services.GetRequiredService<IApplicationLifetime>();
 
             var context = new HostingContext
             {
+                ApplicationLifeTime = applicationLifeTime,
                 ServerFactory = this,
-                Services = services,
                 ApplicationName = "Microsoft.AspNet.Hosting.Tests"
             };
 

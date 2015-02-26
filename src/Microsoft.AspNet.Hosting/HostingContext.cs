@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.Framework.ConfigurationModel;
 
@@ -11,7 +10,7 @@ namespace Microsoft.AspNet.Hosting
 {
     public class HostingContext
     {
-        public IServiceProvider Services { get; set; }
+        public IApplicationLifetime ApplicationLifeTime { get; set; }
         public IConfiguration Configuration { get; set; }
 
         public IApplicationBuilder Builder { get; set; }
@@ -21,7 +20,7 @@ namespace Microsoft.AspNet.Hosting
         public Action<IApplicationBuilder> ApplicationStartup { get; set; }
         public RequestDelegate ApplicationDelegate { get; set; }
 
-        public string ServerName { get; set; }
+        public string ServerFactoryAssembly { get; set; }
         public IServerFactory ServerFactory { get; set; }
         public IServerInformation Server { get; set; }
     }

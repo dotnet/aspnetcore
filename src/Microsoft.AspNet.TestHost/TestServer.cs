@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
@@ -31,13 +28,14 @@ namespace Microsoft.AspNet.TestHost
         public TestServer(IConfiguration config, IServiceProvider serviceProvider, Action<IApplicationBuilder> appStartup)
         {
             var appEnv = serviceProvider.GetRequiredService<IApplicationEnvironment>();
+            var applicationLifeTime = serviceProvider.GetRequiredService<IApplicationLifetime>();
 
             HostingContext hostContext = new HostingContext()
             {
                 ApplicationName = appEnv.ApplicationName,
+                ApplicationLifeTime = applicationLifeTime,
                 Configuration = config,
                 ServerFactory = this,
-                Services = serviceProvider,
                 ApplicationStartup = appStartup
             };
 

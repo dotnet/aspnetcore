@@ -3,8 +3,8 @@
 
 namespace Microsoft.AspNet.Hosting.Server
 {
-    public interface IServerManager
+    public interface IServerLoader
     {
-        IServerFactory GetServerFactory(string serverName);
+        IServerFactory LoadServerFactory(string serverName);
     }
 }

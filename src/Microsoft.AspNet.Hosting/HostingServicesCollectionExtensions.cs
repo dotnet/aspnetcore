@@ -26,10 +26,9 @@ namespace Microsoft.Framework.DependencyInjection
             var describer = new ServiceDescriber(configuration);
 
             services.TryAdd(describer.Transient<IHostingEngine, HostingEngine>());
-            services.TryAdd(describer.Transient<IServerManager, ServerManager>());
+            services.TryAdd(describer.Transient<IServerLoader, ServerLoader>());
 
-            services.TryAdd(describer.Transient<IStartupManager, StartupManager>());
-            services.TryAdd(describer.Transient<IStartupLoaderProvider, StartupLoaderProvider>());
+            services.TryAdd(describer.Transient<IStartupLoader, StartupLoader>());
 
             services.TryAdd(describer.Transient<IApplicationBuilderFactory, ApplicationBuilderFactory>());
             services.TryAdd(describer.Transient<IHttpContextFactory, HttpContextFactory>());

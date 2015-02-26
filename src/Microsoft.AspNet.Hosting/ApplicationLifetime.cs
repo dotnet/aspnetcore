@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Hosting
         /// <summary>
         /// Signals the ApplicationStopping event and blocks until it completes.
         /// </summary>
-        public void SignalStopping()
+        public void NotifyStopping()
         {
             try
             {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Hosting
         /// <summary>
         /// Signals the ApplicationStopped event and blocks until it completes.
         /// </summary>
-        public void SignalStopped()
+        public void NotifyStopped()
         {
             try
             {
