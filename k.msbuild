@@ -271,7 +271,7 @@
                 <term>a hole</term>
                 <Justification>valid context</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
                 <term>Bengali</term>
