@@ -48,12 +48,13 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             config.Set("server.urls", "http://localhost:54321");
             var services = HostingServices.Create(CallContextServiceLocator.Locator?.ServiceProvider, config)
                 .BuildServiceProvider();
+            var applicationLifetime = services.GetRequiredService<IApplicationLifetime>();
 
             var context = new HostingContext()
             {
-                Services = services,
+                ApplicationLifetime = applicationLifetime,
                 Configuration = config,
-                ServerName = "Kestrel",
+                ServerFactoryLocation = "Kestrel",
                 ApplicationStartup = startup,
             };
 
