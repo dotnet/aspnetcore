@@ -275,6 +275,8 @@
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
                 <term>Bengali</term>
+				<term>Oriya</term>
+				<term>Tibetan</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>            
             <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
