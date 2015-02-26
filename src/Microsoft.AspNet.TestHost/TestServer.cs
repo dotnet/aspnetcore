@@ -29,12 +29,12 @@ namespace Microsoft.AspNet.TestHost
         public TestServer(IConfiguration config, IServiceProvider serviceProvider, Action<IApplicationBuilder> appStartup)
         {
             var appEnv = serviceProvider.GetRequiredService<IApplicationEnvironment>();
-            var applicationLifeTime = serviceProvider.GetRequiredService<IApplicationLifetime>();
+            var applicationLifetime = serviceProvider.GetRequiredService<IApplicationLifetime>();
 
             HostingContext hostContext = new HostingContext()
             {
                 ApplicationName = appEnv.ApplicationName,
-                ApplicationLifeTime = applicationLifeTime,
+                ApplicationLifetime = applicationLifetime,
                 Configuration = config,
                 ServerFactory = this,
                 ApplicationStartup = appStartup

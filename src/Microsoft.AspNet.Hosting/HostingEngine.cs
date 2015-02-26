@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Hosting
             InitalizeServerFactory(context);
             EnsureApplicationDelegate(context);
 
-            var applicationLifetime = (ApplicationLifetime)context.ApplicationLifeTime;
+            var applicationLifetime = (ApplicationLifetime)context.ApplicationLifetime;
             var pipeline = new PipelineInstance(_httpContextFactory, context.ApplicationDelegate, _contextAccessor);
             var server = context.ServerFactory.Start(context.Server, pipeline.Invoke);
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Hosting
                 return;
             }
 
-            context.ServerFactory = _serverManager.LoadServerFactory(context.ServerFactoryAssembly);
+            context.ServerFactory = _serverManager.LoadServerFactory(context.ServerFactoryLocation);
         }
 
         private void InitalizeServerFactory(HostingContext context)
@@ -114,7 +114,9 @@ namespace Microsoft.AspNet.Hosting
 
             if (context.ApplicationStartup == null)
             {
-                throw new Exception(diagnosticMessages.Aggregate("TODO: web application entrypoint not found message", (a, b) => a + "\r\n" + b));
+                throw new ArgumentException(
+                    diagnosticMessages.Aggregate("Failed to find an entry point for the web application.", (a, b) => a + "\r\n" + b),
+                    nameof(context));
             }
         }
 

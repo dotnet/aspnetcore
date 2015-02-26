@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Hosting.Startup
         {
             if (string.IsNullOrEmpty(applicationName))
             {
-                throw new ArgumentNullException("applicationName");
+                throw new ArgumentException("applicationName");
             }
 
             var assembly = Assembly.Load(new AssemblyName(applicationName));

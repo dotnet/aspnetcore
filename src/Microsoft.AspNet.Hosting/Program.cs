@@ -39,13 +39,13 @@ namespace Microsoft.AspNet.Hosting
 
             var appEnv = services.GetRequiredService<IApplicationEnvironment>();
             var hostingEnv = services.GetRequiredService<IHostingEnvironment>();
-            var applicationLifeTime = services.GetRequiredService<IApplicationLifetime>();
+            var applicationLifetime = services.GetRequiredService<IApplicationLifetime>();
 
             var context = new HostingContext()
             {
-                ApplicationLifeTime = applicationLifeTime,
+                ApplicationLifetime = applicationLifetime,
                 Configuration = config,
-                ServerFactoryAssembly = config.Get("server"), // TODO: Key names
+                ServerFactoryLocation = config.Get("server"), // TODO: Key names
                 ApplicationName = config.Get("app")  // TODO: Key names
                     ?? appEnv.ApplicationName,
                 EnvironmentName = hostingEnv.EnvironmentName,

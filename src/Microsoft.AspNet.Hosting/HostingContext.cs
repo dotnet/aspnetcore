@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Hosting
 {
     public class HostingContext
     {
-        public IApplicationLifetime ApplicationLifeTime { get; set; }
+        public IApplicationLifetime ApplicationLifetime { get; set; }
         public IConfiguration Configuration { get; set; }
 
         public IApplicationBuilder Builder { get; set; }
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Hosting
         public Action<IApplicationBuilder> ApplicationStartup { get; set; }
         public RequestDelegate ApplicationDelegate { get; set; }
 
-        public string ServerFactoryAssembly { get; set; }
+        public string ServerFactoryLocation { get; set; }
         public IServerFactory ServerFactory { get; set; }
         public IServerInformation Server { get; set; }
     }

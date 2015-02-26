@@ -11,9 +11,7 @@ namespace Microsoft.AspNet.Hosting.Builder
     {
         public HttpContext CreateHttpContext(IFeatureCollection featureCollection)
         {
-            var featureObject = featureCollection ?? new FeatureObject(null);
-            var httpContext = new DefaultHttpContext(new FeatureCollection(featureObject));
-            return httpContext;
+            return new DefaultHttpContext(featureCollection);
         }
     }
 }
