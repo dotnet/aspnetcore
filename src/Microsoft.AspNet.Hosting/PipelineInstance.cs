@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Hosting.Builder;
 
 namespace Microsoft.AspNet.Hosting
@@ -21,9 +22,9 @@ namespace Microsoft.AspNet.Hosting
             _contextAccessor = contextAccessor;
         }
 
-        public Task Invoke(object serverEnvironment)
+        public Task Invoke(IFeatureCollection featureCollection)
         {
-            var httpContext = _httpContextFactory.CreateHttpContext(serverEnvironment);
+            var httpContext = _httpContextFactory.CreateHttpContext(featureCollection);
             _contextAccessor.Value = httpContext;
             return _requestDelegate(httpContext);
         }

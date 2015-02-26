@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
@@ -73,7 +74,7 @@ namespace Microsoft.AspNet.Hosting
             return null;
         }
 
-        public IDisposable Start(IServerInformation serverInformation, Func<object, Task> application)
+        public IDisposable Start(IServerInformation serverInformation, Func<IFeatureCollection, Task> application)
         {
             var startInstance = new StartInstance(application);
             _startInstances.Add(startInstance);
@@ -82,9 +83,9 @@ namespace Microsoft.AspNet.Hosting
 
         public class StartInstance : IDisposable
         {
-            private readonly Func<object, Task> _application;
+            private readonly Func<IFeatureCollection, Task> _application;
 
-            public StartInstance(Func<object, Task> application)
+            public StartInstance(Func<IFeatureCollection, Task> application)
             {
                 _application = application;
             }

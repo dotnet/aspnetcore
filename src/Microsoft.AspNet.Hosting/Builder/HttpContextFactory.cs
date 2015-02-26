@@ -9,11 +9,10 @@ namespace Microsoft.AspNet.Hosting.Builder
 {
     public class HttpContextFactory : IHttpContextFactory
     {
-        public HttpContext CreateHttpContext(object serverContext)
+        public HttpContext CreateHttpContext(IFeatureCollection featureCollection)
         {
-            var featureObject = serverContext as IFeatureCollection ?? new FeatureObject(serverContext);
-            var featureCollection = new FeatureCollection(featureObject);
-            var httpContext = new DefaultHttpContext(featureCollection);
+            var featureObject = featureCollection ?? new FeatureObject(null);
+            var httpContext = new DefaultHttpContext(new FeatureCollection(featureObject));
             return httpContext;
         }
     }

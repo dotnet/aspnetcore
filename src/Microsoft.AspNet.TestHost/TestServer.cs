@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.TestHost
         private const string DefaultEnvironmentName = "Development";
         private const string ServerName = nameof(TestServer);
         private static readonly ServerInformation ServerInfo = new ServerInformation();
-        private Func<object, Task> _appDelegate;
+        private Func<IFeatureCollection, Task> _appDelegate;
         private IDisposable _appInstance;
         private bool _disposed = false;
 
@@ -83,7 +84,7 @@ namespace Microsoft.AspNet.TestHost
             return ServerInfo;
         }
 
-        public IDisposable Start(IServerInformation serverInformation, Func<object, Task> application)
+        public IDisposable Start(IServerInformation serverInformation, Func<IFeatureCollection, Task> application)
         {
             if (!(serverInformation.GetType() == typeof(ServerInformation)))
             {
@@ -95,13 +96,13 @@ namespace Microsoft.AspNet.TestHost
             return this;
         }
 
-        public Task Invoke(object env)
+        public Task Invoke(IFeatureCollection featureCollection)
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(GetType().FullName);
             }
-            return _appDelegate(env);
+            return _appDelegate(featureCollection);
         }
 
         public void Dispose()

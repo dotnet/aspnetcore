@@ -23,14 +23,14 @@ namespace Microsoft.AspNet.TestHost
     /// </summary>
     public class ClientHandler : HttpMessageHandler
     {
-        private readonly Func<object, Task> _next;
+        private readonly Func<IFeatureCollection, Task> _next;
         private readonly PathString _pathBase;
 
         /// <summary>
         /// Create a new handler.
         /// </summary>
         /// <param name="next">The pipeline entry point.</param>
-        public ClientHandler(Func<object, Task> next, PathString pathBase)
+        public ClientHandler(Func<IFeatureCollection, Task> next, PathString pathBase)
         {
             if (next == null)
             {
