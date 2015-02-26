@@ -3,15 +3,15 @@
 
 using System;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNet.Identity.Test
 {
-    public class IdentityRoleClaim : IdentityRoleClaim<string> { }
+    public class TestRoleClaim : TestRoleClaim<string> { }
 
     /// <summary>
     ///     EntityType that represents one specific role claim
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    public class IdentityRoleClaim<TKey> where TKey : IEquatable<TKey>
+    public class TestRoleClaim<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>
         ///     Primary key

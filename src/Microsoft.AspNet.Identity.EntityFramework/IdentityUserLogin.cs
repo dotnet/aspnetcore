@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNet.Identity.EntityFramework
 {
     public class IdentityUserLogin : IdentityUserLogin<string> { }
 

@@ -3,15 +3,15 @@
 
 using System;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNet.Identity.Test
 {
-    public class IdentityUserRole : IdentityUserRole<string> { }
+    public class TestUserRole : TestUserRole<string> { }
 
     /// <summary>
     ///     EntityType that represents a user belonging to a role
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    public class IdentityUserRole<TKey> where TKey : IEquatable<TKey>
+    public class TestUserRole<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>
         ///     UserId for the user that is in the role

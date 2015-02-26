@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Identity.Test;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection()
                     .AddTransient<IUserStore<TestUser>, NoopUserStore>();
-            services.AddIdentity<TestUser, IdentityRole>();
+            services.AddIdentity<TestUser, TestRole>();
             var manager = services.BuildServiceProvider().GetRequiredService<UserManager<TestUser>>();
             Assert.NotNull(manager.PasswordHasher);
             Assert.NotNull(manager.Store);
@@ -544,8 +545,8 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task SecurityStampMethodsFailWhenStoreNotImplemented()
         {
-            var store = new Mock<IUserStore<IdentityUser>>();
-            store.Setup(x => x.GetUserIdAsync(It.IsAny<IdentityUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(Guid.NewGuid().ToString()));
+            var store = new Mock<IUserStore<TestUser>>();
+            store.Setup(x => x.GetUserIdAsync(It.IsAny<TestUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(Guid.NewGuid().ToString()));
             var manager = MockHelpers.TestUserManager(store.Object);
             Assert.False(manager.SupportsUserSecurityStamp);
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateSecurityStampAsync(null));
@@ -636,8 +637,8 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task ResetTokenCallNoopForTokenValueZero()
         {
-            var user = new IdentityUser() { UserName = Guid.NewGuid().ToString()};
-            var store = new Mock<IUserLockoutStore<IdentityUser>>();
+            var user = new TestUser() { UserName = Guid.NewGuid().ToString()};
+            var store = new Mock<IUserLockoutStore<TestUser>>();
             store.Setup(x => x.ResetAccessFailedCountAsync(user, It.IsAny<CancellationToken>())).Returns(() =>
                {
                    throw new Exception();
@@ -1372,7 +1373,7 @@ namespace Microsoft.AspNet.Identity.Test
             var describer = new TestErrorDescriber();
             services.AddInstance<IdentityErrorDescriber>(describer)
                 .AddInstance<IUserStore<TestUser>>(store.Object)
-                .AddIdentity<TestUser, IdentityRole>();
+                .AddIdentity<TestUser, TestRole>();
 
             var manager = services.BuildServiceProvider().GetRequiredService<UserManager<TestUser>>();
 

@@ -15,8 +15,6 @@ using Xunit;
 
 namespace Microsoft.AspNet.Identity.InMemory.Test
 {
-    public class ApplicationUser : InMemoryUser { }
-
     public class HttpSignInTest
     {
         [Theory]
@@ -37,19 +35,19 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
             var services = new ServiceCollection();
             services.AddInstance(contextAccessor.Object);
-            services.AddIdentity<ApplicationUser, IdentityRole>();
-            services.AddSingleton<IUserStore<ApplicationUser>, InMemoryUserStore<ApplicationUser>>();
-            services.AddSingleton<IRoleStore<IdentityRole>, InMemoryRoleStore<IdentityRole>>();
+            services.AddIdentity<TestUser, TestRole>();
+                services.AddSingleton<IUserStore<TestUser>, InMemoryUserStore<TestUser>>();
+                services.AddSingleton<IRoleStore<TestRole>, InMemoryRoleStore<TestRole>>();
             app.ApplicationServices = services.BuildServiceProvider();
 
             // Act
-            var user = new ApplicationUser
+            var user = new TestUser
             {
                 UserName = "Yolo"
             };
             const string password = "Yol0Sw@g!";
-            var userManager = app.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
-            var signInManager = app.ApplicationServices.GetRequiredService<SignInManager<ApplicationUser>>();
+            var userManager = app.ApplicationServices.GetRequiredService<UserManager<TestUser>>();
+            var signInManager = app.ApplicationServices.GetRequiredService<SignInManager<TestUser>>();
 
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
             var result = await signInManager.PasswordSignInAsync(user, password, isPersistent, false);

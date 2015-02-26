@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNet.Identity.EntityFramework
 {
     public class IdentityUser : IdentityUser<string>
     {
@@ -87,5 +88,20 @@ namespace Microsoft.AspNet.Identity
         ///     Used to record failures for the purposes of lockout
         /// </summary>
         public virtual int AccessFailedCount { get; set; }
+
+        /// <summary>
+        ///     Navigation property for users in the role
+        /// </summary>
+        public virtual ICollection<IdentityUserRole<TKey>> Roles { get; } = new List<IdentityUserRole<TKey>>();
+
+        /// <summary>
+        ///     Navigation property for users claims
+        /// </summary>
+        public virtual ICollection<IdentityUserClaim<TKey>> Claims { get; } = new List<IdentityUserClaim<TKey>>();
+
+        /// <summary>
+        ///     Navigation property for users logins
+        /// </summary>
+        public virtual ICollection<IdentityUserLogin<TKey>> Logins { get; } = new List<IdentityUserLogin<TKey>>();
     }
 }

@@ -11,6 +11,7 @@ using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Xunit;
+using System.Linq.Expressions;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
@@ -22,6 +23,34 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         public abstract string ConnectionString { get; }
 
         public class TestDbContext : IdentityDbContext<TUser, TRole, TKey> { }
+
+        protected override TUser CreateTestUser(string namePrefix = "", string email = "", string phoneNumber = "",
+            bool lockoutEnabled = false, DateTimeOffset? lockoutEnd = default(DateTimeOffset?), bool useNamePrefixAsUserName = false)
+        {
+            return new TUser
+            {
+                UserName = useNamePrefixAsUserName ? namePrefix : string.Format("{0}{1}", namePrefix, Guid.NewGuid()),
+                Email = email,
+                PhoneNumber = phoneNumber,
+                LockoutEnabled = lockoutEnabled,
+                LockoutEnd = lockoutEnd
+            };
+        }
+
+        protected override TRole CreateTestRole(string roleNamePrefix = "", bool useRoleNamePrefixAsRoleName = false)
+        {
+            var roleName = useRoleNamePrefixAsRoleName ? roleNamePrefix : string.Format("{0}{1}", roleNamePrefix, Guid.NewGuid());
+            return new TRole() { Name = roleName };
+        }
+
+        protected override Expression<Func<TRole, bool>> RoleNameEqualsPredicate(string roleName) => r => r.Name == roleName;
+
+        protected override Expression<Func<TUser, bool>> UserNameEqualsPredicate(string userName) => u => u.UserName == userName;
+
+        protected override Expression<Func<TRole, bool>> RoleNameStartsWithPredicate(string roleName) => r => r.Name.StartsWith(roleName);
+
+        protected override Expression<Func<TUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
+
 
         [TestPriority(-1000)]
         [Fact]
@@ -67,6 +96,11 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
             services.AddInstance<IRoleStore<TRole>>(new RoleStore<TRole, TestDbContext, TKey>((TestDbContext)context));
+        }
+
+        protected override void SetUserPasswordHash(TUser user, string hashedPassword)
+        {
+            user.PasswordHash = hashedPassword;
         }
 
         public void EnsureDatabase()
@@ -168,8 +202,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             var context = CreateContext();
             var manager = CreateManager(context);
             var role = CreateRoleManager(context);
-            var admin = CreateRole("Admin");
-            var local = CreateRole("Local");
+            var admin = CreateTestRole("Admin" + Guid.NewGuid().ToString());
+            var local = CreateTestRole("Local" + Guid.NewGuid().ToString());
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, new UserLoginInfo("provider", user.Id.ToString(), "display")));
             IdentityResultAssert.IsSuccess(await role.CreateAsync(admin));
@@ -248,5 +282,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.Equal(1, (await manager.GetLoginsAsync(userByEmail)).Count);
             Assert.Equal(2, (await manager.GetRolesAsync(userByEmail)).Count);
         }
+
     }
 }

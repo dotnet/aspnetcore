@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ValidateThrowsWithNullTest()
         {
             // Setup
-            var validator = new PasswordValidator<IdentityUser>();
+            var validator = new PasswordValidator<TestUser>();
 
             // Act
             // Assert
@@ -42,8 +42,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task FailsIfTooShortTests(string input)
         {
             const string error = "Passwords must be at least 6 characters.";
-            var manager = MockHelpers.TestUserManager<IdentityUser>();
-            var valid = new PasswordValidator<IdentityUser>();
+            var manager = MockHelpers.TestUserManager<TestUser>();
+            var valid = new PasswordValidator<TestUser>();
             manager.Options.Password.RequireUppercase = false;
             manager.Options.Password.RequireNonLetterOrDigit = false;
             manager.Options.Password.RequireLowercase = false;
@@ -56,8 +56,8 @@ namespace Microsoft.AspNet.Identity.Test
         [InlineData("aaaaaaaaaaa")]
         public async Task SuccessIfLongEnoughTests(string input)
         {
-            var manager = MockHelpers.TestUserManager<IdentityUser>();
-            var valid = new PasswordValidator<IdentityUser>();
+            var manager = MockHelpers.TestUserManager<TestUser>();
+            var valid = new PasswordValidator<TestUser>();
             manager.Options.Password.RequireUppercase = false;
             manager.Options.Password.RequireNonLetterOrDigit = false;
             manager.Options.Password.RequireLowercase = false;
@@ -70,8 +70,8 @@ namespace Microsoft.AspNet.Identity.Test
         [InlineData("aaaaaaaaaaa")]
         public async Task FailsWithoutRequiredNonAlphanumericTests(string input)
         {
-            var manager = MockHelpers.TestUserManager<IdentityUser>();
-            var valid = new PasswordValidator<IdentityUser>();
+            var manager = MockHelpers.TestUserManager<TestUser>();
+            var valid = new PasswordValidator<TestUser>();
             manager.Options.Password.RequireUppercase = false;
             manager.Options.Password.RequireNonLetterOrDigit = true;
             manager.Options.Password.RequireLowercase = false;
@@ -87,8 +87,8 @@ namespace Microsoft.AspNet.Identity.Test
         [InlineData("!!!!!!")]
         public async Task SucceedsWithRequiredNonAlphanumericTests(string input)
         {
-            var manager = MockHelpers.TestUserManager<IdentityUser>();
-            var valid = new PasswordValidator<IdentityUser>();
+            var manager = MockHelpers.TestUserManager<TestUser>();
+            var valid = new PasswordValidator<TestUser>();
             manager.Options.Password.RequireUppercase = false;
             manager.Options.Password.RequireNonLetterOrDigit = true;
             manager.Options.Password.RequireLowercase = false;
@@ -111,8 +111,8 @@ namespace Microsoft.AspNet.Identity.Test
             const string lowerError = "Passwords must have at least one lowercase ('a'-'z').";
             const string digitError = "Passwords must have at least one digit ('0'-'9').";
             const string lengthError = "Passwords must be at least 6 characters.";
-            var manager = MockHelpers.TestUserManager<IdentityUser>();
-            var valid = new PasswordValidator<IdentityUser>();
+            var manager = MockHelpers.TestUserManager<TestUser>();
+            var valid = new PasswordValidator<TestUser>();
             var errors = new List<string>();
             if ((errorMask & Errors.Length) != Errors.None)
             {

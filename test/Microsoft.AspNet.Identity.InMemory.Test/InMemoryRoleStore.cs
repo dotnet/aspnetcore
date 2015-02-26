@@ -7,10 +7,11 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Identity.Test;
 
 namespace Microsoft.AspNet.Identity.InMemory
 {
-    public class InMemoryRoleStore<TRole> : IQueryableRoleStore<TRole>, IRoleClaimStore<TRole> where TRole : IdentityRole
+    public class InMemoryRoleStore<TRole> : IQueryableRoleStore<TRole>, IRoleClaimStore<TRole> where TRole : TestRole
 
     {
         private readonly Dictionary<string, TRole> _roles = new Dictionary<string, TRole>();
@@ -81,7 +82,7 @@ namespace Microsoft.AspNet.Identity.InMemory
 
         public Task AddClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
         {
-            role.Claims.Add(new IdentityRoleClaim<string> { ClaimType = claim.Type, ClaimValue = claim.Value, RoleId = role.Id });
+            role.Claims.Add(new TestRoleClaim<string> { ClaimType = claim.Type, ClaimValue = claim.Value, RoleId = role.Id });
             return Task.FromResult(0);
         }
 

@@ -68,14 +68,14 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void ConstructorNullChecks()
         {
-            Assert.Throws<ArgumentNullException>("userManager", () => new SignInManager<IdentityUser>(null, null, null, null, null));
-            var userManager = MockHelpers.MockUserManager<IdentityUser>().Object;
-            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<IdentityUser>(userManager, null, null, null));
+            Assert.Throws<ArgumentNullException>("userManager", () => new SignInManager<TestUser>(null, null, null, null, null));
+            var userManager = MockHelpers.MockUserManager<TestUser>().Object;
+            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<TestUser>(userManager, null, null, null));
             var contextAccessor = new Mock<IHttpContextAccessor>();
-            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<IdentityUser>(userManager, contextAccessor.Object, null, null));
+            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<TestUser>(userManager, contextAccessor.Object, null, null));
             var context = new Mock<HttpContext>();
             contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<IdentityUser>(userManager, contextAccessor.Object, null, null));
+            Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<TestUser>(userManager, contextAccessor.Object, null, null));
         }
 
         //TODO: Mock fails in K (this works fine in net45)

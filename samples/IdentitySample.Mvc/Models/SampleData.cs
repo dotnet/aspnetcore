@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity.SqlServer;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;

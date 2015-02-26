@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNet.Identity.EntityFramework
 {
     /// <summary>
     ///     Represents a Role entity
@@ -49,12 +49,12 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Navigation property for users in the role
         /// </summary>
-        public virtual ICollection<IdentityUserRole<TKey>> Users { get; private set; } = new List<IdentityUserRole<TKey>>();
+        public virtual ICollection<IdentityUserRole<TKey>> Users { get; } = new List<IdentityUserRole<TKey>>();
 
         /// <summary>
         ///     Navigation property for claims in the role
         /// </summary>
-        public virtual ICollection<IdentityRoleClaim<TKey>> Claims { get; private set; } = new List<IdentityRoleClaim<TKey>>();
+        public virtual ICollection<IdentityRoleClaim<TKey>> Claims { get; } = new List<IdentityRoleClaim<TKey>>();
 
         /// <summary>
         ///     Role id

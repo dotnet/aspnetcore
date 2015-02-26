@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal(roleClaimType, config.Get("identity:claimsidentity:roleclaimtype"));
 
             var services = new ServiceCollection();
-            services.AddIdentity();
+            services.AddIdentity<TestUser,TestRole>();
             services.ConfigureIdentity(config.GetSubKey("identity"));
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Identity.Test
             var config = new Configuration(new MemoryConfigurationSource(dic));
             var services = new ServiceCollection();
             services.ConfigureIdentity(config.GetSubKey("identity"));
-            services.AddIdentity<IdentityUser, IdentityRole>(o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });
+            services.AddIdentity<TestUser, TestRole>(o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
             var options = accessor.Options;
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection()
                 .ConfigureOptions<PasswordsNegativeLengthSetup>();
-            services.AddIdentity();
+            services.AddIdentity<TestUser,TestRole>();
             var serviceProvider = services.BuildServiceProvider();
 
             var setup = serviceProvider.GetRequiredService<IConfigureOptions<IdentityOptions>>();
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Identity.Test
             var services = new ServiceCollection()
                 .AddOptions()
                 .ConfigureIdentity(options => options.User.RequireUniqueEmail = true);
-            services.AddIdentity();
+            services.AddIdentity<TestUser,TestRole>();
             var serviceProvider = services.BuildServiceProvider();
 
             var optionsGetter = serviceProvider.GetRequiredService<IOptions<IdentityOptions>>();

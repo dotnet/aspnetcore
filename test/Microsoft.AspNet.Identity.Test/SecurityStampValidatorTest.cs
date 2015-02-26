@@ -35,23 +35,23 @@ namespace Microsoft.AspNet.Identity.Test
         [InlineData(false)]
         public async Task OnValidatePrincipalTestSuccess(bool isPersistent)
         {
-            var user = new IdentityUser("test");
-            var userManager = MockHelpers.MockUserManager<IdentityUser>();
-            var claimsManager = new Mock<IUserClaimsPrincipalFactory<IdentityUser>>();
+            var user = new TestUser("test");
+            var userManager = MockHelpers.MockUserManager<TestUser>();
+            var claimsManager = new Mock<IUserClaimsPrincipalFactory<TestUser>>();
             var identityOptions = new IdentityOptions { SecurityStampValidationInterval = TimeSpan.Zero };
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
             var httpContext = new Mock<HttpContext>();
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
-            var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
+            var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>(), user.Id)).ReturnsAsync(user).Verifiable();
             signInManager.Setup(s => s.SignInAsync(user, isPersistent, null)).Returns(Task.FromResult(0)).Verifiable();
             var services = new ServiceCollection();
             services.AddInstance(options.Object);
             services.AddInstance(signInManager.Object);
-            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<IdentityUser>());
+            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
             var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
@@ -72,22 +72,22 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task OnValidateIdentityRejectsWhenValidateSecurityStampFails()
         {
-            var user = new IdentityUser("test");
-            var userManager = MockHelpers.MockUserManager<IdentityUser>();
-            var claimsManager = new Mock<IUserClaimsPrincipalFactory<IdentityUser>>();
+            var user = new TestUser("test");
+            var userManager = MockHelpers.MockUserManager<TestUser>();
+            var claimsManager = new Mock<IUserClaimsPrincipalFactory<TestUser>>();
             var identityOptions = new IdentityOptions { SecurityStampValidationInterval = TimeSpan.Zero };
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
             var httpContext = new Mock<HttpContext>();
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
-            var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
+            var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>(), user.Id)).ReturnsAsync(null).Verifiable();
             var services = new ServiceCollection();
             services.AddInstance(options.Object);
             services.AddInstance(signInManager.Object);
-            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<IdentityUser>());
+            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
             var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
@@ -107,22 +107,22 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task OnValidateIdentityRejectsWhenNoIssuedUtc()
         {
-            var user = new IdentityUser("test");
+            var user = new TestUser("test");
             var httpContext = new Mock<HttpContext>();
-            var userManager = MockHelpers.MockUserManager<IdentityUser>();
-            var claimsManager = new Mock<IUserClaimsPrincipalFactory<IdentityUser>>();
+            var userManager = MockHelpers.MockUserManager<TestUser>();
+            var claimsManager = new Mock<IUserClaimsPrincipalFactory<TestUser>>();
             var identityOptions = new IdentityOptions { SecurityStampValidationInterval = TimeSpan.Zero };
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
-            var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
+            var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>(), user.Id)).ReturnsAsync(null).Verifiable();
             var services = new ServiceCollection();
             services.AddInstance(options.Object);
             services.AddInstance(signInManager.Object);
-            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<IdentityUser>());
+            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
             var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
@@ -142,23 +142,23 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task OnValidateIdentityDoesNotRejectsWhenNotExpired()
         {
-            var user = new IdentityUser("test");
+            var user = new TestUser("test");
             var httpContext = new Mock<HttpContext>();
-            var userManager = MockHelpers.MockUserManager<IdentityUser>();
-            var claimsManager = new Mock<IUserClaimsPrincipalFactory<IdentityUser>>();
+            var userManager = MockHelpers.MockUserManager<TestUser>();
+            var claimsManager = new Mock<IUserClaimsPrincipalFactory<TestUser>>();
             var identityOptions = new IdentityOptions { SecurityStampValidationInterval = TimeSpan.FromDays(1) };
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
-            var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
+            var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>(), user.Id)).Throws(new Exception("Shouldn't be called"));
             signInManager.Setup(s => s.SignInAsync(user, false, null)).Throws(new Exception("Shouldn't be called"));
             var services = new ServiceCollection();
             services.AddInstance(options.Object);
             services.AddInstance(signInManager.Object);
-            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<IdentityUser>());
+            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
             var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));

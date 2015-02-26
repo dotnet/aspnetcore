@@ -19,6 +19,7 @@ using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Shouldly;
 using Xunit;
+using Microsoft.AspNet.Identity.Test;
 
 namespace Microsoft.AspNet.Identity.InMemory
 {
@@ -162,8 +163,8 @@ namespace Microsoft.AspNet.Identity.InMemory
                 {
                     var req = context.Request;
                     var res = context.Response;
-                    var userManager = context.RequestServices.GetRequiredService<UserManager<InMemoryUser>>();
-                    var signInManager = context.RequestServices.GetRequiredService<SignInManager<InMemoryUser>>();
+                    var userManager = context.RequestServices.GetRequiredService<UserManager<TestUser>>();
+                    var signInManager = context.RequestServices.GetRequiredService<SignInManager<TestUser>>();
                     PathString remainder;
                     if (req.Path == new PathString("/normal"))
                     {
@@ -171,7 +172,7 @@ namespace Microsoft.AspNet.Identity.InMemory
                     }
                     else if (req.Path == new PathString("/createMe"))
                     {
-                        var result = await userManager.CreateAsync(new InMemoryUser("hao"), TestPassword);
+                        var result = await userManager.CreateAsync(new TestUser("hao"), TestPassword);
                         res.StatusCode = result.Succeeded ? 200 : 500;
                     }
                     else if (req.Path == new PathString("/protected"))
@@ -220,9 +221,9 @@ namespace Microsoft.AspNet.Identity.InMemory
             },
             services =>
             {
-                services.AddIdentity<InMemoryUser, IdentityRole>();
-                services.AddSingleton<IUserStore<InMemoryUser>, InMemoryUserStore<InMemoryUser>>();
-                services.AddSingleton<IRoleStore<IdentityRole>, InMemoryRoleStore<IdentityRole>>();
+                services.AddIdentity<TestUser, TestRole>();
+                services.AddSingleton<IUserStore<TestUser>, InMemoryUserStore<TestUser>>();
+                services.AddSingleton<IRoleStore<TestRole>, InMemoryRoleStore<TestRole>>();
                 services.ConfigureIdentityApplicationCookie(configureAppCookie);
             });
             server.BaseAddress = baseAddress;
