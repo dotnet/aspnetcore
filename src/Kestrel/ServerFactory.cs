@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNet.Hosting.Server;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.ConfigurationModel;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Server.Kestrel;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Server.Kestrel;
+using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.Runtime;
 
 namespace Kestrel
@@ -28,7 +32,7 @@ namespace Kestrel
             return information;
         }
 
-        public IDisposable Start(IServerInformation serverInformation, Func<object, Task> application)
+        public IDisposable Start(IServerInformation serverInformation, Func<IFeatureCollection, Task> application)
         {
             var disposables = new List<IDisposable>();
             var information = (ServerInformation)serverInformation;
@@ -43,7 +47,7 @@ namespace Kestrel
                     async frame =>
                     {
                         var request = new ServerRequest(frame);
-                        await application.Invoke(request);
+                        await application.Invoke(request.Features);
                     }));
             }
             disposables.Add(engine);

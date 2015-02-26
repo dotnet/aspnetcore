@@ -1,10 +1,14 @@
-using Microsoft.AspNet.Http.Interfaces;
-using Microsoft.AspNet.Server.Kestrel.Http;
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Http.Interfaces;
+using Microsoft.AspNet.Server.Kestrel.Http;
 
 namespace Kestrel
 {
@@ -13,10 +17,25 @@ namespace Kestrel
         Frame _frame;
         string _scheme;
         string _pathBase;
+        private FeatureCollection _features;
 
         public ServerRequest(Frame frame)
         {
             _frame = frame;
+            _features = new FeatureCollection();
+            PopulateFeatures();
+        }
+
+        private void PopulateFeatures()
+        {
+            _features.Add(typeof(IHttpRequestFeature), this);
+            _features.Add(typeof(IHttpResponseFeature), this);
+            _features.Add(typeof(IHttpUpgradeFeature), this);
+        }
+
+        internal IFeatureCollection Features
+        {
+            get { return _features; }
         }
 
         string IHttpRequestFeature.Protocol
