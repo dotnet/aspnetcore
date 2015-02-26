@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                     Assert.True(db.Database.AsRelational().Exists());
 
-                    var historyRepository = ((IAccessor<IServiceProvider>)db).Service.GetRequiredService<DbContextService<IHistoryRepository>>().Service;
+                    var historyRepository = ((IAccessor<IServiceProvider>)db).Service.GetRequiredService<IHistoryRepository>();
                     var appliedMigrations = historyRepository.GetAppliedMigrations();
                     Assert.Equal(2, appliedMigrations.Count);
                     Assert.Equal("111111111111111_MigrationOne", appliedMigrations.ElementAt(0).MigrationId);
