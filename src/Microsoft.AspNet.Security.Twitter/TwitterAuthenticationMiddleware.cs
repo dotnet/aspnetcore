@@ -6,9 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Security.DataHandler;
 using Microsoft.AspNet.Security.DataHandler.Encoder;
-using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.AspNet.Security.Twitter.Messages;
 using Microsoft.Framework.Logging;
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Security.Twitter
             }
             if (Options.StateDataFormat == null)
             {
-                IDataProtector dataProtector = dataProtectionProvider.CreateDataProtector(
+                IDataProtector dataProtector = dataProtectionProvider.CreateProtector(
                     typeof(TwitterAuthenticationMiddleware).FullName, Options.AuthenticationType, "v1");
                 Options.StateDataFormat = new SecureDataFormat<RequestToken>(
                     Serializers.RequestToken,

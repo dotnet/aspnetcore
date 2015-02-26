@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Security.DataProtection;
+using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.AspNet.Security.OAuth;
 using Microsoft.Framework.Logging;

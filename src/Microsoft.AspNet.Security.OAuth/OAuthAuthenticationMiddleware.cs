@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Security.DataHandler;
-using Microsoft.AspNet.Security.DataProtection;
-using Microsoft.AspNet.Security.Infrastructure;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.DataProtection;
+using Microsoft.AspNet.Security.DataHandler;
+using Microsoft.AspNet.Security.Infrastructure;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Security.OAuth
 {
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Security.OAuth
 
             if (Options.StateDataFormat == null)
             {
-                IDataProtector dataProtector = dataProtectionProvider.CreateDataProtector(
+                IDataProtector dataProtector = dataProtectionProvider.CreateProtector(
                     this.GetType().FullName, Options.AuthenticationType, "v1");
                 Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }

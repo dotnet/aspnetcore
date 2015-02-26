@@ -8,11 +8,11 @@ using System.IdentityModel.Tokens;
 using System.Net.Http;
 using System.Text;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Security.DataHandler;
 using Microsoft.AspNet.Security.DataHandler.Encoder;
 using Microsoft.AspNet.Security.DataHandler.Serializer;
-using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
 
             if (Options.StateDataFormat == null)
             {
-                var dataProtector = dataProtectionProvider.CreateDataProtector(
+                var dataProtector = dataProtectionProvider.CreateProtector(
                     typeof(OpenIdConnectAuthenticationMiddleware).FullName, 
 					typeof(string).FullName,
                     Options.AuthenticationType,
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Security.OpenIdConnect
 
             if (Options.StringDataFormat == null)
             {
-                var dataProtector = dataProtectionProvider.CreateDataProtector(
+                var dataProtector = dataProtectionProvider.CreateProtector(
                     typeof(OpenIdConnectAuthenticationMiddleware).FullName,
                     typeof(string).FullName,
                     Options.AuthenticationType,

@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens;
 using System.Net.Http;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;

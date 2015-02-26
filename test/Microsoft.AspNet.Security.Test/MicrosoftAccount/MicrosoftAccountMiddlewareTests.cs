@@ -12,18 +12,18 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Security;
 using Microsoft.AspNet.Security.Cookies;
+using Microsoft.AspNet.Security.DataHandler;
 using Microsoft.AspNet.Security.MicrosoftAccount;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using Newtonsoft.Json;
 using Shouldly;
 using Xunit;
-using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.AspNet.Security.DataHandler;
-using Microsoft.AspNet.Security.DataProtection;
 
 namespace Microsoft.AspNet.Security.Tests.MicrosoftAccount
 {

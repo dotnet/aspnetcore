@@ -4,9 +4,9 @@
 
 using System;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Security.Cookies.Infrastructure;
 using Microsoft.AspNet.Security.DataHandler;
-using Microsoft.AspNet.Security.DataProtection;
 using Microsoft.AspNet.Security.Infrastructure;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Security.Cookies
             }
             if (Options.TicketDataFormat == null)
             {
-                IDataProtector dataProtector = dataProtectionProvider.CreateDataProtector(
+                IDataProtector dataProtector = dataProtectionProvider.CreateProtector(
                     typeof(CookieAuthenticationMiddleware).FullName, Options.AuthenticationType, "v2");
                 Options.TicketDataFormat = new TicketDataFormat(dataProtector);
             }
