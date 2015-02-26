@@ -190,4 +190,7 @@
     <File Name="xunit.runner.tdnet.dll" Ignore="yes" />
     <File Name="xunit.runner.utility.dll" Ignore="yes" />
     <File Name="xunit.runner.kre.dll" Ignore="yes" />
+    <File Name="xunit.execution.AspNet.dll" Ignore="yes" />
+    <File Name="xunit.runner.utility.AspNet.dll" Ignore="yes" />
+    <File Name="xunit.runner.aspnet.dll" Ignore="yes" />
 </Files>
