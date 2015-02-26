@@ -28,12 +28,13 @@ namespace MusicStore
 
             var serviceCollection = HostingServices.Create(_hostServiceProvider);
             var services = serviceCollection.BuildServiceProvider();
+            var applicationLifetime = services.GetRequiredService<IApplicationLifetime>();
 
             var context = new HostingContext()
             {
-                Services = services,
+                ApplicationLifetime = applicationLifetime,
                 Configuration = config,
-                ServerName = "Microsoft.AspNet.Server.WebListener",
+                ServerFactoryLocation = "Microsoft.AspNet.Server.WebListener",
                 ApplicationName = "MusicStore"
             };
 
