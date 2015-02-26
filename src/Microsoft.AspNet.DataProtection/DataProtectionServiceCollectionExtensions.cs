@@ -121,7 +121,7 @@ namespace Microsoft.Framework.DependencyInjection
             }
 
             // TODO: Remove BETA moniker from below.
-            string fullPathToKeys = Path.Combine(homeEnvVar, "ASP.NET", "keys-BETA");
+            string fullPathToKeys = Path.Combine(homeEnvVar, "ASP.NET", "keys-BETA6");
             return new DirectoryInfo(fullPathToKeys);
         }
 
@@ -133,7 +133,7 @@ namespace Microsoft.Framework.DependencyInjection
             if (!String.IsNullOrEmpty(folderPath))
             {
                 // TODO: Remove BETA moniker from below.
-                return new DirectoryInfo(Path.Combine(folderPath, "ASP.NET", "keys-BETA"));
+                return new DirectoryInfo(Path.Combine(folderPath, "ASP.NET", "keys-BETA6"));
             }
             else
             {
@@ -145,7 +145,7 @@ namespace Microsoft.Framework.DependencyInjection
                 ?? Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "Local");
 
             // TODO: Remove BETA moniker from below.
-            DirectoryInfo retVal = new DirectoryInfo(Path.Combine(folderPath, "ASP.NET", "keys-BETA"));
+            DirectoryInfo retVal = new DirectoryInfo(Path.Combine(folderPath, "ASP.NET", "keys-BETA6"));
             try
             {
                 retVal.Create(); // throws if we don't have access, e.g., user profile not loaded
