@@ -118,7 +118,8 @@ namespace Microsoft.Framework.DependencyInjection
             {
                 assemblyProvider.CandidateAssemblies.Add(assembly);
             }
-            var loggerFactory = NullLoggerFactory.Instance;
+
+            var loggerFactory = new LoggerFactory();
             var controllerTypeProvider = new DefaultControllerTypeProvider(assemblyProvider, loggerFactory);
             var controllerTypes = controllerTypeProvider.ControllerTypes;
 

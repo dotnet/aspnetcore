@@ -371,7 +371,7 @@ namespace System.Web.Http
             assemblyProvider.CandidateAssemblies.Add(GetType().GetTypeInfo().Assembly);
             var controllerTypeProvider = new NamespaceFilteredControllerTypeProvider(assemblyProvider);
             var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
-                                                                 NullLoggerFactory.Instance,
+                                                                 new LoggerFactory(),
                                                                  null);
 
             var filterProvider = new Mock<IGlobalFilterProvider>();
@@ -394,7 +394,7 @@ namespace System.Web.Http
                 modelBuilder,
                 filterProvider.Object,
                 optionsAccessor.Object,
-                new NullLoggerFactory());
+                new LoggerFactory());
 
             return provider;
         }
@@ -408,7 +408,7 @@ namespace System.Web.Http
         private class NamespaceFilteredControllerTypeProvider : DefaultControllerTypeProvider
         {
             public NamespaceFilteredControllerTypeProvider(IAssemblyProvider provider)
-                : base(provider, NullLoggerFactory.Instance)
+                : base(provider, new LoggerFactory())
             {
 
             }
