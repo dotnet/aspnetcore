@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             //
             // We skip this check if it is a top level object because we want to always evaluate
             // the creation of top level object (this is also required for ModelBinderAttribute to work.)
-            var bindingSource = BindingSource.GetBindingSource(bindingContext.ModelMetadata.BinderMetadata);
+            var bindingSource = bindingContext.ModelMetadata.BindingSource;
             if (!isTopLevelObject &&
                 bindingSource != null &&
                 bindingSource.IsGreedy)
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             foreach (var propertyMetadata in context.PropertyMetadata)
             {
                 // This check will skip properties which are marked explicitly using a non value binder.
-                var bindingSource = BindingSource.GetBindingSource(propertyMetadata.BinderMetadata);
+                var bindingSource = propertyMetadata.BindingSource;
                 if (bindingSource == null || !bindingSource.IsGreedy)
                 {
                     isAnyPropertyEnabledForValueProviderBasedBinding = true;
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var valueProvider = bindingContext.ValueProvider;
 
-            var bindingSource = BindingSource.GetBindingSource(metadata.BinderMetadata);
+            var bindingSource = metadata.BindingSource;
             if (bindingSource != null && !bindingSource.IsGreedy)
             {
                 var rootValueProvider = bindingContext.OperationBindingContext.ValueProvider as IBindingSourceValueProvider;

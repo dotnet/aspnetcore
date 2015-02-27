@@ -302,7 +302,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                                                                 IModelValidatorProvider validatorProvider = null)
         {
             validatorProvider = validatorProvider ?? GetValidatorProvider();
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,

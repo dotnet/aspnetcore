@@ -63,33 +63,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public void LabelHelpers_ReturnEmptyForModel_IfMetadataPropertyNameEmpty()
-        {
-            // Arrange
-            var provider = new DataAnnotationsModelMetadataProvider();
-            var metadata = new ModelMetadata(
-                provider,
-                containerType: null,
-                modelType: typeof(object),
-                propertyName: string.Empty);
-
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
-            helper.ViewData.ModelExplorer = new ModelExplorer(provider, metadata, model: null);
-
-            // Act
-            var labelResult = helper.Label(expression: string.Empty);
-            var labelNullResult = helper.Label(expression: null);   // null is another alias for current model
-            var labelForResult = helper.LabelFor(m => m);
-            var labelForModelResult = helper.LabelForModel();
-
-            // Assert
-            Assert.Empty(labelResult.ToString());
-            Assert.Empty(labelNullResult.ToString());
-            Assert.Empty(labelForResult.ToString());
-            Assert.Empty(labelForModelResult.ToString());
-        }
-
-        [Fact]
         public void LabelHelpers_DisplayMetadataPropertyNameForProperty()
         {
             // Arrange
@@ -134,8 +107,12 @@ namespace Microsoft.AspNet.Mvc.Core
         public void LabelHelpers_ReturnEmptyForModel_IfDisplayNameEmpty()
         {
             // Arrange
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
-            helper.ViewData.ModelMetadata.DisplayName = string.Empty;
+            var provider = new TestModelMetadataProvider();
+            provider
+                .ForType<DefaultTemplatesUtilities.ObjectTemplateModel>()
+                .DisplayDetails(dd => dd.DisplayName = string.Empty);
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
 
             // Act
             var labelResult = helper.Label(expression: string.Empty);
@@ -156,8 +133,12 @@ namespace Microsoft.AspNet.Mvc.Core
         public void LabelHelpers_DisplayDisplayName_IfNonNull(string displayName)
         {
             // Arrange
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
-            helper.ViewData.ModelMetadata.DisplayName = displayName;
+            var provider = new TestModelMetadataProvider();
+            provider
+                .ForType<DefaultTemplatesUtilities.ObjectTemplateModel>()
+                .DisplayDetails(dd => dd.DisplayName = displayName);
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
 
             // Act
             var labelResult = helper.Label(expression: string.Empty);
@@ -174,15 +155,16 @@ namespace Microsoft.AspNet.Mvc.Core
         public void LabelHelpers_ReturnEmptyForProperty_IfDisplayNameEmpty()
         {
             // Arrange
-            var provider = new EmptyModelMetadataProvider();
+            var provider = new TestModelMetadataProvider();
+            provider
+                .ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1")
+                .DisplayDetails(dd => dd.DisplayName = string.Empty);
 
             var modelExplorer = provider
                 .GetModelExplorerForType(typeof(DefaultTemplatesUtilities.ObjectTemplateModel), model: null)
                 .GetExplorerForProperty("Property1");
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
-            helper.ViewData.ModelExplorer = modelExplorer;
-            helper.ViewData.ModelMetadata.DisplayName = string.Empty;
 
             // Act
             var labelResult = helper.Label(expression: string.Empty);
@@ -206,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var provider = new TestModelMetadataProvider();
             provider
                 .ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1")
-                .Then(mm => mm.DisplayName = displayName);
+                .DisplayDetails(dd => dd.DisplayName = displayName);
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
 

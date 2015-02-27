@@ -55,9 +55,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             RuntimeHelpers.EnsureSufficientExecutionStack();
 
             var modelState = validationContext.ModelValidationContext.ModelState;
-            var bindingSourceMetadata = modelExplorer.Metadata.BinderMetadata as IBindingSourceMetadata;
-            var bindingSource = bindingSourceMetadata?.BindingSource;
 
+            var bindingSource = modelExplorer.Metadata.BindingSource;
             if (bindingSource != null && !bindingSource.IsFromRequest)
             {
                 // Short circuit if the metadata represents something that was not bound using request data.

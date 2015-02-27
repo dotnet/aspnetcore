@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [InlineData(typeof(object))]
         [InlineData(typeof(int))]
         [InlineData(typeof(int[]))]
-        [InlineData(typeof(TestFromHeader))]
+        [InlineData(typeof(BindingSource))]
         public async Task BindModelAsync_ReturnsTrue_ForAllTypes(Type type)
         {
             // Arrange
@@ -74,7 +74,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
         private static ModelBindingContext GetBindingContext(Type modelType)
         {
-            var metadataProvider = new EmptyModelMetadataProvider();
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider.ForType(modelType).BindingDetails(d => d.BindingSource = BindingSource.Header);
+
             var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
@@ -87,13 +89,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 }
             };
 
-            bindingContext.ModelMetadata.BinderMetadata = new TestFromHeader();
             return bindingContext;
-        }
-
-        public class TestFromHeader : IBindingSourceMetadata
-        {
-            public BindingSource BindingSource { get; } = BindingSource.Header;
         }
     }
 }

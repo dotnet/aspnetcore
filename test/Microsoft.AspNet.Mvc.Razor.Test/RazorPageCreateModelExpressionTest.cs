@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private static ViewContext CreateViewContext(RazorPageCreateModelExpressionModel model)
         {
-            return CreateViewContext(model, new DataAnnotationsModelMetadataProvider());
+            return CreateViewContext(model, new TestModelMetadataProvider());
         }
 
         private static ViewContext CreateViewContext(

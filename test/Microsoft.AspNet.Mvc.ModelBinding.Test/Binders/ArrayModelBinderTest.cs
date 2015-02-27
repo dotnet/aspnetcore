@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 { "someName[0]", "42" },
                 { "someName[1]", "84" }
             };
-            ModelBindingContext bindingContext = GetBindingContext(valueProvider);
+            var bindingContext = GetBindingContext(valueProvider);
             var binder = new ArrayModelBinder<int>();
 
             // Act
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task GetBinder_ValueProviderDoesNotContainPrefix_ReturnsNull()
         {
             // Arrange
-            ModelBindingContext bindingContext = GetBindingContext(new SimpleHttpValueProvider());
+            var bindingContext = GetBindingContext(new SimpleHttpValueProvider());
             var binder = new ArrayModelBinder<int>();
 
             // Act
@@ -54,8 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 { "foo[0]", "42" },
             };
-            ModelBindingContext bindingContext = GetBindingContext(valueProvider);
-            bindingContext.ModelMetadata.IsReadOnly = true;
+            var bindingContext = GetBindingContext(valueProvider, isReadOnly: true);
             var binder = new ArrayModelBinder<int>();
 
             // Act
@@ -83,10 +82,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             return mockIntBinder.Object;
         }
 
-        private static ModelBindingContext GetBindingContext(IValueProvider valueProvider)
+        private static ModelBindingContext GetBindingContext(
+            IValueProvider valueProvider,
+            bool isReadOnly = false)
         {
-            var metadataProvider = new EmptyModelMetadataProvider();
-            ModelBindingContext bindingContext = new ModelBindingContext
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider.ForType<int[]>().BindingDetails(bd => bd.IsReadOnly = isReadOnly);
+
+            var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(typeof(int[])),
                 ModelName = "someName",

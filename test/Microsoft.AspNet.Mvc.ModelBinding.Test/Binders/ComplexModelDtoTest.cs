@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
         private static ModelMetadata GetModelMetadata()
         {
-            return new ModelMetadata(new EmptyModelMetadataProvider(), typeof(object), typeof(object), "PropertyName");
+            return new EmptyModelMetadataProvider().GetMetadataForProperty(typeof(string), "Length");
         }
     }
 }

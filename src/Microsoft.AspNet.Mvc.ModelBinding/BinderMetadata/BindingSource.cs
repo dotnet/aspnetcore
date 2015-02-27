@@ -204,11 +204,5 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             return !(s1 == s2);
         }
-
-        // THIS IS TEMP CODE, this will be moved to model metadata
-        public static BindingSource GetBindingSource(IBinderMetadata metadata)
-        {
-            return (metadata as IBindingSourceMetadata)?.BindingSource;
-        }
     }
 }

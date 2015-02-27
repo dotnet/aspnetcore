@@ -23,24 +23,31 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [InlineData(typeof(Person), false)]
         [InlineData(typeof(EmptyModel), true)]
         [InlineData(typeof(EmptyModel), false)]
-        public async Task
-            CanCreateModel_CreatesModel_ForTopLevelObjectIfThereIsExplicitPrefix(Type modelType, bool isPrefixProvided)
+        public async Task CanCreateModel_CreatesModel_ForTopLevelObjectIfThereIsExplicitPrefix(
+            Type modelType,
+            bool isPrefixProvided)
         {
             var mockValueProvider = new Mock<IValueProvider>();
             mockValueProvider.Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
                              .Returns(Task.FromResult(false));
+
+            var metadataProvider = new TestModelMetadataProvider();
+            if (isPrefixProvided)
+            {
+                metadataProvider.ForType<Person>().BindingDetails(bd => bd.BinderModelName = "prefix");
+            }
 
             var bindingContext = new MutableObjectBinderContext
             {
                 ModelBindingContext = new ModelBindingContext
                 {
                     // Random type.
-                    ModelMetadata = GetMetadataForType(typeof(Person)),
+                    ModelMetadata = metadataProvider.GetMetadataForType(typeof(Person)),
                     ValueProvider = mockValueProvider.Object,
                     OperationBindingContext = new OperationBindingContext
                     {
                         ValueProvider = mockValueProvider.Object,
-                        MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                        MetadataProvider = metadataProvider,
                         ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
                     },
 
@@ -49,7 +56,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             };
 
-            bindingContext.ModelBindingContext.ModelMetadata.BinderModelName = isPrefixProvided ? "prefix" : null;
             var mutableBinder = new TestableMutableObjectModelBinder();
             bindingContext.PropertyMetadata = mutableBinder.GetMetadataForProperties(
                                                                 bindingContext.ModelBindingContext);
@@ -84,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     {
                         ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
                         ValueProvider = mockValueProvider.Object,
-                        MetadataProvider = new DataAnnotationsModelMetadataProvider()
+                        MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider()
                     }
                 }
             };
@@ -170,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     {
                         ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
                         ValueProvider = mockValueProvider.Object,
-                        MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                        MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     },
 
                     // Setting it to empty ensures that model does not get created becasue of no model name.
@@ -214,7 +220,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     {
                         ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
                         ValueProvider = mockValueProvider.Object,
-                        MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                        MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     },
                     // Setting it to empty ensures that model does not get created becasue of no model name.
                     ModelName = "dummyName"
@@ -269,7 +275,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     OperationBindingContext = new OperationBindingContext
                     {
                         ValueProvider = mockOriginalValueProvider.Object,
-                        MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                        MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                         ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
                     },
 
@@ -314,7 +320,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     {
                         ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
                         ValueProvider = mockOriginalValueProvider.Object,
-                        MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                        MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     },
                     // Setting it to empty ensures that model does not get created becasue of no model name.
                     ModelName = "dummyName"
@@ -349,7 +355,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 OperationBindingContext = new OperationBindingContext
                 {
                     ModelBinder = mockDtoBinder.Object,
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>()
                 }
             };
@@ -401,7 +407,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 OperationBindingContext = new OperationBindingContext
                 {
                     ModelBinder = mockDtoBinder.Object,
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>()
                 }
             };
@@ -576,7 +582,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 OperationBindingContext = new OperationBindingContext
                 {
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider()
+                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider()
                 }
             };
 
@@ -611,7 +617,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 OperationBindingContext = new OperationBindingContext
                 {
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider()
+                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider()
                 },
             };
 
@@ -640,7 +646,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         RequestServices = CreateServices()
                     },
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                 }
             };
 
@@ -665,7 +671,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 OperationBindingContext = new OperationBindingContext
                 {
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                 }
             };
 
@@ -719,7 +725,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelName = "theModel",
                 OperationBindingContext = new OperationBindingContext
                 {
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>()
                 }
             };
@@ -770,7 +776,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
                 {
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>()
                 }
             };
@@ -1367,7 +1373,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelName = "theModel",
                 OperationBindingContext = new OperationBindingContext
                 {
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     ValidatorProvider = new CompositeModelValidatorProvider(providers)
                 }
             };
@@ -1383,22 +1389,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static ModelMetadata GetMetadataForCanUpdateProperty(string propertyName)
         {
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             return metadataProvider.GetMetadataForProperty(typeof(MyModelTestingCanUpdateProperty), propertyName);
         }
 
         private static ModelMetadata GetMetadataForType(Type t)
         {
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             return metadataProvider.GetMetadataForType(t);
-        }
-
-        private static ModelMetadata GetMetadataForParameter(MethodInfo methodInfo, string parameterName)
-        {
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
-            return metadataProvider.GetMetadataForParameter(
-                methodInfo: methodInfo,
-                parameterName: parameterName);
         }
 
         private class EmptyModel

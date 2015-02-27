@@ -43,8 +43,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void DisplayText_ReturnsNullDisplayText_IfSetAndValueNull()
         {
             // Arrange
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper<OverriddenToStringModel>(model: null);
-            helper.ViewData.ModelMetadata.NullDisplayText = "Null display Text";
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<OverriddenToStringModel>().DisplayDetails(dd =>
+            {
+                dd.NullDisplayText = "Null display Text";
+            });
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper<OverriddenToStringModel>(model: null, provider: provider);
 
             // Act
             var result = helper.DisplayText(expression: string.Empty);
@@ -57,8 +62,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void DisplayTextFor_ReturnsNullDisplayText_IfSetAndValueNull()
         {
             // Arrange
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper<OverriddenToStringModel>(model: null);
-            helper.ViewData.ModelMetadata.NullDisplayText = "Null display Text";
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<OverriddenToStringModel>().DisplayDetails(dd =>
+            {
+                dd.NullDisplayText = "Null display Text";
+            });
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper<OverriddenToStringModel>(model: null, provider: provider);
 
             // Act
             var result = helper.DisplayTextFor(m => m);
@@ -120,8 +130,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 SimpleDisplay = "Simple display text",
             };
 
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            helper.ViewData.ModelMetadata.SimpleDisplayProperty = nameof(OverriddenToStringModel.SimpleDisplay);
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<OverriddenToStringModel>().DisplayDetails(dd =>
+            {
+                dd.SimpleDisplayProperty = nameof(OverriddenToStringModel.SimpleDisplay);
+            });
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper<OverriddenToStringModel>(model: model, provider: provider);
 
             // Act
             var result = helper.DisplayText(expression: string.Empty);
@@ -138,9 +153,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 SimpleDisplay = "Simple display text",
             };
-            
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            helper.ViewData.ModelMetadata.SimpleDisplayProperty = nameof(OverriddenToStringModel.SimpleDisplay);
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<OverriddenToStringModel>().DisplayDetails(dd =>
+            {
+                dd.SimpleDisplayProperty = nameof(OverriddenToStringModel.SimpleDisplay);
+            });
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper<OverriddenToStringModel>(model: model, provider: provider);
 
             // Act
             var result = helper.DisplayTextFor(m => m);
@@ -159,8 +179,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 SimpleDisplay = "Simple display text",
             };
 
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            helper.ViewData.ModelMetadata.SimpleDisplayProperty = nameof(OverriddenToStringModel.SimpleDisplay);
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<OverriddenToStringModel>().DisplayDetails(dd =>
+            {
+                dd.SimpleDisplayProperty = nameof(OverriddenToStringModel.SimpleDisplay);
+            });
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper<OverriddenToStringModel>(model: model, provider: provider);
 
             // Act
             var result = helper.DisplayText("Name");

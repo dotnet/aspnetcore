@@ -103,10 +103,14 @@ namespace Microsoft.AspNet.Mvc.Core
         public void ObjectTemplateDisplaysNullDisplayTextWithNullModelAndTemplateDepthGreaterThanOne()
         {
             // Arrange
-            var html = DefaultTemplatesUtilities.GetHtmlHelper();
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<DefaultTemplatesUtilities.ObjectTemplateModel>().DisplayDetails(dd =>
+            {
+                dd.NullDisplayText = "Null Display Text";
+                dd.SimpleDisplayProperty = "Property1";
+            });
 
-            html.ViewData.ModelMetadata.NullDisplayText = "Null Display Text";
-            html.ViewData.ModelMetadata.SimpleDisplayProperty = "Property1";
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
 
             html.ViewData.TemplateInfo.AddVisited("foo");
             html.ViewData.TemplateInfo.AddVisited("bar");
@@ -131,11 +135,15 @@ namespace Microsoft.AspNet.Mvc.Core
                 Property1 = simpleDisplayText,
             };
 
-            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<DefaultTemplatesUtilities.ObjectTemplateModel>().DisplayDetails(dd =>
+            {
+                dd.HtmlEncode = htmlEncode;
+                dd.NullDisplayText = "Null Display Text";
+                dd.SimpleDisplayProperty = "Property1";
+            });
 
-            html.ViewData.ModelMetadata.HtmlEncode = htmlEncode;
-            html.ViewData.ModelMetadata.NullDisplayText = "Null Display Text";
-            html.ViewData.ModelMetadata.SimpleDisplayProperty = "Property1";
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model, provider: provider);
 
             html.ViewData.TemplateInfo.AddVisited("foo");
             html.ViewData.TemplateInfo.AddVisited("bar");
@@ -190,11 +198,14 @@ Environment.NewLine;
                     "</span></div>" +
                 Environment.NewLine;
 
-            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
-            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var provider = new TestModelMetadataProvider();
+            provider.ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1").DisplayDetails(dd =>
+            {
+                dd.HideSurroundingHtml = true;
+            });
 
-            var metadata = html.ViewData.ModelMetadata.Properties["Property1"];
-            metadata.HideSurroundingHtml = true;
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model, provider: provider);
 
             // Act
             var result = DefaultEditorTemplates.ObjectTemplate(html);
@@ -276,11 +287,16 @@ Environment.NewLine;
             var expected = "<input id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"hidden\" value=\"Model string\" />";
 
             var model = "Model string";
-            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            var viewData = html.ViewData;
-            viewData.ModelMetadata.HideSurroundingHtml = true;
 
-            var templateInfo = viewData.TemplateInfo;
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<string>().DisplayDetails(dd =>
+            {
+                dd.HideSurroundingHtml = true;
+            });
+
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model, provider: provider);
+
+            var templateInfo = html.ViewData.TemplateInfo;
             templateInfo.HtmlFieldPrefix = "FieldPrefix";
             templateInfo.FormattedModelValue = "Formatted string";
 
@@ -384,14 +400,20 @@ Environment.NewLine;
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1").DisplayDetails(dd =>
+            {
+                dd.DataTypeName = templateName;
+            });
+
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
+                null,
                 viewEngine.Object,
+                provider,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
             helper.ViewData["Property1"] = "True";
-
-            var metadata = helper.ViewData.ModelMetadata.Properties["Property1"];
-            metadata.DataTypeName = templateName;
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
             helper.ViewData.TemplateInfo.FormattedModelValue = "Formatted string";
@@ -417,13 +439,19 @@ Environment.NewLine;
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1").DisplayDetails(dd =>
+            {
+                dd.DataTypeName = templateName;
+            });
+
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
+                null,
                 viewEngine.Object,
+                provider,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
-
-            var metadata = helper.ViewData.ModelMetadata.Properties["Property1"];
-            metadata.DataTypeName = templateName;
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
             helper.ViewData.TemplateInfo.FormattedModelValue = "Formatted string";
@@ -449,14 +477,20 @@ Environment.NewLine;
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1").DisplayDetails(dd =>
+            {
+                dd.TemplateHint = templateName;
+            });
+
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
+                null,
                 viewEngine.Object,
+                provider,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
             helper.ViewData["Property1"] = "True";
-
-            var metadata = helper.ViewData.ModelMetadata.Properties["Property1"];
-            metadata.TemplateHint = templateName;
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
             helper.ViewData.TemplateInfo.FormattedModelValue = "Formatted string";
@@ -482,13 +516,19 @@ Environment.NewLine;
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1").DisplayDetails(dd =>
+            {
+                dd.TemplateHint = templateName;
+            });
+
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
+                null,
                 viewEngine.Object,
+                provider,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
-
-            var metadata = helper.ViewData.ModelMetadata.Properties["Property1"];
-            metadata.TemplateHint = templateName;
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
             helper.ViewData.TemplateInfo.FormattedModelValue = "Formatted string";
@@ -551,9 +591,19 @@ Environment.NewLine;
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
-            helper.ViewData.ModelMetadata.DataTypeName = dataTypeName;
-            helper.ViewData.ModelMetadata.EditFormatString = editFormatString; // What [DataType] does for given type.
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<DateTimeOffset>().DisplayDetails(dd =>
+            {
+                dd.DataTypeName = dataTypeName;
+                dd.EditFormatString = editFormatString; // What [DataType] does for given type.
+            });
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                model,
+                null,
+                viewEngine.Object,
+                provider);
             helper.ViewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
             // Act
@@ -590,10 +640,20 @@ Environment.NewLine;
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<DateTimeOffset>().DisplayDetails(dd =>
+            {
+                dd.DataTypeName = dataTypeName;
+                dd.EditFormatString = editFormatString; // What [DataType] does for given type.
+            });
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                model,
+                null,
+                viewEngine.Object,
+                provider);
             helper.Html5DateRenderingMode = Html5DateRenderingMode.Rfc3339;
-            helper.ViewData.ModelMetadata.DataTypeName = dataTypeName;
-            helper.ViewData.ModelMetadata.EditFormatString = editFormatString; // What [DataType] does for given type.
             helper.ViewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
             // Act
@@ -631,11 +691,23 @@ Environment.NewLine;
             viewEngine
                 .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                 .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<DateTimeOffset>().DisplayDetails(dd =>
+            {
+                dd.DataTypeName = dataTypeName;
+                dd.EditFormatString = "Formatted as {0:O}"; // What [DataType] does for given type.
+                dd.HasNonDefaultEditFormat = true;
+            });
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                model,
+                null,
+                viewEngine.Object,
+                provider);
+
             helper.Html5DateRenderingMode = renderingMode; // Ignored due to HasNonDefaultEditFormat.
-            helper.ViewData.ModelMetadata.DataTypeName = dataTypeName;
-            helper.ViewData.ModelMetadata.EditFormatString = "Formatted as {0:O}";
-            helper.ViewData.ModelMetadata.HasNonDefaultEditFormat = true;
             helper.ViewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
             // Act

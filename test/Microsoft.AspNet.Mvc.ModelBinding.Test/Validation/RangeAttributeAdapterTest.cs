@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetClientValidationRules_ReturnsValidationParameters()
         {
             // Arrange
-            var provider = new DataAnnotationsModelMetadataProvider();
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new RangeAttribute(typeof(decimal), "0", "100");
             var adapter = new RangeAttributeAdapter(attribute);

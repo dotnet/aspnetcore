@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class DataAnnotationsModelValidatorProviderTest
     {
-        private readonly DataAnnotationsModelMetadataProvider _metadataProvider = new DataAnnotationsModelMetadataProvider();
+        private readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
 #if ASPNET50
         [Fact]

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ClientRulesWithMinLengthAttribute()
         {
             // Arrange
-            var provider = new DataAnnotationsModelMetadataProvider();
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new MinLengthAttribute(6);
             var adapter = new MinLengthAttributeAdapter(attribute);
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var propertyName = "Length";
             var message = "Array must have at least {1} items.";
-            var provider = new DataAnnotationsModelMetadataProvider();
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), propertyName);
             var attribute = new MinLengthAttribute(2) { ErrorMessage = message };
             var adapter = new MinLengthAttributeAdapter(attribute);

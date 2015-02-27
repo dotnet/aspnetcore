@@ -29,8 +29,10 @@ namespace Microsoft.AspNet.Mvc
                               .Returns(Task.FromResult<object>(new Person()))
                               .Verifiable();
 
-            var bindingContext = GetBindingContext(typeof(Person), inputFormatter: mockInputFormatter.Object);
-            bindingContext.ModelMetadata.BinderMetadata = new FromBodyAttribute();
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
+
+            var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
 
             var binder = GetBodyBinder(mockInputFormatter.Object);
 
@@ -47,8 +49,10 @@ namespace Microsoft.AspNet.Mvc
         public async Task BindModel_NoInputFormatterFound_SetsModelStateError()
         {
             // Arrange
-            var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
-            bindingContext.ModelMetadata.BinderMetadata = new FromBodyAttribute();
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
+
+            var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
 
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
@@ -68,11 +72,10 @@ namespace Microsoft.AspNet.Mvc
         public async Task BindModel_IsGreedy()
         {
             // Arrange
-            var metadata = new Mock<IBindingSourceMetadata>();
-            metadata.SetupGet(m => m.BindingSource).Returns(BindingSource.Body);
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
 
-            var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
-            bindingContext.ModelMetadata.BinderMetadata = metadata.Object;
+            var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
 
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
@@ -88,11 +91,10 @@ namespace Microsoft.AspNet.Mvc
         public async Task BindModel_IsGreedy_IgnoresWrongSource()
         {
             // Arrange
-            var metadata = new Mock<IBindingSourceMetadata>();
-            metadata.SetupGet(m => m.BindingSource).Returns(BindingSource.Header);
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Header);
 
-            var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
-            bindingContext.ModelMetadata.BinderMetadata = metadata.Object;
+            var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
 
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
@@ -107,11 +109,10 @@ namespace Microsoft.AspNet.Mvc
         public async Task BindModel_IsGreedy_IgnoresMetadataWithNoSource()
         {
             // Arrange
-            var metadata = new Mock<IBindingSourceMetadata>();
-            metadata.SetupGet(m => m.BindingSource).Returns((BindingSource)null);
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<Person>().BindingDetails(d => d.BindingSource = null);
 
-            var bindingContext = GetBindingContext(typeof(Person), inputFormatter: null);
-            bindingContext.ModelMetadata.BinderMetadata = metadata.Object;
+            var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
 
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
@@ -129,8 +130,15 @@ namespace Microsoft.AspNet.Mvc
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("Bad data!"));
             httpContext.Request.ContentType = "text/xyz";
-            var bindingContext = GetBindingContext(httpContext, typeof(Person), inputFormatter: new XyzFormatter());
-            bindingContext.ModelMetadata.BinderMetadata = new FromBodyAttribute();
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
+
+            var bindingContext = GetBindingContext(
+                typeof(Person),
+                inputFormatter: new XyzFormatter(),
+                httpContext: httpContext,
+                metadataProvider: provider);
 
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
@@ -148,17 +156,22 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("Your input is bad!", errorMessage);
         }
 
-        private static ModelBindingContext GetBindingContext(Type modelType, IInputFormatter inputFormatter)
-        {
-            return GetBindingContext(new DefaultHttpContext(), modelType, inputFormatter);
-        }
-
         private static ModelBindingContext GetBindingContext(
-            HttpContext httpContext, 
-            Type modelType, 
-            IInputFormatter inputFormatter)
+            Type modelType,
+            IInputFormatter inputFormatter = null,
+            HttpContext httpContext = null,
+            IModelMetadataProvider metadataProvider = null)
         {
-            var metadataProvider = new EmptyModelMetadataProvider();
+            if (httpContext == null)
+            {
+                httpContext = new DefaultHttpContext();
+            }
+
+            if (metadataProvider == null)
+            {
+                metadataProvider = new EmptyModelMetadataProvider();
+            }
+
             var operationBindingContext = new OperationBindingContext
             {
                 ModelBinder = GetBodyBinder(httpContext, inputFormatter),

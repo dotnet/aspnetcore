@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class DataMemberModelValidatorProviderTest
     {
-        private readonly DataAnnotationsModelMetadataProvider _metadataProvider = new DataAnnotationsModelMetadataProvider();
+        private readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
         [Fact]
         public void ClassWithoutAttributes_NoValidator()

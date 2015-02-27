@@ -4,6 +4,7 @@
 using System;
 using System.Xml.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
@@ -58,6 +59,10 @@ namespace Microsoft.AspNet.Mvc
             options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());
             options.ValueProviderFactories.Add(new QueryStringValueProviderFactory());
             options.ValueProviderFactories.Add(new FormValueProviderFactory());
+
+            // Set up metadata providers
+            options.ModelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider());
+            options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataDetailsProvider());
 
             // Set up validators
             options.ModelValidatorProviders.Add(new DataAnnotationsModelValidatorProvider());

@@ -9,6 +9,7 @@ using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Directives;
@@ -81,10 +82,16 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IFilterProvider, DefaultFilterProvider>();
 
             yield return describe.Transient<FormatFilter, FormatFilter>();
+
             // Dataflow - ModelBinding, Validation and Formatting
-            // The DataAnnotationsModelMetadataProvider does significant caching of reflection/attributes
-            // and thus needs to be singleton. 
-            yield return describe.Singleton<IModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
+            //
+            // The DefaultModelMetadataProvider does significant caching and should be a singleton.
+            yield return describe.Singleton<ModelBinding.IModelMetadataProvider, DefaultModelMetadataProvider>();
+            yield return describe.Transient<ModelBinding.Metadata.ICompositeMetadataDetailsProvider>(services =>
+            {
+                var options = services.GetRequiredService<IOptions<MvcOptions>>().Options;
+                return new DefaultCompositeMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
+            });
 
             yield return describe.Transient<IInputFormatterSelector, DefaultInputFormatterSelector>();
             yield return describe.Scoped<IInputFormattersProvider, DefaultInputFormattersProvider>();

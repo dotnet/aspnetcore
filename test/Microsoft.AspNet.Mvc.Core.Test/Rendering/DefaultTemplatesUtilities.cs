@@ -58,12 +58,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 model: null,
                 urlHelper: urlHelper,
                 viewEngine: CreateViewEngine(),
-                provider: CreateModelMetadataProvider());
+                provider: TestModelMetadataProvider.CreateDefaultProvider());
         }
 
         public static HtmlHelper<ObjectTemplateModel> GetHtmlHelper(IHtmlGenerator htmlGenerator)
         {
-            var metadataProvider = CreateModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             return GetHtmlHelper<ObjectTemplateModel>(
                 new ViewDataDictionary<ObjectTemplateModel>(metadataProvider),
                 CreateUrlHelper(),
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 viewData,
                 CreateUrlHelper(),
                 CreateViewEngine(),
-                CreateModelMetadataProvider(),
+                TestModelMetadataProvider.CreateDefaultProvider(),
                 innerHelperWrapper: null,
                 htmlGenerator: null);
         }
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(TModel model, ICompositeViewEngine viewEngine)
         {
-            return GetHtmlHelper(model, CreateUrlHelper(), viewEngine, CreateModelMetadataProvider());
+            return GetHtmlHelper(model, CreateUrlHelper(), viewEngine, TestModelMetadataProvider.CreateDefaultProvider());
         }
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 model,
                 CreateUrlHelper(),
                 viewEngine,
-                CreateModelMetadataProvider(),
+                TestModelMetadataProvider.CreateDefaultProvider(),
                 innerHelperWrapper);
         }
 
@@ -281,11 +281,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private static IUrlHelper CreateUrlHelper()
         {
             return Mock.Of<IUrlHelper>();
-        }
-
-        private static IModelMetadataProvider CreateModelMetadataProvider()
-        {
-            return new DataAnnotationsModelMetadataProvider();
         }
     }
 }

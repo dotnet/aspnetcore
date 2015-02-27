@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -51,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void GetModelBindingContext_ReturnsOnlyIncludedProperties_UsingBindAttributeInclude()
         {
             // Arrange
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var modelMetadata = metadataProvider.GetMetadataForType(
                 typeof(TypeWithIncludedPropertiesUsingBindAttribute));
 
@@ -72,11 +73,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var type = typeof(ControllerActionArgumentBinderTests);
             var methodInfo = type.GetMethod("ParameterWithNoBindAttribute");
+            var parameterInfo = methodInfo.GetParameters().Where(p => p.Name == "parameter").Single();
 
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var modelMetadata = metadataProvider.GetMetadataForParameter(
-                methodInfo: methodInfo,
-                parameterName: "parameter");
+                parameterInfo,
+                attributes: null);
 
             // Act
             var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
@@ -101,11 +103,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var type = typeof(ControllerActionArgumentBinderTests);
             var methodInfo = type.GetMethod(actionMethodName);
+            var parameterInfo = methodInfo.GetParameters().Where(p => p.Name == "parameter").Single();
 
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var modelMetadata = metadataProvider.GetMetadataForParameter(
-                methodInfo: methodInfo,
-                parameterName: "parameter");
+                parameterInfo,
+                attributes: null);
 
             // Act
             var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
@@ -130,11 +133,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Arrange
             var type = typeof(ControllerActionArgumentBinderTests);
             var methodInfo = type.GetMethod(actionMethodName);
+            var parameterInfo = methodInfo.GetParameters().Where(p => p.Name == "parameter1").Single();
 
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var modelMetadata = metadataProvider.GetMetadataForParameter(
-                methodInfo: methodInfo,
-                parameterName: "parameter1");
+                parameterInfo,
+                attributes: null);
 
             // Act
             var context = DefaultControllerActionArgumentBinder.GetModelBindingContext(
@@ -180,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 ModelBinder = binder.Object,
             };
 
-            var modelMetadataProvider = new DataAnnotationsModelMetadataProvider();
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var inputFormattersProvider = new Mock<IInputFormattersProvider>();
             inputFormattersProvider
                 .SetupGet(o => o.InputFormatters)
@@ -235,7 +239,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .SetupGet(o => o.InputFormatters)
                 .Returns(new List<IInputFormatter>());
 
-            var modelMetadataProvider = new DataAnnotationsModelMetadataProvider();
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var invoker = new DefaultControllerActionArgumentBinder(
                 modelMetadataProvider,
                 new DefaultObjectValidator(Mock.Of<IValidationExcludeFiltersProvider>(), modelMetadataProvider),
@@ -345,7 +349,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .Setup(o => o.Validate(It.IsAny<ModelValidationContext>()))
                 .Verifiable();
             var invoker = new DefaultControllerActionArgumentBinder(
-                new DataAnnotationsModelMetadataProvider(),
+                TestModelMetadataProvider.CreateDefaultProvider(),
                 mockValidatorProvider.Object,
                 new MockMvcOptionsAccessor());
 
@@ -394,7 +398,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             mockValidatorProvider.Setup(o => o.Validate(It.IsAny<ModelValidationContext>()))
                                  .Verifiable();
             var invoker = new DefaultControllerActionArgumentBinder(
-                new DataAnnotationsModelMetadataProvider(),
+                TestModelMetadataProvider.CreateDefaultProvider(),
                 mockValidatorProvider.Object,
                 new MockMvcOptionsAccessor());
 
@@ -449,7 +453,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var mockValidatorProvider = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidatorProvider.Setup(o => o.Validate(It.IsAny<ModelValidationContext>()));
             var invoker = new DefaultControllerActionArgumentBinder(
-                new DataAnnotationsModelMetadataProvider(),
+                TestModelMetadataProvider.CreateDefaultProvider(),
                 mockValidatorProvider.Object,
                 options);
 

@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 OperationBindingContext = new OperationBindingContext()
                 {
-                    MetadataProvider = new DataAnnotationsModelMetadataProvider(),
+                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                 },
             };
 

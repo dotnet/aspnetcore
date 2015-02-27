@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var expectedTagName = "not-a";
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = new TestModelMetadataProvider();
 
             var tagHelperContext = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>

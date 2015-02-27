@@ -918,7 +918,7 @@ namespace Microsoft.AspNet.Mvc.Description
             constraintResolver.Setup(c => c.ResolveConstraint("int"))
                 .Returns(new IntRouteConstraint());
 
-            var modelMetadataProvider = new DataAnnotationsModelMetadataProvider();
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
             var provider = new DefaultApiDescriptionProvider(
                 formattersProvider.Object,

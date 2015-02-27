@@ -27,6 +27,7 @@
         "System.Collections.Concurrent": "4.0.10-beta-*",
         "System.ComponentModel.Annotations": "4.0.10-beta-*",
         "System.ComponentModel.TypeConverter": "4.0.0-beta-*",
+        "System.ObjectModel": "4.0.10-beta-*",
         "System.Reflection.TypeExtensions": "4.0.0-beta-*",
         "System.Runtime.Serialization.Primitives": "4.0.0-beta-*"
       }

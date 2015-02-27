@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -43,37 +44,22 @@ namespace Microsoft.AspNet.Mvc
                         nameof(actionContext));
             }
 
+
+            var methodParameters = actionDescriptor.MethodInfo.GetParameters();
             var parameterMetadata = new List<ModelMetadata>();
             foreach (var parameter in actionDescriptor.Parameters)
             {
+                var parameterInfo = methodParameters.Where(p => p.Name == parameter.Name).Single();
                 var metadata = _modelMetadataProvider.GetMetadataForParameter(
-                    methodInfo: actionDescriptor.MethodInfo,
-                    parameterName: parameter.Name);
+                    parameterInfo,
+                    attributes: new object[] { parameter.BinderMetadata });
 
-                if (metadata != null)
-                {
-                    UpdateParameterMetadata(metadata, parameter.BinderMetadata);
-                    parameterMetadata.Add(metadata);
-                }
+                parameterMetadata.Add(metadata);
             }
 
             var actionArguments = new Dictionary<string, object>(StringComparer.Ordinal);
             await PopulateArgumentAsync(actionContext, actionBindingContext, actionArguments, parameterMetadata);
             return actionArguments;
-        }
-
-        private void UpdateParameterMetadata(ModelMetadata metadata, IBinderMetadata binderMetadata)
-        {
-            if (binderMetadata != null)
-            {
-                metadata.BinderMetadata = binderMetadata;
-            }
-
-            var nameProvider = binderMetadata as IModelNameProvider;
-            if (nameProvider != null && nameProvider.Name != null)
-            {
-                metadata.BinderModelName = nameProvider.Name;
-            }
         }
 
         private async Task PopulateArgumentAsync(

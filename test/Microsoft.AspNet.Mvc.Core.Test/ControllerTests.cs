@@ -14,7 +14,6 @@ using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.AspNet.Http.Core;
-using Microsoft.Framework.DependencyInjection;
 #if ASPNET50
 using Moq;
 #endif
@@ -41,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void SettingViewData_AlsoUpdatesViewBag()
         {
             // Arrange
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var controller = new TestableController();
             var originalViewData = controller.ViewData = new ViewDataDictionary<object>(metadataProvider);
             var replacementViewData = new ViewDataDictionary<object>(metadataProvider);
@@ -920,7 +919,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public async Task TryUpdateModel_FallsBackOnEmptyPrefix_IfNotSpecified()
         {
             // Arrange
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
@@ -953,7 +952,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
@@ -1199,7 +1198,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
@@ -1232,7 +1231,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
@@ -1456,7 +1455,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
         private static Controller GetController(IModelBinder binder, IValueProvider provider)
         {
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 

@@ -70,9 +70,13 @@ namespace Microsoft.AspNet.Mvc.Core
         public void ObjectTemplateDisplaysNullDisplayTextWhenObjectIsNull()
         {
             // Arrange
-            var html = DefaultTemplatesUtilities.GetHtmlHelper();
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<DefaultTemplatesUtilities.ObjectTemplateModel>().DisplayDetails(dd =>
+            {
+                dd.NullDisplayText = "(null value)";
+            });
 
-            html.ViewData.ModelMetadata.NullDisplayText = "(null value)";
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
 
             // Act
             var result = DefaultDisplayTemplates.ObjectTemplate(html);
@@ -92,10 +96,14 @@ namespace Microsoft.AspNet.Mvc.Core
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel();
             model.Property1 = simpleDisplayText;
 
-            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<DefaultTemplatesUtilities.ObjectTemplateModel>().DisplayDetails(dd =>
+            {
+                dd.HtmlEncode = htmlEncode;
+                dd.SimpleDisplayProperty = "Property1";
+            });
 
-            html.ViewData.ModelMetadata.HtmlEncode = htmlEncode;
-            html.ViewData.ModelMetadata.SimpleDisplayProperty = "Property1";
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model, provider);
 
             html.ViewData.TemplateInfo.AddVisited("foo");
             html.ViewData.TemplateInfo.AddVisited("bar");
@@ -141,10 +149,14 @@ namespace Microsoft.AspNet.Mvc.Core
                     " SimpleDisplayText = (null)</div>" + Environment.NewLine;
 
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
-            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
 
-            var metadata = html.ViewData.ModelMetadata.Properties["Property1"];
-            metadata.HideSurroundingHtml = true;
+            var provider = new TestModelMetadataProvider();
+            provider.ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1").DisplayDetails(dd =>
+            {
+                dd.HideSurroundingHtml = true;
+            });
+
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model, provider);
 
             // Act
             var result = DefaultDisplayTemplates.ObjectTemplate(html);
@@ -219,9 +231,15 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var model = "Model string";
-            var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<string>().DisplayDetails(dd =>
+            {
+                dd.HideSurroundingHtml = true;
+            });
+
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model, provider: provider);
             var viewData = html.ViewData;
-            viewData.ModelMetadata.HideSurroundingHtml = true;
 
             var templateInfo = viewData.TemplateInfo;
             templateInfo.HtmlFieldPrefix = "FieldPrefix";

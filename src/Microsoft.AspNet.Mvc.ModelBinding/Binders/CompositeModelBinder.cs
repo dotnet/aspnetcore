@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // public IActionResult UpdatePerson([FromForm] Person person) { }
             //
             // In this example, [FromQuery] overrides the ambient data source (form).
-            var bindingSource = BindingSource.GetBindingSource(oldBindingContext.ModelMetadata.BinderMetadata);
+            var bindingSource = oldBindingContext.ModelMetadata.BindingSource;
             if (bindingSource != null && !bindingSource.IsGreedy)
             {
                 var valueProvider =
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static BodyBindingState GetBodyBindingState(ModelBindingContext oldBindingContext)
         {
-            var bindingSource = BindingSource.GetBindingSource(oldBindingContext.ModelMetadata.BinderMetadata);
+            var bindingSource = oldBindingContext.ModelMetadata.BindingSource;
 
             var willReadBodyWithFormatter = bindingSource == BindingSource.Body;
             var willReadBodyAsFormData = bindingSource == BindingSource.Form;

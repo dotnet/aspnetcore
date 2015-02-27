@@ -495,7 +495,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new DataMemberModelValidatorProvider()
             };
 
-            var modelMetadataProvider = new DataAnnotationsModelMetadataProvider();
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
             var excludedValidationTypesPredicate = new List<IExcludeTypeValidationFilter>();
             if (excludedTypes != null)

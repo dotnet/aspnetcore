@@ -278,7 +278,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var expected = @"<input data-val=""true"" data-val-required=""The Name field is required."" id=""Name""" +
                            @" name=""Name"" type=""checkbox"" value=""true"" />" +
                            @"<input name=""Name"" type=""hidden"" value=""false"" />";
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var viewDataDictionary = new ViewDataDictionary<ModelWithValidation>(metadataProvider)
             {
                 Model = new ModelWithValidation()
@@ -395,7 +395,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private static ViewDataDictionary<ModelWithValidation> GetModelWithValidationViewData()
         {
-            var provider = new DataAnnotationsModelMetadataProvider();
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var viewData = new ViewDataDictionary<ModelWithValidation>(provider)
             {
                 { "ComplexProperty.Property1", true },

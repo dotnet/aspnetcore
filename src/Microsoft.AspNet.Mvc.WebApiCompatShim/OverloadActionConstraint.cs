@@ -91,7 +91,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             foreach (var parameter in candidate.Action.Parameters)
             {
                 // We only consider parameters that are marked as bound from the URL.
-                var source = BindingSource.GetBindingSource(parameter.BinderMetadata);
+                var bindingSourceMetadata = parameter?.BinderMetadata as IBindingSourceMetadata;
+                var source = bindingSourceMetadata?.BindingSource;
                 if (source == null)
                 {
                     continue;

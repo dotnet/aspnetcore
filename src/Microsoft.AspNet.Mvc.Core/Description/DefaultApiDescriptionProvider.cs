@@ -433,21 +433,14 @@ namespace Microsoft.AspNet.Mvc.Description
 
             public void WalkParameter()
             {
+                var parameterInfo =
+                    Context.ActionDescriptor.MethodInfo.GetParameters()
+                    .Where(p => p.Name == Parameter.Name)
+                    .Single();
+
                 var modelMetadata = Context.MetadataProvider.GetMetadataForParameter(
-                    methodInfo: Context.ActionDescriptor.MethodInfo,
-                    parameterName: Parameter.Name);
-
-                var binderMetadata = Parameter.BinderMetadata;
-                if (binderMetadata != null)
-                {
-                    modelMetadata.BinderMetadata = binderMetadata;
-                }
-
-                var nameProvider = binderMetadata as IModelNameProvider;
-                if (nameProvider != null && nameProvider.Name != null)
-                {
-                    modelMetadata.BinderModelName = nameProvider.Name;
-                }
+                    parameterInfo,
+                    attributes: new object[] { Parameter.BinderMetadata });
 
                 // Attempt to find a binding source for the parameter
                 //
@@ -482,7 +475,7 @@ namespace Microsoft.AspNet.Mvc.Description
             /// </remarks>
             private bool Visit(ModelMetadata modelMetadata, BindingSource ambientSource, string containerName)
             {
-                var source = BindingSource.GetBindingSource(modelMetadata.BinderMetadata);
+                var source = modelMetadata.BindingSource;
                 if (source != null && source.IsGreedy)
                 {
                     // We have a definite answer for this model. This is a greedy source like

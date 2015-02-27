@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,10 +10,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public interface IModelMetadataProvider
     {
-        IEnumerable<ModelMetadata> GetMetadataForProperties([NotNull] Type containerType);
-
         ModelMetadata GetMetadataForType([NotNull] Type modelType);
 
-        ModelMetadata GetMetadataForParameter([NotNull] MethodInfo methodInfo, [NotNull] string parameterName);
+        IEnumerable<ModelMetadata> GetMetadataForProperties([NotNull] Type modelType);
+
+        ModelMetadata GetMetadataForParameter([NotNull] ParameterInfo parameter, IEnumerable<object> attributes);
     }
 }

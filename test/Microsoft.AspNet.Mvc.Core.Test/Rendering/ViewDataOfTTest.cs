@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
         public void SettingModelThrowsIfTheModelIsNull()
         {
             // Arrange
-            var viewDataOfT = new ViewDataDictionary<int>(new DataAnnotationsModelMetadataProvider());
+            var viewDataOfT = new ViewDataDictionary<int>(new EmptyModelMetadataProvider());
             ViewDataDictionary viewData = viewDataOfT;
 
             // Act and Assert
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
         public void SettingModelThrowsIfTheModelIsIncompatible()
         {
             // Arrange
-            var viewDataOfT = new ViewDataDictionary<string>(new DataAnnotationsModelMetadataProvider());
+            var viewDataOfT = new ViewDataDictionary<string>(new EmptyModelMetadataProvider());
             ViewDataDictionary viewData = viewDataOfT;
 
             // Act and Assert
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var value = "some value";
-            var viewDataOfT = new ViewDataDictionary<object>(new DataAnnotationsModelMetadataProvider());
+            var viewDataOfT = new ViewDataDictionary<object>(new EmptyModelMetadataProvider());
             ViewDataDictionary viewData = viewDataOfT;
 
             // Act
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc
         public void PropertiesInitializedCorrectly()
         {
             // Arrange
-            var viewData = new ViewDataDictionary<string>(new DataAnnotationsModelMetadataProvider());
+            var viewData = new ViewDataDictionary<string>(new EmptyModelMetadataProvider());
 
             // Act & Assert
             Assert.Empty(viewData);
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc
         public void TemplateInfoPropertiesAreNeverNull()
         {
             // Arrange
-            var viewData = new ViewDataDictionary<string>(new DataAnnotationsModelMetadataProvider());
+            var viewData = new ViewDataDictionary<string>(new EmptyModelMetadataProvider());
 
             // Act
             viewData.TemplateInfo.FormattedModelValue = null;

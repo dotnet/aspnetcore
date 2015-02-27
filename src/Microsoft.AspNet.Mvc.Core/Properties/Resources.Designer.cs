@@ -1707,7 +1707,15 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The model type '{0}' does not match the '{1}' type parameter.
+        /// The model's runtime type '{0}' is not assignable to the type '{1}'.
+        /// </summary>
+        internal static string ModelType_WrongType
+        {
+            get { return GetString("ModelType_WrongType"); }
+        }
+
+        /// <summary>
+        /// The model's runtime type '{0}' is not assignable to the type '{1}'.
         /// </summary>
         internal static string FormatModelType_WrongType(object p0, object p1)
         {

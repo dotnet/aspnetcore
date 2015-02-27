@@ -19,10 +19,6 @@ namespace ModelBindingWebSite
             // Set up application services
             app.UseServices(services =>
             {
-                // Override the IModelMetadataProvider AddMvc would normally add.
-                // ModelMetadataController relies on additional values AdditionalValuesMetadataProvider provides.
-                services.AddSingleton<IModelMetadataProvider, AdditionalValuesMetadataProvider>();
-
                 // Add MVC services to the services container
                 services.AddMvc(configuration)
                         .Configure<MvcOptions>(m =>
@@ -32,6 +28,9 @@ namespace ModelBindingWebSite
 
                             m.AddXmlDataContractSerializerFormatter();
                             m.ValidationExcludeFilters.Add(typeof(Address));
+
+                            // ModelMetadataController relies on additional values AdditionalValuesMetadataProvider provides.
+                            m.ModelMetadataDetailsProviders.Add(new AdditionalValuesMetadataProvider());
                         });
 
                 services.AddSingleton<ICalculator, DefaultCalculator>();

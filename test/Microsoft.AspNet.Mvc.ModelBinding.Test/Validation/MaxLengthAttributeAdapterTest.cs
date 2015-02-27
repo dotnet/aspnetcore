@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ClientRulesWithMaxLengthAttribute()
         {
             // Arrange
-            var provider = new DataAnnotationsModelMetadataProvider();
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new MaxLengthAttribute(10);
             var adapter = new MaxLengthAttributeAdapter(attribute);
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var propertyName = "Length";
             var message = "{0} must be at most {1}";
-            var provider = new DataAnnotationsModelMetadataProvider();
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), propertyName);
             var attribute = new MaxLengthAttribute(5) { ErrorMessage = message };
             var adapter = new MaxLengthAttributeAdapter(attribute);

@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var expectedTagName = "not-form";
-            var metadataProvider = new DataAnnotationsModelMetadataProvider();
+            var metadataProvider = new TestModelMetadataProvider();
             var tagHelperContext = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>
                 {
@@ -408,8 +408,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return new ViewContext(
                 actionContext,
                 Mock.Of<IView>(),
-                new ViewDataDictionary(
-                    new DataAnnotationsModelMetadataProvider()),
+                new ViewDataDictionary(new TestModelMetadataProvider()),
                 TextWriter.Null);
         }
     }

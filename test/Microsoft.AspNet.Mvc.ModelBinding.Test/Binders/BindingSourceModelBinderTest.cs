@@ -52,13 +52,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public async Task BindingSourceModelBinder_ReturnsFalse_NonMatchingSource()
         {
             // Arrange
-            var context = new ModelBindingContext();
-            context.ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(string));
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<string>().BindingDetails(d => d.BindingSource = BindingSource.Query);
 
-            context.ModelMetadata.BinderMetadata = new ModelBinderAttribute()
-            {
-                BindingSource = BindingSource.Query,
-            };
+            var context = new ModelBindingContext();
+            context.ModelMetadata = provider.GetMetadataForType(typeof(string));
 
             var binder = new TestableBindingSourceModelBinder(BindingSource.Body);
 
@@ -74,13 +72,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public async Task BindingSourceModelBinder_ReturnsTrue_MatchingSource()
         {
             // Arrange
-            var context = new ModelBindingContext();
-            context.ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(string));
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<string>().BindingDetails(d => d.BindingSource = BindingSource.Body);
 
-            context.ModelMetadata.BinderMetadata = new ModelBinderAttribute()
-            {
-                BindingSource = BindingSource.Body,
-            };
+            var context = new ModelBindingContext();
+            context.ModelMetadata = provider.GetMetadataForType(typeof(string));
 
             var binder = new TestableBindingSourceModelBinder(BindingSource.Body);
 
