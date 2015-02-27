@@ -21,7 +21,7 @@
         "System.Globalization": "4.0.10-beta-*",
         "System.Globalization.Extensions": "4.0.0-beta-*",
         "System.Linq": "4.0.0-beta-*",
-        "System.Linq.Expressions": "4.0.0-beta-*",
+        "System.Linq.Expressions": "4.0.10-beta-*",
         "System.Linq.Queryable": "4.0.0-beta-*",
         "System.Net.Primitives": "4.0.10-beta-*",
         "System.Reflection": "4.0.10-beta-*",
