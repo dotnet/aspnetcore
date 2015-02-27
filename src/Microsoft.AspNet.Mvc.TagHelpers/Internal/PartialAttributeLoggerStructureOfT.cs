@@ -14,12 +14,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
     /// An <see cref="ILoggerStructure"/> for log messages regarding <see cref="ITagHelper"/> instances that opt out of
     /// processing due to missing attributes for one of several possible modes.
     /// </summary>
-    public class PartialModeMatchLoggerStructure<TMode> : ILoggerStructure
+    public class PartialModeMatchLoggerStructure<TMode> : PartialModeMatchLoggerStructure
     {
         private readonly string _uniqueId;
         private readonly string _viewPath;
         private readonly IEnumerable<ModeMatchAttributes<TMode>> _partialMatches;
-        private readonly IEnumerable<KeyValuePair<string, object>> _values;
 
         /// <summary>
         /// Creates a new <see cref="PartialModeMatchLoggerStructure{TMode}"/>.
@@ -31,43 +30,23 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             string uniqueId,
             string viewPath,
             [NotNull] IEnumerable<ModeMatchAttributes<TMode>> partialMatches)
+            : base(values: new Dictionary<string, object>
+            {
+                ["UniqueId"] = uniqueId,
+                ["ViewPath"] = viewPath,
+                ["PartialMatches"] = partialMatches
+            })
         {
             _uniqueId = uniqueId;
             _viewPath = viewPath;
             _partialMatches = partialMatches;
-            _values = new Dictionary<string, object>
-            {
-                ["UniqueId"] = _uniqueId,
-                ["ViewPath"] = _viewPath,
-                ["PartialMatches"] = partialMatches
-            };
         }
-
-        /// <summary>
-        /// The log message.
-        /// </summary>
-        public string Message
-        {
-            get
-            {
-                return "Tag Helper has missing required attributes.";
-            }
-        }
-
-        /// <summary>
-        /// Gets the values associated with this structured log message.
-        /// </summary>
-        /// <returns>The values.</returns>
-        public IEnumerable<KeyValuePair<string, object>> GetValues()
-        {
-            return _values;
-        }
-
+        
         /// <summary>
         /// Generates a human readable string for this structured log message.
         /// </summary>
         /// <returns>The message.</returns>
-        public string Format()
+        public override string Format()
         {
             var newLine = Environment.NewLine;
             return string.Format(

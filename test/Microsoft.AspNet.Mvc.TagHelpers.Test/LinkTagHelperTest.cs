@@ -351,20 +351,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return new TagHelperOutput(tagName, attributes);
         }
 
-        private static IHostingEnvironment MakeHostingEnvironment(IFileProvider webRootFileProvider = null)
+        private static IHostingEnvironment MakeHostingEnvironment()
         {
             var emptyDirectoryContents = new Mock<IDirectoryContents>();
             emptyDirectoryContents.Setup(dc => dc.GetEnumerator())
                 .Returns(Enumerable.Empty<IFileInfo>().GetEnumerator());
-            if (webRootFileProvider == null)
-            {
-                var mockFileProvider = new Mock<IFileProvider>();
-                mockFileProvider.Setup(fp => fp.GetDirectoryContents(It.IsAny<string>()))
-                    .Returns(emptyDirectoryContents.Object);
-                webRootFileProvider = mockFileProvider.Object;
-            }
+            var mockFileProvider = new Mock<IFileProvider>();
+            mockFileProvider.Setup(fp => fp.GetDirectoryContents(It.IsAny<string>()))
+                .Returns(emptyDirectoryContents.Object);
             var hostingEnvironment = new Mock<IHostingEnvironment>();
-            hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(webRootFileProvider);
+            hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(mockFileProvider.Object);
 
             return hostingEnvironment.Object;
         }

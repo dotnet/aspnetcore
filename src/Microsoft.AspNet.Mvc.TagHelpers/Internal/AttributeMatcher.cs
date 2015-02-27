@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {
@@ -15,44 +14,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
     /// </summary>
     public static class AttributeMatcher
     {
-        /// <summary>
-        /// Determines whether a <see cref="ITagHelper" />'s required attributes are present, non null, non empty, and
-        /// non whitepsace.
-        /// </summary>
-        /// <param name="tagHelperContext">The <see cref="TagHelperContext"/>.</param>
-        /// <param name="viewContext">The <see cref="ViewContext"/>.</param>
-        /// <param name="requiredAttributes">
-        ///     The attributes the <see cref="ITagHelper" /> requires in order to run.
-        /// </param>
-        /// <param name="logger">An optional <see cref="ILogger"/> to log warning details to.</param>
-        /// <returns>A <see cref="bool"/> indicating whether the <see cref="ITagHelper" /> should run.</returns> 
-        public static bool AllRequiredAttributesArePresent(
-            [NotNull] TagHelperContext tagHelperContext,
-            [NotNull] ViewContext viewContext,
-            [NotNull] IEnumerable<string> requiredAttributes,
-            ILogger logger)
-        {
-            var attributes = GetPresentMissingAttributes(tagHelperContext, requiredAttributes);
-
-            if (attributes.Missing.Any())
-            {
-                if (attributes.Present.Any() && logger != null && logger.IsEnabled(LogLevel.Warning))
-                {
-                    // At least 1 attribute was present indicating the user intended to use the tag helper,
-                    // but at least 1 was missing too, so log a warning with the details.
-                    logger.WriteWarning(new MissingAttributeLoggerStructure(
-                        tagHelperContext.UniqueId,
-                        viewContext.View.Path,
-                        attributes.Missing));
-                }
-
-                return false;
-            }
-
-            // All required attributes present
-            return true;
-        }
-
         /// <summary>
         /// Determines the modes a <see cref="ITagHelper" /> can run in based on which modes have all their required
         /// attributes present, non null, non empty, and non whitepsace.
