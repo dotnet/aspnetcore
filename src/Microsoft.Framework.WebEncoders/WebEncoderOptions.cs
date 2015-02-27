@@ -8,7 +8,7 @@ namespace Microsoft.Framework.WebEncoders
     /// <summary>
     /// Specifies options common to all three encoders (HtmlEncode, JavaScriptStringEncode, UrlEncode).
     /// </summary>
-    public sealed class EncoderOptions
+    public sealed class WebEncoderOptions
     {
         /// <summary>
         /// Specifies which code points are allowed to be represented unescaped by the encoders.

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
@@ -13,12 +12,7 @@ namespace Microsoft.Framework.WebEncoders
     {
         public static IEnumerable<IServiceDescriptor> GetDefaultServices()
         {
-            return GetDefaultServices(configuration: null);
-        }
-
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration)
-        {
-            var describe = new ServiceDescriber(configuration);
+            var describe = new ServiceDescriber();
 
             // Register the default encoders
             // We want to call the 'Default' property getters lazily since they perform static caching
@@ -31,7 +25,7 @@ namespace Microsoft.Framework.WebEncoders
         {
             return serviceProvider =>
             {
-                var codePointFilter = serviceProvider?.GetService<IOptions<EncoderOptions>>()?.Options?.CodePointFilter;
+                var codePointFilter = serviceProvider?.GetService<IOptions<WebEncoderOptions>>()?.Options?.CodePointFilter;
                 return (codePointFilter != null) ? customFilterFactory(codePointFilter) : defaultFactory();
             };
         }
