@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -12,6 +13,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// </summary>
     public class TagHelperRunner
     {
+        private readonly IHtmlEncoder _htmlEncoder;
+
+        /// <summary>
+        /// Instantiates a new instance of <see cref="TagHelperRunner"/>.
+        /// </summary>
+        /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/> used to encode HTML.</param>
+        public TagHelperRunner([NotNull] IHtmlEncoder htmlEncoder)
+        {
+            _htmlEncoder = htmlEncoder;
+        }
+
         /// <summary>
         /// Calls the <see cref="ITagHelper.ProcessAsync"/> method on <see cref="ITagHelper"/>s.
         /// </summary>
@@ -26,7 +38,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 executionContext.Items,
                 executionContext.UniqueId,
                 executionContext.GetChildContentAsync);
-            var tagHelperOutput = new TagHelperOutput(executionContext.TagName, executionContext.HTMLAttributes)
+            var tagHelperOutput = new TagHelperOutput(
+                executionContext.TagName,
+                executionContext.HTMLAttributes,
+                _htmlEncoder)
             {
                 SelfClosing = executionContext.SelfClosing,
             };

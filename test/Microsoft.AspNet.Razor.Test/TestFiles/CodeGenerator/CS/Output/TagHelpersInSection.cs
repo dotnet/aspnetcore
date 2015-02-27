@@ -11,7 +11,7 @@ namespace TestOutput
         private System.IO.TextWriter __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private TagHelperExecutionContext __tagHelperExecutionContext = null;
-        private TagHelperRunner __tagHelperRunner = new TagHelperRunner();
+        private TagHelperRunner __tagHelperRunner = null;
         private TagHelperScopeManager __tagHelperScopeManager = new TagHelperScopeManager();
         private MyTagHelper __MyTagHelper = null;
         private NestedTagHelper __NestedTagHelper = null;

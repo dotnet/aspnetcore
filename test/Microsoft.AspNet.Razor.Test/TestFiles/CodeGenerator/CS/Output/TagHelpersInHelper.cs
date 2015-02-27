@@ -120,7 +120,7 @@ Write(DateTime.Now);
         private System.IO.TextWriter __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private TagHelperExecutionContext __tagHelperExecutionContext = null;
-        private TagHelperRunner __tagHelperRunner = new TagHelperRunner();
+        private TagHelperRunner __tagHelperRunner = null;
         private TagHelperScopeManager __tagHelperScopeManager = new TagHelperScopeManager();
         private MyTagHelper __MyTagHelper = null;
         private NestedTagHelper __NestedTagHelper = null;
@@ -132,6 +132,7 @@ Write(DateTime.Now);
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            __tagHelperRunner = __tagHelperRunner ?? new TagHelperRunner(HtmlEncoder);
             Instrumentation.BeginContext(33, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers.Test;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -79,7 +80,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 {
                     { "class", "btn" },
                     { "something", "   spaced    " }
-                });
+                },
+                htmlEncoder: new NullHtmlEncoder());
 
             // Act
             var output = tagHelperOutput.GenerateStartTag();
@@ -110,7 +112,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 {
                     { "class", "btn" },
                     { "something", "   spaced    " }
-                });
+                },
+                htmlEncoder: new NullHtmlEncoder());
 
             tagHelperOutput.SelfClosing = true;
 
@@ -137,6 +140,26 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
+        public void GenerateStartTag_UsesProvidedHtmlEncoder()
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput("p",
+                attributes: new Dictionary<string, string>
+                {
+                    { "hello", "world" },
+                },
+                htmlEncoder: new PseudoHtmlEncoder());
+
+            tagHelperOutput.SelfClosing = true;
+
+            // Act
+            var output = tagHelperOutput.GenerateStartTag();
+
+            // Assert
+            Assert.Equal("<p hello=\"HtmlEncode[[world]]\" />", output);
+        }
+
+        [Fact]
         public void GenerateStartTag_ReturnsNothingIfWhitespaceTagName()
         {
             // Arrange
@@ -145,7 +168,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 {
                     { "class", "btn" },
                     { "something", "   spaced    " }
-                })
+                },
+                htmlEncoder: new NullHtmlEncoder())
             {
                 SelfClosing = true
             };
@@ -402,7 +426,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 {
                     { "class", "btn" },
                     { "something", "   spaced    " }
-                })
+                },
+                htmlEncoder: new NullHtmlEncoder())
             {
                 PreContent = "Pre Content",
                 Content = "Content",
@@ -431,7 +456,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 attributes: new Dictionary<string, string>
                 {
                     { originalName, "btn" },
-                });
+                },
+                htmlEncoder: new NullHtmlEncoder());
 
             // Act
             tagHelperOutput.Attributes[updateName] = "super button";

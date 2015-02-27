@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.Razor.Generator
             RunnerTypeName = "TagHelperRunner";
             ScopeManagerTypeName = "TagHelperScopeManager";
             ExecutionContextTypeName = "TagHelperExecutionContext";
+            HtmlEncoderPropertyName = "HtmlEncoder";
         }
 
         /// <summary>
@@ -150,5 +151,10 @@ namespace Microsoft.AspNet.Razor.Generator
         /// Contains information about in-scope tag helpers, HTML attributes, and the tag helpers' output.
         /// </remarks>
         public string ExecutionContextTypeName { get; set; }
+
+        /// <summary>
+        /// The name of the property used to encode HTML.
+        /// </summary>
+        public string HtmlEncoderPropertyName { get; set; }
     }
 }

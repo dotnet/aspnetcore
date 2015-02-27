@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers.Test;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -61,7 +62,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             int[] expectedTagHelperOrders)
         {
             // Arrange
-            var runner = new TagHelperRunner();
+            var runner = new TagHelperRunner(new NullHtmlEncoder());
             var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
             var processOrder = new List<int>();
 
@@ -87,7 +88,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public async Task RunAsync_SetTagHelperOutputSelfClosing(bool selfClosing)
         {
             // Arrange
-            var runner = new TagHelperRunner();
+            var runner = new TagHelperRunner(new NullHtmlEncoder());
             var executionContext = new TagHelperExecutionContext("p", selfClosing);
             var tagHelper = new TagHelperContextTouchingTagHelper();
 
@@ -105,7 +106,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public async Task RunAsync_ProcessesAllTagHelpers()
         {
             // Arrange
-            var runner = new TagHelperRunner();
+            var runner = new TagHelperRunner(new NullHtmlEncoder());
             var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
             var executableTagHelper1 = new ExecutableTagHelper();
             var executableTagHelper2 = new ExecutableTagHelper();
@@ -124,7 +125,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public async Task RunAsync_AllowsModificationOfTagHelperOutput()
         {
             // Arrange
-            var runner = new TagHelperRunner();
+            var runner = new TagHelperRunner(new NullHtmlEncoder());
             var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
             var executableTagHelper = new ExecutableTagHelper();
 
@@ -144,7 +145,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public async Task RunAsync_AllowsDataRetrievalFromTagHelperContext()
         {
             // Arrange
-            var runner = new TagHelperRunner();
+            var runner = new TagHelperRunner(new NullHtmlEncoder());
             var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
             var tagHelper = new TagHelperContextTouchingTagHelper();
 
@@ -161,7 +162,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public async Task RunAsync_ConfiguresTagHelperContextWithExecutionContextsItems()
         {
             // Arrange
-            var runner = new TagHelperRunner();
+            var runner = new TagHelperRunner(new NullHtmlEncoder());
             var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
             var tagHelper = new ContextInspectingTagHelper();
             executionContext.Add(tagHelper);
@@ -172,6 +173,22 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Assert
             Assert.NotNull(tagHelper.ContextProcessedWith);
             Assert.Same(tagHelper.ContextProcessedWith.Items, executionContext.Items);
+        }
+
+        [Fact]
+        public async Task RunAsync_CreatesTagHelperOutput_WithProvidedEncoder()
+        {
+            // Arrange
+            var runner = new TagHelperRunner(new PseudoHtmlEncoder());
+            var executionContext = new TagHelperExecutionContext("p", selfClosing: true);
+            executionContext.AddHtmlAttribute("Hello", "World");
+
+            // Act
+            var tagHelperOutput = await runner.RunAsync(executionContext);
+            var output = tagHelperOutput.GenerateStartTag();
+
+            // Assert
+            Assert.Equal("<p Hello=\"HtmlEncode[[World]]\" />", output);
         }
 
         private class ExecutableTagHelper : TagHelper

@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
 using System.Text;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private bool _contentSet;
         private bool _isTagNameNullOrWhitespace;
         private string _tagName;
+        private readonly IHtmlEncoder _htmlEncoder;
 
         // Internal for testing
         internal TagHelperOutput(string tagName)
@@ -32,13 +33,19 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="tagName">The HTML element's tag name.</param>
         /// <param name="attributes">The HTML attributes.</param>
-        public TagHelperOutput(string tagName, [NotNull] IDictionary<string, string> attributes)
+        /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/> used
+        /// to encode HTML attribute values.</param>
+        public TagHelperOutput(
+            string tagName,
+            [NotNull] IDictionary<string, string> attributes,
+            [NotNull] IHtmlEncoder htmlEncoder)
         {
             TagName = tagName;
             Attributes = new Dictionary<string, string>(attributes, StringComparer.OrdinalIgnoreCase);
             PreContent = string.Empty;
             _content = string.Empty;
             PostContent = string.Empty;
+            _htmlEncoder = htmlEncoder;
         }
 
         /// <summary>
@@ -131,7 +138,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             foreach (var attribute in Attributes)
             {
-                var value = WebUtility.HtmlEncode(attribute.Value);
+                var value = _htmlEncoder.HtmlEncode(attribute.Value);
                 sb.Append(' ')
                   .Append(attribute.Key)
                   .Append("=\"")

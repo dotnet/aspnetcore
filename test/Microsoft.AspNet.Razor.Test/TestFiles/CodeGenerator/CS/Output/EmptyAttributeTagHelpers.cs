@@ -12,7 +12,7 @@ namespace TestOutput
         private System.IO.TextWriter __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private TagHelperExecutionContext __tagHelperExecutionContext = null;
-        private TagHelperRunner __tagHelperRunner = new TagHelperRunner();
+        private TagHelperRunner __tagHelperRunner = null;
         private TagHelperScopeManager __tagHelperScopeManager = new TagHelperScopeManager();
         private InputTagHelper __InputTagHelper = null;
         private InputTagHelper2 __InputTagHelper2 = null;
@@ -25,6 +25,7 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            __tagHelperRunner = __tagHelperRunner ?? new TagHelperRunner(HtmlEncoder);
             Instrumentation.BeginContext(27, 13, true);
             WriteLiteral("\r\n<div>\r\n    ");
             Instrumentation.EndContext();

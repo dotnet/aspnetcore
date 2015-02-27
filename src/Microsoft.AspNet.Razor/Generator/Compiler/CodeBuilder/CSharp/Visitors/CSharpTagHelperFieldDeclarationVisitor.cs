@@ -46,13 +46,19 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                                       CSharpTagHelperCodeRenderer.ExecutionContextVariableName,
                                       value: null);
 
-                    WritePrivateField(_tagHelperContext.RunnerTypeName,
-                                      CSharpTagHelperCodeRenderer.RunnerVariableName,
-                                      "new " + _tagHelperContext.RunnerTypeName + "()");
+                    Writer
+                        .Write("private ")
+                        .WriteVariableDeclaration(
+                        _tagHelperContext.RunnerTypeName,
+                        CSharpTagHelperCodeRenderer.RunnerVariableName,
+                        value: null);
 
-                    WritePrivateField(_tagHelperContext.ScopeManagerTypeName,
-                                      CSharpTagHelperCodeRenderer.ScopeManagerVariableName,
-                                      "new " + _tagHelperContext.ScopeManagerTypeName + "()");
+                    Writer.Write("private ")
+                          .Write(_tagHelperContext.ScopeManagerTypeName)
+                          .Write(" ")
+                          .WriteStartAssignment(CSharpTagHelperCodeRenderer.ScopeManagerVariableName)
+                          .WriteStartNewObject(_tagHelperContext.ScopeManagerTypeName)
+                          .WriteEndMethodInvocation();
                 }
             }
 

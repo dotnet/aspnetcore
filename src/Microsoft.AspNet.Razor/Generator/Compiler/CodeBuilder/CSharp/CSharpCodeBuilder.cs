@@ -66,6 +66,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     {
                         using (writer.BuildMethodDeclaration("public override async", "Task", Host.GeneratedClassContext.ExecuteMethodName))
                         {
+                            new CSharpTagHelperRunnerInitializationVisitor(writer, Context).Accept(Tree.Chunks);
                             csharpCodeVisitor.Accept(Tree.Chunks);
                         }
                     }
