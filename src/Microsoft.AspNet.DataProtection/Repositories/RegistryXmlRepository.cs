@@ -71,11 +71,11 @@ namespace Microsoft.AspNet.DataProtection.Repositories
 
                     using (aspnetBaseKey) {
                         // TODO: Remove the ".BETA" moniker.
-                        var dataProtectionKey = aspnetBaseKey.OpenSubKey("DataProtection.BETA", writable: true);
+                        var dataProtectionKey = aspnetBaseKey.OpenSubKey("DataProtection.BETA6", writable: true);
                         if (dataProtectionKey == null)
                         {
                             // TODO: Remove the ".BETA" moniker from here, also.
-                            dataProtectionKey = aspnetBaseKey.CreateSubKey("DataProtection.BETA");
+                            dataProtectionKey = aspnetBaseKey.CreateSubKey("DataProtection.BETA6");
                         }
 
                         // Once we've opened the HKLM reg key, return a repository which wraps it.
