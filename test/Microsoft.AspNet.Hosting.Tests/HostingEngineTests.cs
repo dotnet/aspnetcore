@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var services = HostingServices.Create().BuildServiceProvider();
             var env = services.GetRequiredService<IHostingEnvironment>();
-            Assert.Equal(Path.GetFullPath("testroot"), env.WebRoot);
+            Assert.Equal(Path.GetFullPath("testroot"), env.WebRootPath);
             Assert.True(env.WebRootFileProvider.GetFileInfo("TextFile.txt").Exists);
         }
 

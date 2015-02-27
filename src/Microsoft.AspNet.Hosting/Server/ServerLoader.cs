@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting.Server

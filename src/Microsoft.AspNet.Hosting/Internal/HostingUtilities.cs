@@ -6,7 +6,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.Hosting
+namespace Microsoft.AspNet.Hosting.Internal
 {
     public static class HostingUtilities
     {

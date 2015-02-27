@@ -7,7 +7,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Hosting.Builder;
 
-namespace Microsoft.AspNet.Hosting
+namespace Microsoft.AspNet.Hosting.Internal
 {
     public class PipelineInstance : IDisposable
     {

@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.TestHost
             TestServer server = TestServer.Create(app =>
             {
                 var env = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
-                Assert.Equal(Directory.GetCurrentDirectory(), env.WebRoot);
+                Assert.Equal(Directory.GetCurrentDirectory(), env.WebRootPath);
             });
         }
 

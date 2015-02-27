@@ -9,8 +9,8 @@ namespace Microsoft.AspNet.Hosting
     {
         string EnvironmentName { get; set; }
 
-        string WebRoot { get; }
+        string WebRootPath { get; }
 
-        IFileProvider WebRootFileProvider { get; set; }
+        IFileProvider WebRootFileProvider { get; }
     }
 }
