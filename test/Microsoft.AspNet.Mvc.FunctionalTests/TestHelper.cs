@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var services = new ServiceCollection();
             services.AddInstance(
                 typeof(IApplicationEnvironment),
-                new TestApplicationEnvironment(appEnvironment, appBasePath));
+                new TestApplicationEnvironment(appEnvironment, appBasePath, applicationWebSiteName));
 
             // Injecting a custom assembly provider via configuration setting. It's not good enough to just
             // add the service directly since it's registered by MVC.
