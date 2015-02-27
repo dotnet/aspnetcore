@@ -15,12 +15,11 @@ namespace Microsoft.Framework.WebEncoders
         private AllowedCharsBitmap _allowedCharsBitmap;
 
         /// <summary>
-        /// Instantiates the filter allowing only the 'Basic Latin' block of characters through.
+        /// Instantiates an empty filter.
         /// </summary>
         public CodePointFilter()
         {
             _allowedCharsBitmap = new AllowedCharsBitmap();
-            AllowBlock(UnicodeBlocks.BasicLatin);
         }
 
         /// <summary>

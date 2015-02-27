@@ -124,7 +124,7 @@ namespace Microsoft.Framework.WebEncoders
                     JavaScriptStringUnicodeEncoder encoder = Volatile.Read(ref _basicLatinSingleton);
                     if (encoder == null)
                     {
-                        encoder = new JavaScriptStringUnicodeEncoder(new CodePointFilter());
+                        encoder = new JavaScriptStringUnicodeEncoder(new CodePointFilter(UnicodeBlocks.BasicLatin));
                         Volatile.Write(ref _basicLatinSingleton, encoder);
                     }
                     return encoder;

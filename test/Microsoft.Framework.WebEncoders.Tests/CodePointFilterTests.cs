@@ -11,17 +11,13 @@ namespace Microsoft.Framework.WebEncoders
     public class CodePointFilterTests
     {
         [Fact]
-        public void Ctor_Parameterless_DefaultsToBasicLatin()
+        public void Ctor_Parameterless_CreatesEmptyFilter()
         {
             // Act
             var filter = new CodePointFilter();
 
             // Assert
-            for (int i = 0; i <= 0x007F; i++)
-            {
-                Assert.True(filter.IsCharacterAllowed((char)i));
-            }
-            for (int i = 0x0080; i <= Char.MaxValue; i++)
+            for (int i = 0; i <= Char.MaxValue; i++)
             {
                 Assert.False(filter.IsCharacterAllowed((char)i));
             }

@@ -120,7 +120,7 @@ namespace Microsoft.Framework.WebEncoders
                     HtmlUnicodeEncoder encoder = Volatile.Read(ref _basicLatinSingleton);
                     if (encoder == null)
                     {
-                        encoder = new HtmlUnicodeEncoder(new CodePointFilter());
+                        encoder = new HtmlUnicodeEncoder(new CodePointFilter(UnicodeBlocks.BasicLatin));
                         Volatile.Write(ref _basicLatinSingleton, encoder);
                     }
                     return encoder;

@@ -163,7 +163,7 @@ namespace Microsoft.Framework.WebEncoders
                     UrlUnicodeEncoder encoder = Volatile.Read(ref _basicLatinSingleton);
                     if (encoder == null)
                     {
-                        encoder = new UrlUnicodeEncoder(new CodePointFilter());
+                        encoder = new UrlUnicodeEncoder(new CodePointFilter(UnicodeBlocks.BasicLatin));
                         Volatile.Write(ref _basicLatinSingleton, encoder);
                     }
                     return encoder;
