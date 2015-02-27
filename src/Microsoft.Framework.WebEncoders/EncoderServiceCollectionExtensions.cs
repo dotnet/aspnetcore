@@ -10,12 +10,12 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class EncoderServiceCollectionExtensions
     {
-        public static IServiceCollection AddEncoders([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddWebEncoders([NotNull] this IServiceCollection services)
         {
-            return AddEncoders(services, configuration: null);
+            return AddWebEncoders(services, configuration: null);
         }
 
-        public static IServiceCollection AddEncoders([NotNull] this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddWebEncoders([NotNull] this IServiceCollection services, IConfiguration configuration)
         {
             services.AddOptions(configuration);
             services.TryAdd(EncoderServices.GetDefaultServices(configuration));
