@@ -7,7 +7,7 @@
     <Import Project="tools\k.settings.targets" />
     <Import Project="tools\QERM.targets" />
 
-    <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;VerifySignatures" />
+    <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;BinScope;VerifySignatures" />
 
     <Target Name="Clean">
         <RemoveDir Directories="$(KBinPath);$(IntermediateOutputPath);$(UnsignedBinariesPath)" />
@@ -261,7 +261,7 @@
             <SrcExclusions Include="$(PoliCheckPath)**\NuGet.Packaging\PackageExtraction\PackagePathHelper.cs">
                 <term>hack</term>
                 <Justification>Temporary to unblock build.</Justification>
-            </SrcExclusions> 
+            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.Http.Server\WebListener.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\HttpReasonPhrase.cs">
                 <term>420</term>
@@ -277,16 +277,16 @@
                 <term>Bengali</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
-			<SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
 									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
 									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
-				<term>Oriya</term>
+                <term>Oriya</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
-			<SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
 									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
 									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
-				<term>Tibetan</term>
+                <term>Tibetan</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
